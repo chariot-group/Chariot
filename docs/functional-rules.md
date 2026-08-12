@@ -3994,3 +3994,51 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
 - `services/web/client/src/lib/sessionWheelDeposit.ts`
 - `docs/functional-rules.md` — FR-session-lobby-wheel-deposit, FR-session-lobby-wheel-leave-refund
+
+## FR-tracker-initiative-modifier-display: Initiative Modifier Next to Initiative Entry
+
+**Rule**: Wherever a combatant initiative score is entered (editable initiative input), the UI MUST display that combatant's character-sheet initiative modifier, and the editable field MUST represent the **initiative roll** (d20 or manual entry). The persisted tracker score used for ordering and locked display MUST be `roll + initiativeModifier`.
+
+**Scope**:
+
+- Complements FR-combat-initiative-tracker (editable initiatives before combat start / preparatory player input) and FR-session-combat-sync (sheet ↔ tracker mirrors) without changing turn order, locking, or player visibility of the rolled initiative **total**.
+- Applies to:
+  - Initiative Tracker row initiative cell while the value is editable (GM before start; player on their own row during preparatory input).
+  - Mid-combat **Add combatants** member initiative inputs when the member is included.
+- Grouped bulk initiative entry applies the same formula: each selected row gets `enteredGroupRoll + thatRow.initiativeModifier`.
+
+**Requirements**:
+
+- The displayed modifier is the character `stats.initiative` value (same semantic as the character sheet “bonus d'initiative”), formatted as a signed integer (`+2`, `0`, `-1`).
+- On tracker rows, the modifier MUST be mirrored onto the row at creation / mid-combat add (`initiativeModifier`) and refreshed via the existing sheet sync mirror path so display does not require an extra fetch at edit time.
+- Legacy rows without `initiativeModifier` MUST treat missing value as `0` until the next sheet sync or row recreate.
+- **Input semantics**: while editable, the field shows/edits the **roll** (`initiative - initiativeModifier` when reopening a committed value). On commit, Redux `initiative` MUST become `roll + initiativeModifier`.
+- **Flush before lock**: starting combat (and any action that locks initiative inputs) MUST flush pending uncommitted initiative field text into Redux first, then apply the roll+modifier formula, so values are not lost when the GM clicks **Start combat** without blurring each field.
+- Locked / started combat display shows the **total** (`initiative`), not the raw roll alone.
+- Placement: adjacent to the initiative input, visually secondary to the score, without breaking the compact tracker grid on mobile.
+- Accessibility: the modifier MUST be exposed to assistive tech (e.g. included in the input `aria-label` or an associated text such as “bonus d'initiative +2”), not icon-only.
+- GM sees the modifier for every editable row. A player sees the modifier only on their own editable row (other combatants’ modifiers MUST NOT be shown to players).
+
+**Prohibitions**:
+
+- Broadcasting or revealing other combatants’ initiative modifiers to players.
+- Double-applying the modifier when re-editing a committed total (focus MUST re-derive the roll from `initiative - initiativeModifier`).
+- Changing turn-order rules beyond sorting by the persisted total `initiative`.
+
+**Tests**:
+
+- Nominal: GM types `15` with modifier `+2`, blurs or starts combat → stored/displayed total `17`; sort uses `17`.
+- Nominal: Start combat while focus is still in an initiative field → pending text is flushed; totals are not left at `0`.
+- Edge: player preparatory input shows modifier only on own row; missing legacy `initiativeModifier` displays/adds as `0`.
+- Edge: re-focus after commit of `17` with mod `+2` shows roll `15` in the input; second commit still yields `17`.
+- Failure: add-combatants excluded member shows no initiative input/modifier; included member uses loaded character modifier in the total.
+
+**References**:
+
+- `services/web/client/src/components/initiativeTracker/InitiativeNumberInput.tsx`
+- `services/web/client/src/components/initiativeTracker/useInitiativeTextInput.ts`
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx`
+- `services/web/client/src/components/dialogs/AddCombatantsGroupMembers.tsx`
+- `services/web/client/src/store/slices/sessionSlice.ts` (`createInitiativeTrackerRow`, `startBattle`)
+- `services/web/client/src/components/initiativeTracker/utils.ts` (`trackerMirrorFieldsFromCharacter`)
+- `docs/functional-rules.md` — FR-combat-initiative-tracker, FR-session-combat-sync, FR-session-combat-navigation

@@ -219,6 +219,7 @@
       "viewSheet": "View sheet",
       "viewSheetFor": "View sheet for {name}",
       "initiativeFor": "Initiative for {name}",
+      "initiativeModifierFor": "Initiative bonus {bonus}",
       "selectRowFor": "Select {name} for grouped initiative",
       "selectRowForVisibility": "Select {name} for grouped display",
       "selectAllRows": "Select all characters",

@@ -48,6 +48,7 @@ import {
 } from "@/components/initiativeTracker/concentration.utils";
 import type { TrackerConcentration } from "@/store/slices/sessionSlice";
 import { TrackerGridCell } from "@/components/initiativeTracker/TrackerGridCell";
+import { formatSignedBonus } from "@/utils/attack.utils";
 
 type InitiativeTrackerRowProps = {
   row: InitiativeTrackerRowType;
@@ -85,6 +86,7 @@ type InitiativeTrackerRowProps = {
   onOpenConcentrationSaveDialog?: (row: InitiativeTrackerRowType) => void;
   labels: {
     initiativeFor: string;
+    initiativeModifierFor: (bonus: string) => string;
     viewSheetFor: string;
     viewSheet: string;
     viewOwnSheet: string;
@@ -511,22 +513,47 @@ export function InitiativeTrackerRow({
   const tabletDetailsId = `initiative-tracker-row-tablet-details-${row.id}`;
   const hasTabletExpansion = totalStateCount > 1;
 
-  const renderInitiativeCell = (compact = false) => (
+  const renderInitiativeCell = (compact = false) => {
+    const showModifier = !isPlayerView || isOwnCharacter;
+    const modifier = Number.isFinite(row.initiativeModifier) ? Number(row.initiativeModifier) : 0;
+    const modifierText = formatSignedBonus(modifier);
+    const modifierAriaLabel = labels.initiativeModifierFor(modifierText);
+
+    return (
     <div className={cn("flex w-full min-w-0 items-center", hasTabletExpansion && !compact && "pl-5")}>
       {showInitiative ? (
         initiativeLocked || (isPlayerView && !isOwnCharacter) ? (
           <div
             className={cn(
-              "mx-auto flex h-9 w-full max-w-[88px] items-center justify-center rounded-[15px] bg-gray-middle-light px-3 text-sm font-medium tabular-nums text-white",
-              compact && "mx-0 max-w-[72px] px-2 max-[360px]:max-w-[60px]",
+              "mx-auto flex w-full max-w-[88px] flex-col items-center justify-center",
+              compact && "mx-0 max-w-[72px] max-[360px]:max-w-[60px]",
             )}>
-            {row.initiative}
+            {showModifier ? (
+              <span
+                className="mb-0.5 text-[10px] font-medium leading-none tabular-nums text-white/55"
+                aria-hidden="true">
+                {modifierText}
+              </span>
+            ) : null}
+            <div
+              className={cn(
+                "flex h-9 w-full items-center justify-center rounded-[15px] bg-gray-middle-light px-3 text-sm font-medium tabular-nums text-white",
+                compact && "px-2",
+              )}
+              aria-label={
+                showModifier ? `${labels.initiativeFor}, ${modifierAriaLabel}` : labels.initiativeFor
+              }>
+              {row.initiative}
+            </div>
           </div>
         ) : (
           <InitiativeNumberInput
             value={row.initiative}
             resetKey={row.id}
             ariaLabel={labels.initiativeFor}
+            modifier={modifier}
+            modifierAriaLabel={modifierAriaLabel}
+            showModifier={showModifier}
             onCommit={(nextValue) => onUpdateRow?.(row.id, { initiative: nextValue })}
             containerClassName={cn(
               compact && "mx-0 max-w-[72px] max-[360px]:max-w-[60px]",
@@ -541,7 +568,8 @@ export function InitiativeTrackerRow({
         <div className="flex justify-center">{compactHidden}</div>
       )}
     </div>
-  );
+    );
+  };
 
   const renderTabletExpansionButton = () =>
     hasTabletExpansion ? (

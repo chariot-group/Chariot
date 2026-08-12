@@ -24,6 +24,7 @@ import {
 } from "@/components/initiativeTracker/utils";
 import CharacterService from "@/services/CharacterService";
 import { buildSessionCharacterHref, withSessionCodeQuery } from "@/lib/sessionInAppNavigation";
+import { flushPendingInitiativeInputs } from "@/lib/flushPendingInitiativeInputs";
 import {
   buildConditionEntry,
   formatRemainingConditionDuration,
@@ -478,6 +479,7 @@ export default function InitiativeTrackerPage() {
 
     return {
       initiativeFor: t("initiativeFor", { name }),
+      initiativeModifierFor: (bonus: string) => t("initiativeModifierFor", { bonus }),
       viewSheetFor: t("viewSheetFor", { name }),
       viewSheet: t("viewSheet"),
       viewOwnSheet: t("viewOwnSheet"),
@@ -748,7 +750,10 @@ export default function InitiativeTrackerPage() {
                   previousHintLocked: t("previousTurnHintLocked"),
                   previousHintNoPrevious: t("previousTurnHintNoPrevious"),
                 }}
-                onStartCombat={() => dispatchTrackerAction(startBattle())}
+                onStartCombat={() => {
+                  flushPendingInitiativeInputs();
+                  dispatchTrackerAction(startBattle());
+                }}
                 onCancelCombat={() => dispatchTrackerAction(endBattle(), { includeEnded: true })}
                 onEndCombat={() => dispatchTrackerAction(endBattle(), { includeEnded: true })}
                 onPrevious={() => dispatchTrackerAction(previousBattleTurn())}

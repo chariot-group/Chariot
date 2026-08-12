@@ -22,7 +22,7 @@ import {
   TRACKER_HEADER_ALIGN,
 } from "@/components/initiativeTracker/constants";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
-import { characterName, type InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
+import { characterName, initiativeTotalFromRoll, resolveInitiativeModifier, type InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
@@ -64,6 +64,7 @@ export type InitiativeTrackerTableProps = {
   ) => void;
   getRowLabels: (row: InitiativeTrackerRow) => {
     initiativeFor: string;
+    initiativeModifierFor: (bonus: string) => string;
     viewSheetFor: string;
     viewSheet: string;
     conditionFor: string;
@@ -335,10 +336,12 @@ export function InitiativeTrackerTable({
     setSelectedRowIds(new Set());
   };
 
-  const applyGroupedInitiative = (initiative: number) => {
+  const applyGroupedInitiative = (roll: number) => {
     if (!onUpdateRow) return;
     selectedRowIds.forEach((rowId) => {
-      onUpdateRow(rowId, { initiative });
+      const row = rows.find((item) => item.id === rowId);
+      const modifier = resolveInitiativeModifier(row?.initiativeModifier);
+      onUpdateRow(rowId, { initiative: initiativeTotalFromRoll(roll, modifier) });
     });
     exitGroupedInitiativeMode();
   };

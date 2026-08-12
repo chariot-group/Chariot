@@ -369,6 +369,7 @@ export default function GroupList({
           tempHitPoints: full.stats?.tempHitPoints ?? 0,
           armorClass: full.stats?.armorClass ?? 10,
           kind: "progression" in full ? "player" : "npc",
+          initiativeModifier: full.stats?.initiative ?? 0,
         });
         dispatch(appendInitiativeTrackerRows([{ ...row, isGmGuest: true }]));
       } catch {

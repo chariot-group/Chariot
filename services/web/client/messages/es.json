@@ -219,6 +219,7 @@
       "viewSheet": "Ver la ficha",
       "viewSheetFor": "Ver la ficha de {name}",
       "initiativeFor": "Iniciativa de {name}",
+      "initiativeModifierFor": "Bonificación de iniciativa {bonus}",
       "selectRowFor": "Seleccionar {name} para iniciativa agrupada",
       "selectRowForVisibility": "Seleccionar {name} para visualización agrupada",
       "selectAllRows": "Seleccionar todos los personajes",

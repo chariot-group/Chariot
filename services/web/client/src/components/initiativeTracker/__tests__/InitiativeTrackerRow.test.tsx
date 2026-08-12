@@ -33,6 +33,7 @@ import type { InitiativeTrackerRow as InitiativeTrackerRowType } from "@/store/s
 
 const labels = {
   initiativeFor: "Initiative",
+  initiativeModifierFor: (bonus: string) => `Initiative bonus ${bonus}`,
   viewSheetFor: "View character sheet",
   viewSheet: "View sheet",
   viewOwnSheet: "View my sheet",
@@ -98,6 +99,7 @@ const baseRow: InitiativeTrackerRowType = {
   lastname: "and an even longer family name",
   surname: "",
   initiative: 12,
+  initiativeModifier: 2,
   hitPoints: 18,
   maxHitPoints: 24,
   tempHitPoints: 0,
@@ -234,7 +236,25 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     );
 
     expect(html).toContain('type="number"');
-    expect(html).toContain('aria-label="Initiative"');
+    expect(html).toContain("Initiative bonus +2");
+    expect(html).toContain("+2");
+    // total 12, modifier 2 → roll field shows 10
+    expect(html).toContain('value="10"');
+  });
+
+  it("edge: player does not see other combatants initiative modifier", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        ownCharacterId="other-character"
+        initiativeLocked={false}
+        labels={labels}
+      />,
+    );
+
+    expect(html).not.toContain("Initiative bonus +2");
+    expect(html).not.toContain('type="number"');
   });
 
   it("nominal: grid condition and group cells are isolated to prevent overlap", () => {
