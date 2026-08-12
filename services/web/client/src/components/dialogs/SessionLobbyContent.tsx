@@ -42,6 +42,7 @@ import {
 import { cn } from "@/lib/utils";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
+import SessionTimer from "@/components/layout/SessionTimer";
 
 type SessionLobbyCopyState = "idle" | "loading" | "success";
 
@@ -246,13 +247,16 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               "flex min-h-0 flex-1 flex-col gap-2.5 lg:row-start-1 lg:gap-3",
               sessionIsActive ? "lg:col-span-3 lg:col-start-1" : "lg:col-span-full",
             )}>
-            <h2
-              id="session-lobby-players-heading"
-              className="shrink-0 text-xl font-bold sm:text-xl lg:text-lg">
-              {t("title")}
-              <span className="font-normal text-muted-foreground"> — {campaign?.label ?? campaignLabel}</span>
-              <span className="sr-only"> ({participants.length})</span>
-            </h2>
+            <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 pr-8">
+              <h2
+                id="session-lobby-players-heading"
+                className="min-w-0 break-words text-xl font-bold sm:text-xl lg:text-lg">
+                {t("title")}
+                <span className="font-normal text-muted-foreground"> — {campaign?.label ?? campaignLabel}</span>
+                <span className="sr-only"> ({participants.length})</span>
+              </h2>
+              <SessionTimer />
+            </div>
 
             <div
               role="list"

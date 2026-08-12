@@ -1770,11 +1770,11 @@
   },
   "header": {
     "logoAriaLabelHome": "Return to home",
-    "logoAriaLabelInSessionPlayer": "Return to character sheet",
-    "logoAriaLabelInSessionGm": "Return to campaign character sheets"
+    "logoAriaLabelInSession": "Open session lobby"
   },
   "sessionTime": {
-    "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left."
+    "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left.",
+    "remainingAriaLabel": "Session time remaining: {time}"
   },
   "releaseNotes": {
     "title": "What's new",

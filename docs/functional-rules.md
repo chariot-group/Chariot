@@ -1897,27 +1897,31 @@ Each initiative tracker row carries:
 
 ## FR-session-lobby-navigation: In-Session Logo and Session Lobby Sidebar Navigation
 
-**Rule**: While a user is connected to an active session, clicking the application logo in the header and the sidebar action button on the session lobby page must provide contextual navigation back to character sheets instead of the generic welcome redirect or an irrelevant session action.
+**Rule**: While a user is connected to an active session, the header logo MUST signal that a session is in progress and open the session lobby modal. The remaining-time countdown MUST appear only inside that modal. Sidebar footer actions continue to provide contextual navigation back to character sheets or battle.
 
 **Scope**:
 
 - Applies when `isInSession === true` and the session record is available in Redux.
-- Complements FR-session-combat-navigation (combat navigation) without overriding combat-specific sidebar rules on other pages.
-- The session lobby page is `/{locale}/campaigns/{campaignId}/session/{sessionCode}`.
+- Complements FR-session-combat-navigation (combat navigation) and FR-session-lobby-modal (lobby open/close) without overriding combat-specific sidebar rules on other pages.
 
-**Header Logo — Player**:
+**Header Logo — In Session**:
 
-- When a connected player clicks the logo, they MUST be redirected to their session character sheet: `/{locale}/characters/{characterId}?sessionCode={sessionCode}` when a character is assigned.
-- If the player has no assigned character, the logo click MUST fall back to `/{locale}/welcome`.
-
-**Header Logo — Game Master**:
-
-- When the connected GM clicks the logo, they MUST be redirected to the first character of the first active group in the session campaign, using the same resolution order as `NavigationService.determineSpaceDestination` (active groups first, then archived groups with characters).
-- If no character exists in the campaign, the logo click MUST fall back to `/{locale}/welcome`.
+- The logo MUST show a discreet live/record indicator (small filled disc, slow opacity pulse) so the user can tell a session is active without a header countdown.
+- `prefers-reduced-motion: reduce` MUST disable the pulse; the disc remains visible and static.
+- Hover and keyboard focus MUST show the session-validity tooltip (8 hours, or auto-close after 5 minutes if all participants have left).
+- Clicking the logo MUST dispatch `openSessionLobby` (FR-session-lobby-modal). It MUST NOT navigate to a character sheet or to welcome.
+- The logo button MUST expose an accessible name indicating that it opens the session lobby.
 
 **Header Logo — Outside Session**:
 
 - When the user is not in a session, logo click behavior is unchanged: redirect to `/{locale}/welcome`.
+- No live indicator and no session tooltip.
+
+**Session Timer**:
+
+- The remaining-time countdown MUST be displayed only inside the session lobby modal, and only when `sessionStatus === "launched"` and `expiresAt` is available.
+- The header MUST NOT display the countdown.
+- Remaining time ≤ 5 minutes MAY use the warning color `red` in the modal; color MUST NOT be the only cue (the numeric countdown remains visible).
 
 **Sidebar Action Button — Player on Session Lobby**:
 
@@ -1928,23 +1932,26 @@ Each initiative tracker row carries:
 
 **Accessibility**:
 
-- The logo button MUST expose an accessible name describing its destination context (home vs character sheet navigation).
+- The logo button MUST expose an accessible name describing its destination (home vs session lobby).
+- The live/record indicator is decorative (`aria-hidden`); meaning is conveyed by the accessible name and tooltip.
+- The modal timer MUST expose an accessible name that includes the remaining time and MUST NOT use a live region that announces every second.
 
 **Tests**:
 
+- Nominal: in session, logo click opens the lobby; live indicator is visible.
+- Nominal: launched session, timer is visible in the lobby and absent from the header.
 - Nominal: launched session, player on session lobby without combat sees **Return to Character Sheet**.
-- Nominal: player in session clicks logo and lands on their session character sheet URL with `sessionCode`.
-- Nominal: GM in session clicks logo and lands on first character of first campaign group.
-- Edge: player without assigned character cannot use **Return to Character Sheet**; logo falls back to welcome.
+- Edge: in session but not launched → live indicator and logo open the lobby; no timer.
+- Edge: player without assigned character cannot use **Return to Character Sheet**.
 - Edge: combat started, player on session lobby sees **Return to Battle**.
-- Regression: user not in session still redirects logo to welcome.
+- Regression: user not in session still redirects logo to welcome, with no live indicator and no timer.
 
 **References**:
 
 - `services/web/client/src/components/layout/Header.tsx`
 - `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
 - `services/web/client/src/components/layout/SessionTimer.tsx`
-- `services/web/client/src/services/NavigationService.ts`
+- `services/web/client/src/lib/sessionPresenceUi.ts`
 - `services/web/client/src/lib/sessionInAppNavigation.ts`
 
 ---
@@ -3215,7 +3222,8 @@ Each initiative tracker row carries:
 - `SessionLobbyDialog` is mounted at layout level and renders `SessionLobbyContent` when open
 - Redux field `sessionLobbyOpen` controls visibility and MUST NOT be persisted
 - Actions `openSessionLobby` and `closeSessionLobby` are the sole open/close contract
-- Opening triggers include: session creation, join success, session timer click, sidebar return-to-session, and reconnect flows that need lobby access
+- Opening triggers include: session creation, join success, header logo click while in session, sidebar return-to-session, and reconnect flows that need lobby access
+- When the session is launched and `expiresAt` is available, the lobby MUST display the remaining-time countdown (see FR-session-lobby-navigation)
 - Legacy route `/{locale}/campaigns/{campaignId}/session/{code}` redirects to `/{locale}/welcome?join={code}`; join handling opens the lobby/join flow without requiring a dedicated page
 - Non-React services that initiate lobby access MUST return session data (e.g. `{ campaignId, code }`) and let the calling component dispatch `openSessionLobby` (see FR-i18n-navigation)
 
@@ -3237,6 +3245,7 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/dialogs/SessionLobbyDialog.tsx`
 - `services/web/client/src/components/dialogs/SessionLobbyDialogDynamic.tsx`
 - `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/components/layout/SessionTimer.tsx`
 - `services/web/client/src/store/slices/sessionSlice.ts`
 - `services/web/client/src/store/slices/__tests__/sessionSlice.lobbyModal.test.ts`
 - `services/web/client/src/app/[locale]/layout.tsx`

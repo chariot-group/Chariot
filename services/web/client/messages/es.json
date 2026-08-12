@@ -1771,11 +1771,11 @@
   },
   "header": {
     "logoAriaLabelHome": "Volver al inicio",
-    "logoAriaLabelInSessionPlayer": "Volver a la hoja de personaje",
-    "logoAriaLabelInSessionGm": "Volver a las hojas de personaje de la campaña"
+    "logoAriaLabelInSession": "Abrir el lobby de la sesión"
   },
   "sessionTime": {
-    "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
+    "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado.",
+    "remainingAriaLabel": "Tiempo restante de la sesión: {time}"
   },
   "releaseNotes": {
     "title": "Novedades",
