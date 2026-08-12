@@ -3856,3 +3856,45 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/CharacterFormView.tsx`
 - `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
 - `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
+
+---
+
+## FR-campaign-context-url-sync: Cohérence campagne URL / Redux et historique navigateur
+
+**Rule**: Sur toute route scopée campagne (`/{locale}/campaigns/{campaignId}/...`), le contexte Redux `campaignContext.selectedCampaignId` MUST rester aligné sur le `campaignId` de l’URL. Le retour / avance navigateur MUST restaurer un triplet cohérent `(campaignId, groupId, characterId)` côté URL et contexte UI (sidebar, groupes, titre de campagne), sans afficher un personnage d’une campagne dans le contexte d’une autre.
+
+**Scope**:
+
+- Navigation entre campagnes (sélecteur d’espace MJ / sidebar)
+- Navigation vers une fiche personnage en campagne
+- Historique navigateur (`back` / `forward`) et soft navigation App Router
+- Complète FR-sidebar-navigation (contexte Player/GM indépendant de l’URL) et FR-character-detail-view (routes fiche) sans les remplacer : le mode Player/GM reste piloté par Redux ; seul le **campaignId** des routes `/campaigns/...` est synchronisé depuis l’URL
+
+**Requirements**:
+
+- Quand le pathname contient `/campaigns/{campaignId}/`, `selectedCampaignId` MUST être mis à jour vers ce `campaignId` si différent (y compris après `popstate` / back-forward).
+- Les groupes affichés en sidebar (et tout cache `group` lié à la campagne sélectionnée) MUST correspondre à `selectedCampaignId` une fois synchronisé.
+- Une entrée d’historique vers une fiche personnage en campagne MUST permettre de revenir à la même combinaison campagne + groupe + personnage que lors de la visite d’origine.
+- Sur une route `/campaigns/{campaignId}/groups/{groupId}/...`, le groupe `{groupId}` MUST être (re)déplié dans la sidebar après sync / rechargement des groupes (via `groupToOpen`), y compris après un changement de campagne qui a vidé `openGroupId`.
+- La synchronisation MUST être déterministe et sans boucle de navigation (pas de `router.push`/`replace` uniquement pour « corriger » le campaignId si l’URL est déjà la source de vérité).
+
+**Prohibitions**:
+
+- Laisser `selectedCampaignId` sur la campagne B après un retour navigateur vers une URL de campagne A.
+- Afficher la fiche d’un personnage X (campagne A) sous le chrome / sidebar / groupes de la campagne B.
+- Déduire le mode Player vs GM depuis l’URL (interdit par FR-sidebar-navigation) — hors périmètre de cette règle.
+
+**Tests**:
+
+- Nominal : campagne A / personnage X → campagne B / personnage Y → back navigateur → URL et `selectedCampaignId` = A, fiche X, sidebar groupes de A, groupe de X déplié.
+- Edge : forward après ce back → retour cohérent vers B / Y avec groupe de Y déplié.
+- Edge : deep link direct vers `/campaigns/{B}/groups/{g}/characters/{y}` avec Redux encore sur A → sync immédiate vers B sans navigation parasite, groupe `g` déplié.
+- Failure / guard : pathname hors `/campaigns/...` (ex. `/characters/{id}` espace joueur) → cette règle ne force pas un `selectedCampaignId` campagne.
+
+**References**:
+
+- `services/web/client/src/store/slices/campaignContextSlice.ts`
+- `services/web/client/src/components/layout/Sidebar/SidebarEnvironment.tsx`
+- `services/web/client/src/hooks/useGroups.ts`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx`
+- `docs/functional-rules.md` — FR-sidebar-navigation, FR-character-detail-view, FR-i18n-navigation
