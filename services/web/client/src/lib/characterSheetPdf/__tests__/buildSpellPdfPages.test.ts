@@ -85,8 +85,8 @@ describe("buildSpellPdfPages", () => {
       description: "word ".repeat(120).trim(),
     }));
 
-    const shortBatches = batchSpellsForDetailPages(shortSpells, true);
-    const longBatches = batchSpellsForDetailPages(longSpells, true);
+    const shortBatches = batchSpellsForDetailPages(shortSpells);
+    const longBatches = batchSpellsForDetailPages(longSpells);
 
     expect(shortBatches.flat()).toHaveLength(6);
     expect(longBatches.flat()).toHaveLength(3);
@@ -184,10 +184,9 @@ describe("buildSpellPdfPages", () => {
   });
 
   it("layout: taller cards consume more vertical budget", () => {
-    const shortHeight = estimateSpellDetailCardHeight({ ...baseSpell, description: "Short." }, true);
+    const shortHeight = estimateSpellDetailCardHeight({ ...baseSpell, description: "Short." });
     const longHeight = estimateSpellDetailCardHeight(
       { ...baseSpell, description: "word ".repeat(80).trim() },
-      true,
     );
     expect(longHeight).toBeGreaterThan(shortHeight);
   });

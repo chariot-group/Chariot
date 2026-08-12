@@ -52,7 +52,7 @@ export function truncateSpellDescription(description: string, maxChars: number):
   return `${normalized.slice(0, Math.max(0, maxChars - 1)).trimEnd()}…`;
 }
 
-export function estimateSpellDetailCardHeight(spell: PdfSpellRow, showPreparedBadge: boolean): number {
+export function estimateSpellDetailCardHeight(spell: PdfSpellRow): number {
   const description = spell.description.replace(/\s+/g, " ").trim();
   const descriptionLines = description
     ? Math.max(
@@ -63,13 +63,11 @@ export function estimateSpellDetailCardHeight(spell: PdfSpellRow, showPreparedBa
         ),
       )
     : 0;
-  const preparedExtra = 0;
-  return PDF_SPELL_DETAIL_CARD_BASE_HEIGHT + preparedExtra + descriptionLines * PDF_SPELL_DETAIL_DESC_LINE_HEIGHT;
+  return PDF_SPELL_DETAIL_CARD_BASE_HEIGHT + descriptionLines * PDF_SPELL_DETAIL_DESC_LINE_HEIGHT;
 }
 
 export function batchSpellsForDetailPages(
   spells: PdfSpellRow[],
-  showPreparedBadge: boolean,
   pageMaxHeight: number = PDF_SPELL_DETAIL_PAGE_MAX_HEIGHT,
 ): PdfSpellRow[][] {
   if (spells.length === 0) return [];
@@ -86,7 +84,7 @@ export function batchSpellsForDetailPages(
   };
 
   for (const spell of spells) {
-    const cardHeight = estimateSpellDetailCardHeight(spell, showPreparedBadge);
+    const cardHeight = estimateSpellDetailCardHeight(spell);
     const isSecondInRow = currentBatch.length % 2 === 1;
 
     if (isSecondInRow) {
@@ -319,18 +317,14 @@ function splitDescriptionForPdfPages(description: string): string[] {
   return parts;
 }
 
-export function buildSpellPdfPages(
-  blocks: PdfSpellcastingBlock[],
-  options: { showPreparedBadge?: boolean } = {},
-): SpellPdfPageDescriptor[] {
-  const showPreparedBadge = options.showPreparedBadge ?? true;
+export function buildSpellPdfPages(blocks: PdfSpellcastingBlock[]): SpellPdfPageDescriptor[] {
   const pages: SpellPdfPageDescriptor[] = [];
 
   blocks.forEach((block, blockIndex) => {
     pages.push({ kind: "overview", blockIndex });
 
     const orderedSpells = getSpellLevelGroups(block).flatMap((group) => group.spells);
-    for (const spellBatch of batchSpellsForDetailPages(orderedSpells, showPreparedBadge)) {
+    for (const spellBatch of batchSpellsForDetailPages(orderedSpells)) {
       pages.push({ kind: "detailBatch", blockIndex, spells: spellBatch });
     }
 

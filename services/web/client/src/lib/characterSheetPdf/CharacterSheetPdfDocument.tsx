@@ -22,7 +22,6 @@ import {
   getSpellOverviewLineCount,
   truncateSpellDescription,
   PDF_SPELL_COMPACT_DESCRIPTION_MAX_CHARS,
-  PDF_SPELL_OVERVIEW_LINES_PER_LEVEL,
 } from "@/lib/characterSheetPdf/buildSpellPdfPages";
 import type { SpellOverviewDensity } from "@/lib/characterSheetPdf/buildSpellPdfPages";
 import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme, PdfAbilityFeature, PdfClassEntry, PdfHitDiceEntry, PdfSpellLevelGroup, PdfSpellRow, PdfSpellcastingBlock } from "@/lib/characterSheetPdf/types";
@@ -954,14 +953,12 @@ function SpellOverviewInnateGroup({
 function SpellOverviewPage({
   block,
   labels,
-  theme,
   styles,
   showPreparedMarks,
   density,
 }: {
   block: PdfSpellcastingBlock;
   labels: CharacterSheetPdfLabels;
-  theme: CharacterSheetPdfTheme;
   styles: ReturnType<typeof createStyles>;
   showPreparedMarks: boolean;
   density: SpellOverviewDensity;
@@ -1155,11 +1152,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
   const { pageOne: featuresPageOne, pageTwo: featuresPageTwo } = splitFeaturesForPdfPages(data.features);
   const equipmentSource = data.equipment || data.treasureText;
   const equipmentSplit = splitTextForPdfPages(equipmentSource, PDF_EQUIPMENT_PAGE1_MAX_CHARS);
-  const spellPages = data.hasSpellcasting
-    ? buildSpellPdfPages(data.spellcastingBlocks, {
-        showPreparedBadge: data.isPlayer,
-      })
-    : [];
+  const spellPages = data.hasSpellcasting ? buildSpellPdfPages(data.spellcastingBlocks) : [];
 
   return (
     <Document>
@@ -1604,7 +1597,6 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               <SpellOverviewPage
                 block={block}
                 labels={labels}
-                theme={theme}
                 styles={styles}
                 showPreparedMarks={showPrepared}
                 density={overviewDensity}
