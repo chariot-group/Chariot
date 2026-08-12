@@ -21,7 +21,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ActionUsageType, AbilityScores } from "@/types/character";
 import {
   AbilityScoreKey,
-  ABILITY_SCORE_SHORT_LABELS,
   formatSignedBonus,
   getAttackSuggestionOptions,
   getProficiencyBonusFromChallengeRating,
@@ -75,6 +74,7 @@ const ActionUpdateSection = ({
   const tEdit = useTranslations("characterDetail.edit");
   const tCommon = useTranslations("common");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
+  const tAbilitiesAbbr = useTranslations("characterDetail.player.general.abilitiesAbbr");
   const { displayFt, toFeet, unitLabel } = useDistanceUnit();
   const sectionId = useId();
   const headingId = `${sectionId}-heading`;
@@ -491,7 +491,7 @@ const ActionUpdateSection = ({
                                 selected: isSelected ? t("selected") : t("notSelected"),
                               })}
                               className="h-7 px-2 text-xs">
-                              {ABILITY_SCORE_SHORT_LABELS[suggestion.key]} {formatSignedBonus(suggestion.attackBonus)}
+                              {tAbilitiesAbbr(suggestion.key)} {formatSignedBonus(suggestion.attackBonus)}
                             </Button>
                           );
                         })}
