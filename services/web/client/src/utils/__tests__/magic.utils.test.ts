@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { Spellcasting } from "@/types/character";
-import { hasLevel1OrHigherSpells, rebindSelectedSpellToList } from "@/utils/magic.utils";
+import {
+  getSpellLevelsFromSpells,
+  hasLevel1OrHigherSpells,
+  pruneOrphanSpellSlotsByLevel,
+  rebindSelectedSpellToList,
+} from "@/utils/magic.utils";
 
 const baseSpellcasting = (spells: Spellcasting["spells"]): Spellcasting => ({
   className: "wizard",
@@ -35,6 +40,69 @@ describe("hasLevel1OrHigherSpells", () => {
 
   it("edge: retourne false lorsque la liste de sorts est vide", () => {
     expect(hasLevel1OrHigherSpells(baseSpellcasting([]))).toBe(false);
+  });
+});
+
+/** @see FR-magic-spell-level-categories */
+describe("getSpellLevelsFromSpells", () => {
+  it("nominal: retourne les niveaux uniques triés présents dans la liste", () => {
+    expect(
+      getSpellLevelsFromSpells([
+        { name: "Fireball", level: 3 },
+        { name: "Fire Bolt", level: 0 },
+        { name: "Counterspell", level: 3 },
+      ]),
+    ).toEqual([0, 3]);
+  });
+
+  it("edge: ignore les niveaux non numériques et retourne [] si vide", () => {
+    expect(getSpellLevelsFromSpells([])).toEqual([]);
+    expect(getSpellLevelsFromSpells(undefined)).toEqual([]);
+    expect(getSpellLevelsFromSpells([{ name: "Bad", level: Number.NaN }])).toEqual([]);
+  });
+});
+
+/** @see FR-magic-spell-level-categories */
+describe("pruneOrphanSpellSlotsByLevel", () => {
+  it("nominal: retire les emplacements sans sort restant à ce niveau", () => {
+    expect(
+      pruneOrphanSpellSlotsByLevel(
+        {
+          "1": { total: 4, used: 1 },
+          "6": { total: 1, used: 0 },
+        },
+        [{ name: "Disintegrate", level: 6 }],
+      ),
+    ).toEqual({ "6": { total: 1, used: 0 } });
+  });
+
+  it("edge: conserve le niveau si un sort y reste ; retire les intermédiaires orphelins", () => {
+    expect(
+      pruneOrphanSpellSlotsByLevel(
+        {
+          "1": { total: 1, used: 0 },
+          "2": { total: 1, used: 0 },
+          "3": { total: 1, used: 0 },
+          "6": { total: 1, used: 0 },
+        },
+        [
+          { name: "Magic Missile", level: 1 },
+          { name: "Disintegrate", level: 6 },
+        ],
+      ),
+    ).toEqual({
+      "1": { total: 1, used: 0 },
+      "6": { total: 1, used: 0 },
+    });
+  });
+
+  it("edge: retourne {} si plus aucun sort de niveau ≥ 1", () => {
+    expect(
+      pruneOrphanSpellSlotsByLevel(
+        { "6": { total: 1, used: 0 } },
+        [{ name: "Fire Bolt", level: 0 }],
+      ),
+    ).toEqual({});
   });
 });
 

@@ -1,7 +1,6 @@
 "use client";
 
 import Profile from "@/components/layout/Profile";
-import SessionTimer from "@/components/layout/SessionTimer";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -9,58 +8,72 @@ import { useTranslations } from "next-intl";
 import Logo from "@public/logo.svg";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import React from "react";
-import { useAppSelector } from "@/store/hooks";
-import {
-  selectCurrentSession,
-  selectCurrentUserParticipant,
-  selectIsInSession,
-} from "@/store/slices/sessionSlice";
-import { useUser } from "@/hooks/useUser";
-import NavigationService from "@/services/NavigationService";
-import { buildPlayerSessionCharacterPath } from "@/lib/sessionInAppNavigation";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { openSessionLobby, selectIsInSession } from "@/store/slices/sessionSlice";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { resolveHeaderLogoClickIntent, resolveSessionLiveTone } from "@/lib/sessionPresenceUi";
+import { useSessionRemainingSeconds } from "@/hooks/useSessionRemainingSeconds";
+import { cn } from "@/lib/utils";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const locale = pathname.split("/")[1] || "fr";
   const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
   const t = useTranslations("header");
+  const tSessionTime = useTranslations("sessionTime");
   const isInSession = useAppSelector(selectIsInSession);
-  const session = useAppSelector(selectCurrentSession);
-  const user = useUser();
-  const currentParticipant = useAppSelector((state) =>
-    selectCurrentUserParticipant(state, user.user?.keycloakId || ""),
-  );
+  const remainingSeconds = useSessionRemainingSeconds();
+  const logoIntent = resolveHeaderLogoClickIntent(isInSession);
+  const liveTone = resolveSessionLiveTone(remainingSeconds);
 
-  const logoAriaLabel = isInSession
-    ? currentParticipant?.status === "gameMaster"
-      ? t("logoAriaLabelInSessionGm")
-      : t("logoAriaLabelInSessionPlayer")
-    : t("logoAriaLabelHome");
+  const logoAriaLabel =
+    logoIntent === "openSessionLobby"
+      ? liveTone === "critical"
+        ? t("logoAriaLabelInSessionCritical")
+        : liveTone === "warning"
+          ? t("logoAriaLabelInSessionWarning")
+          : t("logoAriaLabelInSession")
+      : t("logoAriaLabelHome");
 
-  const handleLogoClick = async () => {
-    try {
-      if (isInSession && session) {
-        if (currentParticipant?.status === "gameMaster") {
-          const destination = await NavigationService.determineSpaceDestination(session.campaignId, locale);
-          router.push(destination.path);
-          return;
-        }
-
-        if (currentParticipant?.characterId) {
-          router.push(
-            buildPlayerSessionCharacterPath(locale, currentParticipant.characterId, session.code),
-          );
-          return;
-        }
-      }
-
-      router.push(`/${locale}/welcome`);
-    } catch (error) {
-      console.error("Failed to determine logo destination:", error);
-      router.push(`/${locale}/welcome`);
+  const handleLogoClick = () => {
+    if (logoIntent === "openSessionLobby") {
+      dispatch(openSessionLobby());
+      return;
     }
+
+    router.push(`/${locale}/welcome`);
   };
+
+  const logoButton = (
+    <button
+      type="button"
+      onClick={handleLogoClick}
+      aria-label={logoAriaLabel}
+      aria-haspopup={logoIntent === "openSessionLobby" ? "dialog" : undefined}
+      className="relative cursor-pointer border-none bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-[15px]">
+      <Image
+        src={Logo}
+        alt=""
+        width={70}
+        height={70}
+        className="h-16 w-16 sm:h-20 sm:w-20 md:h-22.5 md:w-22.5"
+        priority
+      />
+      {logoIntent === "openSessionLobby" ? (
+        <span
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute top-[14%] right-[18%] size-2 rounded-full ring-1 ring-background motion-reduce:animate-none",
+            liveTone === "warning" && "bg-yellow motion-safe:animate-session-warning",
+            liveTone === "critical" && "bg-red motion-safe:animate-session-critical",
+            liveTone === "live" && "bg-red motion-safe:animate-session-live",
+          )}
+        />
+      ) : null}
+    </button>
+  );
 
   return (
     <React.Fragment>
@@ -71,22 +84,19 @@ export default function Header() {
       )}
       <header className="w-full shrink-0 flex flex-row justify-between items-center px-2 sm:px-4 z-10">
         <SidebarTrigger className="self-start mt-1" />
-        <button
-          type="button"
-          onClick={handleLogoClick}
-          aria-label={logoAriaLabel}
-          className="cursor-pointer bg-transparent border-none p-0">
-          <Image
-            src={Logo}
-            alt="Chariot"
-            width={70}
-            height={70}
-            className="w-16 h-16 sm:w-20 sm:h-20 md:w-22.5 md:h-22.5"
-            priority
-          />
-        </button>
+        {logoIntent === "openSessionLobby" ? (
+          <Tooltip>
+            <TooltipTrigger asChild>{logoButton}</TooltipTrigger>
+            <TooltipContent className="max-w-xs sm:max-w-sm">
+              {tSessionTime("tooltip")}
+              {liveTone === "warning" ? ` ${tSessionTime("tooltipWarning")}` : null}
+              {liveTone === "critical" ? ` ${tSessionTime("tooltipCritical")}` : null}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          logoButton
+        )}
         <div className="relative flex items-center gap-3">
-          <SessionTimer />
           <Profile />
         </div>
       </header>

@@ -219,6 +219,7 @@
       "viewSheet": "Ver la ficha",
       "viewSheetFor": "Ver la ficha de {name}",
       "initiativeFor": "Iniciativa de {name}",
+      "initiativeModifierFor": "Bonificación de iniciativa {bonus}",
       "selectRowFor": "Seleccionar {name} para iniciativa agrupada",
       "selectRowForVisibility": "Seleccionar {name} para visualización agrupada",
       "selectAllRows": "Seleccionar todos los personajes",
@@ -931,7 +932,7 @@
       "diceType": "Tipo de dado",
       "bonus": "Bonificación",
       "damageType": "Tipo de daño",
-      "damageTypePlaceholder": "Fuego, Frío...",
+      "damageTypePlaceholder": "Perforante, fuego, fuerza",
       "quickNumberPlaceholder": "Introduce un numero",
       "hitDiceRemainingExceedsClassLevel": "Este valor supera lo permitido por el nivel de esta clase para los dados restantes (máx. {max}).",
       "levelPlaceholder": "1",
@@ -991,6 +992,7 @@
       "abilityUseAria": "Usar {name}, {current} de {max} usos restantes",
       "abilityUseLimitReached": "Límite de usos alcanzado",
       "abilityUseError": "No se pudo guardar el uso",
+      "abilityAdd": "Añadir una habilidad o rasgo",
       "abilityRemove": "Quitar esta habilidad",
       "abilityCounterPlayerSessionNote": "Fuera de sesión no puedes ajustar los usos actuales aquí.",
       "abilityCounterResetLegend": "Reinicio del contador tras descanso",
@@ -1769,11 +1771,18 @@
   },
   "header": {
     "logoAriaLabelHome": "Volver al inicio",
-    "logoAriaLabelInSessionPlayer": "Volver a la hoja de personaje",
-    "logoAriaLabelInSessionGm": "Volver a las hojas de personaje de la campaña"
+    "logoAriaLabelInSession": "Abrir el lobby de la sesión",
+    "logoAriaLabelInSessionWarning": "Abrir el lobby de la sesión, quedan menos de 30 minutos",
+    "logoAriaLabelInSessionCritical": "Abrir el lobby de la sesión, quedan menos de 5 minutos"
   },
   "sessionTime": {
-    "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado."
+    "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado.",
+    "tooltipWarning": "Quedan menos de 30 minutos.",
+    "tooltipCritical": "Quedan menos de 5 minutos.",
+    "remainingAriaLabel": "Tiempo restante de la sesión: {time}",
+    "remainingAriaLabelWarning": "Tiempo restante de la sesión, menos de 30 minutos: {time}",
+    "remainingAriaLabelCritical": "Tiempo restante de la sesión, menos de 5 minutos: {time}",
+    "warningToast": "Quedan 30 minutos para el final de la sesión."
   },
   "releaseNotes": {
     "title": "Novedades",

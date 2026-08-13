@@ -1,16 +1,6 @@
 "use client";
 
 import * as React from "react";
-
-/** Pure helper — exported for unit tests */
-export function buildDuplicateName(character: { firstname: string; lastname?: string } | null): string {
-  if (!character) return "2";
-  const base = [character.firstname, character.lastname]
-    .map((p) => (typeof p === "string" ? p.trim() : ""))
-    .filter(Boolean)
-    .join(" ");
-  return base ? `${base} 2` : "2";
-}
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,14 +12,25 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { characterDisplayName, nextAvailableDuplicateName } from "@/lib/duplicateName";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+/** Pure helper — exported for unit tests */
+export function buildDuplicateName(
+  character: { firstname: string; lastname?: string } | null,
+  existingNames: readonly string[] = [],
+): string {
+  return nextAvailableDuplicateName(characterDisplayName(character), existingNames);
+}
 
 interface DuplicateCharacterDialogProps {
   character: { firstname: string; lastname?: string } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDuplicate: (name: string, count: number) => Promise<void>;
+  /** Visible character display names used to pick the next free suffix */
+  existingNames?: readonly string[];
   /** When provided, shows a secondary "Create in another group" button */
   onDuplicateAndMove?: (name: string, count: number) => Promise<void>;
 }
@@ -39,12 +40,16 @@ export function DuplicateCharacterDialog({
   open,
   onOpenChange,
   onDuplicate,
+  existingNames = [],
   onDuplicateAndMove,
 }: DuplicateCharacterDialogProps) {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
 
-  const defaultName = React.useMemo(() => buildDuplicateName(character), [character]);
+  const defaultName = React.useMemo(
+    () => buildDuplicateName(character, existingNames),
+    [character, existingNames],
+  );
 
   const [name, setName] = React.useState(defaultName);
   const [countStr, setCountStr] = React.useState("1");

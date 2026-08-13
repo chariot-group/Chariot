@@ -219,6 +219,7 @@
       "viewSheet": "Voir la fiche",
       "viewSheetFor": "Voir la fiche de {name}",
       "initiativeFor": "Initiative de {name}",
+      "initiativeModifierFor": "Bonus d'initiative {bonus}",
       "selectRowFor": "Sélectionner {name} pour l'initiative groupée",
       "selectRowForVisibility": "Sélectionner {name} pour l'affichage groupé",
       "selectAllRows": "Sélectionner tous les personnages",
@@ -932,7 +933,7 @@
       "diceType": "Type de dé",
       "bonus": "Bonus",
       "damageType": "Type de dégâts",
-      "damageTypePlaceholder": "Feu, Froid...",
+      "damageTypePlaceholder": "Perforant, feu, force",
       "quickNumberPlaceholder": "Saisir un nombre",
       "hitDiceRemainingExceedsClassLevel": "Ce nombre dépasse le niveau autorisé pour cette classe (maximum : {max}).",
       "levelPlaceholder": "1",
@@ -992,6 +993,7 @@
       "abilityUseAria": "Utiliser {name}, {current} utilisation(s) restante(s) sur {max}",
       "abilityUseLimitReached": "Plafond d'utilisations atteint",
       "abilityUseError": "Impossible d'enregistrer l'utilisation",
+      "abilityAdd": "Ajouter une capacité ou un trait",
       "abilityRemove": "Supprimer cette capacité",
       "abilityCounterPlayerSessionNote": "Hors session, l’utilisation actuelle n’est pas modifiable ici.",
       "abilityCounterResetLegend": "Réinitialisation du compteur après repos",
@@ -1235,7 +1237,7 @@
             "Profond",
             "Infernal",
             "Primordial",
-            "Sylvain",
+            "Sylvestre",
             "Commun des profondeurs"
           ],
           "tools": [
@@ -1773,11 +1775,18 @@
   },
   "header": {
     "logoAriaLabelHome": "Retour à l'accueil",
-    "logoAriaLabelInSessionPlayer": "Retour à la fiche personnage",
-    "logoAriaLabelInSessionGm": "Retour aux fiches personnages de la campagne"
+    "logoAriaLabelInSession": "Ouvrir le lobby de session",
+    "logoAriaLabelInSessionWarning": "Ouvrir le lobby de session, moins de 30 minutes restantes",
+    "logoAriaLabelInSessionCritical": "Ouvrir le lobby de session, moins de 5 minutes restantes"
   },
   "sessionTime": {
-    "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée."
+    "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée.",
+    "tooltipWarning": "Il reste moins de 30 minutes.",
+    "tooltipCritical": "Il reste moins de 5 minutes.",
+    "remainingAriaLabel": "Temps restant de la session : {time}",
+    "remainingAriaLabelWarning": "Temps restant de la session, moins de 30 minutes : {time}",
+    "remainingAriaLabelCritical": "Temps restant de la session, moins de 5 minutes : {time}",
+    "warningToast": "Il reste 30 minutes avant la fin de la session."
   },
   "releaseNotes": {
     "title": "Nouveautés",

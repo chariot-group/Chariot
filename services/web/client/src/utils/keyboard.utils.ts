@@ -48,3 +48,24 @@ export function isTypingInInputElement(target: EventTarget | null): boolean {
 
   return false;
 }
+
+/**
+ * True when a modal dialog layer is open and should consume Escape before
+ * form-level cancel shortcuts.
+ *
+ * @see FR-character-form-nested-escape
+ */
+export function isModalOverlayOpen(root: ParentNode = document): boolean {
+  const candidates = root.querySelectorAll<HTMLElement>(
+    '[role="dialog"], [role="alertdialog"], [data-slot="dialog-content"]',
+  );
+
+  for (const el of candidates) {
+    const state = el.getAttribute("data-state");
+    if (state === "closed") continue;
+    if (el.getAttribute("aria-hidden") === "true") continue;
+    return true;
+  }
+
+  return false;
+}

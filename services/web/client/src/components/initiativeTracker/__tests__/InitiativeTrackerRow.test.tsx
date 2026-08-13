@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import type { ReactNode } from "react";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, values?: Record<string, string | number>) => {
@@ -10,11 +11,29 @@ vi.mock("next-intl", () => ({
   },
 }));
 
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children?: ReactNode;
+    className?: string;
+    "aria-label"?: string;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 import { InitiativeTrackerRow } from "@/components/initiativeTracker/InitiativeTrackerRow";
 import type { InitiativeTrackerRow as InitiativeTrackerRowType } from "@/store/slices/sessionSlice";
 
 const labels = {
   initiativeFor: "Initiative",
+  initiativeModifierFor: (bonus: string) => `Initiative bonus ${bonus}`,
   viewSheetFor: "View character sheet",
   viewSheet: "View sheet",
   viewOwnSheet: "View my sheet",
@@ -80,6 +99,7 @@ const baseRow: InitiativeTrackerRowType = {
   lastname: "and an even longer family name",
   surname: "",
   initiative: 12,
+  initiativeModifier: 2,
   hitPoints: 18,
   maxHitPoints: 24,
   tempHitPoints: 0,
@@ -216,7 +236,44 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     );
 
     expect(html).toContain('type="number"');
-    expect(html).toContain('aria-label="Initiative"');
+    expect(html).toContain("Initiative bonus +2");
+    expect(html).toContain("lucide-dices");
+    expect(html).toContain("+2");
+    // total 12, modifier 2 → roll field shows 10
+    expect(html).toContain('value="10"');
+  });
+
+  it("edge: player does not see other combatants initiative modifier", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        ownCharacterId="other-character"
+        initiativeLocked={false}
+        labels={labels}
+      />,
+    );
+
+    expect(html).not.toContain("Initiative bonus +2");
+    expect(html).not.toContain("lucide-dices");
+    expect(html).not.toContain('type="number"');
+  });
+
+  it("nominal: locked initiative still shows modifier hint with dice icon", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        initiativeLocked
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain("lucide-dices");
+    expect(html).toContain("Initiative bonus +2");
+    expect(html).toContain("+2");
+    expect(html).not.toContain('type="number"');
   });
 
   it("nominal: grid condition and group cells are isolated to prevent overlap", () => {

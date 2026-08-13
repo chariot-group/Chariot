@@ -51,6 +51,10 @@ import {
 } from "@/lib/sessionSocketPool";
 import { formatSessionParticipantLabelFromWsUsername } from "@/lib/formatSessionParticipantUserLabel";
 import { resolveParticipantToastLabel } from "@/lib/sessionParticipantDisplayNames";
+import {
+    resolveParticipantLeftToastKind,
+    shouldNotifyParticipantDisconnected,
+} from "@/lib/sessionParticipantLifecycleToasts";
 import { mergeParticipantsPreserveCharacterIds, participantsStableKey } from "@/lib/sessionParticipantMerge";
 import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
@@ -71,10 +75,9 @@ function extractCharacterIdFromSessionContextPath(pathname: string): string | nu
 }
 
 /**
- * Une connexion WebSocket partagée (voir `sessionSocketPool`) pour la session en cours,
- * y compris sur la page lobby : évite une seconde connexion et une reconnexion à chaque navigation.
- * joined / change-character mettent toujours à jour Redux (sidebar). Les toasts déconnexion / départ
- * restent hors lobby pour éviter les doublons avec la page session.
+ * Une connexion WebSocket partagée (voir `sessionSocketPool`) pour la session en cours.
+ * joined / change-character / leave / disconnect mettent à jour Redux (sidebar).
+ * Toasts leave/disconnect : ownership unique ici (useSessionSocket ne toast pas — FR-session-lobby-modal).
  */
 export default function SessionCharacterSyncClient() {
     const pathname = usePathname();
@@ -342,8 +345,6 @@ export default function SessionCharacterSyncClient() {
         };
     }, [shouldConnect, code, dispatch]);
 
-    const isOnSessionLobbyPage = /\/campaigns\/[^/]+\/session\/[^/]+(?:\/|$)/.test(pathname ?? "");
-
     useEffect(() => {
         if (!shouldConnect || !code || !token) {
             return;
@@ -449,90 +450,88 @@ export default function SessionCharacterSyncClient() {
 
         socket.on("session:character-sheet-updated", onSheetUpdated);
 
-        let onParticipantDisconnected:
-            | ((payload: { userId: string; username?: string }) => void)
-            | undefined;
-        let onParticipantLeft:
-            | ((payload: {
-                  userId: string;
-                  username?: string;
-                  characterId?: string | null;
-              }) => void)
-            | undefined;
+        const onParticipantDisconnected = ({
+            userId,
+            username,
+        }: {
+            userId: string;
+            username?: string;
+        }) => {
+            if (
+                !shouldNotifyParticipantDisconnected({
+                    disconnectedUserId: userId,
+                    currentUserId: userIdRef.current,
+                })
+            ) {
+                return;
+            }
+            const list = participantsRef.current;
+            const next = list.map((p) =>
+                p.userId === userId ? { ...p, status: "disconnected" as const } : p,
+            );
+            dispatch(setSessionParticipants(next));
+            const label = resolveParticipantToastLabel(appStoreRef.current.getState(), userId, username);
+            toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
+        };
 
-        if (!isOnSessionLobbyPage) {
-            onParticipantDisconnected = ({
-                userId,
-                username,
-            }: {
-                userId: string;
-                username?: string;
-            }) => {
-                if (userId === userIdRef.current) return;
-                const list = participantsRef.current;
-                const next = list.map((p) =>
-                    p.userId === userId ? { ...p, status: "disconnected" as const } : p,
+        const onParticipantLeft = (payload: {
+            userId: string;
+            username?: string;
+            characterId?: string | null;
+        }) => {
+            dispatch(removeSessionParticipantByUserId(payload.userId));
+
+            const myId = userIdRef.current;
+            const amGm = myId
+                ? participantsRef.current.some((p) => p.userId === myId && p.status === "gameMaster")
+                : false;
+            const leftCharId = payload.characterId?.trim() ?? "";
+            const viewing = extractCharacterIdFromSessionContextPath(pathnameRef.current);
+            const toastKind = resolveParticipantLeftToastKind({
+                leftUserId: payload.userId,
+                currentUserId: myId,
+                isCurrentUserGm: amGm,
+                leftCharacterId: leftCharId,
+                viewingCharacterId: viewing,
+            });
+
+            if (toastKind === "viewingCharacter") {
+                toastRef.current.info(tRef.current("toast.participantLeftViewingCharacter"));
+            } else if (toastKind === "leftSession") {
+                const label = resolveParticipantToastLabel(
+                    appStoreRef.current.getState(),
+                    payload.userId,
+                    payload.username,
                 );
-                dispatch(setSessionParticipants(next));
-                const label = resolveParticipantToastLabel(appStoreRef.current.getState(), userId, username);
-                toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
-            };
+                toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
+            }
 
-            onParticipantLeft = (payload: {
-                userId: string;
-                username?: string;
-                characterId?: string | null;
-            }) => {
-                dispatch(removeSessionParticipantByUserId(payload.userId));
+            if (!myId) return;
+            if (!amGm || !leftCharId) return;
+            if (viewing !== leftCharId) return;
 
-                const myId = userIdRef.current;
-                const amGm = myId
-                    ? participantsRef.current.some((p) => p.userId === myId && p.status === "gameMaster")
-                    : false;
-                const leftCharId = payload.characterId?.trim() ?? "";
-                const viewing = extractCharacterIdFromSessionContextPath(pathnameRef.current);
-                const gmViewingDepartedCharacter = Boolean(amGm && leftCharId && viewing === leftCharId);
+            const path = pathnameRef.current;
+            const locale = path.split("/")[1] || "fr";
+            const camp = campaignIdRef.current;
+            const sessionCode = codeRef.current;
+            if (camp && sessionCode) {
+                dispatch(openSessionLobby());
+            } else {
+                routerRef.current.push(`/${locale}/welcome`);
+            }
+        };
 
-                if (payload.userId !== myId) {
-                    if (gmViewingDepartedCharacter) {
-                        toastRef.current.info(tRef.current("toast.participantLeftViewingCharacter"));
-                    } else {
-                        const label = resolveParticipantToastLabel(
-                            appStoreRef.current.getState(),
-                            payload.userId,
-                            payload.username,
-                        );
-                        toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
-                    }
-                }
-
-                if (!myId) return;
-                if (!amGm || !leftCharId) return;
-                if (viewing !== leftCharId) return;
-
-                const path = pathnameRef.current;
-                const locale = path.split("/")[1] || "fr";
-                const camp = campaignIdRef.current;
-                const sessionCode = codeRef.current;
-                if (camp && sessionCode) {
-                    dispatch(openSessionLobby());
-                } else {
-                    routerRef.current.push(`/${locale}/welcome`);
-                }
-            };
-
-            socket.on("session:participant-left", onParticipantLeft);
-            socket.on("session:participant-disconnected", onParticipantDisconnected);
-        }
+        socket.on("session:participant-left", onParticipantLeft);
+        socket.on("session:participant-disconnected", onParticipantDisconnected);
 
         return () => {
             socket.off("session:participant-joined", onParticipantJoined);
             socket.off("session:participant-character-changed", onParticipantCharacterChanged);
             socket.off("session:character-sheet-updated", onSheetUpdated);
-            if (onParticipantLeft) socket.off("session:participant-left", onParticipantLeft);
-            if (onParticipantDisconnected) socket.off("session:participant-disconnected", onParticipantDisconnected);
+            socket.off("session:participant-left", onParticipantLeft);
+            socket.off("session:participant-disconnected", onParticipantDisconnected);
         };
-    }, [shouldConnect, code, isOnSessionLobbyPage, dispatch, token]);
+    }, [shouldConnect, code, dispatch, token]);
 
     return null;
 }
