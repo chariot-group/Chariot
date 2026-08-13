@@ -1,14 +1,17 @@
 import CharacterService from '@/services/CharacterService';
 import CampaignService from '@/services/CampaignService';
 import GroupService from '@/services/GroupService';
+import { shouldRedirectAfterLogin as shouldRedirectAfterLoginPath } from '@/lib/postLoginNavigation';
 import { AppDispatch, RootState } from '@/store';
 import {
     fetchCharactersWithoutGroupStart,
     fetchCharactersWithoutGroupSuccess,
     fetchCharactersWithoutGroupFailure,
     selectCharactersWithoutGroup,
-    selectCharactersWithoutGroupLoading
+    selectCharactersWithoutGroupLoading,
+    clearCharacters,
 } from '@/store/slices/characterSlice';
+import { isCharacterAccessDeniedError } from '@/lib/characterAccessError';
 import {
     fetchCampaignsStart,
     fetchCampaignsSuccess,
@@ -30,11 +33,30 @@ type GroupRef = string | { _id?: string };
 class NavigationService {
     private async loadCharactersWithoutGroup(
         dispatch: AppDispatch,
-        getState: () => RootState
+        getState: () => RootState,
+        options?: { forceRefresh?: boolean },
     ): Promise<void> {
         const state = getState();
         const isLoading = selectCharactersWithoutGroupLoading(state);
         const characters = selectCharactersWithoutGroup(state);
+
+        if (options?.forceRefresh) {
+            // Always refetch after account switch — ignore in-flight/cached list (FR-user-cache-isolation).
+            dispatch(clearCharacters());
+            dispatch(fetchCharactersWithoutGroupStart());
+            try {
+                const response = await CharacterService.getPlayersWithoutGroup(1, 10);
+                dispatch(fetchCharactersWithoutGroupSuccess({
+                    characters: response.data,
+                    total: response.pagination.totalItems
+                }));
+            } catch (error) {
+                dispatch(fetchCharactersWithoutGroupFailure(
+                    error instanceof Error ? error.message : 'Failed to fetch characters'
+                ));
+            }
+            return;
+        }
 
         if (isLoading || characters.length > 0) return;
 
@@ -54,17 +76,18 @@ class NavigationService {
 
     private async loadCampaigns(
         dispatch: AppDispatch,
-        getState: () => RootState
+        getState: () => RootState,
+        options?: { forceRefresh?: boolean },
     ): Promise<void> {
         const state = getState();
         const isLoading = selectCampaignsLoading(state);
         const campaigns = selectCampaigns(state);
 
-        if (isLoading || campaigns.length > 0) return;
+        if (isLoading || (!options?.forceRefresh && campaigns.length > 0)) return;
 
         dispatch(fetchCampaignsStart());
         try {
-            const result = await CampaignService.getCampaigns({ page: 1, offset: 10 });
+            const result = await CampaignService.getCampaigns({ page: 1, limit: 10 });
             dispatch(fetchCampaignsSuccess({
                 campaigns: result.data,
                 total: result.totalItems,
@@ -83,17 +106,27 @@ class NavigationService {
         getState: () => RootState,
     ): Promise<NavigationDestination> {
         try {
-            await this.loadCharactersWithoutGroup(dispatch, getState);
+            await this.loadCharactersWithoutGroup(dispatch, getState, { forceRefresh: true });
             const charactersWithoutGroup = selectCharactersWithoutGroup(getState());
 
-            if (charactersWithoutGroup.length > 0) {
-                return {
-                    path: `/${locale}/characters/${charactersWithoutGroup[0]._id}`,
-                    reason: 'character-without-group'
-                };
+            for (const candidate of charactersWithoutGroup) {
+                if (!candidate?._id) continue;
+                try {
+                    await CharacterService.getCharacterById(candidate._id);
+                    return {
+                        path: `/${locale}/characters/${candidate._id}`,
+                        reason: 'character-without-group',
+                        characterId: candidate._id,
+                    };
+                } catch (error) {
+                    // Stale/foreign sheet after account switch — try next, else campaigns/welcome.
+                    if (!isCharacterAccessDeniedError(error)) {
+                        throw error;
+                    }
+                }
             }
 
-            await this.loadCampaigns(dispatch, getState);
+            await this.loadCampaigns(dispatch, getState, { forceRefresh: true });
             const campaigns = selectCampaigns(getState());
 
             if (campaigns.length > 0) {
@@ -200,14 +233,7 @@ class NavigationService {
     }
 
     shouldRedirectAfterLogin(currentPath: string): boolean {
-        if (currentPath.includes('/characters/') ||
-            currentPath.includes('/campaigns/') ||
-            currentPath.includes('/welcome')) {
-            return false;
-        }
-        return currentPath === '/' ||
-            !!currentPath.match(/^\/[a-z]{2}$/) ||
-            currentPath.includes('/auth/');
+        return shouldRedirectAfterLoginPath(currentPath);
     }
 }
 

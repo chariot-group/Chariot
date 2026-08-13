@@ -18,6 +18,12 @@ interface InfoTooltipProps {
   className?: string;
   /** Libellé accessible du bouton "?" (visible sur mobile). */
   moreInfoLabel?: string;
+  /**
+   * Placement du bouton "?" sur les devices tactiles.
+   * - `inline` (défaut) : à côté du contenu
+   * - `corner` : badge en haut à droite du conteneur (utile pour un bouton/card)
+   */
+  helpPlacement?: "inline" | "corner";
 }
 
 /**
@@ -36,6 +42,8 @@ interface InfoTooltipProps {
  * ```
  * Pass `className="w-full"` on InfoTooltip and `flex-1 min-w-0` on the child
  * so the child fills available space and the "?" button doesn't overflow.
+ *
+ * **Corner badge (mobile):** `<InfoTooltip helpPlacement="corner" className="relative ...">`
  */
 export function InfoTooltip({
   content,
@@ -44,9 +52,16 @@ export function InfoTooltip({
   align = "center",
   className,
   moreInfoLabel = "Plus d'informations",
+  helpPlacement = "inline",
 }: InfoTooltipProps) {
+  const isCorner = helpPlacement === "corner";
+
   return (
-    <span className={cn("inline-flex items-center gap-0.5", className)}>
+    <span
+      className={cn(
+        isCorner ? "relative inline-flex" : "inline-flex items-center gap-0.5",
+        className,
+      )}>
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent
@@ -61,7 +76,12 @@ export function InfoTooltip({
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="[@media(hover:hover)]:hidden inline-flex items-center justify-center rounded-full size-4 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring shrink-0"
+            className={cn(
+              "[@media(hover:hover)]:hidden inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring shrink-0",
+              isCorner
+                ? "absolute -top-1.5 -right-1.5 z-10 size-5 bg-card ring-1 ring-white/20 shadow-sm"
+                : "size-4",
+            )}
             aria-label={moreInfoLabel}>
             <CircleHelp
               className="size-3.5"

@@ -8,6 +8,11 @@ import { useAppDispatch } from "@/store/hooks";
 import { RootState } from "@/store";
 import { useStore } from "react-redux";
 import referralService from "@/services/ReferralService";
+import {
+  getPostLoginUserId,
+  markPostLoginCompleted,
+  shouldAttemptPostLoginRedirect,
+} from "@/lib/postLoginNavigation";
 
 const REFERRAL_CODE_STORAGE_KEY = "chariot_referral_code";
 const REFERRAL_INIT_STORAGE_KEY = "chariot_referral_initialized";
@@ -21,7 +26,7 @@ export default function PostLoginNavigator() {
   const pathname = usePathname();
   const router = useRouter();
   const locale = pathname.split("/")[1] || "fr";
-  const { authenticated, loading } = useKeycloak();
+  const { authenticated, loading, userTransitioning } = useKeycloak();
   const dispatch = useAppDispatch();
 
   const store = useStore<RootState>();
@@ -64,27 +69,32 @@ export default function PostLoginNavigator() {
 
   useEffect(() => {
     const handlePostLoginNavigation = async () => {
-      if (authenticated && !loading && !hasHandledAuthRef.current) {
-        if (NavigationService.shouldRedirectAfterLogin(pathname)) {
-          hasHandledAuthRef.current = true;
+      if (!authenticated || loading || userTransitioning) return;
 
-          try {
-            const destination = await NavigationService.determinePostLoginDestination(
-              locale,
-              dispatch,
-              store.getState.bind(store),
-            );
-            router.push(destination.path);
-          } catch (error) {
-            console.error("Failed to determine post-login destination:", error);
-            router.push(`/${locale}/welcome`);
-          }
-        }
+      const userId = getPostLoginUserId();
+      if (hasHandledAuthRef.current || !shouldAttemptPostLoginRedirect(pathname, userId)) {
+        return;
+      }
+
+      // Mark before await so remounts / /locale bounces cannot re-enter (FR-user-cache-isolation).
+      hasHandledAuthRef.current = true;
+      markPostLoginCompleted(userId);
+
+      try {
+        const destination = await NavigationService.determinePostLoginDestination(
+          locale,
+          dispatch,
+          store.getState.bind(store),
+        );
+        router.replace(destination.path);
+      } catch (error) {
+        console.error("Failed to determine post-login destination:", error);
+        router.replace(`/${locale}/welcome`);
       }
     };
 
-    handlePostLoginNavigation();
-  }, [authenticated, loading, pathname, locale, router, dispatch, store]);
+    void handlePostLoginNavigation();
+  }, [authenticated, loading, userTransitioning, pathname, locale, router, dispatch, store]);
 
   return null;
 }
