@@ -34,6 +34,7 @@ import GroupService from "@/services/GroupService";
 import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
 import { showToast } from "@/lib/toast";
 import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
+import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import {
   selectIsInSession,
   selectSessionStatus,
@@ -117,6 +118,19 @@ export default function GroupList({
 
   const openGroupIds = Array.isArray(openGroupId) ? openGroupId : [];
 
+  const existingCharacterNames = React.useMemo(
+    () =>
+      groups.flatMap((group) =>
+        (group.characters ?? []).map((c) => characterDisplayName(c)).filter(Boolean),
+      ),
+    [groups],
+  );
+
+  const existingGroupLabels = React.useMemo(
+    () => groups.map((group) => group.label.trim()).filter(Boolean),
+    [groups],
+  );
+
   const selectedCharacterId = pathname?.includes("/characters/")
     ? pathname.split("/characters/")[1]?.split("/")[0]?.split("?")[0]
     : null;
@@ -185,8 +199,8 @@ export default function GroupList({
         const type = isNpc ? "npcs" : "players";
 
         const createdChars: GroupCharacter[] = [];
-        for (let i = 0; i < count; i++) {
-          const copyName = i === 0 ? name : `${name} ${i + 1}`;
+        const copyNames = buildSequentialCopyNames(name, count);
+        for (const copyName of copyNames) {
           const payload = { ...rest, firstname: copyName, lastname: "", groups: [groupId] };
           const created = await CharacterService.createCharacter(type, payload as typeof rest);
 
@@ -234,8 +248,9 @@ export default function GroupList({
         let firstCreatedGroupId: string | null = null;
         let firstCharId: string | null = null;
 
-        for (let i = 0; i < count; i++) {
-          const copyLabel = i === 0 ? label : `${label} ${i + 1}`;
+        const copyLabels = buildSequentialCopyNames(label, count);
+        for (let i = 0; i < copyLabels.length; i++) {
+          const copyLabel = copyLabels[i];
           const newGroup = await GroupService.createGroup(selectedCampaignId, { label: copyLabel });
 
           const createdCharacters: GroupCharacter[] = [];
@@ -354,6 +369,7 @@ export default function GroupList({
           tempHitPoints: full.stats?.tempHitPoints ?? 0,
           armorClass: full.stats?.armorClass ?? 10,
           kind: "progression" in full ? "player" : "npc",
+          initiativeModifier: full.stats?.initiative ?? 0,
         });
         dispatch(appendInitiativeTrackerRows([{ ...row, isGmGuest: true }]));
       } catch {
@@ -638,6 +654,7 @@ export default function GroupList({
         onOpenChange={(open) => {
           if (!open) setCharacterToDuplicate(null);
         }}
+        existingNames={existingCharacterNames}
         onDuplicate={(name, count) =>
           handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, false)
         }
@@ -652,6 +669,7 @@ export default function GroupList({
         onOpenChange={(open) => {
           if (!open) setGroupToDuplicate(null);
         }}
+        existingLabels={existingGroupLabels}
         onDuplicate={(label, count) => handleDuplicateGroup(groupToDuplicate!, label, count)}
       />
 

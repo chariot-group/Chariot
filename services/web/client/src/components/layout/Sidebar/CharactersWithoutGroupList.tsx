@@ -2,7 +2,7 @@
 
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import { removeCharacterWithoutGroup } from "@/store/slices/characterSlice";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -21,6 +21,7 @@ import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog"
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
+import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import { showToast } from "@/lib/toast";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
@@ -86,14 +87,19 @@ export default function CharactersWithoutGroupList() {
     }
   };
 
+  const existingCharacterNames = useMemo(
+    () => characters.map((c) => characterDisplayName(c)).filter(Boolean),
+    [characters],
+  );
+
   const handleDuplicateCharacter = async (character: Character, name: string, count: number) => {
     if (!isPlayer(character)) return;
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, createdBy, deletedAt, groups, ...rest } = character;
+      const copyNames = buildSequentialCopyNames(name, count);
       let lastCreated: Character | null = null;
-      for (let i = 0; i < count; i++) {
-        const copyName = i === 0 ? name : `${name} ${i + 1}`;
+      for (const copyName of copyNames) {
         const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
         const created = await CharacterService.createCharacter("players", payload);
         dispatch(upsertCharacterWithoutGroup(created as Character));
@@ -285,6 +291,7 @@ export default function CharactersWithoutGroupList() {
         onOpenChange={(open) => {
           if (!open) setCharacterToDuplicate(null);
         }}
+        existingNames={existingCharacterNames}
         onDuplicate={(name, count) => handleDuplicateCharacter(characterToDuplicate!, name, count)}
       />
 

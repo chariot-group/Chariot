@@ -1,7 +1,9 @@
 "use client";
 
 import { useCharacter } from "@/hooks/useCharacter";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
+import { useParams, useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { Player, NPC } from "@/types/character";
@@ -16,16 +18,17 @@ import {
 } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import { useKeycloak } from "@/providers/KeycloakProvider";
+import { shouldRedirectAwayFromCharacterSheet } from "@/lib/characterAccessError";
 
 export default function Character() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const locale = params.locale as string;
   const campaignId = params.idCampaign as string;
   const groupId = params.idGroup as string;
   const characterId = params.idCharacter as string;
   const sessionCodeQs = searchParams.get("sessionCode");
+  const sessionCode = useActiveSessionCode();
   const activeGroups = useAppSelector(selectActiveGroups);
   const archivedGroups = useAppSelector(selectArchivedGroups);
   const contextMode = useAppSelector(selectContextMode);
@@ -35,9 +38,9 @@ export default function Character() {
   const currentUser = useAppSelector(selectUser);
   const { loading: keycloakLoading, userTransitioning } = useKeycloak();
 
-  const { character, loading, error, refetch, setCharacter } = useCharacter(
+  const { character, loading, error, accessDenied, refetch, setCharacter } = useCharacter(
     characterId,
-    sessionCodeQs,
+    sessionCode,
   );
 
   const sessionGmBypassGroup = useMemo(() => {
@@ -80,8 +83,8 @@ export default function Character() {
     }
 
     // Avoid locale root — it re-triggers post-login (FR-post-auth-navigation).
-    return `/${locale}/welcome`;
-  }, [activeGroups, archivedGroups, campaignId, groupId, locale]);
+    return `/welcome`;
+  }, [activeGroups, archivedGroups, campaignId, groupId]);
 
   useEffect(() => {
     if (keycloakLoading || userTransitioning || loading || !character || !groupId || !campaignId) {
@@ -118,10 +121,22 @@ export default function Character() {
       return;
     }
 
-    if (error || !character) {
+    if (!shouldRedirectAwayFromCharacterSheet(accessDenied)) {
+      return;
+    }
+
+    if (!character) {
       router.replace(getFallbackRoute());
     }
-  }, [keycloakLoading, userTransitioning, loading, error, character, router, getFallbackRoute]);
+  }, [
+    keycloakLoading,
+    userTransitioning,
+    loading,
+    accessDenied,
+    character,
+    router,
+    getFallbackRoute,
+  ]);
 
   if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (

@@ -79,6 +79,34 @@ export function trackerStatusFieldsFromCharacter(
  * FR-session-combat-sync — miroir complet des champs de fiche affichés dans le tracker.
  * Utilisé lors d'un refresh temps réel de fiche pour resynchroniser toutes les lignes concernées.
  */
+/** FR-tracker-initiative-modifier-display — bonus d'initiative fiche (`stats.initiative`). */
+export function resolveInitiativeModifierFromStats(
+  stats?: { initiative?: number | null } | null,
+): number {
+  return Number.isFinite(stats?.initiative) ? Number(stats?.initiative) : 0;
+}
+
+export function resolveInitiativeModifier(modifier?: number | null): number {
+  return Number.isFinite(modifier) ? Number(modifier) : 0;
+}
+
+/** Editable field shows the roll; Redux stores the total. */
+export function initiativeRollFromTotal(
+  total: number,
+  modifier?: number | null,
+): number {
+  const safeTotal = Number.isFinite(total) ? Number(total) : 0;
+  return safeTotal - resolveInitiativeModifier(modifier);
+}
+
+export function initiativeTotalFromRoll(
+  roll: number,
+  modifier?: number | null,
+): number {
+  const safeRoll = Number.isFinite(roll) ? Number(roll) : 0;
+  return safeRoll + resolveInitiativeModifier(modifier);
+}
+
 export function trackerMirrorFieldsFromCharacter(
   character: Character,
 ): Pick<
@@ -88,6 +116,7 @@ export function trackerMirrorFieldsFromCharacter(
   | "surname"
   | "avatar"
   | "armorClass"
+  | "initiativeModifier"
   | "hitPoints"
   | "maxHitPoints"
   | "tempHitPoints"
@@ -100,6 +129,7 @@ export function trackerMirrorFieldsFromCharacter(
     surname: character.surname ?? "",
     avatar: character.avatar ?? "",
     armorClass: Number.isFinite(character.stats?.armorClass) ? Number(character.stats.armorClass) : 0,
+    initiativeModifier: resolveInitiativeModifierFromStats(character.stats),
     ...trackerStatusFieldsFromCharacter(character),
   };
 }

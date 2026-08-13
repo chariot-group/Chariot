@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
     buildPlayerSessionCharacterPath,
+    buildSessionCharacterHref,
     isInitiativeTrackerPage,
     isSessionLobbyPage,
     shouldGmShowReturnToBattle,
     shouldGmShowReturnToSheet,
     shouldPlayerShowReturnToBattleOnSessionLobby,
     shouldPlayerShowReturnToSheetOnSessionLobby,
+    shouldShowSessionLobbyInvitePanel,
     withSessionCodeQuery,
 } from "@/lib/sessionInAppNavigation";
 
@@ -18,6 +20,35 @@ describe("isSessionLobbyPage", () => {
     it("edge: rejects character and initiative tracker routes", () => {
         expect(isSessionLobbyPage("/fr/campaigns/camp-1/groups/gr-1/characters/ch-1")).toBe(false);
         expect(isSessionLobbyPage("/fr/initiativeTracker")).toBe(false);
+    });
+});
+
+/** @see FR-session-join-qr-code */
+describe("shouldShowSessionLobbyInvitePanel", () => {
+    it("nominal: shows invite panel while session is activated", () => {
+        expect(shouldShowSessionLobbyInvitePanel("activated")).toBe(true);
+    });
+
+    it("nominal: hides invite panel after launch", () => {
+        expect(shouldShowSessionLobbyInvitePanel("launched")).toBe(false);
+    });
+
+    it("edge: hides for closed or missing status", () => {
+        expect(shouldShowSessionLobbyInvitePanel("closed")).toBe(false);
+        expect(shouldShowSessionLobbyInvitePanel(null)).toBe(false);
+        expect(shouldShowSessionLobbyInvitePanel(undefined)).toBe(false);
+    });
+});
+
+describe("buildSessionCharacterHref", () => {
+    it("nominal: builds locale-agnostic href with sessionCode", () => {
+        expect(buildSessionCharacterHref("char-1", "ABCD12")).toBe(
+            "/characters/char-1?sessionCode=ABCD12",
+        );
+    });
+
+    it("edge: omits query when session code is missing", () => {
+        expect(buildSessionCharacterHref("char-1", null)).toBe("/characters/char-1");
     });
 });
 

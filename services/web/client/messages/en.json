@@ -226,6 +226,7 @@
       "viewSheet": "View sheet",
       "viewSheetFor": "View sheet for {name}",
       "initiativeFor": "Initiative for {name}",
+      "initiativeModifierFor": "Initiative bonus {bonus}",
       "selectRowFor": "Select {name} for grouped initiative",
       "selectRowForVisibility": "Select {name} for grouped display",
       "selectAllRows": "Select all characters",
@@ -938,7 +939,7 @@
       "diceType": "Dice Type",
       "bonus": "Bonus",
       "damageType": "Damage Type",
-      "damageTypePlaceholder": "Fire, Cold...",
+      "damageTypePlaceholder": "Piercing, fire, force",
       "quickNumberPlaceholder": "Enter a number",
       "hitDiceRemainingExceedsClassLevel": "This value exceeds what this class allows for remaining hit dice (max {max}).",
       "levelPlaceholder": "1",
@@ -998,6 +999,7 @@
       "abilityUseAria": "Use {name}, {current} of {max} uses remaining",
       "abilityUseLimitReached": "Maximum uses reached",
       "abilityUseError": "Could not save use",
+      "abilityAdd": "Add an ability or trait",
       "abilityRemove": "Remove this ability",
       "abilityCounterPlayerSessionNote": "While not in a session, current uses cannot be edited here.",
       "abilityCounterResetLegend": "Counter reset after rest",
@@ -1794,8 +1796,9 @@
   },
   "header": {
     "logoAriaLabelHome": "Return to home",
-    "logoAriaLabelInSessionPlayer": "Return to character sheet",
-    "logoAriaLabelInSessionGm": "Return to campaign character sheets",
+    "logoAriaLabelInSession": "Open session lobby",
+    "logoAriaLabelInSessionWarning": "Open session lobby, less than 30 minutes remaining",
+    "logoAriaLabelInSessionCritical": "Open session lobby, less than 5 minutes remaining",
     "communityLibraryTooltip": "Open the community library",
     "communityLibraryAriaLabel": "Open the community library"
   },
@@ -1807,7 +1810,13 @@
     "tabPlayers": "PCs"
   },
   "sessionTime": {
-    "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left."
+    "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left.",
+    "tooltipWarning": "Less than 30 minutes remaining.",
+    "tooltipCritical": "Less than 5 minutes remaining.",
+    "remainingAriaLabel": "Session time remaining: {time}",
+    "remainingAriaLabelWarning": "Session time remaining, less than 30 minutes: {time}",
+    "remainingAriaLabelCritical": "Session time remaining, less than 5 minutes: {time}",
+    "warningToast": "30 minutes remaining before the session ends."
   },
   "releaseNotes": {
     "title": "What's new",

@@ -219,6 +219,8 @@ export interface InitiativeTrackerRow {
     surname: string;
     avatar: string;
     initiative: number;
+    /** FR-tracker-initiative-modifier-display — miroir de `stats.initiative` (bonus fiche). */
+    initiativeModifier: number;
     hitPoints: number;
     maxHitPoints: number;
     tempHitPoints: number;
@@ -253,6 +255,7 @@ export function createInitiativeTrackerRow(input: {
     surname: string;
     avatar?: string;
     initiative?: number;
+    initiativeModifier?: number;
     hitPoints: number;
     maxHitPoints: number;
     tempHitPoints?: number;
@@ -266,6 +269,7 @@ export function createInitiativeTrackerRow(input: {
     const lastname = input.lastname ?? '';
     const surname = input.surname ?? '';
     const gmName = defaultPlayerDisplayNameForRow({ firstname, lastname, surname });
+    const initiativeModifier = Number.isFinite(input.initiativeModifier) ? Number(input.initiativeModifier) : 0;
 
     return {
         id: `${input.groupId}:${input.characterId}`,
@@ -274,7 +278,9 @@ export function createInitiativeTrackerRow(input: {
         lastname,
         surname,
         avatar: input.avatar ?? '',
-        initiative: input.initiative ?? 0,
+        // Seed with modifier so the editable roll field shows 0 (total = roll + mod).
+        initiative: input.initiative ?? initiativeModifier,
+        initiativeModifier,
         hitPoints: input.hitPoints,
         maxHitPoints: input.maxHitPoints,
         tempHitPoints: input.tempHitPoints ?? 0,
@@ -361,6 +367,7 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
     return applyPlayerRowVisibilityRules({
         ...row,
         kind,
+        initiativeModifier: Number.isFinite(row.initiativeModifier) ? Number(row.initiativeModifier) : 0,
         concentration: normalizeTrackerConcentration(row.concentration),
         pendingConcentrationCheck: normalizePendingConcentrationCheck(row.pendingConcentrationCheck),
         playerDisplayName: rawAlias.length > 0 ? rawAlias : gmName,

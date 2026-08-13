@@ -21,7 +21,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ActionUsageType, AbilityScores } from "@/types/character";
 import {
   AbilityScoreKey,
-  ABILITY_SCORE_SHORT_LABELS,
   formatSignedBonus,
   getAttackSuggestionOptions,
   getProficiencyBonusFromChallengeRating,
@@ -75,6 +74,7 @@ const ActionUpdateSection = ({
   const tEdit = useTranslations("characterDetail.edit");
   const tCommon = useTranslations("common");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
+  const tAbilitiesAbbr = useTranslations("characterDetail.player.general.abilitiesAbbr");
   const { displayFt, toFeet, unitLabel } = useDistanceUnit();
   const sectionId = useId();
   const headingId = `${sectionId}-heading`;
@@ -193,7 +193,7 @@ const ActionUpdateSection = ({
     <section
       className="flex flex-col gap-2 w-full"
       aria-labelledby={headingId}>
-      <Card className="gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between min-w-0 w-full">
+      <Card className="sticky top-0 z-10 gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between min-w-0 w-full bg-card">
         <h2
           id={headingId}
           className={`min-w-0 flex-1 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>
@@ -214,13 +214,15 @@ const ActionUpdateSection = ({
                 damage: [{ dice: "", type: "", applyAbilityBonus: false }],
                 range: "",
               });
-              // Attendre le prochain rendu pour que le nouvel élément soit présent
+              const newIndex = fields.length;
+              setOpenAccordionValues((prev) => [...prev, `action-${newIndex}`]);
+              // Wait for render + accordion open before scrolling within the sheet container
               setTimeout(() => {
-                const lastAction = fields.length > 0 ? document.getElementById(`action-${fields.length - 1}`) : null;
-                if (lastAction) {
-                  lastAction.scrollIntoView({ behavior: "smooth", block: "center" });
+                const newAction = document.getElementById(`action-${newIndex}`);
+                if (newAction) {
+                  newAction.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 }
-              }, 100);
+              }, 350);
             }}
             aria-label={t("addActionToSection", { section: title })}
             className="flex items-center gap-2">
@@ -491,7 +493,7 @@ const ActionUpdateSection = ({
                                 selected: isSelected ? t("selected") : t("notSelected"),
                               })}
                               className="h-7 px-2 text-xs">
-                              {ABILITY_SCORE_SHORT_LABELS[suggestion.key]} {formatSignedBonus(suggestion.attackBonus)}
+                              {tAbilitiesAbbr(suggestion.key)} {formatSignedBonus(suggestion.attackBonus)}
                             </Button>
                           );
                         })}

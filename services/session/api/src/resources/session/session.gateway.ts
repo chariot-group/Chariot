@@ -264,7 +264,8 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             const leavingCharacterId: string | null = leavingParticipant?.characterId ?? null;
 
-            const session: SessionWithParticipants = this.extractSession(await this.sessionService.leave(data.sessionId, client.user.keycloakId));
+            const leaveResult = await this.sessionService.leave(data.sessionId, client.user.keycloakId);
+            const session: SessionWithParticipants = this.extractSession(leaveResult);
             const roomId = session.id;
 
             client.leave(roomId);
@@ -276,6 +277,13 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 username: client.user.username,
                 characterId: leavingCharacterId,
             });
+
+            /* FR-session-lobby-wheel-leave-refund: synchroniser le pool de wheels après libération. */
+            if (leaveResult.tokensByUser) {
+                this.server.to(roomId).emit('session:token-updated', {
+                    tokensByUser: leaveResult.tokensByUser,
+                });
+            }
 
             client.emit('session:left', { sessionId: data.sessionId });
 
@@ -311,6 +319,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             this.logger.verbose(`Session ${roomId} launched by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
+            const response = error?.response;
+            if (response && typeof response === 'object' && response.code === 'WHEEL_QUOTA_MISMATCH') {
+                client.emit('session:error', {
+                    code: 'WHEEL_QUOTA_MISMATCH',
+                    message: response.message ?? 'Wheel quota mismatch',
+                });
+                return;
+            }
             let message: string = `Failed to launch session: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             client.emit('session:error', { message });
