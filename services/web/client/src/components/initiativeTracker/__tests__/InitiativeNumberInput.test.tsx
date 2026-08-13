@@ -1,8 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import type { ReactNode } from "react";
 
 vi.mock("@/components/ui/input", () => ({
   Input: (props: Record<string, unknown>) => <input {...props} />,
+}));
+
+vi.mock("@/components/ui/tooltip", () => ({
+  Tooltip: ({ children }: { children: ReactNode }) => <>{children}</>,
+  TooltipTrigger: ({ children }: { children: ReactNode }) => <>{children}</>,
+  TooltipContent: ({ children }: { children: ReactNode }) => <span data-tooltip="true">{children}</span>,
 }));
 
 import { InitiativeNumberInput } from "@/components/initiativeTracker/InitiativeNumberInput";
@@ -23,6 +30,8 @@ describe("FR-tracker-initiative-modifier-display — InitiativeNumberInput", () 
     );
 
     expect(html).toContain("+2");
+    expect(html).toContain("lucide-dices");
+    expect(html).toContain('data-tooltip="true"');
     expect(html).toContain('value="15"');
     expect(html).toContain('aria-label="Initiative de Aria, Bonus d&#x27;initiative +2"');
   });
@@ -40,6 +49,7 @@ describe("FR-tracker-initiative-modifier-display — InitiativeNumberInput", () 
     );
 
     expect(html).not.toContain("+5");
+    expect(html).not.toContain("lucide-dices");
     expect(html).toContain('value="9"');
     expect(html).toContain('aria-label="Initiative"');
   });

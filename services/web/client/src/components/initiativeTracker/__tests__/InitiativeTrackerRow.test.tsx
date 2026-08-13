@@ -237,6 +237,7 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
 
     expect(html).toContain('type="number"');
     expect(html).toContain("Initiative bonus +2");
+    expect(html).toContain("lucide-dices");
     expect(html).toContain("+2");
     // total 12, modifier 2 → roll field shows 10
     expect(html).toContain('value="10"');
@@ -254,6 +255,24 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     );
 
     expect(html).not.toContain("Initiative bonus +2");
+    expect(html).not.toContain("lucide-dices");
+    expect(html).not.toContain('type="number"');
+  });
+
+  it("nominal: locked initiative still shows modifier hint with dice icon", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        initiativeLocked
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain("lucide-dices");
+    expect(html).toContain("Initiative bonus +2");
+    expect(html).toContain("+2");
     expect(html).not.toContain('type="number"');
   });
 

@@ -4033,8 +4033,9 @@ Each initiative tracker row carries:
 - **Input semantics**: while editable, the field shows/edits the **roll** (`initiative - initiativeModifier` when reopening a committed value). On commit, Redux `initiative` MUST become `roll + initiativeModifier`.
 - **Flush before lock**: starting combat (and any action that locks initiative inputs) MUST flush pending uncommitted initiative field text into Redux first, then apply the roll+modifier formula, so values are not lost when the GM clicks **Start combat** without blurring each field.
 - Locked / started combat display shows the **total** (`initiative`), not the raw roll alone.
-- Placement: adjacent to the initiative input, visually secondary to the score, without breaking the compact tracker grid on mobile.
-- Accessibility: the modifier MUST be exposed to assistive tech (e.g. included in the input `aria-label` or an associated text such as “bonus d'initiative +2”), not icon-only.
+- Placement: adjacent to the initiative input (including locked total display), visually secondary to the score, without breaking the compact tracker grid on mobile.
+- The modifier MUST be paired with the same initiative dice icon used on the character sheet, and MUST expose a tooltip (hover/focus) using the accessible modifier label (e.g. “bonus d'initiative +2”).
+- Accessibility: the modifier MUST be exposed to assistive tech (input `aria-label` and a keyboard-focusable tooltip trigger). The signed numeric modifier remains visible; the icon MUST NOT replace the number.
 - GM sees the modifier for every editable row. A player sees the modifier only on their own editable row (other combatants’ modifiers MUST NOT be shown to players).
 
 **Prohibitions**:
@@ -4045,6 +4046,7 @@ Each initiative tracker row carries:
 
 **Tests**:
 
+- Nominal: modifier hint shows dice icon, signed bonus (`+2`), and tooltip/accessible name “bonus d'initiative +2”.
 - Nominal: GM types `15` with modifier `+2`, blurs or starts combat → stored/displayed total `17`; sort uses `17`.
 - Nominal: Start combat while focus is still in an initiative field → pending text is flushed; totals are not left at `0`.
 - Edge: player preparatory input shows modifier only on own row; missing legacy `initiativeModifier` displays/adds as `0`.
@@ -4053,6 +4055,7 @@ Each initiative tracker row carries:
 
 **References**:
 
+- `services/web/client/src/components/initiativeTracker/InitiativeModifierHint.tsx`
 - `services/web/client/src/components/initiativeTracker/InitiativeNumberInput.tsx`
 - `services/web/client/src/components/initiativeTracker/useInitiativeTextInput.ts`
 - `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx`

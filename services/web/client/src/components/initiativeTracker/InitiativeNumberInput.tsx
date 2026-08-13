@@ -1,6 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import { InitiativeModifierHint } from "@/components/initiativeTracker/InitiativeModifierHint";
 import { useInitiativeTextInput } from "@/components/initiativeTracker/useInitiativeTextInput";
 import {
   initiativeRollFromTotal,
@@ -52,19 +53,18 @@ export function InitiativeNumberInput({
   );
 
   const modifierText = formatSignedBonus(resolvedModifier);
-  const combinedAriaLabel =
-    showModifier && modifierAriaLabel
-      ? `${ariaLabel}, ${modifierAriaLabel}`
-      : ariaLabel;
+  const hintAriaLabel = modifierAriaLabel ?? modifierText;
+  const combinedAriaLabel = showModifier ? `${ariaLabel}, ${hintAriaLabel}` : ariaLabel;
 
   return (
     <div className={cn(INITIATIVE_CONTAINER_CLASS, containerClassName)}>
       {showModifier ? (
-        <span
-          className="mb-0.5 block text-center text-[10px] font-medium leading-none tabular-nums text-white/55"
-          aria-hidden="true">
-          {modifierText}
-        </span>
+        <div className="flex justify-center">
+          <InitiativeModifierHint
+            modifierText={modifierText}
+            ariaLabel={hintAriaLabel}
+          />
+        </div>
       ) : null}
       <Input
         type="number"

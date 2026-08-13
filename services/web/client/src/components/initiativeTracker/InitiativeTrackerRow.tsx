@@ -37,6 +37,7 @@ import {
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
 import { InitiativeNumberInput } from "@/components/initiativeTracker/InitiativeNumberInput";
+import { InitiativeModifierHint } from "@/components/initiativeTracker/InitiativeModifierHint";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import {
   ConcentrationSpellDialog,
@@ -529,11 +530,10 @@ export function InitiativeTrackerRow({
               compact && "mx-0 max-w-[72px] max-[360px]:max-w-[60px]",
             )}>
             {showModifier ? (
-              <span
-                className="mb-0.5 text-[10px] font-medium leading-none tabular-nums text-white/55"
-                aria-hidden="true">
-                {modifierText}
-              </span>
+              <InitiativeModifierHint
+                modifierText={modifierText}
+                ariaLabel={modifierAriaLabel}
+              />
             ) : null}
             <div
               className={cn(
