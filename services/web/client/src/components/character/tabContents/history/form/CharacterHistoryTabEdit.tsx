@@ -28,16 +28,19 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
         {t("backstory")}
       </h2>
 
-      {/* Col 1: Apparence */}
-      <div className="xl:row-span-2">
-        <Card className="gap-4 h-full">
+      {/* Col 1: Apparence (sizes to content — FR-character-history-appearance-fit) */}
+      <div className="xl:row-span-2 self-start min-w-0 w-full">
+        <Card
+          className="gap-4 h-fit min-w-0 w-full"
+          role="region"
+          aria-labelledby="appearance-title">
           <h2
             id="appearance-title"
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("appearance")}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4 min-w-0 *:data-[slot=field]:min-w-0 *:data-[slot=field]:h-fit">
             <Controller
               name="appearance.eyes"
               control={form.control}

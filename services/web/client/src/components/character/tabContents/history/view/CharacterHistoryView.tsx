@@ -20,10 +20,10 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
 
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4">
-      {/* Col 1: Apparence (spans 2 rows on xl) */}
-      <div className="xl:row-span-2">
+      {/* Col 1: Apparence (spans 2 rows on xl, sizes to content — FR-character-history-appearance-fit) */}
+      <div className="xl:row-span-2 self-start min-w-0 w-full">
         <Card
-          className="gap-3 py-4 px-4 md:px-6 h-full"
+          className="gap-3 py-4 px-4 md:px-6 h-fit min-w-0 w-full"
           role="region"
           aria-labelledby="appearance-title">
           <h2
@@ -31,7 +31,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
             className={`${accentColor} text-xl md:text-2xl font-semibold`}>
             {t("appearance")}
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 items-start gap-3 md:gap-4 w-full min-w-0 [&>div]:min-w-0 [&>div]:h-fit">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Eye
@@ -40,7 +40,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("eyes")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.eyes}</span>
+              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.eyes}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -50,7 +50,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("age")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.age}</span>
+              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.age}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -60,7 +60,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("skin")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.skin}</span>
+              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.skin}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -70,7 +70,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("height")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words flex flex-row items-center gap-1">
+              <span className="text-sm pl-6 wrap-break-words min-w-0 flex flex-row items-center gap-1">
                 {character?.appearance?.height != null ? (
                   <span className="flex items-baseline gap-1">
                     <span>{displayHeight(Number(character.appearance.height))}{heightLabel}</span>
@@ -97,7 +97,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("weight")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words flex items-baseline gap-1">
+              <span className="text-sm pl-6 wrap-break-words min-w-0 flex items-baseline gap-1">
                 {character?.appearance?.weight != null ? (
                   <>
                     <span>{displayWeight(Number(character.appearance.weight))}{weightLabel}</span>
@@ -116,7 +116,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("hair")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words">{character?.appearance?.hair}</span>
+              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.hair}</span>
             </div>
           </div>
         </Card>

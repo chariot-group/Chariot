@@ -4129,3 +4129,38 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/battle/view/PlayerBattleTabContent.tsx`
 - `services/web/client/src/components/character/tabContents/battle/view/NPCBattleTabContent.tsx`
 - `docs/functional-rules.md` — FR-character-detail-view, FR-character-action-dual-range, FR-frontend-design
+
+---
+
+## FR-character-history-appearance-fit: History Appearance Card Sizes to Content
+
+**Rule**: On the character History tab, the Appearance card and its fields MUST size to their own content in view and edit modes; they MUST NOT stretch to match neighboring cards or sibling field height.
+
+**Requirements**:
+
+- Applies to the History tab Appearance region (eyes, age, skin, height, weight, hair) in both read and edit modes.
+- The Appearance card height MUST follow its fields; it MUST NOT fill leftover column height from a multi-row grid span or from taller neighboring cards (traits, allies, bonds, ideals, flaws).
+- Each appearance field MUST size to its own value. A long wrapping value in one field MUST NOT inflate empty vertical space inside other appearance fields of the same row.
+- Long values remain fully readable: they wrap inside the field (`min-w-0`, wrap) and MUST NOT overflow the card (FR-frontend-design overflow containment).
+- View mode MUST NOT truncate appearance values to keep a uniform row height.
+- Edit-mode appearance controls stay compact (single-line inputs for the six identity fields); they MUST NOT grow to fill the card.
+- Accessibility: existing labels, `aria-labelledby` on the Appearance region, and field-error linking remain unchanged; wrapping MUST NOT clip text or hide values from keyboard/screen-reader users.
+
+**Prohibitions**:
+
+- Stretching the Appearance card with full-height fill (`h-full` or equivalent) across spanned grid rows.
+- Uniform grid-row stretching that leaves large empty areas inside short appearance fields.
+- Truncating appearance values in view mode solely to keep sibling fields the same height.
+
+**Tests**:
+
+- Nominal: short values (age, height, weight plus brief eyes/skin/hair) keep the Appearance card compact; neighboring long background cards do not enlarge it.
+- Edge: a long wrapping value in one appearance field (e.g. eyes or hair) grows that field only; sibling fields stay compact and the card does not overflow horizontally.
+- Failure: empty or missing appearance values MUST NOT leave a stretched empty Appearance card matching the height of the two-row neighboring stack.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/history/view/CharacterHistoryView.tsx`
+- `services/web/client/src/components/character/tabContents/history/form/CharacterHistoryTabEdit.tsx`
+- `docs/functional-rules.md` — FR-character-universal-fields, FR-character-detail-view, FR-frontend-design
+- `docs/design.md` — §3 spacing, §5.3 cards, §6.4 overflow and text containment
