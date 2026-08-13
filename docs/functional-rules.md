@@ -4096,3 +4096,36 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
 - `services/web/client/src/utils/magic.utils.ts`
 - `docs/functional-rules.md` — FR-character-detail-view
+
+---
+
+## FR-character-action-section-visibility: Combat Action Section Visible When Empty
+
+**Rule**: On the character combat tab in read (show) mode, each action section heading MUST remain visible even when that section has zero actions, so the user can discover the section without first adding actions in edit mode.
+
+**Requirements**:
+
+- Player combat tab: the **Actions** heading MUST render when `actions` is empty.
+- NPC combat tab: the **Actions**, **Legendary actions**, and **Lair actions** headings MUST each render even when the corresponding list is empty (same layout as edit mode).
+- Empty section MUST still expose the heading as an accessible section label (`aria-labelledby`).
+- Expand/collapse-all and usage-type priority controls MAY remain visible but MUST stay disabled / non-actionable when the list is empty (existing empty-shell behavior).
+- Edit mode is unchanged: action sections already remain visible so the user can add items.
+
+**Prohibitions**:
+
+- Hiding an entire action section (heading included) solely because the list is empty in show mode.
+- Rendering placeholder accordion items or fake actions to keep the heading visible.
+
+**Tests**:
+
+- Nominal: player with at least one action still shows heading, filters, and action cards.
+- Edge: player with zero actions still shows the **Actions** heading in show mode; expand-all is disabled; no action cards.
+- Edge: NPC with empty legendary and lair lists still shows those two headings in show mode.
+- Failure: empty section MUST NOT omit the heading or leave an unlabeled region.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`
+- `services/web/client/src/components/character/tabContents/battle/view/PlayerBattleTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/battle/view/NPCBattleTabContent.tsx`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-character-action-dual-range, FR-frontend-design

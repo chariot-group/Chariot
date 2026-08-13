@@ -24,6 +24,7 @@ const normalizeUsageType = (usageType?: string): ActionUsageType => {
   return "action";
 };
 
+/** @see FR-character-action-section-visibility: heading stays visible when the list is empty */
 const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
   const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
@@ -49,8 +50,6 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
     return aIsPriority ? -1 : 1;
   });
   const hasActions = displayedActions.length > 0;
-
-  if (actions.length === 0) return null;
 
   return (
     <section
