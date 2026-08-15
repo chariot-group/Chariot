@@ -262,72 +262,80 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
   const readOnlyForm = {} as unknown as UseFormReturn<FieldValues>;
 
   return (
-    <div className="w-full flex flex-col gap-2 md:gap-4 px-1 min-h-0 h-full overflow-y-auto lg:overflow-hidden">
-      <Card className="gap-3 py-4 px-4 md:px-6">
-        <h2 className="text-xl sm:text-2xl font-semibold purple">{tGeneral("character")}</h2>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 xl:gap-6">
-          <dl className="flex flex-col gap-2">
-            <div className="flex flex-wrap gap-1">
-              <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
-              <dd className="text-sm sm:text-base">{normalizedMonster.firstname}</dd>
+    <div className="w-full flex flex-col gap-2 px-1 min-h-0 h-full overflow-y-auto lg:overflow-hidden">
+      <Card
+        className="gap-1.5 py-2 px-3 md:px-4"
+        role="region"
+        aria-labelledby="monster-preview-character-heading">
+        <h2
+          id="monster-preview-character-heading"
+          className="text-sm sm:text-base font-semibold purple">
+          {tGeneral("character")}
+        </h2>
+        <dl className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-x-4 gap-y-0.5 text-xs sm:text-sm">
+          <div className="flex flex-wrap gap-x-1 min-w-0">
+            <dt className="font-semibold shrink-0">{tEdit("firstname")} :</dt>
+            <dd className="min-w-0 break-words">{normalizedMonster.firstname}</dd>
+          </div>
+          {normalizedMonster.lastname && (
+            <div className="flex flex-wrap gap-x-1 min-w-0">
+              <dt className="font-semibold shrink-0">{tEdit("lastname")} :</dt>
+              <dd className="min-w-0 break-words">{normalizedMonster.lastname}</dd>
             </div>
-            {normalizedMonster.lastname && (
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
-                <dd className="text-sm sm:text-base">{normalizedMonster.lastname}</dd>
-              </div>
-            )}
-            {normalizedMonster.surname && (
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
-                <dd className="text-sm sm:text-base">{normalizedMonster.surname}</dd>
-              </div>
-            )}
-            <div className="flex flex-wrap gap-1">
-              <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
-              <dd className="text-sm sm:text-base">
-                {normalizedMonster.profile.type}
-                {normalizedMonster.profile.subtype?.length > 0 && ` (${normalizedMonster.profile.subtype})`}
-              </dd>
+          )}
+          {normalizedMonster.surname && (
+            <div className="flex flex-wrap gap-x-1 min-w-0">
+              <dt className="font-semibold shrink-0">{tEdit("surname")} :</dt>
+              <dd className="min-w-0 break-words">{normalizedMonster.surname}</dd>
             </div>
-            <div className="flex flex-wrap gap-1">
-              <dt className="text-sm sm:text-base font-semibold">{tEdit("alignment")} :</dt>
-              <dd className="text-sm sm:text-base">{normalizedMonster.profile.alignment}</dd>
-            </div>
-          </dl>
-
-          <div className="flex flex-col gap-2 text-sm sm:text-base xl:border-l xl:pl-6 border-border/60">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold">
-                <InfoTooltip
-                  content={tCommon("challengeRatingTooltip")}
-                  side="top"
-                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                  <abbr className="no-underline cursor-help">{tPreview("challengeRatingShort")}</abbr>
-                </InfoTooltip>
-                {" :"}
-              </span>
-              <span>
-                {formatChallengeRating(normalizedMonster.challenge.challengeRating)}
-              </span>
+          )}
+          <div className="flex flex-wrap gap-x-1 min-w-0">
+            <dt className="font-semibold shrink-0">{tNpc("typeLabel")} :</dt>
+            <dd className="min-w-0 break-words">
+              {normalizedMonster.profile.type}
+              {normalizedMonster.profile.subtype?.length > 0 && ` (${normalizedMonster.profile.subtype})`}
+            </dd>
+          </div>
+          <div className="flex flex-wrap gap-x-1 min-w-0">
+            <dt className="font-semibold shrink-0">{tEdit("alignment")} :</dt>
+            <dd className="min-w-0 break-words">{normalizedMonster.profile.alignment}</dd>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-x-1 min-w-0">
+            <dt className="font-semibold shrink-0">
+              <InfoTooltip
+                content={tCommon("challengeRatingTooltip")}
+                side="top"
+                moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                <abbr className="no-underline cursor-help">{tPreview("challengeRatingShort")}</abbr>
+              </InfoTooltip>
+              {" :"}
+            </dt>
+            <dd className="min-w-0">
+              {formatChallengeRating(normalizedMonster.challenge.challengeRating)}
               <span className="text-gray-middle-light">
+                {" "}
                 ({normalizedMonster.challenge.experiencePoints} {tPreview("experiencePointsShort")})
               </span>
-            </div>
-            <p>
-              <span className="font-semibold">{tPreview("calculatedArmorClass")} :</span> {computedArmorClass}
+            </dd>
+          </div>
+          <div className="flex flex-wrap gap-x-1 min-w-0">
+            <dt className="font-semibold shrink-0">{tPreview("calculatedArmorClass")} :</dt>
+            <dd className="min-w-0">
+              {computedArmorClass}
               {baseArmorClass > 0 && computedArmorClass !== baseArmorClass
                 ? ` (${tPreview("sourceArmorClass", { value: baseArmorClass })})`
                 : ""}
-            </p>
-            <p>
-              <span className="font-semibold">{tPreview("hitPointsDice")} :</span> {normalizedMonster.hitPointsRoll}
-            </p>
-            <p>
-              <span className="font-semibold">{tPreview("estimatedProficiencyBonus")} :</span> +{proficiencyFromCR}
-            </p>
+            </dd>
           </div>
-        </div>
+          <div className="flex flex-wrap gap-x-1 min-w-0">
+            <dt className="font-semibold shrink-0">{tPreview("hitPointsDice")} :</dt>
+            <dd className="min-w-0">{normalizedMonster.hitPointsRoll}</dd>
+          </div>
+          <div className="flex flex-wrap gap-x-1 min-w-0">
+            <dt className="font-semibold shrink-0">{tPreview("estimatedProficiencyBonus")} :</dt>
+            <dd className="min-w-0">+{proficiencyFromCR}</dd>
+          </div>
+        </dl>
       </Card>
 
       <Tabs

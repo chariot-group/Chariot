@@ -123,11 +123,18 @@
     "groupNamePlaceholder": "Ex: Les Héros de la Lumière",
     "groupCreatedSuccess": "Groupe {name} créé avec succès !",
     "createCharacter": "Créer un personnage",
-    "createCharacterDialogTitle": "Créer un nouveau personnage",
-    "createCharacterDialogDescription": "Quel type de personnage souhaitez-vous créer ?",
+    "createCharacterDialogTitle": "Créer un personnage",
+    "createCharacterDialogDescription": "Ajoutez un personnage à ce groupe.",
+    "createCharacterPlayerAriaLabel": "Créer un personnage joueur manuellement",
+    "createCharacterNpcAriaLabel": "Créer un PNJ manuellement",
+    "createCharacterDialogOrSeparator": "ou",
+    "createCharacterLibrarySectionTitle": "Librairie communautaire",
+    "createCharacterLibrarySectionDescription": "Importer un monstre ou PNJ depuis la librairie communautaire. La fiche est pré-remplie.",
+    "createCharacterLibraryBrowse": "Parcourir la librairie",
+    "createCharacterLibraryBrowseAriaLabel": "Importer un PNJ depuis la librairie communautaire",
     "playerCharacter": "Personnage joueur",
     "npcCharacter": "PNJ",
-    "npcCodexCharacter": "PNJ depuis Codex",
+    "npcCodexCharacter": "Librairie communautaire",
     "gmSpaceAbbr": "MJ",
     "playerSpaceShort": "Joueur",
     "noCampaigns": "Aucune campagne",
@@ -1458,8 +1465,8 @@
       "spells": "Sorts",
       "spellSlotsEdit": "Emplacements de sorts",
       "addSpell": "Ajouter un sort",
-      "addCodexSpell": "Ajouter un sort via Codex",
-      "codexUnavailable": "Codex est actuellement indisponible",
+      "addCodexSpell": "Ajouter un sort via la librairie communautaire",
+      "codexUnavailable": "La librairie communautaire est actuellement indisponible",
       "selectSpellToEdit": "Sélectionnez un sort à gauche pour modifier ses détails",
       "noSpellsInLevel": "Aucun sort à ce niveau",
       "newSpell": "Nouveau sort",
@@ -1541,8 +1548,15 @@
         "byLevel": "Niveau",
         "byUses": "Utilisations / jour"
       },
+      "codexLegend": {
+        "legendLabel": "Légende des icônes",
+        "selection": "Sélection",
+        "chariot": "Chariot",
+        "srd": "SRD",
+        "srdTooltip": "Contenu SRD (System Reference Document)"
+      },
       "codexDialog": {
-        "title": "Rechercher un sort dans Codex",
+        "title": "Rechercher un sort dans la librairie communautaire",
         "searchPlaceholder": "Rechercher un sort...",
         "noResults": "Aucun sort trouvé",
         "searching": "Recherche en cours...",
@@ -1562,7 +1576,6 @@
         "error": "Erreur lors de la recherche",
         "validatedByChariot": "Validé par Chariot",
         "srdContent": "Contenu SRD (System Reference Document)",
-        "legendLabel": "Légende des icônes",
         "languageFilter": {
           "all": "🌍 Toutes les langues",
           "fr": "🇫🇷 Français",
@@ -1574,31 +1587,32 @@
           "toggle": "Filtres",
           "ariaLabel": "Afficher ou masquer les filtres de recherche",
           "active": "Filtres actifs",
-          "resetAriaLabel": "Réinitialiser les filtres (niveau, classe, école)"
-        },
-        "legendShort": {
-          "selection": "Sélection",
-          "chariot": "Chariot",
-          "srd": "SRD"
+          "resetAriaLabel": "Réinitialiser les filtres (système(s), niveau(x), classe(s), école(s))"
         },
         "classFilter": {
           "all": "Toutes les classes",
-          "shortAll": "Classe",
+          "shortAll": "Classe(s)",
           "ariaLabel": "Filtrer par classe",
           "selectedCount": "{count} classes"
         },
         "levelFilter": {
           "all": "Tous les niveaux",
-          "shortAll": "Niveau",
+          "shortAll": "Niveau(x)",
           "shortCantrip": "Mineurs",
           "ariaLabel": "Filtrer par niveau de sort",
           "shortSelected": "Niv. {level}"
         },
         "schoolFilter": {
           "all": "Toutes les écoles",
-          "shortAll": "École",
+          "shortAll": "École(s)",
           "ariaLabel": "Filtrer par école de magie",
           "selectedCount": "{count} écoles"
+        },
+        "gameSystemFilter": {
+          "all": "Tous les systèmes",
+          "shortAll": "Système(s)",
+          "ariaLabel": "Filtrer par système de jeu",
+          "DND_5E": "D&D 5e"
         },
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
@@ -1611,29 +1625,41 @@
         }
       },
       "monsterCodexDialog": {
-        "title": "Rechercher un monstre dans Codex",
-        "searchPlaceholder": "Rechercher un monstre...",
-        "noResults": "Aucun monstre trouvé",
+        "title": "Rechercher dans la librairie communautaire",
+        "searchPlaceholder": "Rechercher un monstre ou un joueur...",
+        "noResults": "Aucun résultat trouvé",
         "searching": "Recherche en cours...",
-        "selectMonster": "Sélectionnez un monstre pour voir les détails",
-        "validate": "Utiliser ce monstre",
+        "selectEntry": "Sélectionnez une entrée pour voir les détails",
+        "validate": "Utiliser ce personnage",
         "cancel": "Annuler",
         "loadMore": "Charger plus",
         "error": "Erreur lors de la recherche",
         "validatedByChariot": "Validé par Chariot",
         "srdContent": "Contenu SRD (System Reference Document)",
-        "legendLabel": "Légende des icônes",
+        "entityTypeFilter": {
+          "both": "PNJ et PJ",
+          "monsters": "PNJ",
+          "players": "PJ",
+          "ariaLabel": "Filtrer par type de personnage"
+        },
         "languageFilter": {
           "all": "🌍 Toutes les langues",
           "fr": "🇫🇷 Français",
           "en": "🇬🇧 English",
-          "es": "🇪🇸 Español"
+          "es": "🇪🇸 Español",
+          "ariaLabel": "Filtrer par langue"
+        },
+        "gameSystemFilter": {
+          "all": "Tous les systèmes",
+          "ariaLabel": "Filtrer par système de jeu",
+          "DND_5E": "D&D 5e"
         },
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
         "crLabel": "ID",
         "monsterInfo": "{cr} • {type}",
+        "playerInfo": "Niv. {level} • {detail}",
         "preview": {
           "challengeRatingShort": "FP",
           "experiencePointsShort": "XP",
@@ -1777,7 +1803,16 @@
     "logoAriaLabelHome": "Retour à l'accueil",
     "logoAriaLabelInSession": "Ouvrir le lobby de session",
     "logoAriaLabelInSessionWarning": "Ouvrir le lobby de session, moins de 30 minutes restantes",
-    "logoAriaLabelInSessionCritical": "Ouvrir le lobby de session, moins de 5 minutes restantes"
+    "logoAriaLabelInSessionCritical": "Ouvrir le lobby de session, moins de 5 minutes restantes",
+    "communityLibraryTooltip": "Accéder à la librairie communautaire",
+    "communityLibraryAriaLabel": "Accéder à la librairie communautaire"
+  },
+  "sessionCommunityLibrary": {
+    "title": "Librairie communautaire",
+    "tabsAriaLabel": "Type de contenu à consulter",
+    "tabSpells": "Sorts",
+    "tabMonsters": "PNJ",
+    "tabPlayers": "PJ"
   },
   "sessionTime": {
     "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée.",

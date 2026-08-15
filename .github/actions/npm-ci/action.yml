@@ -1,0 +1,29 @@
+name: npm ci
+description: Install npm dependencies with dev deps and cache recovery retry
+
+inputs:
+  working-directory:
+    description: Path to the package directory (contains package-lock.json)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        export NODE_ENV=development
+
+        install_deps() {
+          npm ci
+        }
+
+        if install_deps; then
+          exit 0
+        fi
+
+        echo "::warning::npm ci failed — clearing npm cache and retrying"
+        npm cache clean --force
+        rm -rf node_modules
+        install_deps

@@ -123,11 +123,18 @@
     "groupNamePlaceholder": "Ej: Los Héroes de la Luz",
     "groupCreatedSuccess": "¡Grupo {name} creado con éxito!",
     "createCharacter": "Crear un personaje",
-    "createCharacterDialogTitle": "Crear un nuevo personaje",
-    "createCharacterDialogDescription": "¿Qué tipo de personaje quieres crear?",
+    "createCharacterDialogTitle": "Crear un personaje",
+    "createCharacterDialogDescription": "Añade un personaje a este grupo.",
+    "createCharacterPlayerAriaLabel": "Crear un personaje jugador manualmente",
+    "createCharacterNpcAriaLabel": "Crear un PNJ manualmente",
+    "createCharacterDialogOrSeparator": "o",
+    "createCharacterLibrarySectionTitle": "Biblioteca comunitaria",
+    "createCharacterLibrarySectionDescription": "Importa un monstruo o PNJ desde la biblioteca comunitaria. La ficha viene pre-rellenada.",
+    "createCharacterLibraryBrowse": "Explorar la biblioteca",
+    "createCharacterLibraryBrowseAriaLabel": "Importar un PNJ desde la biblioteca comunitaria",
     "playerCharacter": "Personaje jugador",
     "npcCharacter": "PNJ",
-    "npcCodexCharacter": "PNJ desde Codex",
+    "npcCodexCharacter": "Biblioteca comunitaria",
     "gmSpaceAbbr": "MJ",
     "playerSpaceShort": "Jugador",
     "noCampaigns": "Sin campañas",
@@ -1454,8 +1461,8 @@
       "spells": "Conjuros",
       "spellSlotsEdit": "Ranuras de conjuros",
       "addSpell": "Añadir un conjuro manualmente",
-      "addCodexSpell": "Añadir un conjuro desde Codex",
-      "codexUnavailable": "Codex no está disponible actualmente",
+      "addCodexSpell": "Añadir un conjuro desde la biblioteca comunitaria",
+      "codexUnavailable": "La biblioteca comunitaria no está disponible actualmente",
       "selectSpellToEdit": "Selecciona un conjuro a la izquierda para editar sus detalles",
       "noSpellsInLevel": "No hay conjuros en este nivel",
       "newSpell": "Nuevo conjuro",
@@ -1537,8 +1544,15 @@
         "byLevel": "Nivel",
         "byUses": "Usos / día"
       },
+      "codexLegend": {
+        "legendLabel": "Leyenda de iconos",
+        "selection": "Selección",
+        "chariot": "Chariot",
+        "srd": "SRD",
+        "srdTooltip": "Contenido SRD (System Reference Document)"
+      },
       "codexDialog": {
-        "title": "Buscar un conjuro en Codex",
+        "title": "Buscar un conjuro en la biblioteca comunitaria",
         "searchPlaceholder": "Buscar un conjuro...",
         "noResults": "No se encontraron conjuros",
         "searching": "Buscando...",
@@ -1558,7 +1572,6 @@
         "error": "Error al buscar",
         "validatedByChariot": "Validado por Chariot",
         "srdContent": "Contenido SRD (System Reference Document)",
-        "legendLabel": "Leyenda de iconos",
         "languageFilter": {
           "all": "🌍 Todos los idiomas",
           "fr": "🇫🇷 Francés",
@@ -1570,31 +1583,32 @@
           "toggle": "Filtros",
           "ariaLabel": "Mostrar u ocultar filtros de búsqueda",
           "active": "Filtros activos",
-          "resetAriaLabel": "Restablecer filtros (nivel, clase, escuela)"
-        },
-        "legendShort": {
-          "selection": "Selección",
-          "chariot": "Chariot",
-          "srd": "SRD"
+          "resetAriaLabel": "Restablecer filtros (sistema(s), nivel(es), clase(s), escuela(s))"
         },
         "classFilter": {
           "all": "Todas las clases",
-          "shortAll": "Clase",
+          "shortAll": "Clase(s)",
           "ariaLabel": "Filtrar por clase",
           "selectedCount": "{count} clases"
         },
         "levelFilter": {
           "all": "Todos los niveles",
-          "shortAll": "Nivel",
+          "shortAll": "Nivel(es)",
           "shortCantrip": "Trucos",
           "ariaLabel": "Filtrar por nivel de conjuro",
           "shortSelected": "Niv. {level}"
         },
         "schoolFilter": {
           "all": "Todas las escuelas",
-          "shortAll": "Escuela",
+          "shortAll": "Escuela(s)",
           "ariaLabel": "Filtrar por escuela de magia",
           "selectedCount": "{count} escuelas"
+        },
+        "gameSystemFilter": {
+          "all": "Todos los sistemas",
+          "shortAll": "Sistema(s)",
+          "ariaLabel": "Filtrar por sistema de juego",
+          "DND_5E": "D&D 5e"
         },
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",
@@ -1607,29 +1621,41 @@
         }
       },
       "monsterCodexDialog": {
-        "title": "Buscar un monstruo en Codex",
-        "searchPlaceholder": "Buscar un monstruo...",
-        "noResults": "No se encontraron monstruos",
+        "title": "Buscar en la biblioteca comunitaria",
+        "searchPlaceholder": "Buscar un monstruo o un PJ...",
+        "noResults": "No se encontraron resultados",
         "searching": "Buscando...",
-        "selectMonster": "Selecciona un monstruo para ver los detalles",
-        "validate": "Usar este monstruo",
+        "selectEntry": "Selecciona una entrada para ver los detalles",
+        "validate": "Usar este personaje",
         "cancel": "Cancelar",
         "loadMore": "Cargar más",
         "error": "Error al buscar",
         "validatedByChariot": "Validado por Chariot",
         "srdContent": "Contenido SRD (System Reference Document)",
-        "legendLabel": "Leyenda de iconos",
+        "entityTypeFilter": {
+          "both": "PNJ y PJ",
+          "monsters": "PNJ",
+          "players": "PJ",
+          "ariaLabel": "Filtrar por tipo de personaje"
+        },
         "languageFilter": {
           "all": "🌍 Todos los idiomas",
           "fr": "🇫🇷 Francés",
           "en": "🇬🇧 Inglés",
-          "es": "🇪🇸 Español"
+          "es": "🇪🇸 Español",
+          "ariaLabel": "Filtrar por idioma"
+        },
+        "gameSystemFilter": {
+          "all": "Todos los sistemas",
+          "ariaLabel": "Filtrar por sistema de juego",
+          "DND_5E": "D&D 5e"
         },
         "resultsCount": "{count} resultado{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
         "crLabel": "CR",
         "monsterInfo": "{cr} • {type}",
+        "playerInfo": "Niv. {level} • {detail}",
         "preview": {
           "challengeRatingShort": "CR",
           "experiencePointsShort": "XP",
@@ -1773,7 +1799,16 @@
     "logoAriaLabelHome": "Volver al inicio",
     "logoAriaLabelInSession": "Abrir el lobby de la sesión",
     "logoAriaLabelInSessionWarning": "Abrir el lobby de la sesión, quedan menos de 30 minutos",
-    "logoAriaLabelInSessionCritical": "Abrir el lobby de la sesión, quedan menos de 5 minutos"
+    "logoAriaLabelInSessionCritical": "Abrir el lobby de la sesión, quedan menos de 5 minutos",
+    "communityLibraryTooltip": "Acceder a la biblioteca comunitaria",
+    "communityLibraryAriaLabel": "Acceder a la biblioteca comunitaria"
+  },
+  "sessionCommunityLibrary": {
+    "title": "Biblioteca comunitaria",
+    "tabsAriaLabel": "Tipo de contenido a consultar",
+    "tabSpells": "Conjuros",
+    "tabMonsters": "PNJ",
+    "tabPlayers": "PJ"
   },
   "sessionTime": {
     "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado.",

@@ -12,6 +12,7 @@ import type { Locale } from "@/i18n/request";
 import CodexService, { CodexSpellItem } from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
+import CodexIconLegend from "@/components/character/CodexIconLegend";
 import {
   Search,
   Loader2,
@@ -38,6 +39,7 @@ import type { SpellClass } from "@/constants/spellClasses";
 import { SPELL_CLASSES, spellClassTranslationKey } from "@/constants/spellClasses";
 import type { SpellSchool } from "@/constants/spellSchools";
 import { SPELL_SCHOOLS, spellSchoolTranslationKey } from "@/constants/spellSchools";
+import { GAME_SYSTEMS, getDefaultCodexGameSystemFilter, HAS_MULTIPLE_CODEX_GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
 import { resolveCodexSpellSchoolLabel } from "@/utils/codexSpellSchool.utils";
 import {
   DropdownMenu,
@@ -58,8 +60,14 @@ const SPELL_LEVELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 interface CodexSpellSearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSpellSelected: (spell: Partial<Spell>) => void;
+  onSpellSelected?: (spell: Partial<Spell>) => void;
   accentColor: string;
+  /** Read-only browse: preview only, no spell import. */
+  browseOnly?: boolean;
+  /** Renders search UI without an outer Dialog (for embedding in a parent modal). */
+  embedded?: boolean;
+  /** Shared portaled filter tracker when embedded in a parent dialog. */
+  sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
 }
 
 import {
@@ -180,6 +188,9 @@ export default function CodexSpellSearchDialog({
   onOpenChange,
   onSpellSelected,
   accentColor,
+  browseOnly = false,
+  embedded = false,
+  sharedPortaledFilterOpenTracker,
 }: CodexSpellSearchDialogProps) {
   const userLocale = useLocale() as Locale;
   const tMagic = useTranslations("characterDetail.magic");
@@ -192,6 +203,9 @@ export default function CodexSpellSearchDialog({
   const [selectedClasses, setSelectedClasses] = useState<SpellClass[]>([]);
   const [selectedSchools, setSelectedSchools] = useState<SpellSchool[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(
+    getDefaultCodexGameSystemFilter,
+  );
   const [searchResults, setSearchResults] = useState<CodexSpellItem[]>([]);
   const [selectedSpell, setSelectedSpell] = useState<Partial<Spell> | null>(null);
   const [selectedCodexSpell, setSelectedCodexSpell] = useState<CodexSpellItem | null>(null);
@@ -211,15 +225,23 @@ export default function CodexSpellSearchDialog({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const isLoadingRef = useRef(false);
   const spellPreviewScrollRef = useRef<HTMLDivElement>(null);
-  const portaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+  const internalPortaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+  const portaledFilterOpenTracker =
+    sharedPortaledFilterOpenTracker ?? internalPortaledFilterOpenTrackerRef.current;
 
-  const handlePortaledFilterOpenChange = useCallback((isOpen: boolean) => {
-    portaledFilterOpenTrackerRef.current.notifyOpenChange(isOpen);
-  }, []);
+  const handlePortaledFilterOpenChange = useCallback(
+    (isOpen: boolean) => {
+      portaledFilterOpenTracker.notifyOpenChange(isOpen);
+    },
+    [portaledFilterOpenTracker],
+  );
 
-  const shouldPreventDialogOutsideDismiss = useCallback((target: EventTarget | null) => {
-    return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTrackerRef.current, target);
-  }, []);
+  const shouldPreventDialogOutsideDismiss = useCallback(
+    (target: EventTarget | null) => {
+      return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target);
+    },
+    [portaledFilterOpenTracker],
+  );
 
   const ITEMS_PER_PAGE = 20;
 
@@ -253,10 +275,18 @@ export default function CodexSpellSearchDialog({
     return tDialog("levelFilter.shortSelected", { level: selectedLevel });
   }, [selectedLevel, tDialog]);
 
+  const gameSystemFilterLabel = useMemo(() => {
+    if (selectedGameSystem === null) {
+      return tDialog("gameSystemFilter.shortAll");
+    }
+    return tDialog(`gameSystemFilter.${selectedGameSystem}`);
+  }, [selectedGameSystem, tDialog]);
+
   const resetFilters = useCallback(() => {
     setSelectedLevel(null);
     setSelectedClasses([]);
     setSelectedSchools([]);
+    setSelectedGameSystem(getDefaultCodexGameSystemFilter());
   }, []);
 
   const toggleClassFilter = useCallback((spellClass: SpellClass) => {
@@ -276,7 +306,10 @@ export default function CodexSpellSearchDialog({
   const isCurrentSpellQueued = selectedSpellKey ? isSpellQueuedInQueue(spellQueue, selectedSpellKey) : false;
 
   const hasActiveFilters =
-    selectedLevel !== null || selectedClasses.length > 0 || selectedSchools.length > 0;
+    selectedLevel !== null ||
+    selectedClasses.length > 0 ||
+    selectedSchools.length > 0 ||
+    (HAS_MULTIPLE_CODEX_GAME_SYSTEMS && selectedGameSystem !== null);
 
   const compactLanguageLabel =
     selectedLang === null ? "🌍" : codexLocaleFlagEmoji(selectedLang) || selectedLang.toUpperCase();
@@ -296,11 +329,13 @@ export default function CodexSpellSearchDialog({
       apiClasses?: SpellClass[],
       apiLevel?: number | null,
       apiSchools?: SpellSchool[],
+      apiGameSystem?: CodexGameSystem | null,
     ) => {
       const lang = apiLang !== undefined ? apiLang : selectedLang;
       const classes = apiClasses !== undefined ? apiClasses : selectedClasses;
       const level = apiLevel !== undefined ? apiLevel : selectedLevel;
       const schools = apiSchools !== undefined ? apiSchools : selectedSchools;
+      const gameSystem = apiGameSystem !== undefined ? apiGameSystem : selectedGameSystem;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -325,6 +360,7 @@ export default function CodexSpellSearchDialog({
           classes.length > 0 ? classes : undefined,
           level ?? undefined,
           schools.length > 0 ? schools : undefined,
+          gameSystem ?? undefined,
         );
         const newResults = response.data || [];
 
@@ -358,7 +394,7 @@ export default function CodexSpellSearchDialog({
         isLoadingRef.current = false;
       }
     },
-    [selectedLang, selectedClasses, selectedSchools, selectedLevel, tDialog, ITEMS_PER_PAGE],
+    [selectedLang, selectedClasses, selectedSchools, selectedLevel, selectedGameSystem, tDialog, ITEMS_PER_PAGE],
   );
 
   // Effet pour lancer la recherche avec debounce
@@ -369,11 +405,13 @@ export default function CodexSpellSearchDialog({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedLang, selectedClasses, selectedSchools, selectedLevel, searchSpells]);
+  }, [searchQuery, selectedLang, selectedClasses, selectedSchools, selectedLevel, selectedGameSystem, searchSpells]);
 
   // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
-    portaledFilterOpenTrackerRef.current.reset();
+    if (!sharedPortaledFilterOpenTracker) {
+      portaledFilterOpenTracker.reset();
+    }
 
     if (open) {
       setSearchQuery("");
@@ -381,6 +419,7 @@ export default function CodexSpellSearchDialog({
       setSelectedClasses([]);
       setSelectedSchools([]);
       setSelectedLevel(null);
+      setSelectedGameSystem(getDefaultCodexGameSystemFilter());
       setSearchResults([]);
       setSelectedSpell(null);
       setSelectedCodexSpell(null);
@@ -397,7 +436,7 @@ export default function CodexSpellSearchDialog({
       setHasMore(false);
       isLoadingRef.current = false;
       // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchSpells("", 1, false, userLocale, [], null, []);
+      searchSpells("", 1, false, userLocale, [], null, [], getDefaultCodexGameSystemFilter());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -487,7 +526,7 @@ export default function CodexSpellSearchDialog({
   };
 
   const handleUseThisSpell = () => {
-    if (selectedSpell) {
+    if (selectedSpell && onSpellSelected) {
       onSpellSelected(selectedSpell);
       onOpenChange(false);
     }
@@ -499,7 +538,7 @@ export default function CodexSpellSearchDialog({
   };
 
   const handleAddSelection = () => {
-    if (spellQueue.length === 0) return;
+    if (spellQueue.length === 0 || !onSpellSelected) return;
 
     spellQueue.forEach(({ spell }) => onSpellSelected(spell));
     onOpenChange(false);
@@ -512,34 +551,15 @@ export default function CodexSpellSearchDialog({
   const isMultiSelectionMode = spellQueue.length > 0;
   const spellActionsDisabled = !selectedSpell || previewLangResolving;
 
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}>
-      <DialogContent
-        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
-        onPointerDownOutside={(event) => {
-          const target = event.detail.originalEvent?.target ?? event.target;
-          if (shouldPreventDialogOutsideDismiss(target)) {
-            event.preventDefault();
-          }
-        }}
-        onInteractOutside={(event) => {
-          const target = event.detail.originalEvent?.target ?? event.target;
-          if (shouldPreventDialogOutsideDismiss(target)) {
-            event.preventDefault();
-          }
-        }}
-        onFocusOutside={(event) => {
-          if (shouldPreventDialogOutsideDismiss(event.target)) {
-            event.preventDefault();
-          }
-        }}>
+  const dialogBody = (
+    <>
+      {!embedded ? (
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
         </DialogHeader>
+      ) : null}
 
-        <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
           {/* Partie gauche : Recherche et résultats */}
           <div
             className={`relative z-10 flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
@@ -589,6 +609,7 @@ export default function CodexSpellSearchDialog({
                   </SelectContent>
                 </Select>
               </div>
+              <CodexIconLegend showSelection />
               <Collapsible
                 open={filtersOpen}
                 onOpenChange={setFiltersOpen}
@@ -600,7 +621,7 @@ export default function CodexSpellSearchDialog({
                     aria-label={tDialog("filtersCollapse.ariaLabel")}
                     className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[15px] py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
                     <ChevronDown
-                      className={cn("size-4 shrink-0 transition-transform", filtersOpen && "rotate-180")}
+                      className={cn("size-4 shrink-0 transition-transform", !filtersOpen && "rotate-180")}
                       aria-hidden="true"
                     />
                     <Layers
@@ -622,7 +643,7 @@ export default function CodexSpellSearchDialog({
                     disabled={!hasActiveFilters}
                     onClick={resetFilters}
                     aria-label={tDialog("filtersCollapse.resetAriaLabel")}
-                    className="size-8 shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-40">
+                    className="size-8 shrink-0 text-muted-foreground enabled:hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:opacity-40">
                     <FilterX
                       className="size-3.5"
                       aria-hidden="true"
@@ -630,8 +651,50 @@ export default function CodexSpellSearchDialog({
                   </Button>
                 </div>
                 <CollapsibleContent className="pt-2">
-                  <div className="flex w-full min-w-0 gap-1.5 overflow-visible">
-                    <div className="relative min-w-0 flex-1">
+                  <div className="flex w-full min-w-0 flex-wrap gap-1.5 overflow-visible">
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
+                      <Select
+                        value={selectedGameSystem ?? "all"}
+                        disabled={!HAS_MULTIPLE_CODEX_GAME_SYSTEMS}
+                        onOpenChange={handlePortaledFilterOpenChange}
+                        onValueChange={(value) => {
+                          if (value === "all") {
+                            setSelectedGameSystem(null);
+                            return;
+                          }
+                          if (GAME_SYSTEMS.includes(value as CodexGameSystem)) {
+                            setSelectedGameSystem(value as CodexGameSystem);
+                          }
+                        }}>
+                        <SelectTrigger
+                          disabled={!HAS_MULTIPLE_CODEX_GAME_SYSTEMS}
+                          className={cn(
+                            "h-9 w-full min-w-0 px-2 text-xs focus-visible:ring-inset",
+                            selectedGameSystem !== null && "border-purple/30 bg-purple/5",
+                          )}
+                          aria-label={tDialog("gameSystemFilter.ariaLabel")}>
+                          <SelectValue>{gameSystemFilterLabel}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          side="bottom"
+                          sideOffset={4}
+                          className="min-w-[var(--radix-select-trigger-width)]">
+                          {HAS_MULTIPLE_CODEX_GAME_SYSTEMS ? (
+                            <SelectItem value="all">{tDialog("gameSystemFilter.all")}</SelectItem>
+                          ) : null}
+                          {GAME_SYSTEMS.map((gameSystem) => (
+                            <SelectItem
+                              key={gameSystem}
+                              value={gameSystem}>
+                              {tDialog(`gameSystemFilter.${gameSystem}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
                       <Select
                         value={selectedLevel === null ? "all" : String(selectedLevel)}
                         onOpenChange={handlePortaledFilterOpenChange}
@@ -670,7 +733,7 @@ export default function CodexSpellSearchDialog({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="relative min-w-0 flex-1">
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
                       <DropdownMenu
                         modal={false}
                         onOpenChange={handlePortaledFilterOpenChange}>
@@ -711,7 +774,7 @@ export default function CodexSpellSearchDialog({
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <div className="relative min-w-0 flex-1">
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
                       <DropdownMenu
                         modal={false}
                         onOpenChange={handlePortaledFilterOpenChange}>
@@ -755,38 +818,6 @@ export default function CodexSpellSearchDialog({
                   </div>
                 </CollapsibleContent>
               </Collapsible>
-
-              {/* Légende des icônes */}
-              <p
-                className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-snug text-muted-foreground"
-                aria-label={tDialog("legendLabel")}>
-                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                  <Check
-                    className="size-3.5 shrink-0 text-purple"
-                    aria-hidden="true"
-                  />
-                  {tDialog("legendShort.selection")}
-                </span>
-                <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                  <BadgeCheck
-                    className="size-3.5 shrink-0 text-green-600"
-                    aria-hidden="true"
-                  />
-                  {tDialog("legendShort.chariot")}
-                </span>
-                <InfoTooltip
-                  content={tDialog("srdContent")}
-                  side="top"
-                  moreInfoLabel={tDialog("srdContent")}>
-                  <span className="inline-flex cursor-help items-center gap-1.5 whitespace-nowrap">
-                    <FileBadge
-                      className="size-3.5 shrink-0"
-                      aria-hidden="true"
-                    />
-                    {tDialog("legendShort.srd")}
-                  </span>
-                </InfoTooltip>
-              </p>
             </div>
 
             {/* Résultats de recherche */}
@@ -959,9 +990,10 @@ export default function CodexSpellSearchDialog({
           </div>
         </div>
 
+      {!embedded ? (
         <DialogFooter
-          className={`shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
-          {isMultiSelectionMode ? (
+          className={`shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${!browseOnly && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
+          {!browseOnly && isMultiSelectionMode ? (
             <Collapsible
               open={selectionDetailsOpen}
               onOpenChange={setSelectionDetailsOpen}
@@ -971,7 +1003,7 @@ export default function CodexSpellSearchDialog({
                 aria-expanded={selectionDetailsOpen}
                 className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-purple transition-colors hover:text-purple/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
                 <ChevronDown
-                  className={cn("size-4 shrink-0 transition-transform", selectionDetailsOpen && "rotate-180")}
+                  className={cn("size-4 shrink-0 transition-transform", !selectionDetailsOpen && "rotate-180")}
                   aria-hidden="true"
                 />
                 <span
@@ -1028,7 +1060,7 @@ export default function CodexSpellSearchDialog({
               {tDialog("cancel")}
             </Button>
 
-            {(isMultiSelectionMode || selectedSpell) && (
+            {!browseOnly && (isMultiSelectionMode || selectedSpell) ? (
               <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 sm:border-l sm:border-border sm:pl-3">
                 {isMultiSelectionMode ? (
                   <>
@@ -1110,9 +1142,45 @@ export default function CodexSpellSearchDialog({
                   </>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
         </DialogFooter>
+      ) : null}
+    </>
+  );
+
+  if (embedded) {
+    if (!open) {
+      return null;
+    }
+
+    return <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{dialogBody}</div>;
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}>
+      <DialogContent
+        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        onPointerDownOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onFocusOutside={(event) => {
+          if (shouldPreventDialogOutsideDismiss(event.target)) {
+            event.preventDefault();
+          }
+        }}>
+        {dialogBody}
       </DialogContent>
     </Dialog>
   );

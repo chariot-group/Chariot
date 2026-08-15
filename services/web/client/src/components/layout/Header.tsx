@@ -1,6 +1,7 @@
 "use client";
 
 import Profile from "@/components/layout/Profile";
+import SessionCommunityLibraryButton from "@/components/layout/SessionCommunityLibraryButton";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -97,6 +98,7 @@ export default function Header() {
           logoButton
         )}
         <div className="relative flex items-center gap-3">
+          <SessionCommunityLibraryButton />
           <Profile />
         </div>
       </header>

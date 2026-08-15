@@ -3765,6 +3765,156 @@ Each initiative tracker row carries:
 
 ---
 
+## FR-codex-game-system-filter: Codex Search — Game System Filter
+
+**Rule**: Codex search dialogs for spells (`CodexSpellSearchDialog`) and monsters (`MonsterCodexDialog`) MUST allow filtering results by game system. The filter MUST be applied server-side via the Codex API `gameSystem` query parameter.
+
+**Scope**:
+
+- Complements existing name and language filters (and spell-specific class, level, school filters).
+- Aligns with Codex API `FR-api-game-system` (`GET /spells`, `GET /monsters`).
+
+**Behavior**:
+
+- Users MUST be able to select at most one game system, or leave the filter unset for all systems.
+- When no game system is selected, all systems are returned (no `gameSystem` param sent).
+- When a game system is selected, it MUST be forwarded to the API as `gameSystem` (canonical enum value, e.g. `DND_5E`).
+- Changing the game system filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening either dialog MUST reset the game system filter: when `GAME_SYSTEMS` contains exactly one entry, to that sole value (preselected); otherwise to “all systems” (unset).
+- When `GAME_SYSTEMS` contains exactly one entry, the game system filter control MUST remain visible with that sole value preselected and MUST be disabled (non-interactive); the sole system MUST still be applied to API requests.
+- Filter labels MUST use i18n keys under `gameSystemFilter` in each dialog namespace.
+- Supported values MUST come from `GAME_SYSTEMS` in `constants/gameSystems.ts` (extensible enum).
+
+**Accessibility (FR-frontend-design)**:
+
+- The game system filter control MUST expose an accessible name (`aria-label`) equivalent to other Codex filter controls.
+- When only one game system is supported, the control MUST be disabled and expose that state to assistive technologies.
+- The spell dialog MUST use the same single-select `Select` pattern as the level filter.
+
+**Prohibitions**:
+
+- Client-side-only game system filtering when the API supports the `gameSystem` param.
+- Hardcoded game system labels bypassing i18n.
+- Sending values outside the `GAME_SYSTEMS` enum.
+
+**Tests**:
+
+- `CodexService.searchSpells` forwards a selected game system to `/spells`.
+- `CodexService.searchMonsters` forwards a selected game system to `/monsters`.
+- Both methods omit `gameSystem` when the filter is unset.
+- `getDefaultCodexGameSystemFilter` returns the sole system when `GAME_SYSTEMS.length === 1`, otherwise `null`.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/constants/gameSystems.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
+## FR-codex-npc-search-entity-type: Codex NPC Search — Monster and Player Filter
+
+**Rule**: The community library search dialog (`MonsterCodexDialog`) used for NPC creation MUST allow searching Codex monsters (`GET /monsters`) and premade player characters (`GET /players`), with a single-select entity-type filter.
+
+**Scope**:
+
+- Complements FR-codex-game-system-filter (game system and language filters).
+- Applies to NPC creation from the community library (`npcs-codex` flow).
+- Selected player entries are converted to `Partial<NPC>` for the existing NPC creation draft pipeline.
+
+**Behavior**:
+
+- Users MUST be able to filter results by: monsters only, players only, or both (default: both).
+- When **both** is selected, the client MUST query `/monsters` and `/players` in parallel with the same pagination, language, name, and game-system parameters, then merge results (monsters first, then players).
+- When only one type is selected, only the corresponding Codex endpoint is called.
+- Changing the entity-type filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening the dialog MUST reset the entity-type filter to **both**.
+- List rows for monsters keep CR and creature type; list rows for players show level and race (or class list fallback).
+- Preview and validation MUST work for both kinds; player selection uses `convertCodexPlayerToChariotNPC`.
+- Filter labels MUST use i18n keys under `entityTypeFilter` in `monsterCodexDialog`.
+
+**Accessibility (FR-frontend-design)**:
+
+- The entity-type filter control MUST expose an accessible name (`aria-label`) equivalent to other Codex filter controls.
+
+**Prohibitions**:
+
+- Client-side-only entity-type filtering when the Codex API exposes separate `/monsters` and `/players` endpoints.
+- Hardcoded entity-type labels bypassing i18n.
+- Breaking the existing NPC codex draft flow (`onMonsterSelected` / `setNpcCodexDraft`).
+
+**Tests**:
+
+- `CodexService.searchPlayers` forwards name, lang, pagination, and optional `gameSystem`.
+- `CodexService.convertCodexPlayerToChariotNPC` maps a nominal player translation to `Partial<NPC>`.
+- Edge: `searchPlayers` omits `gameSystem` when unset.
+
+**References**:
+
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/utils/codexLocale.utils.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
+## FR-session-gm-codex-library: In-Session GM Community Library Access
+
+**Rule**: During an active session, the Game Master MUST be able to open a read-only community library (Codex) search from anywhere in the application, covering spells, monsters, and premade player characters.
+
+**Scope**:
+
+- Applies when the user is the GM (`currentParticipant.status === "gameMaster"`) and `isInSession === true`.
+- Complements FR-codex-game-system-filter, FR-codex-npc-search-entity-type, FR-codex-spell-level-filter, and FR-codex-spell-school-filter without changing their filter semantics.
+- Does not grant access to players or to users outside an active session.
+
+**Header entry point**:
+
+- The global header MUST expose a grimoire button immediately **before** (to the left of) the profile avatar when the GM is in session.
+- The button MUST use a book icon (`Book` from lucide-react).
+- The button MUST expose an accessible name and a tooltip with the label **« Accéder à la librairie communautaire »** (i18n key under `header`).
+- When Codex is unavailable (`useCodexHealth`), the button MUST be disabled and the tooltip MUST communicate unavailability (reuse existing `codexUnavailable` copy where applicable).
+
+**Dialog behavior**:
+
+- Clicking the button opens a modal community library browser reachable from any page while in session.
+- The dialog MUST provide access to spells, monsters (NPCs), and premade player characters within a **single** modal, using tabs or an equivalent in-dialog switch (no route change, no separate modals per type).
+- Each type reuses the same search, filters, preview, and pagination as `CodexSpellSearchDialog` (spells) and `MonsterCodexDialog` (monsters / players).
+- Session browse mode is **read-only**: users consult previews only; there is no spell import, NPC draft creation, or navigation away from the current session page.
+- Closing the dialog MUST return the GM to the exact page and state they were on (no route change).
+
+**Accessibility (FR-frontend-design)**:
+
+- Header button is keyboard-focusable with visible focus ring.
+- Dialog follows existing Dialog primitive focus trap and `aria-labelledby` title.
+- Tab controls (if used to switch spells / characters) MUST be keyboard-operable with an accessible name per tab.
+
+**Prohibitions**:
+
+- Showing the grimoire button to players or when not in session.
+- Hardcoded French tooltip bypassing i18n.
+- Reusing creation flows (`onSpellSelected`, `onMonsterSelected`, `npcs-codex` navigation) from session browse mode.
+- Opening a second WebSocket connection or mutating session state as part of Codex browse.
+
+**Tests**:
+
+- Nominal: GM in session sees grimoire button; player does not.
+- Nominal: opening the dialog exposes spell and character search without route change.
+- Edge: Codex unavailable disables the header button.
+- Failure: non-GM user never receives the header control.
+
+**References**:
+
+- `services/web/client/src/components/layout/Header.tsx`
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/hooks/useCodexHealth.ts`
+- `services/web/client/messages/{en,fr,es}.json`
+
+---
+
 ## FR-character-sheet-pdf-export: Character Sheet PDF Export
 
 **Rule**: The web application MUST allow exporting Player character sheets as a downloadable PDF. NPC export MUST remain visible but disabled with a « coming soon » affordance until a dedicated NPC PDF layout ships. The Player PDF layout MUST follow the three-page D&D 5e personal character sheet structure (core stats, biography/appearance, spellcasting) while applying Chariot's documented visual baseline (`docs/design.md`). Export is client-side only; no new backend endpoint is required.
