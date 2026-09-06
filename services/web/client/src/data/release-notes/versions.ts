@@ -2,6 +2,51 @@ import type { ReleaseNote } from '@/data/release-notes/types';
 
 export const ALL_RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '2.9.0',
+    date: '2026-09-06',
+    translations: {
+      fr: {
+        title: 'Export PDF, concentration & librairie communautaire',
+        highlights: [
+          { text: 'Exportez vos fiches joueur en PDF (thème sombre ou clair), depuis la fiche ou le menu de la barre latérale. L\'export PNJ arrive bientôt.' },
+          { text: 'Suivez la concentration en combat : indiquez le sort maintenu dans le tracker d\'initiative, et recevez un rappel de jet de sauvegarde de CON quand vous perdez des PV.' },
+          { text: 'En session, le MJ ouvre la librairie communautaire (grimoire) depuis l\'en-tête pour consulter sorts, monstres et personnages préfaits sans quitter la table.' },
+          { text: 'La recherche de sorts gagne un filtre par école de magie. La création de PNJ peut aussi s\'appuyer sur des personnages préfaits, pas seulement des monstres.' },
+          { text: 'L\'initiative affiche désormais le modificateur à côté du jet : le total utilisé pour l\'ordre de tour est jet + bonus.' },
+          { text: 'Le minuteur de session vit dans le lobby, avec un indicateur dans l\'en-tête et un toast d\'alerte à 30 minutes. Le QR code et le code d\'invitation disparaissent une fois la session lancée.' },
+          { text: 'Les wheels déposées en lobby sont libérées si un joueur part avant le lancement, et la session ne se lance que si le dépôt correspond au nombre de participants.' },
+          { text: 'Nombreux ajustements de fiches : Escape ne ferme plus le formulaire quand une modale est ouverte, catégories de sorts sans niveaux vides, sections d\'actions toujours visibles, apparence qui s\'adapte au contenu, et noms dupliqués suffixés.' },
+        ],
+      },
+      en: {
+        title: 'PDF export, concentration & community library',
+        highlights: [
+          { text: 'Export player sheets as PDF (dark or light theme) from the sheet or the sidebar menu. NPC export is coming soon.' },
+          { text: 'Track concentration in combat: set the maintained spell on the initiative tracker, and get a CON save reminder when you lose HP.' },
+          { text: 'In session, the GM opens the community library (grimoire) from the header to browse spells, monsters, and premade characters without leaving the table.' },
+          { text: 'Spell search now filters by school of magic. NPC creation can also use premade player characters, not only monsters.' },
+          { text: 'Initiative now shows the modifier next to the roll: turn order uses roll + bonus.' },
+          { text: 'The session timer lives in the lobby, with a header live indicator and a warning toast at 30 minutes. The QR code and invite code disappear once the session is launched.' },
+          { text: 'Wheels deposited in the lobby are released if a player leaves before launch, and the session only starts when deposits match the participant count.' },
+          { text: 'Many sheet adjustments: Escape no longer closes the form while a modal is open, spell categories without empty levels, action sections always visible, appearance sizing to content, and suffixed duplicate names.' },
+        ],
+      },
+      es: {
+        title: 'Exportación PDF, concentración y biblioteca comunitaria',
+        highlights: [
+          { text: 'Exporta tus fichas de jugador en PDF (tema oscuro o claro) desde la ficha o el menú de la barra lateral. La exportación de PNJ llegará pronto.' },
+          { text: 'Sigue la concentración en combate: indica el hechizo mantenido en el rastreador de iniciativa y recibe un recordatorio de tirada de salvación de CON cuando pierdes PV.' },
+          { text: 'En sesión, el DJ abre la biblioteca comunitaria (grimorio) desde el encabezado para consultar hechizos, monstruos y personajes prediseñados sin salir de la mesa.' },
+          { text: 'La búsqueda de hechizos gana un filtro por escuela de magia. La creación de PNJ también puede basarse en personajes prediseñados, no solo en monstruos.' },
+          { text: 'La iniciativa muestra ahora el modificador junto a la tirada: el total usado para el orden de turno es tirada + bonificador.' },
+          { text: 'El temporizador de sesión vive en el lobby, con un indicador en el encabezado y un aviso a los 30 minutos. El código QR y el código de invitación desaparecen una vez lanzada la sesión.' },
+          { text: 'Las wheels depositadas en el lobby se liberan si un jugador se va antes del lanzamiento, y la sesión solo arranca si el depósito coincide con el número de participantes.' },
+          { text: 'Numerosos ajustes de fichas: Escape ya no cierra el formulario con un modal abierto, categorías de hechizos sin niveles vacíos, secciones de acciones siempre visibles, apariencia que se adapta al contenido, y nombres duplicados con sufijo.' },
+        ],
+      },
+    },
+  },
+  {
     version: '2.8.0',
     date: '2026-06-26',
     translations: {
@@ -58,7 +103,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'Dupliquez vos groupes et personnages en quelques clics. Placez temporairement un personnage non-joueur dans le groupe des joueurs le temps d\'une session.' },
           { text: 'Vue rapide du combat : consultez n\'importe quelle fiche sans perdre le fil de l\'initiative.' },
           { text: 'Les erreurs dans les formulaires de personnage indiquent maintenant précisément l\'onglet ou le champ à corriger.' },
-          { text: 'Filtres de sorts dans l\'ajout via Codex (par classe et niveau) et sélection multiple pour ajouter plusieurs sorts en une seule fois.' },
+          { text: 'Filtres de sorts dans l\'ajout via la librairie communautaire (par classe et niveau) et sélection multiple pour ajouter plusieurs sorts en une seule fois.' },
           { text: 'Page profil entièrement redessinée, avec préférences de langue et d\'unité (m / ft avec affichage double optionnel).' },
           { text: 'Ce module de notes de version — vous lisez actuellement la 2.7.0. Retrouvez les versions précédentes depuis votre profil.' },
         ],
@@ -71,7 +116,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'Duplicate groups and characters in a few clicks. Temporarily place an NPC in the player group for the duration of a session.' },
           { text: 'Combat quick view: browse any character sheet without losing track of the initiative order.' },
           { text: 'Character form errors now pinpoint exactly which tab or field needs attention.' },
-          { text: 'Spell filters in Codex-based spell addition (by class and level), plus multi-select to add several spells at once.' },
+          { text: 'Spell filters in community library spell addition (by class and level), plus multi-select to add several spells at once.' },
           { text: 'Fully redesigned profile page, with language and unit preferences (m / ft with optional dual display).' },
           { text: 'This release notes module — you are reading 2.7.0 right now. Browse previous versions from your profile.' },
         ],
@@ -84,7 +129,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'Duplica grupos y personajes en pocos clics. Coloca temporalmente un PNJ en el grupo de jugadores durante una sesión.' },
           { text: 'Vista rápida de combate: consulta cualquier ficha sin perder el hilo de la iniciativa.' },
           { text: 'Los errores en los formularios de personaje ahora indican exactamente qué pestaña o campo necesita atención.' },
-          { text: 'Filtros de hechizos en la adición vía Codex (por clase y nivel), y selección múltiple para añadir varios hechizos a la vez.' },
+          { text: 'Filtros de hechizos en la adición vía la biblioteca comunitaria (por clase y nivel), y selección múltiple para añadir varios hechizos a la vez.' },
           { text: 'Página de perfil completamente rediseñada, con preferencias de idioma y unidad (m / ft con visualización doble opcional).' },
           { text: 'Este módulo de notas de versión — estás leyendo la 2.7.0 ahora mismo. Consulta versiones anteriores desde tu perfil.' },
         ],
@@ -135,7 +180,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'Le MJ choisit quels champs d\'un PNJ sont visibles par les joueurs : nom, PV, CA, conditions… champ par champ.' },
           { text: 'Saisie groupée d\'initiative : le MJ peut sélectionner plusieurs personnages et leur attribuer la même valeur en une seule fois.' },
           { text: 'Les sorts mineurs (cantrips) ont un nombre d\'utilisations illimité et un bouton "Lancer" dédié. Les emplacements de sorts affichent maintenant les slots utilisés.' },
-          { text: 'Les sens (vision dans le noir, perception passive…) s\'ajoutent et s\'éditent dans la fiche joueur et PNJ, avec support Codex.' },
+          { text: 'Les sens (vision dans le noir, perception passive…) s\'ajoutent et s\'éditent dans la fiche joueur et PNJ, avec support de la librairie communautaire.' },
           { text: 'En session, modifiez les pièces, PV et notes directement sans passer en mode édition complet.' },
           { text: 'Ajout des points d\'inspiration : gagnez-en en mode édition, dépensez-les depuis la fiche.' },
         ],
@@ -147,7 +192,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'The GM chooses which NPC fields are visible to players: name, HP, AC, conditions… field by field.' },
           { text: 'Bulk initiative entry: the GM can select multiple characters and assign them the same value in one go.' },
           { text: 'Cantrips have unlimited uses and a dedicated "Cast" button. Spell slots now show used slots instead of remaining ones.' },
-          { text: 'Senses (darkvision, passive perception…) can be added and edited on player and NPC sheets, with Codex support.' },
+          { text: 'Senses (darkvision, passive perception…) can be added and edited on player and NPC sheets, with community library support.' },
           { text: 'In a session, edit coins, HP, and notes directly without entering full edit mode.' },
           { text: 'Inspiration points added: earn them in edit mode, spend them from the sheet.' },
         ],
@@ -159,7 +204,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'El DJ elige qué campos de un PNJ son visibles para los jugadores: nombre, PV, CA, condiciones… campo por campo.' },
           { text: 'Entrada de iniciativa en masa: el DJ puede seleccionar varios personajes y asignarles el mismo valor de una sola vez.' },
           { text: 'Los trucos tienen usos ilimitados y un botón "Lanzar" dedicado. Las ranuras de hechizos ahora muestran las ranuras usadas.' },
-          { text: 'Los sentidos (visión en la oscuridad, percepción pasiva…) se añaden y editan en las fichas de jugador y PNJ, con soporte de Codex.' },
+          { text: 'Los sentidos (visión en la oscuridad, percepción pasiva…) se añaden y editan en las fichas de jugador y PNJ, con soporte de la biblioteca comunitaria.' },
           { text: 'En sesión, edita monedas, PV y notas directamente sin entrar en el modo edición completo.' },
           { text: 'Puntos de inspiración añadidos: gánalos en modo edición, gástalos desde la ficha.' },
         ],
@@ -237,24 +282,24 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
     date: '2026-04-26',
     translations: {
       fr: {
-        title: 'Sessions de jeu & améliorations Codex',
+        title: 'Sessions de jeu & améliorations de la librairie communautaire',
         highlights: [
           { text: 'Nouveau service de session : rejoignez une partie en temps réel avec votre groupe.' },
-          { text: 'Le Codex est maintenant accessible dans toutes les langues de l\'application.' },
+          { text: 'La librairie communautaire est maintenant accessible dans toutes les langues de l\'application.' },
         ],
       },
       en: {
-        title: 'Game sessions & Codex improvements',
+        title: 'Game sessions & community library improvements',
         highlights: [
           { text: 'New session service: join a game in real time with your group.' },
-          { text: 'The Codex is now accessible in all application languages.' },
+          { text: 'The community library is now accessible in all application languages.' },
         ],
       },
       es: {
-        title: 'Sesiones de juego & mejoras del Codex',
+        title: 'Sesiones de juego & mejoras de la biblioteca comunitaria',
         highlights: [
           { text: 'Nuevo servicio de sesión: únete a una partida en tiempo real con tu grupo.' },
-          { text: 'El Codex ahora es accesible en todos los idiomas de la aplicación.' },
+          { text: 'La biblioteca comunitaria ahora es accesible en todos los idiomas de la aplicación.' },
         ],
       },
     },
@@ -300,26 +345,26 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
     date: '2026-03-06',
     translations: {
       fr: {
-        title: 'Achats & création depuis le Codex',
+        title: 'Achats & création depuis la librairie communautaire',
         highlights: [
           { text: 'Rechargez vos tokens directement depuis l\'application, sans quitter Chariot.' },
-          { text: 'Créez un personnage ou un PNJ directement depuis une entrée du Codex en un clic.' },
+          { text: 'Créez un personnage ou un PNJ directement depuis une entrée de la librairie communautaire en un clic.' },
           { text: 'Nouveau formulaire de création et d\'édition pour les personnages et les PNJ.' },
         ],
       },
       en: {
-        title: 'Purchases & creation from the Codex',
+        title: 'Purchases & creation from the community library',
         highlights: [
           { text: 'Top up your tokens directly from the app, without leaving Chariot.' },
-          { text: 'Create a character or NPC directly from a Codex entry in one click.' },
+          { text: 'Create a character or NPC directly from a community library entry in one click.' },
           { text: 'New creation and edit form for characters and NPCs.' },
         ],
       },
       es: {
-        title: 'Compras & creación desde el Codex',
+        title: 'Compras & creación desde la biblioteca comunitaria',
         highlights: [
           { text: 'Recarga tus tokens directamente desde la aplicación, sin salir de Chariot.' },
-          { text: 'Crea un personaje o PNJ directamente desde una entrada del Codex en un clic.' },
+          { text: 'Crea un personaje o PNJ directamente desde una entrada de la biblioteca comunitaria en un clic.' },
           { text: 'Nuevo formulario de creación y edición para personajes y PNJ.' },
         ],
       },

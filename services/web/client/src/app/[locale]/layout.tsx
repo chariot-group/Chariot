@@ -6,6 +6,7 @@ import ReduxProvider from "@/providers/ReduxProvider";
 import ToastContainer from "@/components/ToastContainer";
 import LocaleDetector from "@/components/LocaleDetector";
 import AccountLocaleSync from "@/components/AccountLocaleSync";
+import CampaignContextUrlSync from "@/components/CampaignContextUrlSync";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
@@ -71,6 +72,7 @@ export default async function RootLayout({
                   <ReleaseNotesProvider />
                   <LocaleDetector />
                   <AccountLocaleSync />
+                  <CampaignContextUrlSync />
                   <ToastContainer />
                   <Header />
 

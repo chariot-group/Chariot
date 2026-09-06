@@ -38,6 +38,7 @@ export const BULK_VISIBILITY_FIELD_KEYS: (keyof InitiativeTrackerPlayerFieldVisi
   "lifeStatus",
   "armorClass",
   "conditions",
+  "concentration",
   "groupLabel",
 ];
 

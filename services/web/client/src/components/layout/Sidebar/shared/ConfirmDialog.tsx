@@ -80,7 +80,6 @@ export function ConfirmDialog({
           <Button
             type="button"
             variant={destructive ? "destructive" : "default"}
-            className={destructive ? "text-black" : undefined}
             disabled={isLoading}
             onClick={handleConfirm}>
             {confirmLabel}

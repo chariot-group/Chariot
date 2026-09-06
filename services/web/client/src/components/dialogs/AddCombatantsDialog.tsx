@@ -35,6 +35,8 @@ import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Character } from "@/types/character";
 import {
+  initiativeTotalFromRoll,
+  resolveInitiativeModifierFromStats,
   trackerDeathSavesFailuresFromCharacter,
   trackerKindFromCharacter,
 } from "@/components/initiativeTracker/utils";
@@ -211,7 +213,10 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
       return { ...current, [groupId]: Array.from(excluded) };
     });
     if (include && initiativeByMemberId[memberId] == null) {
-      setInitiativeByMemberId((current) => ({ ...current, [memberId]: 0 }));
+      const group = groups.find((item) => item._id === groupId);
+      const member = group?.characters?.find((item) => item._id === memberId);
+      const seededTotal = resolveInitiativeModifierFromStats(member?.stats);
+      setInitiativeByMemberId((current) => ({ ...current, [memberId]: seededTotal }));
     }
   };
 
@@ -222,7 +227,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     }));
   };
 
-  const applyGroupInitiative = (groupId: string, initiative: number) => {
+  const applyGroupInitiative = (groupId: string, roll: number) => {
     const group = groups.find((item) => item._id === groupId);
     if (!group) return;
 
@@ -230,7 +235,10 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     const updates: Record<string, number> = {};
     (group.characters ?? []).forEach((member) => {
       if (inCombatCharacterIds.has(member._id) || excluded.has(member._id)) return;
-      updates[member._id] = initiative;
+      updates[member._id] = initiativeTotalFromRoll(
+        roll,
+        resolveInitiativeModifierFromStats(member.stats),
+      );
     });
     setInitiativeByMemberId((current) => ({ ...current, ...updates }));
   };
@@ -242,9 +250,13 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     }));
   };
 
-  const resolveMemberInitiative = (memberId: string): number => {
+  const resolveMemberInitiative = (
+    memberId: string,
+    stats?: { initiative?: number | null } | null,
+  ): number => {
     const value = initiativeByMemberId[memberId];
-    return Number.isFinite(value) ? value : 0;
+    if (Number.isFinite(value)) return value as number;
+    return resolveInitiativeModifierFromStats(stats);
   };
 
   const handleAdd = async () => {
@@ -298,7 +310,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
               lastname: character.lastname ?? "",
               surname: character.surname ?? "",
               avatar: character.avatar ?? "",
-              initiative: resolveMemberInitiative(member._id),
+              initiative: resolveMemberInitiative(member._id, stats),
               hitPoints: Number.isFinite(currentHitPoints)
                 ? Number(currentHitPoints)
                 : Number(maxHitPoints ?? 0),
@@ -309,6 +321,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
               deathSavesFailures: isHydrated
                 ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
                 : 0,
+              initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats.initiative) : 0,
             });
           });
       });
@@ -392,6 +405,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                                   initiative: t("initiative"),
                                   character: t("character"),
                                   initiativeFor: t("addCombatantsInitiativeFor"),
+                                  initiativeModifierFor: t("initiativeModifierFor"),
                                   groupedSelectedCount: t("groupedInitiativeSelectedCount", {
                                     count: availableMembers.filter((m) => !excluded.has(m._id)).length,
                                   }),

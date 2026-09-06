@@ -8,6 +8,8 @@ export interface AbilityScores {
 }
 
 // Enums from backend
+export type GameSystem = 'DND_5E';
+
 export type Alignment =
     | 'Lawful Good'
     | 'Neutral Good'
@@ -295,6 +297,7 @@ export interface Character {
     lastname: string;
     surname: string;
     avatar: string;
+    gameSystem: GameSystem;
     stats: Stats;
     affinities: Affinities;
     abilities: Ability[];

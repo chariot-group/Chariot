@@ -6,13 +6,14 @@ import { useTranslations } from 'next-intl';
 import { useCharacter } from '@/hooks/useCharacter';
 import { useToast } from '@/hooks/useToast';
 import CharacterService from '@/services/CharacterService';
-import { Player, NPC } from '@/types/character';
+import { Player, NPC, Spell } from '@/types/character';
 import { createPlayerSchema, createNpcSchema } from '@/schemas/character';
 import { makeZodMessages } from '@/lib/zodErrorMap';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectIsInSession } from '@/store/slices/sessionSlice';
 import { upsertCharacterWithoutGroup } from '@/store/slices/characterSlice';
 import { upsertCharacterInGroups } from '@/store/slices/groupSlice';
+import { pruneOrphanSpellSlotsByLevel } from '@/utils/magic.utils';
 
 /**
  * Type de personnage supporté
@@ -278,7 +279,10 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
                     nextByLevel[levelKey] = { total, used: Math.min(used, total) };
                 }
-                return { ...row, spellSlotsByLevel: nextByLevel };
+                // FR-magic-spell-level-categories: drop slot keys with no spell at that level
+                const spells = Array.isArray(row.spells) ? (row.spells as Spell[]) : [];
+                const prunedByLevel = pruneOrphanSpellSlotsByLevel(nextByLevel, spells);
+                return { ...row, spellSlotsByLevel: prunedByLevel };
             });
         }
 

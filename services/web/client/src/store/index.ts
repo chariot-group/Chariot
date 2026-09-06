@@ -10,6 +10,10 @@ import characterReducer from '@/store/slices/characterSlice';
 import userReducer from '@/store/slices/userSlice';
 import codexDraftReducer from '@/store/slices/codexDraftSlice';
 import { ensureConditionEntryRemainingSeconds } from '@/components/initiativeTracker/conditionDuration';
+import {
+    normalizePendingConcentrationCheck,
+    normalizeTrackerConcentration,
+} from '@/components/initiativeTracker/concentration.utils';
 import { defaultPlayerDisplayNameForRow } from '@/components/initiativeTracker/utils';
 import sessionReducer, {
     normalizeInitiativeTrackerConditionEntry,
@@ -174,6 +178,8 @@ const sessionTransform = createTransform(
                     .map((entry) => normalizeInitiativeTrackerConditionEntry(entry))
                     .filter((entry): entry is NonNullable<typeof entry> => entry != null)
                     .map((entry) => ensureConditionEntryRemainingSeconds(entry)),
+                concentration: normalizeTrackerConcentration(row.concentration),
+                pendingConcentrationCheck: normalizePendingConcentrationCheck(row.pendingConcentrationCheck),
             };
         }),
         battleInitialized: outbound?.battleInitialized ?? (outbound?.initiativeTrackerRows?.length ?? 0) > 0,

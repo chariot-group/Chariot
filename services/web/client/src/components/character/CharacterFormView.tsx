@@ -16,9 +16,16 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
-import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
+import {
+  isEnterWithModifiers,
+  isEnterWithoutModifiers,
+  isModalOverlayOpen,
+  isTypingInInputElement,
+} from "@/utils/keyboard.utils";
 import { toast } from "react-toastify";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
+import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
+import { CharacterSheetHeader } from "@/components/character/CharacterSheetHeader";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -269,6 +276,12 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const { errors } = useFormState({ control: form.control });
   const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
 
+  const watchedFirstname = form.watch("firstname");
+  const watchedLastname = form.watch("lastname");
+  const watchedSurname = form.watch("surname");
+  const headerFullName = [watchedFirstname?.trim(), watchedLastname?.trim()].filter(Boolean).join(" ");
+  const createTitleFallback = characterType === "players" ? tCreate("titlePlayer") : tCreate("titleNpc");
+
   const hasAppliedCodexDefaultsRef = useRef(false);
 
   useEffect(() => {
@@ -487,7 +500,10 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
 
   useEffect(() => {
     const handleGlobalShortcuts = (event: KeyboardEvent) => {
+      // Nested dialogs (e.g. Codex spell search) must consume Escape first.
+      // @see FR-character-form-nested-escape
       if (event.key === "Escape") {
+        if (isModalOverlayOpen()) return;
         event.preventDefault();
         event.stopPropagation();
         handleCancel();
@@ -576,34 +592,26 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           {/* Header avec onglets et titre de création */}
           <div className="shrink-0">
             <div className="mx-auto sm:px-6 md:px-8 px-2">
-              <div className="w-full flex flex-col lg:flex-row-reverse lg:justify-between gap-2">
-                {/* Infos du personnage - À droite sur lg, au-dessus sur mobile */}
-                <div className="flex flex-col gap-1 min-w-0 lg:max-w-[50%]">
-                  {/* Ligne 1: Nom du personnage */}
-                  <div className="min-w-0 w-full justify-start lg:justify-end flex items-start lg:items-center">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white truncate min-w-0 max-w-full">
-                      {characterType === "players" ? tCreate("titlePlayer") : tCreate("titleNpc")}
-                    </h1>
-                  </div>
-
-                  {/* Ligne 2: Surnom + Classe/CR + Groupe */}
-                  <div className="flex flex-col gap-2 text-sm items-start lg:items-end justify-end">
-                    <div className="text-white font-semibold">
-                      <span>{tCreate("description")}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Onglets - À gauche sur lg, en dessous sur mobile */}
-                <div className="flex flex-col gap-2 min-w-0 lg:max-w-[50%] lg:self-end overflow-x-auto lg:overflow-x-visible overflow-y-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+              <CharacterSheetHeader
+                identity={
+                  <CharacterSheetHeaderIdentity
+                    fullName={headerFullName}
+                    surname={watchedSurname}
+                    emptyNameFallback={createTitleFallback}
+                    subtitle={
+                      <div className="font-semibold text-white">
+                        <span>{tCreate("description")}</span>
+                      </div>
+                    }
+                  />
+                }
+                tabs={
                   <CharacterTabs
                     activeTab={activeTab}
-                    listClassName="gap-1 lg:flex-wrap"
-                    triggerClassName="grow-0"
                     tabsWithErrors={tabsWithErrors}
                   />
-                </div>
-              </div>
+                }
+              />
             </div>
           </div>
 

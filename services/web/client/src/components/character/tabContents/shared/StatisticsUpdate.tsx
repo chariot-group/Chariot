@@ -423,6 +423,41 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
         <h3 className="text-sm font-medium">{t("healthPoints")}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
           <Controller
+            name="stats.maxHitPoints"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <label
+                  htmlFor="health-max"
+                  className="text-xs truncate">
+                  {tEdit("maxHP")}
+                </label>
+                <QuickNumberCalculator
+                  value={field.value ?? ""}
+                  currentValue={field.value}
+                  min={safeCurrentHitPoints}
+                  onValueChange={(nextValue) => field.onChange(nextValue)}
+                  onApply={(nextValue) => field.onChange(nextValue)}
+                  onConstraintResult={({ wasClamped, source }) => handleMaxHpConstraintResult({ wasClamped, source })}
+                  triggerLabel={`${tEdit("maxHP")} quick calculator`}
+                  inputLabel={`${tEdit("maxHP")} value`}
+                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
+                  inputProps={{
+                    id: "health-max",
+                    className: "text-sm",
+                    name: field.name,
+                    onBlur: field.onBlur,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? "health-max-error" : undefined,
+                  }}
+                />
+                {fieldState.error && <FieldError id="health-max-error">{fieldState.error.message}</FieldError>}
+              </Field>
+            )}
+          />
+          <Controller
             name="stats.currentHitPoints"
             control={form.control}
             render={({ field, fieldState }) => (
@@ -457,41 +492,6 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
                   }}
                 />
                 {fieldState.error && <FieldError id="health-current-error">{fieldState.error.message}</FieldError>}
-              </Field>
-            )}
-          />
-          <Controller
-            name="stats.maxHitPoints"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="health-max"
-                  className="text-xs truncate">
-                  {tEdit("maxHP")}
-                </label>
-                <QuickNumberCalculator
-                  value={field.value ?? ""}
-                  currentValue={field.value}
-                  min={safeCurrentHitPoints}
-                  onValueChange={(nextValue) => field.onChange(nextValue)}
-                  onApply={(nextValue) => field.onChange(nextValue)}
-                  onConstraintResult={({ wasClamped, source }) => handleMaxHpConstraintResult({ wasClamped, source })}
-                  triggerLabel={`${tEdit("maxHP")} quick calculator`}
-                  inputLabel={`${tEdit("maxHP")} value`}
-                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
-                  inputProps={{
-                    id: "health-max",
-                    className: "text-sm",
-                    name: field.name,
-                    onBlur: field.onBlur,
-                    "aria-invalid": fieldState.invalid,
-                    "aria-describedby": fieldState.error ? "health-max-error" : undefined,
-                  }}
-                />
-                {fieldState.error && <FieldError id="health-max-error">{fieldState.error.message}</FieldError>}
               </Field>
             )}
           />

@@ -1,22 +1,29 @@
 "use client";
 
+import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import {
   selectBattleInitialized,
+  selectBattleStarted,
   selectBattleStateSnapshot,
+  selectInitiativeTrackerRows,
   selectIsInSession,
   selectSessionCode,
   selectSessionParticipants,
   applyRemoteBattleState,
+  updateInitiativeTrackerRow,
   type BattleStateSnapshot,
+  type PendingConcentrationCheck,
+  type TrackerConcentration,
 } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
   emitBattleStateUpdate,
   registerBattleStateBroadcastScheduler,
   registerBattleStateRequestResponder,
   respondToBattleStateRequest,
 } from "@/lib/sessionBattleSyncBridge";
+import { registerConcentrationUpdateApplier } from "@/lib/sessionConcentrationBridge";
 import { getPooledSessionSocket } from "@/lib/sessionSocketPool";
 import { sanitizeBattleStateSnapshotForPlayers } from "@/components/initiativeTracker/utils";
 import { useKeycloak } from "@/providers/KeycloakProvider";
@@ -47,6 +54,7 @@ function isGameMaster(
  */
 export function useSessionBattleSync() {
   const dispatch = useAppDispatch();
+  const store = useAppStore();
   const isInSession = useAppSelector(selectIsInSession);
   const code = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
@@ -114,6 +122,40 @@ export function useSessionBattleSync() {
       registerBattleStateRequestResponder(null);
     };
   }, [broadcastSnapshot, isInSession]);
+
+  useEffect(() => {
+    if (!isInSession) {
+      registerConcentrationUpdateApplier(null);
+      return;
+    }
+
+    registerConcentrationUpdateApplier((payload) => {
+      if (!isGmRef.current) return false;
+
+      const state = store.getState();
+      if (!selectBattleStarted(state)) return false;
+
+      const row = selectInitiativeTrackerRows(state).find(
+        (candidate) => candidate.characterId === payload.characterId,
+      );
+      if (!row) return false;
+
+      dispatch(updateInitiativeTrackerRow({
+        id: row.id,
+        changes: {
+          concentration: payload.concentration,
+          pendingConcentrationCheck: payload.pendingConcentrationCheck ?? null,
+        },
+      }));
+
+      emitBattleStateUpdate(selectBattleStateSnapshot(store.getState()));
+      return true;
+    });
+
+    return () => {
+      registerConcentrationUpdateApplier(null);
+    };
+  }, [dispatch, isInSession, store]);
 
   const isGm = isGameMaster(participants, currentUserId);
 
@@ -191,12 +233,52 @@ export function useSessionBattleSync() {
       }
     };
 
+    const onPlayerConcentrationUpdated = ({
+      characterId,
+      concentration,
+      pendingConcentrationCheck,
+      userId,
+    }: {
+      characterId?: string;
+      concentration?: TrackerConcentration | null;
+      pendingConcentrationCheck?: PendingConcentrationCheck | null;
+      userId?: string;
+    }) => {
+      if (typeof characterId !== "string" || !characterId.trim()) return;
+      if (typeof userId !== "string" || !userId.trim()) return;
+
+      const participant = participants.find((p) => p.userId === userId);
+      if (!participant || participant.status === "gameMaster" || participant.characterId !== characterId) {
+        return;
+      }
+
+      const state = store.getState();
+      if (!selectBattleStarted(state)) return;
+
+      const row = selectInitiativeTrackerRows(state).find(
+        (candidate) => candidate.characterId === characterId,
+      );
+      if (!row || row.groupId !== SESSION_PARTICIPANTS_GROUP_ID) return;
+
+      dispatch(updateInitiativeTrackerRow({
+        id: row.id,
+        changes: {
+          concentration: concentration ?? null,
+          pendingConcentrationCheck: pendingConcentrationCheck ?? null,
+        },
+      }));
+
+      emitBattleStateUpdate(selectBattleStateSnapshot(store.getState()));
+    };
+
     socket.on("session:battle-state-requested", onBattleStateRequested);
     socket.on("session:participant-joined", onParticipantJoined);
+    socket.on("session:player-concentration-updated", onPlayerConcentrationUpdated);
 
     return () => {
       socket.off("session:battle-state-requested", onBattleStateRequested);
       socket.off("session:participant-joined", onParticipantJoined);
+      socket.off("session:player-concentration-updated", onPlayerConcentrationUpdated);
     };
-  }, [broadcastSnapshot, code, isGm, isInSession]);
+  }, [broadcastSnapshot, code, dispatch, isGm, isInSession, participants, store]);
 }

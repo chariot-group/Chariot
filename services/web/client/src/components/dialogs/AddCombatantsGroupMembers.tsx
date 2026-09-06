@@ -4,18 +4,21 @@ import * as React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InitiativeNumberInput } from "@/components/initiativeTracker/InitiativeNumberInput";
 import { InitiativeTrackerGroupedInitiativeBar } from "@/components/initiativeTracker/InitiativeTrackerGroupedInitiativeBar";
+import { resolveInitiativeModifierFromStats } from "@/components/initiativeTracker/utils";
+import { formatSignedBonus } from "@/utils/attack.utils";
 
 /** Aligné sur la colonne initiative du tracker (88px). */
 export const ADD_COMBATANTS_MEMBER_GRID = "88px minmax(0, 1fr) 40px";
 
 const INITIATIVE_INPUT_CLASS =
-  "h-9 w-full max-w-[88px] rounded-[15px] bg-gray-middle-light px-3 text-center text-sm font-normal tabular-nums text-white";
+  "h-9 w-full rounded-[15px] bg-gray-middle-light px-3 text-center text-sm font-normal tabular-nums text-white";
 
 type BattleMember = {
   _id: string;
   firstname?: string;
   lastname?: string;
   surname?: string;
+  stats?: { initiative?: number | null } | null;
 };
 
 type AddCombatantsGroupMembersProps = {
@@ -26,6 +29,7 @@ type AddCombatantsGroupMembersProps = {
     initiative: string;
     character: string;
     initiativeFor: string;
+    initiativeModifierFor: string;
     groupedSelectedCount: string;
     groupedInitiativePlaceholder: string;
     groupedInitiativeApply: string;
@@ -55,9 +59,10 @@ export function AddCombatantsGroupMembers({
   const includedMembers = members.filter((member) => !excludedMemberIds.has(member._id));
   const includedCount = includedMembers.length;
 
-  const resolveInitiative = (memberId: string) => {
+  const resolveInitiative = (memberId: string, member: BattleMember) => {
     const value = initiativeByMemberId[memberId];
-    return Number.isFinite(value) ? value : 0;
+    if (Number.isFinite(value)) return value as number;
+    return resolveInitiativeModifierFromStats(member.stats);
   };
 
   return (
@@ -89,6 +94,9 @@ export function AddCombatantsGroupMembers({
         {members.map((member) => {
           const included = !excludedMemberIds.has(member._id);
           const memberName = formatCharacterName(member);
+          const modifier = resolveInitiativeModifierFromStats(member.stats);
+          const modifierText = formatSignedBonus(modifier);
+          const modifierAriaLabel = labels.initiativeModifierFor.replace("{bonus}", modifierText);
 
           return (
             <div
@@ -107,9 +115,12 @@ export function AddCombatantsGroupMembers({
               <div className="col-span-2 flex w-full justify-start sm:col-span-1 sm:justify-center">
                 {included ? (
                   <InitiativeNumberInput
-                    value={resolveInitiative(member._id)}
+                    value={resolveInitiative(member._id, member)}
                     resetKey={member._id}
                     ariaLabel={labels.initiativeFor.replace("{name}", memberName)}
+                    modifier={modifier}
+                    modifierAriaLabel={modifierAriaLabel}
+                    showModifier
                     onCommit={(value) => onMemberInitiativeChange(member._id, value)}
                     className={INITIATIVE_INPUT_CLASS}
                   />

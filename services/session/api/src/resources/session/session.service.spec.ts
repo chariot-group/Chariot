@@ -59,7 +59,13 @@ const mockRedis = {
     setSessionExpiration: jest.fn(),
     clearSessionExpiration: jest.fn(),
     onSessionExpired: jest.fn(),
-
+    clearUserTokens: jest.fn().mockResolvedValue({ tokens: {}, released: 0 }),
+    clampTokensToMax: jest.fn().mockImplementation(async (_code: string, maxSlots: number) => ({
+        tokens: {},
+        released: 0,
+        maxSlots,
+    })),
+    getTokens: jest.fn().mockResolvedValue({}),
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -210,6 +216,7 @@ describe('SessionService', () => {
             mockPrismaSession.findFirst.mockResolvedValue(session);
             mockPrismaSession.update.mockResolvedValue(launched);
             mockRedis.setSessionExpiration.mockResolvedValue(undefined);
+            mockRedis.getTokens.mockResolvedValue({});
 
             const result = await service.launch('CODE123', 'user-uuid-1');
 
@@ -222,6 +229,20 @@ describe('SessionService', () => {
                 }),
             );
             expect(mockRedis.setSessionExpiration).toHaveBeenCalledWith('sess-uuid-1', 28800);
+        });
+
+        it('guard FR-session-lobby-wheel-quota-invariant: rejects launch when deposited !== quota', async () => {
+            const participants = [
+                makeParticipant({ id: 'part-1', userId: 'user-uuid-1' }),
+                makeParticipant({ id: 'part-2', userId: 'user-uuid-2' }),
+            ];
+            mockPrismaSession.findFirst.mockResolvedValue(
+                makeSession({ creatorUserId: 'user-uuid-1', participants }),
+            );
+            mockRedis.getTokens.mockResolvedValue({ 'user-uuid-1': 3 });
+
+            await expect(service.launch('CODE123', 'user-uuid-1')).rejects.toThrow(BadRequestException);
+            expect(mockPrismaSession.update).not.toHaveBeenCalled();
         });
 
         it('should throw NotFoundException when session does not exist', async () => {
@@ -250,6 +271,7 @@ describe('SessionService', () => {
             mockPrismaSession.findFirst.mockResolvedValue(
                 makeSession({ creatorUserId: 'user-uuid-1' }),
             );
+            mockRedis.getTokens.mockResolvedValue({});
             mockPrismaSession.update.mockRejectedValue(new Error('DB error'));
 
             await expect(service.launch('CODE123', 'user-uuid-1')).rejects.toThrow(
@@ -358,16 +380,123 @@ describe('SessionService', () => {
                 .mockResolvedValueOnce(session)
                 .mockResolvedValueOnce(updated);
             mockPrismaParticipant.delete.mockResolvedValue({});
+            mockRedis.clearUserTokens.mockResolvedValue({
+                tokens: { 'user-uuid-2': 1 },
+                released: 2,
+            });
+            mockRedis.clampTokensToMax.mockResolvedValue({
+                tokens: { 'user-uuid-2': 1 },
+                released: 0,
+            });
 
             const result = await service.leave('CODE123', 'user-uuid-1');
 
             expect(result.data).toBe(updated);
             expect(result.message).toContain('user-uuid-1 left');
+            expect(result.tokensByUser).toEqual({ 'user-uuid-2': 1 });
+            expect(mockRedis.clearUserTokens).toHaveBeenCalledWith('CODE123', 'user-uuid-1');
+            expect(mockRedis.clampTokensToMax).toHaveBeenCalledWith('CODE123', 1);
             expect(mockPrismaParticipant.delete).toHaveBeenCalledWith({
                 where: { id: 'part-1' },
             });
         });
 
+        it('nominal FR-session-lobby-wheel-leave-refund: releases reserved wheels when session is activated', async () => {
+            const participant = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
+            const session = makeSession({
+                status: SessionStatus.activated,
+                participants: [participant],
+            });
+            const updated = makeSession({ status: SessionStatus.activated, participants: [] });
+
+            mockPrismaSession.findFirst
+                .mockResolvedValueOnce(session)
+                .mockResolvedValueOnce(updated);
+            mockPrismaParticipant.delete.mockResolvedValue({});
+            mockRedis.clearUserTokens.mockResolvedValue({
+                tokens: { 'other-user': 1 },
+                released: 3,
+            });
+            mockRedis.clampTokensToMax.mockResolvedValue({
+                tokens: {},
+                released: 1,
+            });
+
+            const result = await service.leave('CODE123', 'user-uuid-1');
+
+            expect(mockRedis.clearUserTokens).toHaveBeenCalledWith('CODE123', 'user-uuid-1');
+            expect(mockRedis.clampTokensToMax).toHaveBeenCalledWith('CODE123', 0);
+            expect(result.tokensByUser).toEqual({});
+        });
+
+        it('nominal FR-session-lobby-wheel-quota-invariant: clamps excess after leave', async () => {
+            const participant1 = makeParticipant({ id: 'part-1', userId: 'user-a' });
+            const participant2 = makeParticipant({ id: 'part-2', userId: 'user-b' });
+            const participant3 = makeParticipant({ id: 'part-3', userId: 'user-c' });
+            const session = makeSession({
+                participants: [participant1, participant2, participant3],
+            });
+            const updated = makeSession({ participants: [participant1, participant2] });
+
+            mockPrismaSession.findFirst
+                .mockResolvedValueOnce(session)
+                .mockResolvedValueOnce(updated);
+            mockPrismaParticipant.delete.mockResolvedValue({});
+            mockRedis.clearUserTokens.mockResolvedValue({
+                tokens: { 'user-a': 2, 'user-b': 1 },
+                released: 0,
+            });
+            mockRedis.clampTokensToMax.mockResolvedValue({
+                tokens: { 'user-a': 1, 'user-b': 1 },
+                released: 1,
+            });
+
+            const result = await service.leave('CODE123', 'user-c');
+
+            expect(mockRedis.clampTokensToMax).toHaveBeenCalledWith('CODE123', 2);
+            expect(result.tokensByUser).toEqual({ 'user-a': 1, 'user-b': 1 });
+        });
+
+        it('edge: leave with zero reserved wheels still returns tokensByUser for activated session', async () => {
+            const participant = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
+            const session = makeSession({ participants: [participant] });
+            const updated = makeSession({ participants: [] });
+
+            mockPrismaSession.findFirst
+                .mockResolvedValueOnce(session)
+                .mockResolvedValueOnce(updated);
+            mockPrismaParticipant.delete.mockResolvedValue({});
+            mockRedis.clearUserTokens.mockResolvedValue({ tokens: {}, released: 0 });
+            mockRedis.clampTokensToMax.mockResolvedValue({ tokens: {}, released: 0 });
+
+            const result = await service.leave('CODE123', 'user-uuid-1');
+
+            expect(mockRedis.clearUserTokens).toHaveBeenCalledWith('CODE123', 'user-uuid-1');
+            expect(result.tokensByUser).toEqual({});
+        });
+
+        it('guard: does not release wheels when session is already launched', async () => {
+            const participant = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
+            const session = makeSession({
+                status: SessionStatus.launched,
+                participants: [participant],
+            });
+            const updated = makeSession({
+                status: SessionStatus.launched,
+                participants: [],
+            });
+
+            mockPrismaSession.findFirst
+                .mockResolvedValueOnce(session)
+                .mockResolvedValueOnce(updated);
+            mockPrismaParticipant.delete.mockResolvedValue({});
+
+            const result = await service.leave('CODE123', 'user-uuid-1');
+
+            expect(mockRedis.clearUserTokens).not.toHaveBeenCalled();
+            expect(mockRedis.clampTokensToMax).not.toHaveBeenCalled();
+            expect(result.tokensByUser).toBeUndefined();
+        });
 
         it('should throw NotFoundException when session does not exist', async () => {
             mockPrismaSession.findFirst.mockResolvedValue(null);
@@ -382,6 +511,7 @@ describe('SessionService', () => {
             mockPrismaSession.findFirst.mockResolvedValue(session);
 
             await expect(service.leave('CODE123', 'user-uuid-1')).rejects.toThrow(BadRequestException);
+            expect(mockRedis.clearUserTokens).not.toHaveBeenCalled();
         });
 
         it('should throw InternalServerErrorException when participant delete fails', async () => {
@@ -393,6 +523,18 @@ describe('SessionService', () => {
             await expect(service.leave('CODE123', 'user-uuid-1')).rejects.toThrow(
                 InternalServerErrorException,
             );
+        });
+
+        it('failure: Redis clear failure surfaces as InternalServerErrorException', async () => {
+            const participant = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
+            const session = makeSession({ participants: [participant] });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+            mockRedis.clearUserTokens.mockRejectedValue(new Error('Redis down'));
+
+            await expect(service.leave('CODE123', 'user-uuid-1')).rejects.toThrow(
+                InternalServerErrorException,
+            );
+            expect(mockPrismaParticipant.delete).not.toHaveBeenCalled();
         });
     });
 

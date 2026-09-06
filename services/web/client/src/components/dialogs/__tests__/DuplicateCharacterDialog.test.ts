@@ -29,27 +29,16 @@ describe("FR-character-duplicate — DuplicateCharacterDialog — buildDuplicate
   it("edge: returns '2' when firstname is only whitespace", () => {
     expect(buildDuplicateName({ firstname: "   ", lastname: "" })).toBe("2");
   });
-});
 
-describe("FR-character-duplicate — multi-copy naming", () => {
-  const copyName = (base: string, i: number) => (i === 0 ? base : `${base} ${i + 1}`);
-
-  it("nominal: first copy keeps name as-is", () => {
-    expect(copyName("Goblin 2", 0)).toBe("Goblin 2");
+  it("nominal: increments past an existing copy", () => {
+    expect(
+      buildDuplicateName({ firstname: "test" }, ["test", "test 2"]),
+    ).toBe("test 3");
   });
 
-  it("nominal: subsequent copies append incremented suffix", () => {
-    expect(copyName("Goblin 2", 1)).toBe("Goblin 2 2");
-    expect(copyName("Goblin 2", 2)).toBe("Goblin 2 3");
-  });
-
-  it("edge: count=1 produces exactly one name", () => {
-    const names = Array.from({ length: 1 }, (_, i) => copyName("Hero", i));
-    expect(names).toEqual(["Hero"]);
-  });
-
-  it("edge: count=3 produces three distinct names", () => {
-    const names = Array.from({ length: 3 }, (_, i) => copyName("Orc", i));
-    expect(names).toEqual(["Orc", "Orc 2", "Orc 3"]);
+  it("nominal: duplicating a copy continues the stem sequence", () => {
+    expect(
+      buildDuplicateName({ firstname: "test 2" }, ["test", "test 2"]),
+    ).toBe("test 3");
   });
 });

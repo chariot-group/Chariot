@@ -12,6 +12,7 @@ import type { Locale } from "@/i18n/request";
 import CodexService, { CodexSpellItem } from "@/services/CodexService";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
+import CodexIconLegend from "@/components/character/CodexIconLegend";
 import {
   Search,
   Loader2,
@@ -23,6 +24,7 @@ import {
   ListPlus,
   ListMinus,
   Layers,
+  FilterX,
   X,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -35,6 +37,10 @@ import {
 } from "@/utils/codexLocale.utils";
 import type { SpellClass } from "@/constants/spellClasses";
 import { SPELL_CLASSES, spellClassTranslationKey } from "@/constants/spellClasses";
+import type { SpellSchool } from "@/constants/spellSchools";
+import { SPELL_SCHOOLS, spellSchoolTranslationKey } from "@/constants/spellSchools";
+import { GAME_SYSTEMS, getDefaultCodexGameSystemFilter, HAS_MULTIPLE_CODEX_GAME_SYSTEMS, type CodexGameSystem } from "@/constants/gameSystems";
+import { resolveCodexSpellSchoolLabel } from "@/utils/codexSpellSchool.utils";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -54,8 +60,14 @@ const SPELL_LEVELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 interface CodexSpellSearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSpellSelected: (spell: Partial<Spell>) => void;
+  onSpellSelected?: (spell: Partial<Spell>) => void;
   accentColor: string;
+  /** Read-only browse: preview only, no spell import. */
+  browseOnly?: boolean;
+  /** Renders search UI without an outer Dialog (for embedding in a parent modal). */
+  embedded?: boolean;
+  /** Shared portaled filter tracker when embedded in a parent dialog. */
+  sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
 }
 
 import {
@@ -96,6 +108,8 @@ function SpellResultItem({
   const translation = spellItem.translations[displayLang];
   if (!translation) return null;
 
+  const schoolLabel = resolveCodexSpellSchoolLabel(translation.school);
+
   const handleCardClick = () => {
     onSpellClick(spellItem, displayLang);
   };
@@ -130,7 +144,8 @@ function SpellResultItem({
             <div className="min-w-0 flex-1">
               <div className="font-semibold text-sm md:text-base">{translation.name}</div>
               <div className="text-xs text-muted-foreground mt-1">
-                {tMagic("spellLevel", { level: translation.level })} • {translation.school}
+                {tMagic("spellLevel", { level: translation.level })}
+                {schoolLabel ? ` • ${schoolLabel}` : ""}
               </div>
               {spellItem.classes && spellItem.classes.length > 0 && (
                 <div className="text-xs text-muted-foreground mt-1">
@@ -173,16 +188,24 @@ export default function CodexSpellSearchDialog({
   onOpenChange,
   onSpellSelected,
   accentColor,
+  browseOnly = false,
+  embedded = false,
+  sharedPortaledFilterOpenTracker,
 }: CodexSpellSearchDialogProps) {
   const userLocale = useLocale() as Locale;
   const tMagic = useTranslations("characterDetail.magic");
   const tDialog = useTranslations("characterDetail.magic.codexDialog");
   const tClasses = useTranslations("classes");
+  const tSpellSchools = useTranslations("characterDetail.magic.spellSchools");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string | null>(null);
   const [selectedClasses, setSelectedClasses] = useState<SpellClass[]>([]);
+  const [selectedSchools, setSelectedSchools] = useState<SpellSchool[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+  const [selectedGameSystem, setSelectedGameSystem] = useState<CodexGameSystem | null>(
+    getDefaultCodexGameSystemFilter,
+  );
   const [searchResults, setSearchResults] = useState<CodexSpellItem[]>([]);
   const [selectedSpell, setSelectedSpell] = useState<Partial<Spell> | null>(null);
   const [selectedCodexSpell, setSelectedCodexSpell] = useState<CodexSpellItem | null>(null);
@@ -199,26 +222,72 @@ export default function CodexSpellSearchDialog({
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const [spellQueue, setSpellQueue] = useState<QueuedSpellEntry[]>([]);
   const [selectionDetailsOpen, setSelectionDetailsOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const isLoadingRef = useRef(false);
   const spellPreviewScrollRef = useRef<HTMLDivElement>(null);
-  const portaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+  const internalPortaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
+  const portaledFilterOpenTracker =
+    sharedPortaledFilterOpenTracker ?? internalPortaledFilterOpenTrackerRef.current;
 
-  const handlePortaledFilterOpenChange = useCallback((isOpen: boolean) => {
-    portaledFilterOpenTrackerRef.current.notifyOpenChange(isOpen);
-  }, []);
+  const handlePortaledFilterOpenChange = useCallback(
+    (isOpen: boolean) => {
+      portaledFilterOpenTracker.notifyOpenChange(isOpen);
+    },
+    [portaledFilterOpenTracker],
+  );
 
-  const shouldPreventDialogOutsideDismiss = useCallback((target: EventTarget | null) => {
-    return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTrackerRef.current, target);
-  }, []);
+  const shouldPreventDialogOutsideDismiss = useCallback(
+    (target: EventTarget | null) => {
+      return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target);
+    },
+    [portaledFilterOpenTracker],
+  );
 
   const ITEMS_PER_PAGE = 20;
 
   const classFilterLabel = useMemo(() => {
     if (selectedClasses.length === 0) {
-      return tDialog("classFilter.all");
+      return tDialog("classFilter.shortAll");
     }
-    return selectedClasses.map((spellClass) => tClasses(spellClassTranslationKey(spellClass))).join(", ");
+    if (selectedClasses.length === 1) {
+      return tClasses(spellClassTranslationKey(selectedClasses[0]));
+    }
+    return tDialog("classFilter.selectedCount", { count: selectedClasses.length });
   }, [selectedClasses, tClasses, tDialog]);
+
+  const schoolFilterLabel = useMemo(() => {
+    if (selectedSchools.length === 0) {
+      return tDialog("schoolFilter.shortAll");
+    }
+    if (selectedSchools.length === 1) {
+      return tSpellSchools(spellSchoolTranslationKey(selectedSchools[0]));
+    }
+    return tDialog("schoolFilter.selectedCount", { count: selectedSchools.length });
+  }, [selectedSchools, tSpellSchools, tDialog]);
+
+  const levelFilterLabel = useMemo(() => {
+    if (selectedLevel === null) {
+      return tDialog("levelFilter.shortAll");
+    }
+    if (selectedLevel === 0) {
+      return tDialog("levelFilter.shortCantrip");
+    }
+    return tDialog("levelFilter.shortSelected", { level: selectedLevel });
+  }, [selectedLevel, tDialog]);
+
+  const gameSystemFilterLabel = useMemo(() => {
+    if (selectedGameSystem === null) {
+      return tDialog("gameSystemFilter.shortAll");
+    }
+    return tDialog(`gameSystemFilter.${selectedGameSystem}`);
+  }, [selectedGameSystem, tDialog]);
+
+  const resetFilters = useCallback(() => {
+    setSelectedLevel(null);
+    setSelectedClasses([]);
+    setSelectedSchools([]);
+    setSelectedGameSystem(getDefaultCodexGameSystemFilter());
+  }, []);
 
   const toggleClassFilter = useCallback((spellClass: SpellClass) => {
     setSelectedClasses((prev) =>
@@ -226,9 +295,24 @@ export default function CodexSpellSearchDialog({
     );
   }, []);
 
+  const toggleSchoolFilter = useCallback((spellSchool: SpellSchool) => {
+    setSelectedSchools((prev) =>
+      prev.includes(spellSchool) ? prev.filter((value) => value !== spellSchool) : [...prev, spellSchool],
+    );
+  }, []);
+
   const queuedSpellKeys = useMemo(() => buildQueuedSpellKeys(spellQueue), [spellQueue]);
 
   const isCurrentSpellQueued = selectedSpellKey ? isSpellQueuedInQueue(spellQueue, selectedSpellKey) : false;
+
+  const hasActiveFilters =
+    selectedLevel !== null ||
+    selectedClasses.length > 0 ||
+    selectedSchools.length > 0 ||
+    (HAS_MULTIPLE_CODEX_GAME_SYSTEMS && selectedGameSystem !== null);
+
+  const compactLanguageLabel =
+    selectedLang === null ? "🌍" : codexLocaleFlagEmoji(selectedLang) || selectedLang.toUpperCase();
 
   useEffect(() => {
     if (!selectedSpellKey) return;
@@ -244,10 +328,14 @@ export default function CodexSpellSearchDialog({
       apiLang?: string | null,
       apiClasses?: SpellClass[],
       apiLevel?: number | null,
+      apiSchools?: SpellSchool[],
+      apiGameSystem?: CodexGameSystem | null,
     ) => {
       const lang = apiLang !== undefined ? apiLang : selectedLang;
       const classes = apiClasses !== undefined ? apiClasses : selectedClasses;
       const level = apiLevel !== undefined ? apiLevel : selectedLevel;
+      const schools = apiSchools !== undefined ? apiSchools : selectedSchools;
+      const gameSystem = apiGameSystem !== undefined ? apiGameSystem : selectedGameSystem;
       // Éviter les appels multiples simultanés
       if (isLoadingRef.current) {
         return;
@@ -271,6 +359,8 @@ export default function CodexSpellSearchDialog({
           ITEMS_PER_PAGE,
           classes.length > 0 ? classes : undefined,
           level ?? undefined,
+          schools.length > 0 ? schools : undefined,
+          gameSystem ?? undefined,
         );
         const newResults = response.data || [];
 
@@ -304,7 +394,7 @@ export default function CodexSpellSearchDialog({
         isLoadingRef.current = false;
       }
     },
-    [selectedLang, selectedClasses, selectedLevel, tDialog, ITEMS_PER_PAGE],
+    [selectedLang, selectedClasses, selectedSchools, selectedLevel, selectedGameSystem, tDialog, ITEMS_PER_PAGE],
   );
 
   // Effet pour lancer la recherche avec debounce
@@ -315,17 +405,21 @@ export default function CodexSpellSearchDialog({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedLang, selectedClasses, selectedLevel, searchSpells]);
+  }, [searchQuery, selectedLang, selectedClasses, selectedSchools, selectedLevel, selectedGameSystem, searchSpells]);
 
   // Réinitialiser lors de l'ouverture du dialog
   useEffect(() => {
-    portaledFilterOpenTrackerRef.current.reset();
+    if (!sharedPortaledFilterOpenTracker) {
+      portaledFilterOpenTracker.reset();
+    }
 
     if (open) {
       setSearchQuery("");
       setSelectedLang(userLocale);
       setSelectedClasses([]);
+      setSelectedSchools([]);
       setSelectedLevel(null);
+      setSelectedGameSystem(getDefaultCodexGameSystemFilter());
       setSearchResults([]);
       setSelectedSpell(null);
       setSelectedCodexSpell(null);
@@ -336,12 +430,13 @@ export default function CodexSpellSearchDialog({
       setPreviewTranslationError(null);
       setSpellQueue([]);
       setSelectionDetailsOpen(false);
+      setFiltersOpen(false);
       setError(null);
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
       // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchSpells("", 1, false, userLocale, [], null);
+      searchSpells("", 1, false, userLocale, [], null, [], getDefaultCodexGameSystemFilter());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -431,7 +526,7 @@ export default function CodexSpellSearchDialog({
   };
 
   const handleUseThisSpell = () => {
-    if (selectedSpell) {
+    if (selectedSpell && onSpellSelected) {
       onSpellSelected(selectedSpell);
       onOpenChange(false);
     }
@@ -443,7 +538,7 @@ export default function CodexSpellSearchDialog({
   };
 
   const handleAddSelection = () => {
-    if (spellQueue.length === 0) return;
+    if (spellQueue.length === 0 || !onSpellSelected) return;
 
     spellQueue.forEach(({ spell }) => onSpellSelected(spell));
     onOpenChange(false);
@@ -456,177 +551,273 @@ export default function CodexSpellSearchDialog({
   const isMultiSelectionMode = spellQueue.length > 0;
   const spellActionsDisabled = !selectedSpell || previewLangResolving;
 
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}>
-      <DialogContent
-        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
-        onPointerDownOutside={(event) => {
-          const target = event.detail.originalEvent?.target ?? event.target;
-          if (shouldPreventDialogOutsideDismiss(target)) {
-            event.preventDefault();
-          }
-        }}
-        onInteractOutside={(event) => {
-          const target = event.detail.originalEvent?.target ?? event.target;
-          if (shouldPreventDialogOutsideDismiss(target)) {
-            event.preventDefault();
-          }
-        }}
-        onFocusOutside={(event) => {
-          if (shouldPreventDialogOutsideDismiss(event.target)) {
-            event.preventDefault();
-          }
-        }}>
+  const dialogBody = (
+    <>
+      {!embedded ? (
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
         </DialogHeader>
+      ) : null}
 
-        <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
+      <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
           {/* Partie gauche : Recherche et résultats */}
           <div
             className={`relative z-10 flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
             {/* Barre de recherche et filtres */}
-            <div className="flex shrink-0 flex-col gap-2 w-full overflow-visible">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder={tDialog("searchPlaceholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                  autoFocus
-                />
-              </div>
-              <div className="flex w-full min-w-0 flex-col gap-2 overflow-visible">
-                <div className="flex w-full min-w-0 gap-2">
-                  {/* Filtre de langue */}
-                  <div className="relative min-w-0 flex-1">
-                    <Select
-                      value={selectedLang ?? "all"}
-                      onOpenChange={handlePortaledFilterOpenChange}
-                      onValueChange={(value) => {
-                        if (value === "all") {
-                          setSelectedLang(null);
-                        } else if (value === "fr" || value === "en" || value === "es") {
-                          setSelectedLang(value);
-                        }
-                      }}>
-                      <SelectTrigger className="w-full min-w-0 flex-1 focus-visible:ring-inset">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
-                        <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
-                        <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
-                        <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {/* Filtre par niveau de sort */}
-                  <div className="relative min-w-0 flex-1">
-                    <Select
-                      value={selectedLevel === null ? "all" : String(selectedLevel)}
-                      onOpenChange={handlePortaledFilterOpenChange}
-                      onValueChange={(value) => {
-                        if (value === "all") {
-                          setSelectedLevel(null);
-                          return;
-                        }
-                        const level = Number(value);
-                        if (Number.isInteger(level) && level >= 0 && level <= 9) {
-                          setSelectedLevel(level);
-                        }
-                      }}>
-                      <SelectTrigger
-                        className="w-full min-w-0 flex-1 focus-visible:ring-inset"
-                        aria-label={tDialog("levelFilter.ariaLabel")}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{tDialog("levelFilter.all")}</SelectItem>
-                        {SPELL_LEVELS.map((level) => (
-                          <SelectItem
-                            key={level}
-                            value={String(level)}>
-                            {level === 0 ? tMagic("cantrips") : tMagic("spellLevelShort", { level })}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+            <div className="flex shrink-0 flex-col gap-1.5 w-full overflow-visible">
+              <div className="flex w-full min-w-0 items-center gap-2">
+                <div className="relative min-w-0 flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder={tDialog("searchPlaceholder")}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                    autoFocus
+                  />
                 </div>
-                {/* Filtre par classe(s) */}
-                <div className="relative w-full">
-                  <DropdownMenu
-                    modal={false}
-                    onOpenChange={handlePortaledFilterOpenChange}>
-                    <DropdownMenuTrigger
-                      type="button"
-                      aria-label={tDialog("classFilter.ariaLabel")}
-                      className={cn(
-                        "flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-[15px] bg-gray-middle-light px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50",
-                        selectedClasses.length === 0 && "text-muted-foreground",
-                      )}>
-                      <span className="min-w-0 truncate text-left">{classFilterLabel}</span>
-                      <ChevronDown
-                        className="size-4 shrink-0 opacity-50"
-                        aria-hidden="true"
+                <Select
+                  value={selectedLang ?? "all"}
+                  onOpenChange={handlePortaledFilterOpenChange}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setSelectedLang(null);
+                    } else if (value === "fr" || value === "en" || value === "es") {
+                      setSelectedLang(value);
+                    }
+                  }}>
+                  <SelectTrigger
+                    className="h-9 w-auto shrink-0 gap-1 px-2.5 focus-visible:ring-inset [&_svg]:hidden"
+                    aria-label={tDialog("languageFilter.ariaLabel")}>
+                    <span
+                      className="text-lg leading-none select-none"
+                      aria-hidden="true">
+                      {compactLanguageLabel}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent
+                    position="popper"
+                    align="end"
+                    side="bottom"
+                    sideOffset={4}
+                    className="min-w-[var(--radix-select-trigger-width)]">
+                    <SelectItem value="all">{tDialog("languageFilter.all")}</SelectItem>
+                    <SelectItem value="fr">{tDialog("languageFilter.fr")}</SelectItem>
+                    <SelectItem value="en">{tDialog("languageFilter.en")}</SelectItem>
+                    <SelectItem value="es">{tDialog("languageFilter.es")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <CodexIconLegend showSelection />
+              <Collapsible
+                open={filtersOpen}
+                onOpenChange={setFiltersOpen}
+                className="w-full min-w-0">
+                <div className="flex w-full min-w-0 items-center gap-1">
+                  <CollapsibleTrigger
+                    type="button"
+                    aria-expanded={filtersOpen}
+                    aria-label={tDialog("filtersCollapse.ariaLabel")}
+                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[15px] py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
+                    <ChevronDown
+                      className={cn("size-4 shrink-0 transition-transform", !filtersOpen && "rotate-180")}
+                      aria-hidden="true"
+                    />
+                    <Layers
+                      className="size-4 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="min-w-0 truncate">{tDialog("filtersCollapse.toggle")}</span>
+                    {hasActiveFilters ? (
+                      <span
+                        className="size-2 shrink-0 rounded-full bg-purple"
+                        aria-label={tDialog("filtersCollapse.active")}
                       />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="start"
-                      className="max-h-60 min-w-48 w-full overflow-hidden p-0">
-                      <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-                        <DropdownMenuItem
-                          className="font-medium"
-                          onSelect={() => setSelectedClasses([])}>
-                          {tDialog("classFilter.all")}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {SPELL_CLASSES.map((spellClass) => (
-                          <DropdownMenuCheckboxItem
-                            key={spellClass}
-                            checked={selectedClasses.includes(spellClass)}
-                            onCheckedChange={() => toggleClassFilter(spellClass)}
-                            onSelect={(event) => event.preventDefault()}>
-                            {tClasses(spellClassTranslationKey(spellClass))}
-                          </DropdownMenuCheckboxItem>
-                        ))}
-                      </div>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    ) : null}
+                  </CollapsibleTrigger>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    disabled={!hasActiveFilters}
+                    onClick={resetFilters}
+                    aria-label={tDialog("filtersCollapse.resetAriaLabel")}
+                    className="size-8 shrink-0 text-muted-foreground enabled:hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground disabled:opacity-40">
+                    <FilterX
+                      className="size-3.5"
+                      aria-hidden="true"
+                    />
+                  </Button>
                 </div>
-              </div>
-            </div>
-
-            {/* Légende des icônes */}
-            <div
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground shrink-0 py-1"
-              aria-label={tDialog("legendLabel")}>
-              <span className="flex items-center gap-1">
-                <Check
-                  className="size-3.5 text-purple shrink-0"
-                  aria-hidden="true"
-                />
-                {tDialog("queuedInSelection")}
-              </span>
-              <span className="flex items-center gap-1">
-                <BadgeCheck
-                  className="size-3.5 text-green-600 shrink-0"
-                  aria-hidden="true"
-                />
-                {tDialog("validatedByChariot")}
-              </span>
-              <span className="flex items-center gap-1">
-                <FileBadge
-                  className="size-3.5 shrink-0"
-                  aria-hidden="true"
-                />
-                {tDialog("srdContent")}
-              </span>
+                <CollapsibleContent className="pt-2">
+                  <div className="flex w-full min-w-0 flex-wrap gap-1.5 overflow-visible">
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
+                      <Select
+                        value={selectedGameSystem ?? "all"}
+                        disabled={!HAS_MULTIPLE_CODEX_GAME_SYSTEMS}
+                        onOpenChange={handlePortaledFilterOpenChange}
+                        onValueChange={(value) => {
+                          if (value === "all") {
+                            setSelectedGameSystem(null);
+                            return;
+                          }
+                          if (GAME_SYSTEMS.includes(value as CodexGameSystem)) {
+                            setSelectedGameSystem(value as CodexGameSystem);
+                          }
+                        }}>
+                        <SelectTrigger
+                          disabled={!HAS_MULTIPLE_CODEX_GAME_SYSTEMS}
+                          className={cn(
+                            "h-9 w-full min-w-0 px-2 text-xs focus-visible:ring-inset",
+                            selectedGameSystem !== null && "border-purple/30 bg-purple/5",
+                          )}
+                          aria-label={tDialog("gameSystemFilter.ariaLabel")}>
+                          <SelectValue>{gameSystemFilterLabel}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          side="bottom"
+                          sideOffset={4}
+                          className="min-w-[var(--radix-select-trigger-width)]">
+                          {HAS_MULTIPLE_CODEX_GAME_SYSTEMS ? (
+                            <SelectItem value="all">{tDialog("gameSystemFilter.all")}</SelectItem>
+                          ) : null}
+                          {GAME_SYSTEMS.map((gameSystem) => (
+                            <SelectItem
+                              key={gameSystem}
+                              value={gameSystem}>
+                              {tDialog(`gameSystemFilter.${gameSystem}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
+                      <Select
+                        value={selectedLevel === null ? "all" : String(selectedLevel)}
+                        onOpenChange={handlePortaledFilterOpenChange}
+                        onValueChange={(value) => {
+                          if (value === "all") {
+                            setSelectedLevel(null);
+                            return;
+                          }
+                          const level = Number(value);
+                          if (Number.isInteger(level) && level >= 0 && level <= 9) {
+                            setSelectedLevel(level);
+                          }
+                        }}>
+                        <SelectTrigger
+                          className={cn(
+                            "h-9 w-full min-w-0 px-2 text-xs focus-visible:ring-inset",
+                            selectedLevel !== null && "border-purple/30 bg-purple/5",
+                          )}
+                          aria-label={tDialog("levelFilter.ariaLabel")}>
+                          <SelectValue>{levelFilterLabel}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent
+                          position="popper"
+                          align="start"
+                          side="bottom"
+                          sideOffset={4}
+                          className="min-w-[var(--radix-select-trigger-width)]">
+                          <SelectItem value="all">{tDialog("levelFilter.all")}</SelectItem>
+                          {SPELL_LEVELS.map((level) => (
+                            <SelectItem
+                              key={level}
+                              value={String(level)}>
+                              {level === 0 ? tMagic("cantrips") : tMagic("spellLevelShort", { level })}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
+                      <DropdownMenu
+                        modal={false}
+                        onOpenChange={handlePortaledFilterOpenChange}>
+                        <DropdownMenuTrigger
+                          type="button"
+                          aria-label={tDialog("classFilter.ariaLabel")}
+                          className={cn(
+                            "flex h-9 w-full min-w-0 cursor-pointer items-center justify-between gap-1 rounded-[15px] bg-gray-middle-light px-2 py-2 text-xs shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50",
+                            selectedClasses.length === 0 && "text-muted-foreground",
+                            selectedClasses.length > 0 && "border border-purple/30 bg-purple/5",
+                          )}>
+                          <span className="min-w-0 truncate text-left">{classFilterLabel}</span>
+                          <ChevronDown
+                            className="size-3.5 shrink-0 opacity-50"
+                            aria-hidden="true"
+                          />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="start"
+                          className="max-h-60 min-w-48 w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden p-0">
+                          <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                            <DropdownMenuItem
+                              className="font-medium"
+                              onSelect={() => setSelectedClasses([])}>
+                              {tDialog("classFilter.all")}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {SPELL_CLASSES.map((spellClass) => (
+                              <DropdownMenuCheckboxItem
+                                key={spellClass}
+                                checked={selectedClasses.includes(spellClass)}
+                                onCheckedChange={() => toggleClassFilter(spellClass)}
+                                onSelect={(event) => event.preventDefault()}>
+                                {tClasses(spellClassTranslationKey(spellClass))}
+                              </DropdownMenuCheckboxItem>
+                            ))}
+                          </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="relative min-w-0 flex-1 basis-[calc(50%-0.375rem)] sm:basis-[calc(25%-0.5rem)]">
+                      <DropdownMenu
+                        modal={false}
+                        onOpenChange={handlePortaledFilterOpenChange}>
+                        <DropdownMenuTrigger
+                          type="button"
+                          aria-label={tDialog("schoolFilter.ariaLabel")}
+                          className={cn(
+                            "flex h-9 w-full min-w-0 cursor-pointer items-center justify-between gap-1 rounded-[15px] bg-gray-middle-light px-2 py-2 text-xs shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-inset focus-visible:ring-ring/50",
+                            selectedSchools.length === 0 && "text-muted-foreground",
+                            selectedSchools.length > 0 && "border border-purple/30 bg-purple/5",
+                          )}>
+                          <span className="min-w-0 truncate text-left">{schoolFilterLabel}</span>
+                          <ChevronDown
+                            className="size-3.5 shrink-0 opacity-50"
+                            aria-hidden="true"
+                          />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="start"
+                          className="max-h-60 min-w-48 w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden p-0">
+                          <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                            <DropdownMenuItem
+                              className="font-medium"
+                              onSelect={() => setSelectedSchools([])}>
+                              {tDialog("schoolFilter.all")}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {SPELL_SCHOOLS.map((spellSchool) => (
+                              <DropdownMenuCheckboxItem
+                                key={spellSchool}
+                                checked={selectedSchools.includes(spellSchool)}
+                                onCheckedChange={() => toggleSchoolFilter(spellSchool)}
+                                onSelect={(event) => event.preventDefault()}>
+                                {tSpellSchools(spellSchoolTranslationKey(spellSchool))}
+                              </DropdownMenuCheckboxItem>
+                            ))}
+                          </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
 
             {/* Résultats de recherche */}
@@ -799,9 +990,10 @@ export default function CodexSpellSearchDialog({
           </div>
         </div>
 
+      {!embedded ? (
         <DialogFooter
-          className={`shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
-          {isMultiSelectionMode ? (
+          className={`shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${!browseOnly && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
+          {!browseOnly && isMultiSelectionMode ? (
             <Collapsible
               open={selectionDetailsOpen}
               onOpenChange={setSelectionDetailsOpen}
@@ -811,7 +1003,7 @@ export default function CodexSpellSearchDialog({
                 aria-expanded={selectionDetailsOpen}
                 className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-purple transition-colors hover:text-purple/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
                 <ChevronDown
-                  className={cn("size-4 shrink-0 transition-transform", selectionDetailsOpen && "rotate-180")}
+                  className={cn("size-4 shrink-0 transition-transform", !selectionDetailsOpen && "rotate-180")}
                   aria-hidden="true"
                 />
                 <span
@@ -868,7 +1060,7 @@ export default function CodexSpellSearchDialog({
               {tDialog("cancel")}
             </Button>
 
-            {(isMultiSelectionMode || selectedSpell) && (
+            {!browseOnly && (isMultiSelectionMode || selectedSpell) ? (
               <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 sm:border-l sm:border-border sm:pl-3">
                 {isMultiSelectionMode ? (
                   <>
@@ -950,9 +1142,45 @@ export default function CodexSpellSearchDialog({
                   </>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
         </DialogFooter>
+      ) : null}
+    </>
+  );
+
+  if (embedded) {
+    if (!open) {
+      return null;
+    }
+
+    return <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{dialogBody}</div>;
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}>
+      <DialogContent
+        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        onPointerDownOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event) => {
+          const target = event.detail.originalEvent?.target ?? event.target;
+          if (shouldPreventDialogOutsideDismiss(target)) {
+            event.preventDefault();
+          }
+        }}
+        onFocusOutside={(event) => {
+          if (shouldPreventDialogOutsideDismiss(event.target)) {
+            event.preventDefault();
+          }
+        }}>
+        {dialogBody}
       </DialogContent>
     </Dialog>
   );

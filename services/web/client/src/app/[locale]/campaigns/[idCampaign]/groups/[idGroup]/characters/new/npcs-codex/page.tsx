@@ -35,7 +35,6 @@ export default function CreateNpcFromCodexPage() {
     setIsDialogOpen(open);
     if (!open) {
       dispatch(clearNpcCodexDraft());
-      router.back();
     }
   };
 

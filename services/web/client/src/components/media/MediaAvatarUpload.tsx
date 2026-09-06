@@ -10,8 +10,10 @@ import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
 import {
+  isAcceptedMediaAvatarFile,
   MEDIA_AVATAR_ACCEPT_MIME,
   MEDIA_AVATAR_MAX_UPLOAD_BYTES,
+  MEDIA_AVATAR_MAX_UPLOAD_MB,
   MEDIA_AVATAR_RECOMMENDED_HEIGHT_PX,
   MEDIA_AVATAR_RECOMMENDED_WIDTH_PX,
   MEDIA_AVATAR_ROUNDED_CLASS,
@@ -65,18 +67,13 @@ export function MediaAvatarUpload({
       return;
     }
 
-    if (
-      !MEDIA_AVATAR_ACCEPT_MIME.split(",").some(
-        (accepted) =>
-          accepted === file.type || (accepted.startsWith(".") && file.name.toLowerCase().endsWith(accepted)),
-      )
-    ) {
+    if (!isAcceptedMediaAvatarFile(file)) {
       toast.error(t("invalidType"));
       return;
     }
 
     if (file.size > MEDIA_AVATAR_MAX_UPLOAD_BYTES) {
-      toast.error(t("tooLarge"));
+      toast.error(t("tooLarge", { maxMb: MEDIA_AVATAR_MAX_UPLOAD_MB }));
       return;
     }
 
@@ -141,7 +138,7 @@ export function MediaAvatarUpload({
   const requirementsHint = t("requirementsHint", {
     width: MEDIA_AVATAR_RECOMMENDED_WIDTH_PX,
     height: MEDIA_AVATAR_RECOMMENDED_HEIGHT_PX,
-    maxMb: MEDIA_AVATAR_MAX_UPLOAD_BYTES / (1024 * 1024),
+    maxMb: MEDIA_AVATAR_MAX_UPLOAD_MB,
   });
 
   return (
@@ -258,7 +255,10 @@ export function MediaAvatarUpload({
 
       <p
         id={requirementsId}
-        className="text-xs text-gray-light leading-snug text-center max-w-56">
+        className={cn(
+          "text-xs text-gray-light leading-snug text-center max-w-56",
+          size === "sheet" && "max-sm:sr-only",
+        )}>
         {requirementsHint}
       </p>
     </div>

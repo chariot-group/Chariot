@@ -264,7 +264,8 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             const leavingCharacterId: string | null = leavingParticipant?.characterId ?? null;
 
-            const session: SessionWithParticipants = this.extractSession(await this.sessionService.leave(data.sessionId, client.user.keycloakId));
+            const leaveResult = await this.sessionService.leave(data.sessionId, client.user.keycloakId);
+            const session: SessionWithParticipants = this.extractSession(leaveResult);
             const roomId = session.id;
 
             client.leave(roomId);
@@ -276,6 +277,13 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 username: client.user.username,
                 characterId: leavingCharacterId,
             });
+
+            /* FR-session-lobby-wheel-leave-refund: synchroniser le pool de wheels après libération. */
+            if (leaveResult.tokensByUser) {
+                this.server.to(roomId).emit('session:token-updated', {
+                    tokensByUser: leaveResult.tokensByUser,
+                });
+            }
 
             client.emit('session:left', { sessionId: data.sessionId });
 
@@ -311,6 +319,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             this.logger.verbose(`Session ${roomId} launched by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
+            const response = error?.response;
+            if (response && typeof response === 'object' && response.code === 'WHEEL_QUOTA_MISMATCH') {
+                client.emit('session:error', {
+                    code: 'WHEEL_QUOTA_MISMATCH',
+                    message: response.message ?? 'Wheel quota mismatch',
+                });
+                return;
+            }
             let message: string = `Failed to launch session: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             client.emit('session:error', { message });
@@ -482,6 +498,56 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             );
         } catch (error: any) {
             const message: string = `Failed to submit player initiative: ${error.message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            client.emit('session:error', { message });
+        }
+    }
+
+    @SubscribeMessage('session:player-concentration-updated')
+    async handlePlayerConcentrationUpdated(
+        @ConnectedSocket() client: AuthenticatedSocket,
+        @MessageBody()
+        data: {
+            sessionId: string;
+            characterId: string;
+            concentration: { spellName: string; spellLevel?: number; className?: string; sinceRound?: number } | null;
+            pendingConcentrationCheck?: { damageAmount: number; dc: number } | null;
+        },
+    ) {
+        try {
+            const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
+            const me = session.participants.find((p) => p.userId === client.user.keycloakId);
+            if (!me) {
+                client.emit('session:error', { message: 'Not a session participant' });
+                return;
+            }
+            if (me.status === 'gameMaster') {
+                client.emit('session:error', { message: 'Game master cannot submit player concentration updates' });
+                return;
+            }
+            if (!data.characterId || me.characterId !== data.characterId) {
+                client.emit('session:error', { message: 'Player can only submit concentration for their own character' });
+                return;
+            }
+
+            const spellName = data.concentration?.spellName?.trim?.() ?? '';
+            if (data.concentration != null && !spellName) {
+                client.emit('session:error', { message: 'Invalid concentration payload' });
+                return;
+            }
+
+            client.to(session.id).emit('session:player-concentration-updated', {
+                userId: client.user.keycloakId,
+                characterId: data.characterId,
+                concentration: data.concentration,
+                pendingConcentrationCheck: data.pendingConcentrationCheck ?? null,
+            });
+            this.logger.verbose(
+                `${client.user.username} submitted concentration update in session ${session.id}`,
+                this.SERVICE_NAME,
+            );
+        } catch (error: any) {
+            const message: string = `Failed to submit player concentration update: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             client.emit('session:error', { message });
         }

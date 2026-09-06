@@ -14,10 +14,7 @@ import {
     formatSessionParticipantLabelFromWsUsername,
     formatSessionParticipantUserLabel,
 } from "@/lib/formatSessionParticipantUserLabel";
-import {
-    fetchSessionParticipantDisplayName,
-    resolveParticipantToastLabel,
-} from "@/lib/sessionParticipantDisplayNames";
+import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisplayNames";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
@@ -313,9 +310,9 @@ export function useSessionSocket({
             requestSessionRosterHttpSync();
         };
 
+        /* Toasts leave/disconnect : SessionCharacterSyncClient uniquement (évite le double toast avec le lobby modal). */
         const onParticipantLeft = ({
             userId,
-            username,
         }: {
             userId: string;
             username?: string;
@@ -323,23 +320,13 @@ export function useSessionSocket({
         }) => {
             if (userId === currentUserRef.current?.keycloakId) return;
             setParticipantsRef.current((prev) => prev.filter((p) => p.userId !== userId));
-            const label = resolveParticipantToastLabel(appStore.getState(), userId, username);
-            toastRef.current.info(tRef.current("toast.participantLeftSession", { username: label }));
         };
 
-        const onParticipantDisconnected = ({
-            userId,
-            username,
-        }: {
-            userId: string;
-            username?: string;
-        }) => {
+        const onParticipantDisconnected = ({ userId }: { userId: string; username?: string }) => {
             if (userId === currentUserRef.current?.keycloakId) return;
             setParticipantsRef.current((prev) =>
                 prev.map((p) => (p.userId === userId ? { ...p, status: "disconnected" as const } : p)),
             );
-            const label = resolveParticipantToastLabel(appStore.getState(), userId, username);
-            toastRef.current.info(tRef.current("toast.participantDisconnected", { username: label }));
         };
 
         const onSessionExpired = () => {

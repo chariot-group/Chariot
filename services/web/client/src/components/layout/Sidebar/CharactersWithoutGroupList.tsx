@@ -2,7 +2,7 @@
 
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import { removeCharacterWithoutGroup } from "@/store/slices/characterSlice";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -19,9 +19,12 @@ import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
+import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
+import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import { showToast } from "@/lib/toast";
 import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
+import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -50,6 +53,7 @@ export default function CharactersWithoutGroupList() {
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [characterToDuplicate, setCharacterToDuplicate] = useState<Character | null>(null);
+  const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
   const pathname = usePathname();
 
@@ -83,14 +87,19 @@ export default function CharactersWithoutGroupList() {
     }
   };
 
+  const existingCharacterNames = useMemo(
+    () => characters.map((c) => characterDisplayName(c)).filter(Boolean),
+    [characters],
+  );
+
   const handleDuplicateCharacter = async (character: Character, name: string, count: number) => {
     if (!isPlayer(character)) return;
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, createdBy, deletedAt, groups, ...rest } = character;
+      const copyNames = buildSequentialCopyNames(name, count);
       let lastCreated: Character | null = null;
-      for (let i = 0; i < count; i++) {
-        const copyName = i === 0 ? name : `${name} ${i + 1}`;
+      for (const copyName of copyNames) {
         const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
         const created = await CharacterService.createCharacter("players", payload);
         dispatch(upsertCharacterWithoutGroup(created as Character));
@@ -105,9 +114,16 @@ export default function CharactersWithoutGroupList() {
   };
 
   const buildCharacterActions = (character: Character): SidebarActionItem[] => {
-    if (actionsDisabled) return [];
+    const exportAction: SidebarActionItem = {
+      id: "exportPdf",
+      label: t("exportPdf"),
+      onSelect: () => void requestCharacterPdfExport(character._id),
+    };
+
+    if (actionsDisabled) return [exportAction];
 
     return [
+      exportAction,
       {
         id: "duplicate",
         label: t("duplicate"),
@@ -181,7 +197,7 @@ export default function CharactersWithoutGroupList() {
             <SidebarItemWithActions
               key={character._id ?? `character-${index}`}
               actions={characterActions}
-              disabled={actionsDisabled}
+              disabled={characterActions.length === 0}
               contextMenuLabel={t("characterActions")}
               className={cn(
                 "rounded-[12px] transition-all duration-150",
@@ -275,7 +291,14 @@ export default function CharactersWithoutGroupList() {
         onOpenChange={(open) => {
           if (!open) setCharacterToDuplicate(null);
         }}
+        existingNames={existingCharacterNames}
         onDuplicate={(name, count) => handleDuplicateCharacter(characterToDuplicate!, name, count)}
+      />
+
+      <ExportCharacterSheetPdfDialog
+        character={characterToExport}
+        open={!!characterToExport}
+        onOpenChange={closeExportDialog}
       />
     </nav>
   );

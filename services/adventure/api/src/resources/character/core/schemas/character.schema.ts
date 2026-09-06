@@ -13,6 +13,11 @@ import { Appearance } from '@/resources/character/player/schemas/appearance/appe
 import { Background } from '@/resources/character/player/schemas/background/background.schema';
 import { Treasure } from '@/resources/character/core/schemas/treasure/treasure.schema';
 import { Conditions } from '@/resources/character/core/schemas/conditions/conditions.schema';
+import {
+  DEFAULT_GAME_SYSTEM,
+  GAME_SYSTEMS,
+  GameSystem,
+} from '@/common/constants/game-system.constant';
 
 export type CharacterDocument = Character & Document;
 
@@ -37,6 +42,19 @@ export class Character extends BaseSchema {
   @ApiProperty({ example: 'http://example.com/avatar.png' })
   @Prop({ required: false })
   avatar: string;
+
+  @ApiProperty({
+    example: DEFAULT_GAME_SYSTEM,
+    enum: GAME_SYSTEMS,
+    default: DEFAULT_GAME_SYSTEM,
+  })
+  @Prop({
+    type: String,
+    enum: GAME_SYSTEMS,
+    required: true,
+    default: DEFAULT_GAME_SYSTEM,
+  })
+  gameSystem: GameSystem;
 
   @ApiProperty({ type: Stats })
   @Prop({ type: Stats, default: {} })
@@ -87,3 +105,12 @@ export class Character extends BaseSchema {
 }
 
 export const CharacterSchema = SchemaFactory.createForClass(Character);
+
+CharacterSchema.set('toJSON', {
+  transform(_doc, ret) {
+    if (ret.gameSystem == null) {
+      ret.gameSystem = DEFAULT_GAME_SYSTEM;
+    }
+    return ret;
+  },
+});

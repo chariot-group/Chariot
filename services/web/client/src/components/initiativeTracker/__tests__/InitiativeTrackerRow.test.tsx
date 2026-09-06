@@ -1,10 +1,39 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { ReactNode } from "react";
+
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string, values?: Record<string, string | number>) => {
+    if (values) {
+      return `${key}:${JSON.stringify(values)}`;
+    }
+    return key;
+  },
+}));
+
+vi.mock("@/i18n/navigation", () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children?: ReactNode;
+    className?: string;
+    "aria-label"?: string;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 import { InitiativeTrackerRow } from "@/components/initiativeTracker/InitiativeTrackerRow";
 import type { InitiativeTrackerRow as InitiativeTrackerRowType } from "@/store/slices/sessionSlice";
 
 const labels = {
   initiativeFor: "Initiative",
+  initiativeModifierFor: (bonus: string) => `Initiative bonus ${bonus}`,
   viewSheetFor: "View character sheet",
   viewSheet: "View sheet",
   viewOwnSheet: "View my sheet",
@@ -45,6 +74,7 @@ const labels = {
       lifeStatus: "Vital status",
       armorClass: "AC",
       conditions: "Conditions",
+      concentration: "Concentration",
       groupLabel: "Group",
     },
     apply: "Apply",
@@ -69,6 +99,7 @@ const baseRow: InitiativeTrackerRowType = {
   lastname: "and an even longer family name",
   surname: "",
   initiative: 12,
+  initiativeModifier: 2,
   hitPoints: 18,
   maxHitPoints: 24,
   tempHitPoints: 0,
@@ -82,6 +113,7 @@ const baseRow: InitiativeTrackerRowType = {
     lifeStatus: true,
     armorClass: true,
     conditions: true,
+    concentration: true,
     groupLabel: true,
   },
   conditions: [],
@@ -101,7 +133,7 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
       />,
     );
 
-    expect(html).toContain("flex w-full max-w-full min-w-0 overflow-hidden justify-self-start text-left");
+    expect(html).toContain('data-tracker-grid-cell-align="character"');
     expect(html).toContain("block w-full max-w-full min-w-0 flex-1 basis-0 overflow-hidden underline");
     expect(html).toContain("flex w-full max-w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden");
     expect(html).toContain("block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white");
@@ -204,6 +236,67 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     );
 
     expect(html).toContain('type="number"');
-    expect(html).toContain('aria-label="Initiative"');
+    expect(html).toContain("Initiative bonus +2");
+    expect(html).toContain("lucide-dices");
+    expect(html).toContain("+2");
+    // total 12, modifier 2 → roll field shows 10
+    expect(html).toContain('value="10"');
+  });
+
+  it("edge: player does not see other combatants initiative modifier", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        ownCharacterId="other-character"
+        initiativeLocked={false}
+        labels={labels}
+      />,
+    );
+
+    expect(html).not.toContain("Initiative bonus +2");
+    expect(html).not.toContain("lucide-dices");
+    expect(html).not.toContain('type="number"');
+  });
+
+  it("nominal: locked initiative still shows modifier hint with dice icon", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        initiativeLocked
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain("lucide-dices");
+    expect(html).toContain("Initiative bonus +2");
+    expect(html).toContain("+2");
+    expect(html).not.toContain('type="number"');
+  });
+
+  it("nominal: grid condition and group cells are isolated to prevent overlap", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{
+          ...baseRow,
+          groupLabel: "Participants",
+          concentration: { spellName: "Entangle" },
+        }}
+        mode="gm"
+        battleStarted
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        onAddCondition={() => {}}
+        onRemoveCondition={() => {}}
+        onClearConditions={() => {}}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('data-tracker-grid-cell-align="condition"');
+    expect(html).toContain('data-tracker-grid-cell-align="group"');
+    expect(html).toContain("overflow-x-clip");
+    expect(html).toContain("md:grid");
   });
 });

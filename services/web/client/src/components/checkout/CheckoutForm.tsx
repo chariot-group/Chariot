@@ -358,7 +358,7 @@ export function CheckoutPaidForm(props: CheckoutFormProps) {
   const elements = useElements();
   const router = useRouter();
   const t = useTranslations("checkout");
-  const { locale, piRefreshing, quantitySyncPending, piError, pricing, quantity } = props;
+  const { locale, piRefreshing, quantitySyncPending, piError, pricing } = props;
   const { chargeableAmount, currency } = pricing;
 
   return (

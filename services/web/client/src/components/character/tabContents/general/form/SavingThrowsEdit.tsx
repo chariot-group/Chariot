@@ -56,10 +56,12 @@ export default function SavingThrowsEdit({ form, accentColor }: SavingThrowsEdit
                 onClick={() => toggleSavingThrowProficiency(key)}
                 className="text-left">
                 <div className="p-2 hover:bg-gray-middle-light/50 transition-colors cursor-pointer">
-                  <div className="text-sm flex items-center gap-2 justify-between">
-                    <span className={`truncate ${isProficient && "italic"}`}>{label}</span>{" "}
+                  <div className="text-sm sm:text-base flex items-center gap-2 justify-between">
+                    <span className={`truncate font-medium text-gray-light ${isProficient ? "italic" : ""}`}>
+                      {label}
+                    </span>{" "}
                     <div className="flex flex-row gap-2">
-                      <span className="font-bold shrink-0">
+                      <span className="font-bold shrink-0 text-foreground">
                         {displayBonus >= 0 ? `+${displayBonus}` : `${displayBonus}`}
                       </span>
                       <Image
