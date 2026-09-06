@@ -27,6 +27,9 @@ updates:
       # typescript-eslint peer is still <6.1.0; TS 7 breaks npm ci
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
+      # nest-winston / nestjs-prometheus peers still stop at Nest 11
+      - dependency-name: "@nestjs/*"
+        update-types: ["version-update:semver-major"]
 
   # npm — gateway
   - package-ecosystem: "npm"
@@ -40,6 +43,9 @@ updates:
       - dependency-name: "@stripe/*"
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
+      # nest-winston / nestjs-prometheus / @nestjs/throttler peers still stop at Nest 11
+      - dependency-name: "@nestjs/*"
+        update-types: ["version-update:semver-major"]
 
   # npm — session
   - package-ecosystem: "npm"
@@ -52,6 +58,9 @@ updates:
       - dependency-name: "stripe"
       - dependency-name: "@stripe/*"
       - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # nest-winston / nestjs-prometheus peers still stop at Nest 11
+      - dependency-name: "@nestjs/*"
         update-types: ["version-update:semver-major"]
 
   # npm — web
@@ -97,6 +106,9 @@ updates:
     versioning-strategy: increase
     ignore:
       - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # nest-winston peers still stop at Nest 11
+      - dependency-name: "@nestjs/*"
         update-types: ["version-update:semver-major"]
 
   # Docker — media
