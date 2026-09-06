@@ -1,5 +1,44 @@
 # Changelog
 
+## [2.9.0] - 06-09-2026
+
+### Added
+- Added player character sheet PDF export (dark or light theme) from the sheet and the sidebar; NPC export is visible but disabled (coming soon)
+- Added concentration tracking in the initiative tracker: set, replace, or clear a concentration spell; CON save reminder when hit points decrease
+- Added in-session GM community library (grimoire) from the header: browse spells, monsters, and premade characters without leaving the session
+- Added spell school filter in the community library spell search
+- Added game system attribute on campaigns and characters (D&D 5e, extensible)
+- Added community library game system filter on spell and monster search
+- Added community library NPC search across monsters and premade player characters
+- Added initiative modifier next to the initiative roll (stored total is roll + modifier)
+- Added session remaining-time warning toast when 30 minutes are left
+- Added removal of whole combatant groups from the initiative tracker
+- Added sticky header on ability/trait edit sections
+- Added automatic wheel refund when a participant leaves the lobby before launch, and a launch gate requiring deposits to match participant quota
+
+### Changed
+- Renamed Codex to community library across the product
+- Session remaining-time countdown moved from the header to the session lobby; the header shows a live indicator with warning and critical tones
+- Session join code and QR invite are hidden after the session is launched
+- Hit point fields display max HP before current HP
+- Spell-level accordion categories appear only for levels that have at least one spell
+- Combat action section headings remain visible when the list is empty
+- History tab appearance card sizes to its content instead of stretching to neighboring cards
+- Duplicate character and group names receive a numeric suffix
+- Web client bumped to 2.9.0; adventure 2.8.0; session 1.5.0
+
+### Fixed
+- Fixed nested dialogs (Codex, confirms) closing the character form on Escape: Escape now dismisses only the topmost overlay
+- Fixed campaign context drifting on browser back/forward: URL campaign, sidebar groups, and open sheet stay aligned
+- Fixed session character labels showing technical IDs instead of names
+- Fixed GM "My Players" sidebar section during sessions
+- Fixed avatar upload and media URL handling edge cases
+- Fixed wheels balance display and lobby deposit progress when the roster changes
+- Fixed redirect to the assigned character sheet from the session lobby
+- Fixed contrast, placeholders, scroll, and add-spell UX in character forms
+- Fixed post-login navigation after account switch
+- Fixed pending initiative values being lost when combat starts while a field is still focused
+
 ## [2.8.0] - 26-06-2026
 
 ### Added

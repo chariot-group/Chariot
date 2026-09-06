@@ -2,6 +2,51 @@ import type { ReleaseNote } from '@/data/release-notes/types';
 
 export const ALL_RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '2.9.0',
+    date: '2026-09-06',
+    translations: {
+      fr: {
+        title: 'Export PDF, concentration & librairie communautaire',
+        highlights: [
+          { text: 'Exportez vos fiches joueur en PDF (thème sombre ou clair), depuis la fiche ou le menu de la barre latérale. L\'export PNJ arrive bientôt.' },
+          { text: 'Suivez la concentration en combat : indiquez le sort maintenu dans le tracker d\'initiative, et recevez un rappel de jet de sauvegarde de CON quand vous perdez des PV.' },
+          { text: 'En session, le MJ ouvre la librairie communautaire (grimoire) depuis l\'en-tête pour consulter sorts, monstres et personnages préfaits sans quitter la table.' },
+          { text: 'La recherche de sorts gagne un filtre par école de magie. La création de PNJ peut aussi s\'appuyer sur des personnages préfaits, pas seulement des monstres.' },
+          { text: 'L\'initiative affiche désormais le modificateur à côté du jet : le total utilisé pour l\'ordre de tour est jet + bonus.' },
+          { text: 'Le minuteur de session vit dans le lobby, avec un indicateur dans l\'en-tête et un toast d\'alerte à 30 minutes. Le QR code et le code d\'invitation disparaissent une fois la session lancée.' },
+          { text: 'Les wheels déposées en lobby sont libérées si un joueur part avant le lancement, et la session ne se lance que si le dépôt correspond au nombre de participants.' },
+          { text: 'Nombreux ajustements de fiches : Escape ne ferme plus le formulaire quand une modale est ouverte, catégories de sorts sans niveaux vides, sections d\'actions toujours visibles, apparence qui s\'adapte au contenu, et noms dupliqués suffixés.' },
+        ],
+      },
+      en: {
+        title: 'PDF export, concentration & community library',
+        highlights: [
+          { text: 'Export player sheets as PDF (dark or light theme) from the sheet or the sidebar menu. NPC export is coming soon.' },
+          { text: 'Track concentration in combat: set the maintained spell on the initiative tracker, and get a CON save reminder when you lose HP.' },
+          { text: 'In session, the GM opens the community library (grimoire) from the header to browse spells, monsters, and premade characters without leaving the table.' },
+          { text: 'Spell search now filters by school of magic. NPC creation can also use premade player characters, not only monsters.' },
+          { text: 'Initiative now shows the modifier next to the roll: turn order uses roll + bonus.' },
+          { text: 'The session timer lives in the lobby, with a header live indicator and a warning toast at 30 minutes. The QR code and invite code disappear once the session is launched.' },
+          { text: 'Wheels deposited in the lobby are released if a player leaves before launch, and the session only starts when deposits match the participant count.' },
+          { text: 'Many sheet adjustments: Escape no longer closes the form while a modal is open, spell categories without empty levels, action sections always visible, appearance sizing to content, and suffixed duplicate names.' },
+        ],
+      },
+      es: {
+        title: 'Exportación PDF, concentración y biblioteca comunitaria',
+        highlights: [
+          { text: 'Exporta tus fichas de jugador en PDF (tema oscuro o claro) desde la ficha o el menú de la barra lateral. La exportación de PNJ llegará pronto.' },
+          { text: 'Sigue la concentración en combate: indica el hechizo mantenido en el rastreador de iniciativa y recibe un recordatorio de tirada de salvación de CON cuando pierdes PV.' },
+          { text: 'En sesión, el DJ abre la biblioteca comunitaria (grimorio) desde el encabezado para consultar hechizos, monstruos y personajes prediseñados sin salir de la mesa.' },
+          { text: 'La búsqueda de hechizos gana un filtro por escuela de magia. La creación de PNJ también puede basarse en personajes prediseñados, no solo en monstruos.' },
+          { text: 'La iniciativa muestra ahora el modificador junto a la tirada: el total usado para el orden de turno es tirada + bonificador.' },
+          { text: 'El temporizador de sesión vive en el lobby, con un indicador en el encabezado y un aviso a los 30 minutos. El código QR y el código de invitación desaparecen una vez lanzada la sesión.' },
+          { text: 'Las wheels depositadas en el lobby se liberan si un jugador se va antes del lanzamiento, y la sesión solo arranca si el depósito coincide con el número de participantes.' },
+          { text: 'Numerosos ajustes de fichas: Escape ya no cierra el formulario con un modal abierto, categorías de hechizos sin niveles vacíos, secciones de acciones siempre visibles, apariencia que se adapta al contenido, y nombres duplicados con sufijo.' },
+        ],
+      },
+    },
+  },
+  {
     version: '2.8.0',
     date: '2026-06-26',
     translations: {
