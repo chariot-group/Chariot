@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
     buildPlayerSessionCharacterPath,
+    buildSessionCharacterHref,
     isInitiativeTrackerPage,
     isSessionLobbyPage,
     shouldGmShowReturnToBattle,
     shouldGmShowReturnToSheet,
     shouldPlayerShowReturnToBattleOnSessionLobby,
     shouldPlayerShowReturnToSheetOnSessionLobby,
+    shouldShowSessionLobbyInvitePanel,
+    withSessionCodeQuery,
 } from "@/lib/sessionInAppNavigation";
 
 describe("isSessionLobbyPage", () => {
@@ -20,6 +23,35 @@ describe("isSessionLobbyPage", () => {
     });
 });
 
+/** @see FR-session-join-qr-code */
+describe("shouldShowSessionLobbyInvitePanel", () => {
+    it("nominal: shows invite panel while session is activated", () => {
+        expect(shouldShowSessionLobbyInvitePanel("activated")).toBe(true);
+    });
+
+    it("nominal: hides invite panel after launch", () => {
+        expect(shouldShowSessionLobbyInvitePanel("launched")).toBe(false);
+    });
+
+    it("edge: hides for closed or missing status", () => {
+        expect(shouldShowSessionLobbyInvitePanel("closed")).toBe(false);
+        expect(shouldShowSessionLobbyInvitePanel(null)).toBe(false);
+        expect(shouldShowSessionLobbyInvitePanel(undefined)).toBe(false);
+    });
+});
+
+describe("buildSessionCharacterHref", () => {
+    it("nominal: builds locale-agnostic href with sessionCode", () => {
+        expect(buildSessionCharacterHref("char-1", "ABCD12")).toBe(
+            "/characters/char-1?sessionCode=ABCD12",
+        );
+    });
+
+    it("edge: omits query when session code is missing", () => {
+        expect(buildSessionCharacterHref("char-1", null)).toBe("/characters/char-1");
+    });
+});
+
 describe("buildPlayerSessionCharacterPath", () => {
     it("nominal: appends sessionCode query when provided", () => {
         expect(buildPlayerSessionCharacterPath("fr", "char-1", "ABCD12")).toBe(
@@ -29,6 +61,25 @@ describe("buildPlayerSessionCharacterPath", () => {
 
     it("edge: omits query when session code is missing", () => {
         expect(buildPlayerSessionCharacterPath("fr", "char-1", null)).toBe("/fr/characters/char-1");
+    });
+});
+
+describe("FR-session-combat-navigation — withSessionCodeQuery", () => {
+    it("nominal: appends sessionCode to a bare character path", () => {
+        expect(withSessionCodeQuery("/fr/characters/char-1", "ABCD12")).toBe(
+            "/fr/characters/char-1?sessionCode=ABCD12",
+        );
+    });
+
+    it("edge: leaves path unchanged when sessionCode is already present", () => {
+        expect(withSessionCodeQuery("/fr/characters/char-1?sessionCode=ABCD12", "ZZZZ99")).toBe(
+            "/fr/characters/char-1?sessionCode=ABCD12",
+        );
+    });
+
+    it("failure: returns path unchanged when session code is missing", () => {
+        expect(withSessionCodeQuery("/fr/characters/char-1", null)).toBe("/fr/characters/char-1");
+        expect(withSessionCodeQuery("/fr/characters/char-1", "  ")).toBe("/fr/characters/char-1");
     });
 });
 

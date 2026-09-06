@@ -32,6 +32,10 @@ export const TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION =
 export const PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS =
   "minmax(52px, 132px) minmax(92px, 1.15fr) minmax(64px, 88px) minmax(40px, 52px) minmax(88px, 0.95fr) minmax(0, 0.9fr)";
 
+/** Classes obligatoires sur chaque cellule directe de la grille tracker — empêche le chevauchement inter-colonnes. */
+export const TRACKER_GRID_CELL_GUARDRAIL_CLASS =
+  "min-w-0 max-w-full overflow-x-clip overflow-y-visible isolate";
+
 /** Classes d'alignement par colonne (initiative, perso, pv, ca, état, groupe [, visibilité]). */
 export const TRACKER_CELL_ALIGN = {
   initiative: "justify-self-center text-center",

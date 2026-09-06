@@ -415,6 +415,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
               kind,
               deathSavesFailures,
+              initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats.initiative) : 0,
             });
           });
       });

@@ -13,6 +13,10 @@ import {
   trackerKindFromCharacter,
   trackerMirrorFieldsFromCharacter,
   trackerStatusFieldsFromCharacter,
+  resolveInitiativeModifier,
+  resolveInitiativeModifierFromStats,
+  initiativeRollFromTotal,
+  initiativeTotalFromRoll,
 } from "@/components/initiativeTracker/utils";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
@@ -171,6 +175,7 @@ describe("FR-tracker-vital-status — character → tracker mirror helpers", () 
         currentHitPoints: 16,
         tempHitPoints: 5,
         armorClass: 17,
+        initiative: 3,
       } as Player["stats"],
       deathSaves: { successes: 0, failures: 0 },
     });
@@ -181,12 +186,36 @@ describe("FR-tracker-vital-status — character → tracker mirror helpers", () 
       surname: "The Whisper",
       avatar: "https://example.test/lyra.png",
       armorClass: 17,
+      initiativeModifier: 3,
       hitPoints: 16,
       maxHitPoints: 22,
       tempHitPoints: 5,
       kind: "player",
       deathSavesFailures: 0,
     });
+  });
+
+  it("edge: resolveInitiativeModifierFromStats defaults missing values to 0", () => {
+    expect(resolveInitiativeModifierFromStats(undefined)).toBe(0);
+    expect(resolveInitiativeModifierFromStats({ initiative: undefined })).toBe(0);
+    expect(resolveInitiativeModifierFromStats({ initiative: -1 })).toBe(-1);
+  });
+
+  it("nominal: roll + modifier produces the persisted total", () => {
+    expect(initiativeTotalFromRoll(15, 2)).toBe(17);
+    expect(initiativeRollFromTotal(17, 2)).toBe(15);
+  });
+
+  it("edge: re-edit cycle does not double-apply the modifier", () => {
+    const total = initiativeTotalFromRoll(12, 3);
+    expect(total).toBe(15);
+    expect(initiativeTotalFromRoll(initiativeRollFromTotal(total, 3), 3)).toBe(15);
+  });
+
+  it("failure: non-finite roll/modifier fall back safely", () => {
+    expect(initiativeTotalFromRoll(Number.NaN, 2)).toBe(2);
+    expect(initiativeRollFromTotal(Number.NaN, 2)).toBe(-2);
+    expect(resolveInitiativeModifier(undefined)).toBe(0);
   });
 
   it("error/missing data: a player without deathSaves still produces a sane mirror (failures = 0)", () => {
@@ -316,8 +345,11 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
       lifeStatus: false,
       armorClass: false,
       conditions: false,
+      concentration: false,
       groupLabel: false,
     },
+    concentration: { spellName: "Bless", sinceRound: 2 },
+    pendingConcentrationCheck: { damageAmount: 5, dc: 10 },
     kind: "npc",
     deathSavesFailures: 0,
   } as InitiativeTrackerRow;
@@ -333,6 +365,8 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     expect(sanitized.deathSavesFailures).toBe(0);
     expect(sanitized.armorClass).toBe(0);
     expect(sanitized.conditions).toEqual([]);
+    expect(sanitized.concentration).toBeNull();
+    expect(sanitized.pendingConcentrationCheck).toBeNull();
     expect(sanitized.groupLabel).toBe("");
   });
 
@@ -346,6 +380,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
         lifeStatus: true,
         armorClass: true,
         conditions: true,
+        concentration: true,
         groupLabel: true,
       },
     });
@@ -354,6 +389,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     expect(sanitized.initiative).toBe(18);
     expect(sanitized.hitPoints).toBe(44);
     expect(sanitized.conditions).toHaveLength(1);
+    expect(sanitized.concentration?.spellName).toBe("Bless");
     expect(sanitized.groupLabel).toBe("Hidden lair");
   });
 

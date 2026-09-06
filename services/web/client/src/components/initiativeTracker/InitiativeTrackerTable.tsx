@@ -22,7 +22,7 @@ import {
   TRACKER_HEADER_ALIGN,
 } from "@/components/initiativeTracker/constants";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
-import { characterName, type InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
+import { characterName, initiativeTotalFromRoll, resolveInitiativeModifier, type InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
@@ -49,6 +49,10 @@ export type InitiativeTrackerTableProps = {
   onRemoveCondition?: (row: InitiativeTrackerRow, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions?: (row: InitiativeTrackerRow) => void;
   onHitPointsClick?: (row: InitiativeTrackerRow) => void;
+  battleStarted?: boolean;
+  currentRound?: number;
+  onSetConcentration?: (row: InitiativeTrackerRow, concentration: import("@/store/slices/sessionSlice").TrackerConcentration | null) => void;
+  onOpenConcentrationSaveDialog?: (row: InitiativeTrackerRow) => void;
   onRemoveFromInitiative?: (rowId: string) => void;
   onRemoveMultipleFromInitiative?: (rowIds: string[]) => void;
   onUpdateMultipleRows?: (
@@ -60,6 +64,7 @@ export type InitiativeTrackerTableProps = {
   ) => void;
   getRowLabels: (row: InitiativeTrackerRow) => {
     initiativeFor: string;
+    initiativeModifierFor: (bonus: string) => string;
     viewSheetFor: string;
     viewSheet: string;
     conditionFor: string;
@@ -100,6 +105,7 @@ export type InitiativeTrackerTableProps = {
         lifeStatus: string;
         armorClass: string;
         conditions: string;
+        concentration: string;
         groupLabel: string;
       };
       apply: string;
@@ -191,6 +197,10 @@ export function InitiativeTrackerTable({
   onRemoveCondition,
   onClearConditions,
   onHitPointsClick,
+  battleStarted = false,
+  currentRound = 1,
+  onSetConcentration,
+  onOpenConcentrationSaveDialog,
   onRemoveFromInitiative,
   onRemoveMultipleFromInitiative,
   onUpdateMultipleRows,
@@ -326,10 +336,12 @@ export function InitiativeTrackerTable({
     setSelectedRowIds(new Set());
   };
 
-  const applyGroupedInitiative = (initiative: number) => {
+  const applyGroupedInitiative = (roll: number) => {
     if (!onUpdateRow) return;
     selectedRowIds.forEach((rowId) => {
-      onUpdateRow(rowId, { initiative });
+      const row = rows.find((item) => item.id === rowId);
+      const modifier = resolveInitiativeModifier(row?.initiativeModifier);
+      onUpdateRow(rowId, { initiative: initiativeTotalFromRoll(roll, modifier) });
     });
     exitGroupedInitiativeMode();
   };
@@ -672,6 +684,10 @@ export function InitiativeTrackerTable({
             onRemoveCondition={isPlayerView ? undefined : onRemoveCondition}
             onClearConditions={isPlayerView ? undefined : onClearConditions}
             onHitPointsClick={isPlayerView ? undefined : onHitPointsClick}
+            battleStarted={battleStarted}
+            currentRound={currentRound}
+            onSetConcentration={onSetConcentration}
+            onOpenConcentrationSaveDialog={onOpenConcentrationSaveDialog}
             onRemoveFromInitiative={isPlayerView ? undefined : onRemoveFromInitiative}
             labels={getRowLabels(row)}
           />

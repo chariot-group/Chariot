@@ -22,15 +22,6 @@ export const ATTACK_ABILITY_SCORE_KEYS = ABILITY_SCORE_KEYS;
 
 export type AbilityScoreKey = (typeof ABILITY_SCORE_KEYS)[number];
 
-export const ABILITY_SCORE_SHORT_LABELS: Record<AbilityScoreKey, string> = {
-    strength: "FOR",
-    dexterity: "DEX",
-    constitution: "CON",
-    intelligence: "INT",
-    wisdom: "SAG",
-    charisma: "CHA",
-};
-
 export function formatSignedBonus(value: number): string {
     return value >= 0 ? `+${value}` : `${value}`;
 }

@@ -31,20 +31,20 @@ export default function SavingThrow({ skillName, accentColor, stats }: SavingThr
       className="flex flex-col items-center gap-0 py-1.5 px-1 rounded-[10px] hover:bg-gray-middle-light/50 transition-colors"
       role="listitem"
       aria-label={`${fullName} : ${bonusStr}`}>
-      <span className="flex items-center gap-0.5 mb-1">
-        <span className="text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground leading-none">
+      <span className="flex items-center gap-1 mb-1">
+        <span className="text-xs sm:text-sm font-semibold uppercase tracking-wide text-gray-light leading-none">
           {abbr}
         </span>
         <Image
           src={getIconForValue(masteryLevel, accentColor)}
           alt={t("masteryLevelIcon", { level: masteryLevel })}
-          width={12}
-          height={12}
+          width={14}
+          height={14}
           className="shrink-0"
           aria-hidden="true"
         />
       </span>
-      <span className={`text-base font-bold leading-none${isProficient ? " italic" : ""}`}>
+      <span className={`text-base sm:text-lg font-bold leading-none text-foreground${isProficient ? " italic" : ""}`}>
         {bonusStr}
       </span>
     </div>

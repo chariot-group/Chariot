@@ -1323,11 +1323,23 @@ When adding a rule:
   - if the removed row was the active turn, advance to the next alive row in sorted order (or clear active turn if none remain);
   - purge turn-action keys tied to the removed row;
   - if no rows remain, clear `battleInitialized` and reset turn engine.
+- The GM MUST also be able to **remove an entire group** from the roster while the battle is initialized (before or after combat start), without ending the battle:
+  - removes all tracker rows sharing that `groupId` in one action;
+  - applies the same per-row cleanup rules as “leave initiative” (active turn advance, turn-action purge, clear battle if no rows remain);
+  - the virtual session-participants group (`__session_participants__`) MUST remain non-removable as a whole when it still has members (individual participant rows may still leave initiative via the row action);
+  - removing a group MUST NOT reopen or reset `initBattleDraft` selection state beyond what is implied by the surviving tracker rows.
 
 **Reset and End States**:
 
+- `Cancel combat` / `Annuler le combat` (battle initialized, combat not started):
+  - MUST be available to the GM on the initiative tracker page without requiring combat start first
+  - primary label MUST be the product equivalent of **Annuler le combat** (localized)
+  - MUST open a confirmation dialog in functional, non-technical language
+  - dialog intent MUST state that the prepared combat will be discarded and everyone returns to their character sheet
+  - on confirmation, MUST apply the same cleanup as `End combat` (rows, draft, initialized/started flags, turn engine, `untilCombatEnd` conditions, navigation back to character sheets, broadcast of ended battle state)
+  - after cancel, a brand new battle configuration is required before another combat can start
 - `End combat`:
-  - is available to the GM only
+  - is available to the GM only once combat has started (`battleStarted === true`)
   - MUST first open a confirmation dialog written in functional, non-technical language
   - dialog intent MUST clearly state that leaving combat returns everyone to their character sheet and that combat progress will no longer be available
   - dialog copy SHOULD stay concise; recommended confirmation message: `Are you sure you want to leave combat? If you confirm, everyone will return to their character sheet and combat progress will no longer be available.`
@@ -1342,6 +1354,7 @@ When adding a rule:
   - clears all tracker rows
   - clears initialized/started combat state
   - requires a new battle configuration
+- Group removal from the roster MUST remain available both before and after combat start (same Mid-Combat Roster rules).
 
 **Persistence and Recovery**:
 
@@ -1370,6 +1383,8 @@ When adding a rule:
 - Action lock behavior on rollback after row update
 - Condition lifecycle for each duration type and combat end cleanup
 - Persist/rehydration normalization of session tracker state
+- Cancel preparation before start clears battle state without requiring `startBattle`
+- Remove entire group from roster (before and after start) while keeping unrelated rows; session-participants group cannot be removed as a whole when it has members
 
 **References**:
 
@@ -1551,7 +1566,12 @@ When adding a rule:
 
 - `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
 - Updated when the GM navigates to any character detail route during an active session.
+- When the session is active, the stored path MUST include the `sessionCode` query parameter so that sheets not owned by the GM (player roster / guest characters) remain readable after navigation back from the initiative tracker (including after cancel/end combat).
 - Cleared when the session ends (`clearCurrentSession`).
+- Navigation consumers (sidebar **Return to Character Sheet**, post-combat redirect) MUST ensure `sessionCode` is present on the target URL while the session is still active.
+- Combat name links (initiative tracker rows, combat footer “view sheet”) MUST navigate with `sessionCode` while the session is active and MUST use locale-aware navigation (`@/i18n/navigation`).
+- Character sheet pages MUST resolve session read context as URL `sessionCode` **or** the active Redux session code (same precedence as `useActiveSessionCode`) so a soft-navigation race without query hydration does not 403 roster sheets.
+- Sheet routes MUST redirect away (welcome / fallback) only on definitive access denial (HTTP 403/404). Transient fetch failures MUST NOT permanently lock or kick the user off the sheet; a 403/404 that occurred without session context MUST be retried when `sessionCode` becomes available.
 
 **Player Visibility Model**:
 
@@ -1830,31 +1850,44 @@ Each initiative tracker row carries:
 - A resolved label MUST NOT be replaced by a Keycloak UUID if a better source becomes available later (WebSocket username or successful profile fetch).
 - While resolution is pending, UI surfaces MUST show `...`, not the raw `userId`.
 
+**Assigned Character Identity (lobby + GM sidebar)**:
+
+- When a participant has an assigned `characterId`, the session lobby participant card and the GM sidebar `Joueurs (session)` section MUST show the character display name (`firstname` + optional `lastname`), never the Mongo `characterId`.
+- While the character sheet is loading or the fetch failed, those surfaces MUST show `...` (same loading placeholder), not the raw character id.
+- Both surfaces MUST show the character avatar when an avatar stored value is available, resolving the presigned URL with `sessionCode` (FR-media-avatar-read-access).
+- The GM sidebar MUST show character avatars for roster players and GM guest characters (size `xs`, accessible `alt` derived from the character label).
+
 **Prohibitions**:
 
 - Displaying a participant email as their session label
 - Displaying a Keycloak `sub` / UUID (`userId`) as a fallback label
 - Treating a UUID-shaped `username` or WebSocket `username` as a valid display label
 - Persisting `participantDisplayNames` across sessions (labels are ephemeral per active session)
+- Displaying a Mongo character id as the character name in the lobby or GM sidebar
 
 **Tests**:
 
 - Nominal: user with `username` shows that username in lobby, GM sidebar, and initiative tracker when character sheet is unavailable
+- Nominal: assigned character shows `firstname` (+ `lastname`) and avatar in lobby card and GM sidebar (never Mongo id)
 - Edge: user without `username` but with `firstName` + `lastName` shows the full name
 - Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
 - Edge: initial API failure followed by WebSocket username still updates the displayed label
+- Edge: character sheet still loading shows `...` for the character name (not character id)
 - Error: profile fetch failure shows `...`, never UUID or email
+- Error: character sheet fetch failure keeps `...` for the character name (not character id)
 - Regression: `username` equal to Keycloak UUID falls back to `firstName` + `lastName` or `...`
 
 **References**:
 
 - `services/web/client/src/lib/formatSessionParticipantUserLabel.ts`
+- `services/web/client/src/lib/formatSessionCharacterLabel.ts`
 - `services/web/client/src/lib/sessionParticipantDisplayNames.ts`
 - `services/web/client/src/store/slices/sessionSlice.ts` (`participantDisplayNames`)
 - `services/web/client/src/hooks/useSessionData.ts`
 - `services/web/client/src/hooks/useSessionSocket.ts`
 - `services/web/client/src/components/SessionCharacterSyncClient.tsx`
 - `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
 - `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
 - `services/web/client/src/app/[locale]/campaigns/[idCampaign]/session/[code]/page.tsx`
 - `services/web/client/src/components/character/CharacterDetailView.tsx`
@@ -1864,27 +1897,34 @@ Each initiative tracker row carries:
 
 ## FR-session-lobby-navigation: In-Session Logo and Session Lobby Sidebar Navigation
 
-**Rule**: While a user is connected to an active session, clicking the application logo in the header and the sidebar action button on the session lobby page must provide contextual navigation back to character sheets instead of the generic welcome redirect or an irrelevant session action.
+**Rule**: While a user is connected to an active session, the header logo MUST signal that a session is in progress and open the session lobby modal. The remaining-time countdown MUST appear only inside that modal. Sidebar footer actions continue to provide contextual navigation back to character sheets or battle.
 
 **Scope**:
 
 - Applies when `isInSession === true` and the session record is available in Redux.
-- Complements FR-session-combat-navigation (combat navigation) without overriding combat-specific sidebar rules on other pages.
-- The session lobby page is `/{locale}/campaigns/{campaignId}/session/{sessionCode}`.
+- Complements FR-session-combat-navigation (combat navigation) and FR-session-lobby-modal (lobby open/close) without overriding combat-specific sidebar rules on other pages.
 
-**Header Logo — Player**:
+**Header Logo — In Session**:
 
-- When a connected player clicks the logo, they MUST be redirected to their session character sheet: `/{locale}/characters/{characterId}?sessionCode={sessionCode}` when a character is assigned.
-- If the player has no assigned character, the logo click MUST fall back to `/{locale}/welcome`.
-
-**Header Logo — Game Master**:
-
-- When the connected GM clicks the logo, they MUST be redirected to the first character of the first active group in the session campaign, using the same resolution order as `NavigationService.determineSpaceDestination` (active groups first, then archived groups with characters).
-- If no character exists in the campaign, the logo click MUST fall back to `/{locale}/welcome`.
+- The logo MUST show a discreet live/record indicator (small filled disc, slow opacity pulse) so the user can tell a session is active without a header countdown.
+- When remaining time is ≤ 30 minutes, the indicator MUST switch to a warning tone (`yellow`, faster pulse). When remaining time is ≤ 5 minutes, it MUST switch to a critical tone (`red`, faster pulse than warning). Color MUST NOT be the only cue: pulse speed also changes, and the accessible name / tooltip MUST mention the remaining-time urgency.
+- `prefers-reduced-motion: reduce` MUST disable the pulse; the disc remains visible and static, still using the warning/critical color when applicable.
+- Hover and keyboard focus MUST show the session-validity tooltip (8 hours, or auto-close after 5 minutes if all participants have left).
+- Clicking the logo MUST dispatch `openSessionLobby` (FR-session-lobby-modal). It MUST NOT navigate to a character sheet or to welcome.
+- The logo button MUST expose an accessible name indicating that it opens the session lobby.
 
 **Header Logo — Outside Session**:
 
 - When the user is not in a session, logo click behavior is unchanged: redirect to `/{locale}/welcome`.
+- No live indicator and no session tooltip.
+
+**Session Timer**:
+
+- The remaining-time countdown MUST be displayed only inside the session lobby modal, and only when `sessionStatus === "launched"` and `expiresAt` is available.
+- The header MUST NOT display the countdown.
+- Remaining time ≤ 30 minutes MUST use the warning color `yellow` in the modal; remaining time ≤ 5 minutes MUST use `red`. Color MUST NOT be the only cue (the numeric countdown remains visible).
+- When remaining time **crosses** the 30-minute threshold (from above 30 minutes to ≤ 30 minutes), every connected participant MUST see a warning toast once. Late join or refresh while already ≤ 30 minutes MUST NOT replay the toast.
+- The 30-minute toast MUST be owned by a single layout-level client (`SessionTimeWarningToast`). Header and lobby MUST NOT emit a duplicate.
 
 **Sidebar Action Button — Player on Session Lobby**:
 
@@ -1895,23 +1935,32 @@ Each initiative tracker row carries:
 
 **Accessibility**:
 
-- The logo button MUST expose an accessible name describing its destination context (home vs character sheet navigation).
+- The logo button MUST expose an accessible name describing its destination (home vs session lobby).
+- The live/record indicator is decorative (`aria-hidden`); meaning is conveyed by the accessible name and tooltip.
+- The modal timer MUST expose an accessible name that includes the remaining time and MUST NOT use a live region that announces every second.
 
 **Tests**:
 
+- Nominal: in session, logo click opens the lobby; live indicator is visible.
+- Nominal: launched session, timer is visible in the lobby and absent from the header.
+- Nominal: launched session with more than 30 minutes remaining uses the live indicator tone.
+- Edge: remaining time ≤ 30 minutes uses the warning tone; ≤ 5 minutes uses the critical tone.
+- Nominal: remaining time crosses 30 minutes → one warning toast per connected client.
+- Edge: mount or refresh already below 30 minutes → no toast.
 - Nominal: launched session, player on session lobby without combat sees **Return to Character Sheet**.
-- Nominal: player in session clicks logo and lands on their session character sheet URL with `sessionCode`.
-- Nominal: GM in session clicks logo and lands on first character of first campaign group.
-- Edge: player without assigned character cannot use **Return to Character Sheet**; logo falls back to welcome.
+- Edge: in session but not launched → live indicator and logo open the lobby; no timer.
+- Edge: player without assigned character cannot use **Return to Character Sheet**.
 - Edge: combat started, player on session lobby sees **Return to Battle**.
-- Regression: user not in session still redirects logo to welcome.
+- Regression: user not in session still redirects logo to welcome, with no live indicator and no timer.
 
 **References**:
 
 - `services/web/client/src/components/layout/Header.tsx`
 - `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
 - `services/web/client/src/components/layout/SessionTimer.tsx`
-- `services/web/client/src/services/NavigationService.ts`
+- `services/web/client/src/lib/sessionPresenceUi.ts`
+- `services/web/client/src/hooks/useSessionRemainingSeconds.ts`
+- `services/web/client/src/components/layout/SessionTimeWarningToast.tsx`
 - `services/web/client/src/lib/sessionInAppNavigation.ts`
 
 ---
@@ -1948,6 +1997,7 @@ Each initiative tracker row carries:
 - Client roster state MUST merge HTTP and WebSocket updates without overwriting newer WebSocket data (`mergeParticipantsPreserveCharacterIds`).
 - After participant join or character-change events, clients SHOULD trigger a debounced HTTP roster resync as a convergence fallback.
 - Session end toasts MUST be deduplicated per session code and reason when multiple socket subscribers receive the same event (`shouldShowSessionEndNotice`).
+- Participant leave and disconnect toasts MUST be shown by exactly one client owner (`SessionCharacterSyncClient`). Lobby subscribers (`useSessionSocket`) MAY update local roster state for the same events but MUST NOT emit duplicate leave/disconnect toasts.
 
 **WebSocket Conventions** (mandatory for all session event handlers):
 
@@ -1965,6 +2015,7 @@ Each initiative tracker row carries:
 - Broadcasting join events with `characterId: null` when the persisted roster already has a character.
 - Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
 - Registering duplicate session-end handlers that each show an independent toast for the same event.
+- Showing participant-left or participant-disconnected toasts from more than one socket subscriber for the same event.
 - Closing a session automatically due to WebSocket inactivity or all participants being disconnected. The only valid session termination triggers are: 8-hour Redis TTL expiration and explicit GM manual close.
 
 **Tests**:
@@ -1976,11 +2027,14 @@ Each initiative tracker row carries:
 - Gateway edge: disconnect beyond grace period emits `session:participant-disconnected`.
 - Join after reconnect preserves roster `characterId` in the `session:participant-joined` broadcast.
 - Session end toast is shown once despite multiple subscribers.
+- Participant leave/disconnect toast is shown once despite layout + lobby subscribers both receiving the event.
 
 **References**:
 
 - `services/web/client/src/lib/sessionSocketPool.ts`
 - `services/web/client/src/lib/__tests__/sessionSocketPool.test.ts`
+- `services/web/client/src/lib/sessionParticipantLifecycleToasts.ts`
+- `services/web/client/src/lib/__tests__/sessionParticipantLifecycleToasts.test.ts`
 - `services/web/client/src/hooks/useSessionSocket.ts`
 - `services/web/client/src/components/SessionCharacterSyncClient.tsx`
 - `services/web/client/src/lib/sessionCharacterSyncBridge.ts`
@@ -2559,6 +2613,53 @@ Each initiative tracker row carries:
 
 ---
 
+## FR-codex-spell-school-filter: Codex Spell Search — School Filter
+
+**Rule**: The Codex spell search dialog (`CodexSpellSearchDialog`) MUST allow filtering search results by one or more D&D 5e schools of magic. The filter MUST be applied server-side via the Codex `/spells` API `schools` query parameter (canonical slugs).
+
+**Scope**:
+
+- Complements the existing name, language, class, and level filters in the Codex spell search dialog.
+- Applies only to spell search from the character magic tab; does not change monster Codex search.
+
+**Behavior**:
+
+- Users MUST be able to select zero or more spell schools (canonical slugs: `abjuration`, `conjuration`, `divination`, `enchantment`, `evocation`, `illusion`, `necromancy`, `transmutation`), or leave the filter unset for all schools.
+- When no school is selected, all schools are returned (no `schools` param sent).
+- When one or more schools are selected, they MUST be forwarded to the API as repeated `schools` query params (lowercase slugs).
+- Changing the school filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening the dialog MUST reset the school filter to “all schools”.
+- School labels in the filter UI MUST use i18n keys under `characterDetail.magic.spellSchools`.
+- Preview and list rows MUST display the school label resolved from the Codex translation (`string` or populated `{ name }` object).
+
+**Accessibility (FR-frontend-design)**:
+
+- The school filter control MUST expose an accessible name (`aria-label`) equivalent to the class filter pattern.
+- The school filter control MUST use the same multi-select `DropdownMenu` checkbox pattern as the class filter.
+
+**Prohibitions**:
+
+- Client-side-only school filtering when the API supports the `schools` param (pagination would be incorrect).
+- Hardcoded school labels bypassing i18n in the filter UI.
+- Sending invalid school slugs (outside the canonical list).
+
+**Tests**:
+
+- `CodexService.searchSpells` forwards selected schools to `/spells` as slug query params.
+- `CodexService.searchSpells` omits `schools` when the filter is unset.
+- `resolveCodexSpellSchoolLabel` resolves string and object school values.
+- API error propagation unchanged.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/constants/spellSchools.ts`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/utils/codexSpellSchool.utils.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
 ## FR-release-notes: Release Notes and New Version Detection
 
 **Rule**: The application must notify authenticated users of new features on each update via a non-blocking modal displaying version notes in their language. Users must also be able to consult the version history at any time from their profile page.
@@ -2799,7 +2900,8 @@ Each initiative tracker row carries:
 **Modale de confirmation (`DuplicateCharacterDialog`)** :
 
 - S'ouvre lorsque l'utilisateur sélectionne l'action « Dupliquer » dans le menu contextuel ou le menu overflow.
-- Affiche un champ de texte prérempli avec le nom proposé : `"<firstname> <lastname> 2"` (ou `"<firstname> 2"` si pas de nom de famille, ou simplement `"2"` si les deux sont vides). Le suffixe est incrémenté (`2`, `3`…) si le nom proposé correspond déjà à un personnage existant dans la liste visible (vérification locale uniquement).
+- Affiche un champ de texte prérempli avec le nom proposé : prochain suffixe libre `"<stem> 2"`, `"<stem> 3"`… où `<stem>` est le nom d’affichage source sans suffixe numérique final (ou simplement `"2"` / `"3"`… si le nom est vide). Le suffixe est choisi en vérifiant la liste visible uniquement (pas d’appel API). Exemple : source `test` avec `test 2` déjà présent → propose `test 3` ; source `test 2` → stem `test`, même logique.
+- Champ count (entier 1–99, défaut 1) : chaque copie reçoit un nom séquentiel à partir de la valeur saisie (`test 2` + count 2 → `test 2`, `test 3` — jamais `test 2 2`).
 - Le champ est éditable et autofocusé à l'ouverture.
 - La validation par **Entrée** déclenche le bouton « Créer » (action primaire), sauf si le champ de texte est vide.
 - **Escape** ferme la modale sans création.
@@ -2840,6 +2942,8 @@ Each initiative tracker row carries:
 
 - Nominal : dupliquer un joueur sans groupe → nouveau personnage sans groupe, nom `"<nom> 2"`, toast succès, redirection vers la fiche.
 - Nominal : dupliquer un PNJ dans un groupe → même groupe, nom `"<nom> 2"`, toast succès.
+- Nominal : count = 2 avec nom proposé `"test 2"` → crée `test 2` et `test 3`.
+- Nominal : source `test` alors que `test 2` existe déjà → propose `test 3`.
 - Edge : nom vide dans la modale → bouton « Créer » désactivé.
 - Edge : Escape ferme la modale sans déclencher de création.
 - Edge : Enter dans le champ déclenche « Créer » (action primaire).
@@ -2851,7 +2955,8 @@ Each initiative tracker row carries:
 
 - `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
-- `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx` (à créer)
+- `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx`
+- `services/web/client/src/lib/duplicateName.ts`
 - `services/web/client/src/services/CharacterService.ts`
 - `services/web/client/src/components/dialogs/MoveCharacterDialog.tsx`
 
@@ -2866,7 +2971,7 @@ Each initiative tracker row carries:
 - Indisponible en session active (`actionsDisabled`).
 
 **Modale (`DuplicateGroupDialog`)** :
-- Champ label prérempli avec `"<label du groupe source> 2"`, éditable, autofocusé.
+- Champ label prérempli avec le prochain suffixe libre parmi les labels de groupes visibles (même logique stem/suffixe que FR-character-duplicate), éditable, autofocusé.
 - Champ count (entier 1–99, défaut 1).
 - Bouton **Créer** (action primaire) : déclenché aussi par **Enter** si label non vide.
 - **Escape** ferme sans création.
@@ -2881,7 +2986,7 @@ Each initiative tracker row carries:
 
 **Logique de duplication (côté frontend)** :
 - Aucun nouvel endpoint backend requis.
-- Pour chaque copie `i` (1 à count) : label = `i === 1 ? name : \`${name} ${i + 1}\`` (même convention que FR-character-duplicate).
+- Pour chaque copie `i` (0 à count−1) : label issu de `buildSequentialCopyNames(name, count)` — ex. name prérempli `"Gobelins 2"` et count 3 → `"Gobelins 2"`, `"Gobelins 3"`, `"Gobelins 4"` (jamais `"Gobelins 2 2"`).
 - Créer le groupe via `GroupService.createGroup(campaignId, { label })`.
 - Pour chaque personnage du groupe source : récupérer le détail via `CharacterService.getCharacterById`, exclure `_id, createdBy, deletedAt, groups`, et créer avec `groups: [newGroupId]`.
 - Dispatch `addGroupToStore` avec le groupe créé (peuplé avec ses personnages) après chaque création complète.
@@ -3088,22 +3193,26 @@ Each initiative tracker row carries:
 
 ## FR-session-join-qr-code: Session Join QR Code
 
-**Rule**: The session lobby MUST display a QR code encoding the join URL so any participant (GM or player) can share session access quickly.
+**Rule**: While the session is still in lobby (`status === activated`), the session lobby MUST display the session code and a QR code encoding the join URL so participants can invite others. After the session is launched, invite surfaces (session code, copy actions, and QR) MUST be hidden because new players cannot join mid-session.
 
 **Requirements**:
 
-- The QR code is rendered inside `SessionLobbyContent` (session lobby modal), not on a dedicated full-page session route
+- The QR code and session-code invite panel are rendered inside `SessionLobbyContent` (session lobby modal), not on a dedicated full-page session route
+- Invite UI (code, copy code/link, QR) MUST be shown only when `sessionStatus === "activated"`
+- When `sessionStatus === "launched"` (or any non-lobby status), the invite column/panel MUST NOT be rendered; the participants / in-session content MAY use the full lobby width
 - Join URL encodes the current page origin with query parameter `?join={sessionCode}`
 - QR code MUST use a white background and sufficient contrast (dark foreground) for mobile scanners
-- QR section MUST expose an accessible label (`aria-label`)
+- When visible, the QR section MUST expose an accessible label (`aria-label`)
 
 **Prohibitions**:
 
 - Require navigation to a dedicated session page solely to display the QR code
+- Showing session code or QR invite controls after launch when join is closed to newcomers
 
 **Tests**:
 
-- Nominal: session lobby modal shows a scannable QR code for the active session
+- Nominal: activated lobby shows scannable QR and session code
+- Nominal: launched lobby hides code and QR
 - Edge: encoded URL contains the correct `join` query parameter
 
 **References**:
@@ -3122,7 +3231,8 @@ Each initiative tracker row carries:
 - `SessionLobbyDialog` is mounted at layout level and renders `SessionLobbyContent` when open
 - Redux field `sessionLobbyOpen` controls visibility and MUST NOT be persisted
 - Actions `openSessionLobby` and `closeSessionLobby` are the sole open/close contract
-- Opening triggers include: session creation, join success, session timer click, sidebar return-to-session, and reconnect flows that need lobby access
+- Opening triggers include: session creation, join success, header logo click while in session, sidebar return-to-session, and reconnect flows that need lobby access
+- When the session is launched and `expiresAt` is available, the lobby MUST display the remaining-time countdown (see FR-session-lobby-navigation)
 - Legacy route `/{locale}/campaigns/{campaignId}/session/{code}` redirects to `/{locale}/welcome?join={code}`; join handling opens the lobby/join flow without requiring a dedicated page
 - Non-React services that initiate lobby access MUST return session data (e.g. `{ campaignId, code }`) and let the calling component dispatch `openSessionLobby` (see FR-i18n-navigation)
 
@@ -3144,6 +3254,7 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/dialogs/SessionLobbyDialog.tsx`
 - `services/web/client/src/components/dialogs/SessionLobbyDialogDynamic.tsx`
 - `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/components/layout/SessionTimer.tsx`
 - `services/web/client/src/store/slices/sessionSlice.ts`
 - `services/web/client/src/store/slices/__tests__/sessionSlice.lobbyModal.test.ts`
 - `services/web/client/src/app/[locale]/layout.tsx`
@@ -3543,3 +3654,666 @@ Each initiative tracker row carries:
 - `services/admin/client/src/services/PromoCodeService.ts`
 - `services/admin/client/src/app/promo-codes/page.tsx`
 - `services/payment/api/src/resources/promo-code/promo-code.service.ts`
+
+---
+
+## FR-game-system: Game System Attribute
+
+**Rule**: Campaigns and all character types (Player, NPC) MUST declare a mandatory `gameSystem` attribute identifying the tabletop ruleset. Only D&D 5e is supported initially; the enum MUST be extensible for future systems.
+
+**Requirements**:
+
+- `gameSystem` is a string enum; current allowed value: `DND_5E`
+- Default value on create when omitted: `DND_5E`
+- Field is persisted on Campaign and base Character schemas (inherited by Player and NPC)
+- Create DTOs expose `gameSystem` with enum validation
+- Update DTOs MUST NOT accept `gameSystem` (immutable after creation)
+- Swagger documents the enum and default on create/read endpoints
+
+**Prohibitions**:
+
+- Storing free-text or unknown values outside the enum
+- Duplicating `gameSystem` on Player/NPC discriminators when it already exists on Character
+- Modifying `gameSystem` after entity creation (PATCH/PUT)
+
+**Tests**:
+
+- Nominal: create campaign/character without `gameSystem` → persisted as `DND_5E`
+- Edge: explicit `DND_5E` on create is accepted
+- Failure: invalid enum value is rejected by DTO validation
+- Failure: update DTOs reject or strip `gameSystem`
+
+**References**:
+
+- `services/adventure/api/src/common/constants/game-system.constant.ts`
+- `services/adventure/api/src/resources/campaign/schemas/campaign.schema.ts`
+- `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
+
+---
+
+## FR-tracker-concentration: Initiative Tracker - Concentration Spell Tracking
+
+**Rule**: During an active session combat, the initiative tracker must help participants track D&D 5e concentration on a per-row, tracker-only basis, with player self-service on their own row, GM control on all rows, real-time synchronization, and optional concentration-save reminders when hit points decrease.
+
+**Scope**:
+
+- Applies while a session combat is initialized or started (concentration edits require `battleStarted === true`).
+- Complements FR-combat-initiative-tracker, FR-session-combat-navigation, FR-session-combat-sync, and FR-tracker-vital-status without overriding turn lifecycle, visibility defaults for session-participant rows, or persisted character data rules.
+
+**Data Model (tracker-only)**:
+
+- Each `InitiativeTrackerRow` MAY carry:
+  - `concentration: { spellName, spellLevel?, className?, sinceRound? } | null`
+  - `pendingConcentrationCheck: { damageAmount, dc } | null` (optional reminder until resolved)
+- Concentration state MUST NOT be persisted on the character sheet.
+- Concentration state MUST be cleared when combat ends or the tracker is reset.
+- Concentration MUST auto-clear when the row vital status becomes `unconscious` or `dead` (FR-tracker-vital-status).
+
+**Visibility**:
+
+- A new player field flag `concentration` MUST exist in `playerFieldVisibility`.
+- Default visibility: `true` for session-participant player rows, `false` for NPC rows (same pattern as conditions).
+- When hidden from players, concentration MUST be stripped from player snapshots (FR-session-combat-navigation sanitization).
+
+**Permissions**:
+
+- Once combat has started, players MUST remain read-only on tracker rows except they MAY set, replace, or clear concentration on their own session character row only.
+- The GM MUST manage concentration on any row at any time while combat is started.
+- Only one active concentration entry per row; setting a new concentration spell MUST replace the previous entry automatically.
+
+**Magic Tab Integration**:
+
+- When a session participant casts a spell whose duration indicates concentration (heuristic: `duration` contains "concentration", case-insensitive), the client MUST prompt for confirmation before activating tracker concentration.
+- On confirmation, concentration MUST be applied to the matching tracker row using the same synchronization path as manual tracker edits.
+
+**Concentration Save Reminder**:
+
+- When a row with active concentration loses effective hit points (`hitPoints + tempHitPoints`) during started combat, the client MUST surface a non-blocking reminder with damage taken and CON save DC (`max(10, floor(damage / 2))`).
+- The concentration-save modal MUST be shown only to the owning session participant on their own row; the GM MUST NOT receive that modal for player rows (GM retains the modal for non-player tracker rows they manage).
+- The concentration-save modal MUST auto-open only once per pending-check signature (damage + DC); revisiting the tracker page MUST NOT re-trigger it for the same pending reminder (badge remains the manual entry point).
+- The reminder MUST offer at least: **Kept**, **Lost**, and **Later** (GM-managed non-player rows only; session player rows MUST NOT offer **Later** and MUST require an explicit **Kept** or **Lost** choice).
+- **Lost** MUST clear concentration; **Kept** MUST clear the pending reminder only; **Later** MUST keep the pending reminder visible on the row until resolved.
+- The row badge MUST show a compact generic concentration label (`badgeLabel` / `badgeShort` i18n keys) with the maintained spell name available via tooltip/detail (`badgeDetail`); while a pending check exists, a compact CON-save indicator (e.g. `CON DC {dc}`) with warning styling; activating the badge MUST reopen the save reminder when applicable.
+- Chariot MUST NOT roll dice or enforce save outcomes automatically.
+
+**Synchronization**:
+
+- Concentration changes MUST propagate through the existing battle snapshot WebSocket flow (`session:battle-state-updated`).
+- Player-originated concentration updates MUST be relayed through the session gateway to the GM client, which remains authoritative for rebroadcasting the final snapshot (same pattern as preparatory player initiative).
+
+**Prohibitions**:
+
+- Persisting concentration on character records.
+- Allowing a player to modify another participant's concentration.
+- Allowing concentration edits when combat is not started.
+- Keeping concentration after combat end, tracker reset, unconscious/dead vital status, or explicit **Lost** resolution.
+
+**Tests**:
+
+- Nominal: set/replace/clear concentration on GM row; player sets own row during started combat.
+- Edge: auto-clear on unconscious/dead; hidden concentration stripped from player snapshot.
+- Edge: HP decrease with active concentration creates pending check with correct DC.
+- Failure: player cannot update another character's concentration; gateway rejects invalid payload.
+
+**References**:
+
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/components/initiativeTracker/`
+- `services/web/client/src/lib/sessionConcentrationBridge.ts`
+- `services/web/client/src/hooks/useSessionBattleSync.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`
+
+---
+
+## FR-codex-game-system-filter: Codex Search — Game System Filter
+
+**Rule**: Codex search dialogs for spells (`CodexSpellSearchDialog`) and monsters (`MonsterCodexDialog`) MUST allow filtering results by game system. The filter MUST be applied server-side via the Codex API `gameSystem` query parameter.
+
+**Scope**:
+
+- Complements existing name and language filters (and spell-specific class, level, school filters).
+- Aligns with Codex API `FR-api-game-system` (`GET /spells`, `GET /monsters`).
+
+**Behavior**:
+
+- Users MUST be able to select at most one game system, or leave the filter unset for all systems.
+- When no game system is selected, all systems are returned (no `gameSystem` param sent).
+- When a game system is selected, it MUST be forwarded to the API as `gameSystem` (canonical enum value, e.g. `DND_5E`).
+- Changing the game system filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening either dialog MUST reset the game system filter: when `GAME_SYSTEMS` contains exactly one entry, to that sole value (preselected); otherwise to “all systems” (unset).
+- When `GAME_SYSTEMS` contains exactly one entry, the game system filter control MUST remain visible with that sole value preselected and MUST be disabled (non-interactive); the sole system MUST still be applied to API requests.
+- Filter labels MUST use i18n keys under `gameSystemFilter` in each dialog namespace.
+- Supported values MUST come from `GAME_SYSTEMS` in `constants/gameSystems.ts` (extensible enum).
+
+**Accessibility (FR-frontend-design)**:
+
+- The game system filter control MUST expose an accessible name (`aria-label`) equivalent to other Codex filter controls.
+- When only one game system is supported, the control MUST be disabled and expose that state to assistive technologies.
+- The spell dialog MUST use the same single-select `Select` pattern as the level filter.
+
+**Prohibitions**:
+
+- Client-side-only game system filtering when the API supports the `gameSystem` param.
+- Hardcoded game system labels bypassing i18n.
+- Sending values outside the `GAME_SYSTEMS` enum.
+
+**Tests**:
+
+- `CodexService.searchSpells` forwards a selected game system to `/spells`.
+- `CodexService.searchMonsters` forwards a selected game system to `/monsters`.
+- Both methods omit `gameSystem` when the filter is unset.
+- `getDefaultCodexGameSystemFilter` returns the sole system when `GAME_SYSTEMS.length === 1`, otherwise `null`.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/constants/gameSystems.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
+## FR-codex-npc-search-entity-type: Codex NPC Search — Monster and Player Filter
+
+**Rule**: The community library search dialog (`MonsterCodexDialog`) used for NPC creation MUST allow searching Codex monsters (`GET /monsters`) and premade player characters (`GET /players`), with a single-select entity-type filter.
+
+**Scope**:
+
+- Complements FR-codex-game-system-filter (game system and language filters).
+- Applies to NPC creation from the community library (`npcs-codex` flow).
+- Selected player entries are converted to `Partial<NPC>` for the existing NPC creation draft pipeline.
+
+**Behavior**:
+
+- Users MUST be able to filter results by: monsters only, players only, or both (default: both).
+- When **both** is selected, the client MUST query `/monsters` and `/players` in parallel with the same pagination, language, name, and game-system parameters, then merge results (monsters first, then players).
+- When only one type is selected, only the corresponding Codex endpoint is called.
+- Changing the entity-type filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
+- Opening the dialog MUST reset the entity-type filter to **both**.
+- List rows for monsters keep CR and creature type; list rows for players show level and race (or class list fallback).
+- Preview and validation MUST work for both kinds; player selection uses `convertCodexPlayerToChariotNPC`.
+- Filter labels MUST use i18n keys under `entityTypeFilter` in `monsterCodexDialog`.
+
+**Accessibility (FR-frontend-design)**:
+
+- The entity-type filter control MUST expose an accessible name (`aria-label`) equivalent to other Codex filter controls.
+
+**Prohibitions**:
+
+- Client-side-only entity-type filtering when the Codex API exposes separate `/monsters` and `/players` endpoints.
+- Hardcoded entity-type labels bypassing i18n.
+- Breaking the existing NPC codex draft flow (`onMonsterSelected` / `setNpcCodexDraft`).
+
+**Tests**:
+
+- `CodexService.searchPlayers` forwards name, lang, pagination, and optional `gameSystem`.
+- `CodexService.convertCodexPlayerToChariotNPC` maps a nominal player translation to `Partial<NPC>`.
+- Edge: `searchPlayers` omits `gameSystem` when unset.
+
+**References**:
+
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/utils/codexLocale.utils.ts`
+- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+
+---
+
+## FR-session-gm-codex-library: In-Session GM Community Library Access
+
+**Rule**: During an active session, the Game Master MUST be able to open a read-only community library (Codex) search from anywhere in the application, covering spells, monsters, and premade player characters.
+
+**Scope**:
+
+- Applies when the user is the GM (`currentParticipant.status === "gameMaster"`) and `isInSession === true`.
+- Complements FR-codex-game-system-filter, FR-codex-npc-search-entity-type, FR-codex-spell-level-filter, and FR-codex-spell-school-filter without changing their filter semantics.
+- Does not grant access to players or to users outside an active session.
+
+**Header entry point**:
+
+- The global header MUST expose a grimoire button immediately **before** (to the left of) the profile avatar when the GM is in session.
+- The button MUST use a book icon (`Book` from lucide-react).
+- The button MUST expose an accessible name and a tooltip with the label **« Accéder à la librairie communautaire »** (i18n key under `header`).
+- When Codex is unavailable (`useCodexHealth`), the button MUST be disabled and the tooltip MUST communicate unavailability (reuse existing `codexUnavailable` copy where applicable).
+
+**Dialog behavior**:
+
+- Clicking the button opens a modal community library browser reachable from any page while in session.
+- The dialog MUST provide access to spells, monsters (NPCs), and premade player characters within a **single** modal, using tabs or an equivalent in-dialog switch (no route change, no separate modals per type).
+- Each type reuses the same search, filters, preview, and pagination as `CodexSpellSearchDialog` (spells) and `MonsterCodexDialog` (monsters / players).
+- Session browse mode is **read-only**: users consult previews only; there is no spell import, NPC draft creation, or navigation away from the current session page.
+- Closing the dialog MUST return the GM to the exact page and state they were on (no route change).
+
+**Accessibility (FR-frontend-design)**:
+
+- Header button is keyboard-focusable with visible focus ring.
+- Dialog follows existing Dialog primitive focus trap and `aria-labelledby` title.
+- Tab controls (if used to switch spells / characters) MUST be keyboard-operable with an accessible name per tab.
+
+**Prohibitions**:
+
+- Showing the grimoire button to players or when not in session.
+- Hardcoded French tooltip bypassing i18n.
+- Reusing creation flows (`onSpellSelected`, `onMonsterSelected`, `npcs-codex` navigation) from session browse mode.
+- Opening a second WebSocket connection or mutating session state as part of Codex browse.
+
+**Tests**:
+
+- Nominal: GM in session sees grimoire button; player does not.
+- Nominal: opening the dialog exposes spell and character search without route change.
+- Edge: Codex unavailable disables the header button.
+- Failure: non-GM user never receives the header control.
+
+**References**:
+
+- `services/web/client/src/components/layout/Header.tsx`
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/hooks/useCodexHealth.ts`
+- `services/web/client/messages/{en,fr,es}.json`
+
+---
+
+## FR-character-sheet-pdf-export: Character Sheet PDF Export
+
+**Rule**: The web application MUST allow exporting Player character sheets as a downloadable PDF. NPC export MUST remain visible but disabled with a « coming soon » affordance until a dedicated NPC PDF layout ships. The Player PDF layout MUST follow the three-page D&D 5e personal character sheet structure (core stats, biography/appearance, spellcasting) while applying Chariot's documented visual baseline (`docs/design.md`). Export is client-side only; no new backend endpoint is required.
+
+**Scope**:
+
+- Player characters (`Player`) in **Mes personnages** and in campaign groups — export active
+- NPC characters (`NPC`) in campaign groups — export control visible but disabled (coming soon); PDF generation MUST NOT run
+- Game system: `DND_5E` only (initial release); other systems MUST NOT expose the action until a dedicated layout exists
+
+**Entry points**:
+
+- **Character detail view** (`CharacterDetailView`): secondary action button « Exporter en PDF » visible when the sheet is in read mode (not editing), alongside existing footer/header actions. Hidden when `showEditControls` is false (GM read-only player sheet outside session). For NPCs the button MUST be disabled (grayed), expose an accessible name that reflects unavailability, and show a tooltip/popover on hover (or equivalent touch affordance) stating that NPC PDF export is coming soon.
+- **Sidebar context menu** (FR-sidebar-context-actions): same action on character rows (players and NPCs) in **Mes personnages** and in groups, via overflow menu on mobile/tablet. For NPCs the menu item MUST be disabled (grayed) with the same coming-soon tooltip/title and MUST NOT open the export dialog or fetch the full sheet for export.
+
+**PDF layout (D&D 5e structure + Chariot styling)**:
+
+- **Page 1 — Core sheet** (always):
+  - Header identity block: avatar thumbnail (when resolvable via presigned read, variant `main`), QR code encoding the absolute character sheet URL (`{origin}/{locale}/characters/{characterId}`), character name, race/type, class & level (PJ) or CR & XP (PNJ), background or creature type, alignment, XP (PJ), player name when resolvable (PJ, optional). Header cards MUST size to content (no uniform min-height); header padding MUST stay compact so content starts near the top margin.
+  - Features & traits (`abilities`) MUST render as a structured list: each entry on its own block with the ability name emphasized and description on following line(s), not a single bullet-separated run-on paragraph.
+  - Six ability scores with modifiers, inspiration (PJ), proficiency bonus, saving throws, skills (with computed bonuses), passive perception
+  - Combat block: AC, initiative, speed, current/max/temp HP, hit dice (PJ) or HP roll notation (PNJ)
+  - Death saves (PJ only), attacks & spell attacks, equipment & treasure currencies, proficiencies/languages, features & traits (`abilities`)
+- **Page 2 — Biography** (always):
+  - Appearance (age, height, weight, eyes, skin, hair, description)
+  - Personality traits, ideals, bonds, flaws, allies & organizations, backstory (PJ) or equivalent narrative fields
+  - Continuation of features & traits when page 1 overflow occurs (same structured list format)
+- **Page 3 — Spellcasting** (conditional):
+  - Included only when `spellcasting` has at least one entry with spells or slots
+  - Per class block: spellcasting ability, save DC, attack bonus, cantrips, prepared/known spells by level, slot usage grid (PJ) or innate/uses-per-day grid (PNJ innate)
+
+**Visual treatment** (FR-frontend-design):
+
+- The user MUST choose between two export themes before download:
+  - **Dark** (Chariot app): background `--card` (`#19191c`) / `--background` (`#0c0c0c`), body text `--foreground` / `--gray-light`, borders `white/10` or `--gray`
+  - **Light** (print-friendly): background white (`#ffffff`), body text dark (`#1a1a1a`), borders `#d6d6d6`
+- Both themes share the same section accent colors: General `blue`, Combat `red`, Magic `pink`, Inventory `yellow`, History `green`
+- Rounded corners on field boxes (`rounded-[15px]` equivalent in PDF units)
+- Chariot wordmark or app name in PDF footer on each page
+- Contrast MUST meet WCAG AA (4.5:1) for normal text in both themes
+
+**Data mapping**:
+
+- Skill and save bonuses MUST use the same calculation helpers as the live sheet (`calculateSkillBonus`, `calculateAbilityBonus`, saving-throw logic from `global.utils`)
+- Translated labels MUST use the active UI locale at export time (`next-intl` namespaces: `characterDetail`, `classes`, `alignments`, etc.)
+- Internal identifiers (`_id`, `createdBy`, `keycloakId`) MUST NOT appear in the PDF
+- Empty optional fields render as blank lines/boxes, not « undefined » or « null »
+
+**Interaction**:
+
+- Player: click opens a theme picker (dark / light) then triggers client-side PDF generation and browser download
+- Player: button shows loading state (`aria-busy="true"`, disabled) while generating
+- Player success: file downloaded as `chariot-{sanitized-firstname}-{sanitized-lastname}-{YYYY-MM-DD}.pdf`
+- Player failure: toast error; button returns to idle
+- NPC: control remains visible, disabled, with coming-soon tooltip; no theme dialog, no PDF generation
+
+**Prohibitions**:
+
+- Requiring a backend export endpoint
+- Blocking export during an active session for Players (export remains available unless `showEditControls` is false for GM read-only player sheets)
+- Enabling or completing PDF export for NPC characters while this coming-soon gate is active
+- Hiding the NPC export control entirely (must stay visible but disabled)
+- Using relative imports in new source files (project `@/` alias rule)
+- Embedding Wizards of the Coast copyrighted artwork or verbatim « TM & © » footer from the official blank sheet
+- Light-theme PDF that ignores Chariot palette without explicit product decision
+
+**Tests**:
+
+- Nominal: Player with full data → 3-page PDF buffer produced, filename sanitized
+- Nominal: NPC sheet / sidebar row → export control disabled with coming-soon tooltip; no PDF generated
+- Edge: Character without spellcasting → 2 pages only (Player)
+- Edge: Long text fields truncated or wrapped without layout overflow crash
+- Failure: Avatar fetch failure → PDF still generated without image
+- Unit: export filename builder strips unsafe characters
+- Unit: skill bonus mapping matches `calculateSkillBonus` for sample stats
+- Unit / component: group/sidebar character discriminant correctly marks NPC export as disabled
+- Accessibility: export button has accessible name; loading state exposes `aria-busy`; disabled NPC control still exposes coming-soon reason to assistive tech
+
+**References**:
+
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/lib/characterSheetPdf/` (to create)
+- `services/web/client/src/utils/global.utils.ts`
+- `docs/design.md`
+
+---
+
+## FR-character-form-nested-escape: Character Form Escape vs Nested Dialogs
+
+**Rule**: On character create and character edit forms, pressing Escape MUST dismiss only the topmost open overlay (dialog / confirm / popover layer that traps Escape). Escape MUST NOT cancel or leave the character form while such an overlay is open.
+
+**Scope**:
+
+- Character creation (`CharacterFormView` and equivalent create flows)
+- Character edit mode (`CharacterDetailView` while `isEditing`)
+- Nested overlays opened from these forms, including at least: Codex spell search (`CodexSpellSearchDialog`), confirmation dialogs, export/theme dialogs, and other Radix/Shadcn `Dialog` instances opened above the form
+
+**Requirements**:
+
+- Global form shortcuts that cancel create/edit on Escape MUST ignore Escape when a nested dialog (or equivalent modal layer) is open.
+- Escape on an open nested dialog MUST close that dialog only; the form remains in create/edit mode with unsaved changes preserved.
+- After the nested dialog is closed, a subsequent Escape MAY cancel/leave the form (existing create/edit shortcut behavior).
+- Behavior MUST remain keyboard-accessible and consistent with dialog focus trap conventions (FR-frontend-design).
+
+**Prohibitions**:
+
+- Letting the form-level Escape handler (including capture-phase `window` listeners) cancel create/edit while a nested dialog is open.
+- Closing both the Codex (or other nested) dialog and the character form on a single Escape press.
+
+**Tests**:
+
+- Nominal: open Codex spell search from magic tab while editing → Escape closes Codex only; edit mode stays active.
+- Nominal: open Codex during character creation → Escape closes Codex only; create form stays mounted.
+- Edge: after Codex is closed, Escape cancels edit / leaves create as before.
+- Edge: ConfirmDialog open above the form → Escape closes confirm only, not the form.
+- Failure / guard: form Escape handler does not run when `role="dialog"` (or equivalent open modal) is present in the document.
+
+**References**:
+
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/web/client/src/components/character/CharacterFormView.tsx`
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
+
+---
+
+## FR-campaign-context-url-sync: Cohérence campagne URL / Redux et historique navigateur
+
+**Rule**: Sur toute route scopée campagne (`/{locale}/campaigns/{campaignId}/...`), le contexte Redux `campaignContext.selectedCampaignId` MUST rester aligné sur le `campaignId` de l’URL. Le retour / avance navigateur MUST restaurer un triplet cohérent `(campaignId, groupId, characterId)` côté URL et contexte UI (sidebar, groupes, titre de campagne), sans afficher un personnage d’une campagne dans le contexte d’une autre.
+
+**Scope**:
+
+- Navigation entre campagnes (sélecteur d’espace MJ / sidebar)
+- Navigation vers une fiche personnage en campagne
+- Historique navigateur (`back` / `forward`) et soft navigation App Router
+- Complète FR-sidebar-navigation (contexte Player/GM indépendant de l’URL) et FR-character-detail-view (routes fiche) sans les remplacer : le mode Player/GM reste piloté par Redux ; seul le **campaignId** des routes `/campaigns/...` est synchronisé depuis l’URL
+
+**Requirements**:
+
+- Quand le pathname contient `/campaigns/{campaignId}/`, `selectedCampaignId` MUST être mis à jour vers ce `campaignId` si différent (y compris après `popstate` / back-forward).
+- Les groupes affichés en sidebar (et tout cache `group` lié à la campagne sélectionnée) MUST correspondre à `selectedCampaignId` une fois synchronisé.
+- Une entrée d’historique vers une fiche personnage en campagne MUST permettre de revenir à la même combinaison campagne + groupe + personnage que lors de la visite d’origine.
+- Sur une route `/campaigns/{campaignId}/groups/{groupId}/...`, le groupe `{groupId}` MUST être (re)déplié dans la sidebar après sync / rechargement des groupes (via `groupToOpen`), y compris après un changement de campagne qui a vidé `openGroupId`.
+- La synchronisation MUST être déterministe et sans boucle de navigation (pas de `router.push`/`replace` uniquement pour « corriger » le campaignId si l’URL est déjà la source de vérité).
+
+**Prohibitions**:
+
+- Laisser `selectedCampaignId` sur la campagne B après un retour navigateur vers une URL de campagne A.
+- Afficher la fiche d’un personnage X (campagne A) sous le chrome / sidebar / groupes de la campagne B.
+- Déduire le mode Player vs GM depuis l’URL (interdit par FR-sidebar-navigation) — hors périmètre de cette règle.
+
+**Tests**:
+
+- Nominal : campagne A / personnage X → campagne B / personnage Y → back navigateur → URL et `selectedCampaignId` = A, fiche X, sidebar groupes de A, groupe de X déplié.
+- Edge : forward après ce back → retour cohérent vers B / Y avec groupe de Y déplié.
+- Edge : deep link direct vers `/campaigns/{B}/groups/{g}/characters/{y}` avec Redux encore sur A → sync immédiate vers B sans navigation parasite, groupe `g` déplié.
+- Failure / guard : pathname hors `/campaigns/...` (ex. `/characters/{id}` espace joueur) → cette règle ne force pas un `selectedCampaignId` campagne.
+
+**References**:
+
+- `services/web/client/src/store/slices/campaignContextSlice.ts`
+- `services/web/client/src/components/layout/Sidebar/SidebarEnvironment.tsx`
+- `services/web/client/src/hooks/useGroups.ts`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx`
+- `docs/functional-rules.md` — FR-sidebar-navigation, FR-character-detail-view, FR-i18n-navigation
+
+---
+
+## FR-session-lobby-wheel-leave-refund: Auto-release of reserved wheels on pre-launch leave
+
+**Rule**: When a participant explicitly leaves a session that is still in lobby (`status === activated`, not launched), the server MUST automatically release all wheels that participant had reserved for that session so they are available again on their balance quota and removed from the session deposit pool.
+
+**Scope**:
+
+- Complements FR-session-lobby-wheel-deposit (reservations until launch) and FR-user-balance-history (debit only at launch).
+- Applies to explicit leave paths (WebSocket `session:leave` and HTTP leave), not to transient disconnect grace periods.
+
+**Requirements**:
+
+- Deposits remain Redis reservations until launch; “refund” means clearing that user’s reserved count for the session (no Adventure `addHistory` credit, because no debit occurred yet).
+- On leave while `status === activated`: release all reserved wheels for the leaving `userId` (set their deposit to 0 / remove their Redis hash field).
+- Broadcast `session:token-updated` with the updated `tokensByUser` map to remaining participants (same contract as manual withdraw).
+- If the leaving user had 0 reserved wheels, leave behavior is unchanged (no-op on tokens).
+- If the session is already `launched` (or `closed`), leave MUST NOT release or credit wheels (launch debit already applied or session ended).
+
+**Prohibitions**:
+
+- Crediting user balance / writing history on pre-launch leave for released reservations.
+- Releasing another participant’s reserved wheels when one user leaves.
+- Skipping the Redis release on WS leave while doing it only on HTTP leave (or the reverse) — both paths MUST share the same release semantics.
+
+**Tests**:
+
+- Nominal: user with N reserved wheels leaves an `activated` session → their entry is cleared, others’ deposits unchanged, `session:token-updated` broadcast.
+- Edge: leave with 0 reserved wheels → no token map change required beyond existing leave flow.
+- Edge / guard: leave after `launched` → reserved/spent wheels are not restored via this mechanism.
+- Failure: Redis clear failure must not silently leave orphan reservations without surfacing an error on the leave path when feasible.
+
+**References**:
+
+- `services/session/api/src/resources/session/session.gateway.ts`
+- `services/session/api/src/resources/session/session.service.ts`
+- `services/session/api/src/redis/redis.service.ts`
+- `docs/functional-rules.md` — FR-session-lobby-wheel-deposit, FR-user-balance-history
+
+---
+
+## FR-session-lobby-wheel-quota-invariant: Wheel deposits must match participant quota before launch
+
+**Rule**: While a session is in lobby (`activated`), the total reserved wheels MUST never exceed the current participant count (quota). Launch MUST be allowed only when the total reserved wheels equals that quota exactly.
+
+**Scope**:
+
+- Complements FR-session-lobby-wheel-deposit (quota = participants including GM) and FR-session-lobby-wheel-leave-refund (release leaver deposits).
+- Applies after roster shrinks (leave) and at launch validation.
+
+**Requirements**:
+
+- **Invariant**: at all times in lobby, `sum(tokensByUser) <= participants.length`.
+- **On leave (activated)**: after releasing the leaving user’s reservations, if the remaining total still exceeds the new participant count, the server MUST automatically release the excess reservations until `sum === participants.length` (deterministic order: reduce from users with the highest deposit first; ties broken by `userId` ascending). Broadcast `session:token-updated` with the final map.
+- **Launch gate (server authority)**: `session:launch` / HTTP launch MUST reject when `sum(tokensByUser) !== participants.length` (too few or too many), with an explicit error code (e.g. `WHEEL_QUOTA_MISMATCH`).
+- **Client**: the GM “Lancer la session” control MUST be enabled only when `totalDeposited === participants.length` (not merely `>=`). If over-quota somehow appears client-side before sync, launch MUST stay disabled and the progress UI MUST not present an over-quota state as launch-ready.
+
+**Prohibitions**:
+
+- Launching with `totalDeposited > participants.length` or `< participants.length`.
+- Silently leaving excess deposits after a leave without clamp or launch block.
+- Debiting Adventure balance for excess reservations created only by a post-leave overflow.
+
+**Tests**:
+
+- Nominal: after leave, leaver cleared and remaining total already `<=` new quota → no further clamp.
+- Nominal: after leave, remaining total `>` new quota → excess released from highest depositors; broadcast updated map; total equals new quota.
+- Edge: equal highest deposits → tie-break by `userId` ascending is stable.
+- Guard: launch with mismatch (under or over) is rejected server-side.
+- Failure: client does not enable launch when `totalDeposited !== maxSlots`.
+
+**References**:
+
+- `services/session/api/src/redis/redis.service.ts`
+- `services/session/api/src/resources/session/session.service.ts`
+- `services/session/api/src/resources/session/session.gateway.ts`
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/lib/sessionWheelDeposit.ts`
+- `docs/functional-rules.md` — FR-session-lobby-wheel-deposit, FR-session-lobby-wheel-leave-refund
+
+## FR-tracker-initiative-modifier-display: Initiative Modifier Next to Initiative Entry
+
+**Rule**: Wherever a combatant initiative score is entered (editable initiative input), the UI MUST display that combatant's character-sheet initiative modifier, and the editable field MUST represent the **initiative roll** (d20 or manual entry). The persisted tracker score used for ordering and locked display MUST be `roll + initiativeModifier`.
+
+**Scope**:
+
+- Complements FR-combat-initiative-tracker (editable initiatives before combat start / preparatory player input) and FR-session-combat-sync (sheet ↔ tracker mirrors) without changing turn order, locking, or player visibility of the rolled initiative **total**.
+- Applies to:
+  - Initiative Tracker row initiative cell while the value is editable (GM before start; player on their own row during preparatory input).
+  - Mid-combat **Add combatants** member initiative inputs when the member is included.
+- Grouped bulk initiative entry applies the same formula: each selected row gets `enteredGroupRoll + thatRow.initiativeModifier`.
+
+**Requirements**:
+
+- The displayed modifier is the character `stats.initiative` value (same semantic as the character sheet “bonus d'initiative”), formatted as a signed integer (`+2`, `0`, `-1`).
+- On tracker rows, the modifier MUST be mirrored onto the row at creation / mid-combat add (`initiativeModifier`) and refreshed via the existing sheet sync mirror path so display does not require an extra fetch at edit time.
+- Legacy rows without `initiativeModifier` MUST treat missing value as `0` until the next sheet sync or row recreate.
+- **Input semantics**: while editable, the field shows/edits the **roll** (`initiative - initiativeModifier` when reopening a committed value). On commit, Redux `initiative` MUST become `roll + initiativeModifier`.
+- **Flush before lock**: starting combat (and any action that locks initiative inputs) MUST flush pending uncommitted initiative field text into Redux first, then apply the roll+modifier formula, so values are not lost when the GM clicks **Start combat** without blurring each field.
+- Locked / started combat display shows the **total** (`initiative`), not the raw roll alone.
+- Placement: adjacent to the initiative input (including locked total display), visually secondary to the score, without breaking the compact tracker grid on mobile.
+- The modifier MUST be paired with the same initiative dice icon used on the character sheet, and MUST expose a tooltip (hover/focus) using the accessible modifier label (e.g. “bonus d'initiative +2”).
+- Accessibility: the modifier MUST be exposed to assistive tech (input `aria-label` and a keyboard-focusable tooltip trigger). The signed numeric modifier remains visible; the icon MUST NOT replace the number.
+- GM sees the modifier for every editable row. A player sees the modifier only on their own editable row (other combatants’ modifiers MUST NOT be shown to players).
+
+**Prohibitions**:
+
+- Broadcasting or revealing other combatants’ initiative modifiers to players.
+- Double-applying the modifier when re-editing a committed total (focus MUST re-derive the roll from `initiative - initiativeModifier`).
+- Changing turn-order rules beyond sorting by the persisted total `initiative`.
+
+**Tests**:
+
+- Nominal: modifier hint shows dice icon, signed bonus (`+2`), and tooltip/accessible name “bonus d'initiative +2”.
+- Nominal: GM types `15` with modifier `+2`, blurs or starts combat → stored/displayed total `17`; sort uses `17`.
+- Nominal: Start combat while focus is still in an initiative field → pending text is flushed; totals are not left at `0`.
+- Edge: player preparatory input shows modifier only on own row; missing legacy `initiativeModifier` displays/adds as `0`.
+- Edge: re-focus after commit of `17` with mod `+2` shows roll `15` in the input; second commit still yields `17`.
+- Failure: add-combatants excluded member shows no initiative input/modifier; included member uses loaded character modifier in the total.
+
+**References**:
+
+- `services/web/client/src/components/initiativeTracker/InitiativeModifierHint.tsx`
+- `services/web/client/src/components/initiativeTracker/InitiativeNumberInput.tsx`
+- `services/web/client/src/components/initiativeTracker/useInitiativeTextInput.ts`
+- `services/web/client/src/components/initiativeTracker/InitiativeTrackerRow.tsx`
+- `services/web/client/src/components/dialogs/AddCombatantsGroupMembers.tsx`
+- `services/web/client/src/store/slices/sessionSlice.ts` (`createInitiativeTrackerRow`, `startBattle`)
+- `services/web/client/src/components/initiativeTracker/utils.ts` (`trackerMirrorFieldsFromCharacter`)
+- `docs/functional-rules.md` — FR-combat-initiative-tracker, FR-session-combat-sync, FR-session-combat-navigation
+
+---
+
+## FR-magic-spell-level-categories: Spell Level Categories Without Orphans
+
+**Rule**: On the character magic tab (view and edit), spell-level accordion categories MUST appear only for levels that currently have at least one spell; orphan `spellSlotsByLevel` entries MUST be pruned when no spell remains at that level.
+
+**Requirements**:
+
+- Level accordion sections (cantrips = 0, levels 1–9) MUST be listed from spells present on the active spellcasting block, not from `spellSlotsByLevel` keys alone.
+- A level section MUST be shown if and only if at least one spell has that level.
+- When the last spell of a level is removed, or a spell’s level is changed so that the previous level has no remaining spells, the corresponding `spellSlotsByLevel` entry MUST be removed from form/persisted state.
+- Adding a non-cantrip spell of level N MUST still ensure a `spellSlotsByLevel[N]` entry exists (create with sensible defaults if missing).
+- New empty spellcasting blocks MUST NOT seed a level-1 slot row by default; slots are created when the first level ≥ 1 spell is added (or when the user otherwise needs that level’s slots).
+- Innate / uses-per-day grouping is unchanged: groups follow `usesPerDay` of existing spells only.
+- Accessibility: collapsing empty categories MUST NOT leave focus on a removed accordion item; focus moves to the list region or another remaining category.
+
+**Prohibitions**:
+
+- Showing empty level accordion headers (slots-only levels with zero spells) in view or edit mode.
+- Leaving stale `spellSlotsByLevel` keys after the last spell of that level is gone.
+- Filling intermediate levels 1…N−1 solely because a spell of level N was added or its level was incremented via the control.
+
+**Tests**:
+
+- Nominal: add a level-6 spell → only cantrips (if any) and level 6 sections appear; remove that spell → level 6 section disappears and `spellSlotsByLevel["6"]` is gone.
+- Edge: change a spell from level 1 to 6 via the level control (including stepped increments) → no empty sections for levels 1–5; orphan slot keys for 1–5 are pruned when no spells remain there.
+- Edge: two spells at level 3, remove one → level 3 section and slots remain.
+- Failure: innate spellcasting still groups only by existing `usesPerDay` values; no by-level orphan categories.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/view/CharacterMagicView.tsx`
+- `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
+- `services/web/client/src/utils/magic.utils.ts`
+- `docs/functional-rules.md` — FR-character-detail-view
+
+---
+
+## FR-character-action-section-visibility: Combat Action Section Visible When Empty
+
+**Rule**: On the character combat tab in read (show) mode, each action section heading MUST remain visible even when that section has zero actions, so the user can discover the section without first adding actions in edit mode.
+
+**Requirements**:
+
+- Player combat tab: the **Actions** heading MUST render when `actions` is empty.
+- NPC combat tab: the **Actions**, **Legendary actions**, and **Lair actions** headings MUST each render even when the corresponding list is empty (same layout as edit mode).
+- Empty section MUST still expose the heading as an accessible section label (`aria-labelledby`).
+- Expand/collapse-all and usage-type priority controls MAY remain visible but MUST stay disabled / non-actionable when the list is empty (existing empty-shell behavior).
+- Edit mode is unchanged: action sections already remain visible so the user can add items.
+
+**Prohibitions**:
+
+- Hiding an entire action section (heading included) solely because the list is empty in show mode.
+- Rendering placeholder accordion items or fake actions to keep the heading visible.
+
+**Tests**:
+
+- Nominal: player with at least one action still shows heading, filters, and action cards.
+- Edge: player with zero actions still shows the **Actions** heading in show mode; expand-all is disabled; no action cards.
+- Edge: NPC with empty legendary and lair lists still shows those two headings in show mode.
+- Failure: empty section MUST NOT omit the heading or leave an unlabeled region.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`
+- `services/web/client/src/components/character/tabContents/battle/view/PlayerBattleTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/battle/view/NPCBattleTabContent.tsx`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-character-action-dual-range, FR-frontend-design
+
+---
+
+## FR-character-history-appearance-fit: History Appearance Card Sizes to Content
+
+**Rule**: On the character History tab, the Appearance card and its fields MUST size to their own content in view and edit modes; they MUST NOT stretch to match neighboring cards or sibling field height.
+
+**Requirements**:
+
+- Applies to the History tab Appearance region (eyes, age, skin, height, weight, hair) in both read and edit modes.
+- The Appearance card height MUST follow its fields; it MUST NOT fill leftover column height from a multi-row grid span or from taller neighboring cards (traits, allies, bonds, ideals, flaws).
+- Each appearance field MUST size to its own value. A long wrapping value in one field MUST NOT inflate empty vertical space inside other appearance fields of the same row.
+- Long values remain fully readable: they wrap inside the field (`min-w-0`, wrap) and MUST NOT overflow the card (FR-frontend-design overflow containment).
+- View mode MUST NOT truncate appearance values to keep a uniform row height.
+- Edit-mode appearance controls stay compact (single-line inputs for the six identity fields); they MUST NOT grow to fill the card.
+- Accessibility: existing labels, `aria-labelledby` on the Appearance region, and field-error linking remain unchanged; wrapping MUST NOT clip text or hide values from keyboard/screen-reader users.
+
+**Prohibitions**:
+
+- Stretching the Appearance card with full-height fill (`h-full` or equivalent) across spanned grid rows.
+- Uniform grid-row stretching that leaves large empty areas inside short appearance fields.
+- Truncating appearance values in view mode solely to keep sibling fields the same height.
+
+**Tests**:
+
+- Nominal: short values (age, height, weight plus brief eyes/skin/hair) keep the Appearance card compact; neighboring long background cards do not enlarge it.
+- Edge: a long wrapping value in one appearance field (e.g. eyes or hair) grows that field only; sibling fields stay compact and the card does not overflow horizontally.
+- Failure: empty or missing appearance values MUST NOT leave a stretched empty Appearance card matching the height of the two-row neighboring stack.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/history/view/CharacterHistoryView.tsx`
+- `services/web/client/src/components/character/tabContents/history/form/CharacterHistoryTabEdit.tsx`
+- `docs/functional-rules.md` — FR-character-universal-fields, FR-character-detail-view, FR-frontend-design
+- `docs/design.md` — §3 spacing, §5.3 cards, §6.4 overflow and text containment

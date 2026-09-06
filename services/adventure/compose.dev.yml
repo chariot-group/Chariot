@@ -57,7 +57,7 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
-      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://host.docker.internal:9002}
+      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://chariot-session:9002}
     depends_on:
       chariot-mongo:
         condition: service_healthy

@@ -1,7 +1,9 @@
 "use client";
 
 import { useCharacter } from "@/hooks/useCharacter";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
+import { useParams, useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { Player, NPC } from "@/types/character";
@@ -15,16 +17,18 @@ import {
   selectSessionParticipants,
 } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
+import { useKeycloak } from "@/providers/KeycloakProvider";
+import { shouldRedirectAwayFromCharacterSheet } from "@/lib/characterAccessError";
 
 export default function Character() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const locale = params.locale as string;
   const campaignId = params.idCampaign as string;
   const groupId = params.idGroup as string;
   const characterId = params.idCharacter as string;
   const sessionCodeQs = searchParams.get("sessionCode");
+  const sessionCode = useActiveSessionCode();
   const activeGroups = useAppSelector(selectActiveGroups);
   const archivedGroups = useAppSelector(selectArchivedGroups);
   const contextMode = useAppSelector(selectContextMode);
@@ -32,10 +36,11 @@ export default function Character() {
   const reduxSessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const currentUser = useAppSelector(selectUser);
+  const { loading: keycloakLoading, userTransitioning } = useKeycloak();
 
-  const { character, loading, error, refetch, setCharacter } = useCharacter(
+  const { character, loading, error, accessDenied, refetch, setCharacter } = useCharacter(
     characterId,
-    sessionCodeQs,
+    sessionCode,
   );
 
   const sessionGmBypassGroup = useMemo(() => {
@@ -77,11 +82,12 @@ export default function Character() {
       return `/campaigns/${campaignId}/groups/${remainingArchived[0]._id}/characters/new/players`;
     }
 
-    return `/${locale}`;
-  }, [activeGroups, archivedGroups, campaignId, groupId, locale]);
+    // Avoid locale root — it re-triggers post-login (FR-post-auth-navigation).
+    return `/welcome`;
+  }, [activeGroups, archivedGroups, campaignId, groupId]);
 
   useEffect(() => {
-    if (loading || !character || !groupId || !campaignId) {
+    if (keycloakLoading || userTransitioning || loading || !character || !groupId || !campaignId) {
       return;
     }
 
@@ -98,33 +104,41 @@ export default function Character() {
     if (!groupIds.includes(groupId) && !sessionGmBypassGroup) {
       router.replace(getFallbackRoute());
     }
-  }, [campaignId, character, getFallbackRoute, groupId, loading, router, sessionGmBypassGroup]);
+  }, [
+    campaignId,
+    character,
+    getFallbackRoute,
+    groupId,
+    keycloakLoading,
+    loading,
+    router,
+    sessionGmBypassGroup,
+    userTransitioning,
+  ]);
 
   useEffect(() => {
-    if (loading) {
+    if (keycloakLoading || userTransitioning || loading) {
       return;
     }
 
-    if (error || !character) {
+    if (!shouldRedirectAwayFromCharacterSheet(accessDenied)) {
+      return;
+    }
+
+    if (!character) {
       router.replace(getFallbackRoute());
     }
-  }, [loading, error, character, router, getFallbackRoute]);
+  }, [
+    keycloakLoading,
+    userTransitioning,
+    loading,
+    accessDenied,
+    character,
+    router,
+    getFallbackRoute,
+  ]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!loading && (error || !character)) {
-    setTimeout(() => {
-      if (!character) {
-        router.push(`/404`);
-      }
-    }, 500);
-
+  if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

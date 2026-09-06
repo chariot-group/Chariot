@@ -53,6 +53,7 @@ const FIELD_KEYS: FieldKey[] = [
   "lifeStatus",
   "armorClass",
   "conditions",
+  "concentration",
   "groupLabel",
 ];
 

@@ -1,21 +1,27 @@
 import { toast } from "react-toastify";
 
-export const showToast = (message: string, type: "success" | "error" | "info" | "warning") => {
+type ToastType = "success" | "error" | "info" | "warning";
+
+export const showToast = (
+  message: string,
+  type: ToastType,
+  options?: { autoClose?: number; toastId?: string },
+) => {
   switch (type) {
     case "success":
-      toast.success(message);
+      toast.success(message, options);
       break;
     case "error":
-      toast.error(message);
+      toast.error(message, options);
       break;
     case "info":
-      toast.info(message);
+      toast.info(message, options);
       break;
     case "warning":
-      toast.warning(message);
+      toast.warning(message, options);
       break;
     default:
-      toast(message);
+      toast(message, options);
       break;
   }
 };

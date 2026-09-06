@@ -1,14 +1,6 @@
 "use client";
 
 import * as React from "react";
-
-/** Pure helper — exported for unit tests */
-export function buildDuplicateGroupLabel(group: { label: string } | null): string {
-  if (!group) return "2";
-  const base = group.label.trim();
-  return base ? `${base} 2` : "2";
-}
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,14 +12,25 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { nextAvailableDuplicateName } from "@/lib/duplicateName";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+/** Pure helper — exported for unit tests */
+export function buildDuplicateGroupLabel(
+  group: { label: string } | null,
+  existingLabels: readonly string[] = [],
+): string {
+  return nextAvailableDuplicateName(group?.label?.trim() ?? "", existingLabels);
+}
 
 interface DuplicateGroupDialogProps {
   group: { label: string } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDuplicate: (label: string, count: number) => Promise<void>;
+  /** Visible group labels used to pick the next free suffix */
+  existingLabels?: readonly string[];
 }
 
 export function DuplicateGroupDialog({
@@ -35,11 +38,15 @@ export function DuplicateGroupDialog({
   open,
   onOpenChange,
   onDuplicate,
+  existingLabels = [],
 }: DuplicateGroupDialogProps) {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
 
-  const defaultLabel = React.useMemo(() => buildDuplicateGroupLabel(group), [group]);
+  const defaultLabel = React.useMemo(
+    () => buildDuplicateGroupLabel(group, existingLabels),
+    [group, existingLabels],
+  );
 
   const [label, setLabel] = React.useState(defaultLabel);
   const [countStr, setCountStr] = React.useState("1");

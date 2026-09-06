@@ -2,13 +2,52 @@ export function isSessionLobbyPage(pathname: string): boolean {
     return /\/campaigns\/[^/]+\/session\/[^/]+\/?$/.test(pathname);
 }
 
+/** @see FR-session-join-qr-code — invite code/QR only before launch. */
+export function shouldShowSessionLobbyInvitePanel(
+    sessionStatus: string | null | undefined,
+): boolean {
+    return sessionStatus === "activated";
+}
+
+/**
+ * Locale-agnostic sheet href for `@/i18n/navigation` Link / router.
+ * @see FR-session-combat-navigation, FR-i18n-navigation
+ */
+export function buildSessionCharacterHref(
+    characterId: string,
+    sessionCode?: string | null,
+): string {
+    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
+    return `/characters/${encodeURIComponent(characterId)}${query}`;
+}
+
 export function buildPlayerSessionCharacterPath(
     locale: string,
     characterId: string,
     sessionCode?: string | null,
 ): string {
-    const query = sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : "";
-    return `/${locale}/characters/${encodeURIComponent(characterId)}${query}`;
+    return `/${locale}${buildSessionCharacterHref(characterId, sessionCode)}`;
+}
+
+/**
+ * FR-session-combat-navigation — ensure a character sheet path keeps session read access.
+ * Idempotent if `sessionCode` is already present in the URL.
+ */
+export function withSessionCodeQuery(
+    path: string,
+    sessionCode?: string | null,
+): string {
+    const code = sessionCode?.trim();
+    if (!code || !path) return path;
+
+    const [pathnamePart, search = ""] = path.split("?", 2);
+    const params = new URLSearchParams(search);
+    if (params.get("sessionCode")?.trim()) {
+        return path;
+    }
+    params.set("sessionCode", code);
+    const nextSearch = params.toString();
+    return nextSearch ? `${pathnamePart}?${nextSearch}` : pathnamePart;
 }
 
 export function shouldPlayerShowReturnToSheetOnSessionLobby(input: {

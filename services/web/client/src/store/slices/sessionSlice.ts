@@ -17,6 +17,25 @@ import {
     isSessionParticipantTrackerRow,
     sortInitiativeTrackerRows,
 } from '@/components/initiativeTracker/utils';
+import {
+    computeConcentrationCheckFromHpChange,
+    normalizePendingConcentrationCheck,
+    normalizeTrackerConcentration,
+} from '@/components/initiativeTracker/concentration.utils';
+
+/** FR-tracker-concentration — sort actif suivi sur la ligne tracker (non persisté fiche). */
+export interface TrackerConcentration {
+    spellName: string;
+    spellLevel?: number;
+    className?: string;
+    sinceRound?: number;
+}
+
+/** FR-tracker-concentration — rappel de jet CON en attente de résolution. */
+export interface PendingConcentrationCheck {
+    damageAmount: number;
+    dc: number;
+}
 
 export interface SessionInitBattleDraft {
     showAllOpponents: boolean;
@@ -109,6 +128,7 @@ export interface InitiativeTrackerPlayerFieldVisibility {
     lifeStatus: boolean;
     armorClass: boolean;
     conditions: boolean;
+    concentration: boolean;
     groupLabel: boolean;
 }
 
@@ -119,6 +139,7 @@ export const DEFAULT_NPC_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFieldVi
     lifeStatus: false,
     armorClass: false,
     conditions: false,
+    concentration: false,
     groupLabel: false,
 };
 
@@ -129,6 +150,7 @@ export const DEFAULT_PLAYER_PLAYER_FIELD_VISIBILITY: InitiativeTrackerPlayerFiel
     lifeStatus: true,
     armorClass: true,
     conditions: true,
+    concentration: true,
     groupLabel: true,
 };
 
@@ -162,6 +184,7 @@ export function normalizePlayerFieldVisibility(
         lifeStatus: typeof value.lifeStatus === 'boolean' ? value.lifeStatus : defaults.lifeStatus,
         armorClass: typeof value.armorClass === 'boolean' ? value.armorClass : defaults.armorClass,
         conditions: typeof value.conditions === 'boolean' ? value.conditions : defaults.conditions,
+        concentration: typeof value.concentration === 'boolean' ? value.concentration : defaults.concentration,
         groupLabel: typeof value.groupLabel === 'boolean' ? value.groupLabel : defaults.groupLabel,
     };
 }
@@ -196,6 +219,8 @@ export interface InitiativeTrackerRow {
     surname: string;
     avatar: string;
     initiative: number;
+    /** FR-tracker-initiative-modifier-display — miroir de `stats.initiative` (bonus fiche). */
+    initiativeModifier: number;
     hitPoints: number;
     maxHitPoints: number;
     tempHitPoints: number;
@@ -214,6 +239,10 @@ export interface InitiativeTrackerRow {
     deathSavesFailures: number;
     /** FR-session-gm-guest-character — personnage MJ promu temporairement dans le groupe participants session. */
     isGmGuest?: boolean;
+    /** FR-tracker-concentration — sort de concentration actif (état tracker-only). */
+    concentration?: TrackerConcentration | null;
+    /** FR-tracker-concentration — rappel de jet CON en attente. */
+    pendingConcentrationCheck?: PendingConcentrationCheck | null;
 }
 
 /** FR-combat-initiative-tracker / FR-session-combat-navigation — fabrique une ligne tracker (setup ou ajout en cours de combat). */
@@ -226,6 +255,7 @@ export function createInitiativeTrackerRow(input: {
     surname: string;
     avatar?: string;
     initiative?: number;
+    initiativeModifier?: number;
     hitPoints: number;
     maxHitPoints: number;
     tempHitPoints?: number;
@@ -239,6 +269,7 @@ export function createInitiativeTrackerRow(input: {
     const lastname = input.lastname ?? '';
     const surname = input.surname ?? '';
     const gmName = defaultPlayerDisplayNameForRow({ firstname, lastname, surname });
+    const initiativeModifier = Number.isFinite(input.initiativeModifier) ? Number(input.initiativeModifier) : 0;
 
     return {
         id: `${input.groupId}:${input.characterId}`,
@@ -247,12 +278,16 @@ export function createInitiativeTrackerRow(input: {
         lastname,
         surname,
         avatar: input.avatar ?? '',
-        initiative: input.initiative ?? 0,
+        // Seed with modifier so the editable roll field shows 0 (total = roll + mod).
+        initiative: input.initiative ?? initiativeModifier,
+        initiativeModifier,
         hitPoints: input.hitPoints,
         maxHitPoints: input.maxHitPoints,
         tempHitPoints: input.tempHitPoints ?? 0,
         armorClass: input.armorClass,
         conditions: [],
+        concentration: null,
+        pendingConcentrationCheck: null,
         groupId: input.groupId,
         groupLabel: input.groupLabel,
         visible: input.visible ?? true,
@@ -332,6 +367,9 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
     return applyPlayerRowVisibilityRules({
         ...row,
         kind,
+        initiativeModifier: Number.isFinite(row.initiativeModifier) ? Number(row.initiativeModifier) : 0,
+        concentration: normalizeTrackerConcentration(row.concentration),
+        pendingConcentrationCheck: normalizePendingConcentrationCheck(row.pendingConcentrationCheck),
         playerDisplayName: rawAlias.length > 0 ? rawAlias : gmName,
         playerFieldVisibility: normalizePlayerFieldVisibility(
             row.playerFieldVisibility,
@@ -340,6 +378,28 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
         ),
         visible: row.visible,
     });
+};
+
+const clearConcentrationIfIncapacitated = (row: InitiativeTrackerRow): void => {
+    const status = getInitiativeTrackerRowStatus(row);
+    if (status === 'dead' || status === 'unconscious') {
+        row.concentration = null;
+        row.pendingConcentrationCheck = null;
+    }
+};
+
+const applyConcentrationHpSideEffects = (
+    row: InitiativeTrackerRow,
+    previous: Pick<InitiativeTrackerRow, 'hitPoints' | 'tempHitPoints' | 'concentration'>,
+    battleStarted: boolean,
+): void => {
+    clearConcentrationIfIncapacitated(row);
+    if (!battleStarted || !row.concentration) return;
+
+    const pending = computeConcentrationCheckFromHpChange(previous, row);
+    if (pending) {
+        row.pendingConcentrationCheck = pending;
+    }
 };
 
 const mergePlayerFieldVisibilityChange = (
@@ -353,9 +413,41 @@ const mergePlayerFieldVisibilityChange = (
     };
 };
 
-const purgeTurnKeysForRow = (turnsWithActions: string[], rowId: string): string[] => {
-    const suffix = `:${rowId}`;
-    return turnsWithActions.filter((key) => !key.endsWith(suffix));
+const purgeTurnKeysForRows = (turnsWithActions: string[], rowIds: Set<string>): string[] => {
+    return turnsWithActions.filter((key) => {
+        const rowId = key.slice(key.indexOf(':') + 1);
+        return !rowIds.has(rowId);
+    });
+};
+
+/** Shared leave-initiative cleanup for one or many rows (FR-combat-initiative-tracker). */
+const removeTrackerRowsById = (state: CurrentSessionState, rowIdList: string[]) => {
+    const rowIds = new Set(rowIdList);
+    if (rowIds.size === 0) return;
+
+    const beforeLength = state.initiativeTrackerRows.length;
+    const removedActiveTurn = state.activeTurnRowId != null && rowIds.has(state.activeTurnRowId);
+    state.initiativeTrackerRows = state.initiativeTrackerRows.filter((row) => !rowIds.has(row.id));
+    if (state.initiativeTrackerRows.length === beforeLength) return;
+
+    state.turnsWithActions = purgeTurnKeysForRows(state.turnsWithActions, rowIds);
+
+    if (state.initiativeTrackerRows.length === 0) {
+        state.battleInitialized = false;
+        resetBattleTurnState(state);
+        return;
+    }
+
+    if (state.battleStarted) {
+        const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
+        const activeStillPresent = state.activeTurnRowId
+            ? sorted.some((row) => row.id === state.activeTurnRowId)
+            : false;
+        if (removedActiveTurn || !activeStillPresent) {
+            state.activeTurnRowId = findFirstAliveRowId(sorted);
+        }
+        markActiveTurnWithActions(state);
+    }
 };
 
 const resetBattleTurnState = (state: CurrentSessionState) => {
@@ -540,61 +632,25 @@ const sessionSlice = createSlice({
             }
         },
         removeInitiativeTrackerRow: (state, action: PayloadAction<string>) => {
-            const rowId = action.payload;
-            const index = state.initiativeTrackerRows.findIndex((row) => row.id === rowId);
-            if (index < 0) return;
-
-            const wasActiveTurn = state.activeTurnRowId === rowId;
-            state.initiativeTrackerRows.splice(index, 1);
-            state.turnsWithActions = purgeTurnKeysForRow(state.turnsWithActions, rowId);
-
-            if (state.initiativeTrackerRows.length === 0) {
-                state.battleInitialized = false;
-                resetBattleTurnState(state);
-                return;
-            }
-
-            if (state.battleStarted) {
-                const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
-                const activeStillPresent = state.activeTurnRowId
-                    ? sorted.some((row) => row.id === state.activeTurnRowId)
-                    : false;
-                if (wasActiveTurn || !activeStillPresent) {
-                    state.activeTurnRowId = findFirstAliveRowId(sorted);
-                }
-                markActiveTurnWithActions(state);
-            }
+            removeTrackerRowsById(state, [action.payload]);
         },
         removeInitiativeTrackerRows: (state, action: PayloadAction<string[]>) => {
-            const rowIds = new Set(action.payload);
-            if (rowIds.size === 0) return;
+            removeTrackerRowsById(state, action.payload);
+        },
+        /**
+         * FR-combat-initiative-tracker — remove all rows for one or more groups.
+         * Session participants group cannot be removed as a whole.
+         */
+        removeInitiativeTrackerGroups: (state, action: PayloadAction<string[]>) => {
+            const groupIds = new Set(
+                action.payload.filter((groupId) => groupId !== SESSION_PARTICIPANTS_GROUP_ID),
+            );
+            if (groupIds.size === 0) return;
 
-            const beforeLength = state.initiativeTrackerRows.length;
-            const removedActiveTurn = state.activeTurnRowId != null && rowIds.has(state.activeTurnRowId);
-            state.initiativeTrackerRows = state.initiativeTrackerRows.filter((row) => !rowIds.has(row.id));
-            if (state.initiativeTrackerRows.length === beforeLength) return;
-
-            state.turnsWithActions = state.turnsWithActions.filter((key) => {
-                const rowId = key.slice(key.indexOf(':') + 1);
-                return !rowIds.has(rowId);
-            });
-
-            if (state.initiativeTrackerRows.length === 0) {
-                state.battleInitialized = false;
-                resetBattleTurnState(state);
-                return;
-            }
-
-            if (state.battleStarted) {
-                const sorted = sortInitiativeTrackerRows(state.initiativeTrackerRows);
-                const activeStillPresent = state.activeTurnRowId
-                    ? sorted.some((row) => row.id === state.activeTurnRowId)
-                    : false;
-                if (removedActiveTurn || !activeStillPresent) {
-                    state.activeTurnRowId = findFirstAliveRowId(sorted);
-                }
-                markActiveTurnWithActions(state);
-            }
+            const rowIds = state.initiativeTrackerRows
+                .filter((row) => groupIds.has(row.groupId))
+                .map((row) => row.id);
+            removeTrackerRowsById(state, rowIds);
         },
         updateInitiativeTrackerRow: (
             state,
@@ -602,6 +658,11 @@ const sessionSlice = createSlice({
         ) => {
             const row = state.initiativeTrackerRows.find((item) => item.id === action.payload.id);
             if (!row) return;
+            const previousHpSnapshot = {
+                hitPoints: row.hitPoints,
+                tempHitPoints: row.tempHitPoints,
+                concentration: row.concentration ?? null,
+            };
             const nextPlayerFieldVisibility = mergePlayerFieldVisibilityChange(
                 row,
                 action.payload.changes.playerFieldVisibility,
@@ -613,6 +674,16 @@ const sessionSlice = createSlice({
                     row.kind,
                     row.groupId,
                 );
+            }
+            if (
+                action.payload.changes.hitPoints != null
+                || action.payload.changes.tempHitPoints != null
+                || action.payload.changes.deathSavesFailures != null
+                || action.payload.changes.maxHitPoints != null
+            ) {
+                applyConcentrationHpSideEffects(row, previousHpSnapshot, state.battleStarted);
+            } else {
+                clearConcentrationIfIncapacitated(row);
             }
             const normalized = applyPlayerRowVisibilityRules(row);
             row.visible = normalized.visible;
@@ -784,6 +855,7 @@ export const {
     appendInitiativeTrackerRows,
     removeInitiativeTrackerRow,
     removeInitiativeTrackerRows,
+    removeInitiativeTrackerGroups,
     updateInitiativeTrackerRow,
     updateInitiativeTrackerRowsBulk,
     resetInitiativeTracker,

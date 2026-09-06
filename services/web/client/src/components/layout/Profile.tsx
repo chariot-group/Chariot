@@ -61,10 +61,10 @@ export default function Profile() {
       <CollapsibleTrigger
         ref={collapsibleTriggerRef}
         className="w-auto"
-        disabled={loading}
         aria-label={t("profile")}
         aria-expanded={isOpen}
-        aria-haspopup="true">
+        aria-haspopup="true"
+        aria-busy={loading}>
         {user?.keycloakId ? (
           <MediaAvatar
             scope="user"

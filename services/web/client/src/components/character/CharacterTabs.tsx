@@ -29,7 +29,7 @@ export default function CharacterTabs({ activeTab, listClassName, triggerClassNa
 
   return (
     <TabsList
-      className={cn("bg-transparent gap-1 flex-row justify-start self-start xl:self-end", listClassName)}
+      className={cn("bg-transparent flex-row flex-nowrap justify-start gap-1 self-start", listClassName)}
       role="tablist"
       aria-label={t("tabs.general")}>
       {CHARACTER_TABS.map((tab) => {
@@ -44,7 +44,7 @@ export default function CharacterTabs({ activeTab, listClassName, triggerClassNa
             aria-controls={`${tab}-content`}
             data-invalid={hasError || undefined}
             className={cn(
-              "relative text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white",
+              "relative shrink-0 grow-0 flex-none text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white",
               activeTab === tab
                 ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
                 : "text-white bg-gray hover:bg-gray-middle",

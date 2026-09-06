@@ -27,12 +27,14 @@ import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import { DuplicateGroupDialog } from "@/components/dialogs/DuplicateGroupDialog";
+import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
 import GroupService from "@/services/GroupService";
 import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
 import { showToast } from "@/lib/toast";
 import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
+import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import {
   selectIsInSession,
   selectSessionStatus,
@@ -46,6 +48,8 @@ import {
 } from "@/store/slices/sessionSlice";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
+import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
+import { isNpcGroupCharacter } from "@/lib/isNpcGroupCharacter";
 
 interface GroupListProps {
   groups: Group[];
@@ -110,8 +114,22 @@ export default function GroupList({
 
   const [isDeletingGroup, setIsDeletingGroup] = React.useState(false);
   const [isDeletingCharacter, setIsDeletingCharacter] = React.useState(false);
+  const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
   const openGroupIds = Array.isArray(openGroupId) ? openGroupId : [];
+
+  const existingCharacterNames = React.useMemo(
+    () =>
+      groups.flatMap((group) =>
+        (group.characters ?? []).map((c) => characterDisplayName(c)).filter(Boolean),
+      ),
+    [groups],
+  );
+
+  const existingGroupLabels = React.useMemo(
+    () => groups.map((group) => group.label.trim()).filter(Boolean),
+    [groups],
+  );
 
   const selectedCharacterId = pathname?.includes("/characters/")
     ? pathname.split("/characters/")[1]?.split("/")[0]?.split("?")[0]
@@ -181,8 +199,8 @@ export default function GroupList({
         const type = isNpc ? "npcs" : "players";
 
         const createdChars: GroupCharacter[] = [];
-        for (let i = 0; i < count; i++) {
-          const copyName = i === 0 ? name : `${name} ${i + 1}`;
+        const copyNames = buildSequentialCopyNames(name, count);
+        for (const copyName of copyNames) {
           const payload = { ...rest, firstname: copyName, lastname: "", groups: [groupId] };
           const created = await CharacterService.createCharacter(type, payload as typeof rest);
 
@@ -230,8 +248,9 @@ export default function GroupList({
         let firstCreatedGroupId: string | null = null;
         let firstCharId: string | null = null;
 
-        for (let i = 0; i < count; i++) {
-          const copyLabel = i === 0 ? label : `${label} ${i + 1}`;
+        const copyLabels = buildSequentialCopyNames(label, count);
+        for (let i = 0; i < copyLabels.length; i++) {
+          const copyLabel = copyLabels[i];
           const newGroup = await GroupService.createGroup(selectedCampaignId, { label: copyLabel });
 
           const createdCharacters: GroupCharacter[] = [];
@@ -350,6 +369,7 @@ export default function GroupList({
           tempHitPoints: full.stats?.tempHitPoints ?? 0,
           armorClass: full.stats?.armorClass ?? 10,
           kind: "progression" in full ? "player" : "npc",
+          initiativeModifier: full.stats?.initiative ?? 0,
         });
         dispatch(appendInitiativeTrackerRows([{ ...row, isGmGuest: true }]));
       } catch {
@@ -373,9 +393,22 @@ export default function GroupList({
     (character: GroupCharacter, groupId: string): SidebarActionItem[] => {
       if (!selectedCampaignId) return [];
 
+      const npcPdfExportDisabled = isNpcGroupCharacter(character);
+      const exportAction: SidebarActionItem = {
+        id: "exportPdf",
+        label: t("exportPdf"),
+        disabled: npcPdfExportDisabled,
+        disabledTooltip: npcPdfExportDisabled ? t("exportPdfNpcComingSoon") : undefined,
+        onSelect: () => {
+          if (npcPdfExportDisabled) return;
+          void requestCharacterPdfExport(character._id);
+        },
+      };
+
       if (actionsDisabled) {
         const isGuest = gmGuestCharacterIds.includes(character._id);
         return [
+          exportAction,
           {
             id: isGuest ? "removeFromSession" : "addToSession",
             label: isGuest ? t("removeFromSession") : t("addToSession"),
@@ -387,7 +420,7 @@ export default function GroupList({
         ];
       }
 
-      const items: SidebarActionItem[] = [];
+      const items: SidebarActionItem[] = [exportAction];
 
       items.push({
         id: "duplicate",
@@ -432,7 +465,7 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, gmGuestCharacterIds, handleAddGmGuestToSession, handleRemoveGmGuestFromSession, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, router, selectedCampaignId, setOpenMobile, t],
+    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, gmGuestCharacterIds, handleAddGmGuestToSession, handleRemoveGmGuestFromSession, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, requestCharacterPdfExport, router, selectedCampaignId, setOpenMobile, t],
   );
 
   if (groups.length === 0) {
@@ -621,6 +654,7 @@ export default function GroupList({
         onOpenChange={(open) => {
           if (!open) setCharacterToDuplicate(null);
         }}
+        existingNames={existingCharacterNames}
         onDuplicate={(name, count) =>
           handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, false)
         }
@@ -635,7 +669,14 @@ export default function GroupList({
         onOpenChange={(open) => {
           if (!open) setGroupToDuplicate(null);
         }}
+        existingLabels={existingGroupLabels}
         onDuplicate={(label, count) => handleDuplicateGroup(groupToDuplicate!, label, count)}
+      />
+
+      <ExportCharacterSheetPdfDialog
+        character={characterToExport}
+        open={!!characterToExport}
+        onOpenChange={closeExportDialog}
       />
     </div>
   );
