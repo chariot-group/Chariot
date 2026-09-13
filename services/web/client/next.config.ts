@@ -7,6 +7,11 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["@react-pdf/renderer"],
+  logging: {
+    incomingRequests: {
+      ignore: [/\/api\/metrics/, /\/api\/health/, /\/api\/logs/],
+    },
+  },
   allowedDevOrigins: ["192.168.1.186"],
   env: {
     NEXT_PUBLIC_APP_VERSION: packageJson.version,

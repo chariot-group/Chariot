@@ -12,6 +12,10 @@ services:
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_ENV_NAME: production
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-production}
+      LOKI_ENABLED: ${LOKI_ENABLED:-false}
+      LOKI_URL: ${LOKI_URL:-}
+      LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
     networks:
       - chariot-group-network-prod
       - traefik-public

@@ -5,6 +5,7 @@ import { XCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { reportClientIssue } from "@/logger/reportClientIssue";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -16,8 +17,7 @@ export default function Error({ error, reset }: ErrorProps) {
   const router = useRouter();
 
   useEffect(() => {
-    // Log l'erreur côté client pour le monitoring
-    console.error("Error boundary caught:", error);
+    reportClientIssue("error", error.message || "Error boundary caught", "ErrorBoundary");
   }, [error]);
 
   return (
