@@ -64,6 +64,14 @@ services:
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL:-http://chariot-adventure:9000}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-local}
+      LOKI_ENABLED: ${LOKI_ENABLED:-false}
+      LOKI_URL: ${LOKI_URL:-}
+      LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
     depends_on:
       chariot-session-postgres:
         condition: service_healthy
@@ -74,6 +82,7 @@ services:
       - chariot-group-network
     extra_hosts:
       - "localhost:host-gateway"
+      - "host.docker.internal:host-gateway"
 
 volumes:
   chariot_session_postgres_data:

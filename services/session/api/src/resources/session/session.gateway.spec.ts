@@ -5,6 +5,7 @@ import { SessionGateway } from '@/resources/session/session.gateway';
 import { SessionService } from '@/resources/session/session.service';
 import { RedisService } from '@/redis/redis.service';
 import { AdventureUserService } from '@/common/adventure/adventure-user.service';
+import { SessionLiveMetrics } from '@/metrics/session-live.metrics';
 
 // ─── Module mocks (hoisted before imports) ───────────────────────────────────
 
@@ -68,6 +69,7 @@ const mockSessionService = {
     launch: jest.fn(),
     close: jest.fn(),
     expireSession: jest.fn(),
+    markConnectedParticipantsDisconnected: jest.fn().mockResolvedValue(0),
     disconnectParticipant: jest.fn(),
     findParticipants: jest.fn(),
     findOne: jest.fn(),
@@ -131,6 +133,15 @@ describe('SessionGateway', () => {
                 { provide: RedisService, useValue: mockRedisService },
                 { provide: AdventureUserService, useValue: mockAdventureUserService },
                 { provide: ConfigService, useValue: mockConfigService },
+                {
+                    provide: SessionLiveMetrics,
+                    useValue: {
+                        recordLifecycle: jest.fn(),
+                        recordWs: jest.fn(),
+                        recordWheel: jest.fn(),
+                        refreshLive: jest.fn(),
+                    },
+                },
             ],
         }).compile();
 
@@ -157,6 +168,7 @@ describe('SessionGateway', () => {
                 'gateway',
                 expect.any(Function),
             );
+            expect(mockSessionService.markConnectedParticipantsDisconnected).toHaveBeenCalled();
         });
 
         it('should emit session:expired and leave room when a session expires', async () => {

@@ -43,7 +43,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
         });
 
-        this.logger.verbose('Redis connected with keyspace notifications enabled', this.SERVICE_NAME);
+        this.logger.log('Redis connected with keyspace notifications enabled', this.SERVICE_NAME);
     }
 
     async onModuleDestroy() {

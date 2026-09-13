@@ -10,6 +10,7 @@ import { ParticipantStatus, SessionStatus } from '@prisma/client';
 import { SessionService } from '@/resources/session/session.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
+import { SessionLiveMetrics } from '@/metrics/session-live.metrics';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -52,7 +53,15 @@ const mockPrismaParticipant = {
     create: jest.fn(),
     delete: jest.fn(),
     update: jest.fn(),
+    updateMany: jest.fn(),
     upsert: jest.fn(),
+};
+
+const mockLiveMetrics = {
+    recordLifecycle: jest.fn(),
+    recordWs: jest.fn(),
+    recordWheel: jest.fn(),
+    refreshLive: jest.fn(),
 };
 
 const mockRedis = {
@@ -89,6 +98,10 @@ describe('SessionService', () => {
                 {
                     provide: RedisService,
                     useValue: mockRedis,
+                },
+                {
+                    provide: SessionLiveMetrics,
+                    useValue: mockLiveMetrics,
                 },
             ],
         }).compile();
@@ -128,6 +141,43 @@ describe('SessionService', () => {
                 InternalServerErrorException,
             );
         });
+
+        it('should rejoin an existing activated lobby even without expiresAt', async () => {
+            const gm = makeParticipant({
+                userId: 'user-uuid-1',
+                status: ParticipantStatus.gameMaster,
+            });
+            const existing = makeSession({
+                status: SessionStatus.activated,
+                expiresAt: null,
+                participants: [gm],
+            });
+            mockPrismaSession.findFirst
+                .mockResolvedValueOnce(existing)
+                .mockResolvedValueOnce(existing);
+            mockPrismaParticipant.update.mockResolvedValue(gm);
+
+            const result = await service.create({ campaignId: 'camp-uuid-1' }, 'user-uuid-1');
+
+            expect(result.data).toBe(existing);
+            expect(result.message).toContain('rejoined');
+            expect(mockPrismaSession.create).not.toHaveBeenCalled();
+            expect(mockPrismaSession.findFirst).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: expect.objectContaining({
+                        creatorUserId: 'user-uuid-1',
+                        creatorCampaignId: 'camp-uuid-1',
+                        OR: [
+                            { expiresAt: { gt: expect.any(Date) } },
+                            {
+                                expiresAt: null,
+                                status: SessionStatus.activated,
+                            },
+                        ],
+                    }),
+                }),
+            );
+        });
     });
 
     // ── findOne ───────────────────────────────────────────────────────────────
@@ -165,6 +215,30 @@ describe('SessionService', () => {
             );
 
             await expect(service.findOne('CODE123')).rejects.toThrow(GoneException);
+        });
+
+        it('should close and reject a launched session past expiresAt', async () => {
+            const expired = makeSession({
+                status: SessionStatus.launched,
+                expiresAt: new Date('2020-01-01T00:00:00Z'),
+                participants: [makeParticipant()],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(expired);
+            mockPrismaSession.update.mockResolvedValue({
+                ...expired,
+                status: SessionStatus.closed,
+                deletedAt: new Date(),
+            });
+
+            await expect(service.findOne('CODE123')).rejects.toThrow(ForbiddenException);
+            expect(mockPrismaSession.update).toHaveBeenCalledWith({
+                where: { id: 'sess-uuid-1' },
+                data: {
+                    status: SessionStatus.closed,
+                    deletedAt: expect.any(Date),
+                },
+                include: { participants: true },
+            });
         });
 
         it('should throw InternalServerErrorException on prisma error', async () => {
@@ -754,6 +828,66 @@ describe('SessionService', () => {
             await expect(service.expireSession('sess-uuid-1')).rejects.toThrow(
                 InternalServerErrorException,
             );
+        });
+    });
+
+    // ── sweepStaleSessions ────────────────────────────────────────────────────
+
+    describe('sweepStaleSessions', () => {
+        it('should expire launched tables past TTL and idle lobbies', async () => {
+            mockPrismaSession.findMany
+                .mockResolvedValueOnce([{ id: 'launched-1' }])
+                .mockResolvedValueOnce([{ id: 'lobby-1' }]);
+            mockPrismaSession.findFirst.mockResolvedValue(makeSession({ participants: [] }));
+            mockPrismaSession.update.mockResolvedValue(
+                makeSession({ status: SessionStatus.closed, participants: [] }),
+            );
+
+            const closed = await service.sweepStaleSessions();
+
+            expect(closed).toBe(2);
+            expect(mockPrismaSession.update).toHaveBeenCalledTimes(2);
+        });
+
+        it('should return 0 when nothing is stale', async () => {
+            mockPrismaSession.findMany.mockResolvedValue([]);
+
+            const closed = await service.sweepStaleSessions();
+
+            expect(closed).toBe(0);
+            expect(mockPrismaSession.update).not.toHaveBeenCalled();
+        });
+    });
+
+    // ── markConnectedParticipantsDisconnected ─────────────────────────────────
+
+    describe('markConnectedParticipantsDisconnected', () => {
+        it('should disconnect connected players on open sessions', async () => {
+            mockPrismaParticipant.updateMany.mockResolvedValue({ count: 3 });
+
+            const count = await service.markConnectedParticipantsDisconnected();
+
+            expect(count).toBe(3);
+            expect(mockPrismaParticipant.updateMany).toHaveBeenCalledWith({
+                where: {
+                    status: ParticipantStatus.connected,
+                    session: {
+                        deletedAt: null,
+                        status: { in: [SessionStatus.activated, SessionStatus.launched] },
+                    },
+                },
+                data: { status: ParticipantStatus.disconnected },
+            });
+            expect(mockLiveMetrics.refreshLive).toHaveBeenCalled();
+        });
+
+        it('should not refresh gauges when nobody was connected', async () => {
+            mockPrismaParticipant.updateMany.mockResolvedValue({ count: 0 });
+
+            const count = await service.markConnectedParticipantsDisconnected();
+
+            expect(count).toBe(0);
+            expect(mockLiveMetrics.refreshLive).not.toHaveBeenCalled();
         });
     });
 });
