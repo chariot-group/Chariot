@@ -33,7 +33,7 @@ export class HealthService {
       services.map(async (service) => {
         try {
           const response = await firstValueFrom(
-            this.httpService.get(`${service.url}/`, {
+            this.httpService.get(`${service.url}/ready`, {
               timeout: 5000,
             }),
           );

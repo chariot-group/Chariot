@@ -1,8 +1,12 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { Public } from '@/common/decorators/public.decorator';
+import { MinioService } from '@/resources/media/minio.service';
+import { Response } from 'express';
 
 @Controller()
 export class HealthController {
+  constructor(private readonly minioService: MinioService) {}
+
   @Get('health')
   @Public()
   checkHealth() {
@@ -15,11 +19,16 @@ export class HealthController {
 
   @Get('ready')
   @Public()
-  checkReadiness() {
+  async checkReadiness(@Res({ passthrough: true }) res: Response) {
+    const minio = await this.minioService.isReady();
+    if (!minio) {
+      res.status(503);
+    }
     return {
-      status: 'ready',
+      status: minio ? 'ready' : 'not_ready',
       timestamp: new Date().toISOString(),
       service: 'chariot-media',
+      checks: { minio },
     };
   }
 }

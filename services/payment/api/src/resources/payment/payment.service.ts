@@ -15,8 +15,6 @@ import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
 import { AffiliationService } from '@/resources/affiliation/affiliation.service';
 import { KeycloakAdminService } from '@/common/services/keycloak-admin.service';
 import { Payment } from '@prisma/client';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter } from 'prom-client';
 import {
     calculateAffiliationDiscount,
     calculateCommissionAmount,
@@ -42,12 +40,6 @@ export class PaymentService {
         private readonly promoCodeService: PromoCodeService,
         private readonly affiliationService: AffiliationService,
         private readonly keycloakAdminService: KeycloakAdminService,
-        @InjectMetric('chariot_payments_created_total')
-        private readonly paymentsCreatedCounter: Counter,
-        @InjectMetric('chariot_promo_code_usages_total')
-        private readonly promoCodeUsagesCounter: Counter,
-        @InjectMetric('chariot_affiliation_usages_total')
-        private readonly affiliationUsagesCounter: Counter,
     ) { }
 
     async create(
@@ -120,10 +112,6 @@ export class PaymentService {
 
             const stripeOrderId = payment.stripeSessionId ?? 'unknown';
             const message = `Payment created stripeOrderId=${stripeOrderId} user=${dto.userId}`;
-            this.paymentsCreatedCounter.inc({
-                status: payment.status,
-                currency: payment.currency,
-            });
             this.logger.log(message, this.SERVICE_NAME);
 
             return {
@@ -203,7 +191,6 @@ export class PaymentService {
                                 currentTotalUses: { increment: 1 },
                             },
                         });
-                        this.promoCodeUsagesCounter.inc();
                     }
 
                     if (payment.affiliationId) {
@@ -226,7 +213,6 @@ export class PaymentService {
                                     commissionAmount,
                                 },
                             });
-                            this.affiliationUsagesCounter.inc();
                         }
                     }
                 }
@@ -466,7 +452,6 @@ export class PaymentService {
                             where: { id: dto.promoCodeId },
                             data: { currentTotalUses: { increment: 1 } },
                         });
-                        this.promoCodeUsagesCounter.inc();
                     }
                 }
 
@@ -497,7 +482,6 @@ export class PaymentService {
                                     commissionAmount,
                                 },
                             });
-                            this.affiliationUsagesCounter.inc();
                         }
                     }
                 }
@@ -509,12 +493,6 @@ export class PaymentService {
             const message = result.created
                 ? `Completed payment recorded stripeOrderId=${stripeOrderId} user=${dto.userId}`
                 : `Completed payment already recorded stripeOrderId=${stripeOrderId} user=${dto.userId}`;
-            if (result.created) {
-                this.paymentsCreatedCounter.inc({
-                    status: result.payment.status,
-                    currency: result.payment.currency,
-                });
-            }
             this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: result.payment };

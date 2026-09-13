@@ -63,6 +63,7 @@ export function isOpsPath(path: string): boolean {
   return (
     path.startsWith("/api/metrics") ||
     path.startsWith("/api/health") ||
+    path.startsWith("/api/ready") ||
     path.startsWith("/api/logs") ||
     path.startsWith("/_next/") ||
     path === "/favicon.ico" ||

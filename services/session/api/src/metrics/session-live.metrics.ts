@@ -8,8 +8,6 @@ import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter, Gauge } from 'prom-client';
 import { ParticipantStatus, SessionStatus } from '@prisma/client';
 import { PrismaService } from '@/prisma/prisma.service';
-import { RedisService } from '@/redis/redis.service';
-import { sumTokenMap } from '@/resources/session/session-wheel-quota';
 
 export type SessionLifecycleAction =
     | 'created'
@@ -22,15 +20,6 @@ export type SessionLifecycleAction =
 
 export type SessionWsEvent = 'connect' | 'disconnect' | 'reject';
 
-export type SessionWheelOp = 'add' | 'remove';
-
-export type SessionWheelResult =
-    | 'ok'
-    | 'limit'
-    | 'empty'
-    | 'insufficient'
-    | 'balance_failed';
-
 const REFRESH_MS = 15_000;
 /** Un lobby sans activité depuis 8h n'est plus « ouvert » (même fenêtre que le TTL d'une table). */
 const LOBBY_LIVE_MS = 8 * 60 * 60 * 1000;
@@ -42,23 +31,16 @@ export class SessionLiveMetrics implements OnModuleInit, OnModuleDestroy {
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly redisService: RedisService,
         @InjectMetric('chariot_session_open')
         private readonly openGauge: Gauge<string>,
         @InjectMetric('chariot_session_participants')
         private readonly participantsGauge: Gauge<string>,
-        @InjectMetric('chariot_session_wheels_deposited')
-        private readonly wheelsDeposited: Gauge<string>,
-        @InjectMetric('chariot_session_wheels_quota')
-        private readonly wheelsQuota: Gauge<string>,
         @InjectMetric('chariot_session_active_ws_connections')
         private readonly wsConnected: Gauge<string>,
         @InjectMetric('chariot_session_lifecycle_total')
         private readonly lifecycleCounter: Counter<string>,
         @InjectMetric('chariot_session_ws_connections_total')
         private readonly wsConnectionsCounter: Counter<string>,
-        @InjectMetric('chariot_session_wheel_ops_total')
-        private readonly wheelOpsCounter: Counter<string>,
     ) {}
 
     onModuleInit(): void {
@@ -88,13 +70,6 @@ export class SessionLiveMetrics implements OnModuleInit, OnModuleDestroy {
             this.wsConnected.inc();
         } else if (event === 'disconnect') {
             this.wsConnected.dec();
-        }
-    }
-
-    recordWheel(op: SessionWheelOp, result: SessionWheelResult): void {
-        this.wheelOpsCounter.inc({ op, result });
-        if (result === 'ok' || result === 'limit' || result === 'empty') {
-            void this.refreshLive();
         }
     }
 
@@ -164,16 +139,6 @@ export class SessionLiveMetrics implements OnModuleInit, OnModuleDestroy {
                 { status: 'disconnected' },
                 counts.disconnected,
             );
-
-            let deposited = 0;
-            let quota = 0;
-            for (const session of activated) {
-                quota += session.participants.length;
-                const tokens = await this.redisService.getTokens(session.code);
-                deposited += sumTokenMap(tokens);
-            }
-            this.wheelsDeposited.set(deposited);
-            this.wheelsQuota.set(quota);
         } catch (error: unknown) {
             const message =
                 error instanceof Error ? error.message : String(error);
@@ -189,8 +154,6 @@ export class SessionLiveMetrics implements OnModuleInit, OnModuleDestroy {
         this.participantsGauge.set({ status: 'gameMaster' }, 0);
         this.participantsGauge.set({ status: 'connected' }, 0);
         this.participantsGauge.set({ status: 'disconnected' }, 0);
-        this.wheelsDeposited.set(0);
-        this.wheelsQuota.set(0);
         this.wsConnected.set(0);
 
         for (const action of [
@@ -206,17 +169,6 @@ export class SessionLiveMetrics implements OnModuleInit, OnModuleDestroy {
         }
         for (const event of ['connect', 'disconnect', 'reject'] as const) {
             this.wsConnectionsCounter.inc({ event }, 0);
-        }
-        for (const op of ['add', 'remove'] as const) {
-            for (const result of [
-                'ok',
-                'limit',
-                'empty',
-                'insufficient',
-                'balance_failed',
-            ] as const) {
-                this.wheelOpsCounter.inc({ op, result }, 0);
-            }
         }
     }
 }

@@ -7,26 +7,19 @@ import { SessionLiveMetrics } from '@/metrics/session-live.metrics';
 import {
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
-    errorsCounterProvider,
     sessionOpenGaugeProvider,
     sessionParticipantsGaugeProvider,
-    sessionWheelsDepositedGaugeProvider,
-    sessionWheelsQuotaGaugeProvider,
     activeWsConnectionsGaugeProvider,
     sessionLifecycleCounterProvider,
     wsConnectionsCounterProvider,
-    sessionWheelOpsCounterProvider,
 } from '@/metrics/metrics.service';
 
 const liveMetricProviders = [
     sessionOpenGaugeProvider,
     sessionParticipantsGaugeProvider,
-    sessionWheelsDepositedGaugeProvider,
-    sessionWheelsQuotaGaugeProvider,
     activeWsConnectionsGaugeProvider,
     sessionLifecycleCounterProvider,
     wsConnectionsCounterProvider,
-    sessionWheelOpsCounterProvider,
 ];
 
 @Module({
@@ -52,7 +45,6 @@ const liveMetricProviders = [
         SessionLiveMetrics,
         httpRequestsCounterProvider,
         httpRequestDurationProvider,
-        errorsCounterProvider,
         ...liveMetricProviders,
     ],
     exports: [
@@ -61,7 +53,6 @@ const liveMetricProviders = [
         SessionLiveMetrics,
         httpRequestsCounterProvider,
         httpRequestDurationProvider,
-        errorsCounterProvider,
         ...liveMetricProviders,
     ],
 })

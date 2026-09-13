@@ -70,6 +70,18 @@ export class MinioService implements OnModuleInit {
     return this.enabled;
   }
 
+  async isReady(): Promise<boolean> {
+    if (!this.enabled || !this.client) {
+      return false;
+    }
+    try {
+      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async onModuleInit(): Promise<void> {
     if (!this.enabled) {
       return;

@@ -32,10 +32,6 @@ describe('StripeService.resolveCode — FR-stripe-checkout', () => {
         inc: jest.fn(),
     };
 
-    const codeResolutionsCounterMock = {
-        inc: jest.fn(),
-    };
-
     const tokenCreditsCounterMock = {
         inc: jest.fn(),
     };
@@ -60,7 +56,6 @@ describe('StripeService.resolveCode — FR-stripe-checkout', () => {
             stripePaymentsCounterMock as any,
             stripeWebhooksCounterMock as any,
             checkoutsCounterMock as any,
-            codeResolutionsCounterMock as any,
             tokenCreditsCounterMock as any,
             stripeDurationMock as any,
         );

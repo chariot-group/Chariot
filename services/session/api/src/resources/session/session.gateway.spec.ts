@@ -138,7 +138,6 @@ describe('SessionGateway', () => {
                     useValue: {
                         recordLifecycle: jest.fn(),
                         recordWs: jest.fn(),
-                        recordWheel: jest.fn(),
                         refreshLive: jest.fn(),
                     },
                 },

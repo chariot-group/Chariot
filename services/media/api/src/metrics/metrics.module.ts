@@ -8,7 +8,6 @@ import { MEDIA_UPSTREAM_TIMER } from '@/metrics/upstream-timer.token';
 import {
   httpRequestsCounterProvider,
   httpRequestDurationProvider,
-  errorsCounterProvider,
   uploadsCounterProvider,
   presignedUrlCounterProvider,
   minioOperationDurationProvider,
@@ -40,7 +39,6 @@ import {
     MetricsInterceptor,
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
-    errorsCounterProvider,
     uploadsCounterProvider,
     presignedUrlCounterProvider,
     minioOperationDurationProvider,
@@ -59,7 +57,6 @@ import {
     MetricsInterceptor,
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
-    errorsCounterProvider,
     uploadsCounterProvider,
     presignedUrlCounterProvider,
     minioOperationDurationProvider,

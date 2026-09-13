@@ -588,10 +588,6 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const userId = client.user.keycloakId;
             const balanceError = await this.getInsufficientBalanceError(data.sessionId, userId, 1);
             if (balanceError) {
-                this.liveMetrics.recordWheel(
-                    'add',
-                    balanceError.code === 'INSUFFICIENT_TOKEN_BALANCE' ? 'insufficient' : 'balance_failed',
-                );
                 if (balanceError.code === 'BALANCE_CHECK_FAILED') {
                     this.logger.error(balanceError.message, null, this.SERVICE_NAME);
                 } else {
@@ -602,12 +598,10 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             const updated = await this.redisService.addToken(data.sessionId, userId, maxTokens);
             if (updated === null) {
-                this.liveMetrics.recordWheel('add', 'limit');
                 this.logger.warn('Token limit reached', this.SERVICE_NAME);
                 client.emit('session:error', { code: 'TOKEN_LIMIT_REACHED', message: 'Token limit reached' });
                 return;
             }
-            this.liveMetrics.recordWheel('add', 'ok');
             this.server.to(session.id).emit('session:token-updated', { tokensByUser: updated });
         } catch (error: any) {
             this.logger.error(`Failed to add token: ${error.message}`, null, this.SERVICE_NAME);
@@ -627,11 +621,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
             const updated = await this.redisService.removeToken(data.sessionId, client.user.keycloakId);
             if (updated === null) {
-                this.liveMetrics.recordWheel('remove', 'empty');
                 client.emit('session:error', { message: 'No token to remove' });
                 return;
             }
-            this.liveMetrics.recordWheel('remove', 'ok');
             this.server.to(session.id).emit('session:token-updated', { tokensByUser: updated });
         } catch (error: any) {
             this.logger.error(`Failed to remove token: ${error.message}`, null, this.SERVICE_NAME);
@@ -655,10 +647,6 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             const balanceError = await this.getInsufficientBalanceError(data.sessionId, userId, requestedAmount);
             if (balanceError) {
-                this.liveMetrics.recordWheel(
-                    'add',
-                    balanceError.code === 'INSUFFICIENT_TOKEN_BALANCE' ? 'insufficient' : 'balance_failed',
-                );
                 if (balanceError.code === 'BALANCE_CHECK_FAILED') {
                     this.logger.error(balanceError.message, null, this.SERVICE_NAME);
                 } else {
@@ -669,12 +657,10 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             const result = await this.redisService.addTokens(data.sessionId, userId, maxTokens, requestedAmount);
             if (result === null) {
-                this.liveMetrics.recordWheel('add', 'limit');
                 this.logger.warn('Token limit reached', this.SERVICE_NAME);
                 client.emit('session:error', { code: 'TOKEN_LIMIT_REACHED', message: 'Token limit reached' });
                 return;
             }
-            this.liveMetrics.recordWheel('add', 'ok');
             this.server.to(session.id).emit('session:token-updated', { tokensByUser: result.tokens });
         } catch (error: any) {
             this.logger.error(`Failed to add tokens: ${error.message}`, null, this.SERVICE_NAME);
@@ -694,11 +680,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
             const result = await this.redisService.removeTokens(data.sessionId, client.user.keycloakId, data.amount);
             if (result === null) {
-                this.liveMetrics.recordWheel('remove', 'empty');
                 client.emit('session:error', { message: 'No token to remove' });
                 return;
             }
-            this.liveMetrics.recordWheel('remove', 'ok');
             this.server.to(session.id).emit('session:token-updated', { tokensByUser: result.tokens });
         } catch (error: any) {
             this.logger.error(`Failed to remove tokens: ${error.message}`, null, this.SERVICE_NAME);

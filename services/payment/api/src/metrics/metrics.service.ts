@@ -26,35 +26,6 @@ export const httpRequestDurationProvider = makeHistogramProvider({
     buckets: [0.001, 0.01, 0.1, 0.5, 1, 2, 5],
 });
 
-export const errorsCounterProvider = makeCounterProvider({
-    name: 'chariot_payment_errors_total',
-    help: 'Total number of errors',
-    labelNames: ['type', 'controller', 'severity'],
-});
-
-export const paymentsCreatedCounterProvider = makeCounterProvider({
-    name: 'chariot_payments_created_total',
-    help: 'Payments persisted (PENDING admin create, or COMPLETED fulfillment)',
-    labelNames: ['status', 'currency'],
-});
-
-export const promoCodeUsagesCounterProvider = makeCounterProvider({
-    name: 'chariot_promo_code_usages_total',
-    help: 'Promo code usages recorded on completed payments',
-});
-
-export const affiliationUsagesCounterProvider = makeCounterProvider({
-    name: 'chariot_affiliation_usages_total',
-    help: 'Affiliation usages recorded on completed payments',
-});
-
-export const dbQueryDurationProvider = makeHistogramProvider({
-    name: 'chariot_payment_db_query_duration_seconds',
-    help: 'Database query duration in seconds',
-    labelNames: ['table', 'operation'],
-    buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1],
-});
-
 export const stripePaymentsCounterProvider = makeCounterProvider({
     name: 'chariot_stripe_payments_total',
     help: 'Stripe / free-order fulfillments',
@@ -71,12 +42,6 @@ export const checkoutsCounterProvider = makeCounterProvider({
     name: 'chariot_payment_checkouts_total',
     help: 'Checkout attempts by flow (payment_intent, embedded, checkout, free_order)',
     labelNames: ['flow', 'status'],
-});
-
-export const codeResolutionsCounterProvider = makeCounterProvider({
-    name: 'chariot_payment_code_resolutions_total',
-    help: 'Promo / affiliation code lookups from checkout',
-    labelNames: ['kind', 'status'],
 });
 
 export const tokenCreditsCounterProvider = makeCounterProvider({

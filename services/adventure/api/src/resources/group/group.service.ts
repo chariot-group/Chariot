@@ -20,8 +20,6 @@ import {
   Character,
   CharacterDocument,
 } from '@/resources/character/core/schemas/character.schema';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter } from 'prom-client';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 
 @Injectable()
@@ -31,8 +29,6 @@ export class GroupService {
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
-    @InjectMetric('chariot_groups_created_total')
-    private readonly groupsCreatedCounter: Counter,
   ) {}
 
   private readonly SERVICE_NAME = GroupService.name;
@@ -64,11 +60,6 @@ export class GroupService {
           { _id: campaignId },
           { $addToSet: { [`groups.${type}`]: group._id } },
         );
-      });
-
-      // Incrémentation du compteur Prometheus
-      this.groupsCreatedCounter.inc({
-        campaign_id: campaigns.length > 0 ? campaigns[0].idCampaign : 'none',
       });
 
       const end: number = Date.now();

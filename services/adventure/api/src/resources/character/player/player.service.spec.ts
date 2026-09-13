@@ -12,7 +12,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('PlayerService', () => {
   let service: PlayerService;
@@ -57,7 +56,6 @@ describe('PlayerService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         PlayerService,
         {

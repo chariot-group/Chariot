@@ -16,8 +16,6 @@ import {
   Character,
   CharacterDocument,
 } from '@/resources/character/core/schemas/character.schema';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter } from 'prom-client';
 import { NPC, NPCDocument } from '@/resources/character/npc/schemas/npc.schema';
 import { IResponse } from '@/common/dtos/reponse.dto';
 
@@ -27,8 +25,6 @@ export class NpcService {
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
-    @InjectMetric('chariot_characters_created_total')
-    private readonly charactersCreatedCounter: Counter,
   ) {}
 
   private readonly SERVICE_NAME = NpcService.name;
@@ -91,9 +87,6 @@ export class NpcService {
           { $addToSet: { characters: savedNpc._id } },
         );
       }
-
-      // Incrémentation du compteur Prometheus
-      this.charactersCreatedCounter.inc({ user_id: userId });
 
       const end: number = Date.now();
 

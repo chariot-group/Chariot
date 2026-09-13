@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@react-pdf/renderer"],
   logging: {
     incomingRequests: {
-      ignore: [/\/api\/metrics/, /\/api\/health/, /\/api\/logs/],
+      ignore: [/\/api\/metrics/, /\/api\/health/, /\/api\/ready/, /\/api\/logs/],
     },
   },
   allowedDevOrigins: ["192.168.1.186"],

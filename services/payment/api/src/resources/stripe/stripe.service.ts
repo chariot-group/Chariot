@@ -53,8 +53,6 @@ export class StripeService implements OnModuleInit, OnModuleDestroy {
         private readonly stripeWebhooksCounter: Counter,
         @InjectMetric('chariot_payment_checkouts_total')
         private readonly checkoutsCounter: Counter,
-        @InjectMetric('chariot_payment_code_resolutions_total')
-        private readonly codeResolutionsCounter: Counter,
         @InjectMetric('chariot_payment_token_credits_total')
         private readonly tokenCreditsCounter: Counter,
         @InjectMetric('chariot_payment_stripe_operation_duration_seconds')
@@ -502,7 +500,6 @@ export class StripeService implements OnModuleInit, OnModuleDestroy {
                     }
 
                     const message = `Code '${code}' resolved as promo in ${Date.now() - start}ms`;
-                    this.codeResolutionsCounter.inc({ kind: 'promo', status: 'ok' });
                     this.logger.debug(message, this.SERVICE_NAME);
                     return {
                         message,
@@ -525,7 +522,6 @@ export class StripeService implements OnModuleInit, OnModuleDestroy {
 
                 if (affiliation.isActive) {
                     const message = `Code '${code}' resolved as affiliation in ${Date.now() - start}ms`;
-                    this.codeResolutionsCounter.inc({ kind: 'affiliation', status: 'ok' });
                     this.logger.debug(message, this.SERVICE_NAME);
                     return {
                         message,
@@ -542,21 +538,11 @@ export class StripeService implements OnModuleInit, OnModuleDestroy {
 
             throw new NotFoundException(`Code '${code}' introuvable ou inactif`);
         } catch (error) {
-            if (error instanceof GoneException) {
-                this.codeResolutionsCounter.inc({ kind: 'promo', status: 'exhausted' });
-                throw error;
-            }
-            if (error instanceof UnprocessableEntityException) {
-                const payload = error.getResponse() as { errorCode?: string };
-                const status =
-                    payload?.errorCode === 'PROMO_FIRST_ORDER_ONLY'
-                        ? 'first_order_only'
-                        : 'min_order';
-                this.codeResolutionsCounter.inc({ kind: 'promo', status });
-                throw error;
-            }
-            if (error instanceof NotFoundException) {
-                this.codeResolutionsCounter.inc({ kind: 'unknown', status: 'not_found' });
+            if (
+                error instanceof GoneException ||
+                error instanceof UnprocessableEntityException ||
+                error instanceof NotFoundException
+            ) {
                 throw error;
             }
             this.fail(error, `Error resolving code '${code}': ${(error as Error).message}`);

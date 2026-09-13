@@ -27,12 +27,6 @@ export const httpRequestDurationProvider = makeHistogramProvider({
     buckets: [0.001, 0.01, 0.1, 0.5, 1, 2, 5],
 });
 
-export const errorsCounterProvider = makeCounterProvider({
-    name: 'chariot_session_errors_total',
-    help: 'Total number of errors',
-    labelNames: ['type', 'controller', 'severity'],
-});
-
 export const sessionOpenGaugeProvider = makeGaugeProvider({
     name: 'chariot_session_open',
     help: 'Open sessions by status (activated lobby, launched table)',
@@ -43,16 +37,6 @@ export const sessionParticipantsGaugeProvider = makeGaugeProvider({
     name: 'chariot_session_participants',
     help: 'Participants on open sessions by presence status',
     labelNames: ['status'],
-});
-
-export const sessionWheelsDepositedGaugeProvider = makeGaugeProvider({
-    name: 'chariot_session_wheels_deposited',
-    help: 'Wheels currently deposited in lobby Redis pools',
-});
-
-export const sessionWheelsQuotaGaugeProvider = makeGaugeProvider({
-    name: 'chariot_session_wheels_quota',
-    help: 'Wheel slots required to launch (sum of lobby participants)',
 });
 
 export const activeWsConnectionsGaugeProvider = makeGaugeProvider({
@@ -70,10 +54,4 @@ export const wsConnectionsCounterProvider = makeCounterProvider({
     name: 'chariot_session_ws_connections_total',
     help: 'WebSocket connect / disconnect / reject events',
     labelNames: ['event'],
-});
-
-export const sessionWheelOpsCounterProvider = makeCounterProvider({
-    name: 'chariot_session_wheel_ops_total',
-    help: 'Lobby wheel deposit / withdraw attempts',
-    labelNames: ['op', 'result'],
 });

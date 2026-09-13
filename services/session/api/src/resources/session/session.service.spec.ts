@@ -60,7 +60,6 @@ const mockPrismaParticipant = {
 const mockLiveMetrics = {
     recordLifecycle: jest.fn(),
     recordWs: jest.fn(),
-    recordWheel: jest.fn(),
     refreshLive: jest.fn(),
 };
 

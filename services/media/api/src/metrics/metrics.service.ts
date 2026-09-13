@@ -27,12 +27,6 @@ export const httpRequestDurationProvider = makeHistogramProvider({
   buckets: [0.001, 0.01, 0.1, 0.5, 1, 2, 5],
 });
 
-export const errorsCounterProvider = makeCounterProvider({
-  name: 'chariot_media_errors_total',
-  help: 'Total number of errors',
-  labelNames: ['type', 'controller', 'severity'],
-});
-
 export const uploadsCounterProvider = makeCounterProvider({
   name: 'chariot_media_uploads_total',
   help: 'Total media uploads',

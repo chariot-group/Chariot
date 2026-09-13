@@ -15,5 +15,6 @@ import { MetricsModule } from '@/metrics/metrics.module';
     MinioService,
     ImageProcessorService,
   ],
+  exports: [MinioService],
 })
 export class MediaModule {}

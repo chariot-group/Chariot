@@ -52,6 +52,17 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         this.logger.verbose('Redis disconnected', this.SERVICE_NAME);
     }
 
+    async ping(): Promise<boolean> {
+        if (!this.client) {
+            return false;
+        }
+        try {
+            return (await this.client.ping()) === 'PONG';
+        } catch {
+            return false;
+        }
+    }
+
     /**
      * Enregistre un timer d'expiration pour une session.
      * Quand le TTL expire, Redis émet un événement capté par le subscriber.

@@ -6,7 +6,6 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
 import { AffiliationService } from '@/resources/affiliation/affiliation.service';
 import { KeycloakAdminService } from '@/common/services/keycloak-admin.service';
-import { getToken } from '@willsoto/nestjs-prometheus';
 
 describe('PaymentService', () => {
     let service: PaymentService;
@@ -59,9 +58,6 @@ describe('PaymentService', () => {
                 { provide: PromoCodeService, useValue: promoCodeServiceMock },
                 { provide: AffiliationService, useValue: affiliationServiceMock },
                 { provide: KeycloakAdminService, useValue: keycloakAdminServiceMock },
-                { provide: getToken('chariot_payments_created_total'), useValue: { inc: jest.fn() } },
-                { provide: getToken('chariot_promo_code_usages_total'), useValue: { inc: jest.fn() } },
-                { provide: getToken('chariot_affiliation_usages_total'), useValue: { inc: jest.fn() } },
             ],
         }).compile();
 
