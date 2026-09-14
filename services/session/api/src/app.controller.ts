@@ -5,6 +5,7 @@ import { RedisService } from '@/redis/redis.service';
 import { Public } from '@/common/decorators/public.decorator';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { Response } from 'express';
+import { storeFailLine } from '@/observability/store-log';
 
 @ApiExcludeController()
 @Controller()
@@ -38,14 +39,26 @@ export class AppController {
             checks.postgres = true;
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            this.logger.warn(`Session postgres readiness failed: ${message}`, this.SERVICE);
+            this.logger.warn(
+                storeFailLine('postgres', 'ready', 'unreachable', message),
+                this.SERVICE,
+            );
         }
 
         try {
             checks.redis = await this.redis.ping();
+            if (!checks.redis) {
+                this.logger.warn(
+                    storeFailLine('redis', 'ready', 'unreachable'),
+                    this.SERVICE,
+                );
+            }
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            this.logger.warn(`Session redis readiness failed: ${message}`, this.SERVICE);
+            this.logger.warn(
+                storeFailLine('redis', 'ready', 'unreachable', message),
+                this.SERVICE,
+            );
         }
 
         const ready = Object.values(checks).every(Boolean);

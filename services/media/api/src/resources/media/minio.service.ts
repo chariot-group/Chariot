@@ -12,6 +12,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { MEDIA_BUCKET } from '@/resources/media/media.constants';
+import { storeEventLine, storeFailLine } from '@/observability/store-log';
 
 @Injectable()
 export class MinioService implements OnModuleInit {
@@ -31,7 +32,12 @@ export class MinioService implements OnModuleInit {
     if (!endpoint || !accessKey || !secretKey) {
       this.enabled = false;
       this.logger.warn(
-        'MinIO is not configured (MINIO_ENDPOINT / MINIO_ROOT_USER / MINIO_ROOT_PASSWORD). Media uploads disabled.',
+        storeFailLine(
+          'minio',
+          'connect',
+          'not_configured',
+          'MINIO_ENDPOINT / MINIO_ROOT_USER / MINIO_ROOT_PASSWORD missing. Media uploads disabled.',
+        ),
       );
       return;
     }
@@ -89,10 +95,10 @@ export class MinioService implements OnModuleInit {
 
     try {
       await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
-      this.logger.log(`MinIO bucket "${this.bucket}" is ready`);
+      this.logger.verbose(storeEventLine('minio', 'connect'));
     } catch {
       await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
-      this.logger.log(`MinIO bucket "${this.bucket}" created`);
+      this.logger.verbose(storeEventLine('minio', 'connect', 'created'));
     }
   }
 

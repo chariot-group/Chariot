@@ -1180,6 +1180,9 @@ export class StripeService implements OnModuleInit, OnModuleDestroy {
             `stage=${opts.stage}`,
             `reason=${opts.reason}`,
         ];
+        if (opts.reason === 'postgres') {
+            parts.unshift('store_fail', 'store=postgres');
+        }
         if (opts.flow) parts.push(`flow=${opts.flow}`);
         parts.push(`stripeOrderId=${opts.stripeOrderId || '-'}`);
         if (opts.userId) parts.push(`user=${opts.userId}`);

@@ -21,6 +21,7 @@ services:
       start_period: 10s
     networks:
       - chariot-network
+      - chariot-group-network-integ
 
   chariot-payment:
     ports:

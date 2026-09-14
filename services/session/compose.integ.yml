@@ -21,6 +21,7 @@ services:
       start_period: 10s
     networks:
       - chariot-network
+      - chariot-group-network-integ
 
   chariot-session-redis:
     image: redis:7-alpine
@@ -37,6 +38,7 @@ services:
       start_period: 5s
     networks:
       - chariot-network
+      - chariot-group-network-integ
 
   chariot-session:
     ports:

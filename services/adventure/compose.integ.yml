@@ -24,6 +24,7 @@ services:
       start_period: 40s
     networks:
       - chariot-network
+      - chariot-group-network-integ
 
   chariot-adventure:
     ports:

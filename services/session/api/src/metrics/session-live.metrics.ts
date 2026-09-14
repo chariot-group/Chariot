@@ -8,6 +8,7 @@ import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter, Gauge } from 'prom-client';
 import { ParticipantStatus, SessionStatus } from '@prisma/client';
 import { PrismaService } from '@/prisma/prisma.service';
+import { storeFailLine } from '@/observability/store-log';
 
 export type SessionLifecycleAction =
     | 'created'
@@ -143,7 +144,7 @@ export class SessionLiveMetrics implements OnModuleInit, OnModuleDestroy {
             const message =
                 error instanceof Error ? error.message : String(error);
             this.logger.error(
-                `Failed to refresh live session gauges: ${message}`,
+                storeFailLine('postgres', 'live_gauges', 'query', message),
             );
         }
     }

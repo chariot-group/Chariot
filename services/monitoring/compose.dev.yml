@@ -33,9 +33,10 @@ services:
     ports:
       - "9216:9216"
     environment:
-      MONGODB_URI: ${MONGODB_EXPORTER_URI:-mongodb://chariot_mongo:chariot_mongo@chariot-mongodb:27017}
+      MONGODB_URI: ${MONGODB_EXPORTER_URI:-mongodb://admin:secret@chariot-mongodb:27017/?authSource=admin}
     command:
       - "--compatible-mode"
+      - "--collect-all"
     networks:
       - chariot-group-network
 
@@ -59,7 +60,19 @@ services:
     ports:
       - "9187:9187"
     environment:
-      DATA_SOURCE_NAME: ${POSTGRES_EXPORTER_DSN:-postgresql://postgres:postgres@chariot-session-postgres:5432/session?sslmode=disable}
+      DATA_SOURCE_NAME: ${POSTGRES_EXPORTER_DSN:-postgresql://admin:admin@chariot-session-postgres:5432/chariot_session?sslmode=disable}
+    networks:
+      - chariot-group-network
+
+  postgres-exporter-payment:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    platform: linux/amd64
+    container_name: chariot-postgres-exporter-payment
+    restart: unless-stopped
+    ports:
+      - "9188:9187"
+    environment:
+      DATA_SOURCE_NAME: ${POSTGRES_PAYMENT_EXPORTER_DSN:-postgresql://admin:admin@chariot-payment-postgres:5432/chariot_payment?sslmode=disable}
     networks:
       - chariot-group-network
 

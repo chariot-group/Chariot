@@ -37,6 +37,7 @@ services:
       MONGODB_URI: ${MONGODB_EXPORTER_URI}
     command:
       - "--compatible-mode"
+      - "--collect-all"
     networks:
       - chariot-group-network-prod
 
@@ -61,6 +62,18 @@ services:
       - "9187:9187"
     environment:
       DATA_SOURCE_NAME: ${POSTGRES_EXPORTER_DSN}
+    networks:
+      - chariot-group-network-prod
+
+  postgres-exporter-payment:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    platform: linux/amd64
+    container_name: chariot-postgres-exporter-payment-prod
+    restart: unless-stopped
+    ports:
+      - "9188:9187"
+    environment:
+      DATA_SOURCE_NAME: ${POSTGRES_PAYMENT_EXPORTER_DSN}
     networks:
       - chariot-group-network-prod
 

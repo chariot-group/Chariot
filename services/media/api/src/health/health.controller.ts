@@ -1,10 +1,13 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Logger, Res } from '@nestjs/common';
 import { Public } from '@/common/decorators/public.decorator';
 import { MinioService } from '@/resources/media/minio.service';
 import { Response } from 'express';
+import { storeFailLine } from '@/observability/store-log';
 
 @Controller()
 export class HealthController {
+  private readonly logger = new Logger(HealthController.name);
+
   constructor(private readonly minioService: MinioService) {}
 
   @Get('health')
@@ -23,6 +26,7 @@ export class HealthController {
     const minio = await this.minioService.isReady();
     if (!minio) {
       res.status(503);
+      this.logger.warn(storeFailLine('minio', 'ready', 'unreachable'));
     }
     return {
       status: minio ? 'ready' : 'not_ready',

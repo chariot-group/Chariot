@@ -4,6 +4,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { Public } from '@/common/decorators/public.decorator';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { Response } from 'express';
+import { storeFailLine } from '@/observability/store-log';
 
 @ApiExcludeController()
 @Controller()
@@ -35,7 +36,10 @@ export class AppController {
             postgres = true;
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            this.logger.warn(`Payment readiness failed: ${message}`, this.SERVICE);
+            this.logger.warn(
+                storeFailLine('postgres', 'ready', 'unreachable', message),
+                this.SERVICE,
+            );
         }
 
         if (!postgres) {

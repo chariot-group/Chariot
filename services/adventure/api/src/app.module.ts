@@ -15,6 +15,7 @@ import { SeederModule } from '@/seeder/seeder.module';
 import { UserModule } from '@/resources/user/user.module';
 import { QuickLinkModule } from '@/resources/quick-link/quick-link.module';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
+import { MongoConnectionLogger } from '@/observability/mongo-connection.logger';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
     AppService,
     Logger,
     MaillingService,
+    MongoConnectionLogger,
     {
       provide: APP_GUARD,
       useClass: KeycloakAuthGuard,

@@ -25,6 +25,7 @@ services:
     shm_size: 256mb
     networks:
       - adventure-network
+      - chariot-group-network
 
   chariot-adventure:
     build:
