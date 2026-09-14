@@ -18,6 +18,13 @@ const REQUIRED_PUBLIC_ENV = [
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
+  const { initTracing } = await import("@/observability/tracing");
+  try {
+    await initTracing("chariot-web");
+  } catch {
+    // Observability must never block Next boot (OTEL_ENABLED, OTLP, missing deps).
+  }
+
   const { logger } = await import("@/logger/logger");
 
   logger.info("Web server started", { context: "NextServer" });

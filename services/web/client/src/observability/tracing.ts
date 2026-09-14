@@ -2,7 +2,7 @@
  * OpenTelemetry bootstrap — call from instrumentation.ts before the Next server.
  * Disabled unless OTEL_ENABLED=true.
  */
-function isOpsUrl(url: string | undefined): boolean {
+export function isOpsUrl(url: string | undefined): boolean {
   if (!url) return false;
   const path = url.split("?")[0];
   return (

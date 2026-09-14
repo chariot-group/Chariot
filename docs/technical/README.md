@@ -36,8 +36,8 @@ service-specific documentation available in the repository.
 
 ## 📊 Observability
 
-- **Logging**: log flow and architecture are described in
-  [LOG_FLOW_DIAGRAM.md](LOG_FLOW_DIAGRAM.md)
+- **Stack complète** (Alloy, métriques, logs Loki, traces Tempo, config dev/prod) :
+  [OBSERVABILITY.md](OBSERVABILITY.md)
 
 ## 📋 Architecture (overview)
 
@@ -55,4 +55,3 @@ service-specific documentation available in the repository.
 - For frontend, see `services/web/client/docs`
 - For API and backend configuration, see `services/adventure/api/docs`
 
-- [Observability](./OBSERVABILITY.md)
