@@ -76,6 +76,7 @@ services:
       - chariot-group-network
     extra_hosts:
       - "localhost:host-gateway"
+      - "host.docker.internal:host-gateway"
 
 volumes:
   chariot_mongodb_data:

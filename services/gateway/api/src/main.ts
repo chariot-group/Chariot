@@ -59,7 +59,7 @@ async function bootstrap() {
     },
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept", "traceparent", "tracestate", "baggage"],
     exposedHeaders: ["Authorization"],
   });
 

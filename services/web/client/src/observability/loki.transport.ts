@@ -40,11 +40,28 @@ export type LogInfo = {
   [key: string]: unknown;
 };
 
+function getTraceIds(): { trace_id?: string; span_id?: string } {
+  try {
+    // Optional peer dependency — present when OTEL is enabled
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const otel = require("@opentelemetry/api");
+    const span = otel.trace.getSpan(otel.context.active());
+    const spanCtx = span?.spanContext();
+    return {
+      trace_id: spanCtx?.traceId,
+      span_id: spanCtx?.spanId,
+    };
+  } catch {
+    return {};
+  }
+}
+
 function buildLogLine(info: LogInfo): { level: string; line: string } {
   const level = String(info.level ?? "info").toLowerCase();
   const message = info.message != null ? String(info.message) : "";
   const context = info.context != null ? String(info.context) : undefined;
   const stack = info.stack != null ? String(info.stack) : undefined;
+  const { trace_id, span_id } = getTraceIds();
 
   const extra: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(info)) {
@@ -56,6 +73,8 @@ function buildLogLine(info: LogInfo): { level: string; line: string } {
   const payload: Record<string, unknown> = { message };
   if (context) payload.context = context;
   if (stack) payload.stack = stack;
+  if (trace_id) payload.trace_id = trace_id;
+  if (span_id) payload.span_id = span_id;
   Object.assign(payload, extra);
 
   return { level, line: JSON.stringify(payload) };

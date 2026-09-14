@@ -46,6 +46,7 @@ services:
       start_period: 40s
     extra_hosts:
       - "localhost:host-gateway"
+      - "host.docker.internal:host-gateway"
 
 networks:
   chariot-group-network:

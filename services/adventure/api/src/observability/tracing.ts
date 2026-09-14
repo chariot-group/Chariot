@@ -4,6 +4,46 @@
  * Packages are loaded via runtime dynamic import so the Nest app still
  * compiles when OTel deps are not installed yet.
  */
+function isOpsUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  const path = url.split('?')[0];
+  return (
+    path === '/metrics' ||
+    path === '/health' ||
+    path === '/ready' ||
+    path === '/api/metrics' ||
+    path === '/api/health' ||
+    path === '/api/ready' ||
+    path.endsWith('/metrics') ||
+    path.endsWith('/health') ||
+    path.endsWith('/ready')
+  );
+}
+
+function buildResource(
+  resources: {
+    Resource?: new (attrs: Record<string, string>) => unknown;
+    resourceFromAttributes?: (attrs: Record<string, string>) => unknown;
+  },
+  semconv: Record<string, string>,
+  serviceName: string,
+) {
+  const attrs = {
+    [semconv.ATTR_SERVICE_NAME ?? semconv.SEMRESATTRS_SERVICE_NAME]: serviceName,
+    [semconv.ATTR_SERVICE_VERSION ?? semconv.SEMRESATTRS_SERVICE_VERSION]:
+      process.env.npm_package_version || '0.0.0',
+    'deployment.environment':
+      process.env.OTEL_ENVIRONMENT || process.env.NODE_ENV || 'development',
+  };
+  if (typeof resources.resourceFromAttributes === 'function') {
+    return resources.resourceFromAttributes(attrs);
+  }
+  if (typeof resources.Resource === 'function') {
+    return new resources.Resource(attrs);
+  }
+  throw new Error('No compatible Resource factory in @opentelemetry/resources');
+}
+
 export async function initTracing(serviceName: string): Promise<void> {
   if (process.env.OTEL_ENABLED !== 'true') {
     return;
@@ -29,21 +69,17 @@ export async function initTracing(serviceName: string): Promise<void> {
       ]);
 
     const sdk = new NodeSDK({
-      resource: resources.resourceFromAttributes({
-        [semconv.ATTR_SERVICE_NAME]: serviceName,
-        [semconv.ATTR_SERVICE_VERSION]:
-          process.env.npm_package_version || '0.0.0',
-        'deployment.environment':
-          process.env.OTEL_ENVIRONMENT ||
-          process.env.NODE_ENV ||
-          'development',
-      }),
+      resource: buildResource(resources, semconv, serviceName),
       traceExporter: new exporter.OTLPTraceExporter({
         url: `${endpoint.replace(/\/$/, '')}/v1/traces`,
       }),
       instrumentations: [
         autoInstr.getNodeAutoInstrumentations({
           '@opentelemetry/instrumentation-fs': { enabled: false },
+          '@opentelemetry/instrumentation-http': {
+            ignoreIncomingRequestHook: (req: { url?: string }) =>
+              isOpsUrl(req.url),
+          },
         }),
       ],
     });
