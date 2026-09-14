@@ -81,6 +81,8 @@ Alloy rejoint le **même réseau Docker** que les microservices (`chariot-group-
 
 ### 3.2 Côté Monitoring — `../monitoring`
 
+Exploitation de la stack (compose, ports, prod, volumes) : README du dépôt [`Chariot-Group/monitoring`](https://github.com/Chariot-Group/monitoring).
+
 | Service | Port hôte (défaut) | Rôle |
 | --- | --- | --- |
 | Grafana | `3005` | Dashboards, Explore, corrélation logs ↔ traces ↔ métriques |
@@ -547,7 +549,7 @@ make logs SERVICE=monitoring ENV=dev
 
 1. **`docs/technical/LOG_FLOW_DIAGRAM.md`** décrit l’ancien pipeline Promtail → fichiers Winston. Il est **obsolète** pour Loki (conservé comme archive). Le flux réel est le transport HTTP de §4.3.
 2. **Noms HTTP hétérogènes** (gateway vs `chariot_*` vs `chariot_<svc>_*`) : voulu, déjà géré dans alertes et dashboards Monitoring. Ne pas les uniformiser sans mettre à jour ce dépôt en même temps.
-3. README / runbooks / WireGuard **côté Monitoring** peuvent être absents du clone ; ce document décrit le contrat tel qu’implémenté dans les compose et configs actuels.
+3. Runbook **côté Monitoring** (déploiement, rétention, proxy, Grafana) : README de [`Chariot-Group/monitoring`](https://github.com/Chariot-Group/monitoring). Ce document-ci reste le contrat des signaux.
 
 ## 15. Commandes rapides
 
