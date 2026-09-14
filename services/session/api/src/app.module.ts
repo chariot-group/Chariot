@@ -6,7 +6,6 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { RedisModule } from '@/redis/redis.module';
 import { MetricsModule } from '@/metrics/metrics.module';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
 import { SessionModule } from '@/resources/session/session.module';
 
@@ -20,7 +19,6 @@ import { SessionModule } from '@/resources/session/session.module';
         RedisModule,
         SessionModule,
         MetricsModule,
-        PrometheusModule.register(),
     ],
     controllers: [AppController],
     providers: [

@@ -1,80 +1,60 @@
 name: chariot-monitoring-exporters-dev
 
 services:
-  node-exporter:
-    image: prom/node-exporter:v1.8.2
-    platform: linux/amd64
-    container_name: chariot-node-exporter
+  alloy:
+    image: grafana/alloy:v1.11.2
+    container_name: chariot-alloy
     restart: unless-stopped
     pid: host
     ports:
-      - "9100:9100"
-    command:
+      - "12345:12345"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - ./blackbox.yml:/etc/alloy/blackbox.yml:ro
+      - alloy_data:/var/lib/alloy/data
       # Ne pas monter `/` : sur Docker Desktop Mac ça traverse tout le disque
       # (dont web/admin) et relance les watchers Next/Vite en boucle.
-      - "--path.procfs=/host/proc"
-      - "--path.sysfs=/host/sys"
-      - "--collector.disable-defaults"
-      - "--collector.cpu"
-      - "--collector.meminfo"
-      - "--collector.loadavg"
-      - "--collector.uname"
-    volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
-    networks:
-      - chariot-group-network
-
-  mongodb-exporter:
-    image: percona/mongodb_exporter:0.43.1
-    platform: linux/amd64
-    container_name: chariot-mongodb-exporter
-    restart: unless-stopped
-    ports:
-      - "9216:9216"
-    environment:
-      MONGODB_URI: ${MONGODB_EXPORTER_URI:-mongodb://admin:secret@chariot-mongodb:27017/?authSource=admin}
     command:
-      - "--compatible-mode"
-      - "--collect-all"
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --disable-reporting
+      - /etc/alloy/config.alloy
+    environment:
+      ALLOY_REMOTE_WRITE_URL: ${ALLOY_REMOTE_WRITE_URL:-http://host.docker.internal:9090/api/v1/write}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-prometheus}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-changeme_use_a_strong_secret}
+      GATEWAY_ADDR: chariot-gateway:8082
+      ADVENTURE_ADDR: chariot-adventure:9000
+      PAYMENT_ADDR: chariot-payment:9003
+      SESSION_ADDR: chariot-session:9002
+      MEDIA_ADDR: chariot-media:9005
+      WEB_ADDR: chariot-web:3000
+      KEYCLOAK_ADDR: keycloak:9000
+      READY_GATEWAY_URL: http://chariot-gateway:8082/ready
+      READY_ADVENTURE_URL: http://chariot-adventure:9000/ready
+      READY_PAYMENT_URL: http://chariot-payment:9003/ready
+      READY_SESSION_URL: http://chariot-session:9002/ready
+      READY_MEDIA_URL: http://chariot-media:9005/ready
+      READY_WEB_URL: http://chariot-web:3000/api/ready
+      READY_KEYCLOAK_URL: http://keycloak:9000/auth/health/ready
+      MONGODB_URI: ${MONGODB_EXPORTER_URI:-mongodb://admin:secret@chariot-mongodb:27017/?authSource=admin}
+      REDIS_ADDR: ${REDIS_ADDR:-chariot-session-redis:6379}
+      POSTGRES_SESSION_DSN: ${POSTGRES_EXPORTER_DSN:-postgresql://admin:admin@chariot-session-postgres:5432/chariot_session?sslmode=disable}
+      POSTGRES_PAYMENT_DSN: ${POSTGRES_PAYMENT_EXPORTER_DSN:-postgresql://admin:admin@chariot-payment-postgres:5432/chariot_payment?sslmode=disable}
+      UNIX_COLLECTORS: cpu,meminfo,loadavg,uname
+      HOST_PROCFS: /host/proc
+      HOST_SYSFS: /host/sys
+      HOST_ROOTFS: /
     networks:
       - chariot-group-network
 
-  redis-exporter:
-    image: oliver006/redis_exporter:v1.66.0
-    platform: linux/amd64
-    container_name: chariot-redis-exporter
-    restart: unless-stopped
-    ports:
-      - "9121:9121"
-    environment:
-      REDIS_ADDR: ${REDIS_EXPORTER_ADDR:-redis://chariot-session-redis:6379}
-    networks:
-      - chariot-group-network
-
-  postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:v0.16.0
-    platform: linux/amd64
-    container_name: chariot-postgres-exporter
-    restart: unless-stopped
-    ports:
-      - "9187:9187"
-    environment:
-      DATA_SOURCE_NAME: ${POSTGRES_EXPORTER_DSN:-postgresql://admin:admin@chariot-session-postgres:5432/chariot_session?sslmode=disable}
-    networks:
-      - chariot-group-network
-
-  postgres-exporter-payment:
-    image: prometheuscommunity/postgres-exporter:v0.16.0
-    platform: linux/amd64
-    container_name: chariot-postgres-exporter-payment
-    restart: unless-stopped
-    ports:
-      - "9188:9187"
-    environment:
-      DATA_SOURCE_NAME: ${POSTGRES_PAYMENT_EXPORTER_DSN:-postgresql://admin:admin@chariot-payment-postgres:5432/chariot_payment?sslmode=disable}
-    networks:
-      - chariot-group-network
+volumes:
+  alloy_data:
 
 networks:
   chariot-group-network:

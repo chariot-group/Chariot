@@ -1,5 +1,5 @@
-# Exporters scrapeables (pull) — déployés sur le VPS Chariot
-# Accès réservé au réseau WireGuard / firewall (voir Monitoring/docs/wireguard.md)
+# Alloy — unique point d'échange métriques avec le VPS Monitoring (remote_write).
+# Aucun port scrape publié : Alloy parle aux services sur le réseau Docker interne.
 #
 # Usage:
 #   cd services/monitoring && docker compose -f compose.prod.yml --env-file .env up -d
@@ -8,74 +8,55 @@
 name: chariot-monitoring-exporters-prod
 
 services:
-  node-exporter:
-    image: prom/node-exporter:v1.8.2
-    platform: linux/amd64
-    container_name: chariot-node-exporter-prod
+  alloy:
+    image: grafana/alloy:v1.11.2
+    container_name: chariot-alloy-prod
     restart: unless-stopped
     pid: host
-    ports:
-      - "9100:9100"
-    command:
-      - "--path.rootfs=/host"
-      - "--path.procfs=/host/proc"
-      - "--path.sysfs=/host/sys"
-      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - ./blackbox.yml:/etc/alloy/blackbox.yml:ro
+      - alloy_data:/var/lib/alloy/data
       - /:/host:ro
-    networks:
-      - chariot-group-network-prod
-
-  mongodb-exporter:
-    image: percona/mongodb_exporter:0.43.1
-    platform: linux/amd64
-    container_name: chariot-mongodb-exporter-prod
-    restart: unless-stopped
-    ports:
-      - "9216:9216"
-    environment:
-      MONGODB_URI: ${MONGODB_EXPORTER_URI}
     command:
-      - "--compatible-mode"
-      - "--collect-all"
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --disable-reporting
+      - /etc/alloy/config.alloy
+    environment:
+      ALLOY_REMOTE_WRITE_URL: ${ALLOY_REMOTE_WRITE_URL}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-prometheus}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD}
+      GATEWAY_ADDR: chariot-gateway-prod:8082
+      ADVENTURE_ADDR: chariot-adventure-prod:9000
+      PAYMENT_ADDR: chariot-payment-prod:9003
+      SESSION_ADDR: chariot-session-prod:9002
+      MEDIA_ADDR: chariot-media-prod:9005
+      WEB_ADDR: chariot-frontend-prod:3000
+      KEYCLOAK_ADDR: keycloak-prod:9000
+      READY_GATEWAY_URL: http://chariot-gateway-prod:8082/ready
+      READY_ADVENTURE_URL: http://chariot-adventure-prod:9000/ready
+      READY_PAYMENT_URL: http://chariot-payment-prod:9003/ready
+      READY_SESSION_URL: http://chariot-session-prod:9002/ready
+      READY_MEDIA_URL: http://chariot-media-prod:9005/ready
+      READY_WEB_URL: http://chariot-frontend-prod:3000/api/ready
+      READY_KEYCLOAK_URL: http://keycloak-prod:9000/auth/health/ready
+      MONGODB_URI: ${MONGODB_EXPORTER_URI}
+      REDIS_ADDR: ${REDIS_ADDR:-chariot-session-redis-prod:6379}
+      POSTGRES_SESSION_DSN: ${POSTGRES_EXPORTER_DSN}
+      POSTGRES_PAYMENT_DSN: ${POSTGRES_PAYMENT_EXPORTER_DSN}
+      UNIX_COLLECTORS: cpu,meminfo,loadavg,uname,filesystem
+      HOST_PROCFS: /host/proc
+      HOST_SYSFS: /host/sys
+      HOST_ROOTFS: /host
     networks:
       - chariot-group-network-prod
 
-  redis-exporter:
-    image: oliver006/redis_exporter:v1.66.0
-    platform: linux/amd64
-    container_name: chariot-redis-exporter-prod
-    restart: unless-stopped
-    ports:
-      - "9121:9121"
-    environment:
-      REDIS_ADDR: ${REDIS_EXPORTER_ADDR:-redis://chariot-session-redis-prod:6379}
-    networks:
-      - chariot-group-network-prod
-
-  postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:v0.16.0
-    platform: linux/amd64
-    container_name: chariot-postgres-exporter-prod
-    restart: unless-stopped
-    ports:
-      - "9187:9187"
-    environment:
-      DATA_SOURCE_NAME: ${POSTGRES_EXPORTER_DSN}
-    networks:
-      - chariot-group-network-prod
-
-  postgres-exporter-payment:
-    image: prometheuscommunity/postgres-exporter:v0.16.0
-    platform: linux/amd64
-    container_name: chariot-postgres-exporter-payment-prod
-    restart: unless-stopped
-    ports:
-      - "9188:9187"
-    environment:
-      DATA_SOURCE_NAME: ${POSTGRES_PAYMENT_EXPORTER_DSN}
-    networks:
-      - chariot-group-network-prod
+volumes:
+  alloy_data:
 
 networks:
   chariot-group-network-prod:

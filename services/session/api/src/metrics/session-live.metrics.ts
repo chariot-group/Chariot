@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter, Gauge } from 'prom-client';
-import { ParticipantStatus, SessionStatus } from '@prisma/client';
+import { ParticipantStatus, Prisma, SessionStatus } from '@prisma/client';
 import { PrismaService } from '@/prisma/prisma.service';
 import { storeFailLine } from '@/observability/store-log';
 
@@ -21,7 +21,7 @@ export type SessionLifecycleAction =
 
 export type SessionWsEvent = 'connect' | 'disconnect' | 'reject';
 
-const REFRESH_MS = 15_000;
+const REFRESH_MS = 30_000;
 /** Un lobby sans activité depuis 8h n'est plus « ouvert » (même fenêtre que le TTL d'une table). */
 const LOBBY_LIVE_MS = 8 * 60 * 60 * 1000;
 
@@ -76,57 +76,41 @@ export class SessionLiveMetrics implements OnModuleInit, OnModuleDestroy {
 
     async refreshLive(): Promise<void> {
         try {
-            const now = new Date();
-            const lobbySince = new Date(now.getTime() - LOBBY_LIVE_MS);
-            const sessions = await this.prisma.session.findMany({
-                where: {
-                    deletedAt: null,
-                    OR: [
-                        {
-                            status: SessionStatus.launched,
-                            OR: [
-                                { expiresAt: { gt: now } },
-                                {
-                                    expiresAt: null,
-                                    updatedAt: { gt: lobbySince },
-                                },
-                            ],
-                        },
-                        {
-                            status: SessionStatus.activated,
-                            OR: [
-                                { updatedAt: { gt: lobbySince } },
-                                { createdAt: { gt: lobbySince } },
-                                {
-                                    participants: {
-                                        some: { joinedAt: { gt: lobbySince } },
-                                    },
-                                },
-                            ],
-                        },
-                    ],
-                },
-                include: { participants: true },
-            });
+            const openWhere = this.openSessionWhere();
+            const [sessionCounts, participantCounts] = await Promise.all([
+                this.prisma.session.groupBy({
+                    by: ['status'],
+                    where: openWhere,
+                    _count: { _all: true },
+                }),
+                this.prisma.sessionParticipant.groupBy({
+                    by: ['status'],
+                    where: { session: openWhere },
+                    _count: { _all: true },
+                }),
+            ]);
 
-            const activated = sessions.filter(
-                (s) => s.status === SessionStatus.activated,
-            );
-            const launched = sessions.filter(
-                (s) => s.status === SessionStatus.launched,
-            );
-            this.openGauge.set({ status: 'activated' }, activated.length);
-            this.openGauge.set({ status: 'launched' }, launched.length);
+            const openByStatus: Record<'activated' | 'launched', number> = {
+                activated: 0,
+                launched: 0,
+            };
+            for (const row of sessionCounts) {
+                if (row.status === SessionStatus.activated) {
+                    openByStatus.activated = row._count._all;
+                } else if (row.status === SessionStatus.launched) {
+                    openByStatus.launched = row._count._all;
+                }
+            }
+            this.openGauge.set({ status: 'activated' }, openByStatus.activated);
+            this.openGauge.set({ status: 'launched' }, openByStatus.launched);
 
             const counts: Record<ParticipantStatus, number> = {
                 gameMaster: 0,
                 connected: 0,
                 disconnected: 0,
             };
-            for (const session of sessions) {
-                for (const participant of session.participants) {
-                    counts[participant.status] += 1;
-                }
+            for (const row of participantCounts) {
+                counts[row.status] = row._count._all;
             }
             this.participantsGauge.set(
                 { status: 'gameMaster' },
@@ -147,6 +131,38 @@ export class SessionLiveMetrics implements OnModuleInit, OnModuleDestroy {
                 storeFailLine('postgres', 'live_gauges', 'query', message),
             );
         }
+    }
+
+    private openSessionWhere(): Prisma.SessionWhereInput {
+        const now = new Date();
+        const lobbySince = new Date(now.getTime() - LOBBY_LIVE_MS);
+        return {
+            deletedAt: null,
+            OR: [
+                {
+                    status: SessionStatus.launched,
+                    OR: [
+                        { expiresAt: { gt: now } },
+                        {
+                            expiresAt: null,
+                            updatedAt: { gt: lobbySince },
+                        },
+                    ],
+                },
+                {
+                    status: SessionStatus.activated,
+                    OR: [
+                        { updatedAt: { gt: lobbySince } },
+                        { createdAt: { gt: lobbySince } },
+                        {
+                            participants: {
+                                some: { joinedAt: { gt: lobbySince } },
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
     }
 
     private seedSeries(): void {

@@ -9,6 +9,11 @@ services:
       - "5432"
     volumes:
       - chariot_session_postgres_data_prod:/var/lib/postgresql/data
+      - ./postgres/init-pg-stat-statements.sql:/docker-entrypoint-initdb.d/init-pg-stat-statements.sql:ro
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
