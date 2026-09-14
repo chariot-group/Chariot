@@ -1,4 +1,18 @@
-import { ChartBar, CreditCard, Heart, Key, LayoutDashboard, Tag, Users, Wallet, type LucideIcon } from "lucide-react";
+import {
+  Briefcase,
+  ChartBar,
+  Coins,
+  CreditCard,
+  Dices,
+  Heart,
+  Key,
+  LayoutDashboard,
+  Map,
+  Tag,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 
 type NavLinkItem = {
   label: string;
@@ -34,6 +48,17 @@ const externalNavItems = [
 
 export const navItems: NavItem[] = [
   {
+    label: "Business",
+    icon: Briefcase,
+    type: "folder",
+    children: [
+      { href: "/business", label: "Dashboard", icon: LayoutDashboard, type: "link" },
+      { href: "/business/adventure", label: "Adventure", icon: Map, type: "link" },
+      { href: "/business/session", label: "Session", icon: Dices, type: "link" },
+      { href: "/business/payment", label: "Paiement", icon: Coins, type: "link" },
+    ],
+  },
+  {
     label: "Paiement",
     icon: CreditCard,
     type: "folder",
@@ -47,3 +72,10 @@ export const navItems: NavItem[] = [
   },
   ...externalNavItems,
 ];
+
+export function isNavHrefActive(href: string, pathname: string): boolean {
+  if (href === "/" || href === "/business") {
+    return pathname === href;
+  }
+  return pathname.startsWith(href);
+}

@@ -13,6 +13,7 @@ import { MetricsModule } from '@/metrics/metrics.module';
 import { SeederModule } from '@/seeder/seeder.module';
 import { UserModule } from '@/resources/user/user.module';
 import { QuickLinkModule } from '@/resources/quick-link/quick-link.module';
+import { AnalyticsModule } from '@/resources/analytics/analytics.module';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
 import { MongoConnectionLogger } from '@/observability/mongo-connection.logger';
 
@@ -31,6 +32,7 @@ import { MongoConnectionLogger } from '@/observability/mongo-connection.logger';
     SeederModule,
     UserModule,
     QuickLinkModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

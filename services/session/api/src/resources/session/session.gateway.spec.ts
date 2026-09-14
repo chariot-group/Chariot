@@ -31,6 +31,7 @@ function makeSession(overrides: Record<string, any> = {}) {
         status: SessionStatus.activated,
         deletedAt: null,
         expiresAt: null,
+        launchedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         participants: [],

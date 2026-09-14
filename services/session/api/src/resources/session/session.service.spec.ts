@@ -22,6 +22,7 @@ function makeSession(overrides: Record<string, any> = {}) {
         status: SessionStatus.activated,
         deletedAt: null,
         expiresAt: null,
+        launchedAt: null,
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-01'),
         participants: [],
@@ -298,7 +299,10 @@ describe('SessionService', () => {
             expect(mockPrismaSession.update).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: { id: 'sess-uuid-1' },
-                    data: expect.objectContaining({ status: SessionStatus.launched }),
+                    data: expect.objectContaining({
+                        status: SessionStatus.launched,
+                        launchedAt: expect.any(Date),
+                    }),
                 }),
             );
             expect(mockRedis.setSessionExpiration).toHaveBeenCalledWith('sess-uuid-1', 28800);

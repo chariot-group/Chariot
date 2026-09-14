@@ -18,8 +18,8 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  title: "Chariot — Admin Paiements",
-  description: "Dashboard d'administration des paiements Chariot",
+  title: "Chariot — Admin",
+  description: "Dashboard d'administration Chariot",
   icons: {
     icon: [
       { url: "/favicon.svg?v=upside-down", type: "image/svg+xml" },

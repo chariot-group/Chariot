@@ -4317,3 +4317,63 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/history/form/CharacterHistoryTabEdit.tsx`
 - `docs/functional-rules.md` — FR-character-universal-fields, FR-character-detail-view, FR-frontend-design
 - `docs/design.md` — §3 spacing, §5.3 cards, §6.4 overflow and text containment
+
+---
+
+## FR-admin-business-kpis: Admin Business KPIs and AARRR Dashboard
+
+**Rule**: The admin client MUST expose a Business navigation group with a product-health dashboard (AARRR funnel) and one KPI page per domain database (Adventure, Session, Payment). KPIs MUST support product decisions, not vanity counters. All routes require authentication; Acquisition is account creation, not anonymous visits.
+
+**Requirements**:
+
+**Navigation**:
+- Sidebar folder **Business** with routes `/business` (AARRR dashboard), `/business/adventure`, `/business/session`, `/business/payment`
+- Existing Payment folder and `/` payment P&L dashboard remain unchanged
+- No Media, Gateway, or Keycloak KPI pages
+
+**Funnel (unique Keycloak user, selected period)**:
+- Acquisition: Adventure `User.createdAt` (first authenticated API hit)
+- Activation: participated in at least one session with status `launched` or `closed`
+- Retention: participated in at least two distinct launched sessions
+- Referral: `ReferralReferee.firstPurchaseValidatedAt` set
+- Revenue: at least one payment `COMPLETED`
+- Dashboard MUST show conversion rates between steps, MJ vs player activation split, time series, and health gauges: lobby→launch, wheels in circulation, paying share among activated, users with no shop purchase (sum of unused gift and spent-gift-never-bought)
+
+**Adventure page**: wheels sold vs spent vs stock; **two exclusive KPIs** — unused gift (`balance === 1`, no expense) and spent-gift-never-bought (`balance === 0`, no shop purchase); they MUST NOT overlap; median delay account → first player character / first campaign; campaigns created that never launched; GM concentration (top 10% share of launched tables)
+
+**Session page**: lobby→launch conversion; median time to `launchedAt`; average participants at launch and solo-GM share; early-close vs full 8h; repeat GM/player counts; live snapshot of open launched tables and connected participants
+
+**Payment page**: median delay first launched table → first purchase; gift→paid rate; repeat purchase rate; paying share among activated users; link to `/` for P&L
+
+**Data contract**:
+- Each owning API exposes `GET /analytics/business?from&to&period` guarded by realm role `admin` (`@IsAdmin()`)
+- Admin UI calls Adventure (`/api`), Session (`/session`), and Payment (`/payment`) via the gateway and composes cross-DB ratios client-side
+- Partial service failure MUST NOT blank the whole page: failed domain cards show an error, others render
+- Session `launchedAt` is set on launch only; existing launched/closed rows MAY be backfilled as `expiresAt - 8h`
+- Adventure `blockedUsers` is the sum of the two exclusive counts (`unusedGiftUsers + spentGiftNeverBought`), not a single `$or` query
+
+**Accessibility**:
+- Period presets, refresh, and charts expose accessible names (`aria-label`)
+- Keyboard access and visible focus on all controls; `cursor-pointer` on clickable buttons
+- Tables have headers; loading / empty / error states are announced in text
+- Every KPI and funnel step MUST show a small Info (`i`) icon next to the title. The trigger MUST use `cursor-help`, an accessible name (`Explication du KPI {title}`), and visible focus. Hover (or keyboard focus) shows the definition; on devices without hover, the same icon opens a popover (FR-tooltip-accessibility). The definition MUST state what is counted, over which population, and how to read a high/low value.
+
+**Prohibitions**:
+- Using anonymous pageviews or Gateway HTTP volume as Acquisition
+- Treating campaign or character creation counts as the primary health metric
+- Replacing the Payment P&L dashboard at `/` with the Business funnel
+- Sending analytics endpoints without the admin role guard
+
+**Tests**:
+- Nominal: each analytics service returns expected counts for a populated period; funnel conversion helper divides successive steps
+- Edge: empty period returns zeros; conversion helper returns null when the denominator is 0; unused-gift and spent-gift-never-bought are exclusive; `blockedUsers` equals their sum; `activated` sessions have `launchedAt` null
+- Failure: non-admin JWT receives 403 from `/analytics/business`
+
+**References**:
+- `services/admin/client/src/config/navigation.ts`
+- `services/admin/client/src/app/business/page.tsx`
+- `services/adventure/api/src/resources/analytics/analytics.service.ts`
+- `services/session/api/src/resources/analytics/analytics.service.ts`
+- `services/payment/api/src/resources/analytics/analytics.service.ts`
+- `docs/functional-rules.md` — FR-frontend-design, FR-tooltip-accessibility, FR-user-balance-history, FR-session-lobby-wheel-deposit
+- `docs/design.md`

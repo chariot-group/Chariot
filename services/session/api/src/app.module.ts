@@ -8,6 +8,7 @@ import { RedisModule } from '@/redis/redis.module';
 import { MetricsModule } from '@/metrics/metrics.module';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
 import { SessionModule } from '@/resources/session/session.module';
+import { AnalyticsModule } from '@/resources/analytics/analytics.module';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { SessionModule } from '@/resources/session/session.module';
         PrismaModule,
         RedisModule,
         SessionModule,
+        AnalyticsModule,
         MetricsModule,
     ],
     controllers: [AppController],

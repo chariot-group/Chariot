@@ -265,7 +265,8 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
                 });
             }
 
-            const expiresAt: Date = new Date();
+            const launchedAt: Date = new Date();
+            const expiresAt: Date = new Date(launchedAt);
             expiresAt.setHours(expiresAt.getHours() + SessionService.EXPIRATION_HOURS);
 
             const updated: SessionWithParticipants = await this.prisma.session.update({
@@ -273,6 +274,7 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
                 data: {
                     status: SessionStatus.launched,
                     expiresAt,
+                    launchedAt,
                 },
                 include: { participants: true },
             });
