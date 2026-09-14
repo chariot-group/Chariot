@@ -6,6 +6,11 @@ logging {
 prometheus.remote_write "monitoring" {
   endpoint {
     url = sys.env("ALLOY_REMOTE_WRITE_URL")
+
+    basic_auth {
+      username = sys.env("ALLOY_REMOTE_WRITE_USER")
+      password = sys.env("ALLOY_REMOTE_WRITE_PASSWORD")
+    }
   }
 }
 

@@ -30,7 +30,7 @@ make up SERVICE=monitoring ENV=integ
 cd services/monitoring && docker compose -f compose.integ.yml --env-file .env up -d
 ```
 
-En prod, `ALLOY_REMOTE_WRITE_URL` pointe vers Prometheus via WireGuard (ex. `http://10.8.0.1:9090/api/v1/write`). Aucun port scrape (9100, 9216, `/metrics`) n’a besoin d’être publié hors du réseau Docker Chariot.
+En prod, `ALLOY_REMOTE_WRITE_URL` pointe vers le proxy Prometheus via WireGuard (ex. `http://10.8.0.1:9090/api/v1/write`), avec `ALLOY_REMOTE_WRITE_USER` / `ALLOY_REMOTE_WRITE_PASSWORD` (même secret que `PROMETHEUS_AUTH_*` côté Monitoring). Aucun port scrape (9100, 9216, `/metrics`) n’a besoin d’être publié hors du réseau Docker Chariot. Le `:9090` hôte n’accepte que `/api/v1/write` (basic auth).
 
 ## Docs Monitoring
 
