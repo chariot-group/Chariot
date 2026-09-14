@@ -1,13 +1,4 @@
-import {
-  CreditCard,
-  Heart,
-  Key,
-  LayoutDashboard,
-  Tag,
-  Users,
-  Wallet,
-  type LucideIcon,
-} from "lucide-react";
+import { ChartBar, CreditCard, Heart, Key, LayoutDashboard, Tag, Users, Wallet, type LucideIcon } from "lucide-react";
 
 type NavLinkItem = {
   label: string;
@@ -28,6 +19,7 @@ export type NavItem = NavLinkItem | NavFolderItem;
 
 const keycloakAdminUrl = process.env.NEXT_PUBLIC_KEYCLOAK_ADMIN_URL?.trim();
 const stripeDashboardUrl = process.env.NEXT_PUBLIC_STRIPE_DASHBOARD_URL?.trim();
+const graphanaDashboardUrl = process.env.NEXT_PUBLIC_GRAPHANA_DASHBOARD_URL?.trim();
 
 function externalNavItem(href: string | undefined, label: string, icon: LucideIcon): NavLinkItem | null {
   if (!href) return null;
@@ -37,6 +29,7 @@ function externalNavItem(href: string | undefined, label: string, icon: LucideIc
 const externalNavItems = [
   externalNavItem(keycloakAdminUrl, "Keycloak", Key),
   externalNavItem(stripeDashboardUrl, "Stripe", Wallet),
+  externalNavItem(graphanaDashboardUrl, "Graphana", ChartBar),
 ].filter((item): item is NavLinkItem => item !== null);
 
 export const navItems: NavItem[] = [
