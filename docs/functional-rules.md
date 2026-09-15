@@ -4377,3 +4377,39 @@ Each initiative tracker row carries:
 - `services/payment/api/src/resources/analytics/analytics.service.ts`
 - `docs/functional-rules.md` — FR-frontend-design, FR-tooltip-accessibility, FR-user-balance-history, FR-session-lobby-wheel-deposit
 - `docs/design.md`
+
+---
+
+## FR-admin-kpi-period-persistence: Admin KPI Period Filter Persistence
+
+**Rule**: The admin day-count period filter (preset and chart granularity) MUST persist across navigation between admin pages that expose it, so changing page does not reset the selected window.
+
+**Requirements**:
+
+- Applies to all admin pages that expose the period presets (7 / 30 / 90 / 365 days) and chart granularity: Payment P&L `/` and Business KPI pages `/business`, `/business/adventure`, `/business/session`, `/business/payment`
+- Selecting a preset or granularity on one of these pages MUST be reused on the others without reset
+- Persistence lasts for the current browser tab session (survives in-app navigation and refresh in the same tab)
+- Default when no stored selection exists: 30 last days, granularity `daily`
+- Invalid or out-of-range stored values MUST fall back to that default
+- Period controls keep their existing accessible names (`aria-label` / `aria-pressed`) per FR-admin-business-kpis
+
+**Prohibitions**:
+
+- Resetting preset or granularity to the default solely because the user navigated to another admin KPI page
+- Persisting a period selection that is not one of the defined presets or granularities
+
+**Tests**:
+
+- Nominal: selecting "12 derniers mois" on `/business` then opening `/business/session` keeps that preset and its granularity
+- Edge: a stored invalid preset index falls back to 30 days / daily
+- Failure: missing stored selection uses the default 30 days / daily
+
+**References**:
+
+- `services/admin/client/src/hooks/useBusinessPeriodLoader.ts`
+- `services/admin/client/src/hooks/useKpiPeriodSelection.ts`
+- `services/admin/client/src/lib/businessPeriod.ts`
+- `services/admin/client/src/lib/kpiPeriodPersistence.test.mjs`
+- `services/admin/client/src/components/kpi/PeriodControls.tsx`
+- `services/admin/client/src/app/page.tsx`
+- `docs/functional-rules.md` — FR-admin-business-kpis, FR-frontend-design

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useKpiPeriodSelection } from "@/hooks/useKpiPeriodSelection";
 import { PERIOD_PRESETS } from "@/lib/businessPeriod";
 import type { Period } from "@/lib/businessKpis.types";
 
@@ -10,10 +11,9 @@ export function useBusinessPeriodLoader<T>(
   errorToastId: string,
   errorMessage: string,
 ) {
+  const { preset, period, ready, setPreset, setPeriod } = useKpiPeriodSelection();
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
-  const [preset, setPreset] = useState(1);
-  const [period, setPeriod] = useState<Period>("daily");
   const [error, setError] = useState(false);
 
   const load = useCallback(async () => {
@@ -39,11 +39,15 @@ export function useBusinessPeriodLoader<T>(
   }, [preset, period, loadData, errorToastId, errorMessage]);
 
   useEffect(() => {
+    if (!ready) {
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
       void load();
     }, 0);
     return () => clearTimeout(timeoutId);
-  }, [load]);
+  }, [load, ready]);
 
   return {
     data,
@@ -51,10 +55,7 @@ export function useBusinessPeriodLoader<T>(
     error,
     preset,
     period,
-    setPreset: (index: number) => {
-      setPreset(index);
-      setPeriod(PERIOD_PRESETS[index].period);
-    },
+    setPreset,
     setPeriod,
     load,
   };
