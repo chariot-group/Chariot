@@ -216,24 +216,32 @@ jobs:
           else
             ENV_NAME="integration"
           fi
-          
+
           echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
-          
+          echo "NEXT_PUBLIC_ENV_NAME=${ENV_NAME}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_KEYCLOAK_REALM=chariot" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app" >> $GITHUB_ENV
+
           if [[ "${ENV_NAME}" == "production" ]]; then
-            echo "api_url=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
-            echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
-            echo "session_ws_url=${{ secrets.PROD_SESSION_WS_URL }}" >> $GITHUB_OUTPUT
-            echo "codex_url=${{ secrets.PROD_CODEX_URL }}" >> $GITHUB_OUTPUT
-            echo "stripe_publishable_key=${{ secrets.PROD_STRIPE_PUBLISHABLE_KEY }}" >> $GITHUB_OUTPUT
-            echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
+            echo "NEXT_PUBLIC_API_URL=${{ secrets.PROD_API_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_KEYCLOAK_URL=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_SESSION_WS_URL=${{ secrets.PROD_SESSION_WS_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_CODEX_URL=${{ secrets.PROD_CODEX_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.PROD_STRIPE_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
           else
-            echo "api_url=${{ secrets.INTEG_API_URL }}" >> $GITHUB_OUTPUT
-            echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
-            echo "session_ws_url=${{ secrets.INTEG_SESSION_WS_URL }}" >> $GITHUB_OUTPUT
-            echo "codex_url=${{ secrets.INTEG_CODEX_URL }}" >> $GITHUB_OUTPUT
-            echo "stripe_publishable_key=${{ secrets.INTEG_STRIPE_PUBLISHABLE_KEY }}" >> $GITHUB_OUTPUT
-            echo "env_name=${ENV_NAME}" >> $GITHUB_OUTPUT
+            echo "NEXT_PUBLIC_API_URL=${{ secrets.INTEG_API_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_KEYCLOAK_URL=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_SESSION_WS_URL=${{ secrets.INTEG_SESSION_WS_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_CODEX_URL=${{ secrets.INTEG_CODEX_URL }}" >> $GITHUB_ENV
+            echo "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.INTEG_STRIPE_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
           fi
+
+      - name: Verify frontend build secrets
+        run: |
+          missing=0
+          [ -n "$NEXT_PUBLIC_API_URL" ] || { echo "Missing API URL secret for ${{ steps.env.outputs.env_name }}"; missing=1; }
+          [ -n "$NEXT_PUBLIC_KEYCLOAK_URL" ] || { echo "Missing Keycloak URL secret for ${{ steps.env.outputs.env_name }}"; missing=1; }
+          exit "$missing"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -260,14 +268,14 @@ jobs:
           platforms: linux/amd64
           build-args: |
             NODE_ENV=production
-            NEXT_PUBLIC_API_URL=${{ steps.env.outputs.api_url }}
-            NEXT_PUBLIC_KEYCLOAK_URL=${{ steps.env.outputs.keycloak_url }}
-            NEXT_PUBLIC_CODEX_URL=${{ steps.env.outputs.codex_url }}
-            NEXT_PUBLIC_KEYCLOAK_REALM=chariot
-            NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
-            NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
-            NEXT_PUBLIC_SESSION_WS_URL=${{ steps.env.outputs.session_ws_url }}
-            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ steps.env.outputs.stripe_publishable_key }}
+            NEXT_PUBLIC_API_URL
+            NEXT_PUBLIC_KEYCLOAK_URL
+            NEXT_PUBLIC_CODEX_URL
+            NEXT_PUBLIC_KEYCLOAK_REALM
+            NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+            NEXT_PUBLIC_ENV_NAME
+            NEXT_PUBLIC_SESSION_WS_URL
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
       - name: Output image tags
         run: |

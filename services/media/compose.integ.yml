@@ -24,6 +24,7 @@ services:
     networks:
       - media-network
       - traefik-public
+      - chariot-group-network-integ
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.chariot-minio-integ.rule=Host(`${MINIO_HOST}`)"

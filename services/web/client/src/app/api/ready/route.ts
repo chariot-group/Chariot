@@ -1,16 +1,18 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const REQUIRED_ENV = [
-  "NEXT_PUBLIC_API_URL",
-  "NEXT_PUBLIC_KEYCLOAK_URL",
-  "NEXT_PUBLIC_KEYCLOAK_REALM",
-  "NEXT_PUBLIC_KEYCLOAK_CLIENT_ID",
-] as const;
+function getRequiredPublicEnv(): Record<string, string | undefined> {
+  return {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_KEYCLOAK_URL: process.env.NEXT_PUBLIC_KEYCLOAK_URL,
+    NEXT_PUBLIC_KEYCLOAK_REALM: process.env.NEXT_PUBLIC_KEYCLOAK_REALM,
+    NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID,
+  };
+}
 
 export function GET(): Response {
   const checks = Object.fromEntries(
-    REQUIRED_ENV.map((key) => [key, Boolean(process.env[key])]),
+    Object.entries(getRequiredPublicEnv()).map(([key, value]) => [key, Boolean(value)]),
   );
   const ready = Object.values(checks).every(Boolean);
 
