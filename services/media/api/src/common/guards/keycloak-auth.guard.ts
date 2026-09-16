@@ -108,9 +108,7 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      this.logger.warn(
-        `Token validation failed: ${(error as Error).message}`,
-      );
+      this.logger.warn(`Token validation failed: ${(error as Error).message}`);
       throw new UnauthorizedException('Invalid token');
     }
   }

@@ -513,7 +513,11 @@ export class MediaService implements OnModuleInit {
     thumbKey: string,
     processed: { main: Buffer; thumb: Buffer; contentType: string },
   ): Promise<void> {
-    await this.putObjectAndAccount(mainKey, processed.main, processed.contentType);
+    await this.putObjectAndAccount(
+      mainKey,
+      processed.main,
+      processed.contentType,
+    );
     await this.putObjectAndAccount(
       thumbKey,
       processed.thumb,

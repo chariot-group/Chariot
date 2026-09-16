@@ -1,4 +1,4 @@
-import TransportStream from 'winston-transport';
+import TransportStream from "winston-transport";
 
 type LokiLabels = Record<string, string>;
 
@@ -10,27 +10,27 @@ interface LokiTransportOptions extends TransportStream.TransportStreamOptions {
 }
 
 const RESERVED_KEYS = new Set([
-  'level',
-  'message',
-  'timestamp',
-  'service',
-  'environment',
-  'app',
-  'context',
-  'stack',
-  'splat',
-  'label',
-  'labels',
-  'ms',
-  'trace_id',
-  'span_id',
+  "level",
+  "message",
+  "timestamp",
+  "service",
+  "environment",
+  "app",
+  "context",
+  "stack",
+  "splat",
+  "label",
+  "labels",
+  "ms",
+  "trace_id",
+  "span_id",
 ]);
 
 function getTraceIds(): { trace_id?: string; span_id?: string } {
   try {
     // Optional peer dependency — present when OTEL is enabled
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const otel = require('@opentelemetry/api');
+    const otel = require("@opentelemetry/api");
     const span = otel.trace.getSpan(otel.context.active());
     const spanCtx = span?.spanContext();
     return {
@@ -46,17 +46,16 @@ function buildLogLine(info: Record<string, unknown>): {
   level: string;
   line: string;
 } {
-  const level = String(info.level ?? 'info').toLowerCase();
-  const message = info.message != null ? String(info.message) : '';
-  const context =
-    info.context != null ? String(info.context) : undefined;
+  const level = String(info.level ?? "info").toLowerCase();
+  const message = info.message != null ? String(info.message) : "";
+  const context = info.context != null ? String(info.context) : undefined;
   const stack = info.stack != null ? String(info.stack) : undefined;
   const { trace_id, span_id } = getTraceIds();
 
   const extra: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(info)) {
     if (RESERVED_KEYS.has(key)) continue;
-    if (key.startsWith('Symbol(')) continue;
+    if (key.startsWith("Symbol(")) continue;
     extra[key] = value;
   }
 
@@ -87,7 +86,7 @@ export class LokiTransport extends TransportStream {
 
   constructor(opts: LokiTransportOptions) {
     super(opts);
-    this.pushUrl = `${opts.host.replace(/\/$/, '')}/loki/api/v1/push`;
+    this.pushUrl = `${opts.host.replace(/\/$/, "")}/loki/api/v1/push`;
     this.baseLabels = opts.labels || {};
     this.intervalMs = opts.intervalMs ?? 2000;
     this.maxBatchSize = opts.maxBatchSize ?? 50;
@@ -98,7 +97,7 @@ export class LokiTransport extends TransportStream {
   }
 
   log(info: Record<string, unknown>, callback: () => void): void {
-    setImmediate(() => this.emit('logged', info));
+    setImmediate(() => this.emit("logged", info));
 
     const { level, line } = buildLogLine(info);
     const ts = `${BigInt(Date.now()) * 1000000n}`;
@@ -124,10 +123,7 @@ export class LokiTransport extends TransportStream {
     this.flushing = true;
     const batch = this.buffer.splice(0, this.maxBatchSize);
     try {
-      const groups = new Map<
-        string,
-        { stream: LokiLabels; values: Array<[string, string]> }
-      >();
+      const groups = new Map<string, { stream: LokiLabels; values: Array<[string, string]> }>();
       for (const entry of batch) {
         const key = JSON.stringify(entry.labels);
         let group = groups.get(key);
@@ -139,8 +135,8 @@ export class LokiTransport extends TransportStream {
       }
 
       await fetch(this.pushUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ streams: [...groups.values()] }),
       });
     } catch {
@@ -152,18 +148,17 @@ export class LokiTransport extends TransportStream {
 }
 
 export function createLokiTransport(serviceName: string): LokiTransport | null {
-  if (process.env.LOKI_ENABLED !== 'true') return null;
+  if (process.env.LOKI_ENABLED !== "true") return null;
   const host = process.env.LOKI_URL;
   if (!host) return null;
 
   return new LokiTransport({
     host,
-    level: process.env.LOKI_LOG_LEVEL || 'info',
+    level: process.env.LOKI_LOG_LEVEL || "info",
     labels: {
       service: serviceName,
-      environment:
-        process.env.OTEL_ENVIRONMENT || process.env.NODE_ENV || 'development',
-      app: 'chariot',
+      environment: process.env.OTEL_ENVIRONMENT || process.env.NODE_ENV || "development",
+      app: "chariot",
     },
   });
 }

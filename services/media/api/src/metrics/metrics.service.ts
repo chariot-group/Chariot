@@ -69,5 +69,7 @@ export const uploadBytesProvider = makeHistogramProvider({
   name: 'chariot_media_upload_bytes',
   help: 'Avatar upload size in bytes (original file vs processed WebP)',
   labelNames: ['domain', 'stage'],
-  buckets: [10_000, 50_000, 100_000, 200_000, 500_000, 1_000_000, 2_000_000, 5_000_000],
+  buckets: [
+    10_000, 50_000, 100_000, 200_000, 500_000, 1_000_000, 2_000_000, 5_000_000,
+  ],
 });

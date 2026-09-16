@@ -117,7 +117,9 @@ export class AnalyticsService {
           .exec(),
         this.userModel.countDocuments(unusedGiftUsersFilter()).exec(),
         this.userModel
-          .countDocuments(spentGiftNeverBoughtFilter(TOKEN_PURCHASE_CAMPAIGN_NAME))
+          .countDocuments(
+            spentGiftNeverBoughtFilter(TOKEN_PURCHASE_CAMPAIGN_NAME),
+          )
           .exec(),
         this.countPaidAmongAcquired(range.from, range.to),
         this.campaignModel

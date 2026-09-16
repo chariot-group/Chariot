@@ -306,7 +306,9 @@ describe('MetricsInterceptor', () => {
         error: () => {
           expect(errorSpy).not.toHaveBeenCalled();
           expect(debugSpy).toHaveBeenCalledWith(
-            expect.stringMatching(/GET \/api\/test 404 - \d+\.\d+s - Not found/),
+            expect.stringMatching(
+              /GET \/api\/test 404 - \d+\.\d+s - Not found/,
+            ),
           );
 
           errorSpy.mockRestore();

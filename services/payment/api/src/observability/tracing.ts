@@ -44,6 +44,25 @@ function buildResource(
   throw new Error('No compatible Resource factory in @opentelemetry/resources');
 }
 
+type OtelSdkModule = {
+  NodeSDK: new (config: {
+    resource: unknown;
+    traceExporter: unknown;
+    instrumentations: unknown[];
+  }) => {
+    start: () => Promise<void> | void;
+    shutdown: () => Promise<void>;
+  };
+};
+
+type OtelAutoInstrModule = {
+  getNodeAutoInstrumentations: (options: Record<string, unknown>) => unknown;
+};
+
+type OtelExporterModule = {
+  OTLPTraceExporter: new (config: { url: string }) => unknown;
+};
+
 export async function initTracing(serviceName: string): Promise<void> {
   if (process.env.OTEL_ENABLED !== 'true') {
     return;
@@ -57,15 +76,23 @@ export async function initTracing(serviceName: string): Promise<void> {
     const dynamicImport = new Function(
       'specifier',
       'return import(specifier)',
-    ) as (specifier: string) => Promise<any>;
+    ) as <T = unknown>(specifier: string) => Promise<T>;
 
     const [{ NodeSDK }, autoInstr, exporter, resources, semconv] =
       await Promise.all([
-        dynamicImport('@opentelemetry/sdk-node'),
-        dynamicImport('@opentelemetry/auto-instrumentations-node'),
-        dynamicImport('@opentelemetry/exporter-trace-otlp-http'),
-        dynamicImport('@opentelemetry/resources'),
-        dynamicImport('@opentelemetry/semantic-conventions'),
+        dynamicImport<OtelSdkModule>('@opentelemetry/sdk-node'),
+        dynamicImport<OtelAutoInstrModule>(
+          '@opentelemetry/auto-instrumentations-node',
+        ),
+        dynamicImport<OtelExporterModule>(
+          '@opentelemetry/exporter-trace-otlp-http',
+        ),
+        dynamicImport<Parameters<typeof buildResource>[0]>(
+          '@opentelemetry/resources',
+        ),
+        dynamicImport<Record<string, string>>(
+          '@opentelemetry/semantic-conventions',
+        ),
       ]);
 
     const sdk = new NodeSDK({

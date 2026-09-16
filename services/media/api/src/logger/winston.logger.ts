@@ -3,8 +3,7 @@ import { createLokiTransport } from '@/observability/loki.transport';
 
 const SERVICE = 'media';
 const isDev = process.env.NODE_ENV === 'development';
-const logLevel =
-  process.env.LOG_LEVEL || (isDev ? 'debug' : 'info');
+const logLevel = process.env.LOG_LEVEL || (isDev ? 'debug' : 'info');
 
 const consoleFormat = isDev
   ? format.combine(

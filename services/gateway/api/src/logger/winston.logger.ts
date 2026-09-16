@@ -55,12 +55,7 @@ export const instance = winston.createLogger({
     winston.format.errors({ stack: true }),
     winston.format.splat(),
   ),
-  transports: [
-    errorTransport,
-    combinedTransport,
-    consoleTransport,
-    ...(lokiTransport ? [lokiTransport] : []),
-  ],
+  transports: [errorTransport, combinedTransport, consoleTransport, ...(lokiTransport ? [lokiTransport] : [])],
 });
 
 instance.info("Winston logger initialized for Gateway", {

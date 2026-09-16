@@ -29,7 +29,7 @@ const RESERVED_KEYS = new Set([
 function getTraceIds(): { trace_id?: string; span_id?: string } {
   try {
     // Optional peer dependency — present when OTEL is enabled
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const otel = require('@opentelemetry/api');
     const span = otel.trace.getSpan(otel.context.active());
     const spanCtx = span?.spanContext();

@@ -48,8 +48,7 @@ function buildLogLine(info: Record<string, unknown>): {
 } {
   const level = String(info.level ?? 'info').toLowerCase();
   const message = info.message != null ? String(info.message) : '';
-  const context =
-    info.context != null ? String(info.context) : undefined;
+  const context = info.context != null ? String(info.context) : undefined;
   const stack = info.stack != null ? String(info.stack) : undefined;
   const { trace_id, span_id } = getTraceIds();
 

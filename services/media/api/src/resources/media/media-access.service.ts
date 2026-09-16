@@ -8,7 +8,10 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MEDIA_UPSTREAM_TIMER, TimeUpstream } from '@/metrics/upstream-timer.token';
+import {
+  MEDIA_UPSTREAM_TIMER,
+  TimeUpstream,
+} from '@/metrics/upstream-timer.token';
 
 type CharacterOwnerResponse = {
   createdBy: string;
@@ -313,14 +316,19 @@ export class MediaAccessService {
     const url = `${this.sessionBaseUrl}/sessions/${encodeURIComponent(sessionCode)}/validate-gm-ownership`;
 
     try {
-      const res = await this.timedFetch('session', 'validate_gm_ownership', url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: authHeader,
+      const res = await this.timedFetch(
+        'session',
+        'validate_gm_ownership',
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: authHeader,
+          },
+          body: JSON.stringify({ targetUserId }),
         },
-        body: JSON.stringify({ targetUserId }),
-      });
+      );
 
       if (res.ok) {
         return;

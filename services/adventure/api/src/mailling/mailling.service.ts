@@ -60,10 +60,7 @@ export class MaillingService {
           .replaceAll('{{otp}}', otp.toString()),
       });
 
-      this.logger.log(
-        `Email send at ${email} in ${local}`,
-        this.SERVICE_NAME,
-      );
+      this.logger.log(`Email send at ${email} in ${local}`, this.SERVICE_NAME);
     } catch (error) {
       const message = `Error while send otp code at ${email}: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
