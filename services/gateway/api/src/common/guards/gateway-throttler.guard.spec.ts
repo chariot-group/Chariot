@@ -2,9 +2,14 @@ import { ExecutionContext } from "@nestjs/common";
 import { GatewayThrottlerGuard } from "./gateway-throttler.guard";
 
 describe("GatewayThrottlerGuard", () => {
-  const guard = new GatewayThrottlerGuard({ throttlers: [] }, {} as never, {} as never, {
-    recordRateLimitExceeded: jest.fn(),
-  } as never);
+  const guard = new GatewayThrottlerGuard(
+    { throttlers: [] },
+    {} as never,
+    {} as never,
+    {
+      recordRateLimitExceeded: jest.fn(),
+    } as never,
+  );
   const shouldSkip = (context: ExecutionContext) =>
     (guard as unknown as { shouldSkip(ctx: ExecutionContext): Promise<boolean> }).shouldSkip(context);
 
