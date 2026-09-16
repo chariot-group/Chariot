@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.10.0] - 16-09-2026
+
+### Added
+- Added unified observability across APIs and the web client: structured logs to Loki, traces to Tempo (OTLP), and Prometheus metrics scraped locally by Grafana Alloy
+- Added Grafana Alloy as the Chariot-side metrics collector (dev, integ, and prod), with authenticated remote write and local `/ready` blackbox probes
+- Added `/ready` (APIs) and `/api/ready` (web) endpoints used by Alloy health probes
+- Added admin Business navigation: AARRR funnel dashboard plus Adventure, Session, and Payment KPI pages
+- Added session `launchedAt` timestamp so lobby-to-launch conversion and duration KPIs are accurate
+- Added persistence of the admin KPI period filter (preset and chart granularity) across Business and Payment pages
+
+### Changed
+- Alloy UI is bound to localhost in development; metrics remote write is authenticated instead of accepting anonymous writes
+- Web client bumped to 2.10.0; adventure 2.9.0; session 1.6.0; gateway 2.6.0; payment 1.2.0; media 1.2.0; admin 1.3.0
+
 ## [2.9.0] - 06-09-2026
 
 ### Added
