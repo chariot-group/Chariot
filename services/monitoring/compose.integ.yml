@@ -38,7 +38,7 @@ services:
       READY_SESSION_URL: http://chariot-session-integ:9002/ready
       READY_MEDIA_URL: http://chariot-media-integ:9005/ready
       READY_WEB_URL: http://chariot-frontend-integ:3000/api/ready
-      READY_KEYCLOAK_URL: http://keycloak-integ:9000/auth/health/ready
+      READY_KEYCLOAK_URL: http://keycloak-integ:9000/health/ready
       MONGODB_URI: ${MONGODB_EXPORTER_URI}
       REDIS_ADDR: ${REDIS_ADDR:-chariot-session-redis-integ:6379}
       POSTGRES_SESSION_DSN: ${POSTGRES_EXPORTER_DSN}

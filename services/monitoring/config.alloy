@@ -75,12 +75,12 @@ prometheus.scrape "web" {
 }
 
 // ---------------------------------------------------------------------------
-// Keycloak management (/auth/metrics)
+// Keycloak management (/metrics, /health/*) — le préfixe /auth ne s'applique pas
 // ---------------------------------------------------------------------------
 
 prometheus.scrape "keycloak" {
   job_name        = "keycloak"
-  metrics_path    = "/auth/metrics"
+  metrics_path    = "/metrics"
   scrape_interval = "15s"
 
   targets = [
@@ -249,7 +249,7 @@ prometheus.scrape "redis" {
 
 prometheus.exporter.postgres "session" {
   data_source_names  = [sys.env("POSTGRES_SESSION_DSN")]
-  enabled_collectors = ["stat_statements", "locks"]
+  enabled_collectors = ["database", "stat_database", "stat_statements", "locks"]
 }
 
 discovery.relabel "postgres_session" {
@@ -284,7 +284,7 @@ prometheus.scrape "postgres_session" {
 
 prometheus.exporter.postgres "payment" {
   data_source_names  = [sys.env("POSTGRES_PAYMENT_DSN")]
-  enabled_collectors = ["stat_statements", "locks"]
+  enabled_collectors = ["database", "stat_database", "stat_statements", "locks"]
 }
 
 discovery.relabel "postgres_payment" {
