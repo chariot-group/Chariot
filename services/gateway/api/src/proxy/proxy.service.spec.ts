@@ -4,10 +4,13 @@ import { HttpService } from "@nestjs/axios";
 import { of, throwError } from "rxjs";
 import { AxiosResponse } from "axios";
 import { BadRequestException } from "@nestjs/common";
+import { ServicesConfig } from "./services.config";
+import { GatewayMetricsService } from "@/metrics/gateway-metrics.service";
 
 describe("ProxyService", () => {
   let service: ProxyService;
   let httpService: HttpService;
+  let gatewayMetrics: { recordProxyError: jest.Mock };
 
   beforeEach(async () => {
     // Set up environment for tests
@@ -15,14 +18,23 @@ describe("ProxyService", () => {
     process.env.USERS_SERVICE_URL = "http://test-users:9001";
     process.env.SESSION_SERVICE_URL = "http://test-session:9002";
 
+    gatewayMetrics = {
+      recordProxyError: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProxyService,
+        ServicesConfig,
         {
           provide: HttpService,
           useValue: {
             request: jest.fn(),
           },
+        },
+        {
+          provide: GatewayMetricsService,
+          useValue: gatewayMetrics,
         },
       ],
     }).compile();
@@ -151,6 +163,7 @@ describe("ProxyService", () => {
       jest.spyOn(httpService, "request").mockReturnValue(throwError(() => error));
 
       await expect(service.forward("adventure", "GET", "/test", null, {})).rejects.toThrow("Connection refused");
+      expect(gatewayMetrics.recordProxyError).toHaveBeenCalled();
     });
   });
 
