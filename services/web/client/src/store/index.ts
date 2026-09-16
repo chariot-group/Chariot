@@ -23,6 +23,7 @@ import sessionReducer, {
 } from '@/store/slices/sessionSlice';
 import { CampaignState, GroupState } from '@/types/campaign';
 import { UserState } from '@/types/user';
+import { reportClientIssue } from "@/logger/reportClientIssue";
 
 function getCurrentUserId(): string | null {
     if (typeof window === 'undefined') return null;
@@ -279,7 +280,7 @@ export const purgePersistedState = async (): Promise<void> => {
         await globalPersistor.purge();
         console.log('Redux persisted state successfully purged');
     } catch (error) {
-        console.error('Failed to purge persisted state:', error);
+        reportClientIssue("error", "Failed to purge persisted state", "Storage", error);
         throw error;
     }
 };

@@ -5,7 +5,6 @@ import { AppService } from '@/app.service';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { MetricsModule } from '@/metrics/metrics.module';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { KeycloakAuthGuard } from '@/common/guards/keycloak-auth.guard';
 import { PromoCodeModule } from '@/resources/promo-code/promo-code.module';
 import { AffiliationModule } from '@/resources/affiliation/affiliation.module';
@@ -22,7 +21,6 @@ import { ReferralModule } from '@/resources/referral/referral.module';
         }),
         PrismaModule,
         MetricsModule,
-        PrometheusModule.register(),
         PromoCodeModule,
         AffiliationModule,
         PaymentModule,

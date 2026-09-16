@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import {
   AreaChart,
   Area,
@@ -16,16 +15,14 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { TrendingUp, CreditCard, Users, Percent, RefreshCw, ArrowDownLeft } from "lucide-react";
+import { TrendingUp, CreditCard, Users, Percent, ArrowDownLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { PeriodControls } from "@/components/kpi/PeriodControls";
+import { useBusinessPeriodLoader } from "@/hooks/useBusinessPeriodLoader";
 import { formatCents } from "@/lib/utils";
 import getApiClient from "@/services/ApiService";
-import { toast } from "react-toastify";
-
-type Period = "daily" | "weekly" | "monthly";
+import type { Period } from "@/lib/businessKpis.types";
 
 interface DashboardData {
   kpis: {
@@ -86,12 +83,10 @@ const PIE_COLORS: Record<string, string> = {
   REFUNDED: "#61ebff",
 };
 
-const PERIOD_PRESETS = [
-  { label: "7 derniers jours", days: 7, period: "daily" as Period },
-  { label: "30 derniers jours", days: 30, period: "daily" as Period },
-  { label: "3 derniers mois", days: 90, period: "weekly" as Period },
-  { label: "12 derniers mois", days: 365, period: "monthly" as Period },
-];
+async function fetchPaymentDashboard(params: { period: Period; from: string; to: string }) {
+  const res = await getApiClient().get<DashboardData>("/analytics/dashboard", { params });
+  return res.data;
+}
 
 function KpiCard({
   title,
@@ -123,41 +118,13 @@ function KpiCard({
 }
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [preset, setPreset] = useState(1); // default: 30 jours
-  const [period, setPeriod] = useState<Period>("daily");
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { days, period: defaultPeriod } = PERIOD_PRESETS[preset];
-      const activePeriod = period ?? defaultPeriod;
-      const to = new Date();
-      const from = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-
-      const res = await getApiClient().get<DashboardData>("/analytics/dashboard", {
-        params: {
-          period: activePeriod,
-          from: from.toISOString().slice(0, 10),
-          to: to.toISOString().slice(0, 10),
-        },
-      });
-      setData(res.data);
-    } catch {
-      toast.error("Erreur lors du chargement du dashboard", { toastId: "dashboard-load-error" });
-    } finally {
-      setLoading(false);
-    }
-  }, [preset, period]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      void load();
-    }, 0);
-
-    return () => clearTimeout(timeoutId);
-  }, [load]);
+  const loader = useBusinessPeriodLoader(
+    fetchPaymentDashboard,
+    "dashboard-load-error",
+    "Erreur lors du chargement du dashboard",
+  );
+  const data = loader.data;
+  const loading = loader.loading;
 
   const pieData = data
     ? Object.entries(data.paymentStatusBreakdown)
@@ -191,47 +158,14 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Controls */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-        <div className="flex flex-wrap gap-2">
-          {PERIOD_PRESETS.map((p, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setPreset(i);
-                setPeriod(PERIOD_PRESETS[i].period);
-              }}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                preset === i
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-card-foreground"
-              }`}>
-              {p.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 sm:ml-auto">
-          <Select
-            value={period}
-            onValueChange={(v) => setPeriod(v as Period)}>
-            <SelectTrigger className="w-36 h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="daily">Journalier</SelectItem>
-              <SelectItem value="weekly">Hebdomadaire</SelectItem>
-              <SelectItem value="monthly">Mensuel</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={load}
-            disabled={loading}>
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          </Button>
-        </div>
-      </div>
+      <PeriodControls
+        preset={loader.preset}
+        period={loader.period}
+        loading={loading}
+        onPreset={loader.setPreset}
+        onPeriod={loader.setPeriod}
+        onRefresh={loader.load}
+      />
 
       {/* KPIs */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

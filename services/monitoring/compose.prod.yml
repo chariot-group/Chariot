@@ -1,0 +1,65 @@
+# Alloy — unique point d'échange métriques avec le VPS Monitoring (remote_write).
+# Aucun port scrape publié : Alloy parle aux services sur le réseau Docker interne.
+#
+# Usage:
+#   cd services/monitoring && docker compose -f compose.prod.yml --env-file .env up -d
+#   make up SERVICE=monitoring ENV=prod
+
+name: chariot-monitoring-exporters-prod
+
+services:
+  alloy:
+    image: grafana/alloy:v1.11.2
+    container_name: chariot-alloy-prod
+    restart: unless-stopped
+    pid: host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - ./blackbox.yml:/etc/alloy/blackbox.yml:ro
+      - alloy_data:/var/lib/alloy/data
+      - /:/host:ro
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --disable-reporting
+      - /etc/alloy/config.alloy
+    environment:
+      ALLOY_REMOTE_WRITE_URL: ${ALLOY_REMOTE_WRITE_URL}
+      ALLOY_REMOTE_WRITE_USER: ${ALLOY_REMOTE_WRITE_USER:-alloy}
+      ALLOY_REMOTE_WRITE_PASSWORD: ${ALLOY_REMOTE_WRITE_PASSWORD}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-prometheus}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD}
+      GATEWAY_ADDR: chariot-gateway-prod:8082
+      ADVENTURE_ADDR: chariot-adventure-prod:9000
+      PAYMENT_ADDR: chariot-payment-prod:9003
+      SESSION_ADDR: chariot-session-prod:9002
+      MEDIA_ADDR: chariot-media-prod:9005
+      WEB_ADDR: chariot-frontend-prod:3000
+      KEYCLOAK_ADDR: keycloak-prod:9000
+      READY_GATEWAY_URL: http://chariot-gateway-prod:8082/ready
+      READY_ADVENTURE_URL: http://chariot-adventure-prod:9000/ready
+      READY_PAYMENT_URL: http://chariot-payment-prod:9003/ready
+      READY_SESSION_URL: http://chariot-session-prod:9002/ready
+      READY_MEDIA_URL: http://chariot-media-prod:9005/ready
+      READY_WEB_URL: http://chariot-frontend-prod:3000/api/ready
+      READY_KEYCLOAK_URL: http://keycloak-prod:9000/auth/health/ready
+      MONGODB_URI: ${MONGODB_EXPORTER_URI}
+      REDIS_ADDR: ${REDIS_ADDR:-chariot-session-redis-prod:6379}
+      POSTGRES_SESSION_DSN: ${POSTGRES_EXPORTER_DSN}
+      POSTGRES_PAYMENT_DSN: ${POSTGRES_PAYMENT_EXPORTER_DSN}
+      UNIX_COLLECTORS: cpu,meminfo,loadavg,uname,filesystem
+      HOST_PROCFS: /host/proc
+      HOST_SYSFS: /host/sys
+      HOST_ROOTFS: /host
+    networks:
+      - chariot-group-network-prod
+
+volumes:
+  alloy_data:
+
+networks:
+  chariot-group-network-prod:
+    external: true

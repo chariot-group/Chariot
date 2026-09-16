@@ -7,6 +7,8 @@ import {
   MediaProxyController,
 } from "@/proxy/proxy.controller";
 import { ProxyService } from "@/proxy/proxy.service";
+import { ServicesConfigModule } from "@/proxy/services.config.module";
+import { MetricsModule } from "@/metrics/metrics.module";
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { ProxyService } from "@/proxy/proxy.service";
       timeout: 30000,
       maxRedirects: 5,
     }),
+    ServicesConfigModule,
+    MetricsModule,
   ],
   controllers: [MediaProxyController, ProxyController, SessionProxyController, PaymentProxyController],
   providers: [ProxyService],

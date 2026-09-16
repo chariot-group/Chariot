@@ -13,6 +13,7 @@ import { InternalServerErrorException, Logger, UnauthorizedException } from '@ne
 import { SessionService } from '@/resources/session/session.service';
 import { RedisService } from '@/redis/redis.service';
 import { AdventureUserService } from '@/common/adventure/adventure-user.service';
+import { SessionLiveMetrics } from '@/metrics/session-live.metrics';
 import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { SessionWithParticipants } from '@/resources/session/entities/session.model';
@@ -60,6 +61,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         private readonly redisService: RedisService,
         private readonly adventureUserService: AdventureUserService,
         private readonly configService: ConfigService,
+        private readonly liveMetrics: SessionLiveMetrics,
     ) {
         this.keycloakInternalUrl = this.configService.get<string>('KEYCLOAK_INTERNAL_URL');
         this.keycloakExternalUrl = this.configService.get<string>('KEYCLOAK_URL');
@@ -75,6 +77,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     afterInit() {
+        void this.sessionService.markConnectedParticipantsDisconnected().catch((error: any) => {
+            this.logger.error(
+                `Failed to reconcile presence after restart: ${error.message}`,
+                null,
+                this.SERVICE_NAME,
+            );
+        });
+
         // Écouter les expirations Redis pour fermer automatiquement les sessions
         this.redisService.onSessionExpired('gateway', async (sessionId: string) => {
             this.logger.verbose(`Session ${sessionId} expired via Redis TTL`, this.SERVICE_NAME);
@@ -101,7 +111,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             if (!token) {
                 let message: string = 'No token provided';
-                this.logger.error(message, this.SERVICE_NAME);
+                this.logger.warn(message, this.SERVICE_NAME);
                 throw new UnauthorizedException(message);
             }
 
@@ -114,10 +124,12 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             };
             let duration: number = (Date.now() - start) / 1000;
 
-            this.logger.verbose(`Client connected: ${client.user.username} (${client.id}) in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+            this.logger.debug(`Client connected: ${client.user.username} (${client.id}) in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+            this.liveMetrics.recordWs('connect');
         } catch (error: any) {
             let message: string = `Connection rejected: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
+            this.logger.warn(message, this.SERVICE_NAME);
+            this.liveMetrics.recordWs('reject');
             client.emit('error', { message });
             client.disconnect();
         }
@@ -127,7 +139,8 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         if (!client.user) {
             return;
         }
-        this.logger.verbose(`Client disconnected: ${client.user.username} (${client.id})`, this.SERVICE_NAME);
+        this.logger.debug(`Client disconnected: ${client.user.username} (${client.id})`, this.SERVICE_NAME);
+        this.liveMetrics.recordWs('disconnect');
 
         const tracked = client.sessionRoomIds ? [...client.sessionRoomIds] : [];
         const fromRooms = [...client.rooms].filter(r => r !== client.id);
@@ -173,6 +186,16 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         return result?.data ?? result;
     }
 
+    private emitSessionError(client: AuthenticatedSocket, message: string, error: any): void {
+        const status = error?.status ?? error?.getStatus?.();
+        if (typeof status === 'number' && status < 500) {
+            this.logger.debug(message, this.SERVICE_NAME);
+        } else {
+            this.logger.error(message, null, this.SERVICE_NAME);
+        }
+        client.emit('session:error', { message });
+    }
+
     private trackSessionRoom(client: AuthenticatedSocket, sessionId: string): void {
         if (!client.sessionRoomIds) {
             client.sessionRoomIds = new Set();
@@ -198,11 +221,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             client.emit('session:created', { session });
             let duration: number = (Date.now() - start) / 1000;
 
-            this.logger.verbose(`Session ${session.id} created by ${client.user.username} in ${duration.toFixed(3)}s`, null, this.SERVICE_NAME);
+            this.logger.debug(`Session ${session.id} created by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
-            let message: string = `Session creation failed: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Session creation failed: ${error.message}`, error);
         }
     }
 
@@ -239,11 +260,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             client.emit('session:token-updated', { tokensByUser: currentTokens });
 
             let duration: number = (Date.now() - start) / 1000;
-            this.logger.verbose(`${client.user.username} joined session ${session.id} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+            this.logger.debug(`${client.user.username} joined session ${session.id} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
-            let message: string = `Failed to join session: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to join session: ${error.message}`, error);
         }
     }
 
@@ -293,11 +312,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             let duration: number = (Date.now() - start) / 1000;
 
-            this.logger.verbose(`${client.user.username} left session ${roomId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+            this.logger.debug(`${client.user.username} left session ${roomId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
-            let message: string = `Failed to leave session: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to leave session: ${error.message}`, error);
         }
     }
 
@@ -317,7 +334,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             });
             let duration: number = (Date.now() - start) / 1000;
 
-            this.logger.verbose(`Session ${roomId} launched by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+            this.logger.debug(`Session ${roomId} launched by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
             const response = error?.response;
             if (response && typeof response === 'object' && response.code === 'WHEEL_QUOTA_MISMATCH') {
@@ -327,9 +344,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 });
                 return;
             }
-            let message: string = `Failed to launch session: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to launch session: ${error.message}`, error);
         }
     }
 
@@ -349,11 +364,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             });
 
             let duration: number = (Date.now() - start) / 1000;
-            this.logger.verbose(`${client.user.username} changed character in session ${roomId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+            this.logger.debug(`${client.user.username} changed character in session ${roomId} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
-            let message: string = `Failed to change character: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to change character: ${error.message}`, error);
         }
     }
 
@@ -385,14 +398,12 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 return;
             }
             client.to(session.id).emit('session:character-sheet-updated', { characterId: cid });
-            this.logger.verbose(
+            this.logger.debug(
                 `${client.user.username} broadcast character sheet update ${cid} in session ${session.id}`,
                 this.SERVICE_NAME,
             );
         } catch (error: any) {
-            const message: string = `Failed to broadcast character sheet update: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to broadcast character sheet update: ${error.message}`, error);
         }
     }
 
@@ -417,14 +428,12 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 return;
             }
             client.to(session.id).emit('session:battle-state-updated', { state: data.state });
-            this.logger.verbose(
+            this.logger.debug(
                 `${client.user.username} broadcast battle state in session ${session.id}`,
                 this.SERVICE_NAME,
             );
         } catch (error: any) {
-            const message: string = `Failed to broadcast battle state: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to broadcast battle state: ${error.message}`, error);
         }
     }
 
@@ -447,14 +456,12 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             client.to(session.id).emit('session:battle-state-requested', {
                 requestedBy: client.user.keycloakId,
             });
-            this.logger.verbose(
+            this.logger.debug(
                 `${client.user.username} requested battle state in session ${session.id}`,
                 this.SERVICE_NAME,
             );
         } catch (error: any) {
-            const message: string = `Failed to request battle state: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to request battle state: ${error.message}`, error);
         }
     }
 
@@ -492,14 +499,12 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 characterId: data.characterId,
                 initiative: Math.trunc(Number(data.initiative)),
             });
-            this.logger.verbose(
+            this.logger.debug(
                 `${client.user.username} submitted preparatory initiative in session ${session.id}`,
                 this.SERVICE_NAME,
             );
         } catch (error: any) {
-            const message: string = `Failed to submit player initiative: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to submit player initiative: ${error.message}`, error);
         }
     }
 
@@ -542,14 +547,12 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 concentration: data.concentration,
                 pendingConcentrationCheck: data.pendingConcentrationCheck ?? null,
             });
-            this.logger.verbose(
+            this.logger.debug(
                 `${client.user.username} submitted concentration update in session ${session.id}`,
                 this.SERVICE_NAME,
             );
         } catch (error: any) {
-            const message: string = `Failed to submit player concentration update: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to submit player concentration update: ${error.message}`, error);
         }
     }
 
@@ -568,11 +571,9 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             this.server.in(roomId).socketsLeave(roomId);
 
             let duration: number = (Date.now() - start) / 1000;
-            this.logger.verbose(`Session ${roomId} closed by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
+            this.logger.debug(`Session ${roomId} closed by ${client.user.username} in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
         } catch (error: any) {
-            let message: string = `Failed to close session: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            client.emit('session:error', { message });
+            this.emitSessionError(client, `Failed to close session: ${error.message}`, error);
         }
     }
 
@@ -587,11 +588,17 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             const userId = client.user.keycloakId;
             const balanceError = await this.getInsufficientBalanceError(data.sessionId, userId, 1);
             if (balanceError) {
+                if (balanceError.code === 'BALANCE_CHECK_FAILED') {
+                    this.logger.error(balanceError.message, null, this.SERVICE_NAME);
+                } else {
+                    this.logger.warn(balanceError.message, this.SERVICE_NAME);
+                }
                 client.emit('session:error', balanceError);
                 return;
             }
             const updated = await this.redisService.addToken(data.sessionId, userId, maxTokens);
             if (updated === null) {
+                this.logger.warn('Token limit reached', this.SERVICE_NAME);
                 client.emit('session:error', { code: 'TOKEN_LIMIT_REACHED', message: 'Token limit reached' });
                 return;
             }
@@ -640,11 +647,17 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             }
             const balanceError = await this.getInsufficientBalanceError(data.sessionId, userId, requestedAmount);
             if (balanceError) {
+                if (balanceError.code === 'BALANCE_CHECK_FAILED') {
+                    this.logger.error(balanceError.message, null, this.SERVICE_NAME);
+                } else {
+                    this.logger.warn(balanceError.message, this.SERVICE_NAME);
+                }
                 client.emit('session:error', balanceError);
                 return;
             }
             const result = await this.redisService.addTokens(data.sessionId, userId, maxTokens, requestedAmount);
             if (result === null) {
+                this.logger.warn('Token limit reached', this.SERVICE_NAME);
                 client.emit('session:error', { code: 'TOKEN_LIMIT_REACHED', message: 'Token limit reached' });
                 return;
             }
@@ -708,25 +721,17 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             if (!decodedHeader || typeof decodedHeader === 'string') {
                 let message: string = 'Invalid token structure';
-                this.logger.error(message, null, this.SERVICE_NAME);
-                return reject(new InternalServerErrorException(message));
+                this.logger.debug(message, this.SERVICE_NAME);
+                return reject(new UnauthorizedException(message));
             }
 
             const kid = decodedHeader.header.kid;
 
             if (!kid) {
                 let message: string = 'No kid in token header';
-                this.logger.error(message, null, this.SERVICE_NAME);
-                return reject(new InternalServerErrorException(message));
+                this.logger.debug(message, this.SERVICE_NAME);
+                return reject(new UnauthorizedException(message));
             }
-
-
-            // Ajoute ça temporairement
-            this.jwksClient.getKeys().then(keys => {
-                this.logger.debug(`Available keys from JWKS endpoint: ${(keys as any).map(k => k.kid).join(', ')}`, this.SERVICE_NAME);
-            }).catch(err => {
-                this.logger.error(`Error fetching keys from JWKS endpoint: ${err.message}`, err.stack, this.SERVICE_NAME);
-            });
 
             this.jwksClient.getSigningKey(kid, (err, key) => {
                 if (err) {
@@ -744,8 +749,8 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                     (verifyErr, decoded) => {
                         if (verifyErr) {
                             let message: string = `Error verifying token: ${verifyErr.message}`;
-                            this.logger.error(message, verifyErr.stack, this.SERVICE_NAME);
-                            return reject(new InternalServerErrorException(message));
+                            this.logger.debug(message, this.SERVICE_NAME);
+                            return reject(new UnauthorizedException(message));
                         }
 
                         const validIssuers = [
@@ -756,8 +761,8 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                         const payload = decoded as jwt.JwtPayload;
                         if (payload.iss && !validIssuers.includes(payload.iss)) {
                             let message: string = 'Invalid token issuer';
-                            this.logger.error(`${message}: ${payload.iss}. Expected one of: ${validIssuers.join(', ')}`, null, this.SERVICE_NAME);
-                            return reject(new InternalServerErrorException(message));
+                            this.logger.warn(`${message}: ${payload.iss}. Expected one of: ${validIssuers.join(', ')}`, this.SERVICE_NAME);
+                            return reject(new UnauthorizedException(message));
                         }
 
                         resolve(decoded);

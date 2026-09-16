@@ -633,14 +633,20 @@ jobs:
 
           if [[ "${ENV_NAME}" == "production" ]]; then
             echo "payment_api_url=${{ secrets.PROD_API_URL }}/payment" >> $GITHUB_OUTPUT
+            echo "session_api_url=${{ secrets.PROD_API_URL }}/session" >> $GITHUB_OUTPUT
+            echo "adventure_api_url=${{ secrets.PROD_API_URL }}/api" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.PROD_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_admin_url=${{ secrets.PROD_KEYCLOAK_ADMIN_URL }}" >> $GITHUB_OUTPUT
             echo "stripe_dashboard_url=${{ secrets.PROD_STRIPE_DASHBOARD_URL }}" >> $GITHUB_OUTPUT
+            echo "graphana_dashboard_url=${{ secrets.PROD_GRAPHANA_DASHBOARD_URL }}" >> $GITHUB_OUTPUT
           else
             echo "payment_api_url=${{ secrets.INTEG_API_URL }}/payment" >> $GITHUB_OUTPUT
+            echo "session_api_url=${{ secrets.INTEG_API_URL }}/session" >> $GITHUB_OUTPUT
+            echo "adventure_api_url=${{ secrets.INTEG_API_URL }}/api" >> $GITHUB_OUTPUT
             echo "keycloak_url=${{ secrets.INTEG_KEYCLOAK_URL }}" >> $GITHUB_OUTPUT
             echo "keycloak_admin_url=${{ secrets.INTEG_KEYCLOAK_ADMIN_URL }}" >> $GITHUB_OUTPUT
             echo "stripe_dashboard_url=${{ secrets.INTEG_STRIPE_DASHBOARD_URL }}" >> $GITHUB_OUTPUT
+            echo "graphana_dashboard_url=${{ secrets.INTEG_GRAPHANA_DASHBOARD_URL }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up QEMU
@@ -669,11 +675,14 @@ jobs:
           build-args: |
             NODE_ENV=production
             NEXT_PUBLIC_PAYMENT_API_URL=${{ steps.env.outputs.payment_api_url }}
+            NEXT_PUBLIC_SESSION_API_URL=${{ steps.env.outputs.session_api_url }}
+            NEXT_PUBLIC_ADVENTURE_API_URL=${{ steps.env.outputs.adventure_api_url }}
             NEXT_PUBLIC_KEYCLOAK_URL=${{ steps.env.outputs.keycloak_url }}
             NEXT_PUBLIC_KEYCLOAK_REALM=chariot
             NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=chariot-app
             NEXT_PUBLIC_KEYCLOAK_ADMIN_URL=${{ steps.env.outputs.keycloak_admin_url }}
             NEXT_PUBLIC_STRIPE_DASHBOARD_URL=${{ steps.env.outputs.stripe_dashboard_url }}
+            NEXT_PUBLIC_GRAPHANA_DASHBOARD_URL=${{ steps.env.outputs.graphana_dashboard_url }}
             NEXT_PUBLIC_ENV_NAME=${{ steps.env.outputs.env_name }}
       - name: Output image tags
         run: |

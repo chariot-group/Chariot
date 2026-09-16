@@ -85,20 +85,20 @@ export class GroupController {
   private async validateResource(id: Types.ObjectId): Promise<void> {
     if (!Types.ObjectId.isValid(id)) {
       const message = `Error while fetching group #${id}: Id is not a valid mongoose id`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new BadRequestException(message);
     }
     const group = await this.groupModel.findById(id).exec();
 
     if (!group) {
       const message = `Group #${id} not found`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new NotFoundException(message);
     }
 
     if (group.deletedAt) {
       const message = `group #${id} is gone`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new GoneException(message);
     }
   }

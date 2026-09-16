@@ -13,8 +13,6 @@ import { Model, SortOrder, Types } from 'mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter } from 'prom-client';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 import { Player, PlayerDocument } from './schemas/player.schema';
 
@@ -24,8 +22,6 @@ export class PlayerService {
     @InjectModel(Character.name)
     private characterModel: Model<Character>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
-    @InjectMetric('chariot_characters_created_total')
-    private readonly charactersCreatedCounter: Counter,
   ) {}
 
   private readonly SERVICE_NAME = PlayerService.name;
@@ -70,12 +66,10 @@ export class PlayerService {
         { $addToSet: { characters: savedPlayer._id } },
       );
 
-      // Incrémentation du compteur Prometheus
-      this.charactersCreatedCounter.inc({ user_id: userId });
-
       const end: number = Date.now();
 
       const message: string = `Player created in ${end - start}ms`;
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: savedPlayer,
@@ -113,7 +107,7 @@ export class PlayerService {
             (_, index) => !groupCheckResults[index],
           );
           const message: string = `Invalid group IDs: ${invalidPlayerIds.join(', ')}`;
-          this.logger.error(message, null, this.SERVICE_NAME);
+          this.logger.debug(message, this.SERVICE_NAME);
           throw new BadRequestException(message);
         }
 
@@ -125,7 +119,7 @@ export class PlayerService {
             group._id.toString(),
           );
           const message: string = `Gone group IDs: #${goneGroupIds.join(', #')}`;
-          this.logger.error(message, null, this.SERVICE_NAME);
+          this.logger.debug(message, this.SERVICE_NAME);
           throw new GoneException(message);
         }
       } else {
@@ -164,12 +158,12 @@ export class PlayerService {
 
       if (playerUpdate.matchedCount === 0) {
         const message: string = `Player #${id} not found`;
-        this.logger.error(message, null, this.SERVICE_NAME);
+        this.logger.debug(message, this.SERVICE_NAME);
         throw new NotFoundException(message);
       }
 
       const message = `Player #${id} update in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: player,
@@ -219,7 +213,7 @@ export class PlayerService {
 
       const end: number = Date.now();
       const message: string = `Players found in in ${end - start}ms`;
-      this.logger.log(message, this.SERVICE_NAME);
+      this.logger.debug(message, this.SERVICE_NAME);
 
       return {
         message,

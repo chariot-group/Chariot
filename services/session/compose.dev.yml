@@ -7,6 +7,11 @@ services:
       - "5433:5432"
     volumes:
       - chariot_session_postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-pg-stat-statements.sql:/docker-entrypoint-initdb.d/init-pg-stat-statements.sql:ro
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -19,6 +24,7 @@ services:
       start_period: 10s
     networks:
       - session-network
+      - chariot-group-network
 
   chariot-session-redis:
     image: redis:7-alpine
@@ -35,6 +41,7 @@ services:
       start_period: 5s
     networks:
       - session-network
+      - chariot-group-network
 
   chariot-session:
     build:
@@ -64,6 +71,14 @@ services:
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL:-http://chariot-adventure:9000}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-local}
+      LOKI_ENABLED: ${LOKI_ENABLED:-false}
+      LOKI_URL: ${LOKI_URL:-}
+      LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
     depends_on:
       chariot-session-postgres:
         condition: service_healthy
@@ -74,6 +89,7 @@ services:
       - chariot-group-network
     extra_hosts:
       - "localhost:host-gateway"
+      - "host.docker.internal:host-gateway"
 
 volumes:
   chariot_session_postgres_data:

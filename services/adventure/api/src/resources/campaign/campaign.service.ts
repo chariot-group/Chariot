@@ -5,8 +5,6 @@ import {
   Logger,
 } from '@nestjs/common';
 import { CreateCampaignDto } from '@/resources/campaign/dto/create-campaign.dto';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter } from 'prom-client';
 import { UpdateCampaignDto } from '@/resources/campaign/dto/update-campaign.dto';
 import {
   Campaign,
@@ -23,10 +21,6 @@ export class CampaignService {
   constructor(
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
-    @InjectMetric('chariot_campaigns_created_total')
-    private readonly campaignsCreatedCounter: Counter,
-    @InjectMetric('chariot_active_campaigns')
-    private readonly campaignsActiveCounter: Counter,
   ) {}
 
   private readonly logger: Logger = new Logger(CampaignService.name);
@@ -51,9 +45,6 @@ export class CampaignService {
         } as unknown as Groups,
         createdBy: userId,
       });
-      // Incrémentation du compteur Prometheus
-      this.campaignsCreatedCounter.inc({ user_id: userId });
-      this.campaignsActiveCounter.inc();
       await this.groupModel.updateMany(
         { _id: { $in: totalGroups.map((id) => id) } },
         { $addToSet: { campaigns: campaign._id } },
@@ -61,7 +52,7 @@ export class CampaignService {
       const end: number = Date.now();
 
       const message: string = `Campaign created in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: campaign,
@@ -151,7 +142,7 @@ export class CampaignService {
       }));
 
       const message = `Campaigns found in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.debug(message, this.SERVICE_NAME);
       return {
         message,
         data: campaignsWithGroupsClean,
@@ -179,7 +170,7 @@ export class CampaignService {
       const end: number = Date.now();
 
       const message = `Campaign #${id} found in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.debug(message, this.SERVICE_NAME);
       return {
         message,
         data: campaign,
@@ -250,7 +241,7 @@ export class CampaignService {
       const end: number = Date.now();
 
       const message: string = `Campaign #${id} updated in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
 
       return {
         message: message,
@@ -294,7 +285,7 @@ export class CampaignService {
       const end: number = Date.now();
 
       const message: string = `Campaign #${id} delete in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: campaign,

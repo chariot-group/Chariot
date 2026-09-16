@@ -1,3 +1,5 @@
+import { reportClientIssue } from "@/logger/reportClientIssue";
+
 const STORAGE_KEY = 'chariot_redux_state';
 
 /**
@@ -24,7 +26,7 @@ export const loadState = (): Record<string, unknown> | undefined => {
         }
         return JSON.parse(serializedState);
     } catch (err) {
-        console.error('Failed to load state from localStorage:', err);
+        reportClientIssue("error", "Failed to load state from localStorage", "Storage", err);
         return undefined;
     }
 };
@@ -47,6 +49,6 @@ export const saveStateToLocalStorage = (state: Record<string, unknown>) => {
         const serializedState = JSON.stringify(stateToPersist);
         localStorage.setItem(STORAGE_KEY, serializedState);
     } catch (err) {
-        console.error('Failed to save state to localStorage:', err);
+        reportClientIssue("error", "Failed to save state to localStorage", "Storage", err);
     }
 };

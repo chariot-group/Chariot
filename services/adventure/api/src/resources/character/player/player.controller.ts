@@ -61,13 +61,13 @@ export class PlayerController {
 
     if (!player) {
       const message = `Player #${id} not found`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new NotFoundException(message);
     }
 
     if (player.deletedAt) {
       const message = `Player #${id} is gone`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new GoneException(message);
     }
   }
@@ -209,7 +209,7 @@ export class PlayerController {
       .exec();
     if (!playerDoc) {
       const message = `Player #${id} not found`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new NotFoundException(message);
     }
 

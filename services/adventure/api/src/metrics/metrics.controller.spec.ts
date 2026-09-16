@@ -289,8 +289,7 @@ test_counter 42`;
 
     it('should maintain metric naming convention', async () => {
       const metricsData = `chariot_http_requests_total{method="GET"} 100
-chariot_http_request_duration_seconds_bucket{le="0.01"} 50
-chariot_emails_sent_total{type="otp"} 200`;
+chariot_http_request_duration_seconds_bucket{le="0.01"} 50`;
 
       mockRegister.metrics.mockResolvedValue(metricsData);
 

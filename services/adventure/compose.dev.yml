@@ -25,6 +25,7 @@ services:
     shm_size: 256mb
     networks:
       - adventure-network
+      - chariot-group-network
 
   chariot-adventure:
     build:
@@ -33,6 +34,8 @@ services:
     container_name: chariot-adventure
     restart: unless-stopped
     working_dir: /app
+    ports:
+      - "9000:9000"
     volumes:
       # Mount source code for hot reload
       - ./api:/app
@@ -58,6 +61,14 @@ services:
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
       CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://chariot-session:9002}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-local}
+      LOKI_ENABLED: ${LOKI_ENABLED:-false}
+      LOKI_URL: ${LOKI_URL:-}
+      LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
     depends_on:
       chariot-mongo:
         condition: service_healthy
@@ -66,6 +77,7 @@ services:
       - chariot-group-network
     extra_hosts:
       - "localhost:host-gateway"
+      - "host.docker.internal:host-gateway"
 
 volumes:
   chariot_mongodb_data:

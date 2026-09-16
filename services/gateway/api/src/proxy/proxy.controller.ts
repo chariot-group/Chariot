@@ -58,9 +58,6 @@ async function handleProxy(
       name?: string;
     };
     const errorMessage = error instanceof Error ? error.message : proxiedError.message || "Unknown proxy error";
-    const errorStack = error instanceof Error ? error.stack : undefined;
-
-    logger.error(`Proxy error: ${errorMessage}`, errorStack);
 
     if (proxiedError.response) {
       res.status(proxiedError.response.status).send(proxiedError.response.data);
@@ -82,7 +79,7 @@ export class ProxyController {
 
   constructor(private readonly proxyService: ProxyService) {}
 
-  @All("*")
+  @All("{*path}")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
     await handleProxy(req, res, "adventure", /^\/api/, this.proxyService, this.logger);
   }
@@ -94,7 +91,7 @@ export class SessionProxyController {
 
   constructor(private readonly proxyService: ProxyService) {}
 
-  @All("*")
+  @All("{*path}")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
     await handleProxy(req, res, "session", /^\/session/, this.proxyService, this.logger);
   }
@@ -106,7 +103,7 @@ export class PaymentProxyController {
 
   constructor(private readonly proxyService: ProxyService) {}
 
-  @All("*")
+  @All("{*path}")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
     await handleProxy(req, res, "payment", /^\/payment/, this.proxyService, this.logger);
   }
@@ -118,7 +115,7 @@ export class MediaProxyController {
 
   constructor(private readonly proxyService: ProxyService) {}
 
-  @All("*")
+  @All("{*path}")
   async proxyRequest(@Req() req: Request, @Res() res: Response): Promise<void> {
     await handleProxy(req, res, "media", /^\/api/, this.proxyService, this.logger);
   }

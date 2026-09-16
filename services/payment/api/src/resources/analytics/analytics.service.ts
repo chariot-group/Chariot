@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { PaymentStatus } from '@prisma/client';
+import { PaymentBusinessAnalytics } from '@/resources/analytics/business-analytics.types';
 
 export type Period = 'daily' | 'weekly' | 'monthly';
 
@@ -103,7 +104,7 @@ export class AnalyticsService {
                     this.computeAcquisitionPerformance(dateFrom, dateTo),
                 ]);
 
-            this.logger.verbose(
+            this.logger.debug(
                 `Dashboard computed in ${Date.now() - start}ms`,
                 this.SERVICE_NAME,
             );
@@ -122,6 +123,116 @@ export class AnalyticsService {
             this.logger.error(message, err.stack, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
+    }
+
+    async getBusiness(
+        period: Period,
+        from?: Date,
+        to?: Date,
+    ): Promise<PaymentBusinessAnalytics> {
+        try {
+            const start = Date.now();
+            const dateFrom = from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const dateTo = to ?? new Date();
+
+            const [completedPayments, referrals] = await Promise.all([
+                this.prisma.payment.findMany({
+                    where: { status: PaymentStatus.COMPLETED },
+                    select: { userId: true, createdAt: true },
+                    orderBy: { createdAt: 'asc' },
+                }),
+                this.prisma.referralReferee.findMany({
+                    where: { firstPurchaseValidatedAt: { not: null } },
+                    select: { refereeUserId: true, firstPurchaseValidatedAt: true },
+                }),
+            ]);
+
+            const firstByUser = new Map<string, Date>();
+            const secondByUser = new Map<string, Date>();
+            for (const payment of completedPayments) {
+                if (!firstByUser.has(payment.userId)) {
+                    firstByUser.set(payment.userId, payment.createdAt);
+                    continue;
+                }
+                if (!secondByUser.has(payment.userId)) {
+                    secondByUser.set(payment.userId, payment.createdAt);
+                }
+            }
+
+            const firstPurchasesInPeriod = [...firstByUser.entries()].filter(
+                ([, at]) => at >= dateFrom && at <= dateTo,
+            );
+            const secondPurchasesInPeriod = [...secondByUser.entries()].filter(
+                ([, at]) => at >= dateFrom && at <= dateTo,
+            );
+            const referralsInPeriod = referrals.filter(
+                (row) =>
+                    row.firstPurchaseValidatedAt &&
+                    row.firstPurchaseValidatedAt >= dateFrom &&
+                    row.firstPurchaseValidatedAt <= dateTo,
+            );
+
+            const payingUsersInPeriod = new Set(
+                completedPayments
+                    .filter((payment) => payment.createdAt >= dateFrom && payment.createdAt <= dateTo)
+                    .map((payment) => payment.userId),
+            );
+
+            const firstPurchasers = firstPurchasesInPeriod.length;
+            const repeatPurchasers = secondPurchasesInPeriod.length;
+
+            const result: PaymentBusinessAnalytics = {
+                funnel: {
+                    referralValidated: referralsInPeriod.length,
+                    firstPurchase: firstPurchasers,
+                    referralOverTime: this.bucketSimple(
+                        referralsInPeriod
+                            .map((row) => row.firstPurchaseValidatedAt)
+                            .filter((date): date is Date => date instanceof Date),
+                        period,
+                    ),
+                    firstPurchaseOverTime: this.bucketSimple(
+                        firstPurchasesInPeriod.map(([, at]) => at),
+                        period,
+                    ),
+                },
+                monetization: {
+                    payingUsers: payingUsersInPeriod.size,
+                    firstPurchasers,
+                    repeatPurchasers,
+                    repeatPurchaseRate:
+                        firstPurchasers > 0
+                            ? Math.round((repeatPurchasers / firstPurchasers) * 1000) / 10
+                            : 0,
+                    firstPurchaseByUser: [...firstByUser.entries()].map(([userId, at]) => ({
+                        userId,
+                        at: at.toISOString(),
+                    })),
+                },
+            };
+
+            this.logger.debug(
+                `Payment business analytics in ${Date.now() - start}ms`,
+                this.SERVICE_NAME,
+            );
+            return result;
+        } catch (error) {
+            const err = error instanceof Error ? error : new Error(String(error));
+            const message = `Error while computing payment business analytics: ${err.message}`;
+            this.logger.error(message, err.stack, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    private bucketSimple(dates: Date[], period: Period): { date: string; count: number }[] {
+        const buckets = new Map<string, number>();
+        for (const date of dates) {
+            const key = this.getBucketKey(date, period);
+            buckets.set(key, (buckets.get(key) ?? 0) + 1);
+        }
+        return Array.from(buckets.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([date, count]) => ({ date, count }));
     }
 
     private async computeKpis(from: Date, to: Date): Promise<DashboardKpis> {

@@ -1,11 +1,17 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  MEDIA_UPSTREAM_TIMER,
+  TimeUpstream,
+} from '@/metrics/upstream-timer.token';
 
 type CharacterOwnerResponse = {
   createdBy: string;
@@ -31,7 +37,12 @@ export class MediaAccessService {
   >();
   private readonly OWNER_CACHE_TTL_MS = 60_000;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @Optional()
+    @Inject(MEDIA_UPSTREAM_TIMER)
+    private readonly upstreamTimer?: TimeUpstream,
+  ) {
     this.adventureBaseUrl = (
       this.configService.get<string>('ADVENTURE_INTERNAL_URL') ??
       'http://localhost:9000'
@@ -199,7 +210,7 @@ export class MediaAccessService {
     const url = `${this.adventureBaseUrl}/characters/internal/${encodeURIComponent(characterId)}/owner`;
 
     try {
-      const res = await fetch(url, {
+      const res = await this.timedFetch('adventure', 'fetch_owner', url, {
         method: 'GET',
         headers: {
           'x-internal-service-secret': this.internalSecret,
@@ -305,14 +316,19 @@ export class MediaAccessService {
     const url = `${this.sessionBaseUrl}/sessions/${encodeURIComponent(sessionCode)}/validate-gm-ownership`;
 
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: authHeader,
+      const res = await this.timedFetch(
+        'session',
+        'validate_gm_ownership',
+        url,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: authHeader,
+          },
+          body: JSON.stringify({ targetUserId }),
         },
-        body: JSON.stringify({ targetUserId }),
-      });
+      );
 
       if (res.ok) {
         return;
@@ -383,7 +399,7 @@ export class MediaAccessService {
     const url = `${this.sessionBaseUrl}/sessions/${encodeURIComponent(sessionCode)}/validate-character-access`;
 
     try {
-      const res = await fetch(url, {
+      const res = await this.timedFetch('session', `validate_${mode}`, url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -410,5 +426,18 @@ export class MediaAccessService {
         'Could not validate session access',
       );
     }
+  }
+
+  private async timedFetch(
+    dependency: 'adventure' | 'session',
+    operation: string,
+    url: string,
+    init: RequestInit,
+  ): Promise<Response> {
+    const work = () => fetch(url, init);
+    if (this.upstreamTimer) {
+      return this.upstreamTimer.measure(dependency, operation, work);
+    }
+    return work();
   }
 }

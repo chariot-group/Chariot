@@ -57,13 +57,13 @@ export class CharacterController {
 
     if (!character) {
       const message = `Character ${id} not found`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new NotFoundException(message);
     }
 
     if (character.deletedAt) {
       const message = `Character ${id} is gone`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new GoneException(message);
     }
   }
@@ -158,7 +158,7 @@ export class CharacterController {
 
     if (!minimal) {
       const message = `Character ${id} not found`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new NotFoundException(message);
     }
 

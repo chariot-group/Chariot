@@ -5,11 +5,17 @@ import { instance } from '@/logger/winston.logger';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ErrorDetailsFilter } from '@/common/filters/errors.filter';
+import { initTracing } from '@/observability/tracing';
+import { metricsBasicAuthMiddleware } from '@/observability/metrics-auth.middleware';
+import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
 
 async function bootstrap() {
+  await initTracing('chariot-media');
   const app = await NestFactory.create(AppModule, {
     logger: WinstonModule.createLogger({ instance }),
   });
+
+  app.use(metricsBasicAuthMiddleware);
 
   app.enableCors({
     origin: true,
@@ -21,6 +27,9 @@ async function bootstrap() {
 
   app.useGlobalFilters(new ErrorDetailsFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+
+  const metricsInterceptor = app.get(MetricsInterceptor);
+  app.useGlobalInterceptors(metricsInterceptor);
 
   const config = new DocumentBuilder()
     .setTitle('Chariot Media API')

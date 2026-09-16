@@ -141,7 +141,7 @@ export class ReferralService {
             }
 
             const message = `Referral initialized for user ${userId} in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
             return { message, data: { code: referral.code, refereeDiscountApplied } };
         } catch (error) {
             if (error instanceof HttpException) throw error;
@@ -190,7 +190,7 @@ export class ReferralService {
                 : null;
 
             const message = `Referral info retrieved for user ${userId}`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             return {
                 message,
                 data: {
@@ -334,7 +334,7 @@ export class ReferralService {
                 }
             });
 
-            this.logger.verbose(
+            this.logger.log(
                 `Referral discount marked as used: ${discountType} for user ${userId}, order ${orderId}`,
                 this.SERVICE_NAME,
             );
@@ -371,7 +371,7 @@ export class ReferralService {
                 }),
             ]);
 
-            this.logger.verbose(
+            this.logger.log(
                 `Filleul ${userId} validated — parrain referral ${referee.referralId} pending count incremented`,
                 this.SERVICE_NAME,
             );
@@ -447,7 +447,7 @@ export class ReferralService {
             const data = filtered.slice(skip, skip + limit);
 
             const message = `${data.length} referrals found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             return { message, data, pagination: { page, offset: limit, totalItems } };
         } catch (error) {
             const message = `Error fetching referrals: ${error.message}`;
@@ -483,7 +483,7 @@ export class ReferralService {
             }));
 
             const message = `${payments.length} referral payments found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             return { message, data, pagination: { page, offset: limit, totalItems } };
         } catch (error) {
             const message = `Error fetching referral payments: ${error.message}`;

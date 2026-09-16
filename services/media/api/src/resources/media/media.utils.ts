@@ -98,3 +98,20 @@ export function presignedCacheKey(
 ): string {
   return `${scope}:${entityId}:${variant}`;
 }
+
+export function mediaStorageLabels(key: string): {
+  domain: 'character' | 'user' | 'other';
+  variant: 'main' | 'thumb' | 'other';
+} {
+  const domain = key.includes('/characters/')
+    ? 'character'
+    : key.includes('/users/')
+      ? 'user'
+      : 'other';
+  const variant = key.endsWith('/thumb.webp')
+    ? 'thumb'
+    : key.endsWith('/main.webp')
+      ? 'main'
+      : 'other';
+  return { domain, variant };
+}

@@ -4,6 +4,7 @@ import { spellClassApiValue } from '@/constants/spellClasses';
 import { spellSchoolApiValue } from '@/constants/spellSchools';
 import { Spell, NPC, Action, ActionUsageType } from '@/types/character';
 import { resolveCodexSpellSchoolLabel } from '@/utils/codexSpellSchool.utils';
+import { reportClientIssue } from "@/logger/reportClientIssue";
 
 export interface CodexSpellTranslation {
     name: string;
@@ -688,12 +689,12 @@ class CodexService {
                     });
                     return true;
                 } catch (fallbackError) {
-                    console.warn('Codex service is unavailable:', fallbackError);
+                    reportClientIssue("warn", "Codex service is unavailable", "Codex", fallbackError);
                     return false;
                 }
             }
 
-            console.warn('Codex service is unavailable:', error);
+            reportClientIssue("warn", "Codex service is unavailable", "Codex", error);
             return false;
         }
     }

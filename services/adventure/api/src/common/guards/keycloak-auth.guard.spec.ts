@@ -106,7 +106,7 @@ describe('KeycloakAuthGuard', () => {
       await expect(guard.canActivate(context)).rejects.toThrow(
         UnauthorizedException,
       );
-      expect(mockLogger.error).toHaveBeenCalledWith('No authorization header');
+      expect(mockLogger.debug).toHaveBeenCalledWith('No authorization header');
     });
 
     it('should throw UnauthorizedException when authorization format is invalid', async () => {
@@ -121,7 +121,7 @@ describe('KeycloakAuthGuard', () => {
       await expect(guard.canActivate(context)).rejects.toThrow(
         UnauthorizedException,
       );
-      expect(mockLogger.error).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         'Invalid authorization format',
       );
     });
@@ -138,12 +138,12 @@ describe('KeycloakAuthGuard', () => {
       await expect(guard.canActivate(context)).rejects.toThrow(
         UnauthorizedException,
       );
-      expect(mockLogger.error).toHaveBeenCalledWith(
+      expect(mockLogger.debug).toHaveBeenCalledWith(
         'Invalid authorization format',
       );
     });
 
-    it('should log error with stack trace when token validation fails', async () => {
+    it('should log a warning when token validation fails', async () => {
       jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
       const context = mockExecutionContext({
         method: 'GET',
@@ -159,15 +159,14 @@ describe('KeycloakAuthGuard', () => {
         UnauthorizedException,
       );
 
-      expect(mockLogger.error).toHaveBeenCalled();
-      const errorCall = mockLogger.error.mock.calls[0];
-      expect(errorCall[0]).toContain('Token validation failed');
-      expect(errorCall[1]).toBeDefined(); // Stack trace présente
+      expect(mockLogger.warn).toHaveBeenCalled();
+      const warnCall = mockLogger.warn.mock.calls[0];
+      expect(warnCall[0]).toContain('Token validation failed');
     });
   });
 
   describe('verifyToken', () => {
-    it('should log error when JWT decode fails', async () => {
+    it('should warn when JWT decode fails', async () => {
       jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
       jest.spyOn(jwt, 'decode').mockReturnValue('invalid');
 
@@ -182,10 +181,10 @@ describe('KeycloakAuthGuard', () => {
         UnauthorizedException,
       );
 
-      expect(mockLogger.error).toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalled();
     });
 
-    it('should log error when kid is missing from token header', async () => {
+    it('should warn when kid is missing from token header', async () => {
       jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
       jest.spyOn(jwt, 'decode').mockReturnValue({
         header: {},
@@ -203,7 +202,7 @@ describe('KeycloakAuthGuard', () => {
         UnauthorizedException,
       );
 
-      expect(mockLogger.error).toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalled();
     });
   });
 
@@ -213,7 +212,7 @@ describe('KeycloakAuthGuard', () => {
       expect(loggerInstance).toBeDefined();
     });
 
-    it('should log errors with stack traces', async () => {
+    it('should warn without dumping token contents when validation throws', async () => {
       jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
       const mockError = new Error('Test error');
       jest.spyOn(jwt, 'decode').mockImplementation(() => {
@@ -229,9 +228,10 @@ describe('KeycloakAuthGuard', () => {
 
       await expect(guard.canActivate(context)).rejects.toThrow();
 
-      expect(mockLogger.error).toHaveBeenCalled();
-      const errorCall = mockLogger.error.mock.calls[0];
-      expect(errorCall[1]).toBeDefined(); // Vérifie que la stack trace est passée
+      expect(mockLogger.warn).toHaveBeenCalled();
+      const warnCall = mockLogger.warn.mock.calls[0];
+      expect(warnCall[0]).toContain('Token validation failed');
+      expect(JSON.stringify(warnCall)).not.toContain('test.token');
     });
   });
 });

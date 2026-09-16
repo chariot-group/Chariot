@@ -4,12 +4,15 @@ import {
   CreateBucketCommand,
   DeleteObjectCommand,
   HeadBucketCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { MEDIA_BUCKET } from '@/resources/media/media.constants';
+import { storeEventLine, storeFailLine } from '@/observability/store-log';
 
 @Injectable()
 export class MinioService implements OnModuleInit {
@@ -29,7 +32,12 @@ export class MinioService implements OnModuleInit {
     if (!endpoint || !accessKey || !secretKey) {
       this.enabled = false;
       this.logger.warn(
-        'MinIO is not configured (MINIO_ENDPOINT / MINIO_ROOT_USER / MINIO_ROOT_PASSWORD). Media uploads disabled.',
+        storeFailLine(
+          'minio',
+          'connect',
+          'not_configured',
+          'MINIO_ENDPOINT / MINIO_ROOT_USER / MINIO_ROOT_PASSWORD missing. Media uploads disabled.',
+        ),
       );
       return;
     }
@@ -68,6 +76,18 @@ export class MinioService implements OnModuleInit {
     return this.enabled;
   }
 
+  async isReady(): Promise<boolean> {
+    if (!this.enabled || !this.client) {
+      return false;
+    }
+    try {
+      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async onModuleInit(): Promise<void> {
     if (!this.enabled) {
       return;
@@ -75,10 +95,10 @@ export class MinioService implements OnModuleInit {
 
     try {
       await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
-      this.logger.log(`MinIO bucket "${this.bucket}" is ready`);
+      this.logger.verbose(storeEventLine('minio', 'connect'));
     } catch {
       await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
-      this.logger.log(`MinIO bucket "${this.bucket}" created`);
+      this.logger.verbose(storeEventLine('minio', 'connect', 'created'));
     }
   }
 
@@ -109,6 +129,44 @@ export class MinioService implements OnModuleInit {
   async deleteObjects(keys: string[]): Promise<void> {
     const unique = [...new Set(keys.filter(Boolean))];
     await Promise.all(unique.map((key) => this.deleteObject(key)));
+  }
+
+  async headObjectSize(key: string): Promise<number> {
+    this.assertEnabled();
+    try {
+      const res = await this.client.send(
+        new HeadObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
+      return res.ContentLength ?? 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  async listObjectSizes(
+    prefix: string,
+  ): Promise<Array<{ key: string; size: number }>> {
+    this.assertEnabled();
+    const objects: Array<{ key: string; size: number }> = [];
+    let token: string | undefined;
+
+    do {
+      const res = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.bucket,
+          Prefix: prefix,
+          ContinuationToken: token,
+        }),
+      );
+      for (const obj of res.Contents ?? []) {
+        if (obj.Key) {
+          objects.push({ key: obj.Key, size: obj.Size ?? 0 });
+        }
+      }
+      token = res.IsTruncated ? res.NextContinuationToken : undefined;
+    } while (token);
+
+    return objects;
   }
 
   async createPresignedGetUrl(objectKey: string): Promise<{

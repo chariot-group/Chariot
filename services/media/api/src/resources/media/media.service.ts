@@ -3,9 +3,12 @@ import {
   ForbiddenException,
   Injectable,
   Logger,
+  OnModuleInit,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Counter, Gauge, Histogram } from 'prom-client';
 import { ImageProcessorService } from '@/resources/media/image-processor.service';
 import { MediaAccessService } from '@/resources/media/media-access.service';
 import { MinioService } from '@/resources/media/minio.service';
@@ -18,6 +21,7 @@ import {
   characterAvatarThumbKey,
   isExternalMediaUrl,
   isMediaObjectKey,
+  mediaStorageLabels,
   presignedCacheKey,
   resolveMediaObjectKey,
   resolveLegacyAvatarKeysToDelete,
@@ -26,7 +30,7 @@ import {
 } from '@/resources/media/media.utils';
 
 @Injectable()
-export class MediaService {
+export class MediaService implements OnModuleInit {
   private readonly logger = new Logger(MediaService.name);
   private readonly adventureBaseUrl: string;
   private readonly internalSecret: string;
@@ -36,6 +40,20 @@ export class MediaService {
     private readonly imageProcessorService: ImageProcessorService,
     private readonly mediaAccessService: MediaAccessService,
     private readonly configService: ConfigService,
+    @InjectMetric('chariot_media_uploads_total')
+    private readonly uploadsCounter: Counter<string>,
+    @InjectMetric('chariot_media_presigned_urls_total')
+    private readonly presignedCounter: Counter<string>,
+    @InjectMetric('chariot_media_minio_operation_duration_seconds')
+    private readonly minioDuration: Histogram<string>,
+    @InjectMetric('chariot_media_image_process_duration_seconds')
+    private readonly imageProcessDuration: Histogram<string>,
+    @InjectMetric('chariot_media_upstream_duration_seconds')
+    private readonly upstreamDuration: Histogram<string>,
+    @InjectMetric('chariot_media_stored_bytes')
+    private readonly storedBytes: Gauge<string>,
+    @InjectMetric('chariot_media_upload_bytes')
+    private readonly uploadBytes: Histogram<string>,
   ) {
     this.adventureBaseUrl = (
       this.configService.get<string>('ADVENTURE_INTERNAL_URL') ??
@@ -44,6 +62,10 @@ export class MediaService {
 
     this.internalSecret =
       this.configService.get<string>('INTERNAL_SERVICE_SECRET') ?? '';
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.refreshStoredBytes();
   }
 
   async uploadCharacterAvatar(
@@ -62,24 +84,17 @@ export class MediaService {
       sessionCode,
     );
 
-    const processed =
-      await this.imageProcessorService.processAvatarUpload(file);
+    const processed = await this.withImageTiming(() =>
+      this.imageProcessorService.processAvatarUpload(file),
+    );
 
     const mainKey = characterAvatarMainKey(characterId);
     const thumbKey = characterAvatarThumbKey(characterId);
 
     await this.deleteLegacyAvatarObjects(character.avatar, mainKey, thumbKey);
 
-    await this.minioService.putObject(
-      mainKey,
-      processed.main,
-      processed.contentType,
-    );
-    await this.minioService.putObject(
-      thumbKey,
-      processed.thumb,
-      processed.contentType,
-    );
+    await this.putAvatarObjects(mainKey, thumbKey, processed);
+    this.observeUploadBytes('character', file.size, processed);
 
     await this.updateCharacterAvatar(characterId, mainKey);
 
@@ -89,6 +104,8 @@ export class MediaService {
       kind: character.kind,
     });
 
+    this.uploadsCounter.inc({ type: 'character_avatar', status: 'success' });
+    this.logger.log(`Character avatar uploaded for ${characterId}`);
     return { avatar: mainKey };
   }
 
@@ -110,6 +127,8 @@ export class MediaService {
     await this.deleteStoredCharacterObjects(character.avatar, characterId);
     await this.updateCharacterAvatar(characterId, '');
 
+    this.logger.log(`Character avatar removed for ${characterId}`);
+
     this.mediaAccessService.refreshCharacterOwnerCache(characterId, {
       createdBy: character.createdBy,
       avatar: '',
@@ -127,8 +146,9 @@ export class MediaService {
     this.ensureMinioReady();
     this.mediaAccessService.assertUserSelfAccess(keycloakId, requesterId);
 
-    const processed =
-      await this.imageProcessorService.processAvatarUpload(file);
+    const processed = await this.withImageTiming(() =>
+      this.imageProcessorService.processAvatarUpload(file),
+    );
 
     const mainKey = userAvatarMainKey(keycloakId);
     const thumbKey = userAvatarThumbKey(keycloakId);
@@ -137,19 +157,13 @@ export class MediaService {
 
     await this.deleteLegacyAvatarObjects(previousAvatar, mainKey, thumbKey);
 
-    await this.minioService.putObject(
-      mainKey,
-      processed.main,
-      processed.contentType,
-    );
-    await this.minioService.putObject(
-      thumbKey,
-      processed.thumb,
-      processed.contentType,
-    );
+    await this.putAvatarObjects(mainKey, thumbKey, processed);
+    this.observeUploadBytes('user', file.size, processed);
 
     await this.updateUserAvatar(keycloakId, mainKey);
 
+    this.uploadsCounter.inc({ type: 'user_avatar', status: 'success' });
+    this.logger.log(`User avatar uploaded for ${keycloakId}`);
     return { avatar: mainKey };
   }
 
@@ -165,6 +179,7 @@ export class MediaService {
     await this.deleteStoredUserObjects(previousAvatar, keycloakId);
     await this.updateUserAvatar(keycloakId, '');
 
+    this.logger.log(`User avatar removed for ${keycloakId}`);
     return { avatar: '' };
   }
 
@@ -187,10 +202,17 @@ export class MediaService {
             sessionCode,
           );
         } catch (error) {
-          if (
-            error instanceof ForbiddenException ||
-            error instanceof BadRequestException
-          ) {
+          if (error instanceof ForbiddenException) {
+            this.presignedCounter.inc({ status: 'denied' });
+            results[cacheKey] = {
+              url: null,
+              expiresAt: null,
+              source: 'missing',
+            };
+            return;
+          }
+          if (error instanceof BadRequestException) {
+            this.presignedCounter.inc({ status: 'missing' });
             results[cacheKey] = {
               url: null,
               expiresAt: null,
@@ -201,6 +223,14 @@ export class MediaService {
           throw error;
         }
       }),
+    );
+
+    const sources = { presigned: 0, missing: 0, external: 0 };
+    for (const result of Object.values(results)) {
+      sources[result.source]++;
+    }
+    this.logger.debug(
+      `Presigned reads: ${requests.length} requested, ${sources.presigned} signed, ${sources.missing} missing, ${sources.external} external`,
     );
 
     return results;
@@ -284,12 +314,14 @@ export class MediaService {
     entityId: string,
   ): Promise<PresignedUrlResultDto> {
     if (!storedValue?.trim()) {
+      this.presignedCounter.inc({ status: 'missing' });
       return { url: null, expiresAt: null, source: 'missing' };
     }
 
     const trimmed = storedValue.trim();
 
     if (isExternalMediaUrl(trimmed)) {
+      this.presignedCounter.inc({ status: 'external' });
       return { url: trimmed, expiresAt: null, source: 'external' };
     }
 
@@ -300,18 +332,22 @@ export class MediaService {
     const objectKey = resolveMediaObjectKey(trimmed, variant, scope, entityId);
 
     if (!objectKey) {
+      this.presignedCounter.inc({ status: 'missing' });
       return { url: null, expiresAt: null, source: 'missing' };
     }
 
     try {
-      const presigned =
-        await this.minioService.createPresignedGetUrl(objectKey);
+      const presigned = await this.withMinioTiming('presign_get', () =>
+        this.minioService.createPresignedGetUrl(objectKey),
+      );
+      this.presignedCounter.inc({ status: 'success' });
       return {
         url: presigned.url,
         expiresAt: presigned.expiresAt,
         source: 'presigned',
       };
     } catch (error) {
+      this.presignedCounter.inc({ status: 'error' });
       this.logger.warn(
         `Presigned URL failed for ${objectKey}: ${(error as Error).message}`,
       );
@@ -331,7 +367,7 @@ export class MediaService {
       return;
     }
 
-    await this.minioService.deleteObjects([
+    await this.deleteKeysAndAccount([
       characterAvatarMainKey(characterId),
       characterAvatarThumbKey(characterId),
     ]);
@@ -348,7 +384,7 @@ export class MediaService {
       canonicalThumb,
     );
     if (keys.length > 0) {
-      await this.minioService.deleteObjects(keys);
+      await this.deleteKeysAndAccount(keys);
     }
   }
 
@@ -364,7 +400,7 @@ export class MediaService {
       return;
     }
 
-    await this.minioService.deleteObjects([
+    await this.deleteKeysAndAccount([
       userAvatarMainKey(keycloakId),
       userAvatarThumbKey(keycloakId),
     ]);
@@ -374,7 +410,7 @@ export class MediaService {
     const url = `${this.adventureBaseUrl}/user/internal/${encodeURIComponent(keycloakId)}/avatar`;
 
     try {
-      const res = await fetch(url, {
+      const res = await this.timedFetch('adventure', 'fetch_user_avatar', url, {
         method: 'GET',
         headers: { 'x-internal-service-secret': this.internalSecret },
       });
@@ -404,14 +440,19 @@ export class MediaService {
     const url = `${this.adventureBaseUrl}/characters/internal/${encodeURIComponent(characterId)}/avatar`;
 
     try {
-      const res = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-service-secret': this.internalSecret,
+      const res = await this.timedFetch(
+        'adventure',
+        'patch_character_avatar',
+        url,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-internal-service-secret': this.internalSecret,
+          },
+          body: JSON.stringify({ avatar }),
         },
-        body: JSON.stringify({ avatar }),
-      });
+      );
 
       if (!res.ok) {
         const text = await res.text().catch(() => '');
@@ -441,7 +482,7 @@ export class MediaService {
     const url = `${this.adventureBaseUrl}/user/internal/${encodeURIComponent(keycloakId)}/avatar`;
 
     try {
-      const res = await fetch(url, {
+      const res = await this.timedFetch('adventure', 'patch_user_avatar', url, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -464,6 +505,135 @@ export class MediaService {
       const message = `Adventure service unreachable: ${(err as Error).message}`;
       this.logger.error(message, (err as Error).stack);
       throw new ServiceUnavailableException('Could not persist user avatar');
+    }
+  }
+
+  private async putAvatarObjects(
+    mainKey: string,
+    thumbKey: string,
+    processed: { main: Buffer; thumb: Buffer; contentType: string },
+  ): Promise<void> {
+    await this.putObjectAndAccount(
+      mainKey,
+      processed.main,
+      processed.contentType,
+    );
+    await this.putObjectAndAccount(
+      thumbKey,
+      processed.thumb,
+      processed.contentType,
+    );
+  }
+
+  private async putObjectAndAccount(
+    key: string,
+    body: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    const previous = await this.minioService.headObjectSize(key);
+    await this.withMinioTiming('put', () =>
+      this.minioService.putObject(key, body, contentType),
+    );
+    this.adjustStoredBytes(key, body.length - previous);
+  }
+
+  private async deleteKeysAndAccount(keys: string[]): Promise<void> {
+    const unique = [...new Set(keys.filter(Boolean))];
+    await this.withMinioTiming('delete', async () => {
+      for (const key of unique) {
+        const size = await this.minioService.headObjectSize(key);
+        await this.minioService.deleteObject(key);
+        if (size > 0) {
+          this.adjustStoredBytes(key, -size);
+        }
+      }
+    });
+  }
+
+  private observeUploadBytes(
+    domain: 'character' | 'user',
+    originalBytes: number,
+    processed: { main: Buffer; thumb: Buffer },
+  ): void {
+    this.uploadBytes.observe({ domain, stage: 'original' }, originalBytes);
+    this.uploadBytes.observe(
+      { domain, stage: 'processed' },
+      processed.main.length + processed.thumb.length,
+    );
+  }
+
+  private adjustStoredBytes(key: string, delta: number): void {
+    if (delta === 0) {
+      return;
+    }
+    const { domain, variant } = mediaStorageLabels(key);
+    this.storedBytes.inc({ domain, variant }, delta);
+  }
+
+  private async refreshStoredBytes(): Promise<void> {
+    if (!this.minioService.isEnabled()) {
+      return;
+    }
+
+    try {
+      const objects = [
+        ...(await this.minioService.listObjectSizes('avatars/characters/')),
+        ...(await this.minioService.listObjectSizes('avatars/users/')),
+      ];
+      const totals = new Map<string, number>();
+      for (const { key, size } of objects) {
+        const labels = mediaStorageLabels(key);
+        const mapKey = `${labels.domain}|${labels.variant}`;
+        totals.set(mapKey, (totals.get(mapKey) ?? 0) + size);
+      }
+
+      for (const domain of ['character', 'user'] as const) {
+        for (const variant of ['main', 'thumb'] as const) {
+          this.storedBytes.set(
+            { domain, variant },
+            totals.get(`${domain}|${variant}`) ?? 0,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Could not reconcile MinIO occupancy: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  private async withImageTiming<T>(fn: () => Promise<T>): Promise<T> {
+    const end = this.imageProcessDuration.startTimer();
+    try {
+      return await fn();
+    } finally {
+      end();
+    }
+  }
+
+  private async timedFetch(
+    dependency: 'adventure' | 'session',
+    operation: string,
+    url: string,
+    init: RequestInit,
+  ): Promise<Response> {
+    const end = this.upstreamDuration.startTimer({ dependency, operation });
+    try {
+      return await fetch(url, init);
+    } finally {
+      end();
+    }
+  }
+
+  private async withMinioTiming<T>(
+    operation: string,
+    fn: () => Promise<T>,
+  ): Promise<T> {
+    const end = this.minioDuration.startTimer({ operation });
+    try {
+      return await fn();
+    } finally {
+      end();
     }
   }
 

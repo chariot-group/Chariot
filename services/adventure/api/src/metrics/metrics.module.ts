@@ -6,22 +6,11 @@ import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
 import {
   httpRequestsCounterProvider,
   httpRequestDurationProvider,
-  errorsCounterProvider,
-  activeUsersGaugeProvider,
-  campaignsCreatedCounterProvider,
-  activeCampaignsGaugeProvider,
-  charactersCreatedCounterProvider,
-  groupsCreatedCounterProvider,
-  authAttemptsCounterProvider,
-  dbQueryDurationProvider,
-  emailsSentCounterProvider,
-  mongoConnectionsGaugeProvider,
 } from '@/metrics/metrics.service';
 
 @Module({
   imports: [
     PrometheusModule.register({
-      // Configuration du endpoint /metrics
       path: '/metrics',
       defaultMetrics: {
         enabled: true,
@@ -41,32 +30,12 @@ import {
     MetricsInterceptor,
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
-    errorsCounterProvider,
-    activeUsersGaugeProvider,
-    campaignsCreatedCounterProvider,
-    activeCampaignsGaugeProvider,
-    charactersCreatedCounterProvider,
-    groupsCreatedCounterProvider,
-    authAttemptsCounterProvider,
-    dbQueryDurationProvider,
-    emailsSentCounterProvider,
-    mongoConnectionsGaugeProvider,
   ],
   exports: [
     MetricsService,
     MetricsInterceptor,
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
-    errorsCounterProvider,
-    activeUsersGaugeProvider,
-    campaignsCreatedCounterProvider,
-    activeCampaignsGaugeProvider,
-    charactersCreatedCounterProvider,
-    groupsCreatedCounterProvider,
-    authAttemptsCounterProvider,
-    dbQueryDurationProvider,
-    emailsSentCounterProvider,
-    mongoConnectionsGaugeProvider,
   ],
 })
 export class MetricsModule {}

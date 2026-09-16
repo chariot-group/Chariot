@@ -10,7 +10,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('NpcService - validateGroupRelations', () => {
   let service: NpcService;
@@ -29,7 +28,6 @@ describe('NpcService - validateGroupRelations', () => {
       updateMany: jest.fn(),
     };
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         NpcService,
         { provide: getModelToken(Character.name), useValue: characterModel },
@@ -181,7 +179,6 @@ describe('NpcService - create', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         NpcService,
         { provide: getModelToken(Character.name), useValue: characterModel },
@@ -408,7 +405,6 @@ describe('NpcService - update', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         NpcService,
         { provide: getModelToken(Character.name), useValue: characterModel },
@@ -478,7 +474,7 @@ describe('NpcService - update', () => {
     groupModel.exec.mockResolvedValue(null);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'error')
+      .spyOn(service['logger'], 'debug')
       .mockImplementation(() => {});
 
     await expect(service.update(npcId, mockUpdateNpcDto)).rejects.toThrow(
@@ -487,7 +483,6 @@ describe('NpcService - update', () => {
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/Invalid group IDs:/),
-      null,
       'NpcService',
     );
 
@@ -504,7 +499,7 @@ describe('NpcService - update', () => {
     groupModel.exec.mockResolvedValue(deletedGroup);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'error')
+      .spyOn(service['logger'], 'debug')
       .mockImplementation(() => {});
 
     await expect(service.update(npcId, mockUpdateNpcDto)).rejects.toThrow(
@@ -513,7 +508,6 @@ describe('NpcService - update', () => {
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/Gone group IDs:/),
-      null,
       'NpcService',
     );
 
@@ -530,7 +524,7 @@ describe('NpcService - update', () => {
     groupModel.exec.mockResolvedValue(mockGroup);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'error')
+      .spyOn(service['logger'], 'debug')
       .mockImplementation(() => {});
 
     await expect(service.update(npcId, mockUpdateNpcDto)).rejects.toThrow(
@@ -539,7 +533,6 @@ describe('NpcService - update', () => {
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/NPC #.* not found/),
-      null,
       'NpcService',
     );
 
@@ -611,7 +604,7 @@ describe('NpcService - update', () => {
     groupModel.exec.mockResolvedValue(null);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'error')
+      .spyOn(service['logger'], 'debug')
       .mockImplementation(() => {});
 
     await expect(service.update(npcId, invalidGroupsDto)).rejects.toThrow(
@@ -620,7 +613,6 @@ describe('NpcService - update', () => {
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/Invalid group IDs?: invalid-id/),
-      null,
       'NpcService',
     );
 
@@ -636,17 +628,17 @@ describe('NpcService - update', () => {
     groupModel.exec.mockResolvedValue(mockGroup);
     groupModel.updateMany.mockResolvedValue({});
 
-    const verboseSpy = jest
-      .spyOn(service['logger'], 'verbose')
+    const loggerSpy = jest
+      .spyOn(service['logger'], 'log')
       .mockImplementation(() => {});
 
     await service.update(npcId, mockUpdateNpcDto);
 
-    expect(verboseSpy).toHaveBeenCalledWith(
+    expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/NPC #.* update in \d+ms/),
       service['SERVICE_NAME'],
     );
 
-    verboseSpy.mockRestore();
+    loggerSpy.mockRestore();
   });
 });

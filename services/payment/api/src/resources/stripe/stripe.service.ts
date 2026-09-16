@@ -6,11 +6,14 @@ import {
     NotFoundException,
     GoneException,
     UnprocessableEntityException,
+    HttpException,
+    OnModuleDestroy,
+    OnModuleInit,
 } from '@nestjs/common';
 import Stripe from 'stripe';
 import axios from 'axios';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter } from 'prom-client';
+import { Counter, Histogram } from 'prom-client';
 import { PaymentService } from '@/resources/payment/payment.service';
 import { PromoCodeService } from '@/resources/promo-code/promo-code.service';
 import { AffiliationService } from '@/resources/affiliation/affiliation.service';
@@ -38,7 +41,7 @@ import {
 import { randomUUID } from 'crypto';
 
 @Injectable()
-export class StripeService {
+export class StripeService implements OnModuleInit, OnModuleDestroy {
     constructor(
         private readonly paymentService: PaymentService,
         private readonly promoCodeService: PromoCodeService,
@@ -46,6 +49,14 @@ export class StripeService {
         private readonly referralService: ReferralService,
         @InjectMetric('chariot_stripe_payments_total')
         private readonly stripePaymentsCounter: Counter,
+        @InjectMetric('chariot_stripe_webhooks_total')
+        private readonly stripeWebhooksCounter: Counter,
+        @InjectMetric('chariot_payment_checkouts_total')
+        private readonly checkoutsCounter: Counter,
+        @InjectMetric('chariot_payment_token_credits_total')
+        private readonly tokenCreditsCounter: Counter,
+        @InjectMetric('chariot_payment_stripe_operation_duration_seconds')
+        private readonly stripeDuration: Histogram,
     ) {
         this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
             apiVersion: '2026-02-25.clover',
@@ -55,6 +66,24 @@ export class StripeService {
     private stripe: Stripe;
     private readonly SERVICE_NAME = StripeService.name;
     private readonly logger = new Logger(this.SERVICE_NAME);
+    private readonly pendingFulfills = new Map<
+        string,
+        { kind: 'pi' | 'session'; userId?: string; since: number }
+    >();
+    private readonly reportedMissing = new Set<string>();
+    private reconcileTimer: ReturnType<typeof setInterval> | null = null;
+
+    onModuleInit(): void {
+        this.seedWorkflowCounters();
+        this.reconcileTimer = setInterval(() => {
+            void this.reconcileMissingWebhooks();
+        }, 20_000);
+        this.reconcileTimer.unref?.();
+    }
+
+    onModuleDestroy(): void {
+        if (this.reconcileTimer) clearInterval(this.reconcileTimer);
+    }
 
     async createCheckoutSession(
         dto: CheckoutDto,
@@ -62,7 +91,6 @@ export class StripeService {
     ): Promise<IResponse<string>> {
         try {
             const { displayName } = dto;
-            const start = Date.now();
 
             const {
                 product,
@@ -83,7 +111,8 @@ export class StripeService {
                 );
             }
 
-            const session = await this.stripe.checkout.sessions.create({
+            const session = await this.timeStripe('checkout_create', () =>
+                this.stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
                 line_items: [
                     {
@@ -111,16 +140,17 @@ export class StripeService {
                     ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
                     ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
                 },
-            });
+            }),
+            );
 
-            const message = `Stripe checkout session created in ${Date.now() - start} ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            const message = `Checkout created stripeOrderId=${session.id} flow=checkout user=${userId}`;
+            this.checkoutsCounter.inc({ flow: 'checkout', status: 'success' });
+            this.watchPendingFulfill(session.id, 'session', userId);
+            this.logger.log(message, this.SERVICE_NAME);
             return { message, data: session.url };
         } catch (error) {
-            if (error instanceof BadRequestException) throw error;
-            const errorMessage = `Error creating Stripe checkout session: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw new InternalServerErrorException(errorMessage);
+            this.recordCheckoutFailure('checkout', error);
+            this.throwHttp(error, `Error creating Stripe checkout session: ${(error as Error).message}`);
         }
     }
 
@@ -149,7 +179,7 @@ export class StripeService {
         const product = await this.findProductWithPriceById(packId);
         if (!product) {
             const errorMessage = `Stripe product with ID #${packId} not found`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            this.logger.warn(errorMessage, this.SERVICE_NAME);
             throw new BadRequestException(errorMessage);
         }
 
@@ -249,7 +279,6 @@ export class StripeService {
     ): Promise<IResponse<EmbeddedCheckoutResult>> {
         try {
             const { packId, displayName, promoCode, affiliationCode, locale = 'fr' } = dto;
-            const start = Date.now();
 
             const {
                 product,
@@ -272,7 +301,8 @@ export class StripeService {
 
             const returnUrl = `${process.env.FRONTEND_URL}/${locale}/checkout/return?session_id={CHECKOUT_SESSION_ID}`;
 
-            const session = await this.stripe.checkout.sessions.create({
+            const session = await this.timeStripe('embedded_create', () =>
+                this.stripe.checkout.sessions.create({
                 ui_mode: 'embedded',
                 payment_method_types: ['card'],
                 line_items: [
@@ -303,21 +333,21 @@ export class StripeService {
                     ...(affiliationId && { affiliationCode, affiliationId }),
                     ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
                 },
-            });
+            }),
+            );
 
             if (!session.client_secret) {
                 throw new InternalServerErrorException('Stripe session client_secret is missing');
             }
 
-            const message = `Embedded checkout session created in ${Date.now() - start} ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            const message = `Checkout created stripeOrderId=${session.id} flow=embedded user=${userId}`;
+            this.checkoutsCounter.inc({ flow: 'embedded', status: 'success' });
+            this.watchPendingFulfill(session.id, 'session', userId);
+            this.logger.log(message, this.SERVICE_NAME);
             return { message, data: { clientSecret: session.client_secret } };
         } catch (error) {
-            const errorMessage = `Error creating embedded checkout session: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw error instanceof BadRequestException
-                ? error
-                : new InternalServerErrorException(errorMessage);
+            this.recordCheckoutFailure('embedded', error);
+            this.throwHttp(error, `Error creating embedded checkout session: ${(error as Error).message}`);
         }
     }
 
@@ -326,14 +356,16 @@ export class StripeService {
         userId: string,
     ): Promise<IResponse<CheckoutSessionStatus>> {
         try {
-            const session = await this.stripe.checkout.sessions.retrieve(sessionId);
+            const session = await this.timeStripe('session_retrieve', () =>
+                this.stripe.checkout.sessions.retrieve(sessionId),
+            );
 
             if (session.metadata?.userId !== userId) {
                 throw new BadRequestException('Cette session de paiement ne vous appartient pas');
             }
 
             const message = `Checkout status retrieved for session ${sessionId}`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             return {
                 message,
                 data: {
@@ -342,10 +374,7 @@ export class StripeService {
                 },
             };
         } catch (error) {
-            if (error instanceof BadRequestException) throw error;
-            const errorMessage = `Error retrieving checkout status: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw new InternalServerErrorException(errorMessage);
+            this.fail(error, `Error retrieving checkout status: ${(error as Error).message}`);
         }
     }
 
@@ -355,33 +384,58 @@ export class StripeService {
     ): Promise<IResponse<boolean>> {
         try {
             const start = Date.now();
+            const constructStart = Date.now();
             const event: Stripe.Event = this.stripe.webhooks.constructEvent(
                 payload,
                 signature,
                 process.env.STRIPE_WEBHOOK_SECRET!,
             );
+            this.stripeDuration.observe(
+                { operation: 'webhook_construct' },
+                (Date.now() - constructStart) / 1000,
+            );
 
+            let stripeOrderId: string | undefined;
             if (event.type === 'checkout.session.completed') {
                 const session = event.data.object as Stripe.Checkout.Session;
+                stripeOrderId = session.id;
                 await this.fulfillOrder(session);
             } else if (event.type === 'payment_intent.succeeded') {
                 const paymentIntent = event.data.object as Stripe.PaymentIntent;
+                stripeOrderId = paymentIntent.id;
                 if (paymentIntent.metadata?.source === 'payment_element') {
                     await this.fulfillPaymentIntentOrder(paymentIntent);
                 }
             } else {
-                this.logger.warn(
+                this.logger.debug(
                     `Unhandled Stripe event type: ${event.type}`,
                     this.SERVICE_NAME,
                 );
             }
 
-            const message = `Stripe webhook handled in ${Date.now() - start} ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.stripeWebhooksCounter.inc({
+                status: 'success',
+                event_type: event.type,
+            });
+
+            const message = stripeOrderId
+                ? `Stripe webhook ${event.type} handled stripeOrderId=${stripeOrderId} in ${Date.now() - start} ms`
+                : `Stripe webhook ${event.type} handled in ${Date.now() - start} ms`;
+            this.logger.log(message, this.SERVICE_NAME);
             return { message, data: true };
         } catch (error) {
-            const errorMessage = `Error handling Stripe webhook: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
+            if (error instanceof HttpException) throw error;
+            this.stripeWebhooksCounter.inc({
+                status: 'failed',
+                event_type: 'unknown',
+            });
+            this.logPaymentFail({
+                stage: 'webhook',
+                reason: this.classifyFailReason(error),
+                error,
+                level: 'warn',
+            });
+            const errorMessage = `Error handling Stripe webhook: ${(error as Error).message}`;
             throw new BadRequestException(errorMessage);
         }
     }
@@ -446,7 +500,7 @@ export class StripeService {
                     }
 
                     const message = `Code '${code}' resolved as promo in ${Date.now() - start}ms`;
-                    this.logger.verbose(message, this.SERVICE_NAME);
+                    this.logger.debug(message, this.SERVICE_NAME);
                     return {
                         message,
                         data: {
@@ -468,7 +522,7 @@ export class StripeService {
 
                 if (affiliation.isActive) {
                     const message = `Code '${code}' resolved as affiliation in ${Date.now() - start}ms`;
-                    this.logger.verbose(message, this.SERVICE_NAME);
+                    this.logger.debug(message, this.SERVICE_NAME);
                     return {
                         message,
                         data: {
@@ -485,21 +539,25 @@ export class StripeService {
             throw new NotFoundException(`Code '${code}' introuvable ou inactif`);
         } catch (error) {
             if (
-                error instanceof NotFoundException ||
                 error instanceof GoneException ||
-                error instanceof UnprocessableEntityException
-            ) throw error;
-            const errorMessage = `Error resolving code '${code}': ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw new InternalServerErrorException(errorMessage);
+                error instanceof UnprocessableEntityException ||
+                error instanceof NotFoundException
+            ) {
+                throw error;
+            }
+            this.fail(error, `Error resolving code '${code}': ${(error as Error).message}`);
         }
     }
 
     async getAllProducts(): Promise<IResponse<StripeProductWithPrices[]>> {
         try {
             const start = Date.now();
-            const products = await this.stripe.products.list({ active: true });
-            const prices = await this.stripe.prices.list({ active: true });
+            const products = await this.timeStripe('products_list', () =>
+                this.stripe.products.list({ active: true }),
+            );
+            const prices = await this.timeStripe('prices_list', () =>
+                this.stripe.prices.list({ active: true }),
+            );
 
             const productsWithPrices: StripeProductWithPrices[] = products.data.map(
                 (product) => ({
@@ -509,12 +567,10 @@ export class StripeService {
             );
 
             const message = `Stripe products fetched in ${Date.now() - start} ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             return { message, data: productsWithPrices };
         } catch (error) {
-            const errorMessage = `Error retrieving products from Stripe: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw new BadRequestException(errorMessage);
+            this.fail(error, `Error retrieving products from Stripe: ${(error as Error).message}`);
         }
     }
 
@@ -522,8 +578,12 @@ export class StripeService {
         productId: string,
     ): Promise<StripeProductWithPrices | null> {
         try {
-            const products = await this.stripe.products.list({ active: true });
-            const prices = await this.stripe.prices.list({ active: true });
+            const products = await this.timeStripe('products_list', () =>
+                this.stripe.products.list({ active: true }),
+            );
+            const prices = await this.timeStripe('prices_list', () =>
+                this.stripe.prices.list({ active: true }),
+            );
 
             const productsWithPrices: StripeProductWithPrices[] = products.data.map(
                 (product) => ({
@@ -534,9 +594,10 @@ export class StripeService {
 
             return productsWithPrices.find((p) => p.id === productId) ?? null;
         } catch (error) {
-            const errorMessage = `Error retrieving products from Stripe: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw new BadRequestException(errorMessage);
+            this.fail(
+                error,
+                `Error retrieving products from Stripe: ${(error as Error).message}`,
+            );
         }
     }
 
@@ -549,17 +610,18 @@ export class StripeService {
         userId: string,
     ): Promise<IResponse<PaymentIntentResult>> {
         try {
-            const start = Date.now();
             const result = await this.buildPaymentIntentResult(dto, userId);
-            const message = `PaymentIntent created in ${Date.now() - start} ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            const stripeOrderId = result.paymentIntentId;
+            const message = stripeOrderId
+                ? `Checkout created stripeOrderId=${stripeOrderId} flow=payment_intent user=${userId}`
+                : `Checkout created flow=payment_intent free_order user=${userId}`;
+            this.checkoutsCounter.inc({ flow: 'payment_intent', status: 'success' });
+            if (stripeOrderId) this.watchPendingFulfill(stripeOrderId, 'pi', userId);
+            this.logger.log(message, this.SERVICE_NAME);
             return { message, data: result };
         } catch (error) {
-            const errorMessage = `Error creating PaymentIntent: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw error instanceof BadRequestException
-                ? error
-                : new InternalServerErrorException(errorMessage);
+            this.recordCheckoutFailure('payment_intent', error);
+            this.throwHttp(error, `Error creating PaymentIntent: ${(error as Error).message}`);
         }
     }
 
@@ -569,9 +631,9 @@ export class StripeService {
         userId: string,
     ): Promise<IResponse<PaymentIntentResult>> {
         try {
-            const start = Date.now();
-
-            const existingPI = await this.stripe.paymentIntents.retrieve(piId);
+            const existingPI = await this.timeStripe('pi_retrieve', () =>
+                this.stripe.paymentIntents.retrieve(piId),
+            );
 
             if (existingPI.metadata?.userId !== userId) {
                 throw new BadRequestException('Ce PaymentIntent ne vous appartient pas');
@@ -594,8 +656,12 @@ export class StripeService {
 
             if (existingPI.status === 'canceled') {
                 const result = await this.buildPaymentIntentResult(checkoutDto, userId);
-                const message = `PaymentIntent recreated in ${Date.now() - start} ms`;
-                this.logger.verbose(message, this.SERVICE_NAME);
+                const stripeOrderId = result.paymentIntentId;
+                const message = stripeOrderId
+                    ? `Checkout created stripeOrderId=${stripeOrderId} flow=payment_intent user=${userId}`
+                    : `Checkout created flow=payment_intent free_order user=${userId}`;
+                if (stripeOrderId) this.watchPendingFulfill(stripeOrderId, 'pi', userId);
+                this.logger.log(message, this.SERVICE_NAME);
                 return { message, data: result };
             }
 
@@ -617,10 +683,12 @@ export class StripeService {
             const orderDiscountTotal = totalDiscountAmount + giftOrderAmount;
 
             if (isStripeFreeOrder(chargeableOrderAmount)) {
-                await this.stripe.paymentIntents.cancel(piId);
+                await this.timeStripe('pi_cancel', () =>
+                    this.stripe.paymentIntents.cancel(piId),
+                );
 
-                const message = `PaymentIntent ${piId} cancelled for free order in ${Date.now() - start} ms`;
-                this.logger.verbose(message, this.SERVICE_NAME);
+                const message = `PaymentIntent cancelled stripeOrderId=${piId} flow=free_order`;
+                this.logger.log(message, this.SERVICE_NAME);
                 return {
                     message,
                     data: {
@@ -630,7 +698,8 @@ export class StripeService {
                 };
             }
 
-            await this.stripe.paymentIntents.update(piId, {
+            await this.timeStripe('pi_update', () =>
+                this.stripe.paymentIntents.update(piId, {
                 amount: chargeableOrderAmount,
                 description: `${displayName} (${product.metadata?.token_number || '0'} chars) x${quantity}`,
                 metadata: {
@@ -646,14 +715,15 @@ export class StripeService {
                     referralDiscountType: referralDiscountType ?? '',
                     referralDiscountPercent: referralId ? String(referralDiscountPercent) : '',
                 },
-            });
+            }),
+            );
 
             if (!existingPI.client_secret) {
                 throw new InternalServerErrorException('PaymentIntent client_secret is missing');
             }
 
-            const message = `PaymentIntent ${piId} updated in ${Date.now() - start} ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            const message = `PaymentIntent updated stripeOrderId=${piId}`;
+            this.logger.log(message, this.SERVICE_NAME);
             return {
                 message,
                 data: {
@@ -664,11 +734,7 @@ export class StripeService {
                 },
             };
         } catch (error) {
-            const errorMessage = `Error updating PaymentIntent: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw error instanceof BadRequestException
-                ? error
-                : new InternalServerErrorException(errorMessage);
+            this.fail(error, `Error updating PaymentIntent: ${(error as Error).message}`);
         }
     }
 
@@ -732,19 +798,28 @@ export class StripeService {
             await this.creditTokensToUser(userId, totalTokens, orderId);
 
             this.stripePaymentsCounter.inc({ status: 'success' });
+            this.checkoutsCounter.inc({ flow: 'free_order', status: 'success' });
 
             const message = `Free order fulfilled in ${Date.now() - start} ms`;
-            this.logger.verbose(
-                `Free order fulfilled: ${totalTokens} tokens for user ${userId}`,
+            this.logger.log(
+                `Order fulfilled stripeOrderId=${orderId} flow=free_order user=${userId}`,
                 this.SERVICE_NAME,
             );
             return { message, data: { orderId } };
         } catch (error) {
-            this.stripePaymentsCounter.inc({ status: 'failed' });
-            if (error instanceof BadRequestException) throw error;
-            const errorMessage = `Error fulfilling free order: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw new InternalServerErrorException(errorMessage);
+            if (!(error instanceof HttpException) || error.getStatus() >= 500) {
+                this.stripePaymentsCounter.inc({ status: 'failed' });
+                this.checkoutsCounter.inc({ flow: 'free_order', status: 'failed' });
+                this.logPaymentFail({
+                    stage: 'fulfill',
+                    flow: 'free_order',
+                    reason: this.classifyFailReason(error),
+                    stripeOrderId: 'free',
+                    userId,
+                    error,
+                });
+            }
+            this.throwHttp(error, `Error fulfilling free order: ${(error as Error).message}`);
         }
     }
 
@@ -778,7 +853,8 @@ export class StripeService {
         const tokenAmountPerPack = parseInt(product.metadata?.token_number || '0', 10);
         const orderDiscountTotal = totalDiscountAmount + giftOrderAmount;
 
-        const paymentIntent = await this.stripe.paymentIntents.create({
+        const paymentIntent = await this.timeStripe('pi_create', () =>
+            this.stripe.paymentIntents.create({
             amount: chargeableOrderAmount,
             currency: product.prices[0].currency,
             automatic_payment_methods: { enabled: true },
@@ -795,7 +871,8 @@ export class StripeService {
                 ...(affiliationId && { affiliationCode: dto.affiliationCode!, affiliationId }),
                 ...(referralId && { referralId, referralDiscountType, referralDiscountPercent: String(referralDiscountPercent) }),
             },
-        });
+        }),
+        );
 
         if (!paymentIntent.client_secret) {
             throw new InternalServerErrorException('PaymentIntent client_secret is missing');
@@ -868,15 +945,25 @@ export class StripeService {
             await this.creditTokensToUser(userId, tokenAmountPerPack, paymentIntent.id);
 
             this.stripePaymentsCounter.inc({ status: 'success' });
-            this.logger.verbose(
-                `Order fulfilled via PaymentIntent: ${tokenAmountPerPack} tokens for user ${userId}`,
+            this.unwatchPendingFulfill(paymentIntent.id);
+            this.logger.log(
+                `Order fulfilled stripeOrderId=${paymentIntent.id} flow=payment_intent user=${userId}`,
                 this.SERVICE_NAME,
             );
         } catch (error) {
             this.stripePaymentsCounter.inc({ status: 'failed' });
-            const errorMessage = `Error fulfilling PaymentIntent order: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw new InternalServerErrorException(errorMessage);
+            this.logPaymentFail({
+                stage: 'fulfill',
+                flow: 'payment_intent',
+                reason: this.classifyFailReason(error),
+                stripeOrderId: paymentIntent.id,
+                userId: paymentIntent.metadata?.userId,
+                error,
+            });
+            this.throwHttp(
+                error,
+                `Error fulfilling PaymentIntent stripeOrderId=${paymentIntent.id}: ${(error as Error).message}`,
+            );
         }
     }
 
@@ -947,15 +1034,28 @@ export class StripeService {
             await this.creditTokensToUser(userId, totalTokens, session.id);
 
             this.stripePaymentsCounter.inc({ status: 'success' });
-            this.logger.verbose(
-                `Order fulfilled: ${totalTokens} tokens for user ${userId}`,
+            this.unwatchPendingFulfill(session.id);
+            if (typeof session.payment_intent === 'string') {
+                this.unwatchPendingFulfill(session.payment_intent);
+            }
+            this.logger.log(
+                `Order fulfilled stripeOrderId=${session.id} flow=checkout user=${userId}`,
                 this.SERVICE_NAME,
             );
         } catch (error) {
             this.stripePaymentsCounter.inc({ status: 'failed' });
-            const errorMessage = `Error fulfilling order: ${error.message}`;
-            this.logger.error(errorMessage, null, this.SERVICE_NAME);
-            throw new InternalServerErrorException(errorMessage);
+            this.logPaymentFail({
+                stage: 'fulfill',
+                flow: 'checkout',
+                reason: this.classifyFailReason(error),
+                stripeOrderId: session.id,
+                userId: session.metadata?.userId,
+                error,
+            });
+            this.throwHttp(
+                error,
+                `Error fulfilling order stripeOrderId=${session.id}: ${(error as Error).message}`,
+            );
         }
     }
 
@@ -968,10 +1068,14 @@ export class StripeService {
         const internalSecret = process.env.INTERNAL_SERVICE_SECRET;
 
         if (!adventureUrl || !internalSecret) {
-            this.logger.warn(
-                'ADVENTURE_SERVICE_URL or INTERNAL_SERVICE_SECRET not set — skipping token credit',
-                this.SERVICE_NAME,
-            );
+            this.tokenCreditsCounter.inc({ status: 'skipped' });
+            this.logPaymentFail({
+                stage: 'credit',
+                reason: 'env_missing',
+                stripeOrderId: sessionId,
+                userId,
+                level: 'warn',
+            });
             return;
         }
 
@@ -984,16 +1088,20 @@ export class StripeService {
                     timeout: 5000,
                 },
             );
-            this.logger.verbose(
-                `Credited ${amount} tokens for user ${userId} (session ${sessionId})`,
+            this.tokenCreditsCounter.inc({ status: 'success' });
+            this.logger.log(
+                `Credited ${amount} tokens stripeOrderId=${sessionId} user=${userId}`,
                 this.SERVICE_NAME,
             );
         } catch (error) {
-            this.logger.error(
-                `Failed to credit tokens for user ${userId} (session ${sessionId}): ${error.message}`,
-                null,
-                this.SERVICE_NAME,
-            );
+            this.tokenCreditsCounter.inc({ status: 'failed' });
+            this.logPaymentFail({
+                stage: 'credit',
+                reason: 'adventure_down',
+                stripeOrderId: sessionId,
+                userId,
+                error,
+            });
             // Non-blocking: payment is already recorded, token credit failure is logged
         }
     }
@@ -1001,14 +1109,228 @@ export class StripeService {
     private async getPurchasedQuantity(session: Stripe.Checkout.Session): Promise<number> {
         if (!session.id) return 1;
 
-        const lineItems = await this.stripe.checkout.sessions.listLineItems(session.id, {
-            limit: 100,
-        });
+        const lineItems = await this.timeStripe('line_items', () =>
+            this.stripe.checkout.sessions.listLineItems(session.id, {
+                limit: 100,
+            }),
+        );
 
         const quantity = lineItems.data.reduce(
             (total, item) => total + (item.quantity || 0),
             0,
         );
         return quantity > 0 ? quantity : 1;
+    }
+
+    private fail(error: unknown, message: string): never {
+        if (error instanceof HttpException) throw error;
+        this.logger.error(
+            message,
+            error instanceof Error ? error.stack : null,
+            this.SERVICE_NAME,
+        );
+        throw new InternalServerErrorException(message);
+    }
+
+    private throwHttp(error: unknown, message: string): never {
+        if (error instanceof HttpException) throw error;
+        throw new InternalServerErrorException(message);
+    }
+
+    private isServerFailure(error: unknown): boolean {
+        return !(error instanceof HttpException) || error.getStatus() >= 500;
+    }
+
+    private classifyFailReason(error: unknown): string {
+        if (!(error instanceof Error)) return 'unknown';
+        const msg = error.message.toLowerCase();
+        if (msg.includes('signature') || msg.includes('no signatures found')) {
+            return 'invalid_signature';
+        }
+        if (msg.includes('metadata')) return 'metadata';
+        if (msg.includes('token amount') || msg.includes('invalid token')) {
+            return 'invalid_token_amount';
+        }
+        if (
+            msg.includes('econnrefused') ||
+            msg.includes('etimedout') ||
+            msg.includes('timeout') ||
+            msg.includes('enotfound')
+        ) {
+            return 'dependency_down';
+        }
+        if (msg.includes('prisma') || msg.includes('postgres') || msg.includes('database')) {
+            return 'postgres';
+        }
+        if (msg.includes('stripe') || msg.includes('api key')) return 'stripe_api';
+        return 'internal';
+    }
+
+    private logPaymentFail(opts: {
+        stage: string;
+        reason: string;
+        error?: unknown;
+        stripeOrderId?: string;
+        userId?: string;
+        flow?: string;
+        level?: 'error' | 'warn';
+    }): void {
+        const parts = [
+            'payment_fail',
+            `stage=${opts.stage}`,
+            `reason=${opts.reason}`,
+        ];
+        if (opts.reason === 'postgres') {
+            parts.unshift('store_fail', 'store=postgres');
+        }
+        if (opts.flow) parts.push(`flow=${opts.flow}`);
+        parts.push(`stripeOrderId=${opts.stripeOrderId || '-'}`);
+        if (opts.userId) parts.push(`user=${opts.userId}`);
+        const detail =
+            opts.error instanceof Error
+                ? opts.error.message
+                : opts.error != null
+                    ? String(opts.error)
+                    : '';
+        const line = detail ? `${parts.join(' ')} ${detail}` : parts.join(' ');
+        if (opts.level === 'warn') {
+            this.logger.warn(line, this.SERVICE_NAME);
+            return;
+        }
+        this.logger.error(
+            line,
+            opts.error instanceof Error ? opts.error.stack : null,
+            this.SERVICE_NAME,
+        );
+    }
+
+    private recordCheckoutFailure(flow: string, error: unknown): void {
+        if (!this.isServerFailure(error)) return;
+        this.checkoutsCounter.inc({ flow, status: 'failed' });
+        this.logPaymentFail({
+            stage: 'checkout',
+            flow,
+            reason: this.classifyFailReason(error),
+            error,
+        });
+    }
+
+    /**
+     * Expose les séries à 0 dès le boot. Sinon le 1er inc() apparaît déjà à 1
+     * dans Prometheus et increase() / rate() restent à 0 (nouvelle série).
+     */
+    private seedWorkflowCounters(): void {
+        for (const flow of [
+            'payment_intent',
+            'embedded',
+            'checkout',
+            'free_order',
+        ] as const) {
+            this.checkoutsCounter.inc({ flow, status: 'success' }, 0);
+            this.checkoutsCounter.inc({ flow, status: 'failed' }, 0);
+        }
+        for (const event_type of [
+            'checkout.session.completed',
+            'payment_intent.succeeded',
+            'unknown',
+            'missing',
+        ]) {
+            this.stripeWebhooksCounter.inc({ status: 'success', event_type }, 0);
+            this.stripeWebhooksCounter.inc({ status: 'failed', event_type }, 0);
+        }
+        this.stripePaymentsCounter.inc({ status: 'success' }, 0);
+        this.stripePaymentsCounter.inc({ status: 'failed' }, 0);
+        this.tokenCreditsCounter.inc({ status: 'success' }, 0);
+        this.tokenCreditsCounter.inc({ status: 'failed' }, 0);
+        this.tokenCreditsCounter.inc({ status: 'skipped' }, 0);
+    }
+
+    private watchPendingFulfill(
+        stripeOrderId: string,
+        kind: 'pi' | 'session',
+        userId?: string,
+    ): void {
+        this.pendingFulfills.set(stripeOrderId, {
+            kind,
+            userId,
+            since: Date.now(),
+        });
+    }
+
+    private unwatchPendingFulfill(stripeOrderId: string): void {
+        this.pendingFulfills.delete(stripeOrderId);
+        this.reportedMissing.delete(stripeOrderId);
+    }
+
+    private async reconcileMissingWebhooks(): Promise<void> {
+        const now = Date.now();
+        const graceMs = 20_000;
+        const maxAgeMs = 2 * 60 * 60 * 1000;
+
+        for (const [stripeOrderId, pending] of this.pendingFulfills) {
+            const age = now - pending.since;
+            if (age < graceMs) continue;
+            if (age > maxAgeMs) {
+                this.pendingFulfills.delete(stripeOrderId);
+                continue;
+            }
+            if (this.reportedMissing.has(stripeOrderId)) continue;
+
+            try {
+                const paidOnStripe = await this.isPaidOnStripe(stripeOrderId, pending.kind);
+                if (!paidOnStripe) continue;
+
+                const recorded = await this.paymentService.existsByStripeOrderId(stripeOrderId);
+                if (recorded) {
+                    this.unwatchPendingFulfill(stripeOrderId);
+                    continue;
+                }
+
+                this.reportedMissing.add(stripeOrderId);
+                this.stripeWebhooksCounter.inc({
+                    status: 'failed',
+                    event_type: 'missing',
+                });
+                this.logPaymentFail({
+                    stage: 'webhook',
+                    reason: 'missing_webhook',
+                    stripeOrderId,
+                    userId: pending.userId,
+                    error: 'Paid on Stripe, no webhook received',
+                    level: 'warn',
+                });
+            } catch (error) {
+                this.logger.debug(
+                    `Webhook reconcile skipped for ${stripeOrderId}: ${(error as Error).message}`,
+                    this.SERVICE_NAME,
+                );
+            }
+        }
+    }
+
+    private async isPaidOnStripe(
+        stripeOrderId: string,
+        kind: 'pi' | 'session',
+    ): Promise<boolean> {
+        if (kind === 'pi') {
+            const paymentIntent = await this.timeStripe('pi_retrieve', () =>
+                this.stripe.paymentIntents.retrieve(stripeOrderId),
+            );
+            return paymentIntent.status === 'succeeded';
+        }
+
+        const session = await this.timeStripe('session_retrieve', () =>
+            this.stripe.checkout.sessions.retrieve(stripeOrderId),
+        );
+        return session.payment_status === 'paid' || session.status === 'complete';
+    }
+
+    private async timeStripe<T>(operation: string, fn: () => Promise<T>): Promise<T> {
+        const end = this.stripeDuration.startTimer({ operation });
+        try {
+            return await fn();
+        } finally {
+            end();
+        }
     }
 }

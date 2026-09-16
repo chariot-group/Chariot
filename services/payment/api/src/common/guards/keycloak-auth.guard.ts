@@ -5,20 +5,25 @@ import {
     UnauthorizedException,
     Logger,
     OnModuleInit,
-    InternalServerErrorException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
 import * as jwt from 'jsonwebtoken';
-import jwksClient from 'jwks-rsa';
+import { JwksClient } from 'jwks-rsa';
+
+type DecodedToken = jwt.JwtPayload & {
+    sub?: string;
+    email?: string;
+    preferred_username?: string;
+    realm_access?: unknown;
+    resource_access?: unknown;
+};
 
 @Injectable()
 export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
     private readonly logger = new Logger(KeycloakAuthGuard.name);
-    private readonly SERVICE_NAME = KeycloakAuthGuard.name;
-
-    private jwksClient: jwksClient.JwksClient;
+    private jwksClient: JwksClient;
     private keycloakInternalUrl: string;
     private keycloakExternalUrl: string;
     private realm: string;
@@ -27,32 +32,29 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
     constructor(
         private reflector: Reflector,
         private configService: ConfigService,
-    ) { }
+    ) {}
 
     onModuleInit() {
         this.keycloakInternalUrl = this.configService.get<string>(
             'KEYCLOAK_INTERNAL_URL',
         );
-        this.keycloakExternalUrl =
-            this.configService.get<string>('KEYCLOAK_URL');
+        this.keycloakExternalUrl = this.configService.get<string>('KEYCLOAK_URL');
         this.realm = this.configService.get<string>('KEYCLOAK_REALM');
         this.clientId = this.configService.get<string>('KEYCLOAK_CLIENT_ID');
 
         if (!this.keycloakInternalUrl || !this.realm) {
-            const message =
-                'KEYCLOAK_INTERNAL_URL and KEYCLOAK_REALM must be defined';
-            this.logger.error(message, null, this.SERVICE_NAME);
-            throw new InternalServerErrorException(message);
+            throw new Error(
+                'KEYCLOAK_INTERNAL_URL and KEYCLOAK_REALM must be defined',
+            );
         }
 
-        this.logger.verbose(
+        this.logger.log(
             `Keycloak Auth Guard initialized with internal URL: ${this.keycloakInternalUrl}`,
-            this.SERVICE_NAME,
         );
 
         const jwksUri = `${this.keycloakInternalUrl}/realms/${this.realm}/protocol/openid-connect/certs`;
 
-        this.jwksClient = jwksClient({
+        this.jwksClient = new JwksClient({
             jwksUri,
             cache: true,
             cacheMaxAge: 86400000,
@@ -66,10 +68,10 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
             return true;
         }
 
-        const isPublic = this.reflector.getAllAndOverride<boolean>(
-            IS_PUBLIC_KEY,
-            [context.getHandler(), context.getClass()],
-        );
+        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
 
         if (isPublic) {
             return true;
@@ -78,26 +80,25 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
         const authHeader = request.headers.authorization;
 
         if (!authHeader) {
-            const message = 'No authorization header';
-            this.logger.error(message, null, this.SERVICE_NAME);
-            throw new UnauthorizedException(message);
+            this.logger.debug('No authorization header');
+            throw new UnauthorizedException('No authorization header');
         }
 
         const [bearer, token] = authHeader.split(' ');
 
         if (bearer !== 'Bearer' || !token) {
-            const message = 'Invalid authorization format';
-            this.logger.error(message, null, this.SERVICE_NAME);
-            throw new UnauthorizedException(message);
+            this.logger.debug('Invalid authorization format');
+            throw new UnauthorizedException('Invalid authorization format');
         }
 
         try {
             const decoded = await this.verifyToken(token);
 
             if (!decoded.sub) {
-                const message = 'Invalid token: missing sub claim';
-                this.logger.error(message, null, this.SERVICE_NAME);
-                throw new UnauthorizedException(message);
+                this.logger.warn("Invalid token: missing 'sub' claim");
+                throw new UnauthorizedException(
+                    'Invalid token: missing user ID (sub claim)',
+                );
             }
 
             request.user = {
@@ -109,36 +110,38 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
             };
 
             return true;
-        } catch (error: any) {
-            const message = `Token validation failed: ${error.message}`;
-            this.logger.error(message, null, this.SERVICE_NAME);
-            throw new UnauthorizedException(message);
+        } catch (error) {
+            if (error instanceof UnauthorizedException) {
+                throw error;
+            }
+            this.logger.warn(
+                `Token validation failed: ${(error as Error).message}`,
+            );
+            throw new UnauthorizedException('Invalid token');
         }
     }
 
-    private async verifyToken(token: string): Promise<any> {
+    private async verifyToken(token: string): Promise<DecodedToken> {
         return new Promise((resolve, reject) => {
             const decodedHeader = jwt.decode(token, { complete: true });
 
             if (!decodedHeader || typeof decodedHeader === 'string') {
-                const message = 'Invalid token structure';
-                this.logger.error(message, null, this.SERVICE_NAME);
-                return reject(new InternalServerErrorException(message));
+                return reject(new Error('Invalid token structure'));
             }
 
             const kid = decodedHeader.header.kid;
 
             if (!kid) {
-                const message = 'No kid in token header';
-                this.logger.error(message, null, this.SERVICE_NAME);
-                return reject(new InternalServerErrorException(message));
+                return reject(new Error('No kid in token header'));
             }
 
             this.jwksClient.getSigningKey(kid, (err, key) => {
                 if (err) {
-                    const message = `Error getting signing key: ${err.message}`;
-                    this.logger.error(message, err.stack, this.SERVICE_NAME);
-                    return reject(new InternalServerErrorException(message));
+                    this.logger.error(
+                        `Error getting signing key: ${err.message}`,
+                        err.stack,
+                    );
+                    return reject(err);
                 }
 
                 const signingKey = key.getPublicKey();
@@ -146,18 +149,19 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
                 jwt.verify(
                     token,
                     signingKey,
-                    { algorithms: ['RS256'] },
+                    {
+                        algorithms: ['RS256'],
+                    },
                     (verifyErr, decoded) => {
                         if (verifyErr) {
-                            const message = `JWT verify error: ${verifyErr.message}`;
-                            this.logger.error(
-                                message,
-                                verifyErr.stack,
-                                this.SERVICE_NAME,
+                            this.logger.debug(
+                                `JWT verify error: ${verifyErr.message}`,
                             );
-                            return reject(
-                                new InternalServerErrorException(message),
-                            );
+                            return reject(verifyErr);
+                        }
+
+                        if (!decoded || typeof decoded === 'string') {
+                            return reject(new Error('Invalid token payload'));
                         }
 
                         const validIssuers = [
@@ -165,20 +169,12 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
                             `${this.keycloakExternalUrl}/realms/${this.realm}`,
                         ].filter(Boolean);
 
-                        const payload = decoded as jwt.JwtPayload;
-                        if (
-                            payload.iss &&
-                            !validIssuers.includes(payload.iss)
-                        ) {
-                            const message = `Invalid issuer: ${payload.iss}. Expected one of: ${validIssuers.join(', ')}`;
-                            this.logger.error(
-                                message,
-                                null,
-                                this.SERVICE_NAME,
+                        const payload = decoded as DecodedToken;
+                        if (payload.iss && !validIssuers.includes(payload.iss)) {
+                            this.logger.warn(
+                                `Invalid issuer: ${payload.iss}. Expected one of: ${validIssuers.join(', ')}`,
                             );
-                            return reject(
-                                new InternalServerErrorException(message),
-                            );
+                            return reject(new Error('Invalid token issuer'));
                         }
 
                         resolve(payload);
