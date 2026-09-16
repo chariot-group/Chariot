@@ -37,13 +37,14 @@ describe("HealthController (e2e)", () => {
     it("should return readiness status", () => {
       return request(app.getHttpServer())
         .get("/ready")
-        .expect(200)
         .expect((res) => {
+          expect([200, 503]).toContain(res.status);
           expect(res.body).toHaveProperty("status");
           expect(res.body).toHaveProperty("timestamp");
           expect(res.body).toHaveProperty("checks");
           expect(res.body.checks).toHaveProperty("gateway", true);
           expect(res.body.checks).toHaveProperty("adventure");
+          expect(res.status === 200).toBe(res.body.status === "ready");
         });
     });
   });

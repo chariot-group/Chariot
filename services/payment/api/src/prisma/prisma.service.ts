@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { storeEventLine, storeFailLine } from '@/observability/store-log';
 
 @Injectable()
 export class PrismaService
@@ -24,12 +25,22 @@ export class PrismaService
     }
 
     async onModuleInit() {
-        await this.$connect();
-        this.logger.verbose('Connected to PostgreSQL');
+        try {
+            await this.$connect();
+            this.logger.verbose(storeEventLine('postgres', 'connect'));
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            const stack = error instanceof Error ? error.stack : undefined;
+            this.logger.error(
+                storeFailLine('postgres', 'connect', 'unreachable', message),
+                stack,
+            );
+            throw error;
+        }
     }
 
     async onModuleDestroy() {
         await this.$disconnect();
-        this.logger.verbose('Disconnected from PostgreSQL');
+        this.logger.verbose(storeEventLine('postgres', 'disconnect'));
     }
 }

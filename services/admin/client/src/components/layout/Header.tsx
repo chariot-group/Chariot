@@ -7,7 +7,11 @@ import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useSidebar } from "@/providers/SidebarContext";
 
 const titles: Record<string, string> = {
-  "/": "Dashboard",
+  "/business/adventure": "KPI Adventure",
+  "/business/session": "KPI Session",
+  "/business/payment": "KPI Paiement",
+  "/business": "Dashboard business",
+  "/": "Dashboard paiements",
   "/promo-codes": "Codes promo",
   "/affiliations": "Affiliations",
   "/payments": "Paiements",
@@ -20,7 +24,9 @@ export function Header() {
   const { toggle } = useSidebar();
 
   const title =
-    Object.entries(titles).find(([path]) => (path === "/" ? pathname === "/" : pathname.startsWith(path)))?.[1] ??
+    Object.entries(titles)
+      .sort(([a], [b]) => b.length - a.length)
+      .find(([path]) => (path === "/" ? pathname === "/" : pathname === path || pathname.startsWith(`${path}/`)))?.[1] ??
     "Admin";
 
   const username = (keycloak?.tokenParsed as Record<string, unknown> | undefined)?.preferred_username as

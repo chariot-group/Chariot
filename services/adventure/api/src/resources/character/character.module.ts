@@ -11,28 +11,23 @@ import { NpcModule } from '@/resources/character//npc/npc.module';
 import { PlayerModule } from '@/resources/character/player/player.module';
 import { CharacterService } from '@/resources/character/character.service';
 import { CharacterController } from '@/resources/character/character.controller';
-import { MetricsModule } from '@/metrics/metrics.module';
 import { SessionAccessModule } from '@/common/session/session-access.module';
 
+const characterMongoose = MongooseModule.forFeature([
+  {
+    name: Character.name,
+    schema: CharacterSchema,
+    discriminators: [
+      { name: 'player', schema: PlayerSchema },
+      { name: 'npc', schema: NPCSchema },
+    ],
+  },
+  { name: Group.name, schema: GroupSchema },
+]);
+
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      {
-        name: Character.name,
-        schema: CharacterSchema,
-        discriminators: [
-          { name: 'player', schema: PlayerSchema },
-          { name: 'npc', schema: NPCSchema },
-        ],
-      },
-      { name: Group.name, schema: GroupSchema },
-    ]),
-    MetricsModule,
-    SessionAccessModule,
-    NpcModule,
-    PlayerModule,
-  ],
-  exports: [CharacterService],
+  imports: [characterMongoose, SessionAccessModule, NpcModule, PlayerModule],
+  exports: [CharacterService, characterMongoose],
   controllers: [CharacterController],
   providers: [CharacterService],
 })

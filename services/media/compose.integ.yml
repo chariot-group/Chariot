@@ -34,6 +34,8 @@ services:
       - "traefik.docker.network=traefik-public"
 
   chariot-media:
+    ports:
+      - "9005:9005"
     image: ghcr.io/chariot-group/chariot-media-integration:latest
     container_name: chariot-media-integ
     restart: unless-stopped
@@ -45,6 +47,14 @@ services:
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-}
+      LOKI_ENABLED: ${LOKI_ENABLED:-false}
+      LOKI_URL: ${LOKI_URL:-}
+      LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
       ADVENTURE_INTERNAL_URL: ${ADVENTURE_INTERNAL_URL}
       CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://chariot-minio-integ:9000}

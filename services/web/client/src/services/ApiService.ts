@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import Keycloak from "keycloak-js";
 import { buildKeycloakAuthOptions } from "@/hooks/useLocalePreference";
+import { reportClientIssue } from "@/logger/reportClientIssue";
 
 let keycloakInstance: Keycloak | null = null;
 let loginRedirectInFlight = false;
@@ -105,7 +106,7 @@ const createApiClient = (): AxiosInstance => {
             return Promise.reject(error);
           }
         } catch (refreshError) {
-          console.error("Token refresh failed", refreshError);
+          reportClientIssue("error", "Token refresh failed", "Keycloak", refreshError);
           redirectToLogin(keycloakInstance);
           return Promise.reject(error);
         }

@@ -24,6 +24,23 @@ describe('StripeService.resolveCode — FR-stripe-checkout', () => {
         inc: jest.fn(),
     };
 
+    const stripeWebhooksCounterMock = {
+        inc: jest.fn(),
+    };
+
+    const checkoutsCounterMock = {
+        inc: jest.fn(),
+    };
+
+    const tokenCreditsCounterMock = {
+        inc: jest.fn(),
+    };
+
+    const stripeDurationMock = {
+        startTimer: jest.fn(() => jest.fn()),
+        observe: jest.fn(),
+    };
+
     beforeAll(() => {
         process.env.STRIPE_SECRET_KEY = 'sk_test_fake';
     });
@@ -37,6 +54,10 @@ describe('StripeService.resolveCode — FR-stripe-checkout', () => {
             affiliationServiceMock,
             referralServiceMock,
             stripePaymentsCounterMock as any,
+            stripeWebhooksCounterMock as any,
+            checkoutsCounterMock as any,
+            tokenCreditsCounterMock as any,
+            stripeDurationMock as any,
         );
     });
 

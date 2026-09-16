@@ -7,6 +7,8 @@ import {
     GoneException,
     InternalServerErrorException,
     HttpException,
+    OnModuleInit,
+    OnModuleDestroy,
 } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -17,14 +19,18 @@ import { ParticipantStatus, SessionStatus } from '@prisma/client';
 import { SessionParticipant, SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
 import { IResponse } from '@/common/dtos/response.dto';
 import { sumTokenMap } from '@/resources/session/session-wheel-quota';
+import { SessionLiveMetrics } from '@/metrics/session-live.metrics';
 
 @Injectable()
-export class SessionService {
+export class SessionService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(SessionService.name);
     private readonly SERVICE_NAME = SessionService.name;
 
     private static readonly EXPIRATION_HOURS: number = 8;
     private static readonly EXPIRATION_SECONDS: number = (SessionService.EXPIRATION_HOURS) * 60 * 60;
+    private static readonly SWEEP_MS = 15_000;
+
+    private sweepTimer: ReturnType<typeof setInterval> | null = null;
 
     private static readonly CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     private static readonly CODE_LENGTH = 6;
@@ -50,7 +56,23 @@ export class SessionService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly redisService: RedisService,
+        private readonly liveMetrics: SessionLiveMetrics,
     ) { }
+
+    onModuleInit(): void {
+        void this.sweepStaleSessions();
+        this.sweepTimer = setInterval(() => {
+            void this.sweepStaleSessions();
+        }, SessionService.SWEEP_MS);
+        this.sweepTimer.unref?.();
+    }
+
+    onModuleDestroy(): void {
+        if (this.sweepTimer) {
+            clearInterval(this.sweepTimer);
+            this.sweepTimer = null;
+        }
+    }
 
     private async _findSessionById(id: string): Promise<SessionWithParticipants | null> {
         return this.prisma.session.findFirst({
@@ -67,25 +89,26 @@ export class SessionService {
 
         if (!session) {
             const message: string = `Session with code ${code} not found`;
-            this.logger.error(message, null, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             throw new NotFoundException(message);
         }
 
         if (session.deletedAt !== null) {
             const message: string = `Session with code ${code} is deleted`;
-            this.logger.error(message, null, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             throw new GoneException(message);
         }
 
         if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
             const message: string = `Session with code ${code} is expired since ${session.expiresAt}`;
             this.logger.warn(message, this.SERVICE_NAME);
+            await this.expireSession(session.id);
             throw new ForbiddenException(message);
         }
 
         if (session.status === SessionStatus.closed) {
             const message: string = `Session with code ${code} is closed`;
-            this.logger.error(message, null, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             throw new GoneException(message);
         }
 
@@ -102,8 +125,14 @@ export class SessionService {
                     creatorUserId: userId,
                     creatorCampaignId: createSessionDto.campaignId,
                     status: { not: SessionStatus.closed },
-                    expiresAt: { gt: new Date() },
                     deletedAt: null,
+                    OR: [
+                        { expiresAt: { gt: new Date() } },
+                        {
+                            expiresAt: null,
+                            status: SessionStatus.activated,
+                        },
+                    ],
                 },
                 include: { participants: true },
             });
@@ -127,7 +156,8 @@ export class SessionService {
                 }
                 const updated: SessionWithParticipants = await this._findSessionById(existingSession.id);
                 const message: string = `User ${userId} rejoined existing session #${existingSession.id} for campaign ${createSessionDto.campaignId} in ${Date.now() - start}ms`;
-                this.logger.verbose(message, this.SERVICE_NAME);
+                this.logger.log(message, this.SERVICE_NAME);
+                this.liveMetrics.recordLifecycle('rejoined');
                 return { message, data: updated };
             }
 
@@ -150,7 +180,8 @@ export class SessionService {
             });
 
             const message: string = `Session #${session.id} created in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
+            this.liveMetrics.recordLifecycle('created');
             return { message, data: session };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
@@ -166,7 +197,7 @@ export class SessionService {
             const session: SessionWithParticipants = await this._findSession(code);
 
             const message: string = `Session with code ${code} found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             return { message, data: session };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
@@ -192,7 +223,7 @@ export class SessionService {
             });
 
             const message: string = `Found ${sessions.length} session(s) for user ${userId} in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             return { message, data: sessions };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
@@ -209,13 +240,13 @@ export class SessionService {
 
             if (session.creatorUserId !== userId) {
                 const message: string = `User ${userId} is not the creator of session with code ${code}`;
-                this.logger.error(message, null, this.SERVICE_NAME);
+                this.logger.warn(message, this.SERVICE_NAME);
                 throw new ForbiddenException(message);
             }
 
             if (session.status !== SessionStatus.activated) {
                 const message: string = `Session with code ${code} cannot be launched from status "${session.status}"`;
-                this.logger.error(message, null, this.SERVICE_NAME);
+                this.logger.warn(message, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
 
@@ -225,7 +256,7 @@ export class SessionService {
             const quota = session.participants.length;
             if (totalDeposited !== quota) {
                 const message: string = `Session with code ${code} cannot be launched: wheel quota mismatch (deposited=${totalDeposited}, required=${quota})`;
-                this.logger.error(message, null, this.SERVICE_NAME);
+                this.logger.warn(message, this.SERVICE_NAME);
                 throw new BadRequestException({
                     code: 'WHEEL_QUOTA_MISMATCH',
                     message,
@@ -234,7 +265,8 @@ export class SessionService {
                 });
             }
 
-            const expiresAt: Date = new Date();
+            const launchedAt: Date = new Date();
+            const expiresAt: Date = new Date(launchedAt);
             expiresAt.setHours(expiresAt.getHours() + SessionService.EXPIRATION_HOURS);
 
             const updated: SessionWithParticipants = await this.prisma.session.update({
@@ -242,6 +274,7 @@ export class SessionService {
                 data: {
                     status: SessionStatus.launched,
                     expiresAt,
+                    launchedAt,
                 },
                 include: { participants: true },
             });
@@ -249,7 +282,8 @@ export class SessionService {
             await this.redisService.setSessionExpiration(session.id, SessionService.EXPIRATION_SECONDS);
 
             const message: string = `Session with code ${code} launched in ${Date.now() - start}ms, expires at ${updated.expiresAt.toISOString()}`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
+            this.liveMetrics.recordLifecycle('launched');
             return { message, data: updated };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
@@ -295,7 +329,8 @@ export class SessionService {
 
             const updated: SessionWithParticipants = await this._findSession(code);
             const message: string = `User ${userId} joined session with code ${code} in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
+            this.liveMetrics.recordLifecycle('joined');
             return { message, data: updated };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
@@ -317,7 +352,7 @@ export class SessionService {
 
             if (!participant) {
                 const message: string = `User ${userId} is not a participant of session with code ${code}`;
-                this.logger.error(message, null, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new BadRequestException(message);
             }
 
@@ -342,7 +377,8 @@ export class SessionService {
             }
 
             const message: string = `User ${userId} left session with code ${code} in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
+            this.liveMetrics.recordLifecycle('left');
             return tokensByUser !== undefined
                 ? { message, data: updated, tokensByUser }
                 : { message, data: updated };
@@ -361,7 +397,7 @@ export class SessionService {
 
             if (session.creatorUserId !== userId) {
                 const message: string = `User ${userId} is not the creator of session with code ${code}, cannot close`;
-                this.logger.error(message, null, this.SERVICE_NAME);
+                this.logger.warn(message, this.SERVICE_NAME);
                 throw new ForbiddenException(message);
             }
 
@@ -374,7 +410,8 @@ export class SessionService {
             });
 
             const message: string = `Session with code ${code} closed in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
+            this.liveMetrics.recordLifecycle('closed');
             return { message, data: updated };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
@@ -411,7 +448,7 @@ export class SessionService {
 
             if (!participant) {
                 const message: string = `User ${userId} is not a participant of session with code ${code}`;
-                this.logger.error(message, null, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -422,7 +459,7 @@ export class SessionService {
 
             const updated: SessionWithParticipants = await this._findSession(code);
             const message: string = `User ${userId} changed character to ${characterId} in session with code ${code} in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
             return { message, data: updated };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
@@ -525,7 +562,7 @@ export class SessionService {
 
             if (!session) {
                 const message: string = `Session with code ${code} not found`;
-                this.logger.error(message, null, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -538,13 +575,95 @@ export class SessionService {
             };
 
             const message: string = `Found ${result.participants.length} participant(s) for session with code ${code} in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
             return { message, data: result };
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
             const message: string = `Error retrieving participants for session with code ${code}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
+        }
+    }
+
+    /**
+     * Après un redémarrage, plus aucun WS n'est vivant. On ne touche pas
+     * `gameMaster` : c'est un rôle (droits MJ), pas une présence.
+     */
+    async markConnectedParticipantsDisconnected(): Promise<number> {
+        const result = await this.prisma.sessionParticipant.updateMany({
+            where: {
+                status: ParticipantStatus.connected,
+                session: {
+                    deletedAt: null,
+                    status: { in: [SessionStatus.activated, SessionStatus.launched] },
+                },
+            },
+            data: { status: ParticipantStatus.disconnected },
+        });
+        if (result.count > 0) {
+            this.logger.log(
+                `Marked ${result.count} connected participant(s) disconnected after restart.`,
+                this.SERVICE_NAME,
+            );
+            void this.liveMetrics.refreshLive();
+        }
+        return result.count;
+    }
+
+    /**
+     * Ferme les tables dont le TTL Postgres est dépassé (Redis a pu rater
+     * l'event) et les lobbies sans activité depuis EXPIRATION_HOURS.
+     */
+    async sweepStaleSessions(): Promise<number> {
+        try {
+            const now = new Date();
+            const lobbySince = new Date(
+                now.getTime() - SessionService.EXPIRATION_HOURS * 60 * 60 * 1000,
+            );
+
+            const launchedExpired = await this.prisma.session.findMany({
+                where: {
+                    deletedAt: null,
+                    status: SessionStatus.launched,
+                    expiresAt: { lte: now },
+                },
+                select: { id: true },
+            });
+
+            const staleLobbies = await this.prisma.session.findMany({
+                where: {
+                    deletedAt: null,
+                    status: SessionStatus.activated,
+                    createdAt: { lte: lobbySince },
+                    updatedAt: { lte: lobbySince },
+                    participants: { none: { joinedAt: { gt: lobbySince } } },
+                },
+                select: { id: true },
+            });
+
+            const ids = [...new Set([
+                ...launchedExpired.map((s) => s.id),
+                ...staleLobbies.map((s) => s.id),
+            ])];
+
+            for (const id of ids) {
+                await this.expireSession(id);
+            }
+
+            if (ids.length > 0) {
+                this.logger.log(
+                    `Swept ${ids.length} stale session(s).`,
+                    this.SERVICE_NAME,
+                );
+            }
+            return ids.length;
+        } catch (error: any) {
+            this.logger.error(
+                `Error sweeping stale sessions: ${error.message}`,
+                null,
+                this.SERVICE_NAME,
+            );
+            return 0;
         }
     }
 
@@ -560,7 +679,7 @@ export class SessionService {
             });
 
             if (!session) {
-                this.logger.warn(`Session #${id} already processed or deleted.`, this.SERVICE_NAME);
+                this.logger.debug(`Session #${id} already processed or deleted.`, this.SERVICE_NAME);
                 return [];
             }
 
@@ -574,6 +693,7 @@ export class SessionService {
             });
 
             this.logger.log(`Session #${id} expired and closed.`, this.SERVICE_NAME);
+            this.liveMetrics.recordLifecycle('expired');
 
             return updatedSession.participants.map((p: SessionParticipant) => p.userId);
         } catch (error: any) {

@@ -12,6 +12,7 @@ import {
     clearCharacters,
 } from '@/store/slices/characterSlice';
 import { isCharacterAccessDeniedError } from '@/lib/characterAccessError';
+import { reportClientIssue } from "@/logger/reportClientIssue";
 import {
     fetchCampaignsStart,
     fetchCampaignsSuccess,
@@ -151,7 +152,7 @@ class NavigationService {
             return { path: `/${locale}/welcome`, reason: 'no-characters' };
 
         } catch (error) {
-            console.error('Error determining post-login destination:', error);
+            reportClientIssue("error", "Error determining post-login destination", "Navigation", error);
             return { path: `/${locale}/welcome`, reason: 'no-characters' };
         }
     }
@@ -203,7 +204,7 @@ class NavigationService {
             return { path: `/${locale}/welcome`, reason: 'no-characters' };
 
         } catch (error) {
-            console.error('Error determining space destination:', error);
+            reportClientIssue("error", "Error determining space destination", "Navigation", error);
             return { path: `/${locale}/welcome`, reason: 'no-characters' };
         }
     }
@@ -227,7 +228,7 @@ class NavigationService {
             return { path: `/${locale}/welcome`, reason: 'no-characters' };
 
         } catch (error) {
-            console.error('Error determining player space destination:', error);
+            reportClientIssue("error", "Error determining player space destination", "Navigation", error);
             return { path: `/${locale}/welcome`, reason: 'no-characters' };
         }
     }

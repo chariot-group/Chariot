@@ -289,24 +289,30 @@ describe('MetricsInterceptor', () => {
       });
     });
 
-    it('should log error message', (done) => {
-      const errorMessage = 'Database connection failed';
-      const error = new Error(errorMessage);
-      (error as any).status = 500;
+    it('should log 4xx at debug and 5xx at error', (done) => {
+      const error = new Error('Not found');
+      (error as any).status = 404;
 
       mockCallHandler.handle.mockReturnValue(throwError(() => error));
 
-      const loggerSpy = jest
+      const errorSpy = jest
         .spyOn(interceptor['logger'], 'error')
+        .mockImplementation();
+      const debugSpy = jest
+        .spyOn(interceptor['logger'], 'debug')
         .mockImplementation();
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
         error: () => {
-          expect(loggerSpy).toHaveBeenCalledWith(
-            expect.stringContaining(errorMessage),
+          expect(errorSpy).not.toHaveBeenCalled();
+          expect(debugSpy).toHaveBeenCalledWith(
+            expect.stringMatching(
+              /GET \/api\/test 404 - \d+\.\d+s - Not found/,
+            ),
           );
 
-          loggerSpy.mockRestore();
+          errorSpy.mockRestore();
+          debugSpy.mockRestore();
           done();
         },
       });

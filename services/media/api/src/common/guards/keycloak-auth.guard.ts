@@ -74,12 +74,14 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
     const authHeader = request.headers.authorization;
 
     if (!authHeader) {
+      this.logger.debug('No authorization header');
       throw new UnauthorizedException('No authorization header');
     }
 
     const [bearer, token] = authHeader.split(' ');
 
     if (bearer !== 'Bearer' || !token) {
+      this.logger.debug('Invalid authorization format');
       throw new UnauthorizedException('Invalid authorization format');
     }
 
@@ -87,6 +89,7 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
       const decoded = await this.verifyToken(token);
 
       if (!decoded.sub) {
+        this.logger.warn("Invalid token: missing 'sub' claim");
         throw new UnauthorizedException(
           'Invalid token: missing user ID (sub claim)',
         );
@@ -102,10 +105,10 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
 
       return true;
     } catch (error) {
-      this.logger.error(
-        `Token validation failed: ${(error as Error).message}`,
-        (error as Error).stack,
-      );
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      this.logger.warn(`Token validation failed: ${(error as Error).message}`);
       throw new UnauthorizedException('Invalid token');
     }
   }

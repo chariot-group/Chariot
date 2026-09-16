@@ -11,17 +11,11 @@ jest.mock('path');
 
 describe('MaillingService', () => {
   let service: MaillingService;
-  let mockCounter: any;
   let mockSendMail: jest.Mock;
   let mockReadFile: jest.Mock;
   let mockResolve: jest.Mock;
 
   beforeEach(() => {
-    // Mock Prometheus counter
-    mockCounter = {
-      inc: jest.fn(),
-    };
-
     // Mock nodemailer
     mockSendMail = jest.fn();
     (nodemailer.createTransport as jest.Mock).mockReturnValue({
@@ -37,8 +31,7 @@ describe('MaillingService', () => {
     mockResolve.mockReset();
     mockResolve.mockImplementation((filePath: string) => filePath);
 
-    // Create service instance directly, bypassing NestJS injection
-    service = new MaillingService(mockCounter);
+    service = new MaillingService();
   });
 
   afterEach(() => {
@@ -75,11 +68,6 @@ describe('MaillingService', () => {
 
         const mailCall = mockSendMail.mock.calls[0][0];
         expect(mailCall.html).toContain('123456');
-
-        expect(mockCounter.inc).toHaveBeenCalledWith({
-          type: 'otp',
-          status: 'success',
-        });
       });
     });
 
@@ -104,11 +92,6 @@ describe('MaillingService', () => {
 
         const mailCall = mockSendMail.mock.calls[0][0];
         expect(mailCall.html).toContain('123456');
-
-        expect(mockCounter.inc).toHaveBeenCalledWith({
-          type: 'otp',
-          status: 'success',
-        });
       });
     });
 
@@ -133,11 +116,6 @@ describe('MaillingService', () => {
 
         const mailCall = mockSendMail.mock.calls[0][0];
         expect(mailCall.html).toContain('123456');
-
-        expect(mockCounter.inc).toHaveBeenCalledWith({
-          type: 'otp',
-          status: 'success',
-        });
       });
 
       it('should send OTP email in English for unknown locale', async () => {
@@ -202,11 +180,6 @@ describe('MaillingService', () => {
         await expect(
           service.sendOTP('testuser', 'test@example.com', 123456, 'en'),
         ).rejects.toThrow(InternalServerErrorException);
-
-        expect(mockCounter.inc).toHaveBeenCalledWith({
-          type: 'otp',
-          status: 'failure',
-        });
       });
 
       it('should throw InternalServerErrorException on sendMail error', async () => {
@@ -216,11 +189,6 @@ describe('MaillingService', () => {
         await expect(
           service.sendOTP('testuser', 'test@example.com', 123456, 'en'),
         ).rejects.toThrow(InternalServerErrorException);
-
-        expect(mockCounter.inc).toHaveBeenCalledWith({
-          type: 'otp',
-          status: 'failure',
-        });
       });
 
       it('should include email address in error message', async () => {
@@ -241,7 +209,7 @@ describe('MaillingService', () => {
         mockReadFile.mockResolvedValue('<html>{{username}} {{otp}}</html>');
         mockSendMail.mockResolvedValue({});
         const loggerSpy = jest
-          .spyOn(service['logger'], 'verbose')
+          .spyOn(service['logger'], 'log')
           .mockImplementation();
 
         await service.sendOTP('testuser', 'test@example.com', 123456, 'en');
@@ -330,11 +298,6 @@ describe('MaillingService', () => {
         expect(mailCall.html).toContain(
           'https://app.example.com/auth/active/activation_token_123',
         );
-
-        expect(mockCounter.inc).toHaveBeenCalledWith({
-          type: 'welcome',
-          status: 'success',
-        });
       });
     });
 
@@ -369,11 +332,6 @@ describe('MaillingService', () => {
         await expect(
           service.sendWelcomeEmail('testuser', 'test@example.com', 'token_123'),
         ).rejects.toThrow(InternalServerErrorException);
-
-        expect(mockCounter.inc).toHaveBeenCalledWith({
-          type: 'welcome',
-          status: 'failure',
-        });
       });
 
       it('should throw InternalServerErrorException on sendMail error', async () => {
@@ -383,11 +341,6 @@ describe('MaillingService', () => {
         await expect(
           service.sendWelcomeEmail('testuser', 'test@example.com', 'token_123'),
         ).rejects.toThrow(InternalServerErrorException);
-
-        expect(mockCounter.inc).toHaveBeenCalledWith({
-          type: 'welcome',
-          status: 'failure',
-        });
       });
 
       it('should include email address in error message', async () => {
@@ -408,7 +361,7 @@ describe('MaillingService', () => {
         mockReadFile.mockResolvedValue('<html>Welcome {{username}}</html>');
         mockSendMail.mockResolvedValue({});
         const loggerSpy = jest
-          .spyOn(service['logger'], 'verbose')
+          .spyOn(service['logger'], 'log')
           .mockImplementation();
 
         await service.sendWelcomeEmail('testuser', 'test@example.com', 'token');

@@ -16,8 +16,6 @@ import {
   Character,
   CharacterDocument,
 } from '@/resources/character/core/schemas/character.schema';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter } from 'prom-client';
 import { NPC, NPCDocument } from '@/resources/character/npc/schemas/npc.schema';
 import { IResponse } from '@/common/dtos/reponse.dto';
 
@@ -27,8 +25,6 @@ export class NpcService {
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
-    @InjectMetric('chariot_characters_created_total')
-    private readonly charactersCreatedCounter: Counter,
   ) {}
 
   private readonly SERVICE_NAME = NpcService.name;
@@ -92,12 +88,10 @@ export class NpcService {
         );
       }
 
-      // Incrémentation du compteur Prometheus
-      this.charactersCreatedCounter.inc({ user_id: userId });
-
       const end: number = Date.now();
 
       const message: string = `NPC created in ${end - start}ms`;
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: savedNpc,
@@ -135,7 +129,7 @@ export class NpcService {
             (_, index) => !groupCheckResults[index],
           );
           const message: string = `Invalid group IDs: ${invalidNpcIds.join(', ')}`;
-          this.logger.error(message, null, this.SERVICE_NAME);
+          this.logger.debug(message, this.SERVICE_NAME);
           throw new BadRequestException(message);
         }
 
@@ -147,7 +141,7 @@ export class NpcService {
             group._id.toString(),
           );
           const message: string = `Gone group IDs: ${goneGroupIds.join(', ')}`;
-          this.logger.error(message, null, this.SERVICE_NAME);
+          this.logger.debug(message, this.SERVICE_NAME);
           throw new GoneException(message);
         }
       } else {
@@ -186,12 +180,12 @@ export class NpcService {
 
       if (npcUpdate.modifiedCount === 0) {
         const message = `NPC #${id} not found`;
-        this.logger.error(message, null, this.SERVICE_NAME);
+        this.logger.debug(message, this.SERVICE_NAME);
         throw new NotFoundException(message);
       }
 
       const message = `NPC #${id} update in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: npc,

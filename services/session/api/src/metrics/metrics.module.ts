@@ -3,18 +3,24 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { MetricsController } from '@/metrics/metrics.controller';
 import { MetricsService } from '@/metrics/metrics.service';
 import { MetricsInterceptor } from '@/metrics/metrics.interceptor';
+import { SessionLiveMetrics } from '@/metrics/session-live.metrics';
 import {
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
-    errorsCounterProvider,
-    sessionsCreatedCounterProvider,
-    activeSessionsGaugeProvider,
-    wsConnectionsCounterProvider,
+    sessionOpenGaugeProvider,
+    sessionParticipantsGaugeProvider,
     activeWsConnectionsGaugeProvider,
-    dbQueryDurationProvider,
-    authAttemptsCounterProvider,
-    mongoConnectionsGaugeProvider,
+    sessionLifecycleCounterProvider,
+    wsConnectionsCounterProvider,
 } from '@/metrics/metrics.service';
+
+const liveMetricProviders = [
+    sessionOpenGaugeProvider,
+    sessionParticipantsGaugeProvider,
+    activeWsConnectionsGaugeProvider,
+    sessionLifecycleCounterProvider,
+    wsConnectionsCounterProvider,
+];
 
 @Module({
     imports: [
@@ -36,30 +42,18 @@ import {
     providers: [
         MetricsService,
         MetricsInterceptor,
+        SessionLiveMetrics,
         httpRequestsCounterProvider,
         httpRequestDurationProvider,
-        errorsCounterProvider,
-        sessionsCreatedCounterProvider,
-        activeSessionsGaugeProvider,
-        wsConnectionsCounterProvider,
-        activeWsConnectionsGaugeProvider,
-        dbQueryDurationProvider,
-        authAttemptsCounterProvider,
-        mongoConnectionsGaugeProvider,
+        ...liveMetricProviders,
     ],
     exports: [
         MetricsService,
         MetricsInterceptor,
+        SessionLiveMetrics,
         httpRequestsCounterProvider,
         httpRequestDurationProvider,
-        errorsCounterProvider,
-        sessionsCreatedCounterProvider,
-        activeSessionsGaugeProvider,
-        wsConnectionsCounterProvider,
-        activeWsConnectionsGaugeProvider,
-        dbQueryDurationProvider,
-        authAttemptsCounterProvider,
-        mongoConnectionsGaugeProvider,
+        ...liveMetricProviders,
     ],
 })
-export class MetricsModule { }
+export class MetricsModule {}

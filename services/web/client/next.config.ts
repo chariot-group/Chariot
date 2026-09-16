@@ -6,10 +6,32 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  serverExternalPackages: ["@react-pdf/renderer"],
+  serverExternalPackages: [
+    "@react-pdf/renderer",
+    "@opentelemetry/sdk-node",
+    "@opentelemetry/auto-instrumentations-node",
+    "@opentelemetry/exporter-trace-otlp-http",
+    "@opentelemetry/resources",
+    "@opentelemetry/semantic-conventions",
+    "@opentelemetry/api",
+  ],
+  logging: {
+    incomingRequests: {
+      ignore: [/\/api\/metrics/, /\/api\/health/, /\/api\/ready/, /\/api\/logs/],
+    },
+  },
   allowedDevOrigins: ["192.168.1.186"],
   env: {
     NEXT_PUBLIC_APP_VERSION: packageJson.version,
+  },
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        ...config.watchOptions,
+        ignored: ["**/.git/**", "**/node_modules/**", "**/.next/**"],
+      };
+    }
+    return config;
   },
   typescript: {
     ignoreBuildErrors: true,

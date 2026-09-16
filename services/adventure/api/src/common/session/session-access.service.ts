@@ -103,7 +103,7 @@ export class SessionAccessService {
         return;
       }
 
-      this.logger.verbose(
+      this.logger.warn(
         `Session access denied: HTTP ${res.status} for ${mode} character ${characterId}`,
       );
       throw new ForbiddenException('Session character access denied');

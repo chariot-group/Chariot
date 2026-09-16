@@ -1,14 +1,16 @@
 import {
-    Injectable,
-    NestInterceptor,
-    ExecutionContext,
     CallHandler,
+    ExecutionContext,
+    Injectable,
     Logger,
+    NestInterceptor,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter, Histogram } from 'prom-client';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+const OPS_ROUTES = new Set(['/metrics', '/', '/docs', '/docs-json']);
 
 @Injectable()
 export class MetricsInterceptor implements NestInterceptor {
@@ -19,14 +21,14 @@ export class MetricsInterceptor implements NestInterceptor {
         private readonly httpRequestsCounter: Counter,
         @InjectMetric('chariot_payment_http_request_duration_seconds')
         private readonly httpRequestDuration: Histogram,
-    ) { }
+    ) {}
 
-    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
         const startTime = Date.now();
         const request = context.switchToHttp().getRequest();
         const { method, url, route } = request;
-
         const routePath = route?.path || url;
+        const isOps = OPS_ROUTES.has(routePath);
 
         return next.handle().pipe(
             tap({
@@ -46,9 +48,11 @@ export class MetricsInterceptor implements NestInterceptor {
                         duration,
                     );
 
-                    this.logger.debug(
-                        `${method} ${routePath} ${statusCode} - ${duration.toFixed(3)}s`,
-                    );
+                    if (!isOps) {
+                        this.logger.debug(
+                            `${method} ${routePath} ${statusCode} - ${duration.toFixed(3)}s`,
+                        );
+                    }
                 },
                 error: (error) => {
                     const statusCode = error.status || 500;
@@ -64,6 +68,17 @@ export class MetricsInterceptor implements NestInterceptor {
                         { method, route: routePath },
                         duration,
                     );
+
+                    if (isOps) {
+                        return;
+                    }
+
+                    const line = `${method} ${routePath} ${statusCode} - ${duration.toFixed(3)}s - ${error.message}`;
+                    if (statusCode >= 500) {
+                        this.logger.error(line);
+                    } else {
+                        this.logger.debug(line);
+                    }
                 },
             }),
         );

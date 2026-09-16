@@ -48,7 +48,7 @@ network: ## Crée le réseau Docker si nécessaire
 up: network ## Lance tous les services (ENV=dev par défaut)
 ifdef SERVICE
 	@echo "$(YELLOW)Démarrage du service $(SERVICE) ($(ENV))...$(NC)"
-	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml up -d
+	@cd $(SERVICES_DIR)/$(SERVICE) && docker compose -f compose.$(ENV).yml up -d --remove-orphans
 	@echo "$(GREEN)✓ Service $(SERVICE) démarré$(NC)"
 else
 	@echo "$(YELLOW)Démarrage de tous les services ($(ENV))...$(NC)"
@@ -57,7 +57,7 @@ else
 		compose_file="$(SERVICES_DIR)/$$service/compose.$(ENV).yml"; \
 		if [ -f "$$compose_file" ]; then \
 			echo "$(BLUE)→ Démarrage de $$service...$(NC)"; \
-			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up -d; cd ../..; \
+			cd $(SERVICES_DIR)/$$service && docker compose -f compose.$(ENV).yml up -d --remove-orphans; cd ../..; \
 		else \
 			echo "$(RED)✗ Fichier $$compose_file introuvable$(NC)"; \
 		fi; \

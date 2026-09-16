@@ -14,7 +14,7 @@ export class AppService {
         health: "/health",
         ready: "/ready",
         metrics: "/metrics",
-        adventure: "/api/*",
+        adventure: "/api/{*path}",
       },
     };
   }

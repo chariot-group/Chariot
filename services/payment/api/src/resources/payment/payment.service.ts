@@ -46,8 +46,6 @@ export class PaymentService {
         dto: CreatePaymentDto,
     ): Promise<IResponse<PaymentWithDiscount>> {
         try {
-            const start = Date.now();
-
             let promoCodeId: string | null = null;
             let affiliationId: string | null = null;
             let discountAmount = 0;
@@ -112,8 +110,9 @@ export class PaymentService {
                 },
             });
 
-            const message = `Payment created for user ${dto.userId} in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            const stripeOrderId = payment.stripeSessionId ?? 'unknown';
+            const message = `Payment created stripeOrderId=${stripeOrderId} user=${dto.userId}`;
+            this.logger.log(message, this.SERVICE_NAME);
 
             return {
                 message,
@@ -160,7 +159,7 @@ export class PaymentService {
 
             if (!existing) {
                 const message = `Payment #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -222,7 +221,7 @@ export class PaymentService {
             });
 
             const message = `Payment #${id} status updated to ${dto.status} in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: updated };
         } catch (error) {
@@ -293,7 +292,7 @@ export class PaymentService {
             });
 
             const message = `${payments.length} payments found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return {
                 message,
@@ -322,12 +321,12 @@ export class PaymentService {
 
             if (!payment) {
                 const message = `Payment #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
             const message = `Payment #${id} found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return { message, data: payment };
         } catch (error) {
@@ -336,6 +335,19 @@ export class PaymentService {
             this.logger.error(message, error.stack, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
+    }
+
+    async existsByStripeOrderId(orderId: string): Promise<boolean> {
+        const payment = await this.prisma.payment.findFirst({
+            where: {
+                OR: [
+                    { stripeSessionId: orderId },
+                    { stripePaymentIntentId: orderId },
+                ],
+            },
+            select: { id: true },
+        });
+        return payment != null;
     }
 
     async findByStripeSession(sessionId: string): Promise<IResponse<Payment>> {
@@ -348,12 +360,12 @@ export class PaymentService {
 
             if (!payment) {
                 const message = `Payment with Stripe session '${sessionId}' not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
             const message = `Payment for session '${sessionId}' found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return { message, data: payment };
         } catch (error) {
@@ -373,7 +385,6 @@ export class PaymentService {
 
     async createCompleted(dto: CompletePaymentDto): Promise<IResponse<Payment>> {
         try {
-            const start = Date.now();
             const discountAmount = dto.discountAmount ?? 0;
             const finalAmount = dto.amount - discountAmount;
             const completionOrderId =
@@ -428,7 +439,7 @@ export class PaymentService {
                         },
                     });
 
-                    if (!existingPromoUsage) {
+                        if (!existingPromoUsage) {
                         await tx.promoCodeUsage.create({
                             data: {
                                 promoCodeId: dto.promoCodeId,
@@ -478,10 +489,11 @@ export class PaymentService {
                 return { payment: created, created: true };
             });
 
+            const stripeOrderId = dto.stripeSessionId ?? dto.stripePaymentIntentId ?? 'unknown';
             const message = result.created
-                ? `Completed payment recorded for user ${dto.userId} in ${Date.now() - start}ms`
-                : `Completed payment already recorded for user ${dto.userId} (${Date.now() - start}ms)`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+                ? `Completed payment recorded stripeOrderId=${stripeOrderId} user=${dto.userId}`
+                : `Completed payment already recorded stripeOrderId=${stripeOrderId} user=${dto.userId}`;
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: result.payment };
         } catch (error) {

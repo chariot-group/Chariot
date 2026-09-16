@@ -76,9 +76,12 @@ export class MetricsInterceptor implements NestInterceptor {
             duration,
           );
 
-          this.logger.error(
-            `${method} ${routePath} ${statusCode} - ${duration.toFixed(3)}s - ${error.message}`,
-          );
+          const line = `${method} ${routePath} ${statusCode} - ${duration.toFixed(3)}s - ${error.message}`;
+          if (statusCode >= 500) {
+            this.logger.error(line);
+          } else {
+            this.logger.debug(line);
+          }
         },
       }),
     );
