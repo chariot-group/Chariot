@@ -25,6 +25,7 @@ services:
       - --disable-reporting
       - /etc/alloy/config.alloy
     environment:
+      CHARIOT_ENVIRONMENT: local
       ALLOY_REMOTE_WRITE_URL: ${ALLOY_REMOTE_WRITE_URL:-http://host.docker.internal:9090/api/v1/write}
       ALLOY_REMOTE_WRITE_USER: ${ALLOY_REMOTE_WRITE_USER:-alloy}
       ALLOY_REMOTE_WRITE_PASSWORD: ${ALLOY_REMOTE_WRITE_PASSWORD:-changeme_use_a_strong_secret}

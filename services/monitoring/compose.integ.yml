@@ -20,6 +20,7 @@ services:
       - --disable-reporting
       - /etc/alloy/config.alloy
     environment:
+      CHARIOT_ENVIRONMENT: integ
       ALLOY_REMOTE_WRITE_URL: ${ALLOY_REMOTE_WRITE_URL}
       ALLOY_REMOTE_WRITE_USER: ${ALLOY_REMOTE_WRITE_USER:-alloy}
       ALLOY_REMOTE_WRITE_PASSWORD: ${ALLOY_REMOTE_WRITE_PASSWORD}

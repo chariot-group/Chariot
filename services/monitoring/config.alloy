@@ -14,6 +14,16 @@ prometheus.remote_write "monitoring" {
   }
 }
 
+// Pose environment=prod|integ|local sur toutes les séries (sélecteur Grafana).
+prometheus.relabel "with_environment" {
+  forward_to = [prometheus.remote_write.monitoring.receiver]
+
+  rule {
+    target_label = "environment"
+    replacement  = sys.env("CHARIOT_ENVIRONMENT")
+  }
+}
+
 // ---------------------------------------------------------------------------
 // APIs Nest (/metrics + basic auth)
 // ---------------------------------------------------------------------------
@@ -52,7 +62,7 @@ prometheus.scrape "apis" {
     },
   ]
 
-  forward_to = [prometheus.remote_write.monitoring.receiver]
+  forward_to = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -71,7 +81,7 @@ prometheus.scrape "web" {
     },
   ]
 
-  forward_to = [prometheus.remote_write.monitoring.receiver]
+  forward_to = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -90,7 +100,7 @@ prometheus.scrape "keycloak" {
     },
   ]
 
-  forward_to = [prometheus.remote_write.monitoring.receiver]
+  forward_to = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -168,7 +178,7 @@ prometheus.scrape "ready" {
   job_name        = "chariot-ready"
   scrape_interval = "15s"
   targets         = discovery.relabel.ready.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -206,7 +216,7 @@ prometheus.scrape "mongodb" {
   job_name        = "mongodb"
   scrape_interval = "15s"
   targets         = discovery.relabel.mongodb.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -240,7 +250,7 @@ prometheus.scrape "redis" {
   job_name        = "redis"
   scrape_interval = "15s"
   targets         = discovery.relabel.redis.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -275,7 +285,7 @@ prometheus.scrape "postgres_session" {
   job_name        = "postgres"
   scrape_interval = "15s"
   targets         = discovery.relabel.postgres_session.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -310,7 +320,7 @@ prometheus.scrape "postgres_payment" {
   job_name        = "postgres"
   scrape_interval = "15s"
   targets         = discovery.relabel.postgres_payment.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -347,5 +357,5 @@ prometheus.scrape "node" {
   job_name        = "chariot-node"
   scrape_interval = "15s"
   targets         = discovery.relabel.node.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
