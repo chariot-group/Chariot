@@ -11,6 +11,7 @@ services:
   alloy:
     image: grafana/alloy:v1.11.2
     container_name: chariot-alloy-prod
+    hostname: prod
     restart: unless-stopped
     pid: host
     extra_hosts:

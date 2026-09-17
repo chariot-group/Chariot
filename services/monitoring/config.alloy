@@ -4,6 +4,10 @@ logging {
 }
 
 prometheus.remote_write "monitoring" {
+  external_labels = {
+    environment = sys.env("CHARIOT_ENVIRONMENT"),
+  }
+
   endpoint {
     url = sys.env("ALLOY_REMOTE_WRITE_URL")
 
@@ -11,10 +15,15 @@ prometheus.remote_write "monitoring" {
       username = sys.env("ALLOY_REMOTE_WRITE_USER")
       password = sys.env("ALLOY_REMOTE_WRITE_PASSWORD")
     }
+
+    // Force le label même si une série l'a déjà (vide → drop Prometheus).
+    write_relabel_config {
+      target_label = "environment"
+      replacement  = sys.env("CHARIOT_ENVIRONMENT")
+    }
   }
 }
 
-// Pose environment=prod|integ|local sur toutes les séries (sélecteur Grafana).
 prometheus.relabel "with_environment" {
   forward_to = [prometheus.remote_write.monitoring.receiver]
 
@@ -41,24 +50,29 @@ prometheus.scrape "apis" {
 
   targets = [
     {
-      __address__ = sys.env("GATEWAY_ADDR"),
-      service     = "gateway",
+      __address__  = sys.env("GATEWAY_ADDR"),
+      service      = "gateway",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
     {
-      __address__ = sys.env("ADVENTURE_ADDR"),
-      service     = "adventure",
+      __address__  = sys.env("ADVENTURE_ADDR"),
+      service      = "adventure",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
     {
-      __address__ = sys.env("PAYMENT_ADDR"),
-      service     = "payment",
+      __address__  = sys.env("PAYMENT_ADDR"),
+      service      = "payment",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
     {
-      __address__ = sys.env("SESSION_ADDR"),
-      service     = "session",
+      __address__  = sys.env("SESSION_ADDR"),
+      service      = "session",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
     {
-      __address__ = sys.env("MEDIA_ADDR"),
-      service     = "media",
+      __address__  = sys.env("MEDIA_ADDR"),
+      service      = "media",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
   ]
 
@@ -76,8 +90,9 @@ prometheus.scrape "web" {
 
   targets = [
     {
-      __address__ = sys.env("WEB_ADDR"),
-      service     = "web",
+      __address__  = sys.env("WEB_ADDR"),
+      service      = "web",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
   ]
 
@@ -95,8 +110,9 @@ prometheus.scrape "keycloak" {
 
   targets = [
     {
-      __address__ = sys.env("KEYCLOAK_ADDR"),
-      service     = "keycloak",
+      __address__  = sys.env("KEYCLOAK_ADDR"),
+      service      = "keycloak",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
   ]
 
@@ -171,6 +187,11 @@ discovery.relabel "ready" {
   rule {
     target_label = "job"
     replacement  = "chariot-ready"
+  }
+
+  rule {
+    target_label = "environment"
+    replacement  = sys.env("CHARIOT_ENVIRONMENT")
   }
 }
 
