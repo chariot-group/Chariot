@@ -60,7 +60,7 @@ export class CharacterService {
       const end: number = Date.now();
 
       let message: string = `Characters found in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.debug(message, this.SERVICE_NAME);
       return {
         message: message,
         data: characters,
@@ -87,7 +87,7 @@ export class CharacterService {
       const end: number = Date.now();
 
       const message: string = `Character #${id} found in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.debug(message, this.SERVICE_NAME);
       return {
         message,
         data: character,
@@ -108,13 +108,13 @@ export class CharacterService {
         .exec();
       if (!character) {
         const message: string = `Character #${id} not found`;
-        this.logger.error(message, null, this.SERVICE_NAME);
+        this.logger.debug(message, this.SERVICE_NAME);
         throw new NotFoundException(message);
       }
 
       if (character.deletedAt) {
         const message: string = `Character #${id} already deleted`;
-        this.logger.error(message, null, this.SERVICE_NAME);
+        this.logger.debug(message, this.SERVICE_NAME);
         throw new GoneException(message);
       }
 
@@ -129,7 +129,7 @@ export class CharacterService {
       const end: number = Date.now();
 
       const message: string = `Character #${id} delete in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: character,

@@ -20,8 +20,6 @@ import {
   Character,
   CharacterDocument,
 } from '@/resources/character/core/schemas/character.schema';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Counter } from 'prom-client';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 
 @Injectable()
@@ -31,8 +29,6 @@ export class GroupService {
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
-    @InjectMetric('chariot_groups_created_total')
-    private readonly groupsCreatedCounter: Counter,
   ) {}
 
   private readonly SERVICE_NAME = GroupService.name;
@@ -66,15 +62,10 @@ export class GroupService {
         );
       });
 
-      // Incrémentation du compteur Prometheus
-      this.groupsCreatedCounter.inc({
-        campaign_id: campaigns.length > 0 ? campaigns[0].idCampaign : 'none',
-      });
-
       const end: number = Date.now();
 
       const message: string = `Group created in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: group,
@@ -130,7 +121,7 @@ export class GroupService {
         const campaign = await this.campaignModel.findById(campaignId).lean();
         if (!campaign) {
           const message: string = `Error while fetching groups: Campaign #${campaignId} not found`;
-          this.logger.error(message, null, this.SERVICE_NAME);
+          this.logger.debug(message, this.SERVICE_NAME);
           throw new NotFoundException(message);
         }
 
@@ -172,7 +163,7 @@ export class GroupService {
       const end: number = Date.now();
 
       const message: string = `Groups found in ${end - start}ms`;
-      this.logger.verbose(message);
+      this.logger.debug(message);
 
       return {
         message: message,
@@ -202,7 +193,7 @@ export class GroupService {
       const end: number = Date.now();
 
       const message = `Group #${id} found in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.debug(message, this.SERVICE_NAME);
       return {
         message,
         data: group,
@@ -293,12 +284,12 @@ export class GroupService {
 
       if (groupUpdate.modifiedCount === 0) {
         const message = `Group #${id} not found`;
-        this.logger.error(message, null, this.SERVICE_NAME);
+        this.logger.debug(message, this.SERVICE_NAME);
         throw new NotFoundException(message);
       }
 
       const message = `Group #${id} update in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: group,
@@ -387,7 +378,7 @@ export class GroupService {
       const end: number = Date.now();
 
       const message = `Group #${id} delete in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.log(message, this.SERVICE_NAME);
       return {
         message,
         data: group,

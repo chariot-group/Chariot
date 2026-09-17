@@ -57,4 +57,39 @@ export class AnalyticsController {
         const toDate = to ? new Date(`${to}T23:59:59.999Z`) : undefined;
         return this.analyticsService.getDashboard(period, fromDate, toDate);
     }
+
+    @Get('business')
+    @ApiOperation({ summary: '[Admin] KPIs business paiement (conversion, repeat, parrainage)' })
+    @ApiQuery({
+        name: 'period',
+        required: false,
+        enum: ['daily', 'weekly', 'monthly'],
+        example: 'daily',
+    })
+    @ApiQuery({
+        name: 'from',
+        required: false,
+        type: String,
+        description: 'Date de début ISO 8601 (ex: 2025-01-01)',
+        example: '2025-01-01',
+    })
+    @ApiQuery({
+        name: 'to',
+        required: false,
+        type: String,
+        description: 'Date de fin ISO 8601 (ex: 2025-12-31)',
+        example: '2025-12-31',
+    })
+    @ApiResponse({ status: 200, description: 'KPIs business paiement' })
+    @ApiResponse({ status: 401, description: 'Non authentifié' })
+    @ApiResponse({ status: 403, description: 'Accès admin requis' })
+    async getBusiness(
+        @Query('period') period: Period = 'daily',
+        @Query('from') from?: string,
+        @Query('to') to?: string,
+    ) {
+        const fromDate = from ? new Date(from) : undefined;
+        const toDate = to ? new Date(`${to}T23:59:59.999Z`) : undefined;
+        return this.analyticsService.getBusiness(period, fromDate, toDate);
+    }
 }

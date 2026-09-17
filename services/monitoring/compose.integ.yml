@@ -1,0 +1,58 @@
+name: chariot-monitoring-exporters-integ
+
+services:
+  alloy:
+    image: grafana/alloy:v1.11.2
+    container_name: chariot-alloy-integ
+    restart: unless-stopped
+    pid: host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - ./blackbox.yml:/etc/alloy/blackbox.yml:ro
+      - alloy_data:/var/lib/alloy/data
+      - /:/host:ro
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --disable-reporting
+      - /etc/alloy/config.alloy
+    environment:
+      ALLOY_REMOTE_WRITE_URL: ${ALLOY_REMOTE_WRITE_URL}
+      ALLOY_REMOTE_WRITE_USER: ${ALLOY_REMOTE_WRITE_USER:-alloy}
+      ALLOY_REMOTE_WRITE_PASSWORD: ${ALLOY_REMOTE_WRITE_PASSWORD}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-prometheus}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD}
+      GATEWAY_ADDR: chariot-gateway-integ:8082
+      ADVENTURE_ADDR: chariot-adventure-integ:9000
+      PAYMENT_ADDR: chariot-payment-integ:9003
+      SESSION_ADDR: chariot-session-integ:9002
+      MEDIA_ADDR: chariot-media-integ:9005
+      WEB_ADDR: chariot-frontend-integ:3000
+      KEYCLOAK_ADDR: keycloak-integ:9000
+      READY_GATEWAY_URL: http://chariot-gateway-integ:8082/ready
+      READY_ADVENTURE_URL: http://chariot-adventure-integ:9000/ready
+      READY_PAYMENT_URL: http://chariot-payment-integ:9003/ready
+      READY_SESSION_URL: http://chariot-session-integ:9002/ready
+      READY_MEDIA_URL: http://chariot-media-integ:9005/ready
+      READY_WEB_URL: http://chariot-frontend-integ:3000/api/ready
+      READY_KEYCLOAK_URL: http://keycloak-integ:9000/health/ready
+      MONGODB_URI: ${MONGODB_EXPORTER_URI}
+      REDIS_ADDR: ${REDIS_ADDR:-chariot-session-redis-integ:6379}
+      POSTGRES_SESSION_DSN: ${POSTGRES_EXPORTER_DSN}
+      POSTGRES_PAYMENT_DSN: ${POSTGRES_PAYMENT_EXPORTER_DSN}
+      UNIX_COLLECTORS: cpu,meminfo,loadavg,uname,filesystem
+      HOST_PROCFS: /host/proc
+      HOST_SYSFS: /host/sys
+      HOST_ROOTFS: /host
+    networks:
+      - chariot-group-network-integ
+
+volumes:
+  alloy_data:
+
+networks:
+  chariot-group-network-integ:
+    external: true

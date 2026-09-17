@@ -3,6 +3,7 @@ import { HealthService } from "./health.service";
 import { HttpService } from "@nestjs/axios";
 import { of, throwError } from "rxjs";
 import { AxiosResponse } from "axios";
+import { ServicesConfig } from "../proxy/services.config";
 
 describe("HealthService", () => {
   let service: HealthService;
@@ -15,6 +16,7 @@ describe("HealthService", () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HealthService,
+        ServicesConfig,
         {
           provide: HttpService,
           useValue: {

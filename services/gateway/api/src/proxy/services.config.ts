@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 
 /**
  * Service configuration interface
@@ -13,6 +13,7 @@ export interface ServiceConfig {
  * Services registry configuration
  * Maps service names to their backend URLs based on environment variables
  */
+@Injectable()
 export class ServicesConfig {
   private readonly logger = new Logger(ServicesConfig.name);
   private readonly services: Map<string, ServiceConfig>;

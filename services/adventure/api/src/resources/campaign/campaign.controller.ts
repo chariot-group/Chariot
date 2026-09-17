@@ -80,20 +80,20 @@ export class CampaignController {
   private async validateResource(id: Types.ObjectId): Promise<void> {
     if (!Types.ObjectId.isValid(id)) {
       const message = `Error while fetching campaign #${id}: Id is not a valid mongoose id`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new BadRequestException(message);
     }
     const campaign = await this.campaignModel.findById(id).exec();
 
     if (!campaign) {
       const message = `Campaign #${id} not found`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new NotFoundException(message);
     }
 
     if (campaign.deletedAt) {
       const message = `Campaign #${id} is gone`;
-      this.logger.error(message, null, this.CONTROLLER_NAME);
+      this.logger.debug(message, this.CONTROLLER_NAME);
       throw new GoneException(message);
     }
   }
@@ -131,18 +131,11 @@ export class CampaignController {
       'Archived',
     );
 
-    // Debug logging
-    this.logger.debug(
-      `Request user object: ${JSON.stringify(request.user)}`,
-      this.CONTROLLER_NAME,
-    );
-
     const userId = request.user?.keycloakId;
 
     if (!userId) {
-      this.logger.error(
-        `User authentication failed - user object: ${JSON.stringify(request.user)}`,
-        null,
+      this.logger.warn(
+        'User authentication required to create a campaign',
         this.CONTROLLER_NAME,
       );
       throw new BadRequestException('User authentication required');

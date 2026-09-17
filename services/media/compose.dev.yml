@@ -53,6 +53,14 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-chariot_minio_secret}
       MINIO_BUCKET: ${MINIO_BUCKET:-chariot-media}
       MEDIA_PRESIGNED_TTL_SECONDS: ${MEDIA_PRESIGNED_TTL_SECONDS:-1800}
+      METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-}
+      METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
+      OTEL_ENABLED: ${OTEL_ENABLED:-false}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-local}
+      LOKI_ENABLED: ${LOKI_ENABLED:-false}
+      LOKI_URL: ${LOKI_URL:-}
+      LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
     depends_on:
       chariot-minio:
         condition: service_healthy
@@ -61,6 +69,7 @@ services:
       - chariot-group-network
     extra_hosts:
       - "localhost:host-gateway"
+      - "host.docker.internal:host-gateway"
 
 volumes:
   chariot_minio_data:

@@ -3,15 +3,19 @@ import { HttpService } from "@nestjs/axios";
 import { AxiosResponse } from "axios";
 import { firstValueFrom } from "rxjs";
 import { ServicesConfig } from "./services.config";
+import { GatewayMetricsService } from "@/metrics/gateway-metrics.service";
+import { classifyProxyError } from "@/common/utils/request-log.utils";
+import { instance } from "@/logger/winston.logger";
 
 @Injectable()
 export class ProxyService {
   private readonly logger = new Logger(ProxyService.name);
-  private readonly servicesConfig: ServicesConfig;
 
-  constructor(private readonly httpService: HttpService) {
-    this.servicesConfig = new ServicesConfig();
-  }
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly servicesConfig: ServicesConfig,
+    private readonly gatewayMetrics: GatewayMetricsService,
+  ) {}
 
   /**
    * Forward request to the specified service
@@ -62,9 +66,22 @@ export class ProxyService {
       this.logger.debug(`Received response from ${serviceName}: ${response.status}`);
       return response;
     } catch (error: unknown) {
+      const errorType = classifyProxyError(error);
+      this.gatewayMetrics.recordProxyError(serviceName, errorType);
+
       const errorMessage = error instanceof Error ? error.message : "Unknown forwarding error";
       const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(`Error forwarding to ${serviceName}: ${errorMessage}`, errorStack);
+
+      instance.error({
+        message: `Proxy error ${method} ${serviceName}${path}: ${errorMessage}`,
+        context: "ProxyService",
+        backend: serviceName,
+        method,
+        path,
+        error_type: errorType,
+        stack: errorStack,
+      });
+
       throw error;
     }
   }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Crown, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { navItems } from "@/config/navigation";
+import { isNavHrefActive, navItems } from "@/config/navigation";
 import { useSidebar } from "@/providers/SidebarContext";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 
@@ -89,13 +89,12 @@ export function Sidebar() {
         {/* Nav */}
         <nav className="flex flex-col gap-1 p-3 flex-1">
           <Accordion
-            type="single"
-            className="flex flex-col gap-1 p-3 flex-1"
-            collapsible>
+            type="multiple"
+            defaultValue={["Business", "Paiement"]}
+            className="flex flex-col gap-1 p-3 flex-1">
             {navItems.map((item) => {
               if (item.type === "link") {
-                const active =
-                  !item.external && (item.href === "/" ? pathname === "/" : pathname.startsWith(item.href));
+                const active = isNavHrefActive(item.href, pathname);
                 return (
                   <NavLink
                     key={item.href}
@@ -122,7 +121,7 @@ export function Sidebar() {
                   </AccordionTrigger>
                   <AccordionContent>
                     {item.children.map((child) => {
-                      const active = child.href === "/" ? pathname === "/" : pathname.startsWith(child.href);
+                      const active = isNavHrefActive(child.href, pathname);
                       return (
                         <NavLink
                           key={child.href}

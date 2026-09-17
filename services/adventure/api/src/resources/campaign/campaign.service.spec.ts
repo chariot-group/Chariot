@@ -5,7 +5,6 @@ import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { MetricsModule } from '@/metrics/metrics.module';
 
 describe('CampaignService - create', () => {
   let service: CampaignService;
@@ -37,7 +36,6 @@ describe('CampaignService - create', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         CampaignService,
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
@@ -53,7 +51,7 @@ describe('CampaignService - create', () => {
     groupModel.updateMany.mockResolvedValue({});
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'verbose')
+      .spyOn(service['logger'], 'log')
       .mockImplementation(() => {});
 
     const result = await service.create(mockCampaignDto, userId);
@@ -130,7 +128,6 @@ describe('CampaignService - findAllByUser', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         CampaignService,
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
@@ -223,7 +220,6 @@ describe('CampaignService - findOne', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         CampaignService,
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
@@ -285,7 +281,6 @@ describe('CampaignService - update', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         CampaignService,
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
@@ -366,7 +361,6 @@ describe('CampaignService - remove', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MetricsModule],
       providers: [
         CampaignService,
         { provide: getModelToken(Campaign.name), useValue: campaignModel },

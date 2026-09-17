@@ -260,75 +260,21 @@ include:
 
 ### 7. Configure Monitoring
 
-#### Add Prometheus Metrics
+Expose `GET /metrics` (Prometheus text) and add the target to **Alloy** (`services/monitoring/config.alloy`), not to the Monitoring Prometheus scrape list. See [docs/technical/OBSERVABILITY.md](docs/technical/OBSERVABILITY.md).
 
-In your service, expose metrics endpoint:
-
-```typescript
-// src/metrics/metrics.controller.ts
-import { Controller, Get } from '@nestjs/common';
-import { register } from 'prom-client';
-
-@Controller('metrics')
-export class MetricsController {
-  @Get()
-  getMetrics() {
-    return register.metrics();
-  }
-}
-```
-
-#### Update Prometheus Configuration
-
-Edit `infrastructure/prometheus.yml.template`:
-
-```yaml
-scrape_configs:
-  # ... existing jobs
-  
-  - job_name: 'your-service'
-    static_configs:
-      - targets: ['your-service:${YOUR_SERVICE_PORT}']
-    metrics_path: '/metrics'
-    scrape_interval: 10s
-```
-
-Add environment variables in `.env`:
-
-```bash
-PROMETHEUS_YOUR_SERVICE_TARGET=your-service:YOUR_SERVICE_PORT
-```
+Protect Nest `/metrics` with `METRICS_BASIC_AUTH_*` (same secret as Alloy).
 
 ### 8. Configure Logging
 
-#### Update Promtail Configuration
+Do **not** add Promtail scrape jobs. Nest and Next push logs to Loki when `LOKI_ENABLED=true` (`LokiTransport` → `POST {LOKI_URL}/loki/api/v1/push`).
 
-Edit `infrastructure/promtail-config.yml`:
-
-```yaml
-scrape_configs:
-  # ... existing jobs
-  
-  - job_name: your-service-logs
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: your-service
-          service: your-service
-          component: application
-          __path__: /logs/your-service/*.log
-```
-
-#### Mount Logs Volume
-
-Update `infrastructure/compose.yml` in promtail service:
-
-```yaml
-promtail:
-  volumes:
-    # ... existing volumes
-    - ../services/your-service/logs:/logs/your-service:ro
+```bash
+LOKI_ENABLED=true
+LOKI_URL=http://host.docker.internal:3100
+LOKI_LOG_LEVEL=info
+OTEL_ENABLED=true
+OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4318
+OTEL_ENVIRONMENT=local
 ```
 
 ### 9. Create Service Documentation

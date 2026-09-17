@@ -144,7 +144,7 @@ export class StripeController {
     ) {
         if (!req.rawBody) {
             const errorMessage = 'Stripe webhook request body is missing';
-            this.logger.error(errorMessage, null, this.CONTROLLER_NAME);
+            this.logger.warn(errorMessage, this.CONTROLLER_NAME);
             throw new BadRequestException(errorMessage);
         }
         return this.stripeService.handleWebhook(req.rawBody, signature);

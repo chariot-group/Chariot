@@ -51,7 +51,7 @@ export class PromoCodeService {
             });
 
             const message = `PromoCode '${dto.code}' created in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: promoCode };
         } catch (error) {
@@ -87,7 +87,7 @@ export class PromoCodeService {
             ]);
 
             const message = `${promoCodes.length} promo codes found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return {
                 message,
@@ -112,12 +112,12 @@ export class PromoCodeService {
 
             if (!promoCode) {
                 const message = `PromoCode #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
             const message = `PromoCode #${id} found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return { message, data: promoCode };
         } catch (error) {
@@ -138,12 +138,12 @@ export class PromoCodeService {
 
             if (!promoCode) {
                 const message = `PromoCode '${code}' not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
             const message = `PromoCode '${code}' found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return { message, data: promoCode };
         } catch (error) {
@@ -167,7 +167,7 @@ export class PromoCodeService {
 
             if (!existing) {
                 const message = `PromoCode #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -218,7 +218,7 @@ export class PromoCodeService {
             });
 
             const message = `PromoCode #${id} updated in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: updated };
         } catch (error) {
@@ -239,7 +239,7 @@ export class PromoCodeService {
 
             if (!existing) {
                 const message = `PromoCode #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -255,7 +255,7 @@ export class PromoCodeService {
             });
 
             const message = `PromoCode #${id} deactivated in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: updated };
         } catch (error) {
@@ -276,7 +276,7 @@ export class PromoCodeService {
 
             if (!existing) {
                 const message = `PromoCode #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -286,7 +286,7 @@ export class PromoCodeService {
             });
 
             const message = `PromoCode #${id} deleted in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: deleted };
         } catch (error) {
@@ -369,7 +369,7 @@ export class PromoCodeService {
             }
 
             const message = `PromoCode '${code}' validated in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return { message, data: promoCode };
         } catch (error) {

@@ -13,6 +13,7 @@ import {
   markPostLoginCompleted,
   shouldAttemptPostLoginRedirect,
 } from "@/lib/postLoginNavigation";
+import { reportClientIssue } from "@/logger/reportClientIssue";
 
 const REFERRAL_CODE_STORAGE_KEY = "chariot_referral_code";
 const REFERRAL_INIT_STORAGE_KEY = "chariot_referral_initialized";
@@ -88,7 +89,7 @@ export default function PostLoginNavigator() {
         );
         router.replace(destination.path);
       } catch (error) {
-        console.error("Failed to determine post-login destination:", error);
+        reportClientIssue("error", "Failed to determine post-login destination", "Navigation", error);
         router.replace(`/${locale}/welcome`);
       }
     };

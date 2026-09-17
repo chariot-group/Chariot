@@ -85,30 +85,22 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
     const authHeader = request.headers.authorization;
 
     if (!authHeader) {
-      this.logger.error('No authorization header');
+      this.logger.debug('No authorization header');
       throw new UnauthorizedException('No authorization header');
     }
 
     const [bearer, token] = authHeader.split(' ');
 
     if (bearer !== 'Bearer' || !token) {
-      this.logger.error('Invalid authorization format');
+      this.logger.debug('Invalid authorization format');
       throw new UnauthorizedException('Invalid authorization format');
     }
 
     try {
-      // Valider et décoder le token
       const decoded = await this.verifyToken(token);
 
-      // Debug: voir le contenu du token décodé
-      this.logger.debug(`Decoded token: ${JSON.stringify(decoded)}`);
-
-      // Attacher les informations de l'utilisateur à la requête
-      // Note: `sub` doit toujours être présent dans un token JWT Keycloak valide (UUID de l'utilisateur)
       if (!decoded.sub) {
-        this.logger.error(
-          `Invalid token: missing 'sub' claim. Token contains: ${JSON.stringify({ preferred_username: decoded.preferred_username, email: decoded.email })}`,
-        );
+        this.logger.warn("Invalid token: missing 'sub' claim");
         throw new UnauthorizedException(
           'Invalid token: missing user ID (sub claim)',
         );
@@ -124,10 +116,10 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
 
       return true;
     } catch (error) {
-      this.logger.error(
-        `Token validation failed: ${(error as Error).message}`,
-        (error as Error).stack,
-      );
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      this.logger.warn(`Token validation failed: ${(error as Error).message}`);
       throw new UnauthorizedException('Invalid token');
     }
   }
@@ -169,10 +161,7 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
           },
           (verifyErr, decoded) => {
             if (verifyErr) {
-              this.logger.error(
-                `JWT verify error: ${verifyErr.message}`,
-                verifyErr.stack,
-              );
+              this.logger.debug(`JWT verify error: ${verifyErr.message}`);
               return reject(verifyErr);
             }
 
@@ -188,7 +177,7 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
 
             const payload = decoded as DecodedToken;
             if (payload.iss && !validIssuers.includes(payload.iss)) {
-              this.logger.error(
+              this.logger.warn(
                 `Invalid issuer: ${payload.iss}. Expected one of: ${validIssuers.join(', ')}`,
               );
               return reject(new Error('Invalid token issuer'));

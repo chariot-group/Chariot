@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/commo
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { clampTokensToParticipantQuota } from '@/resources/session/session-wheel-quota';
+import { storeEventLine, storeFailLine } from '@/observability/store-log';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
@@ -21,6 +22,21 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         this.client = new Redis(redisUrl);
         this.subscriber = new Redis(redisUrl);
 
+        this.client.on('error', (error: Error) => {
+            this.logger.error(
+                storeFailLine('redis', 'client', 'driver', error.message),
+                error.stack,
+                this.SERVICE_NAME,
+            );
+        });
+        this.subscriber.on('error', (error: Error) => {
+            this.logger.error(
+                storeFailLine('redis', 'subscriber', 'driver', error.message),
+                error.stack,
+                this.SERVICE_NAME,
+            );
+        });
+
         // Activer les keyspace notifications pour les expirations
         await this.client.config('SET', 'notify-keyspace-events', 'Ex');
 
@@ -35,7 +51,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
                 this.expirationHandlers.forEach((handler) => {
                     Promise.resolve(handler(sessionId)).catch((error: any) => {
-                        this.logger.error(`Error in expiration handler: ${error.message}`, error.stack, this.SERVICE_NAME);
+                        this.logger.error(
+                            storeFailLine(
+                                'redis',
+                                'expire_handler',
+                                'handler',
+                                error.message,
+                            ),
+                            error.stack,
+                            this.SERVICE_NAME,
+                        );
                     });
                 });
             }
@@ -43,13 +68,24 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
         });
 
-        this.logger.verbose('Redis connected with keyspace notifications enabled', this.SERVICE_NAME);
+        this.logger.verbose(storeEventLine('redis', 'connect'), this.SERVICE_NAME);
     }
 
     async onModuleDestroy() {
         await this.subscriber?.quit();
         await this.client?.quit();
-        this.logger.verbose('Redis disconnected', this.SERVICE_NAME);
+        this.logger.verbose(storeEventLine('redis', 'disconnect'), this.SERVICE_NAME);
+    }
+
+    async ping(): Promise<boolean> {
+        if (!this.client) {
+            return false;
+        }
+        try {
+            return (await this.client.ping()) === 'PONG';
+        } catch {
+            return false;
+        }
     }
 
     /**

@@ -47,7 +47,7 @@ export class KeycloakService {
         grantType: 'password',
         clientId: 'admin-cli',
       });
-      this.logger.log('Authenticated with Keycloak admin');
+      this.logger.debug('Authenticated with Keycloak admin');
     } catch (error) {
       this.logger.error('Failed to authenticate with Keycloak', error);
       throw error;
@@ -73,11 +73,14 @@ export class KeycloakService {
         throw new NotFoundException(`User not found: ${keycloakId}`);
       }
 
-      this.logger.log(
+      this.logger.debug(
         `User information retrieved from Keycloak for: ${user.username} (avatar: ${user.attributes?.avatar?.[0] ? 'present' : 'missing'})`,
       );
       return user;
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       this.logger.error(
         `Failed to fetch user ${keycloakId} from Keycloak`,
         error.stack,

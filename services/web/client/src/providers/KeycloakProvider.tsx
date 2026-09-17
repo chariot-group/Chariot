@@ -9,6 +9,7 @@ import { purgePersistedState } from "@/store";
 import { stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
 import { clearPostLoginCompleted } from "@/lib/postLoginNavigation";
 import { useTranslations } from "next-intl";
+import { reportClientIssue } from "@/logger/reportClientIssue";
 
 interface KeycloakContextType {
   keycloak: Keycloak | null;
@@ -73,7 +74,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
           .then((refreshed) => {
             if (refreshed) setToken(kc.token || null);
           })
-          .catch(() => {
+          .catch((error) => {
+            reportClientIssue("error", "Token refresh failed", "Keycloak", error);
             setAuthenticated(false);
             setToken(null);
             const { locale } = buildKeycloakAuthOptions(window.location.pathname);
@@ -158,7 +160,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
             .then((refreshed) => {
               if (refreshed) setToken(kc.token || null);
             })
-            .catch(() => {
+            .catch((error) => {
+              reportClientIssue("error", "Token refresh failed", "Keycloak", error);
               setAuthenticated(false);
               setToken(null);
               const { locale } = buildKeycloakAuthOptions(window.location.pathname);
@@ -169,7 +172,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         document.addEventListener("visibilitychange", handleVisibilityChange);
         visibilityHandlerRef.current = handleVisibilityChange;
       } catch (error) {
-        console.error("Keycloak initialization failed", error);
+        reportClientIssue("error", "Keycloak initialization failed", "Keycloak", error);
         sharedInitPromise = null;
       } finally {
         if (!cancelled) {
@@ -217,7 +220,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem("chariot_user_id");
       clearPostLoginCompleted();
     } catch (error) {
-      console.error("Failed to purge persisted state on logout:", error);
+      reportClientIssue("error", "Failed to purge persisted state on logout", "Storage", error);
     }
 
     try {
@@ -228,7 +231,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         return;
       }
     } catch (error) {
-      console.error("Keycloak logout failed:", error);
+      reportClientIssue("error", "Keycloak logout failed", "Keycloak", error);
     }
 
     // Hard escape if Keycloak logout hangs/fails (e.g. SSO just restarted).

@@ -1,0 +1,351 @@
+logging {
+  level  = "error"
+  format = "logfmt"
+}
+
+prometheus.remote_write "monitoring" {
+  endpoint {
+    url = sys.env("ALLOY_REMOTE_WRITE_URL")
+
+    basic_auth {
+      username = sys.env("ALLOY_REMOTE_WRITE_USER")
+      password = sys.env("ALLOY_REMOTE_WRITE_PASSWORD")
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// APIs Nest (/metrics + basic auth)
+// ---------------------------------------------------------------------------
+
+prometheus.scrape "apis" {
+  job_name        = "chariot-apis"
+  metrics_path    = "/metrics"
+  scrape_interval = "15s"
+  scrape_timeout  = "10s"
+
+  basic_auth {
+    username = sys.env("METRICS_BASIC_AUTH_USER")
+    password = sys.env("METRICS_BASIC_AUTH_PASSWORD")
+  }
+
+  targets = [
+    {
+      __address__ = sys.env("GATEWAY_ADDR"),
+      service     = "gateway",
+    },
+    {
+      __address__ = sys.env("ADVENTURE_ADDR"),
+      service     = "adventure",
+    },
+    {
+      __address__ = sys.env("PAYMENT_ADDR"),
+      service     = "payment",
+    },
+    {
+      __address__ = sys.env("SESSION_ADDR"),
+      service     = "session",
+    },
+    {
+      __address__ = sys.env("MEDIA_ADDR"),
+      service     = "media",
+    },
+  ]
+
+  forward_to = [prometheus.remote_write.monitoring.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Next.js (heartbeat, sans basic auth)
+// ---------------------------------------------------------------------------
+
+prometheus.scrape "web" {
+  job_name        = "chariot-web"
+  metrics_path    = "/api/metrics"
+  scrape_interval = "15s"
+
+  targets = [
+    {
+      __address__ = sys.env("WEB_ADDR"),
+      service     = "web",
+    },
+  ]
+
+  forward_to = [prometheus.remote_write.monitoring.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Keycloak management (/metrics, /health/*) — le préfixe /auth ne s'applique pas
+// ---------------------------------------------------------------------------
+
+prometheus.scrape "keycloak" {
+  job_name        = "keycloak"
+  metrics_path    = "/metrics"
+  scrape_interval = "15s"
+
+  targets = [
+    {
+      __address__ = sys.env("KEYCLOAK_ADDR"),
+      service     = "keycloak",
+    },
+  ]
+
+  forward_to = [prometheus.remote_write.monitoring.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Readiness probes (/ready) — job chariot-ready
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.blackbox "ready" {
+  config_file = "/etc/alloy/blackbox.yml"
+
+  target {
+    name    = "gateway"
+    address = sys.env("READY_GATEWAY_URL")
+    module  = "http_2xx"
+    labels  = { service = "gateway" }
+  }
+
+  target {
+    name    = "adventure"
+    address = sys.env("READY_ADVENTURE_URL")
+    module  = "http_2xx"
+    labels  = { service = "adventure" }
+  }
+
+  target {
+    name    = "payment"
+    address = sys.env("READY_PAYMENT_URL")
+    module  = "http_2xx"
+    labels  = { service = "payment" }
+  }
+
+  target {
+    name    = "session"
+    address = sys.env("READY_SESSION_URL")
+    module  = "http_2xx"
+    labels  = { service = "session" }
+  }
+
+  target {
+    name    = "media"
+    address = sys.env("READY_MEDIA_URL")
+    module  = "http_2xx"
+    labels  = { service = "media" }
+  }
+
+  target {
+    name    = "web"
+    address = sys.env("READY_WEB_URL")
+    module  = "http_2xx"
+    labels  = { service = "web" }
+  }
+
+  target {
+    name    = "keycloak"
+    address = sys.env("READY_KEYCLOAK_URL")
+    module  = "http_2xx"
+    labels  = { service = "keycloak" }
+  }
+}
+
+discovery.relabel "ready" {
+  targets = prometheus.exporter.blackbox.ready.targets
+
+  rule {
+    source_labels = ["__param_target"]
+    target_label  = "instance"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "chariot-ready"
+  }
+}
+
+prometheus.scrape "ready" {
+  job_name        = "chariot-ready"
+  scrape_interval = "15s"
+  targets         = discovery.relabel.ready.output
+  forward_to      = [prometheus.remote_write.monitoring.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// MongoDB (adventure)
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.mongodb "adventure" {
+  mongodb_uri               = sys.env("MONGODB_URI")
+  collect_all               = false
+  compatible_mode           = true
+  enable_diagnostic_data    = true
+  enable_replicaset_status  = true
+}
+
+discovery.relabel "mongodb" {
+  targets = prometheus.exporter.mongodb.adventure.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "mongodb"
+  }
+
+  rule {
+    target_label = "store"
+    replacement  = "mongo"
+  }
+
+  rule {
+    target_label = "service"
+    replacement  = "adventure"
+  }
+}
+
+prometheus.scrape "mongodb" {
+  job_name        = "mongodb"
+  scrape_interval = "15s"
+  targets         = discovery.relabel.mongodb.output
+  forward_to      = [prometheus.remote_write.monitoring.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Redis (session)
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.redis "session" {
+  redis_addr = sys.env("REDIS_ADDR")
+}
+
+discovery.relabel "redis" {
+  targets = prometheus.exporter.redis.session.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "redis"
+  }
+
+  rule {
+    target_label = "store"
+    replacement  = "redis"
+  }
+
+  rule {
+    target_label = "service"
+    replacement  = "session"
+  }
+}
+
+prometheus.scrape "redis" {
+  job_name        = "redis"
+  scrape_interval = "15s"
+  targets         = discovery.relabel.redis.output
+  forward_to      = [prometheus.remote_write.monitoring.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Postgres session
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.postgres "session" {
+  data_source_names  = [sys.env("POSTGRES_SESSION_DSN")]
+  enabled_collectors = ["database", "stat_database", "stat_statements", "locks"]
+}
+
+discovery.relabel "postgres_session" {
+  targets = prometheus.exporter.postgres.session.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "postgres"
+  }
+
+  rule {
+    target_label = "store"
+    replacement  = "session"
+  }
+
+  rule {
+    target_label = "service"
+    replacement  = "session"
+  }
+}
+
+prometheus.scrape "postgres_session" {
+  job_name        = "postgres"
+  scrape_interval = "15s"
+  targets         = discovery.relabel.postgres_session.output
+  forward_to      = [prometheus.remote_write.monitoring.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Postgres payment
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.postgres "payment" {
+  data_source_names  = [sys.env("POSTGRES_PAYMENT_DSN")]
+  enabled_collectors = ["database", "stat_database", "stat_statements", "locks"]
+}
+
+discovery.relabel "postgres_payment" {
+  targets = prometheus.exporter.postgres.payment.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "postgres"
+  }
+
+  rule {
+    target_label = "store"
+    replacement  = "payment"
+  }
+
+  rule {
+    target_label = "service"
+    replacement  = "payment"
+  }
+}
+
+prometheus.scrape "postgres_payment" {
+  job_name        = "postgres"
+  scrape_interval = "15s"
+  targets         = discovery.relabel.postgres_payment.output
+  forward_to      = [prometheus.remote_write.monitoring.receiver]
+}
+
+// ---------------------------------------------------------------------------
+// Host (node_exporter embarqué)
+// UNIX_COLLECTORS : cpu,meminfo,loadavg,uname (+ filesystem en Linux)
+// ---------------------------------------------------------------------------
+
+prometheus.exporter.unix "host" {
+  procfs_path    = coalesce(sys.env("HOST_PROCFS"), "/proc")
+  sysfs_path     = coalesce(sys.env("HOST_SYSFS"), "/sys")
+  rootfs_path    = coalesce(sys.env("HOST_ROOTFS"), "/")
+  set_collectors = string.split(sys.env("UNIX_COLLECTORS"), ",")
+
+  filesystem {
+    mount_points_exclude = "^/(sys|proc|dev|host|etc)($|/)"
+  }
+}
+
+discovery.relabel "node" {
+  targets = prometheus.exporter.unix.host.targets
+
+  rule {
+    target_label = "job"
+    replacement  = "chariot-node"
+  }
+
+  rule {
+    target_label = "host"
+    replacement  = "chariot"
+  }
+}
+
+prometheus.scrape "node" {
+  job_name        = "chariot-node"
+  scrape_interval = "15s"
+  targets         = discovery.relabel.node.output
+  forward_to      = [prometheus.remote_write.monitoring.receiver]
+}

@@ -67,7 +67,7 @@ export class UserService {
       };
 
       const message: string = `User #${id} found in ${end - start}ms`;
-      this.logger.verbose(message, this.SERVICE_NAME);
+      this.logger.debug(message, this.SERVICE_NAME);
 
       return {
         message,

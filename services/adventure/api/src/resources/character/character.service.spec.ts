@@ -51,7 +51,7 @@ describe('CharacterService - findAllByUser', () => {
     characterModel.countDocuments.mockResolvedValue(1);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'verbose')
+      .spyOn(service['logger'], 'debug')
       .mockImplementation(() => {});
 
     const result = await service.findAllByUser(userId, {
@@ -194,7 +194,7 @@ describe('CharacterService - findOne', () => {
     characterModel.exec.mockResolvedValue(mockCharacter);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'verbose')
+      .spyOn(service['logger'], 'debug')
       .mockImplementation(() => {});
 
     const result = await service.findOne(characterId);
@@ -280,7 +280,7 @@ describe('CharacterService - remove', () => {
     mockCharacter.save.mockResolvedValue(mockCharacter);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'verbose')
+      .spyOn(service['logger'], 'log')
       .mockImplementation(() => {});
 
     const result = await service.remove(characterId);
@@ -318,7 +318,7 @@ describe('CharacterService - remove', () => {
     characterModel.exec.mockResolvedValue(null);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'error')
+      .spyOn(service['logger'], 'debug')
       .mockImplementation(() => {});
 
     await expect(service.remove(characterId)).rejects.toThrow(
@@ -327,7 +327,6 @@ describe('CharacterService - remove', () => {
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/Character #.* not found/),
-      null,
       'CharacterService',
     );
 
@@ -342,14 +341,13 @@ describe('CharacterService - remove', () => {
     characterModel.exec.mockResolvedValue(deletedCharacter);
 
     const loggerSpy = jest
-      .spyOn(service['logger'], 'error')
+      .spyOn(service['logger'], 'debug')
       .mockImplementation(() => {});
 
     await expect(service.remove(characterId)).rejects.toThrow(GoneException);
 
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringMatching(/Character #.* already deleted/),
-      null,
       'CharacterService',
     );
 

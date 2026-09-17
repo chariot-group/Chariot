@@ -20,6 +20,9 @@ export class SessionEntity {
     @ApiProperty({ example: '2026-04-11T18:00:00.000Z', nullable: true, required: false })
     expiresAt: Date | null;
 
+    @ApiProperty({ example: '2026-04-11T10:00:00.000Z', nullable: true, required: false })
+    launchedAt: Date | null;
+
     @ApiProperty({ example: null, nullable: true, required: false })
     deletedAt: Date | null;
 

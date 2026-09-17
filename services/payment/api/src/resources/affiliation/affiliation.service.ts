@@ -53,7 +53,7 @@ export class AffiliationService {
             });
 
             const message = `Affiliation '${dto.code}' created in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: affiliation };
         } catch (error) {
@@ -106,7 +106,7 @@ export class AffiliationService {
             );
 
             const message = `${affiliations.length} affiliations found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return {
                 message,
@@ -131,7 +131,7 @@ export class AffiliationService {
 
             if (!affiliation) {
                 const message = `Affiliation #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -145,7 +145,7 @@ export class AffiliationService {
             });
 
             const message = `Affiliation #${id} found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return {
                 message,
@@ -173,12 +173,12 @@ export class AffiliationService {
 
             if (!affiliation) {
                 const message = `Affiliation '${code}' not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
             const message = `Affiliation '${code}' found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return { message, data: affiliation };
         } catch (error) {
@@ -203,7 +203,7 @@ export class AffiliationService {
 
             if (!existing) {
                 const message = `Affiliation #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -220,7 +220,7 @@ export class AffiliationService {
             ]);
 
             const message = `${usages.length} usages for affiliation #${id} found in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.debug(message, this.SERVICE_NAME);
 
             return {
                 message,
@@ -248,7 +248,7 @@ export class AffiliationService {
 
             if (!existing) {
                 const message = `Affiliation #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -287,7 +287,7 @@ export class AffiliationService {
             });
 
             const message = `Affiliation #${id} updated in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: updated };
         } catch (error) {
@@ -308,7 +308,7 @@ export class AffiliationService {
 
             if (!existing) {
                 const message = `Affiliation #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -324,7 +324,7 @@ export class AffiliationService {
             });
 
             const message = `Affiliation #${id} deactivated in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: updated };
         } catch (error) {
@@ -345,7 +345,7 @@ export class AffiliationService {
 
             if (!existing) {
                 const message = `Affiliation #${id} not found`;
-                this.logger.warn(message, this.SERVICE_NAME);
+                this.logger.debug(message, this.SERVICE_NAME);
                 throw new NotFoundException(message);
             }
 
@@ -355,7 +355,7 @@ export class AffiliationService {
             });
 
             const message = `Affiliation #${id} deleted in ${Date.now() - start}ms`;
-            this.logger.verbose(message, this.SERVICE_NAME);
+            this.logger.log(message, this.SERVICE_NAME);
 
             return { message, data: deleted };
         } catch (error) {

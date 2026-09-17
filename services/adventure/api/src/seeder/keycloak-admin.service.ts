@@ -38,7 +38,7 @@ export class KeycloakAdminService {
           grantType: 'password',
           clientId: 'admin-cli',
         });
-        this.logger.log('Authenticated with Keycloak admin');
+        this.logger.debug('Authenticated with Keycloak admin');
         return;
       } catch (error) {
         if (attempt < retries) {
