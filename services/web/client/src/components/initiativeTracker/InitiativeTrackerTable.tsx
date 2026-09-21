@@ -22,6 +22,7 @@ import {
   TRACKER_HEADER_ALIGN,
 } from "@/components/initiativeTracker/constants";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
+import type { ConditionSelectCustomEffectsProps } from "@/components/initiativeTracker/ConditionSelect";
 import { characterName, initiativeTotalFromRoll, resolveInitiativeModifier, type InitiativeTrackerRowStatus } from "@/components/initiativeTracker/utils";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
@@ -48,6 +49,7 @@ export type InitiativeTrackerTableProps = {
   ) => void;
   onRemoveCondition?: (row: InitiativeTrackerRow, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions?: (row: InitiativeTrackerRow) => void;
+  customEffects?: ConditionSelectCustomEffectsProps;
   onHitPointsClick?: (row: InitiativeTrackerRow) => void;
   battleStarted?: boolean;
   currentRound?: number;
@@ -196,6 +198,7 @@ export function InitiativeTrackerTable({
   onAddCondition,
   onRemoveCondition,
   onClearConditions,
+  customEffects,
   onHitPointsClick,
   battleStarted = false,
   currentRound = 1,
@@ -683,6 +686,7 @@ export function InitiativeTrackerTable({
             onAddCondition={isPlayerView ? undefined : onAddCondition}
             onRemoveCondition={isPlayerView ? undefined : onRemoveCondition}
             onClearConditions={isPlayerView ? undefined : onClearConditions}
+            customEffects={isPlayerView ? undefined : customEffects}
             onHitPointsClick={isPlayerView ? undefined : onHitPointsClick}
             battleStarted={battleStarted}
             currentRound={currentRound}

@@ -94,5 +94,10 @@ export function makeZodMessages(t: TranslationFunction) {
          * Les types de dégâts d'une action doivent rester uniques.
          */
         uniqueActionDamageType: () => t('uniqueActionDamageType'),
+
+        /**
+         * Les types de dégâts d'un sort doivent rester uniques.
+         */
+        uniqueSpellDamageType: () => t('uniqueSpellDamageType'),
     };
 }

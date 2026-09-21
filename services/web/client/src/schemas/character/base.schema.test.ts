@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { makeZodMessages } from "@/lib/zodErrorMap";
-import { AbilitySchema, SpellcastingSchema, SpellSlotSchema } from "@/schemas/character/base.schema";
+import { AbilitySchema, SpellcastingSchema, SpellSchema, SpellSlotSchema } from "@/schemas/character/base.schema";
 
 const messages: Record<string, string> = {
   invalidOption: "Option traduite invalide",
   required: "Champ requis",
   abilityCounterOrder: "L'utilisation courante ne peut pas dépasser le plafond",
+  uniqueSpellDamageType: "Chaque type de dégâts doit être unique dans un même sort.",
 };
 
 const zm = makeZodMessages((key) => messages[key] ?? key);
@@ -99,5 +100,52 @@ describe("SpellcastingSchema", () => {
 
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.message).toBe("Option traduite invalide");
+  });
+});
+
+describe("FR-character-spell-multi-damage — SpellSchema", () => {
+  const schema = SpellSchema(zm);
+
+  it("nominal: accepts several typed damage entries", () => {
+    const result = schema.safeParse({
+      name: "Ice Knife",
+      damageDetails: [
+        { diceCount: 1, diceType: "d10", bonus: 0, damageType: "piercing" },
+        { diceCount: 2, diceType: "d6", bonus: 0, damageType: "cold" },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.damageDetails).toHaveLength(2);
+    }
+  });
+
+  it("edge: wraps a legacy single damageDetails object into a list", () => {
+    const result = schema.safeParse({
+      name: "Fireball",
+      damageDetails: { diceCount: 8, diceType: "d6", bonus: 0, damageType: "fire" },
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.damageDetails).toEqual([
+        { diceCount: 8, diceType: "d6", bonus: 0, damageType: "fire" },
+      ]);
+    }
+  });
+
+  it("failure: rejects duplicate damage types on the same spell", () => {
+    const result = schema.safeParse({
+      name: "Fireball",
+      damageDetails: [
+        { diceCount: 8, diceType: "d6", bonus: 0, damageType: "Fire" },
+        { diceCount: 1, diceType: "d8", bonus: 0, damageType: "fire" },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual(["damageDetails", 1, "damageType"]);
+    expect(result.error?.issues[0]?.message).toBe(messages.uniqueSpellDamageType);
   });
 });

@@ -390,6 +390,15 @@
         "hours": "{amount} h",
         "rounds": "{amount, plural, one {# round} other {# rounds}}"
       },
+      "customEffectCreate": "Create a custom effect",
+      "customEffectCreateFromSearch": "Create “{name}”",
+      "customEffectName": "Effect name",
+      "customEffectNamePlaceholder": "E.g. Blessed, Hex, Burning",
+      "customEffectDescription": "Description (optional)",
+      "customEffectDescriptionPlaceholder": "Reminder for the table",
+      "customEffectAddConfirm": "Add effect",
+      "customEffectNameRequired": "Name is required.",
+      "customEffectSection": "Custom effects",
       "statusLabels": {
         "alive": "{name} is alive",
         "unconscious": "{name} is unconscious",
@@ -784,7 +793,8 @@
     "abilityCounterOrder": "Current uses cannot exceed the maximum.",
     "classLevelTotalsVsGlobalHitDice": "Total class levels ({total}) exceed the character’s global level ({global}). Fix class levels or the global level — the error appears on remaining hit dice.",
     "singleDamageType": "Only one damage type is allowed per damage entry.",
-    "uniqueActionDamageType": "Each damage type must be unique within an action."
+    "uniqueActionDamageType": "Each damage type must be unique within an action.",
+    "uniqueSpellDamageType": "Each damage type must be unique within a spell."
   },
   "characterDetail": {
     "editCharacter": "Edit character",
@@ -950,6 +960,9 @@
       "damageDiceTypePlaceholder": "d6",
       "healingDiceCountPlaceholder": "4",
       "healingDiceTypePlaceholder": "d8",
+      "spellDamageEntry": "Damage {index}",
+      "addDamageToSpell": "Add a damage row to this spell",
+      "removeSpellDamage": "Remove damage row {index}",
       "slotsUsed": "Used",
       "slotsTotal": "Total",
       "copperPieces": "Copper Pieces",

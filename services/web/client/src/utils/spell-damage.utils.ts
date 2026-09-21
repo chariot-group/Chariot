@@ -1,14 +1,19 @@
+import type { DamageDetails } from "@/types/character";
+
+/** @see FR-character-spell-multi-damage */
+export const EMPTY_SPELL_DAMAGE_DETAILS: DamageDetails = {
+    diceCount: null,
+    diceType: null,
+    bonus: null,
+    damageType: null,
+};
+
 /**
  * Parse a damage/healing string like "3d8+2 lightning" or "1d6" into structured components
  * @param formula - The damage formula string (e.g., "3d8+2 lightning", "1d6-1", "2d10")
  * @returns An object with diceCount, diceType, bonus, and damageType (if present)
  */
-export function parseDamageFormula(formula: string | null | undefined): {
-    diceCount: number | null;
-    diceType: string | null;
-    bonus: number | null;
-    damageType: string | null;
-} {
+export function parseDamageFormula(formula: string | null | undefined): DamageDetails {
     if (!formula || typeof formula !== 'string' || formula.trim() === '') {
         return { diceCount: null, diceType: null, bonus: null, damageType: null };
     }
@@ -79,4 +84,73 @@ export function formatDamageFormula(
     }
 
     return formula;
+}
+
+/** @see FR-character-spell-multi-damage */
+export function isDamageDetailsFilled(details?: DamageDetails | null): boolean {
+    if (!details) {
+        return false;
+    }
+
+    return Boolean(
+        details.diceCount ||
+            details.diceType ||
+            (details.bonus !== null && details.bonus !== undefined) ||
+            (details.damageType && details.damageType.trim() !== ""),
+    );
+}
+
+/** @see FR-character-spell-multi-damage */
+export function coerceSpellDamageDetailsList(
+    damageDetails: DamageDetails | DamageDetails[] | null | undefined,
+): DamageDetails[] {
+    if (Array.isArray(damageDetails)) {
+        return damageDetails;
+    }
+
+    if (damageDetails && typeof damageDetails === "object") {
+        return [damageDetails];
+    }
+
+    return [];
+}
+
+/** @see FR-character-spell-multi-damage */
+export function hydrateSpellDamageDetails(
+    damageDetails: DamageDetails | DamageDetails[] | null | undefined,
+    damageFormula?: string | null,
+): DamageDetails[] {
+    const list = coerceSpellDamageDetailsList(damageDetails);
+    if (list.some(isDamageDetailsFilled)) {
+        return list;
+    }
+
+    if (damageFormula && damageFormula.trim() !== "") {
+        const parsed = parseDamageFormula(damageFormula);
+        if (parsed.diceCount || parsed.diceType) {
+            return [parsed];
+        }
+    }
+
+    return list;
+}
+
+/** @see FR-character-spell-multi-damage */
+export function formatSpellDamageList(
+    damageDetails: DamageDetails | DamageDetails[] | null | undefined,
+    damageFormula?: string | null,
+): string | null {
+    const hydrated = hydrateSpellDamageDetails(damageDetails, damageFormula);
+    const formatted = hydrated
+        .map((entry) =>
+            formatDamageFormula(entry.diceCount, entry.diceType, entry.bonus, entry.damageType),
+        )
+        .filter((value): value is string => Boolean(value));
+
+    if (formatted.length > 0) {
+        return formatted.join(" + ");
+    }
+
+    const fallback = damageFormula?.trim();
+    return fallback || null;
 }

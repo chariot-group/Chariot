@@ -422,4 +422,28 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     expect(data.qrCodeDataUrl).toBe("data:image/png;base64,qr");
     expect(data.characterPageUrl).toBe("https://chariot.tools/fr/characters/p1");
   });
+
+  it("nominal: joins several spell damage entries for PDF export", () => {
+    const player = {
+      ...basePlayer,
+      spellcasting: [
+        {
+          ...basePlayer.spellcasting[0],
+          spells: [
+            {
+              ...basePlayer.spellcasting[0].spells[0],
+              damage: undefined,
+              damageDetails: [
+                { diceCount: 8, diceType: "d6", bonus: 0, damageType: "fire" },
+                { diceCount: 1, diceType: "d8", bonus: 0, damageType: "radiant" },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const data = mapCharacterToPdfData(player, mapOptions);
+    expect(data.spellcastingBlocks[0]?.spellsByLevel[1]?.[0]?.damage).toBe("8d6 fire + 1d8 radiant");
+  });
 });

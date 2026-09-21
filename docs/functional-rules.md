@@ -1293,11 +1293,14 @@ When adding a rule:
 
 **Conditions Management**:
 
-- Supported conditions follow the D&D list used by tracker constants
+- Supported **standard** conditions follow the D&D list used by tracker constants
+- Custom named effects MAY also be applied on tracker rows (FR-tracker-custom-effects); they share duration and visibility with standard conditions
 - Per character:
-  - add/remove one condition
-  - clear all conditions
-  - one active entry per condition key (re-adding replaces previous entry)
+  - add/remove one standard condition
+  - add/remove one custom effect instance
+  - clear all conditions and custom effect instances on the row
+  - one active entry per standard condition key (re-adding replaces previous entry)
+  - one active instance per custom-effect catalog id (re-adding replaces previous instance)
 - Optional duration on add:
   - `seconds`, `minutes`, `hours`, `rounds`, `untilCombatEnd`
 - Duration runtime behavior:
@@ -1305,7 +1308,7 @@ When adding a rule:
   - decremented by one full round on round advance
   - restored by one full round when valid rollback crosses a round boundary
   - removed automatically when `remainingSeconds <= 0`
-  - all `untilCombatEnd` conditions are removed on combat end
+  - all `untilCombatEnd` conditions and custom effect instances are removed on combat end
 
 **HP Session Interaction**:
 
@@ -4413,3 +4416,112 @@ Each initiative tracker row carries:
 - `services/admin/client/src/components/kpi/PeriodControls.tsx`
 - `services/admin/client/src/app/page.tsx`
 - `docs/functional-rules.md` — FR-admin-business-kpis, FR-frontend-design
+
+---
+
+## FR-character-spell-multi-damage: Spell Multiple Damage Entries
+
+**Rule**: A spell MUST support zero or more typed damage entries (same capability as character actions), so a single spell can express mixed damage such as `8d6 fire + 1d8 radiant`.
+
+**Requirements**:
+
+- Each damage entry MUST keep the current structured spell fields: `diceCount`, `diceType`, `bonus`, `damageType`.
+- Persistence, API DTO/schema, client types, and form schema MUST store spell damage as a list (`damageDetails: DamageDetails[]`), not a single object.
+- Edit mode (player and NPC magic tab) MUST allow adding and removing damage entries independently, with the same interaction pattern as combat actions (add row, delete row, remaining rows stay).
+- View mode, Codex spell preview, and character-sheet PDF MUST display every non-empty entry, joined with ` + ` (same visual convention as action damage).
+- An empty list MUST be valid (utility spells, or attack spells with no dice filled). Incomplete entries (missing dice count/type) MUST NOT appear in view/PDF.
+- Backward compatibility: a legacy single `damageDetails` object, or a legacy `damage` formula string with empty details, MUST be read as a one-entry list and remain editable/displayable.
+- Duplicate `damageType` values (case-insensitive, trimmed) on the same spell MUST be rejected, matching action damage uniqueness.
+- Healing remains a single `healingDetails` object (out of scope unless explicitly extended).
+- Accessibility: each add/delete control MUST have an accessible name including the entry index; damage-type fields keep existing error linking (`aria-invalid` / `aria-describedby`). Keyboard users MUST be able to add, fill, and remove entries without mouse.
+
+**Prohibitions**:
+
+- Limiting a spell to a single damage type or a single dice formula in edit, view, or PDF.
+- Dropping extra entries on save, Codex import, or sheet load.
+- Requiring `applyAbilityBonus` on spell damage (actions have that toggle; spells keep an explicit numeric `bonus` per entry).
+
+**Tests**:
+
+- Nominal: add two entries (`8d6 fire`, `1d8 radiant`) → persist, view, and PDF show `8d6 fire + 1d8 radiant`.
+- Edge: load a character with a single legacy `damageDetails` object or `damage` string `3d8+2 lightning` → one editable/displayable entry; adding a second type works.
+- Edge: remove one of two entries → the remaining entry is kept; empty list hides damage in view.
+- Failure: setting two entries to the same damage type is rejected and does not persist.
+
+**References**:
+
+- `services/adventure/api/src/resources/character/core/schemas/spellcasting/sub/spell.schema.ts`
+- `services/adventure/api/src/resources/character/core/dto/spellcasting/sub/spell.dto.ts`
+- `services/web/client/src/types/character.ts`
+- `services/web/client/src/schemas/character/base.schema.ts`
+- `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/magic/SpellDisplay.tsx`
+- `services/web/client/src/lib/characterSheetPdf/mapCharacterToPdfData.ts`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-frontend-design
+- Combat actions (behavior baseline): `ActionUpdateSection.tsx`, `ActionSection.tsx`
+
+---
+
+## FR-tracker-custom-effects: Initiative Tracker - Session-Reusable Custom Effects
+
+**Rule**: The Game Master MUST be able to create named custom effects on the initiative tracker and reuse them on any combatant for the rest of the session, without recreating the definition each time.
+
+**Scope**:
+
+- Applies to the GM Initiative Tracker (FR-combat-initiative-tracker) while a session is active.
+- Complements FR-combat-initiative-tracker, FR-session-combat-navigation, FR-session-combat-sync, and FR-frontend-design without replacing the D&D standard condition catalog.
+- Tracker-only: custom effects MUST NOT be persisted on the character sheet.
+
+**Session Catalog**:
+
+- The session MUST keep a catalog of custom effect definitions: `{ id, name, description? }`.
+- Creating an effect (name required, description optional) MUST add it to the catalog if no existing entry matches the normalized name.
+- Normalized name: trimmed, uniqueness case-insensitive. A create with a matching name MUST reuse the existing catalog entry (MUST NOT duplicate).
+- Empty name MUST be rejected and MUST NOT create a catalog entry or row instance.
+- Name max length: 40 characters. Description max length: 280 characters.
+- The catalog MUST persist for the current session (Redux persist) across combat end, tracker reset, and round changes.
+- The catalog MUST be cleared when the session ends (`clearCurrentSession`) or when the session code changes.
+
+**Row Instances**:
+
+- Each tracker row MAY carry zero or more custom effect instances: `{ effectId, name, description?, duration?, remainingSeconds? }`.
+- Name and description are copied onto the instance at apply time so player snapshots can display them without the catalog.
+- Multiple custom effects per row are allowed; one instance per `effectId` (re-applying replaces duration).
+- Optional duration uses the same units and runtime as standard conditions (tick on round wrap, rollback restore, auto-remove at `remainingSeconds <= 0`, `untilCombatEnd` cleared on combat end).
+- Clearing all states on a row MUST remove custom instances without deleting catalog definitions.
+- Combat end / tracker reset MUST remove row instances and MUST keep the catalog.
+
+**Permissions and Visibility**:
+
+- Only the GM MAY create catalog entries and add, replace, or remove instances.
+- Players remain read-only (FR-session-combat-navigation).
+- Custom effects share the existing `playerFieldVisibility.conditions` flag; when hidden, instances MUST be stripped from player snapshots (FR-session-combat-sync).
+- Custom effects MUST NOT require a new visibility field.
+
+**UI**:
+
+- Custom effects are managed in the same États / Conditions menu as D&D conditions.
+- The GM MUST be able to search the catalog, reuse an existing definition, or create a new one (including from the current search text).
+- Applied custom effects MUST appear as badges in the tracker États column and on the combat banner when conditions are visible.
+- Accessibility: create/reuse controls MUST have accessible names; name field MUST expose validation (`aria-invalid` / `aria-describedby`); keyboard users MUST be able to create, reuse, and remove without a mouse. Long names truncate in the row badge (`title` keeps the full label).
+
+**Prohibitions**:
+
+- Persisting custom effects on the character sheet.
+- Requiring the GM to recreate a previously defined session effect to apply it to another row.
+- Letting players create or edit custom effects.
+- Exposing custom effect instances to players when the conditions field is hidden.
+
+**Tests**:
+
+- Nominal: GM creates “Béni”, applies it to row A, then reuses it on row B from the catalog without retyping the definition.
+- Edge: combat end clears row instances and keeps the catalog; a new combat in the same session can reuse “Béni”.
+- Edge: creating “béni” when “Béni” exists reuses the catalog id (no duplicate).
+- Failure: empty name is rejected; player snapshot with `conditions: false` has empty custom effect instances.
+
+**References**:
+
+- `services/web/client/src/components/initiativeTracker/ConditionSelect.tsx`
+- `services/web/client/src/components/initiativeTracker/customEffects.ts`
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `docs/functional-rules.md` — FR-combat-initiative-tracker, FR-session-combat-navigation, FR-session-combat-sync, FR-frontend-design
