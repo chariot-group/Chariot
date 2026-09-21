@@ -12,7 +12,12 @@ describe('wrapSpellDamageDetails', () => {
   });
 
   it('edge: wraps a legacy single damage object into a one-entry list', () => {
-    const legacy = { diceCount: 8, diceType: 'd6', bonus: 0, damageType: 'fire' };
+    const legacy = {
+      diceCount: 8,
+      diceType: 'd6',
+      bonus: 0,
+      damageType: 'fire',
+    };
 
     expect(wrapSpellDamageDetails(legacy)).toEqual([legacy]);
   });

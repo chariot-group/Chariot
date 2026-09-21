@@ -19,7 +19,12 @@ describe('FR-character-spell-multi-damage — SpellDto', () => {
   it('edge: wraps a legacy single damageDetails object into a list', () => {
     const dto = plainToInstance(SpellDto, {
       name: 'Fireball',
-      damageDetails: { diceCount: 8, diceType: 'd6', bonus: 0, damageType: 'fire' },
+      damageDetails: {
+        diceCount: 8,
+        diceType: 'd6',
+        bonus: 0,
+        damageType: 'fire',
+      },
     });
 
     expect(validateSync(dto)).toHaveLength(0);
