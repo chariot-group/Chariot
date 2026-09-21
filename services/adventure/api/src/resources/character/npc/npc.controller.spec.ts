@@ -177,3 +177,62 @@ describe('NpcController - validateResource', () => {
     ).resolves.toBeUndefined();
   });
 });
+
+describe('NpcController - FR-npc-player-link queries', () => {
+  let controller: NpcController;
+  let npcService: any;
+  const userId = 'a1b2c3d4-e5f6-4a78-8abc-1234567890ab';
+  const requestMock = { user: { keycloakId: userId } };
+
+  beforeEach(async () => {
+    npcService = {
+      findUnlinkedNpcsWithoutGroup: jest.fn(),
+      findUnlinkedNpcs: jest.fn(),
+      findNpcsByLinkedPlayerIds: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [NpcController],
+      providers: [
+        { provide: NpcService, useValue: npcService },
+        { provide: CharacterService, useValue: {} },
+        { provide: getModelToken(Character.name), useValue: {} },
+      ],
+    }).compile();
+
+    controller = module.get<NpcController>(NpcController);
+  });
+
+  it('nominal: lists unlinked NPCs without group', async () => {
+    npcService.findUnlinkedNpcsWithoutGroup.mockResolvedValue({ data: [] });
+
+    await controller.getUnlinkedNpcsWithoutGroup(requestMock, 1, 10);
+
+    expect(npcService.findUnlinkedNpcsWithoutGroup).toHaveBeenCalledWith(
+      userId,
+      { page: 1, offset: 10, sort: undefined },
+    );
+  });
+
+  it('edge: lists NPCs by linked player ids', async () => {
+    npcService.findNpcsByLinkedPlayerIds.mockResolvedValue({ data: [] });
+
+    await controller.getNpcsByLinkedPlayers(
+      requestMock,
+      '507f1f77bcf86cd799439011, 507f1f77bcf86cd799439012',
+    );
+
+    expect(npcService.findNpcsByLinkedPlayerIds).toHaveBeenCalledWith(userId, [
+      '507f1f77bcf86cd799439011',
+      '507f1f77bcf86cd799439012',
+    ]);
+  });
+
+  it('failure: empty playerIds queries an empty list', async () => {
+    npcService.findNpcsByLinkedPlayerIds.mockResolvedValue({ data: [] });
+
+    await controller.getNpcsByLinkedPlayers(requestMock, undefined);
+
+    expect(npcService.findNpcsByLinkedPlayerIds).toHaveBeenCalledWith(userId, []);
+  });
+});

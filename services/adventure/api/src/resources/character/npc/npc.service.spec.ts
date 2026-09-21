@@ -5,6 +5,7 @@ import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
 import {
   BadRequestException,
+  ForbiddenException,
   GoneException,
   InternalServerErrorException,
   NotFoundException,
@@ -640,5 +641,155 @@ describe('NpcService - update', () => {
     );
 
     loggerSpy.mockRestore();
+  });
+});
+
+describe('NpcService - FR-npc-player-link', () => {
+  let service: NpcService;
+  let characterModel: any;
+  let groupModel: any;
+
+  const userId = 'a1b2c3d4-e5f6-4a78-8abc-1234567890ab';
+  const playerId = new Types.ObjectId();
+  const npcId = new Types.ObjectId();
+
+  const mockCreatedNpc = {
+    _id: npcId,
+    firstname: 'Familiar',
+    createdBy: userId,
+    linkedPlayerId: playerId,
+  };
+
+  beforeEach(async () => {
+    characterModel = {
+      findById: jest.fn().mockReturnThis(),
+      find: jest.fn().mockReturnThis(),
+      countDocuments: jest.fn(),
+      limit: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockReturnThis(),
+      exec: jest.fn(),
+      discriminators: {
+        npc: jest.fn().mockImplementation((data) => ({
+          ...data,
+          save: jest.fn().mockResolvedValue({ ...mockCreatedNpc, ...data }),
+        })),
+      },
+    };
+    characterModel.discriminators.npc.updateOne = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+    });
+    groupModel = {
+      findById: jest.fn().mockReturnThis(),
+      exec: jest.fn(),
+      updateMany: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        NpcService,
+        { provide: getModelToken(Character.name), useValue: characterModel },
+        { provide: getModelToken(Group.name), useValue: groupModel },
+      ],
+    }).compile();
+
+    service = module.get<NpcService>(NpcService);
+  });
+
+  it('nominal: create NPC linked to an owned Player', async () => {
+    characterModel.exec.mockResolvedValue({
+      _id: playerId,
+      kind: 'player',
+      createdBy: userId,
+      deletedAt: null,
+    });
+
+    const result = await service.create(
+      {
+        firstname: 'Familiar',
+        linkedPlayerId: playerId.toHexString(),
+      } as any,
+      userId,
+    );
+
+    expect(characterModel.findById).toHaveBeenCalledWith(playerId.toHexString());
+    expect(result.data.linkedPlayerId.toString()).toBe(playerId.toHexString());
+  });
+
+  it('edge: findUnlinkedNpcsWithoutGroup excludes linked NPCs', async () => {
+    const unlinked = [{ _id: 'npc-unlinked', kind: 'npc', groups: [] }];
+    characterModel.find = jest.fn().mockReturnValue({
+      limit: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue(unlinked),
+    });
+    characterModel.countDocuments = jest.fn().mockResolvedValue(1);
+
+    const result = await service.findUnlinkedNpcsWithoutGroup(userId, {
+      page: 1,
+      offset: 10,
+    });
+
+    expect(characterModel.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'npc',
+        createdBy: userId,
+        deletedAt: null,
+      }),
+    );
+    expect(result.data).toEqual(unlinked);
+    expect(result.pagination).toEqual({ page: 1, offset: 10, totalItems: 1 });
+  });
+
+  it('edge: findNpcsByLinkedPlayerIds returns companions for given Players', async () => {
+    const linked = [{ _id: 'npc-1', linkedPlayerId: playerId }];
+    characterModel.find = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue(linked),
+    });
+
+    const result = await service.findNpcsByLinkedPlayerIds(userId, [
+      playerId.toHexString(),
+    ]);
+
+    expect(characterModel.find).toHaveBeenCalledWith({
+      kind: 'npc',
+      createdBy: userId,
+      deletedAt: null,
+      linkedPlayerId: { $in: [playerId] },
+    });
+    expect(result.data).toEqual(linked);
+  });
+
+  it('failure: reject linking to an NPC', async () => {
+    characterModel.exec.mockResolvedValue({
+      _id: playerId,
+      kind: 'npc',
+      createdBy: userId,
+      deletedAt: null,
+    });
+
+    await expect(
+      service.validateLinkedPlayerId(playerId.toHexString(), userId),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('failure: reject linking to another user Player', async () => {
+    characterModel.exec.mockResolvedValue({
+      _id: playerId,
+      kind: 'player',
+      createdBy: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      deletedAt: null,
+    });
+
+    await expect(
+      service.validateLinkedPlayerId(playerId.toHexString(), userId),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('failure: reject invalid player id in batch query', async () => {
+    await expect(
+      service.findNpcsByLinkedPlayerIds(userId, ['not-an-id']),
+    ).rejects.toThrow(BadRequestException);
   });
 });

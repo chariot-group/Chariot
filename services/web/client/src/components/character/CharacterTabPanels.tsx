@@ -6,9 +6,13 @@ import CharacterHistoryTabContent from "@/components/character/tabContents/histo
 import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
 import CharacterMagicTabContent from "@/components/character/tabContents/magic/CharacterMagicTabContent";
-import { CHARACTER_TABS, TAB_COLORS } from "@/components/character/CharacterTabs";
+import CharacterCompanionsTabContent from "@/components/character/tabContents/companions/CharacterCompanionsTabContent";
+import { tabsForCharacterSheet, TAB_COLORS, type CharacterTab } from "@/components/character/CharacterTabs";
 import { UseCharacterFormReturn } from "@/hooks/useCharacterForm";
 import { NPC, Player } from "@/types/character";
+import { isPlayer } from "@/utils/global.utils";
+import { useAppSelector } from "@/store/hooks";
+import { selectContextMode } from "@/store/slices/environmentSlice";
 
 interface CharacterTabPanelsProps {
     character: Player | NPC;
@@ -18,9 +22,15 @@ interface CharacterTabPanelsProps {
 }
 
 export default function CharacterTabPanels({ character, form, isEditing, onCharacterUpdate }: CharacterTabPanelsProps) {
+    const contextMode = useAppSelector(selectContextMode);
+    const tabs: readonly CharacterTab[] = tabsForCharacterSheet(
+        isPlayer(character),
+        contextMode === "player",
+    );
+
     return (
         <>
-            {CHARACTER_TABS.map((tab) => (
+            {tabs.map((tab) => (
                 <TabsContent
                     key={tab}
                     value={tab}
@@ -82,6 +92,13 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                                         isEditing={isEditing}
                                     />
                                 );
+                            case "companions":
+                                return isPlayer(character) && contextMode === "player" ? (
+                                    <CharacterCompanionsTabContent
+                                        player={character}
+                                        isEditing={isEditing}
+                                    />
+                                ) : null;
                             default:
                                 return null;
                         }

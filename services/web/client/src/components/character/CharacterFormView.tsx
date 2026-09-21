@@ -14,8 +14,10 @@ import { useMemo, useRef } from "react";
 import { useFormState } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
-import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
+import { upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
+import { isPlayer } from "@/utils/global.utils";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
+import { selectContextMode } from "@/store/slices/environmentSlice";
 import {
   isEnterWithModifiers,
   isEnterWithoutModifiers,
@@ -85,6 +87,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const reduxCodexDraft = useAppSelector(selectNpcCodexDraft);
+  const contextMode = useAppSelector(selectContextMode);
 
   const campaignId = params.idCampaign as string;
   const resolvedGroupId = groupId || (params.idGroup as string);
@@ -94,6 +97,8 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
 
   // Lire les données pré-remplies depuis l'URL (pour NPC depuis codex)
   const codexDataParam = searchParams.get("codexData");
+  const linkedPlayerIdParam =
+    contextMode === "player" ? searchParams.get("linkedPlayerId")?.trim() || null : null;
 
   const codexData = useMemo(() => {
     if (reduxCodexDraft) return reduxCodexDraft;
@@ -212,6 +217,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       : npcCodexDefaults
         ? {
             ...npcCodexDefaults,
+            linkedPlayerId: linkedPlayerIdParam,
           }
         : {
             groups: resolvedGroupId ? [resolvedGroupId] : [],
@@ -243,6 +249,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
             challenge: { challengeRating: 0, experiencePoints: 0 },
             actions: { standard: [], legendary: [], lair: [] },
             hitPointsRoll: "",
+            linkedPlayerId: linkedPlayerIdParam,
           };
 
   // Initialiser le formulaire avec useCharacterForm (characterId = null pour création)
@@ -268,6 +275,9 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         router.push(`/campaigns/${campaignId}/groups/${resolvedGroupId}/characters/${createdCharacter._id}`);
       } else {
         dispatch(upsertCharacterWithoutGroup(createdCharacter));
+        if (!isPlayer(createdCharacter)) {
+          dispatch(upsertPlayerSpaceNpc(createdCharacter as NPC));
+        }
         router.push(`/characters/${createdCharacter._id}`);
       }
     },
@@ -290,11 +300,11 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     if (hasAppliedCodexDefaultsRef.current) return;
 
     hasAppliedCodexDefaultsRef.current = true;
-    form.reset(npcCodexDefaults);
+    form.reset({ ...npcCodexDefaults, linkedPlayerId: linkedPlayerIdParam });
     if (reduxCodexDraft) {
       dispatch(clearNpcCodexDraft());
     }
-  }, [characterType, npcCodexDefaults, form, reduxCodexDraft, dispatch]);
+  }, [characterType, npcCodexDefaults, form, reduxCodexDraft, dispatch, linkedPlayerIdParam]);
 
   // Create a placeholder character object for the tab content components
   // This is needed because the tab components expect a character prop

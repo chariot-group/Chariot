@@ -11,7 +11,7 @@ import { createPlayerSchema, createNpcSchema } from '@/schemas/character';
 import { makeZodMessages } from '@/lib/zodErrorMap';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectIsInSession } from '@/store/slices/sessionSlice';
-import { upsertCharacterWithoutGroup } from '@/store/slices/characterSlice';
+import { upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from '@/store/slices/characterSlice';
 import { upsertCharacterInGroups } from '@/store/slices/groupSlice';
 import { pruneOrphanSpellSlotsByLevel } from '@/utils/magic.utils';
 
@@ -381,6 +381,9 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
             // Keep sidebar lists synchronized after update (name/group display).
             dispatch(upsertCharacterWithoutGroup(updatedCharacter));
+            if (!('progression' in updatedCharacter)) {
+                dispatch(upsertPlayerSpaceNpc(updatedCharacter as NPC));
+            }
             dispatch(upsertCharacterInGroups({
                 _id: updatedCharacter._id,
                 firstname: updatedCharacter.firstname,

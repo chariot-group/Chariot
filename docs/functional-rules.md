@@ -4413,3 +4413,116 @@ Each initiative tracker row carries:
 - `services/admin/client/src/components/kpi/PeriodControls.tsx`
 - `services/admin/client/src/app/page.tsx`
 - `docs/functional-rules.md` — FR-admin-business-kpis, FR-frontend-design
+
+---
+
+## FR-npc-player-link: NPC to Player Character Link
+
+**Rule**: An NPC MAY be linked to at most one Player character. A Player character MAY have zero or more linked NPCs. All linking UX (Companions tab, discreet NPC header, nested Player-sidebar rows, create-already-linked) is **Player space only** (`contextMode === "player"`, FR-sidebar-navigation). GM space MUST NOT show, nest, or manage this relation.
+
+**Cardinality**:
+
+- NPC → Player: optional many-to-one (`0..1`). An NPC is either unlinked or linked to exactly one Player.
+- Player → NPCs: one-to-many (`0..N`).
+- Linking an already-linked NPC to another Player MUST replace the previous link (reassignment), not create a second link.
+
+**Data model**:
+
+- Source of truth is a single optional field on the NPC: `linkedPlayerId` (Mongo ObjectId referencing a Player character).
+- The Player document MUST NOT store a duplicated list of NPC ids as source of truth (derive the list by querying NPCs with that `linkedPlayerId`).
+- `linkedPlayerId` is omitted / `null` when the NPC is unlinked.
+- The field is NPC-only. It MUST NOT exist on Player discriminators.
+
+**Ownership and validation**:
+
+- The target of `linkedPlayerId` MUST be an existing, non-deleted character with `kind: 'player'`.
+- The NPC and the target Player MUST share the same `createdBy` (same owner). Cross-owner links (e.g. GM campaign NPC → another user's Player) are out of scope for this rule.
+- Reject linking to an NPC, to a deleted Player, or to a Player the requester does not own.
+- Create and update NPC DTOs MUST accept optional `linkedPlayerId` (`null` unlinks).
+- Soft-deleting a Player MUST unlink its NPCs (`linkedPlayerId` set to `null`). Soft-deleting an NPC removes it from the Player's companion list. NPCs themselves MUST NOT be cascade-deleted when the Player is deleted.
+- Duplicating a Player (FR-character-duplicate) MUST NOT duplicate or reassign linked NPCs. Duplicating an NPC MUST copy `linkedPlayerId` when present (the copy stays linked to the same Player).
+
+**Player space vs GM space** (FR-sidebar-navigation):
+
+- Context is `environment.contextMode`, not the URL. Player space = `player`. GM space = `gm`.
+- Linking UX MUST render only when `contextMode === "player"`.
+- In GM space the same Player or NPC sheet MUST keep the existing five tabs, MUST NOT show the Companions tab, MUST NOT show « Lié à {name} », and MUST NOT expose link / unlink / create-linked actions.
+- Query param `linkedPlayerId` on NPC creation MUST be ignored in GM space.
+- The `linkedPlayerId` field MAY still exist on documents that also belong to a campaign group; GM lists MUST treat those NPCs as ordinary group members (no link label, no nesting under the Player, no companion count).
+
+**Player character sheet — Companions tab**:
+
+- Complements FR-character-detail-view: in **Player space only**, Player sheets gain a sixth tab; NPC sheets and all GM-space sheets keep the existing five tabs.
+- Tab id: `companions`. Labels (i18n `characterDetail.tabs.companions`): FR « Compagnons », EN « Companions », ES « Compañeros ».
+- Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (same contrast treatment as the Combat/red tab). Do not invent a new color.
+- Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
+- Read mode: list linked NPCs (name, kind badge, optional CR). Each row navigates to the NPC sheet. Empty state is explicit.
+- Edit mode: list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
+- Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Color MUST NOT be the only channel for the kind badge (text label required).
+
+**NPC character sheet — discreet linked Player**:
+
+- Complements FR-character-detail-view NPC header (name, CR/XP, group label). In **Player space only**, when `linkedPlayerId` is set, the header MUST show the linked Player display name as **secondary metadata**, at the same visual weight as the group label (smaller than the NPC name; no banner, no extra tab, no card).
+- Copy (i18n): FR « Lié à {name} », EN « Linked to {name} », ES « Vinculado a {name} ».
+- The name is a link to the Player sheet. Long names truncate (`truncate` / `min-w-0`) per `docs/design.md`.
+- When unlinked, or when `contextMode === "gm"`, this metadata MUST NOT render (no empty « Lié à »).
+- The indicator MUST remain readable by assistive tech (visible text, not color-only). Clicking the link MUST be keyboard-operable with visible focus.
+
+**Player sidebar (Mes personnages)**:
+
+- Complements FR-characters-without-group without changing that endpoint: `GET /characters/players/without-group` remains Player-only and MUST NOT return NPCs. Unlinked without-group NPCs are loaded via a dedicated NPC query (same owner, empty `groups`, `linkedPlayerId` absent/`null`). Linked NPCs are loaded by a batch query on the visible Player ids.
+- **Root rows**: Player characters without group, plus **unlinked** NPCs without group. Unlinked NPC rows use the same actions as other character rows (FR-sidebar-context-actions) and a non-color-only PNJ kind badge.
+- **Nested rows**: NPCs linked to a visible Player appear **under that Player**, not as root rows (no duplicate: a linked NPC MUST NOT also appear at the root even if `groups` is empty).
+- Nested and root NPC rows navigate to the NPC sheet, expose Edit / Delete / Duplicate / PDF coming-soon (FR-character-sheet-pdf-export), and show a PNJ kind badge.
+- NPCs that belong to a campaign group remain in the GM group list; if they are also linked, they additionally nest under their Player in the Player sidebar.
+
+**GM sidebar (group lists)**:
+
+- MUST NOT show the linked Player name, a companion count, nested companion rows, or any other linking affordance.
+- Group membership is unchanged: a linked NPC that belongs to a group still appears in that group as a normal character row. This rule MUST NOT hide it from the GM list.
+
+**Accessibility**:
+
+- Nested sidebar lists MUST use a list structure with accessible names (Player name + companion list; each NPC name includes a PNJ kind label). Root unlinked NPCs MUST also include the PNJ kind label in their accessible name.
+- Link / unlink / create controls MUST be keyboard-operable with visible focus.
+- Confirmation dialogs for reassignment and unlink/delete follow FR-sidebar-context-actions (Enter confirm, Escape cancel).
+
+**Prohibitions**:
+
+- Allowing an NPC to be linked to more than one Player at a time.
+- Storing the relation only on the Player (divergent lists).
+- Returning NPCs from `GET /characters/players/without-group`.
+- Showing the Companions tab on NPC sheets (the linked Player is header metadata only, and only in Player space).
+- Showing the Companions tab, « Lié à », link/unlink/create-linked actions, or GM-sidebar link labels when `contextMode === "gm"`.
+- Offering campaign-group NPCs in the Player-space link picker.
+- Hiding unlinked without-group NPCs from the Player sidebar.
+- Showing a linked NPC both nested under its Player and as a root row.
+- Cascade-deleting NPCs when their linked Player is deleted.
+- Using a new undocumented tab color instead of the existing `purple` token.
+- Cross-owner links in this version.
+
+**Tests**:
+
+- Nominal: in Player space, link an owned NPC to an owned Player → NPC has `linkedPlayerId`; Player Companions tab lists it; Player sidebar nests it under that Player.
+- Nominal: Player with several linked NPCs shows all of them nested in the Player sidebar and listed on the tab.
+- Edge: unlinked without-group NPC appears as a root row in the Player sidebar; NPC sheet has no Companions tab and no « Lié à » metadata.
+- Edge: in Player space, linked NPC sheet header shows « Lié à {PlayerName} » as secondary text with a working link; no Companions tab.
+- Edge: linked without-group NPC appears nested under its Player and MUST NOT also appear as a root row.
+- Edge: in GM space, a Player sheet does not expose the Companions tab; an NPC sheet does not show « Lié à »; group lists do not show link labels or nested companions.
+- Edge: reassign NPC from Player A to Player B → only B lists it; confirmation required.
+- Edge: delete Player → NPCs survive with `linkedPlayerId: null`.
+- Edge: duplicate Player does not move/copy NPC links; duplicate NPC keeps the same `linkedPlayerId`.
+- Failure: `linkedPlayerId` pointing at an NPC, a deleted Player, or another user's Player is rejected.
+- Failure: without-group Player endpoint still excludes NPCs.
+- Failure: the Companions link picker does not include NPCs that have a group.
+
+**References**:
+
+- `services/adventure/api/src/resources/character/npc/` (schema, DTOs, service)
+- `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
+- `services/web/client/src/components/character/CharacterTabs.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-characters-without-group, FR-sidebar-navigation, FR-sidebar-context-actions, FR-character-duplicate, FR-character-sheet-pdf-export, FR-frontend-design
+- `docs/design.md` (tab colors, sidebar, accessibility)

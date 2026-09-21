@@ -531,6 +531,7 @@ export default function GroupList({
                 group.characters.map((character) => {
                   const isSelected = selectedCharacterId === character._id;
                   const characterActions = buildCharacterActions(character, group._id);
+                  const displayName = characterDisplayName(character);
 
                   return (
                     <SidebarItemWithActions
@@ -548,8 +549,8 @@ export default function GroupList({
                       <Link
                         href={`/campaigns/${selectedCampaignId}/groups/${group._id}/characters/${character._id}`}
                         aria-current={isSelected ? "page" : undefined}
-                        aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
-                        title={`${character.firstname} ${character.lastname}`}
+                        aria-label={`${displayName}${isSelected ? ` (${t("selected")})` : ""}`}
+                        title={displayName}
                         className={cn(
                           "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
                           isSelected && "pl-4 font-bold text-black",
@@ -563,9 +564,7 @@ export default function GroupList({
                             aria-hidden="true"
                           />
                         )}
-                        <span className="min-w-0 flex-1 truncate">
-                          {character.firstname} {character.lastname}
-                        </span>
+                        <span className="min-w-0 flex-1 truncate">{displayName}</span>
                       </Link>
                     </SidebarItemWithActions>
                   );

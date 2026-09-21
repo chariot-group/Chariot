@@ -23,6 +23,10 @@
     "noGroups": "Sin grupos",
     "noCharacters": "Sin personajes",
     "unnamedCharacter": "Personaje sin nombre",
+    "npcKind": "PNJ",
+    "playerKind": "PJ",
+    "linkedToPlayer": "Vinculado a {name}",
+    "companionsListLabel": "Compañeros de {name}",
     "archive": "Archivar",
     "unarchive": "Restaurar",
     "delete": "Eliminar",
@@ -967,12 +971,34 @@
       "add": "Añadir"
     },
     "tabs": {
+      "listLabel": "Pestañas de la ficha de personaje",
       "general": "General",
       "battle": "Combate",
       "magic": "Magia",
       "inventory": "Inventario",
       "history": "Historia",
+      "companions": "Compañeros",
       "containsErrors": "Esta pestaña contiene campos con errores"
+    },
+    "companions": {
+      "title": "Compañeros",
+      "empty": "Ningún PNJ vinculado a este personaje.",
+      "loading": "Cargando compañeros",
+      "loadError": "No se pudieron cargar los compañeros.",
+      "saveError": "No se pudo guardar el vínculo.",
+      "linkExisting": "Vincular un PNJ",
+      "createLinked": "Crear un PNJ vinculado",
+      "linkDialogTitle": "Vincular un PNJ",
+      "linkDialogDescription": "Elige un PNJ no vinculado de tu espacio de jugador (sin grupo).",
+      "noUnlinkedNpcs": "No hay PNJ disponibles en el espacio de jugador.",
+      "linkSuccess": "PNJ vinculado.",
+      "unlinkSuccess": "Vínculo eliminado.",
+      "unlink": "Desvincular",
+      "unlinkTitle": "Desvincular este PNJ",
+      "unlinkDescription": "¿Quitar el vínculo de {name} con este personaje?",
+      "unlinkAria": "Desvincular {name}",
+      "unnamedNpc": "PNJ sin nombre",
+      "cancel": "Cancelar"
     },
     "battle": {
       "stats": "Estadísticas",
@@ -1365,6 +1391,7 @@
       "subtypeLabel": "Subtipo",
       "challengeRating": "Índice de desafío",
       "challengeRatingAbbr": "ID",
+      "linkedTo": "Vinculado a {name}",
       "alignment": "Alineamiento",
       "general": {
         "title": "Pestaña General",

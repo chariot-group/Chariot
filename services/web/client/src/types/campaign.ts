@@ -32,6 +32,8 @@ export interface Character {
     progression?: unknown;
     /** Present on NPC characters when groups API populates `challenge`. @see FR-character-sheet-pdf-export */
     challenge?: unknown;
+    /** @see FR-npc-player-link */
+    linkedPlayerId?: string | null;
 }
 
 export interface Group {

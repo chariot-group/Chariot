@@ -100,6 +100,8 @@ const characterTransform = createTransform(
             ...outboundState,
             charactersWithoutGroup: sanitizePersistedCharacters(outboundState.charactersWithoutGroup),
             allCharacters: sanitizePersistedCharacters(outboundState.allCharacters),
+            linkedNpcs: sanitizePersistedCharacters(outboundState.linkedNpcs) ?? [],
+            unlinkedNpcsWithoutGroup: sanitizePersistedCharacters(outboundState.unlinkedNpcsWithoutGroup) ?? [],
             loadingWithoutGroup: false,
             loadingMoreWithoutGroup: false,
             errorWithoutGroup: null,

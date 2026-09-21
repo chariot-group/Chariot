@@ -23,6 +23,10 @@
     "noGroups": "No groups",
     "noCharacters": "No characters",
     "unnamedCharacter": "Unnamed character",
+    "npcKind": "NPC",
+    "playerKind": "PC",
+    "linkedToPlayer": "Linked to {name}",
+    "companionsListLabel": "Companions of {name}",
     "archive": "Archive",
     "unarchive": "Restore",
     "delete": "Delete",
@@ -967,12 +971,34 @@
       "add": "Add"
     },
     "tabs": {
+      "listLabel": "Character sheet tabs",
       "general": "General",
       "battle": "Battle",
       "magic": "Magic",
       "inventory": "Inventory",
       "history": "History",
+      "companions": "Companions",
       "containsErrors": "This tab contains fields with errors"
+    },
+    "companions": {
+      "title": "Companions",
+      "empty": "No NPC linked to this character.",
+      "loading": "Loading companions",
+      "loadError": "Could not load companions.",
+      "saveError": "Could not save the link.",
+      "linkExisting": "Link an NPC",
+      "createLinked": "Create a linked NPC",
+      "linkDialogTitle": "Link an NPC",
+      "linkDialogDescription": "Choose an unlinked NPC from your player space (not in a group).",
+      "noUnlinkedNpcs": "No player-space NPC available.",
+      "linkSuccess": "NPC linked.",
+      "unlinkSuccess": "Link removed.",
+      "unlink": "Unlink",
+      "unlinkTitle": "Unlink this NPC",
+      "unlinkDescription": "Remove the link between {name} and this character?",
+      "unlinkAria": "Unlink {name}",
+      "unnamedNpc": "Unnamed NPC",
+      "cancel": "Cancel"
     },
     "battle": {
       "stats": "Stats",
@@ -1365,6 +1391,7 @@
       "subtypeLabel": "Subtype",
       "challengeRating": "Challenge Rating",
       "challengeRatingAbbr": "CR",
+      "linkedTo": "Linked to {name}",
       "alignment": "Alignment",
       "general": {
         "title": "General Tab",

@@ -5,6 +5,8 @@ import {
   Patch,
   Param,
   Req,
+  Get,
+  Query,
   GoneException,
   Logger,
   NotFoundException,
@@ -21,8 +23,9 @@ import {
   CharacterDocument,
 } from '@/resources/character/core/schemas/character.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
+import { ParseNullableIntPipe } from '@/common/pipes/parse-nullable-int.pipe';
 import { NPC } from '@/resources/character/npc/schemas/npc.schema';
-import { IResponse } from '@/common/dtos/reponse.dto';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 import {
   ApiExtraModels,
   ApiOkResponse,
@@ -33,7 +36,7 @@ import {
 } from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
 
-@ApiExtraModels(IResponse, NPC)
+@ApiExtraModels(IResponse, IPaginatedResponse, NPC)
 @Controller('characters/npcs')
 export class NpcController {
   constructor(
@@ -88,6 +91,109 @@ export class NpcController {
     const userId = request.user.keycloakId;
 
     return this.npcService.create(createNpcDto, userId);
+  }
+
+  /** @see FR-npc-player-link */
+  @Get('/without-group')
+  @ApiOperation({
+    summary: 'Get paginated unlinked NPCs without a group for the authenticated user',
+  })
+  @ApiOkResponse({
+    description: 'Unlinked NPCs without group found successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IPaginatedResponse) },
+        {
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: getSchemaPath(NPC) },
+            },
+          },
+        },
+      ],
+    },
+  })
+  getUnlinkedNpcsWithoutGroup(
+    @Req() request,
+    @Query('page', ParseNullableIntPipe) page?: number,
+    @Query('offset', ParseNullableIntPipe) offset?: number,
+    @Query('sort') sort?: string,
+  ): Promise<IPaginatedResponse<Character[]>> {
+    const userId = request.user.keycloakId;
+    return this.npcService.findUnlinkedNpcsWithoutGroup(userId, {
+      page,
+      offset,
+      sort,
+    });
+  }
+
+  /** @see FR-npc-player-link */
+  @Get('/unlinked')
+  @ApiOperation({
+    summary: 'Get paginated unlinked NPCs owned by the authenticated user',
+  })
+  @ApiOkResponse({
+    description: 'Unlinked NPCs found successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IPaginatedResponse) },
+        {
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: getSchemaPath(NPC) },
+            },
+          },
+        },
+      ],
+    },
+  })
+  getUnlinkedNpcs(
+    @Req() request,
+    @Query('page', ParseNullableIntPipe) page?: number,
+    @Query('offset', ParseNullableIntPipe) offset?: number,
+    @Query('sort') sort?: string,
+  ): Promise<IPaginatedResponse<Character[]>> {
+    const userId = request.user.keycloakId;
+    return this.npcService.findUnlinkedNpcs(userId, {
+      page,
+      offset,
+      sort,
+    });
+  }
+
+  /** @see FR-npc-player-link */
+  @Get('/by-linked-players')
+  @ApiOperation({
+    summary: 'Get NPCs linked to the given Player character IDs',
+  })
+  @ApiOkResponse({
+    description: 'Linked NPCs found successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(IResponse) },
+        {
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: getSchemaPath(NPC) },
+            },
+          },
+        },
+      ],
+    },
+  })
+  getNpcsByLinkedPlayers(
+    @Req() request,
+    @Query('playerIds') playerIds?: string,
+  ): Promise<IResponse<Character[]>> {
+    const userId = request.user.keycloakId;
+    const ids = (playerIds ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+    return this.npcService.findNpcsByLinkedPlayerIds(userId, ids);
   }
 
   @IsCreator(CharacterService)

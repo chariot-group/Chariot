@@ -5,7 +5,7 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useMemo, useState } from "react";
-import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabs, { CharacterTab, tabsForCharacterSheet } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
@@ -39,6 +39,10 @@ import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
 import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import { cn } from "@/lib/utils";
+import CharacterService from "@/services/CharacterService";
+import { characterDisplayName as formatCharacterName } from "@/lib/duplicateName";
+import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
+import Link from "next/link";
 
 interface CharacterDetailViewProps {
   character: Player | NPC;
@@ -80,6 +84,7 @@ export default function CharacterDetailView({
     createdByKey: string;
     label: string;
   } | null>(null);
+  const [linkedPlayer, setLinkedPlayer] = useState<Player | null>(null);
 
   const playedByLabel =
     playedBySubjectId != null && resolvedPlayedBy != null && resolvedPlayedBy.createdByKey === playedBySubjectId
@@ -95,8 +100,10 @@ export default function CharacterDetailView({
 
   const showEditControls = !isGmViewingPlayerSheet || canEditAsGm;
 
-  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
-  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
+  const isPlayerSpace = contextMode === "player";
+  const availableTabs = tabsForCharacterSheet(isPlayer(character), isPlayerSpace);
+  const requestedTab = (searchParams.get("tab") as CharacterTab) || "general";
+  const activeTab = availableTabs.includes(requestedTab) ? requestedTab : "general";
 
   // Fonction pour changer d'onglet et mettre à jour l'URL
   const handleTabChange = React.useCallback(
@@ -305,6 +312,29 @@ export default function CharacterDetailView({
     };
   }, [playedBySubjectId]);
 
+  const npcLinkedPlayerId =
+    isPlayerSpace && !isPlayer(character) ? linkedPlayerIdOf(character) : null;
+
+  useEffect(() => {
+    if (!npcLinkedPlayerId) {
+      setLinkedPlayer(null);
+      return;
+    }
+    let cancelled = false;
+    CharacterService.getCharacterById(npcLinkedPlayerId)
+      .then((fetched) => {
+        if (!cancelled && isPlayer(fetched)) {
+          setLinkedPlayer(fetched);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLinkedPlayer(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [npcLinkedPlayerId]);
+
   useEffect(() => {
     if (!showEditControls && isEditing) {
       handleCancelEditor();
@@ -410,6 +440,7 @@ export default function CharacterDetailView({
               ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
               ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
               ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+              ${activeTab === "companions" ? "bg-purple hover:bg-purple/75 text-white" : ""}
             `}
             aria-label={t("saveChanges")}
             aria-busy={isSaving || isAvatarCommitting}>
@@ -459,6 +490,7 @@ export default function CharacterDetailView({
             ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
             ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
             ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+            ${activeTab === "companions" ? "bg-purple hover:bg-purple/75 text-white" : ""}
           `}
             aria-label={t("editCharacter")}>
             <SquarePen
@@ -536,8 +568,9 @@ export default function CharacterDetailView({
                           ) : null}
                         </div>
                       ) : (
-                        <div className="font-semibold text-white">
-                          {(() => {
+                        <div className="flex min-w-0 flex-col gap-1 font-semibold text-white">
+                          <div>
+                            {(() => {
                             const challengeRating = character.challenge?.challengeRating ?? 0;
                             const experiencePoints = character.challenge?.experiencePoints ?? 0;
                             const displayChallengeRating = formatChallengeRating(challengeRating);
@@ -554,6 +587,14 @@ export default function CharacterDetailView({
                               </React.Fragment>
                             );
                           })()}
+                          </div>
+                          {linkedPlayer ? (
+                            <Link
+                              href={`/characters/${linkedPlayer._id}`}
+                              className="min-w-0 truncate text-xs font-normal text-gray-light hover:text-white focus-visible:ring-1 focus-visible:ring-white/50">
+                              {t("npc.linkedTo", { name: formatCharacterName(linkedPlayer) || t("placeholder.noImage") })}
+                            </Link>
+                          ) : null}
                         </div>
                       )
                     }
@@ -562,6 +603,7 @@ export default function CharacterDetailView({
                 tabs={
                   <CharacterTabs
                     activeTab={activeTab}
+                    tabs={availableTabs}
                     tabsWithErrors={isEditing ? tabsWithErrors : undefined}
                   />
                 }

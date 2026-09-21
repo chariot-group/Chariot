@@ -23,6 +23,10 @@
     "noGroups": "Aucun groupe",
     "noCharacters": "Aucun personnage",
     "unnamedCharacter": "Personnage sans nom",
+    "npcKind": "PNJ",
+    "playerKind": "PJ",
+    "linkedToPlayer": "Lié à {name}",
+    "companionsListLabel": "Compagnons de {name}",
     "archive": "Archiver",
     "unarchive": "Restaurer",
     "delete": "Supprimer",
@@ -968,12 +972,34 @@
       "add": "Ajouter"
     },
     "tabs": {
+      "listLabel": "Onglets de la fiche personnage",
       "general": "Général",
       "battle": "Combat",
       "magic": "Magie",
       "inventory": "Inventaire",
       "history": "Histoire",
+      "companions": "Compagnons",
       "containsErrors": "Cet onglet contient des champs en erreur"
+    },
+    "companions": {
+      "title": "Compagnons",
+      "empty": "Aucun PNJ lié à ce personnage.",
+      "loading": "Chargement des compagnons",
+      "loadError": "Impossible de charger les compagnons.",
+      "saveError": "Impossible d'enregistrer la liaison.",
+      "linkExisting": "Lier un PNJ",
+      "createLinked": "Créer un PNJ lié",
+      "linkDialogTitle": "Lier un PNJ",
+      "linkDialogDescription": "Choisissez un PNJ de l'espace joueur (non lié, hors groupe).",
+      "noUnlinkedNpcs": "Aucun PNJ disponible dans l'espace joueur.",
+      "linkSuccess": "PNJ lié.",
+      "unlinkSuccess": "Liaison retirée.",
+      "unlink": "Délier",
+      "unlinkTitle": "Délier ce PNJ",
+      "unlinkDescription": "Retirer la liaison de {name} avec ce personnage ?",
+      "unlinkAria": "Délier {name}",
+      "unnamedNpc": "PNJ sans nom",
+      "cancel": "Annuler"
     },
     "battle": {
       "stats": "Statistiques",
@@ -1369,6 +1395,7 @@
       "subtypeLabel": "Sous-type",
       "challengeRating": "Indice de dangerosité",
       "challengeRatingAbbr": "ID",
+      "linkedTo": "Lié à {name}",
       "alignment": "Alignement",
       "general": {
         "title": "Onglet Général",

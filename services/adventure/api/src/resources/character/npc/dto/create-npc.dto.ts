@@ -1,5 +1,11 @@
-import { Type } from 'class-transformer';
-import { IsOptional, ValidateNested, IsString } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsMongoId,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
 import { ActionsDto } from '@/resources/character/npc/dto/actions/actions.dto';
 import { ChallengeDto } from '@/resources/character/npc/dto/challenge/challenge.dto';
 import { CreateCharacterDto } from '@/resources/character/core/dto/create-character.dto';
@@ -29,4 +35,16 @@ export class CreateNpcDto extends CreateCharacterDto {
   @IsString()
   @IsOptional()
   hitPointsRoll?: string;
+
+  /** @see FR-npc-player-link */
+  @ApiProperty({
+    example: '507f1f77bcf86cd799439011',
+    required: false,
+    nullable: true,
+  })
+  @Transform(({ value }) => (value === '' ? null : value))
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== undefined)
+  @IsMongoId()
+  linkedPlayerId?: string | null;
 }

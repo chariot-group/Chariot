@@ -1,7 +1,7 @@
 "use client";
 
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
-import { removeCharacterWithoutGroup } from "@/store/slices/characterSlice";
+import { removeCharacterWithoutGroup, removePlayerSpaceNpc, upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
 import { useMemo, useState } from "react";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -23,8 +23,10 @@ import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharac
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import { showToast } from "@/lib/toast";
-import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
+import { buildPlayerSidebarRows } from "@/lib/npcPlayerLink";
+import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
+import type { NPC } from "@/types/character";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -34,9 +36,10 @@ import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExpo
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");
   const tClass = useTranslations("classes");
-  const { characters, loading, loadingMore, hasMore, loadMoreCharacters, error } = usePlayersWithoutGroup(10, {
-    autoFetch: false,
-  });
+  const { characters, linkedNpcs, unlinkedNpcs, loading, loadingMore, hasMore, loadMoreCharacters, error } =
+    usePlayersWithoutGroup(10, {
+      autoFetch: false,
+    });
   const router = useRouter();
 
   const dispatch = useAppDispatch();
@@ -72,6 +75,14 @@ export default function CharactersWithoutGroupList() {
       await CharacterService.deleteCharacter(deletingCharacterId);
       setCharacterPendingDelete(null);
       dispatch(removeCharacterWithoutGroup(deletingCharacterId));
+      dispatch(removePlayerSpaceNpc(deletingCharacterId));
+      if (isPlayer(characterPendingDelete)) {
+        for (const npc of linkedNpcs ?? []) {
+          if (npc.linkedPlayerId === deletingCharacterId) {
+            dispatch(upsertPlayerSpaceNpc({ ...npc, linkedPlayerId: null }));
+          }
+        }
+      }
 
       if (selectedCharacterId === deletingCharacterId) {
         if (nextCharacter?._id) {
@@ -87,22 +98,31 @@ export default function CharactersWithoutGroupList() {
     }
   };
 
+  const sidebarRows = useMemo(
+    () => buildPlayerSidebarRows(characters, unlinkedNpcs ?? [], linkedNpcs ?? []),
+    [characters, linkedNpcs, unlinkedNpcs],
+  );
+
   const existingCharacterNames = useMemo(
     () => characters.map((c) => characterDisplayName(c)).filter(Boolean),
     [characters],
   );
 
   const handleDuplicateCharacter = async (character: Character, name: string, count: number) => {
-    if (!isPlayer(character)) return;
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _id, createdBy, deletedAt, groups, ...rest } = character;
       const copyNames = buildSequentialCopyNames(name, count);
+      const type = isPlayer(character) ? "players" : "npcs";
       let lastCreated: Character | null = null;
       for (const copyName of copyNames) {
         const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
-        const created = await CharacterService.createCharacter("players", payload);
-        dispatch(upsertCharacterWithoutGroup(created as Character));
+        const created = await CharacterService.createCharacter(type, payload);
+        if (isPlayer(created)) {
+          dispatch(upsertCharacterWithoutGroup(created as Character));
+        } else {
+          dispatch(upsertPlayerSpaceNpc(created as NPC));
+        }
         lastCreated = created as Character;
       }
       showToast(t("duplicateCharacterSuccess"), "success");
@@ -114,10 +134,16 @@ export default function CharactersWithoutGroupList() {
   };
 
   const buildCharacterActions = (character: Character): SidebarActionItem[] => {
+    const npcPdfExportDisabled = !isPlayer(character);
     const exportAction: SidebarActionItem = {
       id: "exportPdf",
       label: t("exportPdf"),
-      onSelect: () => void requestCharacterPdfExport(character._id),
+      disabled: npcPdfExportDisabled,
+      disabledTooltip: npcPdfExportDisabled ? t("exportPdfNpcComingSoon") : undefined,
+      onSelect: () => {
+        if (npcPdfExportDisabled) return;
+        void requestCharacterPdfExport(character._id);
+      },
     };
 
     if (actionsDisabled) return [exportAction];
@@ -177,7 +203,9 @@ export default function CharactersWithoutGroupList() {
       </Link>
 
       <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-        {characters.map((character, index) => {
+        {sidebarRows.map((row, index) => {
+          const character = row.character;
+          const isNpcRow = row.type === "npc" || !isPlayer(character);
           const isSelected = selectedCharacterId === character._id;
           const classLabel = isPlayer(character)
             ? character.class
@@ -185,15 +213,13 @@ export default function CharactersWithoutGroupList() {
                 .filter((label) => label.length > 0)
                 .join(" / ")
             : "";
-          const displayName =
-            [character.firstname, character.lastname]
-              .map((part) => (typeof part === "string" ? part.trim() : ""))
-              .filter((part) => part.length > 0)
-              .join(" ") || t("unnamedCharacter");
+          const displayName = characterDisplayName(character) || t("unnamedCharacter");
           const isSessionCharacter = sessionCharacterId === character._id;
           const characterActions = buildCharacterActions(character);
+          const kindLabel = isNpcRow ? t("npcKind") : t("playerKind");
+          const companions = row.type === "player" ? row.companions : [];
 
-          return (
+          const rowLink = (
             <SidebarItemWithActions
               key={character._id ?? `character-${index}`}
               actions={characterActions}
@@ -209,7 +235,7 @@ export default function CharactersWithoutGroupList() {
               <Link
                 href={`/characters/${character._id}`}
                 aria-current={isSelected ? "page" : undefined}
-                aria-label={`${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
+                aria-label={`${displayName}${isNpcRow ? ` (${kindLabel})` : classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
                 onClick={() => dispatch(clearSelectedCampaign())}
                 className={cn(
                   "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
@@ -228,7 +254,12 @@ export default function CharactersWithoutGroupList() {
                   )}>
                   {displayName}
                 </span>
-                {classLabel && (
+                {isNpcRow ? (
+                  <SidebarCharacterKindBadge
+                    label={kindLabel}
+                    selected={isSelected}
+                  />
+                ) : classLabel ? (
                   <span
                     className={cn(
                       "text-sm shrink-0 whitespace-nowrap",
@@ -236,7 +267,7 @@ export default function CharactersWithoutGroupList() {
                     )}>
                     ({classLabel})
                   </span>
-                )}
+                ) : null}
                 {isSessionCharacter && (
                   <Swords
                     aria-label={t("sessionCharacter")}
@@ -248,6 +279,70 @@ export default function CharactersWithoutGroupList() {
                 )}
               </Link>
             </SidebarItemWithActions>
+          );
+
+          if (row.type !== "player" || companions.length === 0) {
+            return rowLink;
+          }
+
+          return (
+            <div
+              key={character._id ?? `character-${index}`}
+              className="flex flex-col gap-1">
+              {rowLink}
+              <ul
+                className="ml-3 flex flex-col gap-1"
+                aria-label={t("companionsListLabel", { name: displayName })}>
+                {companions.map((npc) => {
+                  const npcSelected = selectedCharacterId === npc._id;
+                  const npcName = characterDisplayName(npc) || t("unnamedCharacter");
+                  const npcActions = buildCharacterActions(npc);
+                  return (
+                    <li key={npc._id}>
+                      <SidebarItemWithActions
+                        actions={npcActions}
+                        disabled={npcActions.length === 0}
+                        contextMenuLabel={t("characterActions")}
+                        className={cn(
+                          "rounded-[12px] transition-all duration-150",
+                          npcSelected ? "bg-white text-black" : "hover:bg-white/10",
+                        )}
+                        overflowTriggerClassName={
+                          npcSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+                        }>
+                        <Link
+                          href={`/characters/${npc._id}`}
+                          aria-current={npcSelected ? "page" : undefined}
+                          aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
+                          onClick={() => dispatch(clearSelectedCampaign())}
+                          className={cn(
+                            "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                            npcSelected && "pl-4 font-bold text-black",
+                          )}>
+                          {npcSelected && (
+                            <span
+                              className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span
+                            className={cn(
+                              "text-sm min-w-0 flex-1 truncate",
+                              npcSelected && "font-bold text-black",
+                            )}>
+                            {npcName}
+                          </span>
+                          <SidebarCharacterKindBadge
+                            label={t("npcKind")}
+                            selected={npcSelected}
+                          />
+                        </Link>
+                      </SidebarItemWithActions>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           );
         })}
 

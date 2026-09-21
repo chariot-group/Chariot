@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   GoneException,
   HttpException,
   Injectable,
@@ -9,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { CreateNpcDto } from '@/resources/character/npc/dto/create-npc.dto';
 import { UpdateNpcDto } from '@/resources/character/npc/dto/update-npc.dto';
-import { Model, Types } from 'mongoose';
+import { Model, SortOrder, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import {
@@ -17,7 +18,7 @@ import {
   CharacterDocument,
 } from '@/resources/character/core/schemas/character.schema';
 import { NPC, NPCDocument } from '@/resources/character/npc/schemas/npc.schema';
-import { IResponse } from '@/common/dtos/reponse.dto';
+import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 
 @Injectable()
 export class NpcService {
@@ -55,6 +56,62 @@ export class NpcService {
     }
   }
 
+  /**
+   * @see FR-npc-player-link
+   */
+  async validateLinkedPlayerId(
+    linkedPlayerId: string | null | undefined,
+    userId: string,
+  ): Promise<void> {
+    if (linkedPlayerId === undefined || linkedPlayerId === null || linkedPlayerId === '') {
+      return;
+    }
+
+    if (!Types.ObjectId.isValid(linkedPlayerId)) {
+      throw new BadRequestException(`Invalid player ID: #${linkedPlayerId}`);
+    }
+
+    const player = await this.characterModel.findById(linkedPlayerId).exec();
+    if (!player) {
+      throw new NotFoundException(`Player not found: #${linkedPlayerId}`);
+    }
+
+    if (player.deletedAt) {
+      throw new GoneException(`Player already deleted: #${linkedPlayerId}`);
+    }
+
+    const kind = (player as Character & { kind?: string }).kind;
+    if (kind !== 'player') {
+      throw new BadRequestException(
+        `linkedPlayerId must reference a Player character: #${linkedPlayerId}`,
+      );
+    }
+
+    if (player.createdBy !== userId) {
+      throw new ForbiddenException(
+        `You can only link NPCs to your own Player characters`,
+      );
+    }
+  }
+
+  private paginationSort(query: {
+    page?: number;
+    offset?: number;
+    sort?: string;
+  }): { page: number; offset: number; skip: number; sort: { [key: string]: SortOrder } } {
+    const page = query.page ?? 1;
+    const offset = query.offset ?? 10;
+    let sort: { [key: string]: SortOrder } = { updatedAt: 'asc' };
+    if (query.sort) {
+      if (query.sort.startsWith('-')) {
+        sort[query.sort.substring(1)] = 'desc';
+      } else {
+        sort[query.sort] = 'asc';
+      }
+    }
+    return { page, offset, skip: (page - 1) * offset, sort };
+  }
+
   async create(
     createNpcDto: CreateNpcDto,
     userId: string,
@@ -70,6 +127,8 @@ export class NpcService {
         }
         await this.validateGroupRelations(createNpcDto.groups);
       }
+
+      await this.validateLinkedPlayerId(createNpcDto.linkedPlayerId, userId);
 
       const start: number = Date.now();
       const newNpc: NPCDocument = new this.characterModel.discriminators['npc'](
@@ -114,6 +173,18 @@ export class NpcService {
       let { groups, ...npcData } = updateNpcDto;
 
       let npc: Character = await this.characterModel.findById(id).exec();
+      if (!npc) {
+        throw new NotFoundException(`NPC #${id} not found`);
+      }
+
+      if (
+        Object.prototype.hasOwnProperty.call(updateNpcDto, 'linkedPlayerId')
+      ) {
+        await this.validateLinkedPlayerId(
+          updateNpcDto.linkedPlayerId ?? null,
+          npc.createdBy,
+        );
+      }
 
       //Vérification ids characters
       if (groups) {
@@ -195,6 +266,151 @@ export class NpcService {
         throw error;
       }
       const message = `Error while updating #${id} NPC: ${error.message}`;
+      this.logger.error(message, null, this.SERVICE_NAME);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
+  /**
+   * Unlinked NPCs with no group, owned by the authenticated user.
+   * @see FR-npc-player-link
+   */
+  async findUnlinkedNpcsWithoutGroup(
+    userId: string,
+    query: { page?: number; offset?: number; sort?: string },
+  ): Promise<IPaginatedResponse<Character[]>> {
+    try {
+      const { page, offset, skip, sort } = this.paginationSort(query);
+      const filters = {
+        kind: 'npc',
+        createdBy: userId,
+        deletedAt: null,
+        $and: [
+          { $or: [{ groups: { $exists: false } }, { groups: { $size: 0 } }] },
+          {
+            $or: [
+              { linkedPlayerId: { $exists: false } },
+              { linkedPlayerId: null },
+            ],
+          },
+        ],
+      };
+
+      const start: number = Date.now();
+      const npcs: Character[] = await this.characterModel
+        .find(filters)
+        .limit(offset)
+        .skip(skip)
+        .sort(sort)
+        .exec();
+      const totalItems: number =
+        await this.characterModel.countDocuments(filters);
+      const end: number = Date.now();
+
+      const message = `Unlinked NPCs without group found in ${end - start}ms`;
+      this.logger.debug(message, this.SERVICE_NAME);
+
+      return {
+        message,
+        data: npcs,
+        pagination: { page, offset, totalItems },
+      };
+    } catch (error) {
+      const message = `Error retrieving unlinked NPCs without group: ${error.message}`;
+      this.logger.error(message, null, this.SERVICE_NAME);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
+  /**
+   * All owned unlinked NPCs (picker for the Companions tab).
+   * @see FR-npc-player-link
+   */
+  async findUnlinkedNpcs(
+    userId: string,
+    query: { page?: number; offset?: number; sort?: string },
+  ): Promise<IPaginatedResponse<Character[]>> {
+    try {
+      const { page, offset, skip, sort } = this.paginationSort(query);
+      const filters = {
+        kind: 'npc',
+        createdBy: userId,
+        deletedAt: null,
+        $or: [{ linkedPlayerId: { $exists: false } }, { linkedPlayerId: null }],
+      };
+
+      const start: number = Date.now();
+      const npcs: Character[] = await this.characterModel
+        .find(filters)
+        .limit(offset)
+        .skip(skip)
+        .sort(sort)
+        .exec();
+      const totalItems: number =
+        await this.characterModel.countDocuments(filters);
+      const end: number = Date.now();
+
+      const message = `Unlinked NPCs found in ${end - start}ms`;
+      this.logger.debug(message, this.SERVICE_NAME);
+
+      return {
+        message,
+        data: npcs,
+        pagination: { page, offset, totalItems },
+      };
+    } catch (error) {
+      const message = `Error retrieving unlinked NPCs: ${error.message}`;
+      this.logger.error(message, null, this.SERVICE_NAME);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
+  /**
+   * NPCs linked to the given Player ids, owned by the authenticated user.
+   * @see FR-npc-player-link
+   */
+  async findNpcsByLinkedPlayerIds(
+    userId: string,
+    playerIds: string[],
+  ): Promise<IResponse<Character[]>> {
+    try {
+      if (playerIds.length > 100) {
+        throw new BadRequestException(
+          'A maximum of 100 player IDs can be queried at once',
+        );
+      }
+
+      const objectIds: Types.ObjectId[] = [];
+      for (const playerId of playerIds) {
+        if (!Types.ObjectId.isValid(playerId)) {
+          throw new BadRequestException(`Invalid player ID: #${playerId}`);
+        }
+        objectIds.push(new Types.ObjectId(playerId));
+      }
+
+      const start: number = Date.now();
+      const npcs: Character[] =
+        objectIds.length === 0
+          ? []
+          : await this.characterModel
+              .find({
+                kind: 'npc',
+                createdBy: userId,
+                deletedAt: null,
+                linkedPlayerId: { $in: objectIds },
+              })
+              .exec();
+      const end: number = Date.now();
+
+      const message = `Linked NPCs found in ${end - start}ms`;
+      this.logger.debug(message, this.SERVICE_NAME);
+
+      return { message, data: npcs };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      const message = `Error retrieving NPCs by linked players: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }

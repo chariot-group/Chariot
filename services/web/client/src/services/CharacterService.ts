@@ -108,6 +108,50 @@ class CharacterService {
             throw error;
         }
     }
+
+    /** @see FR-npc-player-link */
+    async getUnlinkedNpcsWithoutGroup(page: number = 1, offset: number = 10): Promise<PaginatedCharactersResponse> {
+        try {
+            const response = await apiClient().get<PaginatedCharactersResponse>(
+                `${this.BASE_PATH}/npcs/without-group`,
+                { params: { page, offset } },
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching unlinked NPCs without group:', error);
+            throw error;
+        }
+    }
+
+    /** @see FR-npc-player-link */
+    async getUnlinkedNpcs(page: number = 1, offset: number = 50): Promise<PaginatedCharactersResponse> {
+        try {
+            const response = await apiClient().get<PaginatedCharactersResponse>(
+                `${this.BASE_PATH}/npcs/unlinked`,
+                { params: { page, offset } },
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching unlinked NPCs:', error);
+            throw error;
+        }
+    }
+
+    /** @see FR-npc-player-link */
+    async getNpcsByLinkedPlayers(playerIds: string[]): Promise<NPC[]> {
+        const ids = playerIds.map((id) => id.trim()).filter((id) => id.length > 0);
+        if (ids.length === 0) return [];
+        try {
+            const response = await apiClient().get<{ message: string; data: NPC[] }>(
+                `${this.BASE_PATH}/npcs/by-linked-players`,
+                { params: { playerIds: ids.join(",") } },
+            );
+            return response.data.data ?? [];
+        } catch (error) {
+            console.error('Error fetching NPCs by linked players:', error);
+            throw error;
+        }
+    }
 }
 
 const characterService = new CharacterService();
