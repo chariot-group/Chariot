@@ -9,6 +9,7 @@ import { AddCombatantsDialog } from "@/components/dialogs/AddCombatantsDialog";
 import { RemoveCombatantGroupsDialog } from "@/components/dialogs/RemoveCombatantGroupsDialog";
 import { InitiativeTrackerHealthDialog } from "@/components/initiativeTracker/InitiativeTrackerHealthDialog";
 import { InitiativeTrackerTable } from "@/components/initiativeTracker/InitiativeTrackerTable";
+import type { ConditionSelectCustomEffectsProps } from "@/components/initiativeTracker/ConditionSelect";
 import { InitiativeTrackerTurnControls, type PreviousTurnState } from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import {
@@ -29,6 +30,10 @@ import {
   buildConditionEntry,
   formatRemainingConditionDuration,
 } from "@/components/initiativeTracker/conditionDuration";
+import {
+  replaceCustomEffectOnRow,
+  upsertCustomEffectDefinition,
+} from "@/components/initiativeTracker/customEffects";
 import { ROUND_DURATION_SECONDS, SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import type {
   InitiativeTrackerConditionDurationUnit,
@@ -66,11 +71,13 @@ import {
   selectIsInSession,
   selectSessionCode,
   selectSessionParticipants,
+  selectCustomEffectCatalog,
   removeInitiativeTrackerRow,
   removeInitiativeTrackerRows,
   startBattle,
   updateInitiativeTrackerRow,
   updateInitiativeTrackerRowsBulk,
+  setCustomEffectCatalog,
 } from "@/store/slices/sessionSlice";
 import type { InitiativeTrackerRow, TrackerConcentration } from "@/store/slices/sessionSlice";
 
@@ -95,6 +102,7 @@ export default function InitiativeTrackerPage() {
   const remoteCharacterVersions = useAppSelector(selectCharacterSheetRemoteVersions);
   const lastConsultedSheetPath = useAppSelector(selectLastConsultedSheetPath);
   const initBattleDraft = useAppSelector(selectSessionInitBattleDraft);
+  const customEffectCatalog = useAppSelector(selectCustomEffectCatalog);
 
   const isGameMaster = React.useMemo(() => {
     const userId = user.user?.keycloakId;
@@ -271,7 +279,23 @@ export default function InitiativeTrackerPage() {
   };
 
   const clearConditions = (row: InitiativeTrackerRow) => {
-    updateRow(row.id, { conditions: [] });
+    updateRow(row.id, { conditions: [], customEffects: [] });
+  };
+
+  const addCustomEffect: ConditionSelectCustomEffectsProps["onAdd"] = (row, input, duration) => {
+    const catalog = selectCustomEffectCatalog(store.getState() as Parameters<typeof selectCustomEffectCatalog>[0]);
+    const result = upsertCustomEffectDefinition(catalog, input);
+    if (!result.ok) return;
+    dispatch(setCustomEffectCatalog(result.catalog));
+    updateRow(row.id, {
+      customEffects: replaceCustomEffectOnRow(row.customEffects, result.definition, duration),
+    });
+  };
+
+  const removeCustomEffect: ConditionSelectCustomEffectsProps["onRemove"] = (row, effectId) => {
+    updateRow(row.id, {
+      customEffects: (row.customEffects ?? []).filter((entry) => entry.effectId !== effectId),
+    });
   };
 
   React.useEffect(() => {
@@ -651,6 +675,24 @@ export default function InitiativeTrackerPage() {
           onAddCondition={isGameMaster ? addCondition : undefined}
           onRemoveCondition={isGameMaster ? removeCondition : undefined}
           onClearConditions={isGameMaster ? clearConditions : undefined}
+          customEffects={
+            isGameMaster
+              ? {
+                  catalog: customEffectCatalog,
+                  createLabel: t("customEffectCreate"),
+                  createFromSearchLabel: (name: string) => t("customEffectCreateFromSearch", { name }),
+                  nameLabel: t("customEffectName"),
+                  namePlaceholder: t("customEffectNamePlaceholder"),
+                  descriptionLabel: t("customEffectDescription"),
+                  descriptionPlaceholder: t("customEffectDescriptionPlaceholder"),
+                  addConfirmLabel: t("customEffectAddConfirm"),
+                  nameRequiredLabel: t("customEffectNameRequired"),
+                  sectionLabel: t("customEffectSection"),
+                  onAdd: addCustomEffect,
+                  onRemove: removeCustomEffect,
+                }
+              : undefined
+          }
           onHitPointsClick={isGameMaster && isInSession ? (row) => setHealthDialogRow(row) : undefined}
           battleStarted={battleStarted}
           currentRound={currentRound}

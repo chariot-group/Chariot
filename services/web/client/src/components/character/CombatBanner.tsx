@@ -14,7 +14,7 @@ import {
   sanitizeInitiativeTrackerRowForPlayer,
   sortInitiativeTrackerRows,
 } from "@/components/initiativeTracker/utils";
-import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
+import { CONDITION_META, CUSTOM_EFFECT_META } from "@/components/initiativeTracker/conditionMeta";
 import { formatRemainingConditionDuration } from "@/components/initiativeTracker/conditionDuration";
 import { cn } from "@/lib/utils";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
@@ -195,7 +195,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
   );
 
   const formatConditionDuration = React.useCallback(
-    (entry: InitiativeTrackerConditionEntry): string | null => {
+    (entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">): string | null => {
       if (entry.duration?.unit === "untilCombatEnd") {
         return t("conditionDurationUntilCombatEnd");
       }
@@ -222,7 +222,8 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
       (expandedRow.playerFieldVisibility.hitPoints ||
         expandedRow.playerFieldVisibility.armorClass ||
         expandedRow.playerFieldVisibility.initiative ||
-        (expandedRow.playerFieldVisibility.conditions && expandedRow.conditions.length > 0)));
+        (expandedRow.playerFieldVisibility.conditions &&
+          (expandedRow.conditions.length > 0 || (expandedRow.customEffects?.length ?? 0) > 0))));
 
   return (
     <div ref={containerRef} className="shrink-0 border-t border-white/10 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
@@ -456,7 +457,8 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
               </div>
 
               {/* Badges de conditions */}
-              {(isGm || expandedRow.playerFieldVisibility.conditions) && expandedRow.conditions.length > 0 && (
+              {(isGm || expandedRow.playerFieldVisibility.conditions) &&
+                (expandedRow.conditions.length > 0 || (expandedRow.customEffects?.length ?? 0) > 0) && (
                 <div className="flex flex-wrap gap-1">
                   {expandedRow.conditions.map((entry) => {
                     const meta = CONDITION_META[entry.condition];
@@ -473,6 +475,25 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                         <Icon className="size-2.5 shrink-0" aria-hidden="true" />
                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <span>{t(`conditions.${entry.condition}` as any)}</span>
+                        {duration && (
+                          <span className="ml-0.5 opacity-70">{duration}</span>
+                        )}
+                      </span>
+                    );
+                  })}
+                  {(expandedRow.customEffects ?? []).map((entry) => {
+                    const { Icon, badgeClassName } = CUSTOM_EFFECT_META;
+                    const duration = formatConditionDuration(entry);
+                    return (
+                      <span
+                        key={entry.effectId}
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium leading-none",
+                          badgeClassName,
+                        )}
+                        title={entry.name}>
+                        <Icon className="size-2.5 shrink-0" aria-hidden="true" />
+                        <span className="max-w-[9rem] truncate">{entry.name}</span>
                         {duration && (
                           <span className="ml-0.5 opacity-70">{duration}</span>
                         )}

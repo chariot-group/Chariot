@@ -390,6 +390,15 @@
         "hours": "{amount} h",
         "rounds": "{amount, plural, one {# tour} other {# tours}}"
       },
+      "customEffectCreate": "Créer un effet personnalisé",
+      "customEffectCreateFromSearch": "Créer « {name} »",
+      "customEffectName": "Nom de l'effet",
+      "customEffectNamePlaceholder": "Ex. Béni, Hex, Enflammé",
+      "customEffectDescription": "Description (optionnel)",
+      "customEffectDescriptionPlaceholder": "Rappel pour la table",
+      "customEffectAddConfirm": "Ajouter l'effet",
+      "customEffectNameRequired": "Le nom est obligatoire.",
+      "customEffectSection": "Effets personnalisés",
       "statusLabels": {
         "alive": "{name} est en vie",
         "unconscious": "{name} est inconscient",

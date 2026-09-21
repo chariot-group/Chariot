@@ -390,6 +390,15 @@
         "hours": "{amount} h",
         "rounds": "{amount, plural, one {# asalto} other {# asaltos}}"
       },
+      "customEffectCreate": "Crear un efecto personalizado",
+      "customEffectCreateFromSearch": "Crear « {name} »",
+      "customEffectName": "Nombre del efecto",
+      "customEffectNamePlaceholder": "Ej. Bendecido, Hex, En llamas",
+      "customEffectDescription": "Descripción (opcional)",
+      "customEffectDescriptionPlaceholder": "Recordatorio para la mesa",
+      "customEffectAddConfirm": "Añadir el efecto",
+      "customEffectNameRequired": "El nombre es obligatorio.",
+      "customEffectSection": "Efectos personalizados",
       "statusLabels": {
         "alive": "{name} está vivo",
         "unconscious": "{name} está inconsciente",

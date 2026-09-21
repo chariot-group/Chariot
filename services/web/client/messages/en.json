@@ -390,6 +390,15 @@
         "hours": "{amount} h",
         "rounds": "{amount, plural, one {# round} other {# rounds}}"
       },
+      "customEffectCreate": "Create a custom effect",
+      "customEffectCreateFromSearch": "Create “{name}”",
+      "customEffectName": "Effect name",
+      "customEffectNamePlaceholder": "E.g. Blessed, Hex, Burning",
+      "customEffectDescription": "Description (optional)",
+      "customEffectDescriptionPlaceholder": "Reminder for the table",
+      "customEffectAddConfirm": "Add effect",
+      "customEffectNameRequired": "Name is required.",
+      "customEffectSection": "Custom effects",
       "statusLabels": {
         "alive": "{name} is alive",
         "unconscious": "{name} is unconscious",

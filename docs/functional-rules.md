@@ -1293,11 +1293,14 @@ When adding a rule:
 
 **Conditions Management**:
 
-- Supported conditions follow the D&D list used by tracker constants
+- Supported **standard** conditions follow the D&D list used by tracker constants
+- Custom named effects MAY also be applied on tracker rows (FR-tracker-custom-effects); they share duration and visibility with standard conditions
 - Per character:
-  - add/remove one condition
-  - clear all conditions
-  - one active entry per condition key (re-adding replaces previous entry)
+  - add/remove one standard condition
+  - add/remove one custom effect instance
+  - clear all conditions and custom effect instances on the row
+  - one active entry per standard condition key (re-adding replaces previous entry)
+  - one active instance per custom-effect catalog id (re-adding replaces previous instance)
 - Optional duration on add:
   - `seconds`, `minutes`, `hours`, `rounds`, `untilCombatEnd`
 - Duration runtime behavior:
@@ -1305,7 +1308,7 @@ When adding a rule:
   - decremented by one full round on round advance
   - restored by one full round when valid rollback crosses a round boundary
   - removed automatically when `remainingSeconds <= 0`
-  - all `untilCombatEnd` conditions are removed on combat end
+  - all `untilCombatEnd` conditions and custom effect instances are removed on combat end
 
 **HP Session Interaction**:
 
@@ -4456,3 +4459,69 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/characterSheetPdf/mapCharacterToPdfData.ts`
 - `docs/functional-rules.md` — FR-character-detail-view, FR-frontend-design
 - Combat actions (behavior baseline): `ActionUpdateSection.tsx`, `ActionSection.tsx`
+
+---
+
+## FR-tracker-custom-effects: Initiative Tracker - Session-Reusable Custom Effects
+
+**Rule**: The Game Master MUST be able to create named custom effects on the initiative tracker and reuse them on any combatant for the rest of the session, without recreating the definition each time.
+
+**Scope**:
+
+- Applies to the GM Initiative Tracker (FR-combat-initiative-tracker) while a session is active.
+- Complements FR-combat-initiative-tracker, FR-session-combat-navigation, FR-session-combat-sync, and FR-frontend-design without replacing the D&D standard condition catalog.
+- Tracker-only: custom effects MUST NOT be persisted on the character sheet.
+
+**Session Catalog**:
+
+- The session MUST keep a catalog of custom effect definitions: `{ id, name, description? }`.
+- Creating an effect (name required, description optional) MUST add it to the catalog if no existing entry matches the normalized name.
+- Normalized name: trimmed, uniqueness case-insensitive. A create with a matching name MUST reuse the existing catalog entry (MUST NOT duplicate).
+- Empty name MUST be rejected and MUST NOT create a catalog entry or row instance.
+- Name max length: 40 characters. Description max length: 280 characters.
+- The catalog MUST persist for the current session (Redux persist) across combat end, tracker reset, and round changes.
+- The catalog MUST be cleared when the session ends (`clearCurrentSession`) or when the session code changes.
+
+**Row Instances**:
+
+- Each tracker row MAY carry zero or more custom effect instances: `{ effectId, name, description?, duration?, remainingSeconds? }`.
+- Name and description are copied onto the instance at apply time so player snapshots can display them without the catalog.
+- Multiple custom effects per row are allowed; one instance per `effectId` (re-applying replaces duration).
+- Optional duration uses the same units and runtime as standard conditions (tick on round wrap, rollback restore, auto-remove at `remainingSeconds <= 0`, `untilCombatEnd` cleared on combat end).
+- Clearing all states on a row MUST remove custom instances without deleting catalog definitions.
+- Combat end / tracker reset MUST remove row instances and MUST keep the catalog.
+
+**Permissions and Visibility**:
+
+- Only the GM MAY create catalog entries and add, replace, or remove instances.
+- Players remain read-only (FR-session-combat-navigation).
+- Custom effects share the existing `playerFieldVisibility.conditions` flag; when hidden, instances MUST be stripped from player snapshots (FR-session-combat-sync).
+- Custom effects MUST NOT require a new visibility field.
+
+**UI**:
+
+- Custom effects are managed in the same États / Conditions menu as D&D conditions.
+- The GM MUST be able to search the catalog, reuse an existing definition, or create a new one (including from the current search text).
+- Applied custom effects MUST appear as badges in the tracker États column and on the combat banner when conditions are visible.
+- Accessibility: create/reuse controls MUST have accessible names; name field MUST expose validation (`aria-invalid` / `aria-describedby`); keyboard users MUST be able to create, reuse, and remove without a mouse. Long names truncate in the row badge (`title` keeps the full label).
+
+**Prohibitions**:
+
+- Persisting custom effects on the character sheet.
+- Requiring the GM to recreate a previously defined session effect to apply it to another row.
+- Letting players create or edit custom effects.
+- Exposing custom effect instances to players when the conditions field is hidden.
+
+**Tests**:
+
+- Nominal: GM creates “Béni”, applies it to row A, then reuses it on row B from the catalog without retyping the definition.
+- Edge: combat end clears row instances and keeps the catalog; a new combat in the same session can reuse “Béni”.
+- Edge: creating “béni” when “Béni” exists reuses the catalog id (no duplicate).
+- Failure: empty name is rejected; player snapshot with `conditions: false` has empty custom effect instances.
+
+**References**:
+
+- `services/web/client/src/components/initiativeTracker/ConditionSelect.tsx`
+- `services/web/client/src/components/initiativeTracker/customEffects.ts`
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `docs/functional-rules.md` — FR-combat-initiative-tracker, FR-session-combat-navigation, FR-session-combat-sync, FR-frontend-design
