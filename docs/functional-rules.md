@@ -4413,3 +4413,46 @@ Each initiative tracker row carries:
 - `services/admin/client/src/components/kpi/PeriodControls.tsx`
 - `services/admin/client/src/app/page.tsx`
 - `docs/functional-rules.md` — FR-admin-business-kpis, FR-frontend-design
+
+---
+
+## FR-character-spell-multi-damage: Spell Multiple Damage Entries
+
+**Rule**: A spell MUST support zero or more typed damage entries (same capability as character actions), so a single spell can express mixed damage such as `8d6 fire + 1d8 radiant`.
+
+**Requirements**:
+
+- Each damage entry MUST keep the current structured spell fields: `diceCount`, `diceType`, `bonus`, `damageType`.
+- Persistence, API DTO/schema, client types, and form schema MUST store spell damage as a list (`damageDetails: DamageDetails[]`), not a single object.
+- Edit mode (player and NPC magic tab) MUST allow adding and removing damage entries independently, with the same interaction pattern as combat actions (add row, delete row, remaining rows stay).
+- View mode, Codex spell preview, and character-sheet PDF MUST display every non-empty entry, joined with ` + ` (same visual convention as action damage).
+- An empty list MUST be valid (utility spells, or attack spells with no dice filled). Incomplete entries (missing dice count/type) MUST NOT appear in view/PDF.
+- Backward compatibility: a legacy single `damageDetails` object, or a legacy `damage` formula string with empty details, MUST be read as a one-entry list and remain editable/displayable.
+- Duplicate `damageType` values (case-insensitive, trimmed) on the same spell MUST be rejected, matching action damage uniqueness.
+- Healing remains a single `healingDetails` object (out of scope unless explicitly extended).
+- Accessibility: each add/delete control MUST have an accessible name including the entry index; damage-type fields keep existing error linking (`aria-invalid` / `aria-describedby`). Keyboard users MUST be able to add, fill, and remove entries without mouse.
+
+**Prohibitions**:
+
+- Limiting a spell to a single damage type or a single dice formula in edit, view, or PDF.
+- Dropping extra entries on save, Codex import, or sheet load.
+- Requiring `applyAbilityBonus` on spell damage (actions have that toggle; spells keep an explicit numeric `bonus` per entry).
+
+**Tests**:
+
+- Nominal: add two entries (`8d6 fire`, `1d8 radiant`) → persist, view, and PDF show `8d6 fire + 1d8 radiant`.
+- Edge: load a character with a single legacy `damageDetails` object or `damage` string `3d8+2 lightning` → one editable/displayable entry; adding a second type works.
+- Edge: remove one of two entries → the remaining entry is kept; empty list hides damage in view.
+- Failure: setting two entries to the same damage type is rejected and does not persist.
+
+**References**:
+
+- `services/adventure/api/src/resources/character/core/schemas/spellcasting/sub/spell.schema.ts`
+- `services/adventure/api/src/resources/character/core/dto/spellcasting/sub/spell.dto.ts`
+- `services/web/client/src/types/character.ts`
+- `services/web/client/src/schemas/character/base.schema.ts`
+- `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/magic/SpellDisplay.tsx`
+- `services/web/client/src/lib/characterSheetPdf/mapCharacterToPdfData.ts`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-frontend-design
+- Combat actions (behavior baseline): `ActionUpdateSection.tsx`, `ActionSection.tsx`

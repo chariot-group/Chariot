@@ -784,7 +784,8 @@
     "abilityCounterOrder": "El uso actual no puede superar el máximo.",
     "classLevelTotalsVsGlobalHitDice": "La suma de niveles de clase ({total}) supera el nivel global del personaje ({global}). Corrige los niveles o el nivel global — el error aparece en los dados restantes.",
     "singleDamageType": "Solo se permite un tipo de daño por línea de daño.",
-    "uniqueActionDamageType": "Cada tipo de daño debe ser único dentro de una misma acción."
+    "uniqueActionDamageType": "Cada tipo de daño debe ser único dentro de una misma acción.",
+    "uniqueSpellDamageType": "Cada tipo de daño debe ser único dentro de un mismo conjuro."
   },
   "characterDetail": {
     "editCharacter": "Modificar personaje",
@@ -950,6 +951,9 @@
       "damageDiceTypePlaceholder": "d6",
       "healingDiceCountPlaceholder": "4",
       "healingDiceTypePlaceholder": "d8",
+      "spellDamageEntry": "Daño {index}",
+      "addDamageToSpell": "Añadir una fila de daño a este conjuro",
+      "removeSpellDamage": "Eliminar la fila de daño {index}",
       "slotsUsed": "Usados",
       "slotsTotal": "Total",
       "copperPieces": "Piezas de Cobre",

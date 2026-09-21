@@ -53,7 +53,13 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
-import { parseDamageFormula } from "@/utils/spell-damage.utils";
+import {
+  coerceSpellDamageDetailsList,
+  EMPTY_SPELL_DAMAGE_DETAILS,
+  hydrateSpellDamageDetails,
+  isDamageDetailsFilled,
+  parseDamageFormula,
+} from "@/utils/spell-damage.utils";
 import { cn } from "@/lib/utils";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -209,17 +215,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   useLayoutEffect(() => {
     if (isInnate || spellcastingList.length === 0) return;
     const basePath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
-    const slotsNow =
-      (form.getValues(charPath(basePath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
+    const slotsNow = (form.getValues(charPath(basePath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
 
     for (const s of currentSpells) {
       const L = Number(s.level);
       if (Number.isNaN(L) || L <= 0) continue;
       const key = String(L);
       const slotPath = `${basePath}.${key}`;
-      const entry = slotsNow[key] as
-        | { total?: SpellSlotFieldValue; used?: SpellSlotFieldValue }
-        | undefined;
+      const entry = slotsNow[key] as { total?: SpellSlotFieldValue; used?: SpellSlotFieldValue } | undefined;
 
       if (entry == null || typeof entry !== "object") {
         setCharValue(form, slotPath, { total: 1, used: 0 }, { shouldDirty: true });
@@ -239,8 +242,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       }
     }
 
-    const slotsAfterEnsure =
-      (form.getValues(charPath(basePath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
+    const slotsAfterEnsure = (form.getValues(charPath(basePath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
     const pruned = pruneOrphanSpellSlotsByLevel(slotsAfterEnsure, currentSpells);
     if (!spellSlotLevelKeysEqual(slotsAfterEnsure, pruned)) {
       setCharValue(form, basePath, pruned, { shouldDirty: true, shouldValidate: false });
@@ -261,6 +263,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         range: "",
         ...spell,
         effectType: spell.effectType || "utility",
+        damageDetails: hydrateSpellDamageDetails(spell.damageDetails, spell.damage),
       };
 
       const spellLevel = Number(spellWithDefaults.level ?? 0);
@@ -297,9 +300,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       const uses = spellWithDefaults.usesPerDay ?? null;
       if (uses !== null) {
         const currentByUses =
-          (form.getValues(
-            charPath(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`),
-          ) as unknown as Record<string, { used: number; total: number }> | undefined) || {};
+          (form.getValues(charPath(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`)) as unknown as
+            Record<string, { used: number; total: number }> | undefined) || {};
         if (!currentByUses[`k${uses}`]) {
           setCharValue(
             form,
@@ -330,8 +332,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, newSpells, { shouldDirty: true });
 
       const slotsPath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
-      const slotsNow =
-        (form.getValues(charPath(slotsPath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
+      const slotsNow = (form.getValues(charPath(slotsPath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
       const pruned = pruneOrphanSpellSlotsByLevel(slotsNow, newSpells);
       if (!spellSlotLevelKeysEqual(slotsNow, pruned)) {
         setCharValue(form, slotsPath, pruned, { shouldDirty: true, shouldValidate: false });
@@ -370,6 +371,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     },
     [addSpell],
   );
+
+  const appendSpellDamageRow = useCallback(() => {
+    if (selectedSpellIndex === null) return;
+    const path = charPath(`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails`);
+    const current = coerceSpellDamageDetailsList(form.getValues(path));
+    setCharValue(form, path, [...current, { ...EMPTY_SPELL_DAMAGE_DETAILS }], { shouldDirty: true });
+    setOpenSpellDetailsAccordion((prev) => (prev.includes("damage") ? prev : [...prev, "damage"]));
+  }, [form, selectedSpellcastingIndex, selectedSpellIndex]);
 
   // ── Reactive watches (must be at top level) ──
   const proficiencyBonus: number =
@@ -415,7 +424,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const currentDamageDetails = useWatch({
     control: form.control,
     name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.damageDetails`,
-  }) as DamageDetails | undefined;
+  }) as DamageDetails | DamageDetails[] | undefined;
   const currentHealingDetails = useWatch({
     control: form.control,
     name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.healingDetails`,
@@ -457,9 +466,8 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     const uses: number | null = currentUsesPerDay ?? null;
     if (uses === null) return;
     const currentByUses =
-      (form.getValues(
-        charPath(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`),
-      ) as unknown as Record<string, { used: number; total: number }> | undefined) || {};
+      (form.getValues(charPath(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`)) as unknown as
+        Record<string, { used: number; total: number }> | undefined) || {};
     if (!currentByUses[`k${uses}`]) {
       setCharValue(
         form,
@@ -476,30 +484,22 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       return;
     }
 
-    // Parse and fill damage fields if old damage exists but damageDetails is empty
-    if (currentDamage && currentDamage.trim() !== "") {
-      const hasDamageDetails =
-        currentDamageDetails &&
-        (currentDamageDetails.diceCount ||
-          currentDamageDetails.diceType ||
-          (currentDamageDetails.bonus !== null && currentDamageDetails.bonus !== undefined) ||
-          currentDamageDetails.damageType);
+    // Hydrate legacy single-object or formula string into a damageDetails list
+    const hydratedDamages = hydrateSpellDamageDetails(currentDamageDetails, currentDamage);
+    const currentDamageList = coerceSpellDamageDetailsList(currentDamageDetails);
+    const needsDamageHydration =
+      !Array.isArray(currentDamageDetails) ||
+      (currentDamageList.length === 0 && hydratedDamages.some(isDamageDetailsFilled)) ||
+      (currentDamageList.length > 0 &&
+        !currentDamageList.some(isDamageDetailsFilled) &&
+        hydratedDamages.some(isDamageDetailsFilled));
 
-      if (!hasDamageDetails) {
-        const parsed = parseDamageFormula(currentDamage);
-        if (parsed.diceCount || parsed.diceType) {
-          form.setValue(
-            `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails`,
-            {
-              diceCount: parsed.diceCount,
-              diceType: parsed.diceType,
-              bonus: parsed.bonus,
-              damageType: parsed.damageType,
-            },
-            { shouldDirty: true },
-          );
-        }
-      }
+    if (needsDamageHydration && (hydratedDamages.length > 0 || Array.isArray(currentDamageDetails) === false)) {
+      form.setValue(
+        `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails`,
+        hydratedDamages,
+        { shouldDirty: hydratedDamages.some(isDamageDetailsFilled) && !currentDamageList.some(isDamageDetailsFilled) },
+      );
     }
 
     // Parse and fill healing fields if old healing exists but healingDetails is empty
@@ -535,9 +535,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     selectedSpellcastingIndex,
   ]);
 
-  const abilityScore: number = currentAbilityKey
-    ? (abilityScores[currentAbilityKey as keyof AbilityScores] ?? 10)
-    : 10;
+  const abilityScore: number = currentAbilityKey ? (abilityScores[currentAbilityKey as keyof AbilityScores] ?? 10) : 10;
   const abilityMod: number = calculateAbilityBonus(abilityScore);
   const calculatedSaveDC: number = calculateSpellSaveDC(proficiencyBonus, abilityScore);
   const calculatedAttackBonus: number = calculateSpellAttackBonus(proficiencyBonus, abilityScore);
@@ -613,9 +611,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     }
     const seen = new Set<number | null>();
     currentSpells.forEach((spell) => seen.add(spell.usesPerDay ?? null));
-    return Array.from(seen)
-      .map(npcUsesKey)
-      .join("|");
+    return Array.from(seen).map(npcUsesKey).join("|");
   })();
 
   useEffect(() => {
@@ -1964,16 +1960,32 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                   <AccordionItem
                     value="damage"
                     className="flex flex-col gap-2 w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3">
-                    <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
-                      <AccordionTrigger className="flex-1 py-2 sm:py-3 px-3 sm:px-4 md:px-6 hover:no-underline w-full">
+                    <Card className="flex flex-row items-center justify-between gap-2 p-0 overflow-hidden">
+                      <AccordionTrigger className="min-w-0 flex-1 py-2 sm:py-3 px-3 sm:px-4 md:px-6 hover:no-underline">
                         <h3 className={`text-sm md:text-base font-semibold ${accentColor}`}>{tEdit("spellDamage")}</h3>
                       </AccordionTrigger>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          appendSpellDamageRow();
+                        }}
+                        aria-label={tEdit("addDamageToSpell")}
+                        className="mr-3 sm:mr-4 shrink-0 flex items-center gap-2">
+                        <Plus
+                          className="size-4"
+                          aria-hidden="true"
+                        />
+                        {tEdit("add")}
+                      </Button>
                     </Card>
 
-                    <AccordionContent className="pb-2">
-                      <Card className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full">
+                    <AccordionContent className="pb-2 pt-0">
+                      <div className="flex flex-col gap-2 w-full min-w-0">
                         {currentEffectType === "attack" && (
-                          <div className="flex flex-col gap-1 sm:max-w-48">
+                          <Card className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full sm:max-w-xs">
                             <label
                               htmlFor={`spell-attack-bonus-${selectedSpellIndex}`}
                               className="text-xs font-medium">
@@ -1985,123 +1997,179 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                               readOnly
                               aria-readonly="true"
                             />
-                          </div>
+                          </Card>
                         )}
-                        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
-                          {/* Nombre de dés */}
-                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
-                            <Controller
-                              name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.diceCount`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field
-                                  data-invalid={fieldState.invalid}
-                                  orientation="vertical">
-                                  <label
-                                    htmlFor={`spell-damage-dice-count-${selectedSpellIndex}`}
-                                    className="text-xs font-medium">
-                                    {tEdit("diceCount")}
-                                  </label>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    id={`spell-damage-dice-count-${selectedSpellIndex}`}
-                                    type="number"
-                                    min={0}
-                                    className="w-full"
-                                    placeholder={tEdit("damageDiceCountPlaceholder")}
-                                  />
-                                </Field>
-                              )}
-                            />
-                          </div>
+                        <Controller
+                          name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails`}
+                          control={form.control}
+                          render={({ field: damageField }) => {
+                            const damages = coerceSpellDamageDetailsList(damageField.value);
 
-                          {/* Type de dé */}
-                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-25">
-                            <Controller
-                              name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.diceType`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field
-                                  data-invalid={fieldState.invalid}
-                                  orientation="vertical">
-                                  <label className="text-xs font-medium">{tEdit("diceType")}</label>
-                                  <Select
-                                    value={field.value ?? ""}
-                                    onValueChange={field.onChange}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder={tEdit("damageDiceTypePlaceholder")} />
-                                    </SelectTrigger>
-                                    <SelectContent position="item-aligned">
-                                      <SelectGroup>
-                                        {DICE_TYPES.map((dice) => (
-                                          <SelectItem
-                                            key={dice}
-                                            value={dice}>
-                                            {dice}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectGroup>
-                                    </SelectContent>
-                                  </Select>
-                                </Field>
-                              )}
-                            />
-                          </div>
+                            const updateDamage = (
+                              damageIndex: number,
+                              key: keyof DamageDetails,
+                              value: string | number | null,
+                            ) => {
+                              const updatedDamages = [...damages];
+                              const currentDamage = updatedDamages[damageIndex] ?? { ...EMPTY_SPELL_DAMAGE_DETAILS };
 
-                          {/* Bonus */}
-                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
-                            <Controller
-                              name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.bonus`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field
-                                  data-invalid={fieldState.invalid}
-                                  orientation="vertical">
-                                  <label
-                                    htmlFor={`spell-damage-bonus-${selectedSpellIndex}`}
-                                    className="text-xs font-medium">
-                                    {tEdit("bonus")}
-                                  </label>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    id={`spell-damage-bonus-${selectedSpellIndex}`}
-                                    type="number"
-                                    className="w-full"
-                                    placeholder={tEdit("zeroPlaceholder")}
-                                  />
-                                </Field>
-                              )}
-                            />
-                          </div>
+                              if (key === "damageType" && typeof value === "string") {
+                                const normalizedValue = value.trim();
+                                const duplicatedType = updatedDamages.some((damage, indexInList) => {
+                                  if (indexInList === damageIndex) return false;
+                                  return (
+                                    (damage?.damageType ?? "").trim().toLowerCase() === normalizedValue.toLowerCase()
+                                  );
+                                });
+                                if (normalizedValue && duplicatedType) return;
+                                updatedDamages[damageIndex] = {
+                                  ...currentDamage,
+                                  damageType: normalizedValue,
+                                };
+                                damageField.onChange(updatedDamages);
+                                return;
+                              }
 
-                          {/* Type de dégâts */}
-                          <div className="flex flex-col gap-1 col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-37.5">
-                            <Controller
-                              name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.damageType`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field
-                                  data-invalid={fieldState.invalid}
-                                  orientation="vertical">
-                                  <label
-                                    htmlFor={`spell-damage-type-${selectedSpellIndex}`}
-                                    className="text-xs font-medium">
-                                    {tEdit("damageType")}
-                                  </label>
-                                  <DamageTypeInput
-                                    id={`spell-damage-type-${selectedSpellIndex}`}
-                                    value={field.value ?? ""}
-                                    onChange={field.onChange}
-                                    placeholder={tEdit("damageTypePlaceholder")}
-                                  />
-                                </Field>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      </Card>
+                              updatedDamages[damageIndex] = {
+                                ...currentDamage,
+                                [key]: value,
+                              };
+                              damageField.onChange(updatedDamages);
+                            };
+
+                            return (
+                              <>
+                                {damages.map((damage, damageIndex) => {
+                                  const damageTypePath =
+                                    `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.${damageIndex}.damageType` as Path<Character>;
+                                  const damageTypeState = form.getFieldState(damageTypePath, form.formState);
+                                  const damageTypeErrorId = `spell-${selectedSpellIndex}-damage-${damageIndex}-type-error`;
+                                  const diceCountId = `spell-damage-dice-count-${selectedSpellIndex}-${damageIndex}`;
+                                  const bonusId = `spell-damage-bonus-${selectedSpellIndex}-${damageIndex}`;
+                                  const damageTypeId = `spell-damage-type-${selectedSpellIndex}-${damageIndex}`;
+
+                                  return (
+                                    <Card
+                                      key={damageIndex}
+                                      className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full min-w-0">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className={`text-sm font-semibold ${accentColor}`}>
+                                          {tEdit("spellDamageEntry", { index: damageIndex + 1 })}
+                                        </span>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => {
+                                            damageField.onChange(
+                                              damages.filter((_: DamageDetails, i: number) => i !== damageIndex),
+                                            );
+                                          }}
+                                          aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}
+                                          className="text-red-500 shrink-0">
+                                          <Trash2 className="size-4" />
+                                        </Button>
+                                      </div>
+                                      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+                                        <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
+                                          <label
+                                            htmlFor={diceCountId}
+                                            className="text-xs font-medium">
+                                            {tEdit("diceCount")}
+                                          </label>
+                                          <Input
+                                            id={diceCountId}
+                                            value={damage?.diceCount ?? ""}
+                                            type="number"
+                                            min={0}
+                                            className="w-full"
+                                            placeholder={tEdit("damageDiceCountPlaceholder")}
+                                            onChange={(event) => {
+                                              const nextValue = event.target.value;
+                                              updateDamage(
+                                                damageIndex,
+                                                "diceCount",
+                                                nextValue === "" ? null : Number(nextValue),
+                                              );
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-25">
+                                          <span className="text-xs font-medium">{tEdit("diceType")}</span>
+                                          <Select
+                                            value={damage?.diceType || undefined}
+                                            onValueChange={(value) => updateDamage(damageIndex, "diceType", value)}>
+                                            <SelectTrigger>
+                                              <SelectValue placeholder={tEdit("damageDiceTypePlaceholder")} />
+                                            </SelectTrigger>
+                                            <SelectContent position="item-aligned">
+                                              <SelectGroup>
+                                                {DICE_TYPES.map((dice) => (
+                                                  <SelectItem
+                                                    key={dice}
+                                                    value={dice}>
+                                                    {dice}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectGroup>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
+                                          <label
+                                            htmlFor={bonusId}
+                                            className="text-xs font-medium">
+                                            {tEdit("bonus")}
+                                          </label>
+                                          <Input
+                                            id={bonusId}
+                                            value={damage?.bonus ?? ""}
+                                            type="number"
+                                            className="w-full"
+                                            placeholder={tEdit("zeroPlaceholder")}
+                                            onChange={(event) => {
+                                              const nextValue = event.target.value;
+                                              updateDamage(
+                                                damageIndex,
+                                                "bonus",
+                                                nextValue === "" ? null : Number(nextValue),
+                                              );
+                                            }}
+                                          />
+                                        </div>
+                                        <Field
+                                          data-invalid={damageTypeState.invalid}
+                                          orientation="vertical"
+                                          className="flex flex-col gap-1 col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-37.5">
+                                          <label
+                                            htmlFor={damageTypeId}
+                                            className="text-xs font-medium">
+                                            {tEdit("damageType")}
+                                          </label>
+                                          <DamageTypeInput
+                                            id={damageTypeId}
+                                            value={damage?.damageType ?? ""}
+                                            onChange={(value) => updateDamage(damageIndex, "damageType", value)}
+                                            placeholder={tEdit("damageTypePlaceholder")}
+                                            aria-invalid={damageTypeState.invalid}
+                                            aria-describedby={damageTypeState.error ? damageTypeErrorId : undefined}
+                                          />
+                                          {damageTypeState.error && (
+                                            <FieldError
+                                              id={damageTypeErrorId}
+                                              errors={[damageTypeState.error]}
+                                            />
+                                          )}
+                                        </Field>
+                                      </div>
+                                    </Card>
+                                  );
+                                })}
+                              </>
+                            );
+                          }}
+                        />
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
 
