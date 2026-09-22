@@ -13,7 +13,7 @@ import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useMemo, useRef } from "react";
 import { useFormState } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
+import { clearNpcCodexDraft, clearPlayerCodexDraft, selectNpcCodexDraft, selectPlayerCodexDraft } from "@/store/slices/codexDraftSlice";
 import { upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
 import { isPlayer } from "@/utils/global.utils";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
@@ -75,74 +75,53 @@ const DEFAULT_MASTERIES_ABILITY = {
   charisma: false,
 };
 
-/**
- * Reusable character form view for creation
- * Displays tabs with empty form fields for creating a new character
- */
-export default function CharacterFormView({ characterType, groupId }: CharacterFormViewProps) {
-  const tCreate = useTranslations("characterCreate");
-  const tForm = useTranslations("characterForm");
-  const router = useRouter();
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const dispatch = useAppDispatch();
-  const reduxCodexDraft = useAppSelector(selectNpcCodexDraft);
-  const contextMode = useAppSelector(selectContextMode);
+const getAbilityModifier = (value?: number): number => Math.floor(((value ?? 10) - 10) / 2);
 
-  const campaignId = params.idCampaign as string;
-  const resolvedGroupId = groupId || (params.idGroup as string);
+function buildCodexImportedCombatStats(data: {
+  stats?: {
+    abilityScores?: Partial<{
+      strength: number;
+      dexterity: number;
+      constitution: number;
+      intelligence: number;
+      wisdom: number;
+      charisma: number;
+    }>;
+    savingThrows?: Partial<{
+      strength: number;
+      dexterity: number;
+      constitution: number;
+      intelligence: number;
+      wisdom: number;
+      charisma: number;
+    }>;
+    armorClass?: number;
+    speed?: Partial<{ walk: number; climb: number; swim: number; fly: number; burrow: number }>;
+  };
+}) {
+  const abilityScores = {
+    strength: data.stats?.abilityScores?.strength ?? 10,
+    dexterity: data.stats?.abilityScores?.dexterity ?? 10,
+    constitution: data.stats?.abilityScores?.constitution ?? 10,
+    intelligence: data.stats?.abilityScores?.intelligence ?? 10,
+    wisdom: data.stats?.abilityScores?.wisdom ?? 10,
+    charisma: data.stats?.abilityScores?.charisma ?? 10,
+  };
+  const codexSavingThrows = data.stats?.savingThrows || {};
+  const dexterityModifier = getAbilityModifier(abilityScores.dexterity);
+  const baseArmorClass = data.stats?.armorClass ?? 0;
 
-  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
-  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
-
-  // Lire les données pré-remplies depuis l'URL (pour NPC depuis codex)
-  const codexDataParam = searchParams.get("codexData");
-  const linkedPlayerIdParam =
-    contextMode === "player" ? searchParams.get("linkedPlayerId")?.trim() || null : null;
-
-  const codexData = useMemo(() => {
-    if (reduxCodexDraft) return reduxCodexDraft;
-    if (!codexDataParam) return null;
-    try {
-      return JSON.parse(decodeURIComponent(codexDataParam));
-    } catch {
-      return null;
-    }
-  }, [reduxCodexDraft, codexDataParam]);
-
-  // Fonction pour changer d'onglet et mettre à jour l'URL
-  const handleTabChange = useCallback((newTab: string) => {
-    const tab = newTab as CharacterTab;
-    // Mettre à jour l'URL sans recharger la page
-    const currentParams = new URLSearchParams(searchParams.toString());
-    currentParams.set("tab", tab);
-    router.replace(`?${currentParams.toString()}`, { scroll: false });
-  }, [router, searchParams]);
-
-  const defaultSavingThrows = DEFAULT_SAVING_THROWS;
-  const defaultMasteries = DEFAULT_MASTERIES;
-  const defaultMasteriesAbility = DEFAULT_MASTERIES_ABILITY;
-  const defaultNpcSkills = DEFAULT_MASTERIES;
-
-  const getAbilityModifier = (value?: number): number => Math.floor(((value ?? 10) - 10) / 2);
-
-  const npcCodexDefaults = useMemo(() => {
-    if (!codexData) return null;
-
-    const abilityScores = {
-      strength: codexData.stats?.abilityScores?.strength ?? 10,
-      dexterity: codexData.stats?.abilityScores?.dexterity ?? 10,
-      constitution: codexData.stats?.abilityScores?.constitution ?? 10,
-      intelligence: codexData.stats?.abilityScores?.intelligence ?? 10,
-      wisdom: codexData.stats?.abilityScores?.wisdom ?? 10,
-      charisma: codexData.stats?.abilityScores?.charisma ?? 10,
-    };
-
-    const codexSavingThrows = codexData.stats?.savingThrows || {};
-    const dexterityModifier = getAbilityModifier(abilityScores.dexterity);
-    const baseArmorClass = codexData.stats?.armorClass ?? 0;
-    const computedArmorClass = Math.max(baseArmorClass, 10 + dexterityModifier);
-    const normalizedSavingThrows = {
+  return {
+    abilityScores,
+    armorClass: Math.max(baseArmorClass, 10 + dexterityModifier),
+    speed: {
+      walk: data.stats?.speed?.walk ?? 30,
+      climb: data.stats?.speed?.climb ?? 0,
+      swim: data.stats?.speed?.swim ?? 0,
+      fly: data.stats?.speed?.fly ?? 0,
+      burrow: data.stats?.speed?.burrow ?? 0,
+    },
+    savingThrows: {
       strength: Math.max(
         0,
         (codexSavingThrows.strength ?? getAbilityModifier(abilityScores.strength)) -
@@ -173,35 +152,117 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         (codexSavingThrows.charisma ?? getAbilityModifier(abilityScores.charisma)) -
           getAbilityModifier(abilityScores.charisma),
       ),
-    };
+    },
+  };
+}
+
+/**
+ * Reusable character form view for creation
+ * Displays tabs with empty form fields for creating a new character
+ */
+export default function CharacterFormView({ characterType, groupId }: CharacterFormViewProps) {
+  const tCreate = useTranslations("characterCreate");
+  const tForm = useTranslations("characterForm");
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
+  const reduxNpcCodexDraft = useAppSelector(selectNpcCodexDraft);
+  const reduxPlayerCodexDraft = useAppSelector(selectPlayerCodexDraft);
+  const contextMode = useAppSelector(selectContextMode);
+
+  const campaignId = params.idCampaign as string;
+  const resolvedGroupId = groupId || (params.idGroup as string);
+
+  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
+  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
+
+  // Lire les données pré-remplies depuis l'URL (pour NPC depuis codex)
+  const codexDataParam = searchParams.get("codexData");
+  const linkedPlayerIdParam =
+    contextMode === "player" ? searchParams.get("linkedPlayerId")?.trim() || null : null;
+
+  const npcCodexData = useMemo(() => {
+    if (characterType !== "npcs") return null;
+    if (reduxNpcCodexDraft) return reduxNpcCodexDraft;
+    if (!codexDataParam) return null;
+    try {
+      return JSON.parse(decodeURIComponent(codexDataParam));
+    } catch {
+      return null;
+    }
+  }, [characterType, reduxNpcCodexDraft, codexDataParam]);
+
+  const playerCodexData = characterType === "players" ? reduxPlayerCodexDraft : null;
+
+  // Fonction pour changer d'onglet et mettre à jour l'URL
+  const handleTabChange = useCallback((newTab: string) => {
+    const tab = newTab as CharacterTab;
+    // Mettre à jour l'URL sans recharger la page
+    const currentParams = new URLSearchParams(searchParams.toString());
+    currentParams.set("tab", tab);
+    router.replace(`?${currentParams.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  const defaultSavingThrows = DEFAULT_SAVING_THROWS;
+  const defaultMasteries = DEFAULT_MASTERIES;
+  const defaultMasteriesAbility = DEFAULT_MASTERIES_ABILITY;
+  const defaultNpcSkills = DEFAULT_MASTERIES;
+
+  const npcCodexDefaults = useMemo(() => {
+    if (!npcCodexData) return null;
+    const combatStats = buildCodexImportedCombatStats(npcCodexData);
 
     return {
-      ...codexData,
-      groups: resolvedGroupId ? [resolvedGroupId] : codexData.groups || [],
+      ...npcCodexData,
+      groups: resolvedGroupId ? [resolvedGroupId] : npcCodexData.groups || [],
       stats: {
-        ...(codexData.stats || {}),
-        armorClass: computedArmorClass,
-        abilityScores,
-        speed: {
-          walk: codexData.stats?.speed?.walk ?? 30,
-          climb: codexData.stats?.speed?.climb ?? 0,
-          swim: codexData.stats?.speed?.swim ?? 0,
-          fly: codexData.stats?.speed?.fly ?? 0,
-          burrow: codexData.stats?.speed?.burrow ?? 0,
-        },
-        savingThrows: normalizedSavingThrows,
+        ...(npcCodexData.stats || {}),
+        ...combatStats,
         skills: {
           ...defaultNpcSkills,
-          ...(codexData.stats?.skills || {}),
+          ...(npcCodexData.stats?.skills || {}),
         },
       },
     };
-  }, [codexData, defaultNpcSkills, resolvedGroupId]);
+  }, [npcCodexData, defaultNpcSkills, resolvedGroupId]);
+
+  const playerCodexDefaults = useMemo(() => {
+    if (!playerCodexData) return null;
+    const combatStats = buildCodexImportedCombatStats(playerCodexData);
+
+    return {
+      ...playerCodexData,
+      groups: resolvedGroupId ? [resolvedGroupId] : playerCodexData.groups || [],
+      class: playerCodexData.class?.length
+        ? playerCodexData.class
+        : [{ name: "", subclass: "", level: 1, hitDice: 0 }],
+      profile: {
+        alignment: playerCodexData.profile?.alignment ?? "True Neutral",
+        race: playerCodexData.profile?.race ?? "",
+        subrace: playerCodexData.profile?.subrace ?? "",
+        history: playerCodexData.profile?.history ?? "",
+      },
+      stats: {
+        ...(playerCodexData.stats || {}),
+        ...combatStats,
+        masteries: {
+          ...defaultMasteries,
+          ...(playerCodexData.stats?.masteries || {}),
+        },
+        masteriesAbility: {
+          ...defaultMasteriesAbility,
+          ...(playerCodexData.stats?.masteriesAbility || {}),
+        },
+      },
+      actions: Array.isArray(playerCodexData.actions) ? playerCodexData.actions : [],
+    };
+  }, [playerCodexData, defaultMasteries, defaultMasteriesAbility, resolvedGroupId]);
 
   // Default values for a new character with the group pre-assigned
   const defaultValues =
     characterType === "players"
-      ? {
+      ? playerCodexDefaults ?? {
           groups: resolvedGroupId ? [resolvedGroupId] : [],
           class: [{ name: "", subclass: "", level: 1, hitDice: 0 }],
           profile: {
@@ -295,16 +356,37 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const hasAppliedCodexDefaultsRef = useRef(false);
 
   useEffect(() => {
-    if (characterType !== "npcs") return;
-    if (!npcCodexDefaults) return;
+    if (characterType === "npcs") {
+      if (!npcCodexDefaults) return;
+      if (hasAppliedCodexDefaultsRef.current) return;
+
+      hasAppliedCodexDefaultsRef.current = true;
+      form.reset({ ...npcCodexDefaults, linkedPlayerId: linkedPlayerIdParam });
+      if (reduxNpcCodexDraft) {
+        dispatch(clearNpcCodexDraft());
+      }
+      return;
+    }
+
+    if (characterType !== "players") return;
+    if (!playerCodexDefaults) return;
     if (hasAppliedCodexDefaultsRef.current) return;
 
     hasAppliedCodexDefaultsRef.current = true;
-    form.reset({ ...npcCodexDefaults, linkedPlayerId: linkedPlayerIdParam });
-    if (reduxCodexDraft) {
-      dispatch(clearNpcCodexDraft());
+    form.reset(playerCodexDefaults);
+    if (reduxPlayerCodexDraft) {
+      dispatch(clearPlayerCodexDraft());
     }
-  }, [characterType, npcCodexDefaults, form, reduxCodexDraft, dispatch, linkedPlayerIdParam]);
+  }, [
+    characterType,
+    npcCodexDefaults,
+    playerCodexDefaults,
+    form,
+    reduxNpcCodexDraft,
+    reduxPlayerCodexDraft,
+    dispatch,
+    linkedPlayerIdParam,
+  ]);
 
   // Create a placeholder character object for the tab content components
   // This is needed because the tab components expect a character prop

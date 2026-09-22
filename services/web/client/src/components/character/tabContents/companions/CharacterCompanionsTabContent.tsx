@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2, Link2, Link2Off, UserPlus } from "lucide-react";
+import { Loader2, Link2, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import {
   Dialog,
   DialogContent,
@@ -14,39 +13,68 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import CharacterService from "@/services/CharacterService";
 import { characterDisplayName } from "@/lib/duplicateName";
-import { applyCompanionLinkChange, playerSpaceNpcsForLinkPicker } from "@/lib/npcPlayerLink";
+import {
+  applyCompanionLinkChange,
+  linkedPlayerIdOf,
+  playerSpaceNpcsForLinkPicker,
+  queueCompanionLinkOp,
+  type CompanionLinkOp,
+} from "@/lib/npcPlayerLink";
 import { useAppDispatch } from "@/store/hooks";
 import { upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
+import { CompanionNpcCard } from "@/components/character/tabContents/companions/CompanionNpcCard";
 import { showToast } from "@/lib/toast";
 import type { NPC, Player } from "@/types/character";
 import { cn } from "@/lib/utils";
+import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 interface CharacterCompanionsTabContentProps {
   player: Player;
   isEditing: boolean;
+  onPendingChange?: (pending: boolean) => void;
+  persistRef?: MutableRefObject<(() => Promise<void>) | null>;
+  revertRef?: MutableRefObject<(() => void) | null>;
 }
 
+/**
+ * @see FR-npc-player-link — link/unlink persist only when the Player form is saved.
+ */
 export default function CharacterCompanionsTabContent({
   player,
   isEditing,
+  onPendingChange,
+  persistRef,
+  revertRef,
 }: CharacterCompanionsTabContentProps) {
   const t = useTranslations("characterDetail.companions");
-  const tNpc = useTranslations("characterDetail.npc");
   const tRef = useRef(t);
+  const sessionCode = useActiveSessionCode();
   tRef.current = t;
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const playerId = player._id;
+  const [savedCompanions, setSavedCompanions] = useState<NPC[]>([]);
   const [companions, setCompanions] = useState<NPC[]>([]);
+  const [pendingOps, setPendingOps] = useState<CompanionLinkOp[]>([]);
   const [loading, setLoading] = useState(true);
   const [linkOpen, setLinkOpen] = useState(false);
   const [unlinkedNpcs, setUnlinkedNpcs] = useState<NPC[]>([]);
   const [loadingUnlinked, setLoadingUnlinked] = useState(false);
-  const [pendingUnlink, setPendingUnlink] = useState<NPC | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isPersisting, setIsPersisting] = useState(false);
+  const originalByIdRef = useRef(new Map<string, string | null>());
+  const pendingOpsRef = useRef<CompanionLinkOp[]>([]);
+  const companionsRef = useRef<NPC[]>([]);
+  const savedCompanionsRef = useRef<NPC[]>([]);
+  pendingOpsRef.current = pendingOps;
+  companionsRef.current = companions;
+  savedCompanionsRef.current = savedCompanions;
+  const onPendingChangeRef = useRef(onPendingChange);
+  onPendingChangeRef.current = onPendingChange;
+
+  useEffect(() => {
+    onPendingChangeRef.current?.(pendingOps.length > 0);
+  }, [pendingOps]);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +82,15 @@ export default function CharacterCompanionsTabContent({
 
     void CharacterService.getNpcsByLinkedPlayers([playerId])
       .then((linked) => {
-        if (!cancelled) setCompanions(linked);
+        if (cancelled) return;
+        const originals = new Map<string, string | null>();
+        for (const npc of linked) {
+          if (npc._id) originals.set(npc._id, linkedPlayerIdOf(npc));
+        }
+        originalByIdRef.current = originals;
+        setSavedCompanions(linked);
+        setCompanions(linked);
+        setPendingOps([]);
       })
       .catch(() => {
         if (!cancelled) {
@@ -70,12 +106,80 @@ export default function CharacterCompanionsTabContent({
     };
   }, [playerId]);
 
+  const queueDraft = useCallback(
+    (npc: NPC, linkedPlayerId: string | null) => {
+      const original = originalByIdRef.current.get(npc._id) ?? linkedPlayerIdOf(npc);
+      const updated = { ...npc, linkedPlayerId } as NPC;
+      setCompanions((current) => applyCompanionLinkChange(current, updated, playerId));
+      setPendingOps((current) => queueCompanionLinkOp(current, npc, linkedPlayerId, original));
+      if (linkedPlayerId) {
+        setUnlinkedNpcs((current) => current.filter((item) => item._id !== npc._id));
+      } else {
+        setUnlinkedNpcs((current) =>
+          current.some((item) => item._id === npc._id) ? current : [...current, { ...npc, linkedPlayerId: null }],
+        );
+      }
+      setLinkOpen(false);
+    },
+    [playerId],
+  );
+
+  const persist = useCallback(async () => {
+    const ops = pendingOpsRef.current;
+    if (ops.length === 0) return;
+
+    setIsPersisting(true);
+    try {
+      const persisted: NPC[] = [];
+      for (const op of ops) {
+        const updated = (await CharacterService.updateCharacter("npcs", op.npc._id, {
+          linkedPlayerId: op.linkedPlayerId,
+        })) as NPC;
+        dispatch(upsertPlayerSpaceNpc(updated));
+        persisted.push(updated);
+        originalByIdRef.current.set(updated._id, linkedPlayerIdOf(updated));
+      }
+      let nextCompanions = savedCompanionsRef.current;
+      for (const updated of persisted) {
+        nextCompanions = applyCompanionLinkChange(nextCompanions, updated, playerId);
+      }
+      setSavedCompanions(nextCompanions);
+      setCompanions(nextCompanions);
+      setPendingOps([]);
+    } finally {
+      setIsPersisting(false);
+    }
+  }, [dispatch, playerId]);
+
+  const revert = useCallback(() => {
+    setCompanions(savedCompanionsRef.current);
+    setPendingOps([]);
+    setLinkOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (persistRef) persistRef.current = persist;
+    if (revertRef) revertRef.current = revert;
+    return () => {
+      if (persistRef) persistRef.current = null;
+      if (revertRef) revertRef.current = null;
+    };
+  }, [persist, persistRef, revert, revertRef]);
+
   const openLinkDialog = useCallback(async () => {
     setLinkOpen(true);
     setLoadingUnlinked(true);
     try {
       const response = await CharacterService.getUnlinkedNpcsWithoutGroup(1, 50);
-      setUnlinkedNpcs(playerSpaceNpcsForLinkPicker((response.data ?? []) as NPC[]));
+      const picker = playerSpaceNpcsForLinkPicker((response.data ?? []) as NPC[]).filter(
+        (npc) => !companionsRef.current.some((companion) => companion._id === npc._id),
+      );
+      for (const npc of picker) {
+        if (npc._id && !originalByIdRef.current.has(npc._id)) {
+          originalByIdRef.current.set(npc._id, linkedPlayerIdOf(npc));
+        }
+      }
+      setUnlinkedNpcs(picker);
     } catch {
       showToast(tRef.current("loadError"), "error", { toastId: "companions-unlinked-load-error" });
       setUnlinkedNpcs([]);
@@ -83,32 +187,6 @@ export default function CharacterCompanionsTabContent({
       setLoadingUnlinked(false);
     }
   }, []);
-
-  const applyLink = useCallback(
-    async (npc: NPC, linkedPlayerId: string | null) => {
-      setIsSaving(true);
-      try {
-        const updated = (await CharacterService.updateCharacter("npcs", npc._id, {
-          linkedPlayerId,
-        })) as NPC;
-        dispatch(upsertPlayerSpaceNpc(updated));
-        setCompanions((current) => applyCompanionLinkChange(current, updated, playerId));
-        if (linkedPlayerId) {
-          setUnlinkedNpcs((current) => current.filter((item) => item._id !== updated._id));
-          showToast(tRef.current("linkSuccess"), "success");
-        } else {
-          showToast(tRef.current("unlinkSuccess"), "success");
-        }
-      } catch {
-        showToast(tRef.current("saveError"), "error");
-      } finally {
-        setIsSaving(false);
-        setLinkOpen(false);
-        setPendingUnlink(null);
-      }
-    },
-    [dispatch, playerId],
-  );
 
   const unnamed = t("unnamedNpc");
   const sortedCompanions = useMemo(
@@ -149,59 +227,41 @@ export default function CharacterCompanionsTabContent({
             />
             {t("linkExisting")}
           </Button>
-          <Button
-            type="button"
-            onClick={() => router.push(`/characters/new/npcs?linkedPlayerId=${playerId}`)}
-            aria-label={t("createLinked")}
-            className={cn("cursor-pointer bg-purple text-white hover:bg-purple/80")}>
-            <UserPlus
-              className="size-4"
-              aria-hidden="true"
-            />
-            {t("createLinked")}
-          </Button>
+          <CreateCharacterDialog
+            npcOnly
+            linkedPlayerId={playerId}>
+            <Button
+              type="button"
+              aria-label={t("createLinked")}
+              className={cn("cursor-pointer bg-purple text-white hover:bg-purple/80")}>
+              <UserPlus
+                className="size-4"
+                aria-hidden="true"
+              />
+              {t("createLinked")}
+            </Button>
+          </CreateCharacterDialog>
         </div>
       ) : null}
 
       {sortedCompanions.length === 0 ? (
         <p className="text-sm text-white/70">{t("empty")}</p>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {sortedCompanions.map((npc) => {
-            const name = characterDisplayName(npc) || unnamed;
-            const cr = npc.challenge?.challengeRating;
-            return (
-              <li
-                key={npc._id}
-                className="flex min-w-0 items-center gap-2 rounded-[15px] bg-gray-middle-light px-3 py-2">
-                <Link
-                  href={`/characters/${npc._id}`}
-                  className="min-w-0 flex-1 truncate text-sm font-medium text-white focus-visible:ring-1 focus-visible:ring-white/50">
-                  {name}
-                  {cr != null ? (
-                    <span className="ml-2 text-xs font-normal text-white/60">
-                      {tNpc("challengeRatingAbbr")} {cr}
-                    </span>
-                  ) : null}
-                </Link>
-                {isEditing ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    disabled={isSaving}
-                    onClick={() => setPendingUnlink(npc)}
-                    aria-label={t("unlinkAria", { name })}
-                    className="cursor-pointer shrink-0 text-white/80 hover:text-white">
-                    <Link2Off
-                      className="size-4"
-                      aria-hidden="true"
-                    />
-                  </Button>
-                ) : null}
-              </li>
-            );
-          })}
+        <ul className="grid w-full min-w-0 grid-cols-1 gap-2 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
+          {sortedCompanions.map((npc) => (
+            <li
+              key={npc._id}
+              className="min-w-0 h-full">
+              <CompanionNpcCard
+                npc={npc}
+                unnamedFallback={unnamed}
+                isEditing={isEditing}
+                isPersisting={isPersisting}
+                sessionCode={sessionCode}
+                onUnlink={(companion) => queueDraft(companion, null)}
+              />
+            </li>
+          ))}
         </ul>
       )}
 
@@ -230,8 +290,8 @@ export default function CharacterCompanionsTabContent({
                   <li key={npc._id}>
                     <button
                       type="button"
-                      disabled={isSaving}
-                      onClick={() => void applyLink(npc, playerId)}
+                      disabled={isPersisting}
+                      onClick={() => queueDraft(npc, playerId)}
                       className="flex w-full cursor-pointer items-center rounded-[12px] px-3 py-2 text-left text-sm text-white hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-white/50 disabled:opacity-50">
                       {name}
                     </button>
@@ -250,24 +310,6 @@ export default function CharacterCompanionsTabContent({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <ConfirmDialog
-        open={!!pendingUnlink}
-        onOpenChange={(open) => {
-          if (!open && !isSaving) setPendingUnlink(null);
-        }}
-        title={t("unlinkTitle")}
-        description={t("unlinkDescription", {
-          name: characterDisplayName(pendingUnlink) || unnamed,
-        })}
-        confirmLabel={t("unlink")}
-        cancelLabel={t("cancel")}
-        onConfirm={() => {
-          if (!pendingUnlink) return;
-          void applyLink(pendingUnlink, null);
-        }}
-        isLoading={isSaving}
-      />
     </section>
   );
 }

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { NPC } from "@/types/character";
+import { NPC, Player } from "@/types/character";
 import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/request";
 import CodexService, {
@@ -35,6 +35,7 @@ import {
   createPortaledFilterOpenTracker,
   shouldPreventDialogDismissForPortaledFilter,
 } from "@/lib/portaledFilterOpenTracker";
+import { resolveCodexCreateSelection, type CodexCreateSelection } from "@/lib/codexCharacterCreate";
 import React from "react";
 
 type CodexEntityTypeFilter = "both" | "monsters" | "players";
@@ -42,6 +43,9 @@ type CodexEntityTypeFilter = "both" | "monsters" | "players";
 interface MonsterCodexDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Kind-preserving create: monster → NPC, premade player → Player. */
+  onCharacterSelected?: (selection: CodexCreateSelection) => void;
+  /** @deprecated Prefer onCharacterSelected. Called only for monster → NPC drafts. */
   onMonsterSelected?: (monster: Partial<NPC>) => void;
   /** Read-only browse: preview only, no NPC draft creation. */
   browseOnly?: boolean;
@@ -226,6 +230,7 @@ function PlayerResultItem({
 export default function MonsterCodexDialog({
   open,
   onOpenChange,
+  onCharacterSelected,
   onMonsterSelected,
   browseOnly = false,
   embedded = false,
@@ -593,8 +598,32 @@ export default function MonsterCodexDialog({
   };
 
   const handleValidate = () => {
-    if (selectedMonster && onMonsterSelected) {
-      onMonsterSelected(selectedMonster);
+    const previewLang =
+      selectedItemKey?.split(":").at(-1) ??
+      selectedCodexPlayer?.languages[0] ??
+      selectedCodexMonster?.languages[0] ??
+      "en";
+
+    let playerDraft: Partial<Player> | null = null;
+    if (selectedEntryKind === "player" && selectedCodexPlayer) {
+      try {
+        playerDraft = CodexService.convertCodexPlayerToChariotPlayer(selectedCodexPlayer, previewLang);
+      } catch {
+        setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+        return;
+      }
+    }
+
+    const selection = resolveCodexCreateSelection({
+      entryKind: selectedEntryKind,
+      npcDraft: selectedEntryKind === "monster" ? selectedMonster : null,
+      playerDraft,
+    });
+    if (!selection) return;
+
+    onCharacterSelected?.(selection);
+    if (selection.kind === "npc") {
+      onMonsterSelected?.(selection.draft);
     }
   };
 

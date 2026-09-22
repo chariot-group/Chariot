@@ -4,7 +4,7 @@ import { SquarePen, X, Save, FileDown } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import CharacterTabs, { CharacterTab, tabsForCharacterSheet } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
@@ -143,9 +143,12 @@ export default function CharacterDetailView({
   const [pendingAvatarRemove, setPendingAvatarRemove] = React.useState(false);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = React.useState<string | null>(null);
   const [isAvatarCommitting, setIsAvatarCommitting] = React.useState(false);
+  const [hasPendingCompanionChanges, setHasPendingCompanionChanges] = React.useState(false);
+  const companionPersistRef = useRef<(() => Promise<void>) | null>(null);
+  const companionRevertRef = useRef<(() => void) | null>(null);
 
   const isAvatarDirty = pendingAvatarFile !== null || pendingAvatarRemove;
-  const hasPendingChanges = isDirty || isAvatarDirty;
+  const hasPendingChanges = isDirty || isAvatarDirty || hasPendingCompanionChanges;
 
   const resetAvatarDraft = React.useCallback(() => {
     if (avatarPreviewUrl) {
@@ -215,6 +218,8 @@ export default function CharacterDetailView({
           }
         }
 
+        await companionPersistRef.current?.();
+
         const updatePayload = { ...data } as Record<string, unknown>;
         delete updatePayload.avatar;
 
@@ -249,6 +254,7 @@ export default function CharacterDetailView({
   );
 
   const handleCancelEditor = React.useCallback(() => {
+    companionRevertRef.current?.();
     resetAvatarDraft();
     onCancel();
     setIsEditing(false);
@@ -647,6 +653,9 @@ export default function CharacterDetailView({
               form={form}
               isEditing={isEditing}
               onCharacterUpdate={onCharacterUpdate}
+              onCompanionPendingChange={setHasPendingCompanionChanges}
+              companionPersistRef={companionPersistRef}
+              companionRevertRef={companionRevertRef}
             />
           </div>
         </Tabs>

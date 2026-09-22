@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import type { CodexGameSystem } from '@/constants/gameSystems';
 import { spellClassApiValue } from '@/constants/spellClasses';
 import { spellSchoolApiValue } from '@/constants/spellSchools';
-import { Spell, NPC, Action, ActionUsageType } from '@/types/character';
+import { Spell, NPC, Player, Action, ActionUsageType, Class, Appearance, Background, Treasure } from '@/types/character';
 import { resolveCodexSpellSchoolLabel } from '@/utils/codexSpellSchool.utils';
 import { reportClientIssue } from "@/logger/reportClientIssue";
 
@@ -963,7 +963,8 @@ class CodexService {
     }
 
     /**
-     * Convertit un PJ Codex en format Chariot NPC (création PNJ depuis la librairie).
+     * Aperçu uniquement : mappe un PJ Codex vers la forme NPC de `MonsterPreview`.
+     * Interdit pour la création (FR-codex-npc-search-entity-type).
      */
     convertCodexPlayerToChariotNPC(codexPlayerItem: CodexPlayerItem, lang: string): Partial<NPC> {
         const translation = codexPlayerItem.translations[lang];
@@ -1034,6 +1035,119 @@ class CodexService {
                 subtype: translation.profile?.subrace ?? '',
             },
             hitPointsRoll: undefined,
+        };
+    }
+
+    /**
+     * Mappe un PJ Codex vers un brouillon Player Chariot (création, kind préservé).
+     * @see FR-codex-npc-search-entity-type
+     */
+    convertCodexPlayerToChariotPlayer(codexPlayerItem: CodexPlayerItem, lang: string): Partial<Player> {
+        const translation = codexPlayerItem.translations[lang];
+
+        if (!translation) {
+            console.error('No translation found for player', codexPlayerItem);
+            throw new Error('No translation available for this player');
+        }
+
+        const normalizedSpeed = {
+            walk: translation.stats?.speed?.walk ?? 30,
+            fly: translation.stats?.speed?.fly ?? 0,
+            swim: translation.stats?.speed?.swim ?? 0,
+            climb: translation.stats?.speed?.climb ?? 0,
+            burrow: translation.stats?.speed?.burrow ?? 0,
+        };
+
+        const mappedClasses: Class[] = (translation.class ?? []).map((entry) => ({
+            name: entry.name as Class['name'],
+            subclass: entry.subclass ?? '',
+            level: entry.level ?? 1,
+            hitDice: entry.hitDice ?? 0,
+            ...(entry.hitDiceRemaining != null ? { hitDiceRemaining: entry.hitDiceRemaining } : {}),
+        }));
+
+        const classLevelSum = mappedClasses.reduce((sum, entry) => sum + (entry.level ?? 0), 0);
+        const actions = this.normalizeCodexActionsForNpc(translation.actions, {
+            attackBonus: translation.stats?.proficiencyBonus ?? 2,
+            range: '',
+        });
+
+        return {
+            kind: 'player',
+            firstname: translation.firstname,
+            lastname: translation.lastname,
+            surname: translation.surname,
+            avatar: translation.avatar ?? '',
+            stats: {
+                ...(translation.stats || {}),
+                speed: normalizedSpeed,
+                abilityScores: translation.stats?.abilityScores ?? {
+                    strength: 10,
+                    dexterity: 10,
+                    constitution: 10,
+                    intelligence: 10,
+                    wisdom: 10,
+                    charisma: 10,
+                },
+                savingThrows: translation.stats?.savingThrows ?? {
+                    strength: 0,
+                    dexterity: 0,
+                    constitution: 0,
+                    intelligence: 0,
+                    wisdom: 0,
+                    charisma: 0,
+                },
+                skills: translation.stats?.skills ?? translation.stats?.masteries ?? {},
+                masteries: translation.stats?.masteries ?? translation.stats?.skills ?? {},
+                masteriesAbility: {
+                    strength: false,
+                    dexterity: false,
+                    constitution: false,
+                    intelligence: false,
+                    wisdom: false,
+                    charisma: false,
+                    ...(translation.stats?.masteriesAbility ?? {}),
+                },
+                proficiencyBonus: translation.stats?.proficiencyBonus ?? 2,
+                armors: translation.stats?.armors ?? [],
+                weapons: translation.stats?.weapons ?? [],
+                tools: translation.stats?.tools ?? [],
+                senses: (translation.stats?.senses ?? []).map((sense) => ({
+                    name: sense.type,
+                    value: parseInt(sense.value, 10) || 0,
+                })),
+                languages: translation.stats?.languages ?? [],
+            },
+            affinities: translation.affinities,
+            abilities: translation.abilities,
+            spellcasting: this.normalizeSpellcasting(translation.spellcasting, lang),
+            actions,
+            class: mappedClasses,
+            progression: {
+                level: translation.progression?.level ?? (classLevelSum > 0 ? classLevelSum : 1),
+                experience: translation.progression?.experience ?? 0,
+            },
+            profile: {
+                alignment: this.normalizeAlignment(translation.profile?.alignment),
+                race: translation.profile?.race ?? '',
+                subrace: translation.profile?.subrace ?? '',
+                history: translation.profile?.history ?? '',
+            },
+            appearance: (translation.appearance ?? {}) as Appearance,
+            background: (translation.background ?? {}) as Background,
+            treasure: {
+                cp: 0,
+                sp: 0,
+                ep: 0,
+                gp: 0,
+                pp: 0,
+                treasure: '',
+                equipment: '',
+                ...((translation.treasure ?? {}) as Partial<Treasure>),
+            },
+            inspiration: false,
+            exhaustionLevel: 0,
+            deathSaves: { successes: 0, failures: 0 },
         };
     }
 

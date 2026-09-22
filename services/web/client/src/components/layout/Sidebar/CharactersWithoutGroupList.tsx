@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { usePathname, useRouter } from "next/navigation";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -14,19 +15,25 @@ import { cn } from "@/lib/utils";
 import { selectCurrentUserParticipant, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
 import { useUser } from "@/hooks/useUser";
 import CharacterService from "@/services/CharacterService";
-import { Character } from "@/types/character";
+import { Character, NPC } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
+import { LinkNpcToPlayerDialog } from "@/components/dialogs/LinkNpcToPlayerDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import { showToast } from "@/lib/toast";
 import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
-import { buildPlayerSidebarRows } from "@/lib/npcPlayerLink";
+import {
+  buildPlayerSidebarRows,
+  linkedPlayerIdOf,
+  persistSidebarNpcLinkedPlayer,
+  playerSpaceSidebarActionIds,
+  requiresNpcLinkReassignmentConfirm,
+} from "@/lib/npcPlayerLink";
 import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
-import type { NPC } from "@/types/character";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -56,6 +63,9 @@ export default function CharactersWithoutGroupList() {
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [characterToDuplicate, setCharacterToDuplicate] = useState<Character | null>(null);
+  const [npcPendingLink, setNpcPendingLink] = useState<NPC | null>(null);
+  const [npcPendingReassign, setNpcPendingReassign] = useState<{ npc: NPC; player: Character } | null>(null);
+  const [isLinkingNpc, setIsLinkingNpc] = useState(false);
   const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
   const pathname = usePathname();
@@ -133,29 +143,70 @@ export default function CharactersWithoutGroupList() {
     }
   };
 
+  const persistNpcLink = async (npc: NPC, linkedPlayerId: string | null) => {
+    if (isLinkingNpc) return;
+    setIsLinkingNpc(true);
+    try {
+      const updated = await persistSidebarNpcLinkedPlayer(npc, linkedPlayerId, (id, payload) =>
+        CharacterService.updateCharacter("npcs", id, payload) as Promise<NPC>,
+      );
+      dispatch(upsertPlayerSpaceNpc(updated));
+      showToast(linkedPlayerId ? t("linkNpcSuccess") : t("unlinkNpcSuccess"), "success");
+      setNpcPendingLink(null);
+      setNpcPendingReassign(null);
+    } catch {
+      showToast(linkedPlayerId ? t("linkNpcError") : t("unlinkNpcError"), "error");
+    } finally {
+      setIsLinkingNpc(false);
+    }
+  };
+
+  const handlePickLinkPlayer = (player: Character) => {
+    if (!npcPendingLink || isLinkingNpc) return;
+    if (requiresNpcLinkReassignmentConfirm(linkedPlayerIdOf(npcPendingLink), player._id)) {
+      setNpcPendingLink(null);
+      setNpcPendingReassign({ npc: npcPendingLink, player });
+      return;
+    }
+    void persistNpcLink(npcPendingLink, player._id);
+  };
+
   const buildCharacterActions = (character: Character): SidebarActionItem[] => {
     const npcPdfExportDisabled = !isPlayer(character);
-    const exportAction: SidebarActionItem = {
-      id: "exportPdf",
-      label: t("exportPdf"),
-      disabled: npcPdfExportDisabled,
-      disabledTooltip: npcPdfExportDisabled ? t("exportPdfNpcComingSoon") : undefined,
-      onSelect: () => {
-        if (npcPdfExportDisabled) return;
-        void requestCharacterPdfExport(character._id);
+    const actionMap: Record<string, SidebarActionItem> = {
+      exportPdf: {
+        id: "exportPdf",
+        label: t("exportPdf"),
+        disabled: npcPdfExportDisabled,
+        disabledTooltip: npcPdfExportDisabled ? t("exportPdfNpcComingSoon") : undefined,
+        onSelect: () => {
+          if (npcPdfExportDisabled) return;
+          void requestCharacterPdfExport(character._id);
+        },
       },
-    };
-
-    if (actionsDisabled) return [exportAction];
-
-    return [
-      exportAction,
-      {
+      link: {
+        id: "link",
+        label: t("linkNpc"),
+        onSelect: () => setNpcPendingLink(character as NPC),
+      },
+      unlink: {
+        id: "unlink",
+        label: t("unlinkNpc"),
+        onSelect: () => {
+          void persistNpcLink(character as NPC, null);
+        },
+      },
+      reassign: {
+        id: "reassign",
+        label: t("reassignNpc"),
+        onSelect: () => setNpcPendingLink(character as NPC),
+      },
+      duplicate: {
         id: "duplicate",
         label: t("duplicate"),
         onSelect: () => setCharacterToDuplicate(character),
       },
-      {
+      edit: {
         id: "edit",
         label: t("edit"),
         onSelect: () => {
@@ -163,13 +214,17 @@ export default function CharactersWithoutGroupList() {
           setOpenMobile(false);
         },
       },
-      {
+      delete: {
         id: "delete",
         label: t("delete"),
         variant: "destructive",
         onSelect: () => setCharacterPendingDelete(character),
       },
-    ];
+    };
+
+    return playerSpaceSidebarActionIds(character, { actionsDisabled })
+      .map((id) => actionMap[id])
+      .filter((item): item is SidebarActionItem => Boolean(item));
   };
 
   if (loading && characters.length === 0) {
@@ -190,17 +245,18 @@ export default function CharactersWithoutGroupList() {
       aria-label={t("playerNavigation")}>
       <h2 className="shrink-0 text-lg text-white">{t("yourCharacters")}</h2>
 
-      <Link
-        href="/characters/new/players"
-        onClick={() => setOpenMobile(false)}
-        aria-label={t("createCharacter")}
-        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
-        {t("createCharacter")}
-        <UserPlus
-          aria-hidden="true"
-          className="w-5 h-5"
-        />
-      </Link>
+      <CreateCharacterDialog>
+        <button
+          type="button"
+          aria-label={t("createCharacter")}
+          className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
+          {t("createCharacter")}
+          <UserPlus
+            aria-hidden="true"
+            className="w-5 h-5"
+          />
+        </button>
+      </CreateCharacterDialog>
 
       <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
         {sidebarRows.map((row, index) => {
@@ -291,7 +347,7 @@ export default function CharactersWithoutGroupList() {
               className="flex flex-col gap-1">
               {rowLink}
               <ul
-                className="ml-3 flex flex-col gap-1"
+                className="relative ml-4 flex flex-col gap-1 border-l-2 border-purple pl-2"
                 aria-label={t("companionsListLabel", { name: displayName })}>
                 {companions.map((npc) => {
                   const npcSelected = selectedCharacterId === npc._id;
@@ -394,6 +450,38 @@ export default function CharactersWithoutGroupList() {
         character={characterToExport}
         open={!!characterToExport}
         onOpenChange={closeExportDialog}
+      />
+
+      <LinkNpcToPlayerDialog
+        npc={npcPendingLink}
+        players={characters}
+        open={!!npcPendingLink}
+        onOpenChange={(open) => {
+          if (!open && !isLinkingNpc) setNpcPendingLink(null);
+        }}
+        onSelectPlayer={handlePickLinkPlayer}
+        isLoading={isLinkingNpc}
+      />
+
+      <ConfirmDialog
+        open={!!npcPendingReassign}
+        onOpenChange={(open) => {
+          if (!open && !isLinkingNpc) setNpcPendingReassign(null);
+        }}
+        title={t("reassignNpcDialogTitle")}
+        description={t("reassignNpcDialogDescription", {
+          name: npcPendingReassign
+            ? characterDisplayName(npcPendingReassign.player) || t("unnamedCharacter")
+            : t("unnamedCharacter"),
+        })}
+        confirmLabel={t("reassignNpcConfirm")}
+        cancelLabel={t("cancel")}
+        onConfirm={() => {
+          if (!npcPendingReassign) return;
+          void persistNpcLink(npcPendingReassign.npc, npcPendingReassign.player._id);
+        }}
+        isLoading={isLinkingNpc}
+        destructive={false}
       />
     </nav>
   );

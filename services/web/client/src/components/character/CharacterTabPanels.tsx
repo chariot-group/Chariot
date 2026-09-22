@@ -13,15 +13,27 @@ import { NPC, Player } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
+import type { MutableRefObject } from "react";
 
 interface CharacterTabPanelsProps {
     character: Player | NPC;
     form: UseCharacterFormReturn["form"];
     isEditing: boolean;
     onCharacterUpdate?: (updated?: Player | NPC) => void;
+    onCompanionPendingChange?: (pending: boolean) => void;
+    companionPersistRef?: MutableRefObject<(() => Promise<void>) | null>;
+    companionRevertRef?: MutableRefObject<(() => void) | null>;
 }
 
-export default function CharacterTabPanels({ character, form, isEditing, onCharacterUpdate }: CharacterTabPanelsProps) {
+export default function CharacterTabPanels({
+    character,
+    form,
+    isEditing,
+    onCharacterUpdate,
+    onCompanionPendingChange,
+    companionPersistRef,
+    companionRevertRef,
+}: CharacterTabPanelsProps) {
     const contextMode = useAppSelector(selectContextMode);
     const tabs: readonly CharacterTab[] = tabsForCharacterSheet(
         isPlayer(character),
@@ -97,6 +109,9 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                                     <CharacterCompanionsTabContent
                                         player={character}
                                         isEditing={isEditing}
+                                        onPendingChange={onCompanionPendingChange}
+                                        persistRef={companionPersistRef}
+                                        revertRef={companionRevertRef}
                                     />
                                 ) : null;
                             default:
