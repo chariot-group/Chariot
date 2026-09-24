@@ -10,12 +10,15 @@ export type BaseCharacterTab = (typeof CHARACTER_TABS)[number];
 export type CharacterTab = BaseCharacterTab | "companions";
 export const PLAYER_CHARACTER_TABS: CharacterTab[] = [...CHARACTER_TABS, "companions"];
 
-/** @see FR-npc-player-link — Companions tab is Player-space Player sheets only. */
+/** @see FR-npc-player-link — Companions tab is Player-space Player sheets, plus session-GM assigned Players. */
 export function tabsForCharacterSheet(
   isPlayerCharacter: boolean,
   isPlayerSpace: boolean,
+  showSessionGmCompanionsTab = false,
 ): readonly CharacterTab[] {
-  return isPlayerCharacter && isPlayerSpace ? PLAYER_CHARACTER_TABS : CHARACTER_TABS;
+  return isPlayerCharacter && (isPlayerSpace || showSessionGmCompanionsTab)
+    ? PLAYER_CHARACTER_TABS
+    : CHARACTER_TABS;
 }
 
 interface CharacterTabsProps {

@@ -95,6 +95,7 @@
     "joinSessionErrorNotFound": "No session found for this code.",
     "joinSessionErrorClosed": "This session is closed.",
     "joinSessionSelectCharacterPlaceholder": "Select a character",
+    "joinSessionCompanionCount": "{count, plural, one {# companion} other {# companions}}",
     "comingSoon": "Coming soon",
     "alreadyInSession": "Action cannot be performed; you are already logged in.",
     "returnToSheet": "Character",
@@ -209,6 +210,8 @@
     "initBattleCollapseGroup": "Hide group members",
     "initBattleRemoveGroup": "Remove group from selection",
     "initBattleInInitiative": "In initiative",
+    "initBattleLinkedTo": "Linked to {name}",
+    "initBattleLinkedCompanion": "Linked NPC",
     "initBattleParticipantsCannotBeExcluded": "Participants cannot be excluded from the initiative",
     "initBattleValidateSelection": "Confirm configuration",
     "addCombatants": "Add to combat",
@@ -1776,6 +1779,7 @@
       },
       "noCharacter": "No character",
       "selectCharacterPlaceholder": "Change character",
+      "companionCount": "{count, plural, one {# companion} other {# companions}}",
       "loadingCharacters": "Loading..."
     },
     "sessionCode": {

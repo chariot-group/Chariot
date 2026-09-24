@@ -22,8 +22,11 @@ import {
   queueCompanionLinkOp,
   type CompanionLinkOp,
 } from "@/lib/npcPlayerLink";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
+import { selectIsInSession, selectSessionCode, selectSessionCompanionNpcs } from "@/store/slices/sessionSlice";
+import { normalizeCharacterId } from "@/lib/normalizeCharacterId";
+import { companionsOfPlayer } from "@/lib/sessionPlayerCompanions";
 import { CompanionNpcCard } from "@/components/character/tabContents/companions/CompanionNpcCard";
 import { showToast } from "@/lib/toast";
 import type { NPC, Player } from "@/types/character";
@@ -33,6 +36,8 @@ import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 interface CharacterCompanionsTabContentProps {
   player: Player;
   isEditing: boolean;
+  /** Session GM may list companions but MUST NOT manage liaisons. @see FR-session-player-companion-combatants */
+  liaisonActionsEnabled?: boolean;
   onPendingChange?: (pending: boolean) => void;
   persistRef?: MutableRefObject<(() => Promise<void>) | null>;
   revertRef?: MutableRefObject<(() => void) | null>;
@@ -40,20 +45,33 @@ interface CharacterCompanionsTabContentProps {
 
 /**
  * @see FR-npc-player-link — link/unlink persist only when the Player form is saved.
+ * @see FR-session-player-companion-combatants
  */
 export default function CharacterCompanionsTabContent({
   player,
   isEditing,
+  liaisonActionsEnabled = true,
   onPendingChange,
   persistRef,
   revertRef,
 }: CharacterCompanionsTabContentProps) {
   const t = useTranslations("characterDetail.companions");
   const tRef = useRef(t);
-  const sessionCode = useActiveSessionCode();
+  const sessionCodeFromUrl = useActiveSessionCode();
   tRef.current = t;
   const dispatch = useAppDispatch();
-  const playerId = player._id;
+  const isInSession = useAppSelector(selectIsInSession);
+  const reduxSessionCode = useAppSelector(selectSessionCode);
+  const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
+  const playerId = normalizeCharacterId(player._id) ?? player._id;
+  const sessionCodeForLookup =
+    sessionCodeFromUrl ?? (isInSession ? reduxSessionCode?.trim() || null : null);
+  const canManageLiaisons = liaisonActionsEnabled;
+  const showLiaisonActions = isEditing && canManageLiaisons;
+  const derivedSessionCompanions = useMemo(
+    () => (canManageLiaisons ? [] : companionsOfPlayer(sessionCompanionNpcs, playerId)),
+    [canManageLiaisons, playerId, sessionCompanionNpcs],
+  );
   const [savedCompanions, setSavedCompanions] = useState<NPC[]>([]);
   const [companions, setCompanions] = useState<NPC[]>([]);
   const [pendingOps, setPendingOps] = useState<CompanionLinkOp[]>([]);
@@ -78,19 +96,70 @@ export default function CharacterCompanionsTabContent({
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
-    void CharacterService.getNpcsByLinkedPlayers([playerId])
-      .then((linked) => {
-        if (cancelled) return;
-        const originals = new Map<string, string | null>();
-        for (const npc of linked) {
-          if (npc._id) originals.set(npc._id, linkedPlayerIdOf(npc));
+    const applyCompanionList = (linked: NPC[]) => {
+      const originals = new Map<string, string | null>();
+      for (const npc of linked) {
+        if (npc._id) originals.set(npc._id, linkedPlayerIdOf(npc));
+      }
+      originalByIdRef.current = originals;
+      setSavedCompanions(linked);
+      setCompanions(linked);
+      setPendingOps([]);
+    };
+
+    if (!canManageLiaisons) {
+      if (derivedSessionCompanions.length > 0) {
+        applyCompanionList(derivedSessionCompanions);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+
+      if (!sessionCodeForLookup) {
+        if (derivedSessionCompanions.length === 0 && !cancelled) {
+          setLoading(false);
         }
-        originalByIdRef.current = originals;
-        setSavedCompanions(linked);
-        setCompanions(linked);
-        setPendingOps([]);
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      void CharacterService.getNpcsByLinkedPlayers([playerId], {
+        sessionCode: sessionCodeForLookup,
+      })
+        .then((linked) => {
+          if (cancelled) return;
+          if (linked.length > 0) {
+            applyCompanionList(linked);
+            return;
+          }
+          if (derivedSessionCompanions.length > 0) {
+            applyCompanionList(derivedSessionCompanions);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            if (derivedSessionCompanions.length > 0) {
+              applyCompanionList(derivedSessionCompanions);
+            } else {
+              showToast(tRef.current("loadError"), "error", { toastId: "companions-load-error" });
+            }
+          }
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setLoading(true);
+    void CharacterService.getNpcsByLinkedPlayers([playerId], { sessionCode: null })
+      .then((linked) => {
+        if (!cancelled) applyCompanionList(linked);
       })
       .catch(() => {
         if (!cancelled) {
@@ -104,7 +173,7 @@ export default function CharacterCompanionsTabContent({
     return () => {
       cancelled = true;
     };
-  }, [playerId]);
+  }, [canManageLiaisons, derivedSessionCompanions, playerId, sessionCodeForLookup]);
 
   const queueDraft = useCallback(
     (npc: NPC, linkedPlayerId: string | null) => {
@@ -158,13 +227,18 @@ export default function CharacterCompanionsTabContent({
   }, []);
 
   useEffect(() => {
+    if (!canManageLiaisons) {
+      if (persistRef) persistRef.current = null;
+      if (revertRef) revertRef.current = null;
+      return;
+    }
     if (persistRef) persistRef.current = persist;
     if (revertRef) revertRef.current = revert;
     return () => {
       if (persistRef) persistRef.current = null;
       if (revertRef) revertRef.current = null;
     };
-  }, [persist, persistRef, revert, revertRef]);
+  }, [canManageLiaisons, persist, persistRef, revert, revertRef]);
 
   const openLinkDialog = useCallback(async () => {
     setLinkOpen(true);
@@ -213,7 +287,7 @@ export default function CharacterCompanionsTabContent({
     <section
       className="flex flex-col gap-4"
       aria-label={t("title")}>
-      {isEditing ? (
+      {showLiaisonActions ? (
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
@@ -255,9 +329,9 @@ export default function CharacterCompanionsTabContent({
               <CompanionNpcCard
                 npc={npc}
                 unnamedFallback={unnamed}
-                isEditing={isEditing}
+                isEditing={showLiaisonActions}
                 isPersisting={isPersisting}
-                sessionCode={sessionCode}
+                sessionCode={sessionCodeForLookup}
                 onUnlink={(companion) => queueDraft(companion, null)}
               />
             </li>

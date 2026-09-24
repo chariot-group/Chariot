@@ -197,6 +197,7 @@ const sessionTransform = createTransform(
         lastConsultedSheetPath: outbound?.lastConsultedSheetPath ?? null,
         participantDisplayNames: {},
         gmGuestCharacterIds: outbound?.gmGuestCharacterIds ?? [],
+        sessionCompanionNpcs: [],
         sessionLobbyOpen: false,
     }),
     { whitelist: ['session'] },

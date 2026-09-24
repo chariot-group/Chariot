@@ -18,6 +18,7 @@ type BattleMember = {
   firstname?: string;
   lastname?: string;
   surname?: string;
+  linkedPlayerId?: string | null;
   stats?: { initiative?: number | null } | null;
 };
 
@@ -34,6 +35,8 @@ type AddCombatantsGroupMembersProps = {
     groupedInitiativePlaceholder: string;
     groupedInitiativeApply: string;
     groupedClearSelection: string;
+    linkedTo: string;
+    linkedCompanion: string;
   };
   onToggleMember: (memberId: string, include: boolean) => void;
   onMemberInitiativeChange: (memberId: string, value: number) => void;
@@ -44,6 +47,21 @@ type AddCombatantsGroupMembersProps = {
 function formatCharacterName(character: BattleMember): string {
   const fullName = `${character.firstname ?? ""} ${character.lastname ?? ""}`.trim();
   return fullName || character.surname || "-";
+}
+
+function linkedMemberLabel(
+  member: BattleMember,
+  members: BattleMember[],
+  labels: { linkedTo: string; linkedCompanion: string },
+): string | null {
+  const linkedId = member.linkedPlayerId?.trim();
+  if (!linkedId) return null;
+  const player = members.find((candidate) => candidate._id === linkedId);
+  const playerName = player ? formatCharacterName(player) : "";
+  if (playerName && playerName !== "-") {
+    return labels.linkedTo.replace("{name}", playerName);
+  }
+  return labels.linkedCompanion;
 }
 
 export function AddCombatantsGroupMembers({
@@ -94,6 +112,8 @@ export function AddCombatantsGroupMembers({
         {members.map((member) => {
           const included = !excludedMemberIds.has(member._id);
           const memberName = formatCharacterName(member);
+          const linkedLabel = linkedMemberLabel(member, members, labels);
+          const accessibleName = linkedLabel ? `${memberName} (${linkedLabel})` : memberName;
           const modifier = resolveInitiativeModifierFromStats(member.stats);
           const modifierText = formatSignedBonus(modifier);
           const modifierAriaLabel = labels.initiativeModifierFor.replace("{bonus}", modifierText);
@@ -103,11 +123,16 @@ export function AddCombatantsGroupMembers({
               key={member._id}
               className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 rounded-[22px] bg-gray px-3 py-3 text-white shadow-lg sm:grid-cols-[var(--member-grid)] sm:items-center sm:px-4 sm:py-2.5"
               style={{ "--member-grid": ADD_COMBATANTS_MEMBER_GRID } as React.CSSProperties}>
-              <span className="min-w-0 break-words text-base font-semibold sm:hidden">{memberName}</span>
+              <span className="min-w-0 break-words text-base font-semibold sm:hidden">
+                {memberName}
+                {linkedLabel ? (
+                  <span className="mt-0.5 block text-xs font-normal text-white/55">{linkedLabel}</span>
+                ) : null}
+              </span>
 
               <Checkbox
                 checked={included}
-                aria-label={memberName}
+                aria-label={accessibleName}
                 onCheckedChange={(checked) => onToggleMember(member._id, Boolean(checked))}
                 className="size-5 cursor-pointer justify-self-end sm:hidden"
               />
@@ -117,7 +142,7 @@ export function AddCombatantsGroupMembers({
                   <InitiativeNumberInput
                     value={resolveInitiative(member._id, member)}
                     resetKey={member._id}
-                    ariaLabel={labels.initiativeFor.replace("{name}", memberName)}
+                    ariaLabel={labels.initiativeFor.replace("{name}", accessibleName)}
                     modifier={modifier}
                     modifierAriaLabel={modifierAriaLabel}
                     showModifier
@@ -133,11 +158,16 @@ export function AddCombatantsGroupMembers({
                 )}
               </div>
 
-              <span className="hidden min-w-0 truncate text-base font-semibold sm:block">{memberName}</span>
+              <span className="hidden min-w-0 text-base font-semibold sm:block">
+                <span className="truncate">{memberName}</span>
+                {linkedLabel ? (
+                  <span className="mt-0.5 block truncate text-xs font-normal text-white/55">{linkedLabel}</span>
+                ) : null}
+              </span>
 
               <Checkbox
                 checked={included}
-                aria-label={memberName}
+                aria-label={accessibleName}
                 onCheckedChange={(checked) => onToggleMember(member._id, Boolean(checked))}
                 className="hidden size-5 cursor-pointer justify-self-center sm:block"
               />

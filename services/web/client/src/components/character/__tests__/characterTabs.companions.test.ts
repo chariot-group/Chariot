@@ -22,5 +22,17 @@ describe("FR-npc-player-link — character tabs", () => {
 
   it("failure: GM space never adds companions even for a Player character", () => {
     expect(tabsForCharacterSheet(true, false)).not.toContain("companions");
+    expect(tabsForCharacterSheet(true, false, false)).not.toContain("companions");
+  });
+});
+
+describe("FR-session-player-companion-combatants — session GM companions tab", () => {
+  it("nominal: assigned Player sheets expose companions for the session GM", () => {
+    expect(tabsForCharacterSheet(true, false, true)).toContain("companions");
+  });
+
+  it("edge: NPC sheets never expose companions even for the session GM", () => {
+    expect(tabsForCharacterSheet(false, false, true)).not.toContain("companions");
+    expect(tabsForCharacterSheet(false, true, true)).not.toContain("companions");
   });
 });

@@ -10,12 +10,11 @@ import {
   GoneException,
   Logger,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { NpcService } from '@/resources/character/npc/npc.service';
 import { CreateNpcDto } from '@/resources/character/npc/dto/create-npc.dto';
 import { UpdateNpcDto } from '@/resources/character/npc/dto/update-npc.dto';
-import { IsCreator } from '@/common/decorators/is-creator.decorator';
-import { CharacterService } from '@/resources/character/character.service';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -30,11 +29,11 @@ import {
   ApiExtraModels,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
 import { ProblemDetailsDto } from '@/common/dtos/errors.dto';
+import { SessionAccessService } from '@/common/session/session-access.service';
 
 @ApiExtraModels(IResponse, IPaginatedResponse, NPC)
 @Controller('characters/npcs')
@@ -43,6 +42,7 @@ export class NpcController {
     private readonly npcService: NpcService,
     @InjectModel(Character.name)
     private characterModel: Model<CharacterDocument>,
+    private readonly sessionAccessService: SessionAccessService,
   ) {}
 
   private readonly CONTROLLER_NAME = NpcController.name;
@@ -96,7 +96,8 @@ export class NpcController {
   /** @see FR-npc-player-link */
   @Get('/without-group')
   @ApiOperation({
-    summary: 'Get paginated unlinked NPCs without a group for the authenticated user',
+    summary:
+      'Get paginated unlinked NPCs without a group for the authenticated user',
   })
   @ApiOkResponse({
     description: 'Unlinked NPCs without group found successfully',
@@ -187,59 +188,85 @@ export class NpcController {
   getNpcsByLinkedPlayers(
     @Req() request,
     @Query('playerIds') playerIds?: string,
+    @Query('sessionCode') sessionCode?: string,
   ): Promise<IResponse<Character[]>> {
     const userId = request.user.keycloakId;
     const ids = (playerIds ?? '')
       .split(',')
       .map((id) => id.trim())
       .filter((id) => id.length > 0);
+    const code = sessionCode?.trim();
+    if (code && ids.length > 0) {
+      return this.getSessionCompanions(request, code, ids);
+    }
     return this.npcService.findNpcsByLinkedPlayerIds(userId, ids);
   }
 
-  @IsCreator(CharacterService)
-  @ApiOperation({ summary: 'Update a NPC by ID' })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    required: true,
-    description: 'The ID of the NPC to update',
-    example: '507f1f77bcf86cd799439011',
-  })
-  @ApiOkResponse({
-    description: 'Campaign updated successfully',
-    schema: {
-      allOf: [
-        { $ref: getSchemaPath(IResponse) },
-        {
-          properties: {
-            data: { $ref: getSchemaPath(NPC) },
-          },
-        },
-      ],
+  /** @see FR-session-player-companion-combatants */
+  private async getSessionCompanions(
+    request: {
+      user: { keycloakId: string };
+      headers: { authorization?: string };
     },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Validation error',
-    type: ProblemDetailsDto,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'NPC #ID not found',
-    type: ProblemDetailsDto,
-  })
-  @ApiResponse({
-    status: 410,
-    description: 'NPC #ID has been deleted',
-    type: ProblemDetailsDto,
-  })
+    sessionCode: string,
+    playerIds: string[],
+  ): Promise<IResponse<Character[]>> {
+    await this.sessionAccessService.assertGmCompanionLookup(
+      request.headers.authorization,
+      sessionCode,
+      playerIds,
+    );
+    return this.npcService.findNpcsByLinkedPlayerIds(null, playerIds);
+  }
+
   @Patch(':id')
   async update(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
     @Body() updateNpcDto: UpdateNpcDto,
+    @Req()
+    request: {
+      user: { keycloakId: string };
+      headers: { authorization?: string };
+    },
+    @Query('sessionCode') sessionCode?: string,
   ): Promise<IResponse<Character>> {
     await this.validateResource(id);
 
-    return this.npcService.update(id, updateNpcDto);
+    const npcDoc = await this.characterModel
+      .findById(id)
+      .select('createdBy kind linkedPlayerId')
+      .exec();
+    if (!npcDoc) {
+      const message = `NPC #${id} not found`;
+      this.logger.debug(message, this.CONTROLLER_NAME);
+      throw new NotFoundException(message);
+    }
+
+    const userId = request.user.keycloakId;
+    let payload = updateNpcDto;
+    if (npcDoc.createdBy !== userId) {
+      const code = sessionCode?.trim();
+      if (!code) {
+        throw new ForbiddenException(
+          'You can only update your own characters outside of an authorized session',
+        );
+      }
+      const linked = (npcDoc as unknown as { linkedPlayerId?: unknown })
+        .linkedPlayerId;
+      const linkedPlayerId = linked ? String(linked) : undefined;
+      await this.sessionAccessService.assertGmEdit(
+        request.headers.authorization,
+        code,
+        id.toString(),
+        linkedPlayerId,
+      );
+      if (Object.prototype.hasOwnProperty.call(payload, 'linkedPlayerId')) {
+        const rest = { ...payload };
+        delete rest.linkedPlayerId;
+        payload = rest;
+      }
+    }
+
+    return this.npcService.update(id, payload);
   }
 }

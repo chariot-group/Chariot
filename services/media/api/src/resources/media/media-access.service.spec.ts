@@ -31,12 +31,14 @@ function makeCharacterOwner(
     createdBy: string;
     avatar: string | null;
     kind: string;
+    linkedPlayerId: string | null;
   }> = {},
 ) {
   return {
     createdBy: 'owner-uuid',
     avatar: 'avatars/characters/player/char-id/main.webp',
     kind: 'player',
+    linkedPlayerId: null,
     ...overrides,
   };
 }
@@ -295,6 +297,31 @@ describe('MediaAccessService', () => {
           'CODE01',
         ),
       ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('nominal: session participant reads companion NPC avatar via linkedPlayerId', async () => {
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () =>
+            makeCharacterOwner({
+              createdBy: 'player-owner',
+              kind: 'npc',
+              linkedPlayerId: '507f1f77bcf86cd799439011',
+            }),
+        })
+        .mockResolvedValueOnce({ ok: false, status: 403 })
+        .mockResolvedValueOnce({ ok: true });
+
+      await expect(
+        service.assertCharacterReadAccess(
+          'npc-id',
+          'gm-or-player',
+          AUTH_HEADER,
+          'CODE01',
+        ),
+      ).resolves.toMatchObject({ kind: 'npc', linkedPlayerId: '507f1f77bcf86cd799439011' });
     });
 
     it('should throw ForbiddenException for NPC without sessionCode and non-owner', async () => {

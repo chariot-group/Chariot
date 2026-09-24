@@ -34,6 +34,7 @@ import {
   requiresNpcLinkReassignmentConfirm,
 } from "@/lib/npcPlayerLink";
 import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
+import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessionPlayersSidebarSection";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -229,20 +230,33 @@ export default function CharactersWithoutGroupList() {
 
   if (loading && characters.length === 0) {
     return (
-      <div className="flex justify-center items-center py-4">
-        <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
-      </div>
+      <nav
+        className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-4 focus-visible:outline-none"
+        aria-label={t("playerNavigation")}>
+        <GmSessionPlayersSidebarSection />
+        <div className="flex justify-center items-center py-4">
+          <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+        </div>
+      </nav>
     );
   }
 
   if (error) {
-    return null;
+    return (
+      <nav
+        className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-4 focus-visible:outline-none"
+        aria-label={t("playerNavigation")}>
+        <GmSessionPlayersSidebarSection />
+      </nav>
+    );
   }
 
   return (
     <nav
       className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-4 focus-visible:outline-none"
       aria-label={t("playerNavigation")}>
+      <GmSessionPlayersSidebarSection />
+
       <h2 className="shrink-0 text-lg text-white">{t("yourCharacters")}</h2>
 
       <CreateCharacterDialog>

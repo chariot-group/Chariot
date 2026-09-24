@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { npcSheetHeaderIdentity } from "@/lib/npcPlayerLink";
+import { buildSessionCharacterHref } from "@/lib/sessionInAppNavigation";
 import type { NPC } from "@/types/character";
 
 interface CompanionNpcCardProps {
@@ -42,7 +43,7 @@ export function CompanionNpcCard({
   return (
     <Card className="relative min-w-0 h-full w-full gap-3 overflow-hidden p-4 md:px-6">
       <Link
-        href={`/characters/${npc._id}`}
+        href={buildSessionCharacterHref(npc._id, sessionCode)}
         aria-label={openSheetLabel}
         className="absolute inset-0 z-0 rounded-[24px] focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/50"
       />

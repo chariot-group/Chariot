@@ -95,6 +95,7 @@
     "joinSessionErrorNotFound": "Aucune session trouvée pour ce code.",
     "joinSessionErrorClosed": "Cette session est clôturée.",
     "joinSessionSelectCharacterPlaceholder": "Sélectionner un personnage",
+    "joinSessionCompanionCount": "{count, plural, one {# compagnon} other {# compagnons}}",
     "comingSoon": "Bientôt disponible",
     "alreadyInSession": "Action impossible, vous êtes déjà dans une session",
     "returnToSheet": "Personnage",
@@ -209,6 +210,8 @@
     "initBattleCollapseGroup": "Masquer les membres du groupe",
     "initBattleRemoveGroup": "Retirer le groupe de la sélection",
     "initBattleInInitiative": "Dans l'initiative",
+    "initBattleLinkedTo": "Lié à {name}",
+    "initBattleLinkedCompanion": "PNJ lié",
     "initBattleParticipantsCannotBeExcluded": "Les participants ne peuvent pas être exclus de l'initiative",
     "initBattleValidateSelection": "Valider la configuration",
     "addCombatants": "Ajouter au combat",
@@ -1781,6 +1784,7 @@
       },
       "noCharacter": "Aucun personnage",
       "selectCharacterPlaceholder": "Changer de personnage",
+      "companionCount": "{count, plural, one {# compagnon} other {# compagnons}}",
       "loadingCharacters": "Chargement..."
     },
     "sessionCode": {

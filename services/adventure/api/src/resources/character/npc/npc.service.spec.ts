@@ -742,11 +742,39 @@ describe('NpcService - FR-npc-player-link', () => {
     expect(result.pagination).toEqual({ page: 1, offset: 10, totalItems: 1 });
   });
 
+  it('edge: findNpcsByLinkedPlayerIds without owner lists companions across users', async () => {
+    const linked = [{ _id: 'npc-1', linkedPlayerId: playerId }];
+    const query = {
+      setOptions: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue(linked),
+    };
+    characterModel.find = jest.fn().mockReturnValue(query);
+
+    const result = await service.findNpcsByLinkedPlayerIds(null, [
+      playerId.toHexString(),
+    ]);
+
+    expect(characterModel.find).toHaveBeenCalledWith({
+      kind: 'npc',
+      deletedAt: null,
+      $or: [
+        { linkedPlayerId: { $in: [playerId] } },
+        { linkedPlayerId: { $in: [playerId.toHexString()] } },
+      ],
+    });
+    expect(query.setOptions).toHaveBeenCalledWith({ strictQuery: false });
+    expect(result.data).toEqual([
+      { _id: 'npc-1', linkedPlayerId: playerId.toHexString() },
+    ]);
+  });
+
   it('edge: findNpcsByLinkedPlayerIds returns companions for given Players', async () => {
     const linked = [{ _id: 'npc-1', linkedPlayerId: playerId }];
-    characterModel.find = jest.fn().mockReturnValue({
+    const query = {
+      setOptions: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue(linked),
-    });
+    };
+    characterModel.find = jest.fn().mockReturnValue(query);
 
     const result = await service.findNpcsByLinkedPlayerIds(userId, [
       playerId.toHexString(),
@@ -756,9 +784,35 @@ describe('NpcService - FR-npc-player-link', () => {
       kind: 'npc',
       createdBy: userId,
       deletedAt: null,
-      linkedPlayerId: { $in: [playerId] },
+      $or: [
+        { linkedPlayerId: { $in: [playerId] } },
+        { linkedPlayerId: { $in: [playerId.toHexString()] } },
+      ],
     });
-    expect(result.data).toEqual(linked);
+    expect(query.setOptions).toHaveBeenCalledWith({ strictQuery: false });
+    expect(result.data).toEqual([
+      { _id: 'npc-1', linkedPlayerId: playerId.toHexString() },
+    ]);
+  });
+
+  it('nominal: NPC discriminator query is used when registered', async () => {
+    const linked = [{ _id: 'npc-1', linkedPlayerId: playerId.toHexString() }];
+    const query = {
+      setOptions: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue(linked),
+    };
+    const npcFind = jest.fn().mockReturnValue(query);
+    characterModel.discriminators.npc.find = npcFind;
+
+    const result = await service.findNpcsByLinkedPlayerIds(null, [
+      playerId.toHexString(),
+    ]);
+
+    expect(npcFind).toHaveBeenCalled();
+    expect(characterModel.find).not.toHaveBeenCalled();
+    expect(
+      (result.data[0] as unknown as { linkedPlayerId?: string }).linkedPlayerId,
+    ).toBe(playerId.toHexString());
   });
 
   it('failure: reject linking to an NPC', async () => {

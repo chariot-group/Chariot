@@ -23,6 +23,9 @@ interface CharacterTabPanelsProps {
     onCompanionPendingChange?: (pending: boolean) => void;
     companionPersistRef?: MutableRefObject<(() => Promise<void>) | null>;
     companionRevertRef?: MutableRefObject<(() => void) | null>;
+    /** @see FR-session-player-companion-combatants */
+    showSessionGmCompanionsTab?: boolean;
+    liaisonActionsEnabled?: boolean;
 }
 
 export default function CharacterTabPanels({
@@ -33,11 +36,14 @@ export default function CharacterTabPanels({
     onCompanionPendingChange,
     companionPersistRef,
     companionRevertRef,
+    showSessionGmCompanionsTab = false,
+    liaisonActionsEnabled = true,
 }: CharacterTabPanelsProps) {
     const contextMode = useAppSelector(selectContextMode);
     const tabs: readonly CharacterTab[] = tabsForCharacterSheet(
         isPlayer(character),
         contextMode === "player",
+        showSessionGmCompanionsTab,
     );
 
     return (
@@ -105,10 +111,12 @@ export default function CharacterTabPanels({
                                     />
                                 );
                             case "companions":
-                                return isPlayer(character) && contextMode === "player" ? (
+                                return isPlayer(character) &&
+                                    (contextMode === "player" || showSessionGmCompanionsTab) ? (
                                     <CharacterCompanionsTabContent
                                         player={character}
                                         isEditing={isEditing}
+                                        liaisonActionsEnabled={liaisonActionsEnabled}
                                         onPendingChange={onCompanionPendingChange}
                                         persistRef={companionPersistRef}
                                         revertRef={companionRevertRef}

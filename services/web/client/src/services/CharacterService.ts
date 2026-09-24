@@ -138,13 +138,22 @@ class CharacterService {
     }
 
     /** @see FR-npc-player-link */
-    async getNpcsByLinkedPlayers(playerIds: string[]): Promise<NPC[]> {
+    async getNpcsByLinkedPlayers(
+        playerIds: string[],
+        options?: { sessionCode?: string | null },
+    ): Promise<NPC[]> {
         const ids = playerIds.map((id) => id.trim()).filter((id) => id.length > 0);
         if (ids.length === 0) return [];
         try {
+            const sessionCode = options?.sessionCode?.trim();
             const response = await apiClient().get<{ message: string; data: NPC[] }>(
                 `${this.BASE_PATH}/npcs/by-linked-players`,
-                { params: { playerIds: ids.join(",") } },
+                {
+                    params: {
+                        playerIds: ids.join(","),
+                        ...(sessionCode ? { sessionCode } : {}),
+                    },
+                },
             );
             return response.data.data ?? [];
         } catch (error) {

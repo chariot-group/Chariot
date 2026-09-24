@@ -366,11 +366,52 @@ export class NpcService {
   }
 
   /**
-   * NPCs linked to the given Player ids, owned by the authenticated user.
+   * Query via the NPC discriminator so `linkedPlayerId` is a known schema path
+   * (Mongoose strictQuery otherwise strips it from the base Character model).
+   */
+  private npcFindModel(): Model<CharacterDocument> {
+    const npcModel = this.characterModel.discriminators?.['npc'];
+    if (npcModel && typeof npcModel.find === 'function') {
+      return npcModel as Model<CharacterDocument>;
+    }
+    return this.characterModel;
+  }
+
+  private serializeLinkedNpc(npc: Character): Character {
+    const raw = npc as unknown as {
+      toObject?: (options?: object) => Record<string, unknown>;
+      linkedPlayerId?: unknown;
+    };
+    const plain =
+      typeof raw.toObject === 'function'
+        ? raw.toObject({ depopulate: true })
+        : { ...(npc as unknown as Record<string, unknown>) };
+    const linked = plain.linkedPlayerId;
+    let linkedPlayerId: string | null = null;
+    if (linked != null && linked !== '') {
+      if (typeof linked === 'string') {
+        linkedPlayerId = linked;
+      } else if (
+        typeof linked === 'object' &&
+        linked !== null &&
+        '_id' in (linked as object)
+      ) {
+        linkedPlayerId = String((linked as { _id: unknown })._id);
+      } else {
+        linkedPlayerId = String(linked);
+      }
+    }
+    return { ...plain, linkedPlayerId } as unknown as Character;
+  }
+
+  /**
+   * NPCs linked to the given Player ids.
+   * When `userId` is set, results are owner-scoped. When null, all owners (session GM lookup).
    * @see FR-npc-player-link
+   * @see FR-session-player-companion-combatants
    */
   async findNpcsByLinkedPlayerIds(
-    userId: string,
+    userId: string | null,
     playerIds: string[],
   ): Promise<IResponse<Character[]>> {
     try {
@@ -381,31 +422,40 @@ export class NpcService {
       }
 
       const objectIds: Types.ObjectId[] = [];
+      const hexIds: string[] = [];
       for (const playerId of playerIds) {
         if (!Types.ObjectId.isValid(playerId)) {
           throw new BadRequestException(`Invalid player ID: #${playerId}`);
         }
+        hexIds.push(playerId);
         objectIds.push(new Types.ObjectId(playerId));
       }
 
       const start: number = Date.now();
+      const filter: Record<string, unknown> = {
+        kind: 'npc',
+        deletedAt: null,
+        $or: [
+          { linkedPlayerId: { $in: objectIds } },
+          { linkedPlayerId: { $in: hexIds } },
+        ],
+      };
+      if (userId) {
+        filter.createdBy = userId;
+      }
       const npcs: Character[] =
         objectIds.length === 0
           ? []
-          : await this.characterModel
-              .find({
-                kind: 'npc',
-                createdBy: userId,
-                deletedAt: null,
-                linkedPlayerId: { $in: objectIds },
-              })
+          : await this.npcFindModel()
+              .find(filter)
+              .setOptions({ strictQuery: false })
               .exec();
       const end: number = Date.now();
 
       const message = `Linked NPCs found in ${end - start}ms`;
       this.logger.debug(message, this.SERVICE_NAME);
 
-      return { message, data: npcs };
+      return { message, data: npcs.map((npc) => this.serializeLinkedNpc(npc)) };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

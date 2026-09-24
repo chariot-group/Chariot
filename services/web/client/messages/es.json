@@ -95,6 +95,7 @@
     "joinSessionErrorNotFound": "No se encontró ninguna sesión para este código.",
     "joinSessionErrorClosed": "Esta sesión está cerrada.",
     "joinSessionSelectCharacterPlaceholder": "Seleccionar un personaje",
+    "joinSessionCompanionCount": "{count, plural, one {# compañero} other {# compañeros}}",
     "comingSoon": "Próximamente",
     "alreadyInSession": "No es posible realizar esta acción, ya estás conectado.",
     "returnToSheet": "Personaje",
@@ -209,6 +210,8 @@
     "initBattleCollapseGroup": "Ocultar miembros del grupo",
     "initBattleRemoveGroup": "Quitar grupo de la selección",
     "initBattleInInitiative": "En iniciativa",
+    "initBattleLinkedTo": "Vinculado a {name}",
+    "initBattleLinkedCompanion": "PNJ vinculado",
     "initBattleParticipantsCannotBeExcluded": "Los participantes no pueden ser excluidos de la iniciativa",
     "initBattleValidateSelection": "Confirmar configuración",
     "addCombatants": "Añadir al combate",
@@ -1777,6 +1780,7 @@
       },
       "noCharacter": "Sin personaje",
       "selectCharacterPlaceholder": "Cambiar personaje",
+      "companionCount": "{count, plural, one {# compañero} other {# compañeros}}",
       "loadingCharacters": "Cargando..."
     },
     "sessionCode": {

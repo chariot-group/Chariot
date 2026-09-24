@@ -10,7 +10,11 @@ import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
-import { selectIsInSession, selectSessionCode } from "@/store/slices/sessionSlice";
+import {
+  selectIsInSession,
+  selectSessionCode,
+  selectSessionParticipants,
+} from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import UserService from "@/services/UserService";
 import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipantUserLabel";
@@ -42,6 +46,8 @@ import { cn } from "@/lib/utils";
 import CharacterService from "@/services/CharacterService";
 import { characterDisplayName as formatCharacterName } from "@/lib/duplicateName";
 import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
+import { isPlayerOnSessionRoster } from "@/lib/sessionPlayerCompanions";
+import { buildSessionCharacterHref } from "@/lib/sessionInAppNavigation";
 import Link from "next/link";
 
 interface CharacterDetailViewProps {
@@ -68,15 +74,38 @@ export default function CharacterDetailView({
   const contextMode = useAppSelector(selectContextMode);
   const currentUser = useAppSelector(selectUser);
   const sessionCodeRedux = useAppSelector(selectSessionCode);
+  const participants = useAppSelector(selectSessionParticipants);
   const sessionCodeFromUrl = searchParams.get("sessionCode");
   const currentUserKeycloakId = currentUser?.keycloakId ?? null;
 
-  const isGmViewingPlayerSheet =
-    contextMode === "gm" &&
-    isPlayer(character) &&
+  const isSessionGmUser = Boolean(
+    currentUserKeycloakId &&
+      participants.some(
+        (participant) => participant.userId === currentUserKeycloakId && participant.status === "gameMaster",
+      ),
+  );
+
+  const sessionCodeActive = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
+  const sessionCodeForMedia = sessionCodeActive;
+  const isSessionGmEditContext = Boolean(isInSession && isSessionGmUser && sessionCodeActive);
+
+  const isAssignedSessionPlayer =
+    isPlayer(character) && isPlayerOnSessionRoster(participants, character._id);
+
+  const isSessionCompanionNpc =
+    !isPlayer(character) &&
+    Boolean(linkedPlayerIdOf(character)) &&
+    isPlayerOnSessionRoster(participants, linkedPlayerIdOf(character) ?? "");
+
+  const isForeignOwnedSheet =
     currentUserKeycloakId != null &&
     character.createdBy != null &&
     character.createdBy !== currentUserKeycloakId;
+
+  const isGmViewingPlayerSheet =
+    isSessionGmUser && isPlayer(character) && (isForeignOwnedSheet || isAssignedSessionPlayer);
+  const isGmViewingNpcSheet =
+    isSessionGmUser && !isPlayer(character) && (isForeignOwnedSheet || isSessionCompanionNpc);
 
   const playedBySubjectId = isGmViewingPlayerSheet && character.createdBy != null ? String(character.createdBy) : null;
 
@@ -91,17 +120,21 @@ export default function CharacterDetailView({
       ? resolvedPlayedBy.label
       : null;
 
-  const sessionCodeForMedia = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
+  const canEditAsGm =
+    isSessionGmEditContext && (isForeignOwnedSheet || isAssignedSessionPlayer || isSessionCompanionNpc);
 
-  const canEditAsGm = useMemo(
-    () => isGmViewingPlayerSheet && isInSession && !!sessionCodeFromUrl && sessionCodeFromUrl === sessionCodeRedux,
-    [isGmViewingPlayerSheet, isInSession, sessionCodeFromUrl, sessionCodeRedux],
+  const showEditControls = !isForeignOwnedSheet || canEditAsGm;
+
+  const showSessionGmCompanionsTab = Boolean(
+    isPlayer(character) && isSessionGmEditContext && isAssignedSessionPlayer,
   );
 
-  const showEditControls = !isGmViewingPlayerSheet || canEditAsGm;
-
   const isPlayerSpace = contextMode === "player";
-  const availableTabs = tabsForCharacterSheet(isPlayer(character), isPlayerSpace);
+  const availableTabs = tabsForCharacterSheet(
+    isPlayer(character),
+    isPlayerSpace,
+    showSessionGmCompanionsTab,
+  );
   const requestedTab = (searchParams.get("tab") as CharacterTab) || "general";
   const activeTab = availableTabs.includes(requestedTab) ? requestedTab : "general";
 
@@ -126,7 +159,7 @@ export default function CharacterDetailView({
     type: characterType,
     sourceCharacter: character,
     refetchCharacter,
-    sessionCode: sessionCodeFromUrl,
+    sessionCode: sessionCodeForMedia,
     onSuccess: () => {
       // Rafraîchir les données du parent après la mise à jour
       if (onCharacterUpdate) {
@@ -318,16 +351,18 @@ export default function CharacterDetailView({
     };
   }, [playedBySubjectId]);
 
-  const npcLinkedPlayerId =
-    isPlayerSpace && !isPlayer(character) ? linkedPlayerIdOf(character) : null;
+  const npcLinkedPlayerId = !isPlayer(character) ? linkedPlayerIdOf(character) : null;
+  const showLinkedPlayerMeta = Boolean(
+    npcLinkedPlayerId && (isPlayerSpace || (isGmViewingNpcSheet && isSessionGmEditContext)),
+  );
 
   useEffect(() => {
-    if (!npcLinkedPlayerId) {
+    if (!showLinkedPlayerMeta || !npcLinkedPlayerId) {
       setLinkedPlayer(null);
       return;
     }
     let cancelled = false;
-    CharacterService.getCharacterById(npcLinkedPlayerId)
+    CharacterService.getCharacterById(npcLinkedPlayerId, { sessionCode: sessionCodeForMedia })
       .then((fetched) => {
         if (!cancelled && isPlayer(fetched)) {
           setLinkedPlayer(fetched);
@@ -339,7 +374,7 @@ export default function CharacterDetailView({
     return () => {
       cancelled = true;
     };
-  }, [npcLinkedPlayerId]);
+  }, [npcLinkedPlayerId, sessionCodeForMedia, showLinkedPlayerMeta]);
 
   useEffect(() => {
     if (!showEditControls && isEditing) {
@@ -596,7 +631,7 @@ export default function CharacterDetailView({
                           </div>
                           {linkedPlayer ? (
                             <Link
-                              href={`/characters/${linkedPlayer._id}`}
+                              href={buildSessionCharacterHref(linkedPlayer._id, sessionCodeForMedia)}
                               className="min-w-0 truncate text-xs font-normal text-gray-light hover:text-white focus-visible:ring-1 focus-visible:ring-white/50">
                               {t("npc.linkedTo", { name: formatCharacterName(linkedPlayer) || t("placeholder.noImage") })}
                             </Link>
@@ -656,6 +691,8 @@ export default function CharacterDetailView({
               onCompanionPendingChange={setHasPendingCompanionChanges}
               companionPersistRef={companionPersistRef}
               companionRevertRef={companionRevertRef}
+              showSessionGmCompanionsTab={showSessionGmCompanionsTab}
+              liaisonActionsEnabled={!showSessionGmCompanionsTab}
             />
           </div>
         </Tabs>

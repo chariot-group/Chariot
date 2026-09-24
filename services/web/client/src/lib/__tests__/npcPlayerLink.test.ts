@@ -71,6 +71,20 @@ describe("FR-npc-player-link — player sidebar rows", () => {
     expect(isUnlinkedWithoutGroupNpc(npc("n1", null))).toBe(true);
     expect(isUnlinkedWithoutGroupNpc(npc("n1", "p1"))).toBe(false);
   });
+
+  it("edge: ObjectId-like linkedPlayerId is normalized to a string", () => {
+    const withHex = npc("n1", null);
+    (withHex as unknown as { linkedPlayerId: { toHexString: () => string } }).linkedPlayerId = {
+      toHexString: () => "pj-oid",
+    };
+    expect(linkedPlayerIdOf(withHex)).toBe("pj-oid");
+  });
+
+  it("edge: populated linkedPlayerId._id is normalized to a string", () => {
+    const populated = npc("n1", null);
+    (populated as unknown as { linkedPlayerId: { _id: string } }).linkedPlayerId = { _id: "pj-1" };
+    expect(linkedPlayerIdOf(populated)).toBe("pj-1");
+  });
 });
 
 describe("FR-npc-player-link — queueCompanionLinkOp", () => {

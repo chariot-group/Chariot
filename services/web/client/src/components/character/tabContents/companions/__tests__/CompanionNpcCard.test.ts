@@ -27,7 +27,8 @@ describe("FR-npc-player-link — companion NPC cards", () => {
     expect(card).toContain("npcSheetHeaderIdentity");
     expect(card).toContain("formattedChallengeRating");
     expect(card).toContain("experiencePoints");
-    expect(card).toContain('href={`/characters/${npc._id}`}');
+    expect(card).toContain("buildSessionCharacterHref");
+    expect(card).toContain("npc._id");
     expect(card).toContain("absolute inset-0");
     expect(card).not.toContain("linkedTo");
     expect(card).not.toContain("kindBadge");

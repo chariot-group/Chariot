@@ -368,11 +368,15 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
             const parsedData = await resolvedSchema.parseAsync(sanitizedData);
+            const updatePayload = { ...(parsedData as Record<string, unknown>) };
+            if (type === 'npcs' && sessionCode?.trim()) {
+                delete updatePayload.linkedPlayerId;
+            }
 
             const updatedCharacter = await CharacterService.updateCharacter(
                 type,
                 characterId,
-                parsedData,
+                updatePayload as Partial<Player> | Partial<NPC>,
                 sessionCode,
             );
 

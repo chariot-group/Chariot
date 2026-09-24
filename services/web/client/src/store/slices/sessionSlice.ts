@@ -1,6 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store/index';
 import type { SessionParticipant, SessionStatus } from '@/services/SessionService';
+import type { NPC } from '@/types/character';
 import {
     ROUND_DURATION_SECONDS,
     durationToRemainingSeconds,
@@ -189,9 +190,9 @@ export function normalizePlayerFieldVisibility(
     };
 }
 
-/** FR-session-combat-navigation / FR-session-gm-guest-character — seuls les PJ non-MJ du groupe « participants session » sont non masquables. */
+/** FR-session-combat-navigation / FR-session-gm-guest-character / FR-session-player-companion-combatants — seuls les PJ non-MJ du groupe « participants session » sont non masquables. */
 export function applyPlayerRowVisibilityRules(row: InitiativeTrackerRow): InitiativeTrackerRow {
-    if (!isSessionParticipantTrackerRow(row) || row.isGmGuest) {
+    if (!isSessionParticipantTrackerRow(row) || row.isGmGuest || row.isPlayerCompanion) {
         return row;
     }
     return {
@@ -239,6 +240,8 @@ export interface InitiativeTrackerRow {
     deathSavesFailures: number;
     /** FR-session-gm-guest-character — personnage MJ promu temporairement dans le groupe participants session. */
     isGmGuest?: boolean;
+    /** FR-session-player-companion-combatants — PNJ lié d'un PJ assigné, combattant de session. */
+    isPlayerCompanion?: boolean;
     /** FR-tracker-concentration — sort de concentration actif (état tracker-only). */
     concentration?: TrackerConcentration | null;
     /** FR-tracker-concentration — rappel de jet CON en attente. */
@@ -334,6 +337,8 @@ export interface CurrentSessionState {
     participantDisplayNames: Record<string, string>;
     /** FR-session-gm-guest-character — IDs des personnages MJ temporairement promus dans le groupe participants session. */
     gmGuestCharacterIds: string[];
+    /** FR-session-player-companion-combatants — PNJ liés des PJ assignés (dérivés, non persistés). */
+    sessionCompanionNpcs: NPC[];
     /** FR-session-lobby-modal — contrôle l'ouverture de la modale lobby session (non persisté). */
     sessionLobbyOpen: boolean;
 }
@@ -357,6 +362,7 @@ const initialState: CurrentSessionState = {
     lastConsultedSheetPath: null,
     participantDisplayNames: {},
     gmGuestCharacterIds: [],
+    sessionCompanionNpcs: [],
     sessionLobbyOpen: false,
 };
 
@@ -568,6 +574,7 @@ const sessionSlice = createSlice({
             state.lastConsultedSheetPath = null;
             state.participantDisplayNames = {};
             state.gmGuestCharacterIds = [];
+            state.sessionCompanionNpcs = [];
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
             state.status = action.payload;
@@ -830,6 +837,10 @@ const sessionSlice = createSlice({
             if (!id) return;
             state.gmGuestCharacterIds = (state.gmGuestCharacterIds ?? []).filter((cid) => cid !== id);
         },
+        /** FR-session-player-companion-combatants — cache dérivé des PNJ liés aux PJ du roster. */
+        setSessionCompanionNpcs: (state, action: PayloadAction<NPC[]>) => {
+            state.sessionCompanionNpcs = action.payload;
+        },
         /** FR-session-lobby-modal — ouvre la modale lobby session. */
         openSessionLobby: (state) => {
             state.sessionLobbyOpen = true;
@@ -870,6 +881,7 @@ export const {
     pruneSessionParticipantDisplayNames,
     addGmGuestCharacterToSession,
     removeGmGuestCharacterFromSession,
+    setSessionCompanionNpcs,
     openSessionLobby,
     closeSessionLobby,
 } = sessionSlice.actions;
@@ -904,6 +916,8 @@ export const selectCharacterSheetRemoteVersions = (state: RootState) =>
     state.session.characterSheetRemoteVersions ?? {};
 export const selectGmGuestCharacterIds = (state: RootState) =>
     state.session.gmGuestCharacterIds ?? [];
+export const selectSessionCompanionNpcs = (state: RootState) =>
+    state.session.sessionCompanionNpcs ?? [];
 
 export const selectLastConsultedSheetPath = (state: RootState) =>
     state.session.lastConsultedSheetPath ?? null;

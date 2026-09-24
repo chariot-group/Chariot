@@ -8,7 +8,6 @@ import { ChevronRight, Swords } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import {
   selectIsInSession,
@@ -19,6 +18,7 @@ import {
   mergeSessionParticipantDisplayNames,
   pruneSessionParticipantDisplayNames,
   selectGmGuestCharacterIds,
+  selectSessionCompanionNpcs,
   removeGmGuestCharacterFromSession,
   selectBattleInitialized,
   removeInitiativeTrackerRow,
@@ -31,6 +31,10 @@ import { useSidebar } from "@/components/ui/sidebar";
 import characterService from "@/services/CharacterService";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
+import { characterDisplayName } from "@/lib/duplicateName";
+import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
+import { companionsGroupedByPlayerId, ungroupedSessionCompanions } from "@/lib/sessionPlayerCompanions";
+import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 import type { MediaAvatarSize } from "@/utils/media.utils";
@@ -53,7 +57,6 @@ export default function GmSessionPlayersSidebarSection() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { isMobile, setOpenMobile } = useSidebar();
-  const contextMode = useAppSelector(selectContextMode);
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
@@ -63,6 +66,15 @@ export default function GmSessionPlayersSidebarSection() {
 
   const displayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
+  const companionsByPlayerId = React.useMemo(
+    () => companionsGroupedByPlayerId(sessionCompanionNpcs),
+    [sessionCompanionNpcs],
+  );
+  const ungroupedCompanions = React.useMemo(
+    () => ungroupedSessionCompanions(sessionCompanionNpcs, companionsByPlayerId),
+    [sessionCompanionNpcs, companionsByPlayerId],
+  );
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const [characterMeta, setCharacterMeta] = React.useState<Record<string, SessionCharacterMeta>>({});
   const [guestMeta, setGuestMeta] = React.useState<Record<string, SessionCharacterMeta>>({});
@@ -73,8 +85,14 @@ export default function GmSessionPlayersSidebarSection() {
     !!currentUser?.keycloakId &&
     participants.some((p) => p.userId === currentUser.keycloakId && p.status === "gameMaster");
 
-  /** Tous les humains hors MJ dans la session (y compris avant choix de personnage). */
-  const presenceRoster = React.useMemo(() => participants.filter((p) => p.status !== "gameMaster"), [participants]);
+  /** Joueurs connectés + MJ ayant choisi un PJ (rejoin créateur). */
+  const presenceRoster = React.useMemo(
+    () =>
+      participants.filter(
+        (p) => p.status !== "gameMaster" || Boolean(p.characterId?.trim()),
+      ),
+    [participants],
+  );
 
   /**
    * Signature ordre-indépendante : réordonnement HTTP uniquement sans changer les paires
@@ -153,7 +171,7 @@ export default function GmSessionPlayersSidebarSection() {
     const roster = participantsRef.current.filter(
       (p) => p.status !== "gameMaster" && p.characterId != null && p.characterId.length > 0,
     );
-    if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || roster.length === 0) {
+    if (!isInSession || !isGm || !sessionCode || roster.length === 0) {
       prevRemoteVersionsRef.current = {};
       return;
     }
@@ -195,11 +213,11 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [contextMode, fetchCharacterMeta, isGm, isInSession, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
+  }, [fetchCharacterMeta, isGm, isInSession, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
 
   /** Chargement initial / changement de roster : requêtes espacées pour rester sous le rate limit gateway. */
   React.useEffect(() => {
-    if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode) {
+    if (!isInSession || !isGm || !sessionCode) {
       return;
     }
 
@@ -243,10 +261,10 @@ export default function GmSessionPlayersSidebarSection() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [contextMode, dispatch, displayNames, fetchCharacterMeta, isGm, isInSession, rosterStableKey, sessionCode]);
+  }, [dispatch, displayNames, fetchCharacterMeta, isGm, isInSession, rosterStableKey, sessionCode]);
 
   React.useEffect(() => {
-    if (!isInSession || contextMode !== "gm" || !isGm || gmGuestCharacterIds.length === 0 || !sessionCode) return;
+    if (!isInSession || !isGm || gmGuestCharacterIds.length === 0 || !sessionCode) return;
     let cancelled = false;
     void (async () => {
       const updates: Record<string, SessionCharacterMeta> = {};
@@ -264,7 +282,7 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [contextMode, fetchCharacterMeta, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
+  }, [fetchCharacterMeta, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
 
   React.useEffect(() => {
     setGuestMeta((prev) => {
@@ -307,8 +325,18 @@ export default function GmSessionPlayersSidebarSection() {
         });
       }
     }
+    for (const npc of sessionCompanionNpcs) {
+      if (npc._id && npc.avatar?.trim()) {
+        items.push({
+          scope: "character",
+          entityId: npc._id,
+          storedValue: npc.avatar,
+          size: SIDEBAR_AVATAR_SIZE,
+        });
+      }
+    }
     return items;
-  }, [characterMeta, guestMeta]);
+  }, [characterMeta, guestMeta, sessionCompanionNpcs]);
 
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
     avatarBatchItems,
@@ -316,7 +344,7 @@ export default function GmSessionPlayersSidebarSection() {
     Boolean(isInSession && isGm && sessionCode && avatarBatchItems.length > 0),
   );
 
-  if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
+  if (!isInSession || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
     return null;
   }
 
@@ -416,7 +444,7 @@ export default function GmSessionPlayersSidebarSection() {
             </>
           );
 
-          return hasSheet ? (
+          const playerRow = hasSheet ? (
             <Link
               key={`${p.userId}-${cid ?? "pending"}`}
               href={href}
@@ -435,6 +463,136 @@ export default function GmSessionPlayersSidebarSection() {
               aria-label={inlineLabel}>
               {innerLabel}
             </div>
+          );
+
+          const nestedCompanions = cid ? (companionsByPlayerId[cid] ?? []) : [];
+          if (nestedCompanions.length === 0) {
+            return playerRow;
+          }
+
+          return (
+            <div
+              key={`${p.userId}-${cid ?? "pending"}`}
+              className="flex flex-col gap-1">
+              {playerRow}
+              <ul
+                className="relative ml-4 flex flex-col gap-1 border-l-2 border-purple pl-2"
+                aria-label={t("companionsListLabel", { name: primaryLabel })}>
+                {nestedCompanions.map((npc) => {
+                  const npcSelected = selectedCharacterId === npc._id;
+                  const npcName = characterDisplayName(npc) || t("unnamedCharacter");
+                  const npcHref = `/${locale}/characters/${encodeURIComponent(npc._id)}?sessionCode=${encodeURIComponent(sessionCode)}`;
+                  const npcAvatar = npc.avatar?.trim() ?? "";
+                  const linkedLabel = t("linkedToPlayer", { name: primaryLabel });
+                  return (
+                    <li key={npc._id}>
+                      <Link
+                        href={npcHref}
+                        aria-current={npcSelected ? "page" : undefined}
+                        aria-label={`${npcName} (${linkedLabel})${npcSelected ? ` (${t("selected")})` : ""}`}
+                        onClick={() => {
+                          if (isMobile) setOpenMobile(false);
+                        }}
+                        className={cn(
+                          "relative flex min-w-0 w-full shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 rounded-[12px] focus-visible:ring-1 focus-visible:ring-white/50",
+                          npcSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10",
+                        )}>
+                        {npcSelected && (
+                          <span
+                            className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {npcAvatar ? (
+                          <MediaAvatar
+                            scope="character"
+                            entityId={npc._id}
+                            storedValue={npc.avatar}
+                            size={SIDEBAR_AVATAR_SIZE}
+                            sessionCode={sessionCode}
+                            alt={npcName}
+                            enabled
+                            avatarImageUrl={getAvatarUrl("character", npc._id, SIDEBAR_AVATAR_SIZE)}
+                            className="shrink-0"
+                          />
+                        ) : null}
+                        <span className="flex min-w-0 flex-1 flex-col gap-0">
+                          <span className={cn("text-sm min-w-0 truncate", npcSelected && "font-bold text-black")}>
+                            {npcName}
+                          </span>
+                          <span className={cn("text-xs truncate w-full", npcSelected ? "text-black/50" : "text-white/55")}>
+                            {linkedLabel}
+                          </span>
+                        </span>
+                        <SidebarCharacterKindBadge
+                          label={t("npcKind")}
+                          selected={npcSelected}
+                        />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          );
+        })}
+        {ungroupedCompanions.map((npc) => {
+          const npcSelected = selectedCharacterId === npc._id;
+          const npcName = characterDisplayName(npc) || t("unnamedCharacter");
+          const npcHref = `/${locale}/characters/${encodeURIComponent(npc._id)}?sessionCode=${encodeURIComponent(sessionCode)}`;
+          const npcAvatar = npc.avatar?.trim() ?? "";
+          const linkedPlayerId = linkedPlayerIdOf(npc);
+          const linkedPlayerLabel = linkedPlayerId
+            ? (characterMeta[linkedPlayerId]?.label ?? SESSION_PARTICIPANT_NAME_LOADING)
+            : "";
+          const linkedLabel = linkedPlayerLabel
+            ? t("linkedToPlayer", { name: linkedPlayerLabel })
+            : t("npcKind");
+          return (
+            <Link
+              key={`ungrouped-companion-${npc._id}`}
+              href={npcHref}
+              aria-current={npcSelected ? "page" : undefined}
+              aria-label={`${npcName} (${linkedLabel})${npcSelected ? ` (${t("selected")})` : ""}`}
+              onClick={() => {
+                if (isMobile) setOpenMobile(false);
+              }}
+              className={cn(
+                "relative flex min-w-0 w-full shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 rounded-[12px] focus-visible:ring-1 focus-visible:ring-white/50",
+                npcSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10",
+              )}>
+              {npcSelected && (
+                <span
+                  className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+              )}
+              {npcAvatar ? (
+                <MediaAvatar
+                  scope="character"
+                  entityId={npc._id}
+                  storedValue={npc.avatar}
+                  size={SIDEBAR_AVATAR_SIZE}
+                  sessionCode={sessionCode}
+                  alt={npcName}
+                  enabled
+                  avatarImageUrl={getAvatarUrl("character", npc._id, SIDEBAR_AVATAR_SIZE)}
+                  className="shrink-0"
+                />
+              ) : null}
+              <span className="flex min-w-0 flex-1 flex-col gap-0">
+                <span className={cn("text-sm min-w-0 truncate", npcSelected && "font-bold text-black")}>
+                  {npcName}
+                </span>
+                <span className={cn("text-xs truncate w-full", npcSelected ? "text-black/50" : "text-white/55")}>
+                  {linkedLabel}
+                </span>
+              </span>
+              <SidebarCharacterKindBadge
+                label={t("npcKind")}
+                selected={npcSelected}
+              />
+            </Link>
           );
         })}
         {gmGuestCharacterIds.map((cid) => {

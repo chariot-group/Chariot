@@ -153,7 +153,7 @@ export class CharacterController {
 
     const minimal = await this.characterModel
       .findById(id)
-      .select('createdBy')
+      .select('createdBy kind linkedPlayerId')
       .exec();
 
     if (!minimal) {
@@ -170,10 +170,16 @@ export class CharacterController {
           'You can only view your own characters without an active session context',
         );
       }
+      const linkedPlayerId =
+        (minimal as { kind?: string; linkedPlayerId?: unknown }).kind === 'npc' &&
+        (minimal as { linkedPlayerId?: unknown }).linkedPlayerId
+          ? String((minimal as { linkedPlayerId: unknown }).linkedPlayerId)
+          : undefined;
       await this.sessionAccessService.assertRosterRead(
         req.headers.authorization,
         code,
         id.toString(),
+        linkedPlayerId,
       );
     }
 
@@ -236,7 +242,12 @@ export class CharacterController {
   })
   async getCharacterOwnerInternal(
     @Param('characterId') characterId: string,
-  ): Promise<{ createdBy: string; avatar: string | null; kind: string }> {
+  ): Promise<{
+    createdBy: string;
+    avatar: string | null;
+    kind: string;
+    linkedPlayerId: string | null;
+  }> {
     if (!Types.ObjectId.isValid(characterId)) {
       throw new NotFoundException(`Character ${characterId} not found`);
     }
@@ -247,12 +258,17 @@ export class CharacterController {
       throw new NotFoundException(`Character ${characterId} not found`);
     }
 
+    const kind =
+      ((character as unknown as Record<string, unknown>)['kind'] as string) ??
+      'player';
+    const rawLinked = (character as unknown as { linkedPlayerId?: unknown })
+      .linkedPlayerId;
+
     return {
       createdBy: character.createdBy,
       avatar: character.avatar ?? null,
-      kind:
-        ((character as unknown as Record<string, unknown>)['kind'] as string) ??
-        'player',
+      kind,
+      linkedPlayerId: rawLinked ? String(rawLinked) : null,
     };
   }
 

@@ -1,11 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NpcController } from '@/resources/character/npc/npc.controller';
 import { NpcService } from '@/resources/character/npc/npc.service';
-import { CharacterService } from '@/resources/character/character.service';
+import { SessionAccessService } from '@/common/session/session-access.service';
 import { Types } from 'mongoose';
 import { getModelToken } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
-import { GoneException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  GoneException,
+  NotFoundException,
+} from '@nestjs/common';
 
 describe('NpcController - createNpc', () => {
   let controller: NpcController;
@@ -62,7 +66,13 @@ describe('NpcController - createNpc', () => {
       controllers: [NpcController],
       providers: [
         { provide: NpcService, useValue: npcService },
-        { provide: CharacterService, useValue: {} },
+        {
+          provide: SessionAccessService,
+          useValue: {
+            assertGmCompanionLookup: jest.fn(),
+            assertGmEdit: jest.fn(),
+          },
+        },
         {
           provide: getModelToken(Character.name),
           useValue: {}, // not used here
@@ -87,8 +97,15 @@ describe('NpcController - update', () => {
   let controller: NpcController;
   let npcService: any;
   let characterModel: any;
+  let sessionAccess: {
+    assertGmEdit: jest.Mock;
+    assertGmCompanionLookup: jest.Mock;
+  };
 
   const npcId = new Types.ObjectId();
+  const ownerKeycloakId = 'a3d73edb-5f4c-4e38-9c6b-0c25a58b1234';
+  const gmKeycloakId = 'b4e84fec-6f5d-5f49-0d7c-1d36b69c2345';
+  const linkedPlayerId = new Types.ObjectId().toHexString();
 
   const updateDto = {
     firstname: 'Updated NPC',
@@ -98,19 +115,31 @@ describe('NpcController - update', () => {
 
   beforeEach(async () => {
     npcService = {
-      update: jest.fn(),
+      update: jest.fn().mockResolvedValue({ data: 'updated' }),
+    };
+    sessionAccess = {
+      assertGmEdit: jest.fn().mockResolvedValue(undefined),
+      assertGmCompanionLookup: jest.fn().mockResolvedValue(undefined),
     };
 
     characterModel = {
       findById: jest.fn().mockReturnThis(),
-      exec: jest.fn().mockResolvedValue({ _id: npcId, deletedAt: null }),
+      select: jest.fn().mockReturnThis(),
+      exec: jest
+        .fn()
+        .mockResolvedValueOnce({ _id: npcId, deletedAt: null })
+        .mockResolvedValueOnce({
+          createdBy: ownerKeycloakId,
+          kind: 'npc',
+          linkedPlayerId,
+        }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [NpcController],
       providers: [
         { provide: NpcService, useValue: npcService },
-        { provide: CharacterService, useValue: {} },
+        { provide: SessionAccessService, useValue: sessionAccess },
         { provide: getModelToken(Character.name), useValue: characterModel },
       ],
     }).compile();
@@ -119,13 +148,76 @@ describe('NpcController - update', () => {
   });
 
   it('should update NPC after validating resource', async () => {
-    npcService.update.mockResolvedValue({ data: 'updated' });
+    const requestMock = {
+      user: { keycloakId: ownerKeycloakId },
+      headers: { authorization: 'Bearer token' },
+    };
 
-    const result = await controller.update(npcId, updateDto);
+    const result = await controller.update(
+      npcId,
+      updateDto,
+      requestMock as never,
+      undefined,
+    );
 
     expect(characterModel.findById).toHaveBeenCalledWith(npcId);
     expect(npcService.update).toHaveBeenCalledWith(npcId, updateDto);
+    expect(sessionAccess.assertGmEdit).not.toHaveBeenCalled();
     expect(result).toEqual({ data: 'updated' });
+  });
+
+  it('nominal: session GM gm-edit updates companion NPC character data', async () => {
+    const requestMock = {
+      user: { keycloakId: gmKeycloakId },
+      headers: { authorization: 'Bearer token' },
+    };
+
+    const result = await controller.update(
+      npcId,
+      updateDto,
+      requestMock as never,
+      'ABC123',
+    );
+
+    expect(sessionAccess.assertGmEdit).toHaveBeenCalledWith(
+      'Bearer token',
+      'ABC123',
+      npcId.toString(),
+      linkedPlayerId,
+    );
+    expect(npcService.update).toHaveBeenCalledWith(npcId, updateDto);
+    expect(result).toEqual({ data: 'updated' });
+  });
+
+  it('failure: session GM gm-edit strips linkedPlayerId', async () => {
+    const requestMock = {
+      user: { keycloakId: gmKeycloakId },
+      headers: { authorization: 'Bearer token' },
+    };
+
+    await controller.update(
+      npcId,
+      { ...updateDto, linkedPlayerId: new Types.ObjectId().toHexString() },
+      requestMock as never,
+      'ABC123',
+    );
+
+    expect(npcService.update).toHaveBeenCalledWith(npcId, updateDto);
+    expect(npcService.update.mock.calls[0][1]).not.toHaveProperty(
+      'linkedPlayerId',
+    );
+  });
+
+  it('failure: foreign update without sessionCode is forbidden', async () => {
+    const requestMock = {
+      user: { keycloakId: gmKeycloakId },
+      headers: { authorization: 'Bearer token' },
+    };
+
+    await expect(
+      controller.update(npcId, updateDto, requestMock as never, undefined),
+    ).rejects.toThrow(ForbiddenException);
+    expect(npcService.update).not.toHaveBeenCalled();
   });
 });
 
@@ -145,7 +237,13 @@ describe('NpcController - validateResource', () => {
       controllers: [NpcController],
       providers: [
         { provide: NpcService, useValue: {} },
-        { provide: CharacterService, useValue: {} },
+        {
+          provide: SessionAccessService,
+          useValue: {
+            assertGmEdit: jest.fn(),
+            assertGmCompanionLookup: jest.fn(),
+          },
+        },
         { provide: getModelToken(Character.name), useValue: characterModel },
       ],
     }).compile();
@@ -181,8 +279,15 @@ describe('NpcController - validateResource', () => {
 describe('NpcController - FR-npc-player-link queries', () => {
   let controller: NpcController;
   let npcService: any;
+  let sessionAccess: {
+    assertGmCompanionLookup: jest.Mock;
+    assertGmEdit: jest.Mock;
+  };
   const userId = 'a1b2c3d4-e5f6-4a78-8abc-1234567890ab';
-  const requestMock = { user: { keycloakId: userId } };
+  const requestMock = {
+    user: { keycloakId: userId },
+    headers: { authorization: 'Bearer token' },
+  };
 
   beforeEach(async () => {
     npcService = {
@@ -190,12 +295,16 @@ describe('NpcController - FR-npc-player-link queries', () => {
       findUnlinkedNpcs: jest.fn(),
       findNpcsByLinkedPlayerIds: jest.fn(),
     };
+    sessionAccess = {
+      assertGmCompanionLookup: jest.fn().mockResolvedValue(undefined),
+      assertGmEdit: jest.fn().mockResolvedValue(undefined),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [NpcController],
       providers: [
         { provide: NpcService, useValue: npcService },
-        { provide: CharacterService, useValue: {} },
+        { provide: SessionAccessService, useValue: sessionAccess },
         { provide: getModelToken(Character.name), useValue: {} },
       ],
     }).compile();
@@ -233,6 +342,25 @@ describe('NpcController - FR-npc-player-link queries', () => {
 
     await controller.getNpcsByLinkedPlayers(requestMock, undefined);
 
-    expect(npcService.findNpcsByLinkedPlayerIds).toHaveBeenCalledWith(userId, []);
+    expect(npcService.findNpcsByLinkedPlayerIds).toHaveBeenCalledWith(
+      userId,
+      [],
+    );
+  });
+
+  it('nominal: session GM lookup lists companions across owners', async () => {
+    npcService.findNpcsByLinkedPlayerIds.mockResolvedValue({ data: [] });
+    const playerId = '507f1f77bcf86cd799439011';
+
+    await controller.getNpcsByLinkedPlayers(requestMock, playerId, 'ABC123');
+
+    expect(sessionAccess.assertGmCompanionLookup).toHaveBeenCalledWith(
+      'Bearer token',
+      'ABC123',
+      [playerId],
+    );
+    expect(npcService.findNpcsByLinkedPlayerIds).toHaveBeenCalledWith(null, [
+      playerId,
+    ]);
   });
 });

@@ -1,15 +1,13 @@
 /** @see FR-npc-player-link */
 
 import { characterDisplayName } from "@/lib/duplicateName";
+import { normalizeCharacterId } from "@/lib/normalizeCharacterId";
 import type { Character, NPC } from "@/types/character";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 
 export function linkedPlayerIdOf(character: Character | NPC | null | undefined): string | null {
   if (!character) return null;
-  const value = (character as NPC).linkedPlayerId;
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  return normalizeCharacterId((character as NPC).linkedPlayerId as unknown);
 }
 
 export function hasGroups(character: Character): boolean {

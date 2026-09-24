@@ -478,6 +478,7 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
         userId: string,
         characterId: string,
         mode: 'roster-read' | 'gm-edit',
+        linkedPlayerId?: string,
     ): Promise<IResponse<{ ok: true }>> {
         try {
             const session = await this._findSession(code);
@@ -488,26 +489,37 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
 
             const cid = characterId.trim();
             const inRoster = session.participants.some((p) => p.characterId === cid);
-            if (!inRoster) {
-                throw new ForbiddenException('Character is not part of this session roster');
-            }
+            if (inRoster) {
+                if (mode === 'roster-read') {
+                    return { message: 'Access granted', data: { ok: true } };
+                }
 
-            if (mode === 'roster-read') {
+                if (me.status !== ParticipantStatus.gameMaster) {
+                    throw new ForbiddenException('Only the game master can edit this character in session');
+                }
+
+                const heldByPlayer = session.participants.some(
+                    (p) => p.status !== ParticipantStatus.gameMaster && p.characterId === cid,
+                );
+                if (!heldByPlayer) {
+                    throw new ForbiddenException('Character is not assigned to a player in this session');
+                }
+
                 return { message: 'Access granted', data: { ok: true } };
             }
 
-            if (me.status !== ParticipantStatus.gameMaster) {
+            const linkedId = linkedPlayerId?.trim();
+            if (linkedId && this.isAssignedNonGmCharacter(session, linkedId)) {
+                if (mode === 'roster-read') {
+                    return { message: 'Access granted', data: { ok: true } };
+                }
+                if (me.status === ParticipantStatus.gameMaster) {
+                    return { message: 'Access granted', data: { ok: true } };
+                }
                 throw new ForbiddenException('Only the game master can edit this character in session');
             }
 
-            const heldByPlayer = session.participants.some(
-                (p) => p.status !== ParticipantStatus.gameMaster && p.characterId === cid,
-            );
-            if (!heldByPlayer) {
-                throw new ForbiddenException('Character is not assigned to a player in this session');
-            }
-
-            return { message: 'Access granted', data: { ok: true } };
+            throw new ForbiddenException('Character is not part of this session roster');
         } catch (error: unknown) {
             if (error instanceof HttpException) {
                 throw error;
@@ -516,6 +528,75 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
+    }
+
+    /**
+     * GM-only: every playerId must be a Player character assigned on the session roster.
+     * Includes a MJ who chose a PJ (creator join) — still not a wheel seat / companion participant.
+     * @see FR-session-player-companion-combatants
+     */
+    async validateCompanionLookupForAdventure(
+        code: string,
+        userId: string,
+        playerIds: string[],
+    ): Promise<IResponse<{ ok: true }>> {
+        try {
+            const session = await this._findSession(code);
+            const me = session.participants.find((p) => p.userId === userId);
+            if (!me) {
+                throw new ForbiddenException('User is not a session participant');
+            }
+            if (me.status !== ParticipantStatus.gameMaster) {
+                throw new ForbiddenException('Only the game master can list player companions in session');
+            }
+
+            for (const rawId of playerIds) {
+                const playerId = rawId.trim();
+                if (!playerId || !this.isAssignedSessionPlayerCharacter(session, playerId)) {
+                    throw new ForbiddenException('Player is not an assigned session character');
+                }
+            }
+
+            return { message: 'Access granted', data: { ok: true } };
+        } catch (error: unknown) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            const message = `Error validating companion lookup for session ${code}: ${(error as Error).message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    private normalizeSessionCharacterId(value: string | null | undefined): string | null {
+        if (value == null) return null;
+        const trimmed = String(value).trim();
+        return trimmed.length > 0 ? trimmed : null;
+    }
+
+    private isAssignedNonGmCharacter(
+        session: { participants: Array<{ status: ParticipantStatus; characterId?: string | null }> },
+        characterId: string,
+    ): boolean {
+        const target = this.normalizeSessionCharacterId(characterId);
+        if (!target) return false;
+        return session.participants.some(
+            (participant) =>
+                participant.status !== ParticipantStatus.gameMaster &&
+                this.normalizeSessionCharacterId(participant.characterId) === target,
+        );
+    }
+
+    /** PJ présent sur le roster (joueur connecté ou MJ avec un personnage choisi). */
+    private isAssignedSessionPlayerCharacter(
+        session: { participants: Array<{ status: ParticipantStatus; characterId?: string | null }> },
+        characterId: string,
+    ): boolean {
+        const target = this.normalizeSessionCharacterId(characterId);
+        if (!target) return false;
+        return session.participants.some(
+            (participant) => this.normalizeSessionCharacterId(participant.characterId) === target,
+        );
     }
 
     /**
