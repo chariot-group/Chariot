@@ -1,0 +1,19 @@
+{
+  "name": "@chariot/load-test",
+  "private": true,
+  "description": "Tests de charge Artillery pour les microservices Chariot",
+  "scripts": {
+    "load:smoke": "artillery run chariot-all-services.yml --environment smoke",
+    "load:dev": "artillery run chariot-all-services.yml --environment dev",
+    "load:stress": "artillery run chariot-all-services.yml --environment stress",
+    "load:smoke:report": "mkdir -p reports && artillery run chariot-all-services.yml --environment smoke --output reports/smoke.json",
+    "load:dev:report": "mkdir -p reports && artillery run chariot-all-services.yml --environment dev --output reports/dev.json",
+    "load:stress:report": "mkdir -p reports && artillery run chariot-all-services.yml --environment stress --output reports/stress.json",
+    "report:html": "node generate-html-report.cjs",
+    "load:report": "npm run load:dev:report"
+  },
+  "devDependencies": {
+    "artillery": "^2.0.21",
+    "artillery-engine-socketio-v3": "^1.2.0"
+  }
+}

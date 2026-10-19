@@ -1,0 +1,251 @@
+# Tests de charge Artillery — stack Chariot
+#
+#   cp env.example .env   # secrets + URLs si autre environnement
+#   npm run load:smoke
+#
+# Rapports (JSON + HTML dans reports/) :
+#   npm run load:smoke:report | load:dev:report | load:stress:report
+# HTML seul depuis un JSON existant : npm run report:html -- reports/smoke.json
+#
+# Autre cible : modifier config.variables ci-dessous ou les URLs dans .env
+# (KEYCLOAK_AUTH_PREFIX=/auth pour Keycloak local avec préfixe /auth)
+#
+# WebSocket : sessionWsUrl sans /ws ; path Socket.IO = /ws, namespace = /session.
+# WebSocket : scénarios exécutés via processor (socket.io-client), pas le moteur socketio-v3.
+
+config:
+  target: "{{ gatewayUrl }}"
+  processor: "./processor.cjs"
+  # Au-dessus du plancher 8 s d'agentkeepalive, pour qu'une lenteur Keycloak
+  # ne soit pas rapportée comme ERR_SOCKET_TIMEOUT.
+  http:
+    timeout: 30
+  plugins:
+    expect: {}
+  environments:
+    smoke:
+      phases:
+        - name: smoke
+          duration: 30
+          arrivalRate: 1
+    dev:
+      phases:
+        - name: warm-up
+          duration: 60
+          arrivalRate: 2
+        - name: sustained
+          duration: 180
+          arrivalRate: 5
+    stress:
+      phases:
+        - name: ramp
+          duration: 120
+          arrivalRate: 2
+          rampTo: 20
+        - name: peak
+          duration: 300
+          arrivalRate: 20
+  variables:
+    gatewayUrl: "https://integ.api.chariot.tools"
+    sessionHttpUrl: "https://integ.session.chariot.tools"
+    paymentHttpUrl: "https://integ.payment.chariot.tools"
+    minioUrl: "https://integ.cdn.chariot.tools"
+    webUrl: "https://integ.app.chariot.tools"
+    keycloakUrl: "https://integ.sso.chariot.tools"
+    keycloakAuthPrefix: ""
+    keycloakOidcBase: "https://integ.sso.chariot.tools/realms/chariot"
+    sessionWsUrl: "https://integ.session.chariot.tools"
+    keycloakRealm: "chariot"
+    keycloakClientId: "chariot-app"
+    loadTestUsername: ""
+    loadTestPassword: ""
+    loadTestCampaignId: ""
+scenarios:
+  # Poids faible : seul scénario qui mesure le password grant.
+  # Les autres réutilisent le jeton mis en cache (brute-force Keycloak : 1 s / 5 échecs).
+  - name: Keycloak — token (password grant)
+    weight: 2
+    flow:
+      - function: "syncEnvVars"
+      - post:
+          url: "{{ keycloakOidcBase }}/protocol/openid-connect/token"
+          headers:
+            Content-Type: application/x-www-form-urlencoded
+          form:
+            grant_type: password
+            client_id: "{{ keycloakClientId }}"
+            username: "{{ loadTestUsername }}"
+            password: "{{ loadTestPassword }}"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.access_token"
+              as: accessToken
+
+  - name: Keycloak — JWKS + discovery
+    weight: 5
+    flow:
+      - function: "syncEnvVars"
+      - get:
+          url: "{{ keycloakOidcBase }}/protocol/openid-connect/certs"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "{{ keycloakOidcBase }}/.well-known/openid-configuration"
+          expect:
+            - statusCode: 200
+
+  - name: Gateway — health & readiness
+    weight: 10
+    flow:
+      - function: "syncEnvVars"
+      - get:
+          url: "{{ gatewayUrl }}/health"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "{{ gatewayUrl }}/ready"
+          expect:
+            - statusCode:
+                - 200
+                - 503
+
+  - name: Microservices — liveness (hosts publics)
+    weight: 8
+    flow:
+      - function: "syncEnvVars"
+      - get:
+          url: "{{ gatewayUrl }}/api/"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "{{ sessionHttpUrl }}/ready"
+          expect:
+            - statusCode:
+                - 200
+                - 503
+      - get:
+          url: "{{ paymentHttpUrl }}/ready"
+          expect:
+            - statusCode:
+                - 200
+                - 503
+
+  - name: Adventure — profil utilisateur
+    weight: 18
+    flow:
+      - function: "syncEnvVars"
+      - function: "ensureAccessToken"
+      - get:
+          url: "{{ gatewayUrl }}/api/user/me"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: Session REST — liste & détail
+    weight: 18
+    flow:
+      - function: "syncEnvVars"
+      - function: "ensureAccessToken"
+      - get:
+          url: "{{ gatewayUrl }}/session/sessions"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+          capture:
+            - json: "$.data[0].code"
+              as: sessionCode
+              strict: false
+      - get:
+          url: "{{ gatewayUrl }}/session/sessions/{{ sessionCode }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          ifTrue: sessionCode
+          expect:
+            - statusCode: 200
+      - get:
+          url: "{{ gatewayUrl }}/session/sessions/{{ sessionCode }}/participants"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          ifTrue: sessionCode
+          expect:
+            - statusCode: 200
+
+  - name: Session REST — création (charge écrite)
+    weight: 7
+    flow:
+      - function: "syncEnvVars"
+      - function: "ensureAccessToken"
+      - post:
+          url: "{{ gatewayUrl }}/session/sessions"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+            Content-Type: application/json
+          json:
+            campaignId: "{{ loadTestCampaignId }}"
+          expect:
+            - statusCode:
+                - 201
+                - 400
+                - 403
+          capture:
+            - json: "$.data.code"
+              as: createdSessionCode
+              strict: false
+      - post:
+          url: "{{ gatewayUrl }}/session/sessions/{{ createdSessionCode }}/leave"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode:
+                - 200
+                - 201
+                - 404
+
+  - name: Payment — readiness via gateway
+    weight: 5
+    flow:
+      - function: "syncEnvVars"
+      - get:
+          url: "{{ gatewayUrl }}/payment/ready"
+          expect:
+            - statusCode:
+                - 200
+                - 503
+
+  - name: MinIO — liveness (CDN public)
+    weight: 4
+    flow:
+      - function: "syncEnvVars"
+      - get:
+          url: "{{ minioUrl }}/minio/health/live"
+          expect:
+            - statusCode: 200
+
+  - name: Web client — page d'accueil
+    weight: 5
+    flow:
+      - function: "syncEnvVars"
+      - get:
+          url: "{{ webUrl }}/"
+          expect:
+            - statusCode:
+                - 200
+                - 307
+                - 308
+
+  - name: Session WebSocket — create & leave
+    weight: 15
+    beforeScenario: authenticateUser
+    flow:
+      - function: "syncEnvVars"
+      - function: "wsSessionCreateAndLeave"
+
+  - name: Session WebSocket — join sur session existante
+    weight: 8
+    beforeScenario: prepareSessionJoin
+    flow:
+      - function: "syncEnvVars"
+      - function: "wsSessionJoinAndLeave"
