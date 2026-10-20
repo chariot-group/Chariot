@@ -46,6 +46,9 @@ import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { updateUser } from "@/store/slices/userSlice";
 import NavigationService from "@/services/NavigationService";
+import { captureSessionEndContext, navigateAfterSessionEnd } from "@/lib/sessionEndNavigation";
+import { useStore } from "react-redux";
+import type { RootState } from "@/store";
 import { computeDepositRemainingAmount, computeMaxAddableWheels } from "@/lib/sessionWheelDeposit";
 
 type SessionErrorPayload = { code?: string; message?: string };
@@ -105,6 +108,7 @@ export function useSessionSocket({
 }: UseSessionSocketOptions) {
     const dispatch = useAppDispatch();
     const appStore = useAppStore();
+    const rootStore = useStore<RootState>();
     const tokensByUser = useAppSelector(selectSessionTokensByUser);
     const router = useRouter();
     const toast = useToast();
@@ -181,10 +185,22 @@ export function useSessionSocket({
         setIsChangingCharacter(false);
         setIsLeaving(false);
         setIsLaunching(false);
+        // Lobby and layout share the socket: whichever handles the end first navigates (FR-session-end-navigation).
+        const endContext = {
+            ...captureSessionEndContext(rootStore.getState(), pathname, { campaignId: campaignId ?? null }),
+            isGameMaster,
+        };
         destroySessionSocket();
         socketRef.current = null;
         dispatch(clearCurrentSession());
         dispatch(closeSessionLobby());
+        void navigateAfterSessionEnd({
+            sessionCode: code,
+            context: endContext,
+            router: routerRef.current,
+            dispatch,
+            getState: () => rootStore.getState(),
+        });
     });
 
     useEffect(() => {
