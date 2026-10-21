@@ -30,10 +30,10 @@ jobs:
       - name: Check if Dockerfile exists
         id: check_dockerfile
         run: |
-          if [ -f "services/adventure/api/dockerfile" ]; then
+          if [ -f "services/web/client/Dockerfile.prod" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "❌ Dockerfile not found for ${{ matrix.project }}"
+            echo "❌ Dockerfile not found for web"
             exit 1
           fi
 
@@ -46,8 +46,8 @@ jobs:
         continue-on-error: true
         uses: docker/build-push-action@v7
         with:
-          context: ./services/adventure/api
-          file: ./services/adventure/api/dockerfile
+          context: ./services/web/client
+          file: ./services/web/client/Dockerfile.prod
           push: false
           load: true
           tags: web:scan
@@ -120,7 +120,7 @@ jobs:
       - name: Check if Dockerfile exists
         id: check_dockerfile
         run: |
-          if [ -f "services/adventure/api/dockerfile" ]; then
+          if [ -f "services/adventure/api/Dockerfile.prod" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "❌ Dockerfile not found for adventure"
@@ -137,7 +137,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ./services/adventure/api
-          file: ./services/adventure/api/dockerfile
+          file: ./services/adventure/api/Dockerfile.prod
           push: false
           load: true
           tags: adventure:scan

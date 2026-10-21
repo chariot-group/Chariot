@@ -17,7 +17,10 @@ WORKDIR /app
 RUN apk upgrade --no-cache && apk add --no-cache libc6-compat vips dumb-init curl
 
 COPY package*.json ./
-RUN npm ci --only=production
+# npm n'est pas utilisé au runtime et embarque des dépendances vulnérables (Trivy)
+RUN npm ci --only=production && \
+    rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 
 COPY --from=builder /app/dist ./dist
 
