@@ -34,11 +34,7 @@ import {
   type SessionLobbyParticipantAvatarDescriptor,
 } from "@/lib/sessionLobbyAvatarBatch";
 import { shouldShowSessionLobbyInvitePanel } from "@/lib/sessionInAppNavigation";
-import {
-  computeMaxAddableWheels,
-  isWheelQuotaMetForLaunch,
-  sumDepositedWheels,
-} from "@/lib/sessionWheelDeposit";
+import { computeMaxAddableWheels, isWheelQuotaMetForLaunch, sumDepositedWheels } from "@/lib/sessionWheelDeposit";
 import { cn } from "@/lib/utils";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
@@ -107,11 +103,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     [participants, participantAvatars, characterDetails],
   );
 
-  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
-    avatarBatchItems,
-    code,
-    !isLoading && participants.length > 0,
-  );
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(avatarBatchItems, code, !isLoading && participants.length > 0);
 
   const totalDeposited = sumDepositedWheels(reduxTokensByUser);
   const myDeposited = currentUser ? (reduxTokensByUser[currentUser.keycloakId] ?? 0) : 0;
@@ -200,7 +192,21 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
         aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
         <div
           className={cn(
-            "flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 pt-4 sm:gap-4 sm:px-6 sm:pt-6",
+            "flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 px-4 pt-4 sm:px-6 sm:pt-6",
+            "pr-12 sm:pr-14",
+          )}>
+          <h2
+            id="session-lobby-players-heading"
+            className="min-w-0 break-words text-xl font-bold sm:text-xl lg:text-lg">
+            {t("title")}
+            <span className="font-normal text-muted-foreground"> {campaign?.label ?? `- ${campaignLabel}`}</span>
+            <span className="sr-only"> ({participants.length})</span>
+          </h2>
+          <SessionTimer />
+        </div>
+        <div
+          className={cn(
+            "flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 pt-2.5 sm:gap-4 sm:px-6 sm:pt-3",
             sessionIsActive && "lg:grid lg:grid-cols-4 lg:items-stretch",
           )}>
           {/* Session code + QR — only while join is open (activated lobby). @see FR-session-join-qr-code */}
@@ -244,20 +250,9 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
           <section
             aria-labelledby="session-lobby-players-heading"
             className={cn(
-              "flex min-h-0 flex-1 flex-col gap-2.5 lg:row-start-1 lg:gap-3",
+              "flex min-h-0 flex-1 flex-col lg:row-start-1",
               sessionIsActive ? "lg:col-span-3 lg:col-start-1" : "lg:col-span-full",
             )}>
-            <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 pr-8">
-              <h2
-                id="session-lobby-players-heading"
-                className="min-w-0 break-words text-xl font-bold sm:text-xl lg:text-lg">
-                {t("title")}
-                <span className="font-normal text-muted-foreground"> — {campaign?.label ?? campaignLabel}</span>
-                <span className="sr-only"> ({participants.length})</span>
-              </h2>
-              <SessionTimer />
-            </div>
-
             <div
               role="list"
               aria-label={t("players.ariaLabel")}
@@ -272,24 +267,22 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                   );
 
                   return (
-                  <SessionLobbyParticipantCard
-                    key={participant.id}
-                    participant={participant}
-                    participantName={
-                      participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING
-                    }
-                    characterLabel={getCharacterLabel(participant.characterId)}
-                    participantDeposits={reduxTokensByUser[participant.userId] ?? 0}
-                    isMe={participant.userId === currentUser?.keycloakId}
-                    isPlayer={participant.status === "connected"}
-                    sessionIsActive={sessionIsActive}
-                    myCharacters={myCharacters}
-                    isChangingCharacter={isChangingCharacter}
-                    onCharacterChange={handleCharacterChange}
-                    sessionCode={code}
-                    avatarDescriptor={avatarDescriptor}
-                    avatarImageUrl={getSessionLobbyParticipantAvatarUrl(avatarDescriptor, getAvatarUrl)}
-                  />
+                    <SessionLobbyParticipantCard
+                      key={participant.id}
+                      participant={participant}
+                      participantName={participantNames[participant.userId] ?? SESSION_PARTICIPANT_NAME_LOADING}
+                      characterLabel={getCharacterLabel(participant.characterId)}
+                      participantDeposits={reduxTokensByUser[participant.userId] ?? 0}
+                      isMe={participant.userId === currentUser?.keycloakId}
+                      isPlayer={participant.status === "connected"}
+                      sessionIsActive={sessionIsActive}
+                      myCharacters={myCharacters}
+                      isChangingCharacter={isChangingCharacter}
+                      onCharacterChange={handleCharacterChange}
+                      sessionCode={code}
+                      avatarDescriptor={avatarDescriptor}
+                      avatarImageUrl={getSessionLobbyParticipantAvatarUrl(avatarDescriptor, getAvatarUrl)}
+                    />
                   );
                 })}
             </div>
@@ -405,11 +398,7 @@ function SessionLobbyCopyActions({
   }
 
   return (
-    <div
-      className={cn(
-        "flex w-full items-center gap-2",
-        align === "center" ? "justify-center" : "justify-start",
-      )}>
+    <div className={cn("flex w-full items-center gap-2", align === "center" ? "justify-center" : "justify-start")}>
       <Button
         variant="outline"
         size="sm"
@@ -504,14 +493,10 @@ function SessionLobbyCodeSection({
                   aria-expanded={inviteDetailsOpen}
                   aria-controls="session-lobby-invite-details"
                   aria-label={
-                    inviteDetailsOpen
-                      ? t("sessionCode.inviteToggleCollapse")
-                      : t("sessionCode.inviteToggleExpand")
+                    inviteDetailsOpen ? t("sessionCode.inviteToggleCollapse") : t("sessionCode.inviteToggleExpand")
                   }>
                   <span className="hidden text-xs sm:inline">
-                    {inviteDetailsOpen
-                      ? t("sessionCode.inviteToggleCollapse")
-                      : t("sessionCode.inviteToggleExpand")}
+                    {inviteDetailsOpen ? t("sessionCode.inviteToggleCollapse") : t("sessionCode.inviteToggleExpand")}
                   </span>
                   <ChevronDown
                     aria-hidden="true"
@@ -582,9 +567,7 @@ function SessionLobbyQrSection({
         className,
       )}
       aria-label={t("sessionCode.qrCodeAriaLabel")}>
-      {showHeading && (
-        <h2 className="self-start text-sm font-bold sm:text-base">{t("sessionCode.qrCodeHeading")}</h2>
-      )}
+      {showHeading && <h2 className="self-start text-sm font-bold sm:text-base">{t("sessionCode.qrCodeHeading")}</h2>}
       <div className="shrink-0 rounded border border-border bg-white p-1.5 sm:p-2">
         <QRCodeSVG
           value={joinUrl}
@@ -636,9 +619,7 @@ function SessionLobbyParticipantCard({
 }: SessionLobbyParticipantCardProps) {
   const t = useTranslations("sessionPage");
   const isGameMaster = participant.status === "gameMaster";
-  const avatarAlt = isGameMaster
-    ? participantName
-    : characterLabel?.trim() || participantName;
+  const avatarAlt = isGameMaster ? participantName : characterLabel?.trim() || participantName;
 
   return (
     <Card

@@ -36,7 +36,7 @@ services:
 
   chariot-media:
     ports:
-      - "9005:9005"
+      - "127.0.0.1:9005:9005"
     image: ghcr.io/chariot-group/chariot-media-production:latest
     container_name: chariot-media-prod
     restart: unless-stopped
@@ -52,12 +52,12 @@ services:
       METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
       OTEL_ENABLED: ${OTEL_ENABLED:-false}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
-      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-prod}
       LOKI_ENABLED: ${LOKI_ENABLED:-false}
       LOKI_URL: ${LOKI_URL:-}
       LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
       ADVENTURE_INTERNAL_URL: ${ADVENTURE_INTERNAL_URL}
-      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL}
+      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://chariot-session-prod:9002}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://chariot-minio-prod:9000}
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}

@@ -1,7 +1,6 @@
 import { Controller, Get, Logger, Res } from "@nestjs/common";
-import { SkipThrottle } from "@nestjs/throttler";
 import { Response } from "express";
-import { HealthService } from "./health.service";
+import { HealthService } from "@/health/health.service";
 
 @Controller()
 export class HealthController {
@@ -10,14 +9,12 @@ export class HealthController {
   constructor(private readonly healthService: HealthService) {}
 
   @Get("health")
-  @SkipThrottle()
   async checkHealth() {
     this.logger.debug("Health check requested");
     return this.healthService.getHealth();
   }
 
   @Get("ready")
-  @SkipThrottle()
   async checkReadiness(@Res({ passthrough: true }) res: Response) {
     this.logger.debug("Readiness check requested");
     const readiness = await this.healthService.getReadiness();
