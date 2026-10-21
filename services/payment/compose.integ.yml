@@ -27,8 +27,6 @@ services:
       - chariot-group-network-integ
 
   chariot-payment:
-    ports:
-      - "127.0.0.1:9003:9003"
     image: ghcr.io/chariot-group/chariot-payment-integration:latest
     container_name: chariot-payment-integ
     restart: unless-stopped

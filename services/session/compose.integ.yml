@@ -42,8 +42,6 @@ services:
       - chariot-group-network-integ
 
   chariot-session:
-    ports:
-      - "127.0.0.1:9002:9002"
     image: ghcr.io/chariot-group/chariot-session-integration:latest
     container_name: chariot-session-integ
     restart: unless-stopped

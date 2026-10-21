@@ -27,8 +27,6 @@ services:
       - chariot-group-network-prod
 
   chariot-payment:
-    ports:
-      - "127.0.0.1:9003:9003"
     image: ghcr.io/chariot-group/chariot-payment-production:latest
     container_name: chariot-payment-prod
     restart: unless-stopped

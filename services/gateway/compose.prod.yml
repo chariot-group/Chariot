@@ -6,8 +6,6 @@ services:
     container_name: chariot-gateway-prod
     restart: unless-stopped
     working_dir: /app
-    ports:
-      - "127.0.0.1:8082:8082"
     environment:
       NODE_ENV: production
       GATEWAY_PORT: ${GATEWAY_PORT:-8082}
