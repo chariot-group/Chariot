@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { makeCounterProvider, makeHistogramProvider } from "@willsoto/nestjs-prometheus";
-import { MetricsInterceptor } from "./metrics.interceptor";
-import { GatewayMetricsService } from "./gateway-metrics.service";
+import { MetricsInterceptor } from "@/metrics/metrics.interceptor";
+import { GatewayMetricsService } from "@/metrics/gateway-metrics.service";
 
 export const httpRequestsCounterProvider = makeCounterProvider({
   name: "http_requests_total",
@@ -22,12 +22,6 @@ export const proxyErrorsCounterProvider = makeCounterProvider({
   labelNames: ["backend", "error_type"],
 });
 
-export const rateLimitExceededCounterProvider = makeCounterProvider({
-  name: "gateway_rate_limit_exceeded_total",
-  help: "Total rate limit exceeded responses",
-  labelNames: ["route"],
-});
-
 @Module({
   providers: [
     MetricsInterceptor,
@@ -35,7 +29,6 @@ export const rateLimitExceededCounterProvider = makeCounterProvider({
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
     proxyErrorsCounterProvider,
-    rateLimitExceededCounterProvider,
   ],
   exports: [
     MetricsInterceptor,
@@ -43,7 +36,6 @@ export const rateLimitExceededCounterProvider = makeCounterProvider({
     httpRequestsCounterProvider,
     httpRequestDurationProvider,
     proxyErrorsCounterProvider,
-    rateLimitExceededCounterProvider,
   ],
 })
 export class MetricsModule {}
