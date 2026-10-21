@@ -43,7 +43,7 @@ updates:
       - dependency-name: "@stripe/*"
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
-      # nest-winston / nestjs-prometheus / @nestjs/throttler peers still stop at Nest 11
+      # nest-winston / nestjs-prometheus peers still stop at Nest 11
       - dependency-name: "@nestjs/*"
         update-types: ["version-update:semver-major"]
 

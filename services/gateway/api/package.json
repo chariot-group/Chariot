@@ -1,7 +1,7 @@
 {
   "name": "chariot-gateway",
-  "version": "2.6.0",
-  "description": "Chariot API Gateway - Centralized routing, authentication, and rate limiting",
+  "version": "2.6.1",
+  "description": "Chariot API Gateway - Centralized routing and authentication",
   "author": "Chariot Team",
   "private": true,
   "license": "MIT",
@@ -26,7 +26,6 @@
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.2.7",
     "@nestjs/platform-express": "^11.2.7",
-    "@nestjs/throttler": "^6.7.1",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.81.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.223.0",
