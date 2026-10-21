@@ -1,32 +1,21 @@
 import { Module, Logger } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { ThrottlerModule } from "@nestjs/throttler";
-import { GatewayThrottlerGuard } from "@/common/guards/gateway-throttler.guard";
-import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { APP_INTERCEPTOR } from "@nestjs/core";
 import { HttpModule } from "@nestjs/axios";
 import { PrometheusModule } from "@willsoto/nestjs-prometheus";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { ProxyModule } from "./proxy/proxy.module";
-import { HealthModule } from "./health/health.module";
-import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
-import { MetricsModule } from "./metrics/metrics.module";
-import { MetricsInterceptor } from "./metrics/metrics.interceptor";
+import { AppController } from "@/app.controller";
+import { AppService } from "@/app.service";
+import { ProxyModule } from "@/proxy/proxy.module";
+import { HealthModule } from "@/health/health.module";
+import { LoggingInterceptor } from "@/common/interceptors/logging.interceptor";
+import { MetricsModule } from "@/metrics/metrics.module";
+import { MetricsInterceptor } from "@/metrics/metrics.interceptor";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ".env",
-    }),
-    ThrottlerModule.forRootAsync({
-      useFactory: () => [
-        {
-          name: "default",
-          ttl: parseInt(process.env.GATEWAY_RATE_LIMIT_WINDOW || "60000", 10),
-          limit: parseInt(process.env.GATEWAY_RATE_LIMIT_MAX || "100", 10),
-        },
-      ],
     }),
     PrometheusModule.register({
       path: "/metrics",
@@ -48,12 +37,12 @@ import { MetricsInterceptor } from "./metrics/metrics.interceptor";
     AppService,
     Logger,
     {
-      provide: APP_GUARD,
-      useClass: GatewayThrottlerGuard,
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: LoggingInterceptor,
+      useClass: MetricsInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,

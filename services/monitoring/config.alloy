@@ -4,6 +4,10 @@ logging {
 }
 
 prometheus.remote_write "monitoring" {
+  external_labels = {
+    environment = sys.env("CHARIOT_ENVIRONMENT"),
+  }
+
   endpoint {
     url = sys.env("ALLOY_REMOTE_WRITE_URL")
 
@@ -11,6 +15,21 @@ prometheus.remote_write "monitoring" {
       username = sys.env("ALLOY_REMOTE_WRITE_USER")
       password = sys.env("ALLOY_REMOTE_WRITE_PASSWORD")
     }
+
+    // Force le label même si une série l'a déjà (vide → drop Prometheus).
+    write_relabel_config {
+      target_label = "environment"
+      replacement  = sys.env("CHARIOT_ENVIRONMENT")
+    }
+  }
+}
+
+prometheus.relabel "with_environment" {
+  forward_to = [prometheus.remote_write.monitoring.receiver]
+
+  rule {
+    target_label = "environment"
+    replacement  = sys.env("CHARIOT_ENVIRONMENT")
   }
 }
 
@@ -31,28 +50,33 @@ prometheus.scrape "apis" {
 
   targets = [
     {
-      __address__ = sys.env("GATEWAY_ADDR"),
-      service     = "gateway",
+      __address__  = sys.env("GATEWAY_ADDR"),
+      service      = "gateway",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
     {
-      __address__ = sys.env("ADVENTURE_ADDR"),
-      service     = "adventure",
+      __address__  = sys.env("ADVENTURE_ADDR"),
+      service      = "adventure",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
     {
-      __address__ = sys.env("PAYMENT_ADDR"),
-      service     = "payment",
+      __address__  = sys.env("PAYMENT_ADDR"),
+      service      = "payment",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
     {
-      __address__ = sys.env("SESSION_ADDR"),
-      service     = "session",
+      __address__  = sys.env("SESSION_ADDR"),
+      service      = "session",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
     {
-      __address__ = sys.env("MEDIA_ADDR"),
-      service     = "media",
+      __address__  = sys.env("MEDIA_ADDR"),
+      service      = "media",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
   ]
 
-  forward_to = [prometheus.remote_write.monitoring.receiver]
+  forward_to = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -66,12 +90,13 @@ prometheus.scrape "web" {
 
   targets = [
     {
-      __address__ = sys.env("WEB_ADDR"),
-      service     = "web",
+      __address__  = sys.env("WEB_ADDR"),
+      service      = "web",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
   ]
 
-  forward_to = [prometheus.remote_write.monitoring.receiver]
+  forward_to = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -85,12 +110,13 @@ prometheus.scrape "keycloak" {
 
   targets = [
     {
-      __address__ = sys.env("KEYCLOAK_ADDR"),
-      service     = "keycloak",
+      __address__  = sys.env("KEYCLOAK_ADDR"),
+      service      = "keycloak",
+      environment  = sys.env("CHARIOT_ENVIRONMENT"),
     },
   ]
 
-  forward_to = [prometheus.remote_write.monitoring.receiver]
+  forward_to = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -162,13 +188,18 @@ discovery.relabel "ready" {
     target_label = "job"
     replacement  = "chariot-ready"
   }
+
+  rule {
+    target_label = "environment"
+    replacement  = sys.env("CHARIOT_ENVIRONMENT")
+  }
 }
 
 prometheus.scrape "ready" {
   job_name        = "chariot-ready"
   scrape_interval = "15s"
   targets         = discovery.relabel.ready.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -206,7 +237,7 @@ prometheus.scrape "mongodb" {
   job_name        = "mongodb"
   scrape_interval = "15s"
   targets         = discovery.relabel.mongodb.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -240,7 +271,7 @@ prometheus.scrape "redis" {
   job_name        = "redis"
   scrape_interval = "15s"
   targets         = discovery.relabel.redis.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -275,7 +306,7 @@ prometheus.scrape "postgres_session" {
   job_name        = "postgres"
   scrape_interval = "15s"
   targets         = discovery.relabel.postgres_session.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -310,7 +341,7 @@ prometheus.scrape "postgres_payment" {
   job_name        = "postgres"
   scrape_interval = "15s"
   targets         = discovery.relabel.postgres_payment.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }
 
 // ---------------------------------------------------------------------------
@@ -347,5 +378,5 @@ prometheus.scrape "node" {
   job_name        = "chariot-node"
   scrape_interval = "15s"
   targets         = discovery.relabel.node.output
-  forward_to      = [prometheus.remote_write.monitoring.receiver]
+  forward_to      = [prometheus.relabel.with_environment.receiver]
 }

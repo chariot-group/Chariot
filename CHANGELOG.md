@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.10.1] - 21-10-2026
+
+### Changed
+- Removed applicative HTTP rate limiting from the API gateway; throttling is handled at infrastructure level instead of returning HTTP 429 during heavy session sync
+- Session lobby layout: session title, remaining-time timer, and participant cards share a consistent header row
+
+### Fixed
+- Fixed post-session navigation always sending users to Welcome after close, expiry, or an unavailable session: game masters stay on their campaign when already there, players return to their character or normal post-login destination, and Welcome is used only when they have no characters
+- Fixed post-login destination resolution ignoring characters beyond the first group in a campaign
+- Fixed intermittent session creation failures under concurrent create/join races on Postgres unique constraints
+- Fixed production adventure service unable to validate session access when `CHARIOT_SESSION_API_URL` was not injected into the container
+
 ## [2.10.0] - 16-09-2026
 
 ### Added

@@ -135,12 +135,12 @@ class NavigationService {
                     if (campaign.groups?.active && campaign.groups.active.length > 0) {
                         const campaignDetails = await CampaignService.getCampaignById(campaign._id);
 
-                        if (campaignDetails.groups?.active && campaignDetails.groups.active.length > 0) {
-                            const firstGroup = campaignDetails.groups.active[0] as unknown as CampaignGroup;
-
-                            if (firstGroup.characters && firstGroup.characters.length > 0) {
+                        // Inspect every active group: an empty first group must not fall back to welcome (FR-session-end-navigation).
+                        const activeGroups = (campaignDetails.groups?.active ?? []) as unknown as CampaignGroup[];
+                        for (const group of activeGroups) {
+                            if (group?.characters && group.characters.length > 0) {
                                 return {
-                                    path: `/${locale}/campaigns/${campaign._id}/groups/${firstGroup._id}/characters/${firstGroup.characters[0]._id}`,
+                                    path: `/${locale}/campaigns/${campaign._id}/groups/${group._id}/characters/${group.characters[0]._id}`,
                                     reason: 'character-in-campaign'
                                 };
                             }
@@ -165,17 +165,14 @@ class NavigationService {
             const allGroups = await GroupService.getAllGroupsByCampaign(campaignId);
             const campaign = await CampaignService.getCampaignById(campaignId);
 
-            if (!campaign.groups?.active || !campaign.groups?.archived) {
-                return { path: `/${locale}/welcome`, reason: 'no-characters' };
-            }
-
             const normalizeIds = (items: GroupRef[]): string[] =>
                 items
                     .map((item) => (typeof item === 'string' ? item : item?._id))
                     .filter((id: string | undefined): id is string => Boolean(id));
 
-            const activeGroupIds = normalizeIds(campaign.groups.active);
-            const archivedGroupIds = normalizeIds(campaign.groups.archived);
+            const activeGroupIds = normalizeIds(campaign.groups?.active ?? []);
+            // Missing archived list means no archived groups, not "no characters" (FR-session-end-navigation).
+            const archivedGroupIds = normalizeIds(campaign.groups?.archived ?? []);
 
             const activeGroups = allGroups.filter(group => activeGroupIds.includes(group._id));
             for (const group of activeGroups) {

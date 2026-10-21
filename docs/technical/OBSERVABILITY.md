@@ -226,7 +226,6 @@ Gateway : **pas** de préfixe `chariot_` sur les default metrics (`nodejs_*`) ni
 - `http_requests_total{method,route,status}`
 - `http_request_duration_seconds{method,route}`
 - `gateway_proxy_errors_total{backend,error_type}`
-- `gateway_rate_limit_exceeded_total{route}`
 
 ### Adventure
 
@@ -476,7 +475,7 @@ Dashboards provisionnés (`../monitoring/services/grafana/dashboards/`) :
 | Web | `web.json` | Ready, logs SSR |
 | Data stores | `data-stores.json` | Mongo / Postgres / Redis exporters + `store_fail` + MinIO via media |
 
-Sélecteur **Environnement** `prod` | `integ` : switch des UIDs datasource (`prometheus-$env`, `loki-$env`, `tempo-$env`).
+Sélecteur **Environnement** `prod` | `integ` : switch des UIDs datasource **et** filtre exact `environment="$env"`. Alloy pose le label via `CHARIOT_ENVIRONMENT` (figé dans `compose.integ.yml` / `compose.prod.yml`). Un `docker compose restart` ne suffit pas : il faut `--force-recreate`. Les logs / traces utilisent `OTEL_ENVIRONMENT` (`prod` / `integ` — pas `OTEL_ENVIRONNEMENT`).
 
 Corrélation :
 

@@ -6,8 +6,6 @@ services:
     container_name: chariot-admin-integ
     restart: unless-stopped
     working_dir: /app
-    ports:
-      - "3001"
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_ENV_NAME: integration

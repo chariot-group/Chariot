@@ -14,16 +14,19 @@ describe("CharacterDetailView merged footer", () => {
     const source = readSource();
 
     expect(source).toContain("const characterFooterActions = showEditControls ? (");
-    expect(source).toContain("<CombatBanner characterId={character._id} footerActions={characterFooterActions} />");
+    expect(source).toMatch(/<CombatBanner[\s\S]*characterId=\{character\._id\}[\s\S]*footerActions=\{characterFooterActions\}[\s\S]*\/>/);
   });
 
   it("edge: keeps one footer path for in-session character sheets", () => {
     const source = readSource();
-    const combatFooterMatches = source.match(/<CombatBanner characterId=\{character\._id\} footerActions=\{characterFooterActions\} \/>/g) ?? [];
+    const combatFooterMatches = source.match(/<CombatBanner\b/g) ?? [];
+    const bannerIndex = source.indexOf("<CombatBanner");
 
     expect(combatFooterMatches).toHaveLength(1);
+    expect(source).toContain("footerActions={characterFooterActions}");
     expect(source).not.toContain("sticky bottom-0");
     expect(source).not.toContain("{isInSession && <CombatBanner />}");
-    expect(source.indexOf("<CombatBanner characterId={character._id} footerActions={characterFooterActions} />")).toBeLessThan(source.indexOf("</form>"));
+    expect(bannerIndex).toBeGreaterThan(-1);
+    expect(bannerIndex).toBeLessThan(source.indexOf("</form>"));
   });
 });
