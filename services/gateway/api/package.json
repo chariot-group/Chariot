@@ -1,6 +1,6 @@
 {
   "name": "chariot-gateway",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Chariot API Gateway - Centralized routing and authentication",
   "author": "Chariot Team",
   "private": true,
