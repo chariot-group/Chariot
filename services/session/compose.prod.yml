@@ -5,8 +5,6 @@ services:
     image: postgres:16-alpine
     container_name: chariot-session-postgres-prod
     restart: unless-stopped
-    ports:
-      - "5432"
     volumes:
       - chariot_session_postgres_data_prod:/var/lib/postgresql/data
       - ./postgres/init-pg-stat-statements.sql:/docker-entrypoint-initdb.d/init-pg-stat-statements.sql:ro
@@ -32,8 +30,6 @@ services:
     image: redis:7-alpine
     container_name: chariot-session-redis-prod
     restart: unless-stopped
-    ports:
-      - "6379"
     command: ["redis-server", "--notify-keyspace-events", "Ex"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -47,7 +43,7 @@ services:
 
   chariot-session:
     ports:
-      - "9002:9002"
+      - "127.0.0.1:9002:9002"
     image: ghcr.io/chariot-group/chariot-session-production:latest
     container_name: chariot-session-prod
     restart: unless-stopped
@@ -84,6 +80,7 @@ services:
     networks:
       - chariot-network
       - chariot-group-network-prod
+      - traefik-public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.chariot-session-prod.rule=Host(`${SESSION_HOST}`)"
@@ -102,4 +99,6 @@ networks:
   chariot-network:
     driver: bridge
   chariot-group-network-prod:
+    external: true
+  traefik-public:
     external: true
