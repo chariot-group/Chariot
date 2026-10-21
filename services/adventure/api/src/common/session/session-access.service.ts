@@ -111,7 +111,10 @@ export class SessionAccessService {
       if (err instanceof ForbiddenException) {
         throw err;
       }
-      const message = `Session service unreachable: ${(err as Error).message}`;
+      const cause = (
+        err as Error & { cause?: { code?: string; message?: string } }
+      ).cause;
+      const message = `Session service unreachable at ${url}: ${(err as Error).message}${cause ? ` (${cause.code ?? cause.message})` : ''}`;
       this.logger.error(message, (err as Error).stack);
       throw new ServiceUnavailableException(
         'Could not validate session access',

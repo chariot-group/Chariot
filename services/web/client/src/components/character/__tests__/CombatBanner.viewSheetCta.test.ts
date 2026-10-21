@@ -38,15 +38,17 @@ describe("CombatBanner own character indicator", () => {
     const source = readSource();
 
     expect(source).toContain("isOwnCharacter");
-    expect(source).toContain("bg-blue/15 text-blue ring-2 ring-blue/40");
-    expect(source).toContain('font-semibold text-blue');
+    expect(source).toContain('"ring-blue/40"');
+    expect(source).toContain('"font-semibold text-blue"');
   });
 
   it("edge: active turn ring takes precedence over own character styling", () => {
     const source = readSource();
 
-    // isActive check comes before isOwnCharacter in the conditional
-    expect(source).toMatch(/isActive[\s\S]{0,50}isOwnCharacter/);
+    // Tour actif, puis mort, puis inconscient, puis personnage du joueur.
+    expect(source).toMatch(
+      /isActive[\s\S]{0,80}ring-purple\/40[\s\S]{0,120}isDead[\s\S]{0,80}isUnconscious[\s\S]{0,80}isOwnCharacter[\s\S]{0,40}ring-blue\/40/,
+    );
   });
 
   it("failure guard: own character chip has an accessible aria-label", () => {
