@@ -38,15 +38,7 @@ graph TD
 - Service URLs are discovered from environment variables ending in `_SERVICE_URL`.
 
 ### Rate Limiting
-Configured per environment via `@nestjs/throttler`:
-
-| Environment | Max Requests | Window |
-|-------------|--------------|--------|
-| Dev | 100 | 60s |
-| Integ | 200 | 60s |
-| Prod | 500 | 60s |
-
-Excluded endpoints: `/health`, `/ready`, `/metrics`, `/`
+Not handled by the gateway. Rate limiting is enforced upstream by Cloudflare (edge rules), so the gateway applies no application-level throttling.
 
 ### CORS Management
 Centralized configuration:
@@ -96,8 +88,6 @@ Exposed on `/metrics`:
 |----------|---------|-------------|
 | `GATEWAY_PORT` | 8082 | Listen port |
 | `GATEWAY_LOG_LEVEL` | info | Log level (debug/info/warn/error) |
-| `GATEWAY_RATE_LIMIT_MAX` | 100 | Max requests per window |
-| `GATEWAY_RATE_LIMIT_WINDOW` | 60000 | Time window (ms) |
 | `ADVENTURE_SERVICE_URL` | `http://chariot-adventure:9000` | Adventure service URL |
 | `SESSION_SERVICE_URL` | `http://chariot-session:9002` | Session service URL |
 | `FRONTEND_URL` | `http://localhost:3000` | Allowed CORS origins (comma-separated) |
@@ -187,5 +177,4 @@ sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total
 - Gateway README: [services/gateway](../../services/gateway)
 - Functional rules: [functional-rules.md](../functional-rules.md) (FR-character-universal-fields to FR-user-balance-history)
 - [NestJS Documentation](https://docs.nestjs.com/)
-- [Throttler Module](https://docs.nestjs.com/security/rate-limiting)
 

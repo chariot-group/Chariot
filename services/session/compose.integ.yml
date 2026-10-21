@@ -5,8 +5,6 @@ services:
     image: postgres:16-alpine
     container_name: chariot-session-postgres-integ
     restart: unless-stopped
-    ports:
-      - "5432"
     volumes:
       - chariot_session_postgres_data_integ:/var/lib/postgresql/data
       - ./postgres/init-pg-stat-statements.sql:/docker-entrypoint-initdb.d/init-pg-stat-statements.sql:ro
@@ -32,8 +30,6 @@ services:
     image: redis:7-alpine
     container_name: chariot-session-redis-integ
     restart: unless-stopped
-    ports:
-      - "6379"
     command: ["redis-server", "--notify-keyspace-events", "Ex"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -47,7 +43,7 @@ services:
 
   chariot-session:
     ports:
-      - "9002:9002"
+      - "127.0.0.1:9002:9002"
     image: ghcr.io/chariot-group/chariot-session-integration:latest
     container_name: chariot-session-integ
     restart: unless-stopped
@@ -72,7 +68,7 @@ services:
       METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
       OTEL_ENABLED: ${OTEL_ENABLED:-false}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
-      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-}
+      OTEL_ENVIRONMENT: ${OTEL_ENVIRONMENT:-integ}
       LOKI_ENABLED: ${LOKI_ENABLED:-false}
       LOKI_URL: ${LOKI_URL:-}
       LOKI_LOG_LEVEL: ${LOKI_LOG_LEVEL:-info}
