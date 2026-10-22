@@ -12,9 +12,19 @@ describe("FR-session-participant-labels — GM session players sidebar", () => {
   const source = readFileSync(sidebarPath, "utf8");
 
   it("nominal: renders character MediaAvatar for roster and guest rows", () => {
+    expect(source).toContain('from "@/components/media/MediaAvatar"');
+    expect(source).toContain("<MediaAvatar");
     expect(source).toContain('scope="character"');
     expect(source).toContain("useMediaAvatarBatch");
     expect(source).toContain("SIDEBAR_AVATAR_SIZE");
+  });
+
+  it("nominal: nests session companions under assigned players", () => {
+    expect(source).toContain("companionsGroupedByPlayerId");
+    expect(source).toContain("companionsListLabel");
+    expect(source).toContain("npcKind");
+    expect(source).toContain("linkedToPlayer");
+    expect(source).toContain("ungroupedSessionCompanions");
   });
 
   it("edge: uses loading placeholder instead of raw character id", () => {

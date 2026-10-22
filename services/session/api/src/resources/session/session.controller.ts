@@ -5,6 +5,7 @@ import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
 import { SessionResponseDto, SessionListResponseDto } from '@/resources/session/dto/session-response.dto';
 import { SessionParticipantsResponseDto } from '@/resources/session/dto/session-participants-response.dto';
 import { ValidateCharacterAccessDto } from '@/resources/session/dto/validate-character-access.dto';
+import { ValidateCompanionLookupDto } from '@/resources/session/dto/validate-companion-lookup.dto';
 import { ValidateGmOwnershipDto } from '@/resources/session/dto/validate-gm-ownership.dto';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
@@ -53,7 +54,31 @@ export class SessionController {
         @Body() body: ValidateCharacterAccessDto,
         @Req() req: { user: { keycloakId: string } },
     ): Promise<IResponse<{ ok: true }>> {
-        return this.sessionService.validateCharacterAccessForAdventure(code, req.user.keycloakId, body.characterId, body.mode);
+        return this.sessionService.validateCharacterAccessForAdventure(
+            code,
+            req.user.keycloakId,
+            body.characterId,
+            body.mode,
+            body.linkedPlayerId,
+        );
+    }
+
+    @Post(':code/validate-companion-lookup')
+    @ApiOperation({ summary: 'Valider que le MJ peut lister les compagnons des PJ assignés (FR-session-player-companion-combatants)' })
+    @ApiParam({ name: 'code', description: 'Session code (OTP)' })
+    @ApiResponse({ status: 200, description: 'Accès autorisé' })
+    @ApiResponse({ status: 403, description: 'Accès refusé' })
+    @ApiResponse({ status: 404, description: 'Session introuvable' })
+    validateCompanionLookup(
+        @Param('code') code: string,
+        @Body() body: ValidateCompanionLookupDto,
+        @Req() req: { user: { keycloakId: string } },
+    ): Promise<IResponse<{ ok: true }>> {
+        return this.sessionService.validateCompanionLookupForAdventure(
+            code,
+            req.user.keycloakId,
+            body.playerIds,
+        );
     }
 
     @Post(':code/validate-gm-ownership')

@@ -17,6 +17,7 @@ type CharacterOwnerResponse = {
   createdBy: string;
   avatar: string | null;
   kind: string;
+  linkedPlayerId?: string | null;
 };
 
 @Injectable()
@@ -76,7 +77,12 @@ export class MediaAccessService {
       );
     }
 
-    await this.assertSessionGmEdit(authHeader, code, characterId);
+    await this.assertSessionGmEdit(
+      authHeader,
+      code,
+      characterId,
+      character.kind === 'npc' ? character.linkedPlayerId : undefined,
+    );
 
     return character;
   }
@@ -109,11 +115,23 @@ export class MediaAccessService {
     }
 
     if (character.kind === 'npc') {
-      await this.assertSessionGmOwnership(
-        authHeader,
-        code,
-        character.createdBy,
-      );
+      try {
+        await this.assertSessionGmOwnership(
+          authHeader,
+          code,
+          character.createdBy,
+        );
+      } catch (err) {
+        if (!(err instanceof ForbiddenException) || !character.linkedPlayerId) {
+          throw err;
+        }
+        await this.assertSessionRosterRead(
+          authHeader,
+          code,
+          characterId,
+          character.linkedPlayerId,
+        );
+      }
     } else {
       await this.assertSessionRosterRead(authHeader, code, characterId);
     }
@@ -252,12 +270,14 @@ export class MediaAccessService {
     authHeader: string | undefined,
     sessionCode: string,
     characterId: string,
+    linkedPlayerId?: string | null,
   ): Promise<void> {
     await this.postSessionValidateCharacter(
       authHeader,
       sessionCode,
       characterId,
       'roster-read',
+      linkedPlayerId,
     );
   }
 
@@ -265,12 +285,14 @@ export class MediaAccessService {
     authHeader: string | undefined,
     sessionCode: string,
     characterId: string,
+    linkedPlayerId?: string | null,
   ): Promise<void> {
     await this.postSessionValidateCharacter(
       authHeader,
       sessionCode,
       characterId,
       'gm-edit',
+      linkedPlayerId,
     );
   }
 
@@ -358,8 +380,9 @@ export class MediaAccessService {
     sessionCode: string,
     characterId: string,
     mode: 'roster-read' | 'gm-edit',
+    linkedPlayerId?: string | null,
   ): string {
-    return `${authHeader}\0${sessionCode.trim()}\0${characterId.trim()}\0${mode}`;
+    return `${authHeader}\0${sessionCode.trim()}\0${characterId.trim()}\0${mode}\0${linkedPlayerId?.trim() ?? ''}`;
   }
 
   private async postSessionValidateCharacter(
@@ -367,6 +390,7 @@ export class MediaAccessService {
     sessionCode: string,
     characterId: string,
     mode: 'roster-read' | 'gm-edit',
+    linkedPlayerId?: string | null,
   ): Promise<void> {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new ForbiddenException(
@@ -374,7 +398,13 @@ export class MediaAccessService {
       );
     }
 
-    const key = this.dedupeKey(authHeader, sessionCode, characterId, mode);
+    const key = this.dedupeKey(
+      authHeader,
+      sessionCode,
+      characterId,
+      mode,
+      linkedPlayerId,
+    );
     const pending = this.inflight.get(key);
     if (pending) {
       return pending;
@@ -385,6 +415,7 @@ export class MediaAccessService {
       sessionCode,
       characterId,
       mode,
+      linkedPlayerId,
     ).finally(() => {
       this.inflight.delete(key);
     });
@@ -398,8 +429,10 @@ export class MediaAccessService {
     sessionCode: string,
     characterId: string,
     mode: 'roster-read' | 'gm-edit',
+    linkedPlayerId?: string | null,
   ): Promise<void> {
     const url = `${this.sessionBaseUrl}/sessions/${encodeURIComponent(sessionCode)}/validate-character-access`;
+    const linked = linkedPlayerId?.trim();
 
     try {
       const res = await this.timedFetch('session', `validate_${mode}`, url, {
@@ -408,7 +441,11 @@ export class MediaAccessService {
           'Content-Type': 'application/json',
           Authorization: authHeader,
         },
-        body: JSON.stringify({ characterId, mode }),
+        body: JSON.stringify({
+          characterId,
+          mode,
+          ...(linked ? { linkedPlayerId: linked } : {}),
+        }),
       });
 
       if (res.ok) {

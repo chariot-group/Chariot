@@ -25,6 +25,7 @@ import {
   selectInitiativeTrackerRows,
   selectSessionParticipantDisplayNames,
   selectGmGuestCharacterIds,
+  selectSessionCompanionNpcs,
 } from "@/store/slices/sessionSlice";
 import {
   buildSessionParticipantsGroup,
@@ -64,6 +65,7 @@ const parseChallengeRating = (value: unknown): number => {
 };
 
 const isNpcCharacter = (character: BattleGroupCharacter): boolean => {
+  if (character.kind === "npc" || Boolean(character.linkedPlayerId)) return true;
   const cr = parseChallengeRating(character.challenge?.challengeRating);
   return cr > 0 || !character.createdBy || !!character.profile?.type;
 };
@@ -81,6 +83,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const session = useAppSelector(selectCurrentSession);
   const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
 
   const inCombatCharacterIds = React.useMemo(
@@ -158,6 +161,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
           participantDisplayNames,
           session?.code,
           gmGuestCharacterIds,
+          sessionCompanionNpcs,
         );
         setGroups([...allGroups, sessionGroup]);
       } finally {
@@ -169,7 +173,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     return () => {
       mounted = false;
     };
-  }, [open, selectedCampaignId, session?.code, session?.participants, gmGuestCharacterIds, participantDisplayNames]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, gmGuestCharacterIds, participantDisplayNames, sessionCompanionNpcs]);
 
   React.useEffect(() => {
     if (!open) {
@@ -283,10 +287,19 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
         if (result.status === "fulfilled") detailsById.set(result.value._id, result.value);
       });
 
+      const companionIdSet = new Set(sessionCompanionNpcs.map((npc) => npc._id));
+      const guestIdSet = new Set(gmGuestCharacterIds);
+      const seenRowCharacterIds = new Set<string>();
+
       const rows = selectedGroups.flatMap((group) => {
         const excluded = new Set(excludedMembersByGroup[group._id] ?? []);
         return (group.characters ?? [])
-          .filter((member) => !inCombatCharacterIds.has(member._id) && !excluded.has(member._id))
+          .filter((member) => {
+            if (inCombatCharacterIds.has(member._id) || excluded.has(member._id)) return false;
+            if (seenRowCharacterIds.has(member._id)) return false;
+            seenRowCharacterIds.add(member._id);
+            return true;
+          })
           .map((member) => {
             const character = detailsById.get(member._id) ?? member;
             const stats = character.stats;
@@ -302,7 +315,8 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                 ? "npc"
                 : "player";
 
-            return createInitiativeTrackerRow({
+            return {
+              ...createInitiativeTrackerRow({
               groupId: group._id,
               groupLabel: group.label,
               characterId: member._id,
@@ -322,7 +336,10 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                 ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
                 : 0,
               initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats.initiative) : 0,
-            });
+            }),
+              isGmGuest: guestIdSet.has(member._id),
+              isPlayerCompanion: companionIdSet.has(member._id) && !guestIdSet.has(member._id),
+            };
           });
       });
 
@@ -412,6 +429,8 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                                   groupedInitiativePlaceholder: t("groupedInitiativePlaceholder"),
                                   groupedInitiativeApply: t("groupedInitiativeApply"),
                                   groupedClearSelection: t("groupedInitiativeClearSelection"),
+                                  linkedTo: tInit("initBattleLinkedTo"),
+                                  linkedCompanion: tInit("initBattleLinkedCompanion"),
                                 }}
                                 onToggleMember={(memberId, include) =>
                                   toggleMember(group._id, memberId, include)

@@ -2,7 +2,7 @@
 
 import { useCharacter } from "@/hooks/useCharacter";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
@@ -22,12 +22,10 @@ import { shouldRedirectAwayFromCharacterSheet } from "@/lib/characterAccessError
 
 export default function Character() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const campaignId = params.idCampaign as string;
   const groupId = params.idGroup as string;
   const characterId = params.idCharacter as string;
-  const sessionCodeQs = searchParams.get("sessionCode");
   const sessionCode = useActiveSessionCode();
   const activeGroups = useAppSelector(selectActiveGroups);
   const archivedGroups = useAppSelector(selectArchivedGroups);
@@ -44,7 +42,7 @@ export default function Character() {
   );
 
   const sessionGmBypassGroup = useMemo(() => {
-    if (contextMode !== "gm" || !isInSession || !sessionCodeQs || sessionCodeQs !== reduxSessionCode) {
+    if (contextMode !== "gm" || !isInSession || !sessionCode || sessionCode !== reduxSessionCode) {
       return false;
     }
     const isGm = participants.some(
@@ -59,7 +57,7 @@ export default function Character() {
     isInSession,
     participants,
     reduxSessionCode,
-    sessionCodeQs,
+    sessionCode,
   ]);
 
   const getFallbackRoute = useCallback((): string => {

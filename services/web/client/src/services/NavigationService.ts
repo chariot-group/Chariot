@@ -10,7 +10,10 @@ import {
     selectCharactersWithoutGroup,
     selectCharactersWithoutGroupLoading,
     clearCharacters,
+    setLinkedNpcs,
+    setUnlinkedNpcsWithoutGroup,
 } from '@/store/slices/characterSlice';
+import type { NPC } from '@/types/character';
 import { isCharacterAccessDeniedError } from '@/lib/characterAccessError';
 import { reportClientIssue } from "@/logger/reportClientIssue";
 import {
@@ -32,6 +35,21 @@ type CampaignGroup = { _id: string; characters?: Array<{ _id: string }> };
 type GroupRef = string | { _id?: string };
 
 class NavigationService {
+    private async loadPlayerSpaceNpcs(dispatch: AppDispatch, players: Array<{ _id?: string }>): Promise<void> {
+        const playerIds = players.map((player) => player._id).filter((id): id is string => Boolean(id));
+        try {
+            const [unlinkedResponse, linked] = await Promise.all([
+                CharacterService.getUnlinkedNpcsWithoutGroup(1, 50),
+                CharacterService.getNpcsByLinkedPlayers(playerIds),
+            ]);
+            dispatch(setUnlinkedNpcsWithoutGroup((unlinkedResponse.data ?? []) as NPC[]));
+            dispatch(setLinkedNpcs(linked));
+        } catch {
+            dispatch(setLinkedNpcs([]));
+            dispatch(setUnlinkedNpcsWithoutGroup([]));
+        }
+    }
+
     private async loadCharactersWithoutGroup(
         dispatch: AppDispatch,
         getState: () => RootState,
@@ -51,6 +69,7 @@ class NavigationService {
                     characters: response.data,
                     total: response.pagination.totalItems
                 }));
+                await this.loadPlayerSpaceNpcs(dispatch, response.data);
             } catch (error) {
                 dispatch(fetchCharactersWithoutGroupFailure(
                     error instanceof Error ? error.message : 'Failed to fetch characters'
@@ -68,6 +87,7 @@ class NavigationService {
                 characters: response.data,
                 total: response.pagination.totalItems
             }));
+            await this.loadPlayerSpaceNpcs(dispatch, response.data);
         } catch (error) {
             dispatch(fetchCharactersWithoutGroupFailure(
                 error instanceof Error ? error.message : 'Failed to fetch characters'

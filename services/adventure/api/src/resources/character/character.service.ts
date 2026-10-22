@@ -126,6 +126,16 @@ export class CharacterService {
       });
       await character.save();
 
+      const kind = (character as Character & { kind?: string }).kind;
+      if (kind === 'player') {
+        await this.characterModel
+          .updateMany(
+            { kind: 'npc', linkedPlayerId: id, deletedAt: null },
+            { $set: { linkedPlayerId: null } },
+          )
+          .exec();
+      }
+
       const end: number = Date.now();
 
       const message: string = `Character #${id} delete in ${end - start}ms`;

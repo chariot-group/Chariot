@@ -12,6 +12,7 @@ import type { SessionParticipant } from "@/services/SessionService";
 vi.mock("@/services/CharacterService", () => ({
     default: {
         getCharacterById: vi.fn(),
+        getNpcsByLinkedPlayers: vi.fn(),
     },
 }));
 
@@ -53,6 +54,8 @@ describe("resolveSessionParticipantBattleFallbackName", () => {
 describe("buildSessionParticipantsGroup", () => {
     beforeEach(() => {
         vi.mocked(characterService.getCharacterById).mockReset();
+        vi.mocked(characterService.getNpcsByLinkedPlayers).mockReset();
+        vi.mocked(characterService.getNpcsByLinkedPlayers).mockResolvedValue([]);
         vi.mocked(UserService.getUserById).mockReset();
     });
 
@@ -100,6 +103,88 @@ describe("buildSessionParticipantsGroup", () => {
 
         const group = await buildSessionParticipantsGroup([], [participant()], "campaign-1", {}, "ABC123");
 
-        expect(group.characters[0].surname).toBe(SESSION_PARTICIPANT_NAME_LOADING);
+    expect(group.characters[0].surname).toBe(SESSION_PARTICIPANT_NAME_LOADING);
+  });
+
+  it("nominal: companion characters join the session group without duplicating a roster id", async () => {
+    vi.mocked(characterService.getCharacterById).mockRejectedValue(new Error("unused"));
+
+    const group = await buildSessionParticipantsGroup(
+      [],
+      [participant({ characterId: "pj-1" })],
+      "campaign-1",
+      { "user-1": "aragorn" },
+      "ABC123",
+      [],
+      [
+        { _id: "npc-1", firstname: "Wolf", linkedPlayerId: "pj-1", kind: "npc" },
+        { _id: "pj-1", firstname: "ShouldNotDuplicate" },
+      ],
+    );
+
+    expect(group.characters.map((character) => character._id)).toEqual(["pj-1", "npc-1"]);
+    expect(group.characters[0].firstname).not.toBe("ShouldNotDuplicate");
+    expect(group.characters[1]).toMatchObject({
+      _id: "npc-1",
+      kind: "npc",
+      linkedPlayerId: "pj-1",
     });
+  });
+
+  it("nominal: companions missing from the campaign pool are fetched for the session group", async () => {
+    vi.mocked(characterService.getCharacterById).mockRejectedValue(new Error("unused"));
+    vi.mocked(characterService.getNpcsByLinkedPlayers).mockResolvedValue([
+      { _id: "npc-1", firstname: "Wolf", kind: "npc", linkedPlayerId: "pj-1" } as never,
+    ]);
+
+    const group = await buildSessionParticipantsGroup(
+      [],
+      [participant({ characterId: "pj-1" })],
+      "campaign-1",
+      { "user-1": "aragorn" },
+      "ABC123",
+    );
+
+    expect(characterService.getNpcsByLinkedPlayers).toHaveBeenCalledWith(["pj-1"], {
+      sessionCode: "ABC123",
+    });
+    expect(group.characters.map((character) => character._id)).toEqual(["pj-1", "npc-1"]);
+    expect(group.characters[1]).toMatchObject({
+      linkedPlayerId: "pj-1",
+      kind: "npc",
+    });
+  });
+
+  it("edge: empty companion list leaves the roster unchanged", async () => {
+    vi.mocked(characterService.getCharacterById).mockRejectedValue(new Error("unused"));
+
+    const group = await buildSessionParticipantsGroup(
+      [],
+      [participant({ characterId: "pj-1" })],
+      "campaign-1",
+      { "user-1": "aragorn" },
+      "ABC123",
+      [],
+      [],
+    );
+
+    expect(group.characters).toHaveLength(1);
+    expect(group.characters[0]._id).toBe("pj-1");
+  });
+
+  it("failure: companion lookup error still returns the roster", async () => {
+    vi.mocked(characterService.getCharacterById).mockRejectedValue(new Error("unused"));
+    vi.mocked(characterService.getNpcsByLinkedPlayers).mockRejectedValue(new Error("lookup-denied"));
+
+    const group = await buildSessionParticipantsGroup(
+      [],
+      [participant({ characterId: "pj-1" })],
+      "campaign-1",
+      { "user-1": "aragorn" },
+      "ABC123",
+    );
+
+    expect(group.characters).toHaveLength(1);
+    expect(group.characters[0]._id).toBe("pj-1");
+  });
 });

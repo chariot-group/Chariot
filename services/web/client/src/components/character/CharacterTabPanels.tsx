@@ -6,21 +6,49 @@ import CharacterHistoryTabContent from "@/components/character/tabContents/histo
 import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
 import CharacterMagicTabContent from "@/components/character/tabContents/magic/CharacterMagicTabContent";
-import { CHARACTER_TABS, TAB_COLORS } from "@/components/character/CharacterTabs";
+import CharacterCompanionsTabContent from "@/components/character/tabContents/companions/CharacterCompanionsTabContent";
+import { tabsForCharacterSheet, TAB_COLORS, type CharacterTab } from "@/components/character/CharacterTabs";
 import { UseCharacterFormReturn } from "@/hooks/useCharacterForm";
 import { NPC, Player } from "@/types/character";
+import { isPlayer } from "@/utils/global.utils";
+import { useAppSelector } from "@/store/hooks";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import type { MutableRefObject } from "react";
 
 interface CharacterTabPanelsProps {
     character: Player | NPC;
     form: UseCharacterFormReturn["form"];
     isEditing: boolean;
     onCharacterUpdate?: (updated?: Player | NPC) => void;
+    onCompanionPendingChange?: (pending: boolean) => void;
+    companionPersistRef?: MutableRefObject<(() => Promise<void>) | null>;
+    companionRevertRef?: MutableRefObject<(() => void) | null>;
+    /** @see FR-session-player-companion-combatants */
+    showSessionGmCompanionsTab?: boolean;
+    liaisonActionsEnabled?: boolean;
 }
 
-export default function CharacterTabPanels({ character, form, isEditing, onCharacterUpdate }: CharacterTabPanelsProps) {
+export default function CharacterTabPanels({
+    character,
+    form,
+    isEditing,
+    onCharacterUpdate,
+    onCompanionPendingChange,
+    companionPersistRef,
+    companionRevertRef,
+    showSessionGmCompanionsTab = false,
+    liaisonActionsEnabled = true,
+}: CharacterTabPanelsProps) {
+    const contextMode = useAppSelector(selectContextMode);
+    const tabs: readonly CharacterTab[] = tabsForCharacterSheet(
+        isPlayer(character),
+        contextMode === "player",
+        showSessionGmCompanionsTab,
+    );
+
     return (
         <>
-            {CHARACTER_TABS.map((tab) => (
+            {tabs.map((tab) => (
                 <TabsContent
                     key={tab}
                     value={tab}
@@ -82,6 +110,18 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                                         isEditing={isEditing}
                                     />
                                 );
+                            case "companions":
+                                return isPlayer(character) &&
+                                    (contextMode === "player" || showSessionGmCompanionsTab) ? (
+                                    <CharacterCompanionsTabContent
+                                        player={character}
+                                        isEditing={isEditing}
+                                        liaisonActionsEnabled={liaisonActionsEnabled}
+                                        onPendingChange={onCompanionPendingChange}
+                                        persistRef={companionPersistRef}
+                                        revertRef={companionRevertRef}
+                                    />
+                                ) : null;
                             default:
                                 return null;
                         }

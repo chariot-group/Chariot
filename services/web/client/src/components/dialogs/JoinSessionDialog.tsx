@@ -19,6 +19,7 @@ import { Loader2 } from "lucide-react";
 import sessionService from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
+import { loadCompanionCountsForPlayers } from "@/lib/sessionJoinCompanionVisibility";
 import { useAppDispatch } from "@/store/hooks";
 import { setCurrentSession, openSessionLobby } from "@/store/slices/sessionSlice";
 
@@ -51,18 +52,41 @@ export function JoinSessionDialog({
   const [code, setCode] = useState(initialCode);
   const [characterId, setCharacterId] = useState("");
   const [characters, setCharacters] = useState<Character[]>([]);
+  const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>(
+    {},
+  );
   const [loadingCharacters, setLoadingCharacters] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    let cancelled = false;
     setLoadingCharacters(true);
+    setCompanionCountByCharacterId({});
     characterService
       .getPlayersWithoutGroup(1, 100)
-      .then((res) => setCharacters(res.data))
-      .catch(() => setCharacters([]))
-      .finally(() => setLoadingCharacters(false));
+      .then(async (res) => {
+        if (cancelled) return;
+        setCharacters(res.data);
+        setLoadingCharacters(false);
+        const counts = await loadCompanionCountsForPlayers(
+          res.data.map((character) => character._id),
+          (ids) => characterService.getNpcsByLinkedPlayers(ids),
+        );
+        if (!cancelled) setCompanionCountByCharacterId(counts);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCharacters([]);
+        setCompanionCountByCharacterId({});
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCharacters(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   const handleJoin = async () => {
@@ -98,6 +122,7 @@ export function JoinSessionDialog({
     if (!newOpen) {
       setCode("");
       setCharacterId("");
+      setCompanionCountByCharacterId({});
       setError(null);
     }
   };
@@ -159,6 +184,8 @@ export function JoinSessionDialog({
             placeholder={t("joinSessionSelectCharacterPlaceholder")}
             disabled={isJoining || loadingCharacters}
             triggerClassName="w-full text-xs"
+            companionCountByCharacterId={companionCountByCharacterId}
+            formatCompanionCount={(count) => t("joinSessionCompanionCount", { count })}
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>

@@ -1684,6 +1684,7 @@ Each initiative tracker row carries:
   - player read-only initiative tracker view
   - session character sheets opened by the GM or by players
 - Complements FR-combat-initiative-tracker, FR-tracker-vital-status, and FR-session-combat-navigation without changing their visibility or turn-control rules.
+- Session combatants include assigned player PCs, GM guests (FR-session-gm-guest-character), and player companions (FR-session-player-companion-combatants).
 
 **Synchronization Model**:
 
@@ -1743,7 +1744,7 @@ Each initiative tracker row carries:
 - Limiting tracker refresh to player rows only when an NPC sheet change is relevant to the roster.
 - Limiting tracker refresh to the `hitPoints <= 0` case.
 - Broadcasting tracker-only private state into persisted character records.
-- Broadcasting session character updates for characters that are not on the active session roster.
+- Broadcasting session character updates for characters that are not on the active session roster, not a GM guest in this session, and not a companion of an assigned player PC (FR-session-player-companion-combatants).
 
 **Tests**:
 
@@ -1757,7 +1758,7 @@ Each initiative tracker row carries:
   - Local editor also observes the refresh path without waiting for a remote echo
 - Access and resilience:
   - Hidden player tracker fields remain masked after a sync event
-  - Non-roster character update is ignored
+  - Character update ignored when the id is not a roster PC, GM guest, or derived player companion
   - A failed refetch for one character does not break subsequent sync events
 
 **References**:
@@ -2215,6 +2216,7 @@ Each initiative tracker row carries:
 - Applies only when `sessionStatus === "launched"` and the user is the GM.
 - Works with any character belonging to any of the GM's campaign groups (active or archived groups visible in the sidebar).
 - Complements FR-combat-initiative-tracker (mid-combat add), FR-session-combat-navigation (player tracker visibility), and FR-session-websocket-lifecycle (WebSocket lifecycle) without overriding their rules.
+- Player-owned linked NPCs in session are **not** GM guests; they follow FR-session-player-companion-combatants.
 
 **Entry Point**:
 
@@ -2830,7 +2832,7 @@ Each initiative tracker row carries:
 | Entity | Actions |
 | --- | --- |
 | Character in group (player or NPC) | Move to another group, Edit, Delete |
-| Character in **Mes personnages** | Edit, Delete |
+| Character in **Mes personnages** | Edit, Delete (plus Duplicate / PDF per later rules; NPC link/unlink per FR-sidebar-npc-link) |
 | Group | Edit (rename), Archive or Unarchive (section-dependent), Delete |
 | Archives section header | Delete all archived groups (only when at least one archived group exists) |
 | Campaign | Edit (rename), Delete |
@@ -3461,6 +3463,7 @@ Each initiative tracker row carries:
 |---|---|
 | `character.createdBy === requesterId` (MJ propriétaire) | ✅ Toujours autorisé |
 | `sessionCode` fourni, `requesterId` est participant, `character.createdBy` est le MJ de la session | ✅ Autorisé (`npc-session-read` — nouveau mode) |
+| `sessionCode` fourni, `requesterId` est participant, PNJ dont `linkedPlayerId` est le `characterId` d’un participant non-MJ | ✅ Autorisé (`companion-session-read` — FR-session-player-companion-combatants) |
 | Pas de `sessionCode`, `requesterId !== createdBy` | ❌ `403 ForbiddenException` (déjà implémenté) |
 
 > **Note** : L'état "révélé/masqué" d'un PNJ dans le tracker de combat est une décision UX côté client (Redux/WS, non persisté serveur). Le serveur accorde l'accès à tout PNJ du MJ de la session sans distinguer révélé vs masqué. C'est le client qui ne demande la presigned URL que pour les PNJ révélés.
@@ -3482,6 +3485,7 @@ Each initiative tracker row carries:
 
 - Ne pas accorder l'accès à la PP d'un joueur (non-MJ) à d'autres participants.
 - Ne pas accorder l'accès aux PNJ d'un autre MJ via une session que ce MJ ne dirige pas.
+- Ne pas accorder l'accès à un PNJ lié d'un joueur dont le PJ n'est pas assigné dans cette session.
 - Ne pas contourner ce contrôle côté frontend (le contrôle est serveur-side via presigned URL conditionnelle).
 
 **Tests** :
@@ -3490,8 +3494,9 @@ Each initiative tracker row carries:
 - Nominal : participant de session lit la PP du MJ → presigned URL retournée.
 - Nominal : participant de session lit l'avatar d'un PJ du roster → presigned URL retournée (comportement existant).
 - Nominal : participant de session lit l'avatar d'un PNJ créé par le MJ de cette session → presigned URL retournée.
+- Nominal : participant de session lit l'avatar d'un PNJ compagnon dont `linkedPlayerId` est le PJ assigné d'un joueur → presigned URL retournée (FR-session-player-companion-combatants).
 - Edge : participant tente de lire la PP d'un autre joueur (non-MJ) en session → `403 ForbiddenException`.
-- Edge : participant tente de lire l'avatar d'un PNJ dont le créateur n'est pas le MJ de cette session → `403 ForbiddenException`.
+- Edge : participant tente de lire l'avatar d'un PNJ dont le créateur n'est pas le MJ de cette session **et** qui n'est pas un compagnon d'un PJ du roster → `403 ForbiddenException`.
 - Edge : sessionCode fourni mais requester n'est pas participant → `403 ForbiddenException`.
 - Failure : lecture de la PP d'un autre utilisateur sans sessionCode → `403 ForbiddenException`.
 - Failure : session service injoignable lors de la validation → `503 ServiceUnavailableException`.
@@ -3576,7 +3581,7 @@ Each initiative tracker row carries:
 
 ## FR-session-lobby-wheel-deposit: Dépôt et retrait de wheels dans le lobby de session
 
-**Règle** : Le lobby de session (FR-session-lobby-modal) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
+**Règle** : Le lobby de session (FR-session-lobby-modal) DOIT exposer une interface de dépôt/retrait de wheels claire, symétrique et accessible. Le quota de wheels requis correspond au nombre de participants, **y compris le maître du jeu**. Les compagnons de PJ (FR-session-player-companion-combatants) et les personnages invités MJ (FR-session-gm-guest-character) **ne comptent pas** dans ce quota. La terminologie affichée dans le lobby DOIT utiliser le terme **wheel** (pas token).
 
 **Requirements**:
 
@@ -3816,13 +3821,13 @@ Each initiative tracker row carries:
 
 ## FR-codex-npc-search-entity-type: Codex NPC Search — Monster and Player Filter
 
-**Rule**: The community library search dialog (`MonsterCodexDialog`) used for NPC creation MUST allow searching Codex monsters (`GET /monsters`) and premade player characters (`GET /players`), with a single-select entity-type filter.
+**Rule**: The community library search dialog (`MonsterCodexDialog`) MUST allow searching Codex monsters (`GET /monsters`) and premade player characters (`GET /players`), with a single-select entity-type filter. Confirming a result MUST preserve kind: monster → NPC create form, premade player → Player create form. Kind transformation is forbidden.
 
 **Scope**:
 
-- Complements FR-codex-game-system-filter (game system and language filters).
-- Applies to NPC creation from the community library (`npcs-codex` flow).
-- Selected player entries are converted to `Partial<NPC>` for the existing NPC creation draft pipeline.
+- Complements FR-codex-game-system-filter (game system and language filters) and FR-player-space-codex-character-creation (Player-space create entry).
+- Applies to community-library character creation (`npcs-codex` / Codex create flows) in campaign groups and in Player space.
+- Kind is preserved: a Codex monster becomes an NPC draft; a Codex premade player becomes a Player draft. There is no kind transformation.
 
 **Behavior**:
 
@@ -3832,7 +3837,9 @@ Each initiative tracker row carries:
 - Changing the entity-type filter MUST reset pagination to page 1 and trigger a debounced search, consistent with other filters.
 - Opening the dialog MUST reset the entity-type filter to **both**.
 - List rows for monsters keep CR and creature type; list rows for players show level and race (or class list fallback).
-- Preview and validation MUST work for both kinds; player selection uses `convertCodexPlayerToChariotNPC`.
+- Preview and validation MUST work for both kinds.
+- Confirming a **monster** MUST continue to the NPC create form with an NPC-shaped draft (`convertToChariotNPC`).
+- Confirming a **premade player** MUST continue to the Player create form with a Player-shaped draft. The mapping MUST keep Player fields (class, progression, player profile, player actions). It MUST NOT rewrite the entry as an NPC (`convertCodexPlayerToChariotNPC` is prohibited for this create flow).
 - Filter labels MUST use i18n keys under `entityTypeFilter` in `monsterCodexDialog`.
 
 **Accessibility (FR-frontend-design)**:
@@ -3843,12 +3850,14 @@ Each initiative tracker row carries:
 
 - Client-side-only entity-type filtering when the Codex API exposes separate `/monsters` and `/players` endpoints.
 - Hardcoded entity-type labels bypassing i18n.
-- Breaking the existing NPC codex draft flow (`onMonsterSelected` / `setNpcCodexDraft`).
+- Transforming a Codex premade player into an NPC (or a Codex monster into a Player) during community-library creation.
+- Sending a Codex player draft into the NPC create form, or a Codex monster draft into the Player create form.
 
 **Tests**:
 
 - `CodexService.searchPlayers` forwards name, lang, pagination, and optional `gameSystem`.
-- `CodexService.convertCodexPlayerToChariotNPC` maps a nominal player translation to `Partial<NPC>`.
+- Confirming a Codex monster opens the NPC create form with an NPC draft.
+- Confirming a Codex premade player opens the Player create form with a Player draft (`kind: player` fields present; NPC-only fields such as challenge rating MUST NOT be invented as the character kind).
 - Edge: `searchPlayers` omits `gameSystem` when unset.
 
 **References**:
@@ -4413,6 +4422,446 @@ Each initiative tracker row carries:
 - `services/admin/client/src/components/kpi/PeriodControls.tsx`
 - `services/admin/client/src/app/page.tsx`
 - `docs/functional-rules.md` — FR-admin-business-kpis, FR-frontend-design
+
+---
+
+## FR-npc-player-link: NPC to Player Character Link
+
+**Rule**: An NPC MAY be linked to at most one Player character. A Player character MAY have zero or more linked NPCs. All linking UX (Companions tab, discreet NPC header, nested Player-sidebar rows, create-already-linked) is **Player space only** (`contextMode === "player"`, FR-sidebar-navigation). GM campaign space MUST NOT show, nest, or manage this relation. During an active session, GM **read and combat** of player-owned companions is defined by FR-session-player-companion-combatants (not by this rule).
+
+**Cardinality**:
+
+- NPC → Player: optional many-to-one (`0..1`). An NPC is either unlinked or linked to exactly one Player.
+- Player → NPCs: one-to-many (`0..N`).
+- Linking an already-linked NPC to another Player MUST replace the previous link (reassignment), not create a second link.
+
+**Data model**:
+
+- Source of truth is a single optional field on the NPC: `linkedPlayerId` (Mongo ObjectId referencing a Player character).
+- The Player document MUST NOT store a duplicated list of NPC ids as source of truth (derive the list by querying NPCs with that `linkedPlayerId`).
+- `linkedPlayerId` is omitted / `null` when the NPC is unlinked.
+- The field is NPC-only. It MUST NOT exist on Player discriminators.
+
+**Ownership and validation**:
+
+- The target of `linkedPlayerId` MUST be an existing, non-deleted character with `kind: 'player'`.
+- The NPC and the target Player MUST share the same `createdBy` (same owner). Cross-owner links (e.g. GM campaign NPC → another user's Player) are out of scope for this rule.
+- Reject linking to an NPC, to a deleted Player, or to a Player the requester does not own.
+- Create and update NPC DTOs MUST accept optional `linkedPlayerId` (`null` unlinks).
+- Soft-deleting a Player MUST unlink its NPCs (`linkedPlayerId` set to `null`). Soft-deleting an NPC removes it from the Player's companion list. NPCs themselves MUST NOT be cascade-deleted when the Player is deleted.
+- Duplicating a Player (FR-character-duplicate) MUST NOT duplicate or reassign linked NPCs. Duplicating an NPC MUST copy `linkedPlayerId` when present (the copy stays linked to the same Player).
+
+**Player space vs GM space** (FR-sidebar-navigation):
+
+- Context is `environment.contextMode`, not the URL. Player space = `player`. GM space = `gm`.
+- Linking UX (link / unlink / create-linked, draft Companions-tab edits) MUST render only when `contextMode === "player"`.
+- In GM campaign space (no session, or campaign group lists / campaign character routes), the same Player or NPC sheet MUST keep the existing five tabs, MUST NOT show the Companions tab, MUST NOT show « Lié à {name} », and MUST NOT expose link / unlink / create-linked actions.
+- **Session exception (GM only)**: while the requester is the session GM, they MAY **edit character data** of a session-assigned Player and of its linked NPCs (FR-session-player-companion-combatants). They MUST NOT manage liaisons: no link, unlink, reassign, or create-linked, and `linkedPlayerId` MUST NOT be changed via session `gm-edit`. The assigned Player sheet MAY show the Companions tab without liaison actions (list + navigation only). Opening a companion NPC sheet in that session MAY show « Lié à {name} » as non-editable metadata. Campaign group lists stay unchanged.
+- Query param `linkedPlayerId` on NPC creation MUST be ignored in GM space.
+- The `linkedPlayerId` field MAY still exist on documents that also belong to a campaign group; GM campaign lists MUST treat those NPCs as ordinary group members (no link label, no nesting under the Player, no companion count).
+
+**Player character sheet — Companions tab**:
+
+- Complements FR-character-detail-view: in **Player space only**, Player sheets gain a sixth tab; NPC sheets and all GM-space sheets keep the existing five tabs.
+- Tab id: `companions`. Labels (i18n `characterDetail.tabs.companions`): FR « Compagnons », EN « Companions », ES « Compañeros ».
+- Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (same contrast treatment as the Combat/red tab). Do not invent a new color.
+- Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
+- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST show the same identity as the NPC sheet header (FR-character-detail-view): avatar (4:5, User placeholder when missing), name, surname when present, and CR with abbreviated « ID » tooltip plus XP in parentheses. When the NPC belongs to a group, the first group label MAY appear as secondary metadata. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
+- Edit mode: list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
+- Link and unlink from this tab MUST be **draft-only** until the Player sheet form is saved (the same Save control as the other tabs). Selecting an NPC in the picker MUST NOT persist `linkedPlayerId`. Clicking unlink MUST immediately remove the NPC from the draft list **without** a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. Canceling edit MUST discard pending companion changes and MUST NOT call the NPC update API for those drafts.
+- Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
+
+**NPC character sheet — discreet linked Player**:
+
+- Complements FR-character-detail-view NPC header (name, CR/XP, group label). In **Player space only**, when `linkedPlayerId` is set, the header MUST show the linked Player display name as **secondary metadata**, at the same visual weight as the group label (smaller than the NPC name; no banner, no extra tab, no card).
+- Copy (i18n): FR « Lié à {name} », EN « Linked to {name} », ES « Vinculado a {name} ».
+- The name is a link to the Player sheet. Long names truncate (`truncate` / `min-w-0`) per `docs/design.md`.
+- When unlinked, this metadata MUST NOT render (no empty « Lié à »). When `contextMode === "gm"` outside the session-GM companion exception, it MUST NOT render. In session, the GM MAY see it as non-editable metadata (FR-session-player-companion-combatants).
+- The indicator MUST remain readable by assistive tech (visible text, not color-only). Clicking the link MUST be keyboard-operable with visible focus.
+
+**Player sidebar (Mes personnages)**:
+
+- Complements FR-characters-without-group without changing that endpoint: `GET /characters/players/without-group` remains Player-only and MUST NOT return NPCs. Unlinked without-group NPCs are loaded via a dedicated NPC query (same owner, empty `groups`, `linkedPlayerId` absent/`null`). Linked NPCs are loaded by a batch query on the visible Player ids.
+- **Root rows**: Player characters without group, plus **unlinked** NPCs without group. Unlinked NPC rows use the same actions as other character rows (FR-sidebar-context-actions) plus link (FR-sidebar-npc-link), and a non-color-only PNJ kind badge.
+- **Nested rows**: NPCs linked to a visible Player appear **under that Player**, not as root rows (no duplicate: a linked NPC MUST NOT also appear at the root even if `groups` is empty). Nested rows MUST use a stronger indent than root rows and a vertical rail in the existing `purple` token, so the parent/child relationship is readable without a letter glyph. Color MUST NOT be the only channel: nesting, list structure, and the companions list accessible name remain required.
+- Nested and root NPC rows navigate to the NPC sheet, expose Edit / Delete / Duplicate / PDF coming-soon (FR-character-sheet-pdf-export), link/unlink (FR-sidebar-npc-link), and show a PNJ kind badge.
+- NPCs that belong to a campaign group remain in the GM group list; if they are also linked, they additionally nest under their Player in the Player sidebar.
+
+**GM sidebar (group lists)**:
+
+- Campaign group lists MUST NOT show the linked Player name, a companion count, nested companion rows, or any other linking affordance.
+- Group membership is unchanged: a linked NPC that belongs to a group still appears in that group as a normal character row. This rule MUST NOT hide it from the GM list.
+- The in-session GM sidebar section **Joueurs (session)** MAY nest companions under assigned Players (FR-session-player-companion-combatants). That exception MUST NOT leak into campaign group lists.
+
+**Accessibility**:
+
+- Nested sidebar lists MUST use a list structure with accessible names (Player name + companion list; each NPC name includes a PNJ kind label). Root unlinked NPCs MUST also include the PNJ kind label in their accessible name.
+- Link / unlink / create controls MUST be keyboard-operable with visible focus.
+- Reassignment confirmation dialogs follow FR-sidebar-context-actions (Enter confirm, Escape cancel). Unlink from the Companions tab MUST NOT use a confirmation dialog.
+
+**Prohibitions**:
+
+- Allowing an NPC to be linked to more than one Player at a time.
+- Storing the relation only on the Player (divergent lists).
+- Returning NPCs from `GET /characters/players/without-group`.
+- Showing the Companions tab on NPC sheets (the linked Player is header metadata only, and only in Player space).
+- Showing « Lié à {Player} » or a PNJ kind badge on Companions-tab cards.
+- Showing the Companions tab, « Lié à », link/unlink/create-linked actions, or GM-sidebar link labels when `contextMode === "gm"`, except the session-GM surfaces in FR-session-player-companion-combatants (character-data edit allowed; liaison management still forbidden).
+- Offering a Player choice in the Companions « create linked » dialog (NPC + Codex only).
+- Offering campaign-group NPCs in the Player-space link picker.
+- Persisting `linkedPlayerId` when the user only selects an NPC in the Companions picker (Save of the Player form is required).
+- Hiding unlinked without-group NPCs from the Player sidebar.
+- Showing a linked NPC both nested under its Player and as a root row.
+- Cascade-deleting NPCs when their linked Player is deleted.
+- Using a new undocumented tab color instead of the existing `purple` token.
+- Cross-owner links in this version.
+
+**Tests**:
+
+- Nominal: in Player space, link an owned NPC to an owned Player **and save the Player form** → NPC has `linkedPlayerId`; Player Companions tab lists it; Player sidebar nests it under that Player.
+- Nominal: selecting an NPC in the Companions picker while editing does not persist until Save.
+- Nominal: unlinking a companion in edit mode removes it from the draft list immediately, without a confirmation dialog, and persists only on Save.
+- Nominal: Companions « create linked » opens the create-character dialog limited to NPC + Codex; a Codex monster pre-fills the NPC form with `linkedPlayerId`.
+- Nominal: Player with several linked NPCs shows all of them nested in the Player sidebar and listed on the tab as a responsive Card grid with avatar, name, and CR/XP (no kind badge).
+- Edge: unlinked without-group NPC appears as a root row in the Player sidebar; NPC sheet has no Companions tab and no « Lié à » metadata.
+- Edge: in Player space, linked NPC sheet header shows « Lié à {PlayerName} » as secondary text with a working link; no Companions tab.
+- Edge: nested linked NPC rows use a stronger indent and a purple rail; the companions list keeps an accessible name.
+- Edge: in GM campaign space, a Player sheet does not expose the Companions tab; an NPC sheet does not show « Lié à »; group lists do not show link labels or nested companions.
+- Edge: session GM may edit an assigned Player sheet and a linked NPC sheet; the Companions tab lists companions without link/unlink/create; PATCH of `linkedPlayerId` by the GM is rejected (FR-session-player-companion-combatants).
+- Edge: reassign NPC from Player A to Player B → only B lists it; confirmation required.
+- Edge: delete Player → NPCs survive with `linkedPlayerId: null`.
+- Edge: duplicate Player does not move/copy NPC links; duplicate NPC keeps the same `linkedPlayerId`.
+- Failure: `linkedPlayerId` pointing at an NPC, a deleted Player, or another user's Player is rejected.
+- Failure: without-group Player endpoint still excludes NPCs.
+- Failure: the Companions link picker does not include NPCs that have a group.
+
+**References**:
+
+- `services/adventure/api/src/resources/character/npc/` (schema, DTOs, service)
+- `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
+- `services/web/client/src/components/character/CharacterTabs.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/web/client/src/components/character/tabContents/companions/CharacterCompanionsTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/companions/CompanionNpcCard.tsx`
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-characters-without-group, FR-sidebar-navigation, FR-sidebar-context-actions, FR-character-duplicate, FR-character-sheet-pdf-export, FR-frontend-design, FR-session-player-companion-combatants
+- `docs/design.md` (tab colors, sidebar, accessibility)
+
+---
+
+## FR-player-space-codex-character-creation: Player Space Character Creation from Codex
+
+**Rule**: In Player space (`contextMode === "player"`, FR-sidebar-navigation), creating a character from **Mes personnages** MUST use the same choice dialog as campaign groups: manual Player, manual NPC, or community library (Codex). Codex import MUST preserve kind (monster → NPC, premade player → Player). Characters created this way MUST have empty `groups`.
+
+**Scope**:
+
+- Complements FR-codex-npc-search-entity-type (monster + premade-player search, kind-preserving drafts), FR-npc-player-link (Player-space NPCs, empty groups, sidebar nesting), FR-characters-without-group (Players without group), and FR-frontend-design.
+- Campaign group creation uses the same Codex kind-preserving behavior (FR-codex-npc-search-entity-type); only the destination group differs (`groups: []` here vs current group in GM space).
+- Does not change in-session read-only Codex browse (FR-session-gm-codex-library).
+- Companions-tab « create already linked » (FR-npc-player-link) reuses this dialog limited to NPC + Codex, with `linkedPlayerId` forwarded.
+
+**Sidebar entry**:
+
+- The **Créer un personnage** control in `CharactersWithoutGroupList` MUST open the existing create-character dialog (same copy, layout, and Codex availability state as campaigns), not navigate directly to `/characters/new/players`.
+- Manual **Player** MUST navigate to `/characters/new/players`.
+- Manual **NPC** MUST navigate to `/characters/new/npcs`.
+- **Community library** MUST open the same Codex search dialog as campaigns when Codex is available; the control MUST stay disabled with the existing `codexUnavailable` message when Codex is down (`useCodexHealth`).
+
+**Codex flow** (kind preserved):
+
+- The Codex dialog MUST reuse the campaign search: entity-type filter (monsters, players, both), game-system filter, language, pagination, and preview.
+- Confirming a Codex **monster** MUST store an NPC draft and continue to `/characters/new/npcs?fromCodex=1`.
+- Confirming a Codex **premade player** MUST store a Player draft and continue to `/characters/new/players?fromCodex=1`.
+- Field mapping copies compatible stats/profile/actions onto the matching discriminator. It MUST NOT change the character kind.
+- Closing the Codex dialog without selection MUST clear drafts and MUST NOT leave a dangling create route as the user's destination.
+- Created characters MUST have `groups: []`. Optional `linkedPlayerId` remains Player-space only (FR-npc-player-link). The sidebar Codex entry does not set it; the Companions « create linked » entry MUST set it on NPC drafts (including Codex monster → NPC form).
+
+**Accessibility (FR-frontend-design)**:
+
+- Dialog trigger, type choices, and library browse control MUST keep accessible names (`aria-label`) already used by `CreateCharacterDialog`.
+- Keyboard: Tab through choices, Enter/Space activate, Escape closes the dialog without navigating.
+- Codex unavailable state MUST remain perceivable (`aria-describedby` on the disabled browse button).
+- Visible focus on dark surfaces; color MUST NOT be the only disabled-state channel.
+
+**Prohibitions**:
+
+- Direct sidebar navigation to `/characters/new/players` that skips the type/library choice when Codex/NPC creation is available.
+- Assigning a campaign group to characters created from this Player-space flow.
+- Transforming a Codex premade player into an NPC, or a Codex monster into a Player.
+- Duplicating campaign `CreateCharacterDialog` copy or layout with a second visual pattern.
+- Hardcoded labels bypassing i18n.
+- Opening a second WebSocket or mutating session state as part of this create flow.
+
+**Tests**:
+
+- Nominal: Player-space « Créer » opens the dialog; choosing Player / NPC / library matches campaign choices.
+- Nominal: Companions « create linked » → Codex monster pre-fills the NPC form with `linkedPlayerId` and empty `groups`.
+- Nominal: Codex premade player selection pre-fills the Player-space Player form with empty `groups`.
+- Edge: Codex unavailable disables library browse and exposes `codexUnavailable`.
+- Edge: canceling Codex does not persist a draft into a later create.
+- Failure: Player-space Codex create MUST NOT attach the new character to a campaign group.
+
+**References**:
+
+- `services/web/client/src/components/dialogs/CreateCharacterDialog.tsx`
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/new/npcs-codex/page.tsx`
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `docs/functional-rules.md` — FR-codex-npc-search-entity-type, FR-npc-player-link, FR-characters-without-group, FR-sidebar-navigation, FR-frontend-design
+- `docs/design.md`
+
+---
+
+## FR-sidebar-npc-link: Player Sidebar NPC Link and Unlink
+
+**Rule**: In Player space (`contextMode === "player"`), NPC rows in **Mes personnages** MUST expose link and unlink from the same secondary-action menu as other character actions (right-click on desktop, overflow `⋯` on tablet/mobile). These actions persist immediately on the NPC (`linkedPlayerId`). They MUST NOT appear on Player rows, nor in GM space.
+
+**Scope**:
+
+- Complements FR-npc-player-link (cardinality, ownership, reassignment confirmation, sidebar nesting) without changing Companions-tab draft-until-save semantics.
+- Complements FR-sidebar-context-actions (same action set on context menu and overflow; session-disabled when `disabledInSession`).
+- Complements FR-frontend-design (keyboard, visible focus, accessible names, i18n).
+
+**NPC menu actions**:
+
+- **Unlinked root NPC**: menu item **Link to a character** (i18n: FR « Lier à un personnage », EN « Link to a character », ES « Vincular a un personaje »). MUST open a Player picker dialog listing owned Players currently visible in Mes personnages (without-group Players). Confirming a Player MUST persist `linkedPlayerId` immediately and nest the NPC under that Player. Empty state MUST be explicit when no Player is available. The picker MUST NOT list NPCs, GM-only characters, or Players the requester does not own.
+- **Linked nested NPC**: menu item **Unlink** (i18n: FR « Délier », EN « Unlink », ES « Desvincular »). MUST persist `linkedPlayerId: null` immediately. MUST NOT open a confirmation dialog (same as Companions-tab unlink). After success, the NPC MUST leave the nested list: without-group NPCs become a root row; NPCs that still belong to a campaign group MUST disappear from Mes personnages (they remain in the GM group list).
+- **Linked nested NPC**: menu item **Link to another character** (i18n: FR « Lier à un autre personnage », EN « Link to another character », ES « Vincular a otro personaje »). MUST open the same Player picker, excluding the currently linked Player. Confirming a different Player is a **reassignment** and MUST ask for confirmation (FR-npc-player-link). On confirm, persist the new `linkedPlayerId` immediately and nest under the new Player.
+
+**Persistence (distinct from Companions tab)**:
+
+- Sidebar link/unlink/reassign MUST call the NPC update API immediately. They MUST NOT wait for a Player sheet Save.
+- On success, Redux Player-space NPC lists MUST update so the sidebar re-nests without a full page reload (toast success).
+- On API failure, the sidebar MUST keep the previous nesting and show an error toast.
+
+**Session and GM**:
+
+- When sidebar actions are disabled during an active launched session, link/unlink/reassign MUST be disabled with the other mutating character actions.
+- GM group lists MUST NOT expose these items.
+- The in-session GM sidebar « Joueurs (session) » nested companion rows MUST NOT expose link/unlink/reassign (FR-session-player-companion-combatants). The GM MAY still open and edit the NPC sheet.
+
+**Accessibility**:
+
+- Menu items, picker rows, and confirmation controls MUST be keyboard-operable (Tab, Enter/Space, Escape to close) with visible focus.
+- Dialogs MUST have a title, description, and accessible names. Long Player names truncate (`truncate` / `min-w-0`).
+- Color MUST NOT be the only channel for linked vs unlinked (menu labels differ; nesting already encodes the relation).
+
+**Prohibitions**:
+
+- Showing link/unlink on Player rows or in GM space.
+- Divergent action sets between right-click and overflow menus.
+- Draft-only sidebar linking (Companions-tab Save gating MUST NOT apply here).
+- Linking to a Player not visible in Mes personnages (the NPC would vanish from both root and nested lists).
+- Silent reassignment without confirmation.
+- Confirmation dialog on simple unlink.
+- Hardcoded labels bypassing i18n.
+
+**Tests**:
+
+- Nominal: right-click (or overflow) on an unlinked root NPC → pick a visible Player → NPC nests under that Player; `linkedPlayerId` persisted.
+- Nominal: unlink a nested without-group NPC → NPC becomes a root row; `linkedPlayerId` is null.
+- Nominal: overflow menu on tablet/mobile exposes the same items and handlers as the context menu.
+- Edge: unlink a nested NPC that still has a campaign group → it leaves Mes personnages and stays in the GM group list.
+- Edge: reassign from Player A to Player B → confirmation required; after confirm, nested only under B.
+- Edge: picker empty when Mes personnages has no Player; Link remains available but cannot persist.
+- Edge: launched session disables link/unlink like Edit/Delete.
+- Failure: API error → toast error, previous sidebar nesting unchanged.
+- Failure: GM group NPC rows MUST NOT show link/unlink.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/shared/SidebarItemWithActions.tsx`
+- `services/web/client/src/lib/npcPlayerLink.ts`
+- `services/web/client/src/services/CharacterService.ts`
+- `docs/functional-rules.md` — FR-npc-player-link, FR-sidebar-context-actions, FR-sidebar-navigation, FR-frontend-design
+- `docs/design.md`
+
+---
+
+## FR-session-join-companion-visibility: Linked NPCs Visible When Choosing a Session Character
+
+**Rule**: When a player chooses a Player character to join a session (or to change character in the pre-launch lobby), each option MUST make linked NPCs (FR-npc-player-link) visible. A Player with zero linked NPCs MUST look unchanged. Linked NPCs MUST NOT become selectable session characters and MUST NOT be added to the session roster by this picker.
+
+**Scope**:
+
+- Complements FR-npc-player-link (cardinality, Player-space companions) without changing link/unlink semantics.
+- Complements FR-session-lobby-modal (lobby character change before launch) and the join-by-code dialog.
+- Complements FR-frontend-design (keyboard, visible focus, i18n, color is not the only channel).
+- Does not assign linked NPCs as the participant `characterId`. Session combatant inclusion is FR-session-player-companion-combatants.
+- Does not change GM guest characters (FR-session-gm-guest-character).
+
+**Surfaces**:
+
+- Join-by-code character picker (`JoinSessionDialog`).
+- Session lobby character picker for the current player while the session is still in lobby (`SessionLobbyContent` / `CharacterSelect`, before launch).
+
+**Display**:
+
+- Primary line: Player display name (`firstname` + optional `lastname`), unchanged.
+- When the Player has **one or more** linked NPCs, a **discreet secondary metadata line** MUST appear under that name in both the open list and the closed trigger (so the relation remains visible after selection).
+- Secondary line MUST show **only the companion count** (no companion names), using i18n with pluralization:
+  - FR: `{count, plural, one {# compagnon} other {# compagnons}}`
+  - EN: `{count, plural, one {# companion} other {# companions}}`
+  - ES: `{count, plural, one {# compañero} other {# compañeros}}`
+- Style: secondary metadata (`text-xs`, `text-white/55` / muted). Color MUST NOT be the only channel: the count text is required.
+- A Player with **zero** linked NPCs MUST NOT show an empty « 0 compagnon » / « Aucun compagnon » line.
+
+**Data**:
+
+- Companion list is derived from NPCs whose `linkedPlayerId` matches the Player id (existing `GET /characters/npcs/by-linked-players`).
+- The picker remains Player-only (`GET /characters/players/without-group`). NPCs MUST NOT appear as selectable rows.
+
+**Failure and loading**:
+
+- Companion lookup failure MUST NOT block join or character change. The picker still lists Players by name only (no false companion claim).
+- While companions are loading, options MAY show Player names only; the secondary line appears when data is available.
+
+**Accessibility**:
+
+- Each option's accessible name MUST include the Player name and, when companions exist, the count label (e.g. `Aragorn, 2 compagnons`).
+- Keyboard: Tab to the trigger, arrow keys through options, Enter/Space to select, Escape to close (existing `Select` primitive).
+- Visible focus on dark surfaces; long Player names truncate without overflowing the dialog (`docs/design.md`).
+
+**Prohibitions**:
+
+- Selecting a linked NPC as the session `characterId`.
+- Auto-adding linked NPCs as the participant `characterId` from this picker.
+- Showing companion names or counts on **other players'** lobby cards (the current player's picker remains count-only). GM lobby cards follow FR-session-player-companion-combatants.
+- Showing companion metadata in GM **campaign** group lists.
+- Color-only or icon-only companion indication.
+- Hardcoded labels bypassing i18n.
+- Blocking join because companion lookup failed.
+
+**Tests**:
+
+- Nominal: Player with two linked NPCs shows `2 compagnons` (locale-aware) in the join picker list and on the closed trigger after selection.
+- Nominal: Player with zero linked NPCs shows only the Player name.
+- Nominal: lobby character change before launch shows the same discreet count line for the current player's options.
+- Edge: Player name truncates without overflowing the dialog; accessible name still includes the count label.
+- Edge: companion API failure → Players remain selectable; no companion line is shown.
+- Failure: a linked NPC MUST NOT appear as a selectable session character.
+
+**References**:
+
+- `services/web/client/src/components/character/CharacterSelect.tsx`
+- `services/web/client/src/components/dialogs/JoinSessionDialog.tsx`
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/hooks/useSessionData.ts`
+- `services/web/client/src/lib/sessionJoinCompanionVisibility.ts`
+- `services/web/client/src/services/CharacterService.ts`
+- `docs/functional-rules.md` — FR-npc-player-link, FR-session-lobby-modal, FR-session-player-companion-combatants, FR-frontend-design
+- `docs/design.md`
+
+---
+
+## FR-session-player-companion-combatants: GM Sees Player Companions as Session Combatants
+
+**Rule**: While a session is active, the Game Master MUST see the linked NPCs (FR-npc-player-link) of each assigned player character, and those NPCs MUST become session combatants in the session participants group. Linked NPCs MUST NOT become session participants (no extra seat, no wheel quota, not the participant `characterId`). Other players MUST NOT see companion metadata in the lobby; in combat they see companion tracker rows under the same visibility contract as GM guests.
+
+**Scope**:
+
+- Applies when `isInSession === true` and the viewer is the session GM, except tracker/sheet access granted to participants via battle snapshot and session character read (below).
+- Complements FR-npc-player-link (cardinality and Player-space linking UX unchanged).
+- Complements FR-session-join-companion-visibility (join picker stays Player-only and count-only; it MUST NOT set `characterId` to an NPC).
+- Complements FR-session-gm-guest-character (companions are derived from roster links, not GM-promoted campaign characters).
+- Complements FR-session-combat-navigation, FR-session-combat-sync, FR-session-websocket-lifecycle, FR-session-lobby-wheel-deposit, FR-media-avatar-read-access, and FR-frontend-design.
+- Does not change campaign group lists, Player-space linking, or wheel quota (participants including GM only).
+
+### Identity and derivation
+
+- Source of truth remains NPC `linkedPlayerId`. The session MUST NOT store a duplicated companion list as source of truth.
+- For every non-GM participant with a non-empty `characterId`, companions are the NPCs whose `linkedPlayerId` equals that id.
+- A companion MUST NOT be assigned as any participant's `characterId`.
+- Duplicate tracker/group membership by `characterId` is forbidden: if the NPC is already in the battle as a campaign-group member or GM guest, the session MUST reuse that row, not add a second one.
+
+### GM visibility and character-data edit
+
+- The session GM MAY **edit persisted character data** of an assigned player PC and of each derived companion NPC (same session `gm-edit` as existing roster PCs: HP, AC, identity, tabs, etc.).
+- The session GM MUST NOT **manage liaisons**: no link, unlink, reassign, create-linked, and no write to `linkedPlayerId` (session `gm-edit` MUST ignore or reject that field).
+- **Lobby** (GM only): each non-GM participant card whose assigned Player has one or more companions MUST show companion **names** as secondary metadata under the character label (`text-xs`, muted / `text-white/55`). Zero companions: no extra line. Players other than the card owner MUST NOT see this line. The current player's own picker remains count-only (FR-session-join-companion-visibility).
+- **Sidebar « Joueurs (session) »** (GM only): companions nest under the assigned Player with the same nesting pattern as Player-space (indent + `purple` rail; color is not the only channel). Nested rows navigate to the NPC sheet with `sessionCode`. They MUST NOT expose link/unlink/reassign. Accessible names MUST include the NPC name and a PNJ kind label.
+- **Player sheet opened by the GM in this session**: the sheet is **editable** (character data). The Companions tab is visible and lists companions for navigation only (cards open companion sheets; no link / unlink / create). Outside session, GM sheets keep five tabs (FR-npc-player-link).
+- **Companion NPC sheet** opened in this session by the GM (or the owner): the sheet is **editable** (character data). Existing NPC tabs; « Lié à {Player} » MAY show as non-editable secondary metadata. No link/unlink.
+
+### Session combatants (tracker)
+
+- Companions of assigned Players MUST be included in `buildSessionParticipantsGroup` (`__session_participants__`) alongside player PCs and GM guests.
+- Tracker rows MUST set `kind: "npc"`, `groupId = SESSION_PARTICIPANTS_GROUP_ID`, and `isPlayerCompanion: true`.
+- Visibility contract matches GM guests (FR-session-gm-guest-character): **not** locked to full visibility; NPC field defaults (`visible: true`, `name: true`, other fields `false`); `applyPlayerRowVisibilityRules` MUST skip these rows.
+- Player tracker view after combat start follows the existing session-participants-group filter (same as GM guests). Preparatory initiative input remains limited to the player's own PC row (FR-session-combat-navigation); companion initiative is GM-controlled.
+- **Battle not initialized**: companions appear in Init Battle / Add Combatants as members of the mandatory session participants group. The GM MAY exclude a companion via the existing per-member exclusion.
+- **Battle already initialized or started**: when a companion becomes derived (join, late join, character change before launch, reconnect hydration), the GM client MUST `appendInitiativeTrackerRows` immediately and rebroadcast battle state (FR-session-combat-sync). When a companion leaves the derivation set (player leave, character change, unlink observed on refresh), the GM client MUST remove that tracker row and rebroadcast.
+- Sheet ↔ tracker sync applies to companion rows like other NPC session combatants (FR-session-combat-sync). Local echo remains required for GM edits (`client.to` excludes emitter).
+
+### Access (session-scoped, cross-owner)
+
+- Player companions are owned by the player (`createdBy` ≠ GM). Owner-scoped `GET /characters/npcs/by-linked-players` is insufficient for the GM.
+- A session-scoped lookup MUST return companions of roster Player ids when the requester is a participant of that session and each requested Player id is an assigned non-GM `characterId`. Non-GM requesters MAY receive only what they need for their own join picker (existing owner query). GM lookup MUST succeed across owners.
+- Character GET/PATCH with `sessionCode`:
+  - `roster-read` MUST succeed for a companion NPC whose `linkedPlayerId` is an assigned non-GM `characterId` (all participants, so tracker name links and avatars work).
+  - `gm-edit` MUST succeed for the session GM on assigned player PCs **and** on those companion NPCs for character data.
+  - Session `gm-edit` MUST NOT persist a change to `linkedPlayerId` (ignore the field or reject the request). Only the owning player in Player space may change liaisons (FR-npc-player-link / FR-sidebar-npc-link).
+- Avatar read follows FR-media-avatar-read-access `companion-session-read`.
+- Failure of companion lookup MUST NOT block join, lobby render, session launch, or battle start. The GM sees Players without companion lines/rows; no false companion claim. The GM MAY see an error toast.
+
+### Lifecycle
+
+- Derived when a non-GM participant has an assigned `characterId`; cleared for that Player when the assignment is cleared, the player leaves, or the session ends (`clearCurrentSession`).
+- Character change is allowed only before launch (existing lobby rule). After change, old companions leave the derivation set and new ones enter.
+- Wheel quota MUST NOT include companions (FR-session-lobby-wheel-deposit).
+- Linking UX stays disabled in launched session (FR-sidebar-npc-link). A companion unlinked outside the session disappears from GM session surfaces on the next successful lookup.
+
+### Accessibility (FR-frontend-design)
+
+- Companion names and counts are text, not color-only or icon-only.
+- Nested sidebar lists use list structure and accessible names (Player + companion list; each NPC includes a PNJ kind label).
+- Lobby companion names truncate (`truncate` / `min-w-0`) without overflowing the card.
+- Keyboard: nested sidebar rows and Companions-tab cards remain operable (Enter/Space activate, visible focus on dark surfaces).
+- i18n required (FR/EN/ES). Hardcoded labels forbidden.
+
+**Prohibitions**:
+
+- Treating a companion as a session participant (`characterId`, seat, wheel quota).
+- Selecting a linked NPC in the join/lobby character picker.
+- Showing companion names on lobby cards to non-GM players (other participants).
+- Showing companion nesting or the Companions tab in GM **campaign** group lists or GM sheets outside this session exception.
+- Letting the session GM link, unlink, reassign, or create-linked NPCs, or persist `linkedPlayerId` via session `gm-edit`.
+- Locking companion tracker rows to full player-field visibility.
+- Duplicating a companion as both a session companion row and a GM guest / campaign combatant with the same `characterId`.
+- Owner-only companion lookup that 403s the GM for another user's linked NPCs during a session they master.
+- Blocking session or combat flows because companion fetch failed.
+- Broadcasting companion lists as a second source of truth that can diverge from `linkedPlayerId`.
+- New undocumented colors; reuse `purple` rail and existing muted secondary text.
+
+**Tests**:
+
+- Nominal: player joins with a PJ that has two linked NPCs → GM lobby card lists both names; sidebar nests both under that PJ; Init Battle session group contains both; after battle init, two `isPlayerCompanion` rows exist with NPC visibility defaults.
+- Nominal: GM opens the assigned Player sheet in session → can edit character data; Companions tab lists companions without link/unlink/create; cards open companion sheets with `sessionCode`.
+- Nominal: GM opens a companion NPC sheet in session → can edit character data (HP, stats, tabs); « Lié à » is visible and not editable; no link/unlink.
+- Failure: session GM PATCH that changes `linkedPlayerId` is ignored or rejected; the liaison is unchanged.
+- Nominal: battle already started, late joiner with one companion → GM appends one tracker row and players receive it in the next battle snapshot.
+- Edge: Player with zero companions → no extra lobby line, no nested rows, roster unchanged.
+- Edge: player changes character before launch → old companion rows/names disappear; new character's companions appear.
+- Edge: player leaves → companion tracker rows removed; wheel quota unchanged.
+- Edge: companion already in a selected campaign group → a single tracker row for that `characterId`.
+- Edge: companion lookup 403/500 → join and battle start still succeed; GM sees no companion claim.
+- Edge: non-GM player lobby does not show other participants' companion names.
+- Failure: non-participant requesting companions of another user's PJ without owning them is denied.
+- Failure: `applyPlayerRowVisibilityRules` does not lock `isPlayerCompanion` rows to full visibility.
+
+**References**:
+
+- `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
+- `services/web/client/src/store/slices/sessionSlice.ts`
+- `services/web/client/src/services/CharacterService.ts`
+- `services/adventure/api/src/resources/character/npc/`
+- `services/session/api/src/resources/session/session.service.ts`
+- `docs/functional-rules.md` — FR-npc-player-link, FR-session-join-companion-visibility, FR-session-gm-guest-character, FR-session-combat-navigation, FR-session-combat-sync, FR-session-websocket-lifecycle, FR-session-lobby-wheel-deposit, FR-media-avatar-read-access, FR-frontend-design
+- `docs/design.md`
 
 ---
 

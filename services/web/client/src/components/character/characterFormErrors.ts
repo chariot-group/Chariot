@@ -63,7 +63,7 @@ export function getCharacterTabsWithErrors(
 
 export function getFirstCharacterTabWithError(errors: FieldErrors<FieldValues> | Record<string, unknown>): CharacterTab | null {
   const tabsWithErrors = getCharacterTabsWithErrors(errors);
-  const tabOrder: CharacterTab[] = ["general", "battle", "magic", "inventory", "history"];
+  const tabOrder: CharacterTab[] = ["general", "battle", "magic", "inventory", "history", "companions"];
 
   return tabOrder.find((tab) => tabsWithErrors[tab]) ?? null;
 }
