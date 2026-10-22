@@ -93,6 +93,12 @@ describe('SessionService', () => {
                     useValue: {
                         session: mockPrismaSession,
                         sessionParticipant: mockPrismaParticipant,
+                        $transaction: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+                            fn({
+                                session: mockPrismaSession,
+                                sessionParticipant: mockPrismaParticipant,
+                            }),
+                        ),
                     },
                 },
                 {
@@ -177,6 +183,85 @@ describe('SessionService', () => {
                     }),
                 }),
             );
+        });
+
+        it('rejoins the same session when two creates race on the participant row', async () => {
+            const gm = makeParticipant({
+                userId: 'user-uuid-1',
+                status: ParticipantStatus.gameMaster,
+                characterId: null,
+            });
+            const withoutGm = makeSession({ participants: [] });
+            const withGm = makeSession({ participants: [gm] });
+            let participantInserted = false;
+
+            mockPrismaSession.findFirst.mockImplementation(async (query: { where?: { id?: string } }) => {
+                if (query?.where?.id) {
+                    return withGm;
+                }
+                return participantInserted ? withGm : withoutGm;
+            });
+            mockPrismaParticipant.create.mockImplementation(async () => {
+                if (participantInserted) {
+                    const error = new Error('Unique constraint failed on session_participants_session_id_user_id_key');
+                    (error as { code?: string }).code = 'P2002';
+                    throw error;
+                }
+                participantInserted = true;
+                return gm;
+            });
+            mockPrismaParticipant.update.mockResolvedValue(gm);
+
+            const [first, second] = await Promise.all([
+                service.create({ campaignId: 'camp-uuid-1' }, 'user-uuid-1'),
+                service.create({ campaignId: 'camp-uuid-1' }, 'user-uuid-1'),
+            ]);
+
+            expect(first.message).toContain('rejoined');
+            expect(second.message).toContain('rejoined');
+            expect(first.data).toBe(withGm);
+            expect(second.data).toBe(withGm);
+            expect(mockPrismaSession.create).not.toHaveBeenCalled();
+        });
+
+        it('recreates the game master when the participant disappears before update', async () => {
+            const gm = makeParticipant({
+                userId: 'user-uuid-1',
+                status: ParticipantStatus.gameMaster,
+                characterId: null,
+            });
+            const withGm = makeSession({ participants: [gm] });
+            const withoutGm = makeSession({ participants: [] });
+            const rejoined = makeSession({ participants: [gm] });
+            const missing = new Error(
+                'An operation failed because it depends on one or more records that were required but not found',
+            );
+            (missing as { code?: string }).code = 'P2025';
+
+            let lookup = 0;
+            mockPrismaSession.findFirst.mockImplementation(async (query: { where?: { id?: string } }) => {
+                if (query?.where?.id) {
+                    return rejoined;
+                }
+                lookup += 1;
+                return lookup === 1 ? withGm : withoutGm;
+            });
+            mockPrismaParticipant.update.mockRejectedValueOnce(missing);
+            mockPrismaParticipant.create.mockResolvedValue(gm);
+
+            const result = await service.create({ campaignId: 'camp-uuid-1' }, 'user-uuid-1');
+
+            expect(result.message).toContain('rejoined');
+            expect(result.data).toBe(rejoined);
+            expect(mockPrismaParticipant.create).toHaveBeenCalledWith({
+                data: {
+                    sessionId: 'sess-uuid-1',
+                    userId: 'user-uuid-1',
+                    characterId: null,
+                    status: ParticipantStatus.gameMaster,
+                },
+            });
+            expect(mockPrismaSession.create).not.toHaveBeenCalled();
         });
     });
 

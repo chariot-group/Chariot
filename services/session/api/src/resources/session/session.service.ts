@@ -15,7 +15,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { RedisService } from '@/redis/redis.service';
 import { CreateSessionDto } from '@/resources/session/dto/create-session.dto';
 import { JoinSessionDto } from '@/resources/session/dto/join-session.dto';
-import { ParticipantStatus, SessionStatus } from '@prisma/client';
+import { ParticipantStatus, Prisma, SessionStatus } from '@prisma/client';
 import { SessionParticipant, SessionWithParticipants, SessionParticipantsDetails } from '@/resources/session/entities/session.model';
 import { IResponse } from '@/common/dtos/response.dto';
 import { sumTokenMap } from '@/resources/session/session-wheel-quota';
@@ -29,6 +29,8 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
     private static readonly EXPIRATION_HOURS: number = 8;
     private static readonly EXPIRATION_SECONDS: number = (SessionService.EXPIRATION_HOURS) * 60 * 60;
     private static readonly SWEEP_MS = 15_000;
+    /** Relectures après P2002 / P2025 : Postgres annule la transaction, on recommence. */
+    private static readonly CREATE_RACE_ATTEMPTS = 3;
 
     private sweepTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -118,77 +120,123 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
     async create(createSessionDto: CreateSessionDto, userId: string): Promise<IResponse<SessionWithParticipants>> {
         try {
             const start: number = Date.now();
-
-            // Si une session active existe déjà pour cette campagne, le créateur la rejoint
-            const existingSession = await this.prisma.session.findFirst({
-                where: {
-                    creatorUserId: userId,
-                    creatorCampaignId: createSessionDto.campaignId,
-                    status: { not: SessionStatus.closed },
-                    deletedAt: null,
-                    OR: [
-                        { expiresAt: { gt: new Date() } },
-                        {
-                            expiresAt: null,
-                            status: SessionStatus.activated,
-                        },
-                    ],
-                },
-                include: { participants: true },
-            });
-
-            if (existingSession) {
-                const existingParticipant = existingSession.participants.find(p => p.userId === userId);
-                if (existingParticipant) {
-                    await this.prisma.sessionParticipant.update({
-                        where: { id: existingParticipant.id },
-                        data: { status: ParticipantStatus.gameMaster, characterId: null },
-                    });
-                } else {
-                    await this.prisma.sessionParticipant.create({
-                        data: {
-                            sessionId: existingSession.id,
-                            userId,
-                            characterId: null,
-                            status: ParticipantStatus.gameMaster,
-                        },
-                    });
-                }
-                const updated: SessionWithParticipants = await this._findSessionById(existingSession.id);
-                const message: string = `User ${userId} rejoined existing session #${existingSession.id} for campaign ${createSessionDto.campaignId} in ${Date.now() - start}ms`;
-                this.logger.log(message, this.SERVICE_NAME);
-                this.liveMetrics.recordLifecycle('rejoined');
-                return { message, data: updated };
-            }
-
-            const code = await this.generateUniqueCode();
-            const session: SessionWithParticipants = await this.prisma.session.create({
-                data: {
-                    code,
-                    creatorUserId: userId,
-                    creatorCampaignId: createSessionDto.campaignId,
-                    status: SessionStatus.activated,
-                    participants: {
-                        create: {
-                            userId,
-                            characterId: null,
-                            status: ParticipantStatus.gameMaster,
-                        },
-                    },
-                },
-                include: { participants: true },
-            });
-
-            const message: string = `Session #${session.id} created in ${Date.now() - start}ms`;
-            this.logger.log(message, this.SERVICE_NAME);
-            this.liveMetrics.recordLifecycle('created');
-            return { message, data: session };
+            return await this.createHandlingParticipantRace(createSessionDto, userId, start);
         } catch (error: any) {
             if (error instanceof HttpException) throw error;
             const message: string = `Error creating session for user ${userId}: ${error.message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }
+    }
+
+    /**
+     * Postgres annule la transaction dès qu'une écriture échoue.
+     * P2002 (participant déjà créé par un appel parallèle) et P2025
+     * (participant parti entre la lecture et l'update) relancent la transaction,
+     * qui relit alors la session et rejoint au lieu de répondre 500.
+     */
+    private async createHandlingParticipantRace(
+        createSessionDto: CreateSessionDto,
+        userId: string,
+        start: number,
+    ): Promise<IResponse<SessionWithParticipants>> {
+        let lastError: unknown;
+        for (let attempt = 1; attempt <= SessionService.CREATE_RACE_ATTEMPTS; attempt++) {
+            try {
+                return await this.prisma.$transaction((tx) =>
+                    this.createInTransaction(tx, createSessionDto, userId, start),
+                );
+            } catch (error: unknown) {
+                if (!this.isParticipantRace(error) || attempt === SessionService.CREATE_RACE_ATTEMPTS) {
+                    throw error;
+                }
+                lastError = error;
+            }
+        }
+        throw lastError;
+    }
+
+    private isParticipantRace(error: unknown): boolean {
+        if (typeof error !== 'object' || error === null || !('code' in error)) {
+            return false;
+        }
+        const code = (error as { code?: string }).code;
+        return code === 'P2002' || code === 'P2025';
+    }
+
+    private async createInTransaction(
+        tx: Prisma.TransactionClient,
+        createSessionDto: CreateSessionDto,
+        userId: string,
+        start: number,
+    ): Promise<IResponse<SessionWithParticipants>> {
+        // Si une session active existe déjà pour cette campagne, le créateur la rejoint
+        const existingSession = await tx.session.findFirst({
+            where: {
+                creatorUserId: userId,
+                creatorCampaignId: createSessionDto.campaignId,
+                status: { not: SessionStatus.closed },
+                deletedAt: null,
+                OR: [
+                    { expiresAt: { gt: new Date() } },
+                    {
+                        expiresAt: null,
+                        status: SessionStatus.activated,
+                    },
+                ],
+            },
+            include: { participants: true },
+        });
+
+        if (existingSession) {
+            const existingParticipant = existingSession.participants.find(p => p.userId === userId);
+            if (existingParticipant) {
+                await tx.sessionParticipant.update({
+                    where: { id: existingParticipant.id },
+                    data: { status: ParticipantStatus.gameMaster, characterId: null },
+                });
+            } else {
+                await tx.sessionParticipant.create({
+                    data: {
+                        sessionId: existingSession.id,
+                        userId,
+                        characterId: null,
+                        status: ParticipantStatus.gameMaster,
+                    },
+                });
+            }
+            const updated = await tx.session.findFirst({
+                where: { id: existingSession.id, deletedAt: null },
+                include: { participants: true },
+            });
+            const message: string = `User ${userId} rejoined existing session #${existingSession.id} for campaign ${createSessionDto.campaignId} in ${Date.now() - start}ms`;
+            this.logger.log(message, this.SERVICE_NAME);
+            this.liveMetrics.recordLifecycle('rejoined');
+            return { message, data: updated };
+        }
+
+        const code = await this.generateUniqueCode();
+        const session: SessionWithParticipants = await tx.session.create({
+            data: {
+                code,
+                creatorUserId: userId,
+                creatorCampaignId: createSessionDto.campaignId,
+                status: SessionStatus.activated,
+                participants: {
+                    create: {
+                        userId,
+                        characterId: null,
+                        status: ParticipantStatus.gameMaster,
+                    },
+                },
+            },
+            include: { participants: true },
+        });
+
+        const message: string = `Session #${session.id} created in ${Date.now() - start}ms`;
+        this.logger.log(message, this.SERVICE_NAME);
+        this.liveMetrics.recordLifecycle('created');
+        return { message, data: session };
     }
 
     async findOne(code: string): Promise<IResponse<SessionWithParticipants>> {

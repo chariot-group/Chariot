@@ -4862,3 +4862,50 @@ Each initiative tracker row carries:
 - `services/session/api/src/resources/session/session.service.ts`
 - `docs/functional-rules.md` — FR-npc-player-link, FR-session-join-companion-visibility, FR-session-gm-guest-character, FR-session-combat-navigation, FR-session-combat-sync, FR-session-websocket-lifecycle, FR-session-lobby-wheel-deposit, FR-media-avatar-read-access, FR-frontend-design
 - `docs/design.md`
+
+---
+
+## FR-session-end-navigation: Navigation After Session End or Unavailable Session
+
+**Rule**: When a session ends (closed by the GM, expired) or is detected as unavailable (closed/expired/not found on validation), the client MUST NOT send the user to `/{locale}/welcome` by default. It MUST keep the user on a page that is still valid for them, or resolve a data-driven destination. `/welcome` is only a last-resort fallback when the user has no character at all.
+
+**Requirements**:
+
+- Applies to every session-end path: WebSocket `session:closed` / `session:expired` (layout `SessionCharacterSyncClient` and lobby `useSessionSocket`), session validation on mount (`useSessionValidation`), and the "session unavailable" join flow (`useSessionData`)
+- **Game Master** (current user had status `gameMaster` in the ended session, campaign known):
+  - If the current route is inside that campaign (`/{locale}/campaigns/{campaignId}/...`), the user MUST stay on the current page (no navigation)
+  - Otherwise, navigate to the campaign space destination (first character of an active group, then of an archived group)
+- **Player** (or GM without known campaign):
+  - If the current route is the user's own character without group (`/{locale}/characters/{id}`), the user MUST stay on it
+  - Otherwise, navigate to the post-authentication destination (FR-post-auth-navigation)
+- Destination resolution (FR-post-auth-navigation clarification): when looking for a character in campaigns, ALL active groups of each campaign MUST be inspected, not only the first group; a campaign whose `groups.archived` list is missing MUST be treated as having no archived groups (not as "no characters")
+- `/{locale}/welcome` is used only when the resolved destination is `no-characters` or when resolution fails
+- Session state cleanup (`clearCurrentSession`, socket destroy, lobby close) and end-of-session toasts are unchanged and remain deduplicated (FR-session-websocket-lifecycle)
+- Navigation MUST happen at most once per session end, even when several subscribers observe the end event
+- Logo click outside a session keeps redirecting to `/welcome` (FR-session-lobby-navigation) — out of scope
+
+**Prohibitions**:
+
+- Hardcoded `router.push('/{locale}/welcome')` on session end
+- Navigating away from a still-valid campaign page for the GM who closed the session
+- Redirecting to `/welcome` while the user has characters (without group or in campaign groups)
+
+**Tests**:
+
+- Nominal: GM closes the session while on `/campaigns/{campaignId}/groups/{g}/characters/{c}` → stays on the page, session state cleared
+- Nominal: player receives `session:closed` while on a campaign route → navigated to their first character (post-auth destination)
+- Edge: campaign whose first active group is empty but second has characters → resolves to the second group's character, not `/welcome`
+- Edge: both layout and lobby subscribers observe `session:closed` → single navigation, single toast
+- Failure: destination resolution throws → fallback to `/welcome`
+
+**References**:
+
+- `services/web/client/src/components/SessionCharacterSyncClient.tsx`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/web/client/src/hooks/useSessionValidation.ts`
+- `services/web/client/src/hooks/useSessionData.ts`
+- `services/web/client/src/services/NavigationService.ts`
+- `services/web/client/src/lib/sessionEndNavigation.ts`
+- `services/web/client/src/lib/__tests__/sessionEndNavigation.test.ts`
+- `services/web/client/src/services/__tests__/NavigationService.destinations.test.ts`
+- `docs/functional-rules.md` — FR-post-auth-navigation, FR-session-websocket-lifecycle, FR-session-lobby-navigation, FR-user-cache-isolation

@@ -6,14 +6,10 @@ services:
     container_name: chariot-gateway-integ
     restart: unless-stopped
     working_dir: /app
-    ports:
-      - "8082:8082"
     environment:
       NODE_ENV: integration
       GATEWAY_PORT: ${GATEWAY_PORT:-8082}
       GATEWAY_LOG_LEVEL: ${GATEWAY_LOG_LEVEL:-info}
-      GATEWAY_RATE_LIMIT_MAX: ${GATEWAY_RATE_LIMIT_MAX:-200}
-      GATEWAY_RATE_LIMIT_WINDOW: ${GATEWAY_RATE_LIMIT_WINDOW:-60000}
       # Backend services - add more as needed with pattern {SERVICE_NAME}_SERVICE_URL
       ADVENTURE_SERVICE_URL: ${ADVENTURE_SERVICE_URL}
       SESSION_SERVICE_URL: ${SESSION_SERVICE_URL}

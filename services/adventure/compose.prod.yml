@@ -6,8 +6,6 @@ services:
     platform: linux/amd64
     container_name: chariot-mongodb-prod
     restart: unless-stopped
-    ports:
-      - "27017"
     volumes:
       - chariot_mongodb_data_prod:/data/db
       - chariot_mongodb_logs_prod:/var/log/mongodb
@@ -27,8 +25,6 @@ services:
       - chariot-group-network-prod
 
   chariot-adventure:
-    ports:
-      - "9000:9000"
     image: ghcr.io/chariot-group/chariot-adventure-production:latest
     container_name: chariot-adventure-prod
     restart: unless-stopped
@@ -53,6 +49,7 @@ services:
       KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://chariot-session-prod:9002}
       METRICS_BASIC_AUTH_USER: ${METRICS_BASIC_AUTH_USER:-}
       METRICS_BASIC_AUTH_PASSWORD: ${METRICS_BASIC_AUTH_PASSWORD:-}
       OTEL_ENABLED: ${OTEL_ENABLED:-false}

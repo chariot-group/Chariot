@@ -1,0 +1,4 @@
+.env
+report.json
+reports/
+node_modules/

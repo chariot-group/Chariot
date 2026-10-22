@@ -6,8 +6,6 @@ services:
     platform: linux/amd64
     container_name: chariot-mongodb-integ
     restart: unless-stopped
-    ports:
-      - "27017"
     volumes:
       - chariot_mongodb_data_integ:/data/db
       - chariot_mongodb_logs_integ:/var/log/mongodb
@@ -27,8 +25,6 @@ services:
       - chariot-group-network-integ
 
   chariot-adventure:
-    ports:
-      - "9000:9000"
     image: ghcr.io/chariot-group/chariot-adventure-integration:latest
     container_name: chariot-adventure-integ
     restart: unless-stopped

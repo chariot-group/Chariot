@@ -9,7 +9,7 @@ service-specific documentation available in the repository.
 ## � Gateway
 - **API Gateway**: [services/gateway](../../services/gateway)
   - Centralized entry point on port 8082
-  - Handles routing (`/api/*` → Adventure), rate limiting, CORS, health checks
+  - Handles routing (`/api/*` → Adventure), CORS, health checks (rate limiting is handled by Cloudflare)
   - Prometheus metrics on `/metrics`
 
 ## 🚀 Deployment

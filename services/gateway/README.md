@@ -2,13 +2,12 @@
 
 ## Overview
 
-Centralized entry point for all Chariot microservices. Built with NestJS 10, it handles routing, rate limiting, CORS, and monitoring.
+Centralized entry point for all Chariot microservices. Built with NestJS 10, it handles routing, CORS, and monitoring. Rate limiting is handled upstream by Cloudflare.
 
 ## Key Features
 
 - **Reverse Proxy**: Dynamic routing to multiple backend services via `/api/{service}/*`
 - **Multi-Service Support**: Extensible configuration for multiple microservices
-- **Rate Limiting**: Configurable per environment (100-500 req/min)
 - **Health Checks**: `/health` and `/ready` endpoints with backend connectivity checks
 - **Metrics**: Prometheus metrics on `/metrics`
 - **Logging**: Winston with daily rotation (14 days retention)
@@ -22,8 +21,6 @@ Port: **8082** (all environments)
 ```bash
 GATEWAY_PORT=8082
 GATEWAY_LOG_LEVEL=info
-GATEWAY_RATE_LIMIT_MAX=100
-GATEWAY_RATE_LIMIT_WINDOW=60000
 
 # Backend Services
 # Add services with pattern: {SERVICE_NAME}_SERVICE_URL

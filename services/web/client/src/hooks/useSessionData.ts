@@ -11,6 +11,9 @@ import UserService from "@/services/UserService";
 import { resolveSessionCharacterLabel } from "@/lib/formatSessionCharacterLabel";
 import { formatSessionParticipantUserLabel, SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useStore } from "react-redux";
+import type { RootState } from "@/store";
+import { captureSessionEndContext, navigateAfterSessionEnd } from "@/lib/sessionEndNavigation";
 import {
     clearCurrentSession,
     setCurrentSession,
@@ -67,6 +70,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 } {
 
     const dispatch = useAppDispatch();
+    const store = useStore<RootState>();
     const router = useRouter();
     const toast = useToast();
     const t = useTranslations("sessionPage");
@@ -117,10 +121,17 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     useEffect(() => {
         let cancelled = false;
 
-        const redirectToWelcomeAfterUnavailableSession = () => {
+        const redirectAfterUnavailableSession = () => {
+            const context = captureSessionEndContext(store.getState(), pathname, { campaignId: idCampaign });
             dispatch(clearCurrentSession());
             toast.info(t("toast.sessionNotFound"));
-            router.push(`/${locale}/welcome`);
+            void navigateAfterSessionEnd({
+                sessionCode: code,
+                context,
+                router,
+                dispatch,
+                getState: () => store.getState(),
+            });
         };
 
         const init = async () => {
@@ -134,7 +145,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
                 dispatch(setSessionExpiresAt(session.expiresAt));
             } catch {
                 if (cancelled) return;
-                redirectToWelcomeAfterUnavailableSession();
+                redirectAfterUnavailableSession();
                 setIsLoading(false);
                 return;
             }
@@ -152,7 +163,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
                         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
                         : undefined;
                 if (isSessionUnavailableMessage(message)) {
-                    redirectToWelcomeAfterUnavailableSession();
+                    redirectAfterUnavailableSession();
                     setIsLoading(false);
                     return;
                 }

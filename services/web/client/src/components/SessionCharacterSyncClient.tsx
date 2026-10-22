@@ -58,6 +58,9 @@ import {
 import { mergeParticipantsPreserveCharacterIds, participantsStableKey } from "@/lib/sessionParticipantMerge";
 import { parseSessionUnavailableReason } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
+import { captureSessionEndContext, navigateAfterSessionEnd } from "@/lib/sessionEndNavigation";
+import { useStore } from "react-redux";
+import type { RootState } from "@/store";
 import { trackerMirrorFieldsFromCharacter } from "@/components/initiativeTracker/utils";
 
 /** Évite les rafales HTTP lors des reconnexions Socket.IO rapprochées. */
@@ -86,6 +89,7 @@ export default function SessionCharacterSyncClient() {
     const t = useTranslations("sessionPage");
     const dispatch = useAppDispatch();
     const appStore = useAppStore();
+    const rootStore = useStore<RootState>();
     const { token } = useKeycloak();
     const isInSession = useAppSelector(selectIsInSession);
     const code = useAppSelector(selectSessionCode);
@@ -189,12 +193,22 @@ export default function SessionCharacterSyncClient() {
     const endSessionLocally = useEffectEvent(() => {
         if (hasProcessedSessionEndRef.current) return;
         hasProcessedSessionEndRef.current = true;
+        const sessionCode = codeRef.current;
+        // Snapshot GM status/campaign before the roster is cleared (FR-session-end-navigation).
+        const context = captureSessionEndContext(rootStore.getState(), pathnameRef.current, {
+            campaignId: campaignIdRef.current,
+        });
         destroySessionSocket();
         dispatch(clearCurrentSession());
 
-        const path = pathnameRef.current;
-        const locale = path.split("/")[1] || "fr";
-        routerRef.current.push(`/${locale}/welcome`);
+        if (!sessionCode) return;
+        void navigateAfterSessionEnd({
+            sessionCode,
+            context,
+            router: routerRef.current,
+            dispatch,
+            getState: () => rootStore.getState(),
+        });
     });
 
     const shouldConnect = Boolean(isInSession && code && token);
