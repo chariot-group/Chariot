@@ -116,6 +116,17 @@ export function coerceSpellDamageDetailsList(
 }
 
 /** @see FR-character-spell-multi-damage */
+export function ensureSpellDamageEditRows(
+    damageDetails: DamageDetails | DamageDetails[] | null | undefined,
+): DamageDetails[] {
+    const list = coerceSpellDamageDetailsList(damageDetails);
+    if (list.length === 0) {
+        return [{ ...EMPTY_SPELL_DAMAGE_DETAILS }];
+    }
+    return list;
+}
+
+/** @see FR-character-spell-multi-damage */
 export function hydrateSpellDamageDetails(
     damageDetails: DamageDetails | DamageDetails[] | null | undefined,
     damageFormula?: string | null,

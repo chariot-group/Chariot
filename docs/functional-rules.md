@@ -4428,6 +4428,7 @@ Each initiative tracker row carries:
 - Each damage entry MUST keep the current structured spell fields: `diceCount`, `diceType`, `bonus`, `damageType`.
 - Persistence, API DTO/schema, client types, and form schema MUST store spell damage as a list (`damageDetails: DamageDetails[]`), not a single object.
 - Edit mode (player and NPC magic tab) MUST allow adding and removing damage entries independently, with the same interaction pattern as combat actions (add row, delete row, remaining rows stay).
+- When a spell has no damage entries (empty list after load/hydration), edit mode MUST still show one blank damage row so the user can fill dice/type without clicking add first; removing the last row MUST leave one blank row (not zero rows). Persisted data MAY remain an empty list until the user saves a filled entry.
 - View mode, Codex spell preview, and character-sheet PDF MUST display every non-empty entry, joined with ` + ` (same visual convention as action damage).
 - An empty list MUST be valid (utility spells, or attack spells with no dice filled). Incomplete entries (missing dice count/type) MUST NOT appear in view/PDF.
 - Backward compatibility: a legacy single `damageDetails` object, or a legacy `damage` formula string with empty details, MUST be read as a one-entry list and remain editable/displayable.

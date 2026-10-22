@@ -56,6 +56,7 @@ import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import {
   coerceSpellDamageDetailsList,
   EMPTY_SPELL_DAMAGE_DETAILS,
+  ensureSpellDamageEditRows,
   hydrateSpellDamageDetails,
   isDamageDetailsFilled,
   parseDamageFormula,
@@ -263,7 +264,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         range: "",
         ...spell,
         effectType: spell.effectType || "utility",
-        damageDetails: hydrateSpellDamageDetails(spell.damageDetails, spell.damage),
+        damageDetails: ensureSpellDamageEditRows(
+          hydrateSpellDamageDetails(spell.damageDetails, spell.damage),
+        ),
       };
 
       const spellLevel = Number(spellWithDefaults.level ?? 0);
@@ -497,9 +500,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     if (needsDamageHydration && (hydratedDamages.length > 0 || Array.isArray(currentDamageDetails) === false)) {
       form.setValue(
         `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails`,
-        hydratedDamages,
+        ensureSpellDamageEditRows(hydratedDamages),
         { shouldDirty: hydratedDamages.some(isDamageDetailsFilled) && !currentDamageList.some(isDamageDetailsFilled) },
       );
+    }
+
+    const damageDetailsPath =
+      `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails` as Path<Character>;
+    const damageDetailsAfterHydration = coerceSpellDamageDetailsList(form.getValues(damageDetailsPath));
+    if (damageDetailsAfterHydration.length === 0) {
+      form.setValue(damageDetailsPath, ensureSpellDamageEditRows([]), { shouldDirty: false });
     }
 
     // Parse and fill healing fields if old healing exists but healingDetails is empty
@@ -2051,7 +2061,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                   return (
                                     <Card
                                       key={damageIndex}
-                                      className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full min-w-0">
+                                      className="@container/spell-dmg-entry flex w-full min-w-0 flex-col gap-1 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6">
                                       <div className="flex items-center justify-between gap-2">
                                         <span className={`text-sm font-semibold ${accentColor}`}>
                                           {tEdit("spellDamageEntry", { index: damageIndex + 1 })}
@@ -2062,7 +2072,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                           size="icon"
                                           onClick={() => {
                                             damageField.onChange(
-                                              damages.filter((_: DamageDetails, i: number) => i !== damageIndex),
+                                              ensureSpellDamageEditRows(
+                                                damages.filter((_: DamageDetails, i: number) => i !== damageIndex),
+                                              ),
                                             );
                                           }}
                                           aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}
@@ -2070,11 +2082,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                           <Trash2 className="size-4" />
                                         </Button>
                                       </div>
-                                      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
-                                        <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
+                                      <div className="grid w-full min-w-0 grid-cols-2 gap-x-2 gap-y-2 @md/spell-dmg-entry:grid-cols-[7rem_6.5rem_5.5rem_minmax(0,1fr)] @md/spell-dmg-entry:gap-x-3 @md/spell-dmg-entry:gap-y-1">
+                                        <div className="flex min-w-0 flex-col gap-0.5">
                                           <label
                                             htmlFor={diceCountId}
-                                            className="text-xs font-medium">
+                                            className="text-xs font-medium leading-tight">
                                             {tEdit("diceCount")}
                                           </label>
                                           <Input
@@ -2094,12 +2106,12 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                             }}
                                           />
                                         </div>
-                                        <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-25">
-                                          <span className="text-xs font-medium">{tEdit("diceType")}</span>
+                                        <div className="flex min-w-0 flex-col gap-0.5">
+                                          <span className="text-xs font-medium leading-tight">{tEdit("diceType")}</span>
                                           <Select
                                             value={damage?.diceType || undefined}
                                             onValueChange={(value) => updateDamage(damageIndex, "diceType", value)}>
-                                            <SelectTrigger>
+                                            <SelectTrigger className="w-full">
                                               <SelectValue placeholder={tEdit("damageDiceTypePlaceholder")} />
                                             </SelectTrigger>
                                             <SelectContent position="item-aligned">
@@ -2115,10 +2127,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                             </SelectContent>
                                           </Select>
                                         </div>
-                                        <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
+                                        <div className="col-span-2 flex min-w-0 flex-col gap-0.5 @md/spell-dmg-entry:col-span-1">
                                           <label
                                             htmlFor={bonusId}
-                                            className="text-xs font-medium">
+                                            className="text-xs font-medium leading-tight">
                                             {tEdit("bonus")}
                                           </label>
                                           <Input
@@ -2140,10 +2152,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                                         <Field
                                           data-invalid={damageTypeState.invalid}
                                           orientation="vertical"
-                                          className="flex flex-col gap-1 col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-37.5">
+                                          className="col-span-2 min-w-0 gap-0.5 @md/spell-dmg-entry:col-span-1">
                                           <label
                                             htmlFor={damageTypeId}
-                                            className="text-xs font-medium">
+                                            className="text-xs font-medium leading-tight">
                                             {tEdit("damageType")}
                                           </label>
                                           <DamageTypeInput
@@ -2185,19 +2197,20 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
                     <AccordionContent className="pb-2">
                       <Card className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full">
-                        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3">
+                        <div className="grid w-full min-w-0 grid-cols-2 gap-x-2 gap-y-2 sm:grid-cols-[7rem_6.5rem_5.5rem] sm:gap-x-3 sm:gap-y-1">
                           {/* Nombre de dés */}
-                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-20">
+                          <div className="flex min-w-0 flex-col gap-0.5">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.diceCount`}
                               control={form.control}
                               render={({ field, fieldState }) => (
                                 <Field
                                   data-invalid={fieldState.invalid}
-                                  orientation="vertical">
+                                  orientation="vertical"
+                                  className="gap-0.5">
                                   <label
                                     htmlFor={`spell-healing-dice-count-${selectedSpellIndex}`}
-                                    className="text-xs font-medium">
+                                    className="text-xs font-medium leading-tight">
                                     {tEdit("diceCount")}
                                   </label>
                                   <Input
@@ -2215,15 +2228,16 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           </div>
 
                           {/* Type de dé */}
-                          <div className="flex flex-col gap-1 sm:flex-1 sm:min-w-25">
+                          <div className="flex min-w-0 flex-col gap-0.5">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.diceType`}
                               control={form.control}
                               render={({ field, fieldState }) => (
                                 <Field
                                   data-invalid={fieldState.invalid}
-                                  orientation="vertical">
-                                  <label className="text-xs font-medium">{tEdit("diceType")}</label>
+                                  orientation="vertical"
+                                  className="gap-0.5">
+                                  <label className="text-xs font-medium leading-tight">{tEdit("diceType")}</label>
                                   <Select
                                     value={field.value ?? ""}
                                     onValueChange={field.onChange}>
@@ -2248,17 +2262,18 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                           </div>
 
                           {/* Bonus */}
-                          <div className="flex flex-col gap-1 col-span-2 sm:col-span-1 sm:flex-1 sm:min-w-20">
+                          <div className="col-span-2 flex min-w-0 flex-col gap-0.5 sm:col-span-1">
                             <Controller
                               name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.bonus`}
                               control={form.control}
                               render={({ field, fieldState }) => (
                                 <Field
                                   data-invalid={fieldState.invalid}
-                                  orientation="vertical">
+                                  orientation="vertical"
+                                  className="gap-0.5">
                                   <label
                                     htmlFor={`spell-healing-bonus-${selectedSpellIndex}`}
-                                    className="text-xs font-medium">
+                                    className="text-xs font-medium leading-tight">
                                     {tEdit("bonus")}
                                   </label>
                                   <Input

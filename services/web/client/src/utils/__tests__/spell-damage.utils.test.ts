@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 import {
   coerceSpellDamageDetailsList,
+  ensureSpellDamageEditRows,
   formatSpellDamageList,
   hydrateSpellDamageDetails,
 } from "@/utils/spell-damage.utils";
@@ -42,6 +43,18 @@ describe("FR-character-spell-multi-damage — spell damage helpers", () => {
         damageType: "lightning",
       },
     ]);
+  });
+
+  it("edge: edit mode keeps one blank row when there is no damage", () => {
+    expect(ensureSpellDamageEditRows([])).toEqual([
+      { diceCount: null, diceType: null, bonus: null, damageType: null },
+    ]);
+    expect(ensureSpellDamageEditRows(undefined)).toEqual([
+      { diceCount: null, diceType: null, bonus: null, damageType: null },
+    ]);
+    expect(
+      ensureSpellDamageEditRows([{ diceCount: 3, diceType: "d8", bonus: 0, damageType: "fire" }]),
+    ).toEqual([{ diceCount: 3, diceType: "d8", bonus: 0, damageType: "fire" }]);
   });
 
   it("edge: incomplete extra rows stay hidden while remaining filled entries stay visible", () => {
