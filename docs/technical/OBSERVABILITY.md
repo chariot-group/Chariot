@@ -226,7 +226,6 @@ Gateway : **pas** de préfixe `chariot_` sur les default metrics (`nodejs_*`) ni
 - `http_requests_total{method,route,status}`
 - `http_request_duration_seconds{method,route}`
 - `gateway_proxy_errors_total{backend,error_type}`
-- `gateway_rate_limit_exceeded_total{route}`
 
 ### Adventure
 

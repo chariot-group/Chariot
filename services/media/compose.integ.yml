@@ -35,8 +35,6 @@ services:
       - "traefik.docker.network=traefik-public"
 
   chariot-media:
-    ports:
-      - "9005:9005"
     image: ghcr.io/chariot-group/chariot-media-integration:latest
     container_name: chariot-media-integ
     restart: unless-stopped
