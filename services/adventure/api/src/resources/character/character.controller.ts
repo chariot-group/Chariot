@@ -170,11 +170,13 @@ export class CharacterController {
           'You can only view your own characters without an active session context',
         );
       }
+      const rosterView = minimal as unknown as {
+        kind?: string;
+        linkedPlayerId?: unknown;
+      };
+      const rawLinked = rosterView.linkedPlayerId;
       const linkedPlayerId =
-        (minimal as { kind?: string; linkedPlayerId?: unknown }).kind === 'npc' &&
-        (minimal as { linkedPlayerId?: unknown }).linkedPlayerId
-          ? String((minimal as { linkedPlayerId: unknown }).linkedPlayerId)
-          : undefined;
+        rosterView.kind === 'npc' && rawLinked ? String(rawLinked) : undefined;
       await this.sessionAccessService.assertRosterRead(
         req.headers.authorization,
         code,
