@@ -4,6 +4,7 @@ import { spellClassApiValue } from '@/constants/spellClasses';
 import { spellSchoolApiValue } from '@/constants/spellSchools';
 import { Spell, NPC, Action, ActionUsageType } from '@/types/character';
 import { resolveCodexSpellSchoolLabel } from '@/utils/codexSpellSchool.utils';
+import { hydrateSpellDamageDetails } from '@/utils/spell-damage.utils';
 import { reportClientIssue } from "@/logger/reportClientIssue";
 
 export interface CodexSpellTranslation {
@@ -503,6 +504,7 @@ class CodexService {
                                 (typeof t.effectType === 'number' ? effectTypeMap[t.effectType] : t.effectType) ||
                                 ('utility' as const),
                             damage: t.damage ?? undefined,
+                            damageDetails: hydrateSpellDamageDetails(undefined, t.damage),
                             healing: undefined as string | undefined,
                         };
                     }
@@ -524,6 +526,7 @@ class CodexService {
                     range: flat.range || '',
                     effectType: flat.effectType || 'utility' as const,
                     damage: flat.damage,
+                    damageDetails: hydrateSpellDamageDetails(flat.damageDetails, flat.damage),
                     usesPerDay: flat?.usesPerDay ?? null,
                     used: 0,
                     healing: flat.healing,
@@ -660,6 +663,7 @@ class CodexService {
             classes: codexSpellItem.classes,
             effectType: effectTypeMap[translation.effectType] || 'utility',
             damage: translation.damage || undefined,
+            damageDetails: hydrateSpellDamageDetails(undefined, translation.damage),
         };
     }
 

@@ -390,6 +390,15 @@
         "hours": "{amount} h",
         "rounds": "{amount, plural, one {# tour} other {# tours}}"
       },
+      "customEffectCreate": "Créer un effet personnalisé",
+      "customEffectCreateFromSearch": "Créer « {name} »",
+      "customEffectName": "Nom de l'effet",
+      "customEffectNamePlaceholder": "Ex. Béni, Hex, Enflammé",
+      "customEffectDescription": "Description (optionnel)",
+      "customEffectDescriptionPlaceholder": "Rappel pour la table",
+      "customEffectAddConfirm": "Ajouter l'effet",
+      "customEffectNameRequired": "Le nom est obligatoire.",
+      "customEffectSection": "Effets personnalisés",
       "statusLabels": {
         "alive": "{name} est en vie",
         "unconscious": "{name} est inconscient",
@@ -785,7 +794,8 @@
     "abilityCounterOrder": "L'utilisation actuelle ne peut pas dépasser le plafond.",
     "classLevelTotalsVsGlobalHitDice": "Le total des niveaux de classe ({total}) dépasse le niveau global ({global}). Corrigez les niveaux de classe ou le niveau global — l’erreur est indiquée sur les dés restants.",
     "singleDamageType": "Un seul type de dégâts est autorisé par ligne de dégâts.",
-    "uniqueActionDamageType": "Chaque type de dégâts doit être unique dans une même action."
+    "uniqueActionDamageType": "Chaque type de dégâts doit être unique dans une même action.",
+    "uniqueSpellDamageType": "Chaque type de dégâts doit être unique dans un même sort."
   },
   "characterDetail": {
     "editCharacter": "Modifier le personnage",
@@ -951,6 +961,9 @@
       "damageDiceTypePlaceholder": "d6",
       "healingDiceCountPlaceholder": "4",
       "healingDiceTypePlaceholder": "d8",
+      "spellDamageEntry": "Dégât {index}",
+      "addDamageToSpell": "Ajouter une ligne de dégâts à ce sort",
+      "removeSpellDamage": "Supprimer la ligne de dégâts {index}",
       "slotsUsed": "Utilisés",
       "slotsTotal": "Total",
       "copperPieces": "Pièces de Cuivre",

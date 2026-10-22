@@ -22,6 +22,12 @@ import {
     normalizePendingConcentrationCheck,
     normalizeTrackerConcentration,
 } from '@/components/initiativeTracker/concentration.utils';
+import {
+    normalizeCustomEffectCatalog,
+    normalizeCustomEffectEntries,
+    type InitiativeTrackerCustomEffectEntry,
+    type TrackerCustomEffectDefinition,
+} from '@/components/initiativeTracker/customEffects';
 
 /** FR-tracker-concentration — sort actif suivi sur la ligne tracker (non persisté fiche). */
 export interface TrackerConcentration {
@@ -226,6 +232,8 @@ export interface InitiativeTrackerRow {
     tempHitPoints: number;
     armorClass: number;
     conditions: InitiativeTrackerConditionEntry[];
+    /** FR-tracker-custom-effects — instances d'effets custom appliquées à la ligne. */
+    customEffects?: InitiativeTrackerCustomEffectEntry[];
     groupId: string;
     groupLabel: string;
     visible: boolean;
@@ -286,6 +294,7 @@ export function createInitiativeTrackerRow(input: {
         tempHitPoints: input.tempHitPoints ?? 0,
         armorClass: input.armorClass,
         conditions: [],
+        customEffects: [],
         concentration: null,
         pendingConcentrationCheck: null,
         groupId: input.groupId,
@@ -336,6 +345,8 @@ export interface CurrentSessionState {
     gmGuestCharacterIds: string[];
     /** FR-session-lobby-modal — contrôle l'ouverture de la modale lobby session (non persisté). */
     sessionLobbyOpen: boolean;
+    /** FR-tracker-custom-effects — catalogue d'effets custom réutilisable pendant la session. */
+    customEffectCatalog: TrackerCustomEffectDefinition[];
 }
 
 const initialState: CurrentSessionState = {
@@ -358,6 +369,7 @@ const initialState: CurrentSessionState = {
     participantDisplayNames: {},
     gmGuestCharacterIds: [],
     sessionLobbyOpen: false,
+    customEffectCatalog: [],
 };
 
 const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow => {
@@ -370,6 +382,7 @@ const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow =>
         initiativeModifier: Number.isFinite(row.initiativeModifier) ? Number(row.initiativeModifier) : 0,
         concentration: normalizeTrackerConcentration(row.concentration),
         pendingConcentrationCheck: normalizePendingConcentrationCheck(row.pendingConcentrationCheck),
+        customEffects: normalizeCustomEffectEntries(row.customEffects),
         playerDisplayName: rawAlias.length > 0 ? rawAlias : gmName,
         playerFieldVisibility: normalizePlayerFieldVisibility(
             row.playerFieldVisibility,
@@ -469,12 +482,14 @@ const markActiveTurnWithActions = (state: CurrentSessionState) => {
 const tickAllInitiativeTrackerConditions = (state: CurrentSessionState, deltaSeconds: number) => {
     for (const row of state.initiativeTrackerRows) {
         row.conditions = tickConditionEntries(row.conditions ?? [], deltaSeconds);
+        row.customEffects = tickConditionEntries(row.customEffects ?? [], deltaSeconds);
     }
 };
 
 const clearUntilCombatEndConditions = (state: CurrentSessionState) => {
     for (const row of state.initiativeTrackerRows) {
         row.conditions = removeUntilCombatEndConditions(row.conditions ?? []);
+        row.customEffects = removeUntilCombatEndConditions(row.customEffects ?? []);
     }
 };
 
@@ -548,6 +563,9 @@ const sessionSlice = createSlice({
     initialState,
     reducers: {
         setCurrentSession: (state, action: PayloadAction<{ code: string; campaignId: string }>) => {
+            if (state.code !== action.payload.code) {
+                state.customEffectCatalog = [];
+            }
             state.code = action.payload.code;
             state.campaignId = action.payload.campaignId;
             state.isInSession = true;
@@ -568,6 +586,7 @@ const sessionSlice = createSlice({
             state.lastConsultedSheetPath = null;
             state.participantDisplayNames = {};
             state.gmGuestCharacterIds = [];
+            state.customEffectCatalog = [];
         },
         setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
             state.status = action.payload;
@@ -838,6 +857,10 @@ const sessionSlice = createSlice({
         closeSessionLobby: (state) => {
             state.sessionLobbyOpen = false;
         },
+        /** FR-tracker-custom-effects — remplace le catalogue session d'effets custom. */
+        setCustomEffectCatalog: (state, action: PayloadAction<TrackerCustomEffectDefinition[]>) => {
+            state.customEffectCatalog = normalizeCustomEffectCatalog(action.payload);
+        },
     },
 });
 
@@ -872,6 +895,7 @@ export const {
     removeGmGuestCharacterFromSession,
     openSessionLobby,
     closeSessionLobby,
+    setCustomEffectCatalog,
 } = sessionSlice.actions;
 
 export const selectCurrentSession = (state: RootState) => state.session;
@@ -909,6 +933,7 @@ export const selectLastConsultedSheetPath = (state: RootState) =>
     state.session.lastConsultedSheetPath ?? null;
 
 export const selectSessionLobbyOpen = (state: RootState) => state.session.sessionLobbyOpen ?? false;
+export const selectCustomEffectCatalog = (state: RootState) => state.session.customEffectCatalog ?? [];
 
 const selectInitiativeTrackerRowsState = (state: RootState) => state.session.initiativeTrackerRows;
 const selectBattleInitializedState = (state: RootState) => state.session.battleInitialized;

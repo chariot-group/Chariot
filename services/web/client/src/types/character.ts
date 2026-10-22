@@ -187,7 +187,7 @@ export interface Spell {
     effectType: 'attack' | 'heal' | 'utility';
     damage?: string;
     healing?: string;
-    damageDetails?: DamageDetails;
+    damageDetails?: DamageDetails[];
     healingDetails?: HealingDetails;
     /** NPC only — number of times this spell can be cast per day (undefined = at will) */
     usesPerDay?: number | null;

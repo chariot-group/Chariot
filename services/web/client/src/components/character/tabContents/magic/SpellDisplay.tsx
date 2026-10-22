@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Spell } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { formatDamageFormula } from "@/utils/spell-damage.utils";
+import { formatSpellDamageList } from "@/utils/spell-damage.utils";
 import { formatSignedBonus } from "@/utils/attack.utils";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
@@ -156,14 +156,7 @@ export default function SpellDisplay({
           </Card>
         )}
         {(() => {
-          const damageFormula = spell.damageDetails
-            ? formatDamageFormula(
-                spell.damageDetails.diceCount,
-                spell.damageDetails.diceType,
-                spell.damageDetails.bonus,
-                spell.damageDetails.damageType,
-              )
-            : spell.damage || null;
+          const damageFormula = formatSpellDamageList(spell.damageDetails, spell.damage);
 
           return damageFormula ? (
             <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">
