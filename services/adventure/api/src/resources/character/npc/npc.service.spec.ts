@@ -712,7 +712,9 @@ describe('NpcService - FR-npc-player-link', () => {
       userId,
     );
 
-    expect(characterModel.findById).toHaveBeenCalledWith(playerId.toHexString());
+    expect(characterModel.findById).toHaveBeenCalledWith(
+      playerId.toHexString(),
+    );
     expect(result.data.linkedPlayerId.toString()).toBe(playerId.toHexString());
   });
 

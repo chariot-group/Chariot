@@ -13,12 +13,20 @@ function mongooseProviderTokens(moduleClass: ModuleClass): string[] {
   const tokens: string[] = [];
 
   for (const imported of imports) {
-    if (!imported || typeof imported !== 'object' || !('providers' in imported)) {
+    if (
+      !imported ||
+      typeof imported !== 'object' ||
+      !('providers' in imported)
+    ) {
       continue;
     }
     const providers = (imported as { providers?: unknown[] }).providers ?? [];
     for (const provider of providers) {
-      if (!provider || typeof provider !== 'object' || !('provide' in provider)) {
+      if (
+        !provider ||
+        typeof provider !== 'object' ||
+        !('provide' in provider)
+      ) {
         continue;
       }
       const token = (provider as { provide?: unknown }).provide;

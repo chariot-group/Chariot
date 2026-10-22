@@ -321,7 +321,10 @@ describe('MediaAccessService', () => {
           AUTH_HEADER,
           'CODE01',
         ),
-      ).resolves.toMatchObject({ kind: 'npc', linkedPlayerId: '507f1f77bcf86cd799439011' });
+      ).resolves.toMatchObject({
+        kind: 'npc',
+        linkedPlayerId: '507f1f77bcf86cd799439011',
+      });
     });
 
     it('should throw ForbiddenException for NPC without sessionCode and non-owner', async () => {

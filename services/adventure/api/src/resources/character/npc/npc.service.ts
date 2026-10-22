@@ -63,7 +63,11 @@ export class NpcService {
     linkedPlayerId: string | null | undefined,
     userId: string,
   ): Promise<void> {
-    if (linkedPlayerId === undefined || linkedPlayerId === null || linkedPlayerId === '') {
+    if (
+      linkedPlayerId === undefined ||
+      linkedPlayerId === null ||
+      linkedPlayerId === ''
+    ) {
       return;
     }
 
@@ -98,7 +102,12 @@ export class NpcService {
     page?: number;
     offset?: number;
     sort?: string;
-  }): { page: number; offset: number; skip: number; sort: { [key: string]: SortOrder } } {
+  }): {
+    page: number;
+    offset: number;
+    skip: number;
+    sort: { [key: string]: SortOrder };
+  } {
     const page = query.page ?? 1;
     const offset = query.offset ?? 10;
     let sort: { [key: string]: SortOrder } = { updatedAt: 'asc' };

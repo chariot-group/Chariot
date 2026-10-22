@@ -62,18 +62,24 @@ export class SessionAccessService {
       );
     }
 
-    const idsKey = playerIds.map((id) => id.trim()).filter(Boolean).sort().join(',');
+    const idsKey = playerIds
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .sort()
+      .join(',');
     const key = `${authHeader}\0${sessionCode.trim()}\0companion-lookup\0${idsKey}`;
     const pending = this.inflight.get(key);
     if (pending) {
       return pending;
     }
 
-    const run = this.executeCompanionLookup(authHeader, sessionCode, playerIds).finally(
-      () => {
-        this.inflight.delete(key);
-      },
-    );
+    const run = this.executeCompanionLookup(
+      authHeader,
+      sessionCode,
+      playerIds,
+    ).finally(() => {
+      this.inflight.delete(key);
+    });
     this.inflight.set(key, run);
     return run;
   }
@@ -146,7 +152,9 @@ export class SessionAccessService {
         body: JSON.stringify({
           characterId,
           mode,
-          ...(linkedPlayerId?.trim() ? { linkedPlayerId: linkedPlayerId.trim() } : {}),
+          ...(linkedPlayerId?.trim()
+            ? { linkedPlayerId: linkedPlayerId.trim() }
+            : {}),
         }),
       });
 
