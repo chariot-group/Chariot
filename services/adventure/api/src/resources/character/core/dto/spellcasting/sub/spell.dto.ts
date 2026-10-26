@@ -1,10 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import {
   DamageDetailsDto,
   HealingDetailsDto,
 } from '@/resources/character/core/dto/spellcasting/sub/damage-details.dto';
+import { wrapSpellDamageDetails } from '@/resources/character/core/utils/spell-damage-details.util';
 
 export class SpellDto {
   @ApiProperty({ example: 'Fireball' })
@@ -60,10 +68,19 @@ export class SpellDto {
   @IsString()
   damage?: string;
 
-  @ApiProperty({ type: () => DamageDetailsDto })
+  @ApiProperty({
+    type: [DamageDetailsDto],
+    example: [
+      { diceCount: 8, diceType: 'd6', bonus: 0, damageType: 'fire' },
+      { diceCount: 1, diceType: 'd8', bonus: 0, damageType: 'radiant' },
+    ],
+  })
   @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => DamageDetailsDto)
-  damageDetails?: DamageDetailsDto;
+  @Transform(({ value }) => wrapSpellDamageDetails(value))
+  damageDetails?: DamageDetailsDto[];
 
   @ApiProperty({ example: '4d8' })
   @IsOptional()

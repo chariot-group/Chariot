@@ -334,6 +334,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     tempHitPoints: 3,
     armorClass: 17,
     conditions: [{ condition: "poisoned" }],
+    customEffects: [{ effectId: "fx-1", name: "Béni", description: "Avantage" }],
     groupId: "g1",
     groupLabel: "Hidden lair",
     visible: true,
@@ -365,6 +366,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     expect(sanitized.deathSavesFailures).toBe(0);
     expect(sanitized.armorClass).toBe(0);
     expect(sanitized.conditions).toEqual([]);
+    expect(sanitized.customEffects).toEqual([]);
     expect(sanitized.concentration).toBeNull();
     expect(sanitized.pendingConcentrationCheck).toBeNull();
     expect(sanitized.groupLabel).toBe("");
@@ -389,6 +391,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     expect(sanitized.initiative).toBe(18);
     expect(sanitized.hitPoints).toBe(44);
     expect(sanitized.conditions).toHaveLength(1);
+    expect(sanitized.customEffects).toEqual([{ effectId: "fx-1", name: "Béni", description: "Avantage" }]);
     expect(sanitized.concentration?.spellName).toBe("Bless");
     expect(sanitized.groupLabel).toBe("Hidden lair");
   });

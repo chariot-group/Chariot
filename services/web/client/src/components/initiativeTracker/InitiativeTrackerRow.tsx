@@ -14,7 +14,7 @@ import type {
   InitiativeTrackerConditionEntry,
   InitiativeTrackerRow as InitiativeTrackerRowType,
 } from "@/store/slices/sessionSlice";
-import { ConditionSelect } from "@/components/initiativeTracker/ConditionSelect";
+import { ConditionSelect, type ConditionSelectCustomEffectsProps } from "@/components/initiativeTracker/ConditionSelect";
 import { HiddenFieldPlaceholder } from "@/components/initiativeTracker/HiddenFieldPlaceholder";
 import {
   InitiativeTrackerVisibilityDialog,
@@ -26,7 +26,7 @@ import {
   TRACKER_GRID_TEMPLATE_COLUMNS,
 } from "@/components/initiativeTracker/constants";
 import type { RowStatusAnimation } from "@/hooks/useStatusChangedRows";
-import { CONDITION_META } from "@/components/initiativeTracker/conditionMeta";
+import { CONDITION_META, CUSTOM_EFFECT_META } from "@/components/initiativeTracker/conditionMeta";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import {
   characterName,
@@ -79,6 +79,7 @@ type InitiativeTrackerRowProps = {
   ) => void;
   onRemoveCondition?: (row: InitiativeTrackerRowType, condition: ActiveInitiativeTrackerCondition) => void;
   onClearConditions?: (row: InitiativeTrackerRowType) => void;
+  customEffects?: ConditionSelectCustomEffectsProps;
   onHitPointsClick?: (row: InitiativeTrackerRowType) => void;
   onRemoveFromInitiative?: (rowId: string) => void;
   battleStarted?: boolean;
@@ -139,7 +140,9 @@ type InitiativeTrackerRowProps = {
     };
     getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => string;
     getConditionDescription: (condition: ActiveInitiativeTrackerCondition) => string;
-    formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => string | null;
+    formatConditionEntryDuration: (
+      entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">,
+    ) => string | null;
     getConditionDurationUnits: () => { value: InitiativeTrackerConditionDurationUnit; label: string }[];
     getStatusLabel: (status: InitiativeTrackerRowStatus) => string;
   };
@@ -168,6 +171,7 @@ export function InitiativeTrackerRow({
   onAddCondition,
   onRemoveCondition,
   onClearConditions,
+  customEffects,
   onHitPointsClick,
   onRemoveFromInitiative,
   battleStarted = false,
@@ -435,11 +439,12 @@ export function InitiativeTrackerRow({
   const groupContent = renderGroupContent();
 
   const rowConditions = React.useMemo(() => row.conditions ?? [], [row.conditions]);
+  const rowCustomEffects = React.useMemo(() => row.customEffects ?? [], [row.customEffects]);
   const activeConcentration =
     battleStarted && showConcentration && row.concentration ? row.concentration : null;
   const activePendingConcentrationCheck =
     battleStarted && showConcentration && activeConcentration ? row.pendingConcentrationCheck ?? null : null;
-  const totalStateCount = rowConditions.length + (activeConcentration ? 1 : 0);
+  const totalStateCount = rowConditions.length + rowCustomEffects.length + (activeConcentration ? 1 : 0);
 
   const formatConcentrationDetail = React.useCallback(
     (concentration: TrackerConcentration) => {
@@ -497,9 +502,10 @@ export function InitiativeTrackerRow({
     }
     if (showConditions) {
       parts.push(...rowConditions.map((entry) => labels.getConditionLabel(entry.condition)));
+      parts.push(...rowCustomEffects.map((entry) => entry.name));
     }
     return parts;
-  }, [activeConcentration, formatConcentrationDetail, labels, rowConditions, showConditions]);
+  }, [activeConcentration, formatConcentrationDetail, labels, rowConditions, rowCustomEffects, showConditions]);
 
   const conditionContent =
     showConditions || activeConcentration
@@ -662,6 +668,25 @@ export function InitiativeTrackerRow({
               );
             })
           : null}
+        {showConditions
+          ? rowCustomEffects.map((entry) => {
+              const { Icon, badgeClassName } = CUSTOM_EFFECT_META;
+              const durationLabel = labels.formatConditionEntryDuration(entry);
+              const badgeText = durationLabel ? `${entry.name} (${durationLabel})` : entry.name;
+              return (
+                <span
+                  key={entry.effectId}
+                  className={cn(
+                    "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium",
+                    badgeClassName,
+                  )}
+                  title={badgeText}>
+                  <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+                  <span className="min-w-0 truncate">{badgeText}</span>
+                </span>
+              );
+            })
+          : null}
       </div>
     );
   };
@@ -713,6 +738,7 @@ export function InitiativeTrackerRow({
             onRemoveCondition={onRemoveCondition}
             onClearConditions={onClearConditions}
             concentration={concentrationSelectProps}
+            customEffects={customEffects}
           />
         ) : (
           <div className="flex min-w-0 items-center gap-2">
