@@ -10,10 +10,18 @@
     "load:dev:report": "mkdir -p reports && artillery run chariot-all-services.yml --environment dev --output reports/dev.json",
     "load:stress:report": "mkdir -p reports && artillery run chariot-all-services.yml --environment stress --output reports/stress.json",
     "report:html": "node generate-html-report.cjs",
-    "load:report": "npm run load:dev:report"
+    "load:report": "npm run load:dev:report",
+    "capacity:provision": "node scripts/provision-run.mjs",
+    "capacity:sync-sessions": "node scripts/sync-table-sessions.mjs",
+    "capacity:teardown": "node scripts/teardown-run.mjs",
+    "capacity:smoke": "node scripts/smoke-capacity.mjs",
+    "capacity:run": "node scripts/run-capacity-artillery.mjs",
+    "test:scripts": "node --test scripts/lib/manifest.test.mjs"
   },
   "devDependencies": {
+    "@keycloak/keycloak-admin-client": "^26.8.0",
     "artillery": "^2.0.21",
-    "artillery-engine-socketio-v3": "^1.2.0"
+    "artillery-engine-socketio-v3": "^1.2.0",
+    "mongodb": "^6.20.0"
   }
 }
