@@ -20,6 +20,9 @@ config:
   # ne soit pas rapportée comme ERR_SOCKET_TIMEOUT.
   http:
     timeout: 30
+    defaults:
+      headers:
+        accept-encoding: "gzip, deflate, br"
   plugins:
     expect: {}
   environments:
