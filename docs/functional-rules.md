@@ -4413,3 +4413,47 @@ Each initiative tracker row carries:
 - `services/admin/client/src/components/kpi/PeriodControls.tsx`
 - `services/admin/client/src/app/page.tsx`
 - `docs/functional-rules.md` — FR-admin-business-kpis, FR-frontend-design
+
+---
+
+## FR-load-test-capacity: Automated Capacity Discovery
+
+**Rule**: Capacity tests MUST find, without manual palier babysitting, the last healthy mix of concurrent tables and out-of-session users on integ, and MUST report the numbers needed to choose a normal operating point.
+
+**Requirements**:
+
+- Target MUST be integ only (never prod). Provisioned accounts MUST be isolated by `runId` and fully torn down after the run unless `--keep` is requested.
+- One command MUST provision a pool, step through paliers, classify each palier green/red, write a summary, then teardown.
+- Each palier MUST hold two populations at once when the experiment requires it:
+  - **In session**: 1 GM + N PJs per table, WebSocket joined, light poll (`GET /api/user/me`) with jitter
+  - **Out of session**: authenticated users who create and update campaigns and player characters over HTTP and MUST NOT join a session
+- Out-of-session users MUST create at least one campaign and one player, then keep modifying them during the hold (PATCH campagne / PATCH PJ). Read-only browsing is not sufficient.
+- Table size MUST follow a declared profile (`many-small` = 2 PJs, `few-large` = 8 PJs, `mixed-realistic` = 3–8 PJs fixed in the manifest). The summary MUST include PJ-per-table (min / median / max / mean) at the palier retained as max.
+- Discovery MUST produce at least these three results:
+  1. **Table ceiling**: last green palier of tables with 0 out-of-session users
+  2. **Idle-with-tables ceiling**: last green palier of out-of-session users while holding a declared table load (default: 50 % of the table ceiling)
+  3. **Normal mix**: last green palier of a declared template (tables × PJs/table × idle-per-table), then a recommended operating point at 70 % of that palier (rounded down, at least 1 table if the palier was green)
+- A palier is **red** if any of these holds for the whole hold window (not a single spike of a few seconds): p95 of `GET /api/user/me` > 1 s, p95 of campaign or player write > 1 s, HTTP 5xx > 1 %, WebSocket connect/`session:joined` failures > 1 %, VU failure rate > 1 %. Otherwise it is **green**.
+- The summary MUST include, for every palier and for the three results above: tables, users in session, users out of session, PJ/table stats, p95 `/api/user/me`, p95 writes, 5xx rate, WS failure rate, VU failed/completed, verdict green/red.
+- HTTP latency of processor calls MUST be recorded as test metrics (Artillery JSON alone is not sufficient).
+
+**Prohibitions**:
+
+- Running discovery against production
+- Counting short-lived single-account stress scenarios as a player/table ceiling
+- Treating out-of-session load as read-only (`GET` only)
+- Requiring an operator to choose the next `--tables N` by hand between paliers
+- Reporting a max without the PJ/table distribution of that palier
+- Leaving `loadtest-{runId}-*` Keycloak users or campaigns behind after a finished run (unless `--keep`)
+
+**Tests**:
+
+- Nominal: a dry-run classifier marks a palier green when p95 < 1 s, 5xx = 0, WS fail = 0, VU failed = 0, and the summary lists table ceiling, idle-with-tables ceiling, and recommended normal mix
+- Edge: mixed-realistic manifest reports min/median/max PJ per table; idle users never emit `session:join`
+- Failure: a palier with p95 `/api/user/me` > 1 s or write p95 > 1 s is red; discovery stops increasing that axis and keeps the previous green palier as ceiling
+
+**References**:
+
+- `tools/load-test/CAPACITY.md`
+- `tools/load-test/scripts/`
+- `docs/functional-rules.md` — FR-session-websocket-lifecycle
