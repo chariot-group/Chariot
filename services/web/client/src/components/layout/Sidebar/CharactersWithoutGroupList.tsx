@@ -172,6 +172,13 @@ export default function CharactersWithoutGroupList() {
     void persistNpcLink(npcPendingLink, player._id);
   };
 
+  const unlinkNpcLabel = (npc: Character): string => {
+    const linkedPlayerId = isPlayer(npc) ? null : linkedPlayerIdOf(npc as NPC);
+    const linkedPlayer = linkedPlayerId ? characters.find((c) => c._id === linkedPlayerId) : undefined;
+    const linkedPlayerName = linkedPlayer ? characterDisplayName(linkedPlayer) : "";
+    return linkedPlayerName ? t("unlinkNpcFrom", { name: linkedPlayerName }) : t("unlinkNpc");
+  };
+
   const buildCharacterActions = (character: Character): SidebarActionItem[] => {
     const npcPdfExportDisabled = !isPlayer(character);
     const actionMap: Record<string, SidebarActionItem> = {
@@ -192,7 +199,7 @@ export default function CharactersWithoutGroupList() {
       },
       unlink: {
         id: "unlink",
-        label: t("unlinkNpc"),
+        label: unlinkNpcLabel(character),
         onSelect: () => {
           void persistNpcLink(character as NPC, null);
         },
