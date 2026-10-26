@@ -14,6 +14,7 @@ import {
     normalizePendingConcentrationCheck,
     normalizeTrackerConcentration,
 } from '@/components/initiativeTracker/concentration.utils';
+import { normalizeCustomEffectCatalog, normalizeCustomEffectEntries } from '@/components/initiativeTracker/customEffects';
 import { defaultPlayerDisplayNameForRow } from '@/components/initiativeTracker/utils';
 import sessionReducer, {
     normalizeInitiativeTrackerConditionEntry,
@@ -181,6 +182,7 @@ const sessionTransform = createTransform(
                     .map((entry) => normalizeInitiativeTrackerConditionEntry(entry))
                     .filter((entry): entry is NonNullable<typeof entry> => entry != null)
                     .map((entry) => ensureConditionEntryRemainingSeconds(entry)),
+                customEffects: normalizeCustomEffectEntries(row.customEffects),
                 concentration: normalizeTrackerConcentration(row.concentration),
                 pendingConcentrationCheck: normalizePendingConcentrationCheck(row.pendingConcentrationCheck),
             };
@@ -199,6 +201,7 @@ const sessionTransform = createTransform(
         gmGuestCharacterIds: outbound?.gmGuestCharacterIds ?? [],
         sessionCompanionNpcs: [],
         sessionLobbyOpen: false,
+        customEffectCatalog: normalizeCustomEffectCatalog(outbound?.customEffectCatalog),
     }),
     { whitelist: ['session'] },
 );

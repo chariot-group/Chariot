@@ -8,8 +8,9 @@ import {
   HealingDetails,
   HealingDetailsSchema,
 } from '@/resources/character/core/schemas/spellcasting/sub/damage-details.schema';
+import { wrapSpellDamageDetails } from '@/resources/character/core/utils/spell-damage-details.util';
 
-@Schema({ _id: false })
+@Schema({ _id: false, toJSON: { getters: true }, toObject: { getters: true } })
 export class Spell {
   @ApiProperty({ example: 'Fireball' })
   @Prop()
@@ -54,9 +55,14 @@ export class Spell {
   @Prop()
   damage?: string;
 
-  @ApiProperty({ type: () => DamageDetails })
-  @Prop({ type: DamageDetailsSchema })
-  damageDetails?: DamageDetails;
+  @ApiProperty({ type: [DamageDetails] })
+  @Prop({
+    type: [DamageDetailsSchema],
+    default: [],
+    get: wrapSpellDamageDetails,
+    set: wrapSpellDamageDetails,
+  })
+  damageDetails?: DamageDetails[];
 
   @ApiProperty({ example: '4d8' })
   @Prop()
