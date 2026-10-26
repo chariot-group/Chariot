@@ -5,29 +5,26 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { loadDotEnv } from "./lib/env.mjs";
 import { assertIntegTarget } from "./lib/guard.mjs";
-import { readManifest } from "./lib/manifest.mjs";
+import { readManifest, sessionUserCount } from "./lib/manifest.mjs";
 import { gatewayUrl } from "./lib/env.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 loadDotEnv();
 
-function parseArgs(argv) {
-  const args = { holdSeconds: 150, report: false };
+export function parseArgs(argv) {
+  const args = { holdSeconds: 150, report: false, idle: 0 };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--run-id") args.runId = argv[++i];
     else if (a === "--tables") args.tables = Number(argv[++i]);
+    else if (a === "--idle") args.idle = Number(argv[++i]);
     else if (a === "--hold-seconds") args.holdSeconds = Number(argv[++i]);
     else if (a === "--report") args.report = true;
+    else if (a === "--output") args.output = argv[++i];
     else if (a === "--help" || a === "-h") args.help = true;
   }
   return args;
-}
-
-function usersForTableLimit(manifest, tableLimit) {
-  const slice = manifest.tables.slice(0, tableLimit);
-  return slice.reduce((n, t) => n + 1 + t.players.length, 0);
 }
 
 function writeGeneratedConfig({ userCount, rampSeconds, holdSeconds }) {
@@ -46,81 +43,72 @@ config:
     expect: {}
   variables:
     gatewayUrl: "${gw}"
-    sessionWsUrl: "${process.env.SESSION_WS_URL || "https://integ.session.chariot.tools"}"
+    sessionWsUrl: "${process.env.SESSION_WS_URL || "https://integ-session.chariot.tools"}"
     holdSeconds: ${holdSeconds}
-    pollSeconds: 20
   phases:
     - name: ramp
       duration: ${rampSeconds}
       arrivalRate: 1
       maxVusers: ${userCount}
-    - name: hold
-      duration: ${holdSeconds}
-      arrivalRate: 0
-      maxVusers: ${userCount}
 scenarios:
-  - name: Table — join WS, /api/user/me, leave
+  - name: Capacity — table WS ou idle write
     flow:
       - function: "syncEnvVars"
       - function: "assignCapacityAccount"
-      - function: "capacityHeldTableSession"
+      - function: "runAssignedRole"
 `;
   fs.writeFileSync(outPath, content, "utf8");
   return outPath;
 }
 
-function main() {
-  const args = parseArgs(process.argv);
-  if (args.help || !args.runId || !args.tables) {
-    console.log(`Usage:
-  node scripts/run-capacity-artillery.mjs --run-id <id> --tables <N> [--hold-seconds 150] [--report]
-
-  --tables N   utilise les N premières tables du manifest (palier).
-  --report     écrit reports/capacity-<runId>-t<N>.json
-`);
-    process.exit(args.help ? 0 : 1);
-  }
-
+export function runCapacityPalier({
+  runId,
+  tables,
+  idle = 0,
+  holdSeconds = 150,
+  report = true,
+  output,
+}) {
   assertIntegTarget("capacity-artillery");
-  const manifest = readManifest(args.runId);
-  if (args.tables < 1 || args.tables > manifest.tables.length) {
+  const manifest = readManifest(runId);
+  if (tables < 1 || tables > manifest.tables.length) {
     throw new Error(`--tables doit être entre 1 et ${manifest.tables.length}`);
   }
+  const idleAvailable = manifest.idleUsers?.length ?? 0;
+  if (idle < 0 || idle > idleAvailable) {
+    throw new Error(`--idle doit être entre 0 et ${idleAvailable}`);
+  }
 
-  for (const table of manifest.tables.slice(0, args.tables)) {
+  for (const table of manifest.tables.slice(0, tables)) {
     if (!table.sessionCode) {
       throw new Error(
-        `Table ${table.index} sans sessionCode. npm run capacity:sync-sessions -- --run-id ${args.runId}`,
+        `Table ${table.index} sans sessionCode. npm run capacity:sync-sessions -- --run-id ${runId}`,
       );
     }
   }
 
-  const userCount = usersForTableLimit(manifest, args.tables);
-  const rampSeconds = userCount;
-  const holdSeconds = args.holdSeconds;
+  const userCount = sessionUserCount(manifest, tables) + idle;
+  const rampSeconds = Math.max(1, userCount);
   const wallSeconds = rampSeconds + holdSeconds;
-
-  const configPath = writeGeneratedConfig({
-    userCount,
-    rampSeconds,
-    holdSeconds,
-  });
+  const configPath = writeGeneratedConfig({ userCount, rampSeconds, holdSeconds });
 
   console.log(
-    `Capacité runId=${args.runId} profile=${manifest.profile} tables=${args.tables} users=${userCount} ramp=${rampSeconds}s hold=${holdSeconds}s (total ~${wallSeconds}s)`,
+    `Capacité runId=${runId} profile=${manifest.profile} tables=${tables} idle=${idle} users=${userCount} ramp=${rampSeconds}s hold=${holdSeconds}s (total ~${wallSeconds}s)`,
   );
 
   const env = {
     ...process.env,
-    LOAD_TEST_RUN_ID: args.runId,
-    LOAD_TEST_TABLE_LIMIT: String(args.tables),
+    LOAD_TEST_RUN_ID: runId,
+    LOAD_TEST_TABLE_LIMIT: String(tables),
+    LOAD_TEST_IDLE_LIMIT: String(idle),
     LOAD_TEST_HOLD_SECONDS: String(holdSeconds),
   };
 
-  const reportPath = path.join(root, "reports", `capacity-${args.runId}-t${args.tables}.json`);
-  // Artillery 2 : un seul worker local par défaut (--count 1). Pas de flag --workers.
+  const reportPath =
+    output ||
+    path.join(root, "reports", `capacity-${runId}-t${tables}-i${idle}.json`);
   const artilleryArgs = ["run", configPath];
-  if (args.report) {
+  if (report) {
     fs.mkdirSync(path.join(root, "reports"), { recursive: true });
     artilleryArgs.push("--output", reportPath);
   }
@@ -131,11 +119,46 @@ function main() {
     stdio: "inherit",
   });
 
-  if (args.report) {
+  if (report) {
     console.log(`Rapport : ${reportPath}`);
   }
 
-  process.exit(result.status ?? 1);
+  return {
+    status: result.status ?? 1,
+    reportPath: report ? reportPath : null,
+    userCount,
+    rampSeconds,
+    holdSeconds,
+  };
 }
 
-main();
+function main() {
+  const args = parseArgs(process.argv);
+  if (args.help || !args.runId || !args.tables) {
+    console.log(`Usage:
+  node scripts/run-capacity-artillery.mjs --run-id <id> --tables <N> [--idle N] [--hold-seconds 150] [--report]
+
+  --tables N   N premières tables du manifest (palier).
+  --idle N     N premiers users hors session (écriture campagnes/PJ).
+  --report     écrit reports/capacity-<runId>-t<N>-i<M>.json
+`);
+    process.exit(args.help ? 0 : 1);
+  }
+
+  const result = runCapacityPalier({
+    runId: args.runId,
+    tables: args.tables,
+    idle: args.idle || 0,
+    holdSeconds: args.holdSeconds,
+    report: args.report,
+    output: args.output,
+  });
+  process.exit(result.status);
+}
+
+const invokedDirectly =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (invokedDirectly) {
+  main();
+}

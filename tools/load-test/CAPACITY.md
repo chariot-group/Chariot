@@ -1,6 +1,12 @@
-# Tests de capacité (tables parallèles)
+# Tests de capacité (tables + users hors session)
 
-Mesure le nombre de **tables simultanées** (MJ + PJs connectés), distinct du stress `chariot-all-services.yml`.
+Mesure, **sans palier manuel**, le nombre de tables simultanées et d’users hors session que l’integ tient. Distinct du stress `chariot-all-services.yml`.
+
+**Livrable** (`FR-load-test-capacity`) :
+
+1. **Plafond tables** — dernier palier vert, 0 user hors session, avec min / médiane / max / moyenne de PJ par table
+2. **Plafond hors session** — max d’users qui **créent et modifient** campagnes + PJ, pendant ~50 % du plafond tables
+3. **Mix recommandé** — 70 % du dernier mix vert (N tables + N × idle-per-table hors session)
 
 ## Prérequis
 
@@ -8,52 +14,47 @@ Mesure le nombre de **tables simultanées** (MJ + PJs connectés), distinct du s
 2. `npm install` dans `tools/load-test`.
 3. Optionnel : `ADVENTURE_MONGODB_URI` pour purge Mongo au teardown.
 
-## Profils
-
-| Profil | PJs / table |
-| --- | --- |
-| `many-small` | 2 (min) |
-| `few-large` | 8 (max) |
-| `mixed-realistic` | 3–8 (tirage à la provision, fixé dans le manifest) |
-
-## Commandes
+## Commande principale
 
 ```bash
 cd tools/load-test
 
-npm run capacity:provision -- --run-id 2026-10-26-a --profile mixed-realistic --tables 40
+npm run capacity:discover -- --profile mixed-realistic --max-tables 40 --max-idle 80 --idle-per-table 2
+```
+
+Provision → sync sessions → paliers géométriques puis dichotomie → résumé Markdown/JSON → teardown.
+
+| Option | Défaut | Rôle |
+| --- | --- | --- |
+| `--run-id` | `cap-<timestamp>` | Réutilise un manifest s’il existe déjà |
+| `--profile` | `mixed-realistic` | `many-small` (2 PJ), `few-large` (8), `mixed-realistic` (3–8) |
+| `--max-tables` | 40 | Taille du pool de tables |
+| `--max-idle` | 80 | Pool d’users hors session (écriture) |
+| `--idle-per-table` | 2 | Template du mix « normal » |
+| `--hold-seconds` | 150 | Maintien d’un palier |
+| `--keep` | off | Ne pas teardown à la fin |
+
+Résumé : `reports/capacity-summary-<runId>.md` (et `.json`).
+
+Palier **rouge** si, sur la fenêtre de maintien : p95 `GET /api/user/me` > 1 s, p95 write campagne/PJ > 1 s, 5xx > 1 %, échecs WS > 1 %, VU failed > 1 %.
+
+**Users hors session** : `POST`/`PATCH` campagnes et PJ (pas seulement de la lecture), jamais `session:join`.
+
+Durée typique : plusieurs dizaines de minutes (provision + ~6–12 paliers). Tu peux laisser tourner.
+
+Le maintien (`--hold-seconds`) est **dans le scénario** (WS + writes). Artillery 2 ignore `arrivalRate: 0`, donc il n’y a qu’une phase de montée ; les VU restent le temps du hold.
+
+## Paliers manuels (optionnel)
+
+```bash
+npm run capacity:provision -- --run-id 2026-10-26-a --profile mixed-realistic --tables 40 --idle 80
 npm run capacity:sync-sessions -- --run-id 2026-10-26-a
-
-trap 'npm run capacity:teardown -- --run-id 2026-10-26-a' EXIT
-
-# Palier : N premières tables du manifest (ex. 10 tables many-small = 30 users)
-npm run capacity:run -- --run-id 2026-10-26-a --tables 10 --report
-
+npm run capacity:run -- --run-id 2026-10-26-a --tables 10 --idle 20 --report
 npm run capacity:teardown -- --run-id 2026-10-26-a
 ```
 
-### Paliers suggérés
-
-| Profil | `--tables` (exemples) | Users approx. |
-| --- | --- | --- |
-| `many-small` (2 PJs) | 10 → 25 → 50 → 100 | 30 → 75 → 150 → 300 |
-| `few-large` (8 PJs) | 5 → 10 → 20 → 30 | 45 → 90 → 180 → 270 |
-| `mixed-realistic` | viser 100 → 200 → 300 **users** (calculer N avec le manifest) | Σ (1 + PJs) sur les N premières tables |
-
-Chaque palier : phase **ramp** (1 user/s, `maxVusers` = total du palier), puis phase **hold** (`arrivalRate: 0`, pas de VU supplémentaires). Durée maintien : **150 s** par défaut (`--hold-seconds`). Un seul worker Artillery en local (`--count` vaut 1 par défaut) pour l’assignation 1:1 aux comptes du manifest.
-
-Critères « panique » : p95 `/api/user/me` > 1 s, 5xx > 1 %, échecs WS > 1 % (latence HTTP à enrichir côté processor si besoin).
-
-Smoke (1 table, 2 PJs, provision → sync → teardown) :
+Smoke (1 table, 1 idle, palier 20 s) :
 
 ```bash
 npm run capacity:smoke
 ```
-
-## Manifest
-
-`manifests/manifest-{runId}.json` — comptes, `campaignId`, `sessionCode`, mot de passe du run. **Ne pas committer.**
-
-## Teardown
-
-Leave → close session → DELETE campagne → Mongo (si URI) → suppression utilisateurs Keycloak `loadtest-{runId}-*`.

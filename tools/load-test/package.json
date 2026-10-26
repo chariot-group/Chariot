@@ -16,7 +16,8 @@
     "capacity:teardown": "node scripts/teardown-run.mjs",
     "capacity:smoke": "node scripts/smoke-capacity.mjs",
     "capacity:run": "node scripts/run-capacity-artillery.mjs",
-    "test:scripts": "node --test scripts/lib/manifest.test.mjs"
+    "capacity:discover": "node scripts/discover-capacity.mjs",
+    "test:scripts": "node --test scripts/lib/*.test.mjs"
   },
   "devDependencies": {
     "@keycloak/keycloak-admin-client": "^26.8.0",

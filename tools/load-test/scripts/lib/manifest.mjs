@@ -29,9 +29,13 @@ export function playersCountForTable(profile, tableIndex, rng = Math.random) {
   return 3 + Math.floor(rng() * 6);
 }
 
+export function shouldJoinSession(role) {
+  return role === "gm" || role === "player";
+}
+
 export function listAccounts(manifest) {
   const accounts = [];
-  for (const table of manifest.tables) {
+  for (const table of manifest.tables ?? []) {
     accounts.push({ ...table.gm, role: "gm", tableIndex: table.index, sessionCode: table.sessionCode });
     for (const player of table.players) {
       accounts.push({
@@ -42,9 +46,18 @@ export function listAccounts(manifest) {
       });
     }
   }
+  for (const idle of manifest.idleUsers ?? []) {
+    accounts.push({ ...idle, role: "idle" });
+  }
   return accounts;
 }
 
+export function sessionUserCount(manifest, tableLimit) {
+  const slice = (manifest.tables ?? []).slice(0, tableLimit);
+  return slice.reduce((n, t) => n + 1 + (t.players?.length ?? 0), 0);
+}
+
 export function totalUsers(manifest) {
-  return manifest.tables.reduce((sum, t) => sum + 1 + t.players.length, 0);
+  const session = (manifest.tables ?? []).reduce((sum, t) => sum + 1 + t.players.length, 0);
+  return session + (manifest.idleUsers?.length ?? 0);
 }

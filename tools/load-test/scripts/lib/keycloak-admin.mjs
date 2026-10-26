@@ -29,26 +29,44 @@ async function authenticate(client) {
   });
 }
 
+let sharedAdmin = null;
+let sharedAdminAt = 0;
+
+async function getAdminClient() {
+  const client = sharedAdmin ?? createAdminClient();
+  if (!sharedAdmin || Date.now() - sharedAdminAt > 40_000) {
+    await authenticate(client);
+    sharedAdminAt = Date.now();
+    sharedAdmin = client;
+  }
+  return client;
+}
+
 /**
  * @param {object} params
  * @param {string} params.runId
- * @param {number} params.tableIndex
- * @param {'gm'|'player'} params.role
+ * @param {number} [params.tableIndex]
+ * @param {'gm'|'player'|'idle'} params.role
  * @param {number} [params.playerIndex]
+ * @param {number} [params.idleIndex]
  */
 export async function createLoadTestUser({
   runId,
   tableIndex,
   role,
   playerIndex,
+  idleIndex,
   password,
 }) {
-  const client = createAdminClient();
-  await authenticate(client);
+  const client = await getAdminClient();
   const realm = process.env.KEYCLOAK_REALM || "chariot";
 
   const suffix =
-    role === "gm" ? `t${tableIndex}-gm` : `t${tableIndex}-p${playerIndex}`;
+    role === "idle"
+      ? `idle${idleIndex}`
+      : role === "gm"
+        ? `t${tableIndex}-gm`
+        : `t${tableIndex}-p${playerIndex}`;
   const username = `loadtest-${runId}-${suffix}`;
   const email = `${username}@loadtest.chariot.invalid`;
 
@@ -57,12 +75,12 @@ export async function createLoadTestUser({
     username,
     email,
     firstName: "LoadTest",
-    lastName: role === "gm" ? "GM" : `P${playerIndex}`,
+    lastName: role === "idle" ? `Idle${idleIndex}` : role === "gm" ? "GM" : `P${playerIndex}`,
     enabled: true,
     emailVerified: true,
     attributes: {
       loadTestRunId: [runId],
-      loadTestTableIndex: [String(tableIndex)],
+      loadTestTableIndex: [role === "idle" ? "idle" : String(tableIndex)],
       loadTestRole: [role],
     },
     credentials: [{ type: "password", value: password, temporary: false }],
@@ -77,8 +95,7 @@ export async function createLoadTestUser({
 }
 
 export async function deleteLoadTestUsersForRun(runId) {
-  const client = createAdminClient();
-  await authenticate(client);
+  const client = await getAdminClient();
   const realm = process.env.KEYCLOAK_REALM || "chariot";
   const prefix = `loadtest-${runId}-`;
 

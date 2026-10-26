@@ -75,13 +75,51 @@ function httpRequest(options, body) {
 
 function buildKeycloakOidcBase(context) {
   const base = stripTrailingSlash(process.env.KEYCLOAK_URL || context.vars.keycloakUrl || "");
-  const prefix = stripTrailingSlash(process.env.KEYCLOAK_AUTH_PREFIX || context.vars.keycloakAuthPrefix || "");
+  const prefix = stripTrailingSlash(
+    process.env.KEYCLOAK_AUTH_PREFIX || context.vars.keycloakAuthPrefix || "",
+  );
   const realm = process.env.KEYCLOAK_REALM || context.vars.keycloakRealm || "chariot";
   return `${base}${prefix}/realms/${realm}`;
 }
 
 function gatewayUrl(context) {
   return stripTrailingSlash(process.env.GATEWAY_URL || context.vars.gatewayUrl || "");
+}
+
+function gatewayRequestOptions(context, method, pathname, accessToken, bodyStr) {
+  const url = new URL(`${gatewayUrl(context)}${pathname}`);
+  return {
+    protocol: url.protocol,
+    hostname: url.hostname,
+    port: url.port,
+    path: `${url.pathname}${url.search}`,
+    method,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...(bodyStr
+        ? {
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(bodyStr),
+          }
+        : {}),
+    },
+  };
+}
+
+async function timedRequest(events, metricName, options, body) {
+  const started = Date.now();
+  const result = await httpRequest(options, body);
+  const ms = Date.now() - started;
+  if (events) {
+    events.emit("histogram", metricName, ms);
+    events.emit("counter", "capacity.http_total", 1);
+    if (result.status >= 500) events.emit("counter", "capacity.http_5xx", 1);
+  }
+  return result;
+}
+
+function resourceId(json) {
+  return json?.data?.id ?? json?.data?._id ?? null;
 }
 
 function manifestPathForRun(runId) {
@@ -114,6 +152,16 @@ function tableLimit() {
   return manifest.tables.length;
 }
 
+function idleLimit() {
+  const manifest = loadManifest();
+  const idleUsers = manifest.idleUsers ?? [];
+  const fromEnv = Number(process.env.LOAD_TEST_IDLE_LIMIT);
+  if (Number.isFinite(fromEnv) && fromEnv >= 0) {
+    return Math.min(fromEnv, idleUsers.length);
+  }
+  return idleUsers.length;
+}
+
 function flattenAccounts() {
   const manifest = loadManifest();
   const limit = tableLimit();
@@ -140,6 +188,13 @@ function flattenAccounts() {
         keycloakId: player.keycloakId,
       });
     }
+  }
+  for (const idle of (manifest.idleUsers ?? []).slice(0, idleLimit())) {
+    accounts.push({
+      role: "idle",
+      username: idle.username,
+      keycloakId: idle.keycloakId,
+    });
   }
   return { accounts, password: manifest.password, runId: manifest.runId };
 }
@@ -201,7 +256,7 @@ function fetchAccessTokenForUser(context, username, password) {
 
 function sessionWsBaseUrl(context) {
   return stripTrailingSlash(
-    process.env.SESSION_WS_URL || context.vars.sessionWsUrl || "https://integ.session.chariot.tools",
+    process.env.SESSION_WS_URL || context.vars.sessionWsUrl || "https://integ-session.chariot.tools",
   );
 }
 
@@ -236,18 +291,109 @@ function onceSocketEvent(socket, event, timeoutMs = 28000) {
   });
 }
 
-async function getUserMe(context, accessToken) {
-  const url = new URL(`${gatewayUrl(context)}/api/user/me`);
-  const { status, json } = await httpRequest({
-    protocol: url.protocol,
-    hostname: url.hostname,
-    port: url.port,
-    path: `${url.pathname}${url.search}`,
-    method: "GET",
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+function jitterMs() {
+  return (15 + Math.random() * 10) * 1000;
+}
+
+async function getUserMe(context, accessToken, events) {
+  const { status, json } = await timedRequest(
+    events,
+    "capacity.user_me",
+    gatewayRequestOptions(context, "GET", "/api/user/me", accessToken),
+  );
   if (status !== 200) {
     throw new Error(`GET /api/user/me HTTP ${status}: ${JSON.stringify(json)}`);
+  }
+}
+
+function minimalPlayerPayload(firstname) {
+  return {
+    firstname,
+    groups: [],
+    stats: { senses: [], size: "Medium" },
+    affinities: { resistances: [], immunities: [], vulnerabilities: [] },
+    abilities: [],
+    actions: [],
+    spellcasting: [],
+    inspiration: false,
+    progression: { level: 1, experience: 0 },
+    class: [],
+    appearance: {},
+    background: {},
+    treasure: {},
+    profile: { race: "", subrace: "", alignment: "True Neutral" },
+  };
+}
+
+async function createCampaign(context, accessToken, events, runId) {
+  const body = JSON.stringify({
+    label: `Idle ${runId}`.slice(0, 50),
+    groups: { active: [], archived: [] },
+  });
+  const { status, json } = await timedRequest(
+    events,
+    "capacity.campaign_write",
+    gatewayRequestOptions(context, "POST", "/api/campaigns", accessToken, body),
+    body,
+  );
+  if (status !== 201 && status !== 200) {
+    throw new Error(`POST /api/campaigns HTTP ${status}: ${JSON.stringify(json)}`);
+  }
+  const id = resourceId(json);
+  if (!id) throw new Error(`POST /api/campaigns sans id: ${JSON.stringify(json)}`);
+  return String(id);
+}
+
+async function patchCampaign(context, accessToken, events, campaignId, runId, tick) {
+  const body = JSON.stringify({ label: `Idle ${runId} ${tick}`.slice(0, 50) });
+  const { status, json } = await timedRequest(
+    events,
+    "capacity.campaign_write",
+    gatewayRequestOptions(context, "PATCH", `/api/campaigns/${campaignId}`, accessToken, body),
+    body,
+  );
+  if (status !== 200) {
+    throw new Error(`PATCH /api/campaigns/${campaignId} HTTP ${status}: ${JSON.stringify(json)}`);
+  }
+}
+
+async function createPlayer(context, accessToken, events, firstname) {
+  const body = JSON.stringify(minimalPlayerPayload(firstname));
+  const { status, json } = await timedRequest(
+    events,
+    "capacity.player_write",
+    gatewayRequestOptions(context, "POST", "/api/characters/players", accessToken, body),
+    body,
+  );
+  if (status !== 201 && status !== 200) {
+    throw new Error(`POST /api/characters/players HTTP ${status}: ${JSON.stringify(json)}`);
+  }
+  const id = resourceId(json);
+  if (!id) throw new Error(`POST /api/characters/players sans id: ${JSON.stringify(json)}`);
+  return String(id);
+}
+
+async function patchPlayer(context, accessToken, events, playerId, firstname) {
+  const body = JSON.stringify({ firstname });
+  const { status, json } = await timedRequest(
+    events,
+    "capacity.player_write",
+    gatewayRequestOptions(context, "PATCH", `/api/characters/players/${playerId}`, accessToken, body),
+    body,
+  );
+  if (status !== 200) {
+    throw new Error(`PATCH /api/characters/players/${playerId} HTTP ${status}: ${JSON.stringify(json)}`);
+  }
+}
+
+async function listCampaigns(context, accessToken, events) {
+  const { status, json } = await timedRequest(
+    events,
+    "capacity.campaign_list",
+    gatewayRequestOptions(context, "GET", "/api/campaigns?offset=20", accessToken),
+  );
+  if (status !== 200) {
+    throw new Error(`GET /api/campaigns HTTP ${status}: ${JSON.stringify(json)}`);
   }
 }
 
@@ -285,7 +431,7 @@ async function ensureCapacityAccessToken(context) {
   context.vars.accessToken = await fetchAccessTokenForUser(context, username, password);
 }
 
-async function capacityHeldTableSession(context) {
+async function capacityHeldTableSession(context, events) {
   let socket;
   try {
     mergeEnvIntoContext(context);
@@ -293,18 +439,23 @@ async function capacityHeldTableSession(context) {
     const accessToken = context.vars.accessToken;
     const sessionCode = context.vars.sessionCode;
     const holdSeconds = Number(context.vars.holdSeconds || process.env.LOAD_TEST_HOLD_SECONDS || 150);
-    const pollSeconds = Number(context.vars.pollSeconds || 20);
 
-    socket = await openSessionSocket(accessToken, context);
-    socket.emit("session:join", { sessionId: sessionCode, characterId: null });
-    await onceSocketEvent(socket, "session:joined");
+    try {
+      socket = await openSessionSocket(accessToken, context);
+      socket.emit("session:join", { sessionId: sessionCode, characterId: null });
+      await onceSocketEvent(socket, "session:joined");
+      events?.emit("counter", "capacity.ws_join_ok", 1);
+    } catch (err) {
+      events?.emit("counter", "capacity.ws_join_fail", 1);
+      throw err;
+    }
 
     const endAt = Date.now() + holdSeconds * 1000;
     while (Date.now() < endAt) {
-      await getUserMe(context, accessToken);
+      await getUserMe(context, accessToken, events);
       const remaining = endAt - Date.now();
       if (remaining <= 0) break;
-      await new Promise((r) => setTimeout(r, Math.min(pollSeconds * 1000, remaining)));
+      await new Promise((r) => setTimeout(r, Math.min(jitterMs(), remaining)));
     }
 
     socket.emit("session:leave", { sessionId: sessionCode });
@@ -314,9 +465,55 @@ async function capacityHeldTableSession(context) {
   }
 }
 
+async function capacityIdleWriteSession(context, events) {
+  mergeEnvIntoContext(context);
+  await ensureCapacityAccessToken(context);
+  const accessToken = context.vars.accessToken;
+  const holdSeconds = Number(context.vars.holdSeconds || process.env.LOAD_TEST_HOLD_SECONDS || 150);
+  const runId = loadManifest().runId;
+  let campaignId = null;
+  let playerId = null;
+  let extraPlayerCreated = false;
+  let tick = 0;
+  const endAt = Date.now() + holdSeconds * 1000;
+
+  while (Date.now() < endAt) {
+    await getUserMe(context, accessToken, events);
+    if (!campaignId) {
+      campaignId = await createCampaign(context, accessToken, events, runId);
+    } else {
+      await patchCampaign(context, accessToken, events, campaignId, runId, tick);
+    }
+    if (!playerId) {
+      playerId = await createPlayer(context, accessToken, events, `Idle-${tick}`);
+    } else if (!extraPlayerCreated && tick >= 1) {
+      await createPlayer(context, accessToken, events, "Idle-extra");
+      extraPlayerCreated = true;
+    } else {
+      await patchPlayer(context, accessToken, events, playerId, `Idle-${tick}`);
+    }
+    await listCampaigns(context, accessToken, events);
+    tick += 1;
+    const remaining = endAt - Date.now();
+    if (remaining <= 0) break;
+    await new Promise((r) => setTimeout(r, Math.min(jitterMs(), remaining)));
+  }
+}
+
+async function runAssignedRole(context, events) {
+  const role = context.vars.capacityAccount?.role;
+  if (role === "idle") {
+    await capacityIdleWriteSession(context, events);
+    return;
+  }
+  await capacityHeldTableSession(context, events);
+}
+
 module.exports = {
   syncEnvVars,
   assignCapacityAccount,
   ensureCapacityAccessToken,
   capacityHeldTableSession,
+  capacityIdleWriteSession,
+  runAssignedRole,
 };

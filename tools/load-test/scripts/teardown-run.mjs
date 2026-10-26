@@ -90,7 +90,28 @@ async function main() {
     }
   }
 
-  const mongoStats = await cleanupAdventureMongo(keycloakIds);
+  for (const idle of manifest.idleUsers ?? []) {
+    try {
+      const token = await requestPasswordGrant(idle.username, password);
+      const { json } = await gatewayJson("GET", "/api/campaigns?offset=50", token);
+      const campaigns = Array.isArray(json?.data) ? json.data : [];
+      for (const campaign of campaigns) {
+        const id = campaign.id ?? campaign._id;
+        if (!id) continue;
+        const delStatus = await deleteCampaign(token, id);
+        console.log(`  delete idle campaign ${id}: HTTP ${delStatus}`);
+      }
+    } catch (err) {
+      console.warn(`  idle ${idle.username}: ${err.message}`);
+    }
+  }
+
+  let mongoStats = { skipped: true };
+  try {
+    mongoStats = await cleanupAdventureMongo(keycloakIds);
+  } catch (err) {
+    console.warn(`Mongo cleanup: ${err.message}`);
+  }
   if (!mongoStats.skipped) {
     console.log(
       `Mongo: users=${mongoStats.users} campaigns=${mongoStats.campaigns} characters=${mongoStats.characters}`,
