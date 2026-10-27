@@ -35,7 +35,13 @@ import {
   createPortaledFilterOpenTracker,
   shouldPreventDialogDismissForPortaledFilter,
 } from "@/lib/portaledFilterOpenTracker";
-import { resolveCodexCreateSelection, type CodexCreateSelection } from "@/lib/codexCharacterCreate";
+import {
+  resolveCodexCreateSelection,
+  parseCodexSelectionKey,
+  resolvePreselectionLang,
+  type CodexCreateSelection,
+  type CodexPreselection,
+} from "@/lib/codexCharacterCreate";
 import React from "react";
 
 type CodexEntityTypeFilter = "both" | "monsters" | "players";
@@ -53,6 +59,12 @@ interface MonsterCodexDialogProps {
   embedded?: boolean;
   /** Locks entity search to monsters or players and hides the entity-type filter. */
   lockedEntityTypeFilter?: "monsters" | "players";
+  /** Entry to load and preview on open (share link). @see FR-codex-share-link-preselection */
+  initialSelection?: CodexPreselection | null;
+  /** Fired when the previewed entry changes (null when none), e.g. to mirror it in the URL. */
+  onPreviewedEntryChange?: (entry: { kind: "player" | "monster"; id: string; lang: string | null } | null) => void;
+  /** The link carried a Codex ID but its params were invalid: show the fallback error. */
+  initialSelectionInvalid?: boolean;
   /** Shared portaled filter tracker when embedded in a parent dialog. */
   sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
 }
@@ -87,7 +99,7 @@ function MonsterResultItem({
   selectedLang: string | null;
   pinnedLang?: string | null;
   isSelected: boolean;
-  onMonsterClick: (monster: CodexMonsterItem, lang: string) => void | Promise<void>;
+  onMonsterClick: (monster: CodexMonsterItem, lang: string) => unknown;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
 }) {
   const tCommon = useTranslations("common");
@@ -171,7 +183,7 @@ function PlayerResultItem({
   selectedLang: string | null;
   pinnedLang?: string | null;
   isSelected: boolean;
-  onPlayerClick: (player: CodexPlayerItem, lang: string) => void | Promise<void>;
+  onPlayerClick: (player: CodexPlayerItem, lang: string) => unknown;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
   tClasses: (key: string) => string;
 }) {
@@ -235,6 +247,9 @@ export default function MonsterCodexDialog({
   browseOnly = false,
   embedded = false,
   lockedEntityTypeFilter,
+  initialSelection,
+  initialSelectionInvalid = false,
+  onPreviewedEntryChange,
   sharedPortaledFilterOpenTracker,
 }: MonsterCodexDialogProps) {
   const router = useRouter();
@@ -265,7 +280,10 @@ export default function MonsterCodexDialog({
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [previewLangResolving, setPreviewLangResolving] = useState(false);
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
+  const [preselectionError, setPreselectionError] = useState(false);
   const isLoadingRef = useRef(false);
+  const validateButtonRef = useRef<HTMLButtonElement>(null);
+  const focusValidateOnSelectRef = useRef(false);
   const internalPortaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
   const portaledFilterOpenTracker =
     sharedPortaledFilterOpenTracker ?? internalPortaledFilterOpenTrackerRef.current;
@@ -405,6 +423,7 @@ export default function MonsterCodexDialog({
       setPreviewLangResolving(false);
       setPreviewTranslationError(null);
       setError(null);
+      setPreselectionError(initialSelectionInvalid);
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
@@ -427,7 +446,7 @@ export default function MonsterCodexDialog({
     codexMonsterItem: CodexMonsterItem,
     lang: string,
     options?: { fromPreviewLangBar?: boolean },
-  ) => {
+  ): Promise<boolean> => {
     const fromPreview = options?.fromPreviewLangBar ?? false;
     const prevKey = selectedItemKey;
     let currentLangForSameId: string | undefined;
@@ -474,13 +493,13 @@ export default function MonsterCodexDialog({
         }
         if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
         const populated = await CodexService.populateMonstersList([item]);
         item = populated[0];
         if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
       } finally {
         setPreviewLangResolving(false);
@@ -495,8 +514,10 @@ export default function MonsterCodexDialog({
       setSelectedMonster(convertedMonster);
       setSelectedItemKey(`monster:${item._id}:${lang}`);
       setShowMobileDetails(true);
+      return true;
     } catch {
       setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+      return false;
     }
   };
 
@@ -504,7 +525,7 @@ export default function MonsterCodexDialog({
     codexPlayerItem: CodexPlayerItem,
     lang: string,
     options?: { fromPreviewLangBar?: boolean },
-  ) => {
+  ): Promise<boolean> => {
     const fromPreview = options?.fromPreviewLangBar ?? false;
     const prevKey = selectedItemKey;
     let currentLangForSameId: string | undefined;
@@ -551,13 +572,13 @@ export default function MonsterCodexDialog({
         }
         if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
         const populated = await CodexService.populatePlayersList([item]);
         item = populated[0];
         if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
       } finally {
         setPreviewLangResolving(false);
@@ -572,8 +593,10 @@ export default function MonsterCodexDialog({
       setSelectedMonster(convertedMonster);
       setSelectedItemKey(`player:${item._id}:${lang}`);
       setShowMobileDetails(true);
+      return true;
     } catch {
       setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+      return false;
     }
   };
 
@@ -596,6 +619,75 @@ export default function MonsterCodexDialog({
 
     setPreviewLangStack((s) => s.slice(0, -1));
   };
+
+  const preselectionKind = initialSelection?.kind;
+  const preselectionId = initialSelection?.id;
+  const preselectionLang = initialSelection?.lang ?? null;
+
+  useEffect(() => {
+    if (!open || !preselectionKind || !preselectionId) return;
+    let cancelled = false;
+
+    const applyPreselection = async () => {
+      const fetchLang = preselectionLang ?? userLocale;
+      const item =
+        preselectionKind === "player"
+          ? await CodexService.getPlayerById(preselectionId, fetchLang)
+          : await CodexService.getMonsterById(preselectionId, fetchLang);
+      if (cancelled) return;
+
+      const lang = item
+        ? resolvePreselectionLang({
+            requested: preselectionLang,
+            userLocale,
+            available: item.languages ?? [],
+          })
+        : null;
+      if (!item || !lang) {
+        setPreselectionError(true);
+        return;
+      }
+
+      setSelectedLang(lang);
+      focusValidateOnSelectRef.current = true;
+      const selected =
+        preselectionKind === "player"
+          ? await handlePlayerClick(item as CodexPlayerItem, lang)
+          : await handleMonsterClick(item as CodexMonsterItem, lang);
+      if (cancelled) return;
+      if (!selected) {
+        focusValidateOnSelectRef.current = false;
+        setPreselectionError(true);
+      }
+    };
+
+    void applyPreselection();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, preselectionKind, preselectionId, preselectionLang]);
+
+  const lastEmittedEntryKeyRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!onPreviewedEntryChange) return;
+    // Skip the initial « nothing selected » so a deep link isn't reset before it loads.
+    if (lastEmittedEntryKeyRef.current === undefined && selectedItemKey === null) {
+      lastEmittedEntryKeyRef.current = null;
+      return;
+    }
+    if (lastEmittedEntryKeyRef.current === selectedItemKey) return;
+    lastEmittedEntryKeyRef.current = selectedItemKey;
+    onPreviewedEntryChange(parseCodexSelectionKey(selectedItemKey));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItemKey]);
+
+  useEffect(() => {
+    if (selectedItemKey && focusValidateOnSelectRef.current) {
+      focusValidateOnSelectRef.current = false;
+      validateButtonRef.current?.focus();
+    }
+  }, [selectedItemKey]);
 
   const handleValidate = () => {
     const previewLang =
@@ -777,6 +869,14 @@ export default function MonsterCodexDialog({
                 </Select>
               </div>
             </div>
+
+            {preselectionError ? (
+              <p
+                role="alert"
+                className="shrink-0 rounded-md border border-red-500/60 px-3 py-2 text-sm text-red-500">
+                {tDialog("preselectionError")}
+              </p>
+            ) : null}
 
             <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
               {isSearching ? (
@@ -973,6 +1073,7 @@ export default function MonsterCodexDialog({
           </Button>
           {!browseOnly ? (
             <Button
+              ref={validateButtonRef}
               type="button"
               onClick={handleValidate}
               disabled={!selectedMonster}

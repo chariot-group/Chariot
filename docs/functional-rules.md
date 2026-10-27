@@ -5019,3 +5019,84 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/__tests__/sessionEndNavigation.test.ts`
 - `services/web/client/src/services/__tests__/NavigationService.destinations.test.ts`
 - `docs/functional-rules.md` — FR-post-auth-navigation, FR-session-websocket-lifecycle, FR-session-lobby-navigation, FR-user-cache-isolation
+
+---
+
+## FR-codex-share-link-preselection: Codex Share Link with Preselected Character
+
+**Rule**: In Player space, a direct link (or any QR code encoding it, produced outside the application) MUST open the community library (Codex) create flow with one premade character already selected and previewed, so the user only has to confirm « Utiliser ce personnage » to continue to the create form. The application MUST NOT create the character automatically.
+
+**Link format**:
+
+`/{locale}/characters/new/codex/{codexId}?kind=player|monster&lang=fr|en|es`
+
+- `codexId` (path param) identifies the Codex entry.
+- `kind` (query, **required**) is `player` (premade player → Player draft) or `monster` (monster → NPC draft). It selects the Codex endpoint (`/players/:id` or `/monsters/:id`) because IDs are not type-discriminated.
+- `lang` (query, optional) is the preview language. Resolution: link `lang` if supported by the entry, else the user's UI locale, else `en`.
+
+**Scope**:
+
+- Complements FR-player-space-codex-character-creation and FR-codex-npc-search-entity-type (kind-preserving drafts; no kind transformation) without changing their semantics.
+- **Player space only.** There is no campaign-group variant: a group link is only meaningful for users who already have access to that group, so sharing it has no value. Existing route `/characters/new/codex` (free search) is unchanged.
+- The application does not generate or display QR codes for this feature.
+
+**URL mirroring (shareable by construction)**:
+
+- In the Player-space Codex create flow, whenever the user previews an entry (list click or preview-language change), the browser URL MUST be updated in place (`history.replaceState`, no navigation, no new history entry) to the link format above for that entry, so it can be copied and shared as is.
+- When no entry is previewed any more, the URL MUST return to `/{locale}/characters/new/codex`.
+- Mirroring MUST NOT apply to the campaign-group flow, nor to the « create linked » flow (`linkedPlayerId`), whose links are not shareable.
+- URL changes made by mirroring MUST NOT re-trigger the preselection loading.
+
+**Behavior**:
+
+- On open, the Codex dialog MUST load the entry by ID and `kind`, hydrate its translation for the resolved `lang` (same logic as a manual row click), show the preview, and enable the confirm action.
+- The entity-type filter MUST be locked to the link `kind`.
+- Confirming MUST follow the existing flow: store the kind-preserving draft, then continue to `/characters/new/players?fromCodex=1` or `/characters/new/npcs?fromCodex=1`. Created characters MUST have empty `groups`.
+- Closing the dialog without confirming MUST clear drafts (FR-player-space-codex-character-creation).
+- If `kind` is missing/invalid, `codexId` has an invalid format, the entry is not found, or Codex is unavailable (`useCodexHealth`), the dialog MUST fall back to the normal Codex search and show an accessible error message (`role="alert"`, i18n). It MUST NOT crash or leave an empty preview.
+- The preselection MUST be applied once per opening and MUST NOT be overwritten by the dialog's reset-on-open logic.
+
+**Authentication (SSO)**:
+
+- If the user is not authenticated when opening the link, the application MUST redirect to SSO and, after login, return to the **original link including path and query** (Keycloak `login-required` returns to the current URL), instead of `/{locale}/welcome`.
+- The post-login automatic redirect (FR-post-auth-navigation, `shouldRedirectAfterLogin`) MUST NOT fire on `/characters/...` paths, so it never replaces the link.
+- The application MUST NOT introduce a custom `redirectUri` built from a query value (no open redirect).
+- The return URL MUST be allowed by the SSO client configuration (valid redirect URIs).
+
+**Accessibility (FR-frontend-design)**:
+
+- The error message MUST be announced to assistive technologies (`role="alert"`).
+- Once the preselection is loaded, focus MUST land on a meaningful control (confirm action or preview), with visible focus.
+- Loading state MUST be perceivable (not color-only).
+- All new copy MUST be i18n (fr, en, es).
+
+**Prohibitions**:
+
+- Creating the character without the user's explicit confirmation.
+- Transforming a Codex player into an NPC or a monster into a Player.
+- Campaign-group variant of this link.
+- A custom post-login redirect target taken from the link's query string.
+- Putting personal data in the link.
+- Hardcoded labels bypassing i18n.
+
+**Tests**:
+
+- Nominal: valid `kind=player` link preselects and previews the entry; confirm yields a Player draft with empty `groups`.
+- Nominal: valid `kind=monster` link yields an NPC draft.
+- Nominal: previewing an entry yields its shareable path; the link round-trips through the parser.
+- Edge: no previewed entry restores the base path.
+- Edge: `lang` absent/unsupported falls back to user locale then `en`.
+- Edge: filter is locked to the link `kind`; reset-on-open does not clear the preselection.
+- Edge: the post-login redirect guard does not fire on the share link path.
+- Failure: unknown `codexId`, invalid/missing `kind`, or Codex unavailable → normal search plus `role="alert"` message.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/characters/new/codex/[codexId]/page.tsx` (new)
+- `services/web/client/src/components/character/CreateCharacterFromCodexView.tsx`
+- `services/web/client/src/components/character/MonsterCodexDialog.tsx`
+- `services/web/client/src/lib/codexCharacterCreate.ts`
+- `services/web/client/src/services/CodexService.ts`
+- `services/web/client/src/providers/KeycloakProvider.tsx`
+- `docs/functional-rules.md` — FR-player-space-codex-character-creation, FR-codex-npc-search-entity-type, FR-post-auth-navigation, FR-frontend-design
+- `docs/design.md`
