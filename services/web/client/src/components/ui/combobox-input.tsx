@@ -167,7 +167,7 @@ export function ComboboxInput({
             id={suggestionsListId}
             role="listbox"
             style={dropdownStyle}
-            className="z-100 bg-gray-middle-light rounded-[15px] border shadow-md overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+            className="z-100 bg-popover rounded-[15px] border border-frame shadow-md overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
             <div className="p-1">
               {allOptions.map((option, index) => {
                 const isCustom = index === 0 && isCustomEntry;

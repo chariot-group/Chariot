@@ -187,7 +187,7 @@ export function TagInput({
             ref={suggestionsRef}
             id={`${id}-suggestions`}
             role="listbox"
-            className="absolute z-50 w-full mt-1 bg-gray-middle-light rounded-[15px] border shadow-md max-h-60 overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+            className="absolute z-50 w-full mt-1 bg-popover rounded-[15px] border border-frame shadow-md max-h-60 overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
             <div className="p-1">
               {allOptions.map((option, index) => {
                 const isCustom = index === 0 && isCustomEntry;

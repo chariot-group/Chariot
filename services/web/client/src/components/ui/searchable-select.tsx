@@ -203,7 +203,7 @@ export function SearchableSelect({
           id={listboxId}
           role="listbox"
           aria-label={placeholder}
-          className="absolute top-[calc(100%+0.25rem)] z-50 w-full rounded-[15px] border bg-card p-2 shadow-md"
+          className="absolute top-[calc(100%+0.25rem)] z-50 w-full rounded-[15px] border border-frame bg-popover p-2 shadow-md"
           onPointerDown={(event) => {
             event.preventDefault();
           }}>
