@@ -3,8 +3,8 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-const tabsScrollClassName =
-  "min-w-0 w-full overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-scrollbar-track";
+/** Horizontal scrolling of the tab bar is handled inside CharacterTabs so its rounded ends scroll with it. */
+const tabsScrollClassName = "min-w-0 w-full";
 
 type CharacterSheetHeaderProps = {
   identity: React.ReactNode;
@@ -44,11 +44,7 @@ export function CharacterSheetHeader({ identity, tabs, avatar, className }: Char
           </div>
         ) : null}
       </div>
-      <div
-        className={cn(
-          tabsScrollClassName,
-          hasAvatarGrid && "lg:col-start-1 lg:row-start-2 lg:w-auto lg:self-end",
-        )}>
+      <div className={cn(tabsScrollClassName, hasAvatarGrid && "lg:col-start-1 lg:row-start-2 lg:w-auto lg:self-end")}>
         {tabs}
       </div>
     </div>

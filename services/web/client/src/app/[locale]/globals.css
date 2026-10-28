@@ -294,3 +294,11 @@
     border-color: var(--purple);  
   }
 }
+
+/* Scrollable region without a visible scrollbar (wheel, touch and keyboard scrolling still work) */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

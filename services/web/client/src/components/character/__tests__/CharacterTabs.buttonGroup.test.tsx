@@ -60,6 +60,18 @@ describe("CharacterTabs — joined button group", () => {
     expect(triggerOf(html, "General")).toContain("focus-visible:ring-inset");
   });
 
+  it("edge: on narrow screens the rounded frame scrolls with the tabs, without a visible scrollbar", () => {
+    const html = renderTabs("general");
+    const scroller = html.match(/<div class="scrollbar-none[^"]*">/)?.[0] ?? "";
+    const list = html.match(/<div[^>]*role="tablist"[^>]*>/)?.[0] ?? "";
+
+    expect(scroller).toContain("overflow-x-auto");
+    expect(scroller).toContain("scrollbar-none");
+    expect(scroller).toContain("max-w-full");
+    expect(list).toContain("w-max");
+    expect(list).not.toContain("overflow-x-auto");
+  });
+
   it("failure: a tab with errors keeps a non-color indicator and an inset error ring", () => {
     const html = renderTabs("general", { magic: true });
     const magic = triggerOf(html, "Magic");

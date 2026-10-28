@@ -98,7 +98,7 @@ export default function SidebarContext() {
 
   return (
     <nav
-      className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-4 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full"
+      className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-4 pr-2 scroll-smooth scrollbar-none"
       aria-label={t("gmNavigation")}>
       {selectedCampaign && <h2 className="shrink-0 text-lg text-white">{selectedCampaign.label}</h2>}
 

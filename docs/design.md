@@ -122,6 +122,7 @@ A compact Tailwind scale is used most frequently:
 - Scrollable regions:
   - `overflow-y-auto` with custom scrollbar styling (`::-webkit-scrollbar`)
   - recurring `pr-2` to prevent content from sitting under the scrollbar
+  - Exception: navigation lists and bars hide their scrollbar with the `scrollbar-none` utility (`globals.css`); wheel, touch and keyboard scrolling still work. Applies to the layout sidebar, the character sheet tab bar and the community library result list.
 - Grids:
   - Welcome/Profile: `grid-cols-1`, then `xl:grid-cols-2` or `xl:grid-cols-3`
 
@@ -191,7 +192,7 @@ The character sheet tab bar (General, Battle, Magic, Inventory, History) is one 
 - Active trigger: domain color fill (section 2.3) with dark text `text-black` on every tab, Battle included (black on red: 5.7:1); inactive: transparent, white text, `hover:bg-white/10`
 - Focus: keyboard only (`focus-visible`), drawn inside the trigger (`ring-2 ring-inset ring-ring`); no outline on mouse click
 - Error state (FR-form-field-validation): inset `ring-red/80` plus the alert icon (never color alone)
-- Mobile: the group scrolls horizontally inside its container
+- Mobile: the group scrolls horizontally inside a `scrollbar-none` wrapper; the rounded frame (`w-max`) scrolls with the tabs, so the rounded ends stay on the first (General) and last (History) tabs. Never put `overflow-x-auto` on the frame itself. Because the scrollbar is hidden, `useHorizontalWheelScroll` maps the vertical mouse wheel to horizontal scrolling; touch, trackpad and keyboard focus scroll natively.
 
 ## 5.3 Cards and Panels
 

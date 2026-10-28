@@ -176,7 +176,7 @@ export default function CharactersWithoutGroupList() {
         {t("createCharacter")}
       </Link>
 
-      <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
+      <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 scrollbar-none">
         {characters.map((character, index) => {
           const isSelected = selectedCharacterId === character._id;
           const classLabel = isPlayer(character)

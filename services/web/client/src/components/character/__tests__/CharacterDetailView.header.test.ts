@@ -34,7 +34,8 @@ describe("Character sheet header identity layout", () => {
     expect(detailSource).toContain("<CharacterSheetHeader");
     expect(formSource).toContain("<CharacterSheetHeader");
     expect(headerSource).toContain("flex w-full flex-col gap-4 pb-2");
-    expect(headerSource).toContain("min-w-0 w-full overflow-x-auto");
+    expect(headerSource).toContain('tabsScrollClassName = "min-w-0 w-full"');
+    expect(tabsSource).toContain("scrollbar-none min-w-0 max-w-full self-start overflow-x-auto");
     expect(headerSource).toContain("lg:grid lg:grid-cols-[minmax(0,1fr)_auto]");
     expect(headerSource).toContain("lg:col-start-1 lg:row-start-2");
     expect(headerSource).toContain("lg:col-start-2 lg:row-start-1 lg:row-span-2");
