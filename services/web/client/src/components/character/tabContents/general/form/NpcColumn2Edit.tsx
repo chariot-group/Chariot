@@ -19,25 +19,23 @@ export default function NpcColumn2Edit({ form, accentColor, className }: NpcColu
       aria-labelledby="characteristics-skills-section">
       {/* Jets de sauvegarde */}
       <Card
-        className="gap-3 py-4 px-4 md:px-6 order-1"
+        className="gap-3 py-4 px-4 md:px-6"
         role="region"
-        aria-labelledby="character-savingthrows">
+        aria-labelledby="character-savingthrows-edit">
         <h2
           id="character-savingthrows-edit"
           className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
           {t("savingThrows")}
         </h2>
-      </Card>
-      <div className="order-2">
         <SavingThrowsEdit
           form={form}
           accentColor={accentColor}
         />
-      </div>
+      </Card>
 
       {/* Compétences */}
       <Card
-        className="gap-3 py-4 px-4 md:px-6 order-3"
+        className="gap-3 py-4 px-4 md:px-6"
         role="region"
         aria-labelledby="skills-heading-edit">
         <h2
@@ -45,10 +43,8 @@ export default function NpcColumn2Edit({ form, accentColor, className }: NpcColu
           className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
           {t("skills")}
         </h2>
-      </Card>
-      <div className="order-4">
         <NpcSkillsEdit form={form} />
-      </div>
+      </Card>
     </section>
   );
 }
