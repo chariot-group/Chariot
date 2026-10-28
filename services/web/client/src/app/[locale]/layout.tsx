@@ -55,7 +55,7 @@ export default async function RootLayout({
   return (
     <html lang={locale}>
       <body
-        className={`${interTight.variable} antialiased bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat font-sans overflow-hidden h-dvh`}>
+        className={`${interTight.variable} antialiased font-sans overflow-hidden h-dvh`}>
         <NextIntlClientProvider messages={messages}>
           <KeycloakProvider>
             <ReduxProvider>

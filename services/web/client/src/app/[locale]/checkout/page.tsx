@@ -39,7 +39,7 @@ function CheckoutContent() {
   } = useCheckout();
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#0c0c0c] bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat overflow-y-auto md:overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background overflow-y-auto md:overflow-hidden">
       <div className="w-full mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col gap-6 flex-1 md:min-h-0">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -161,7 +161,7 @@ export default function CheckoutPage() {
   return (
     <Suspense
       fallback={
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c0c0c]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }>

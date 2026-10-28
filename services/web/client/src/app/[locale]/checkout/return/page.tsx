@@ -72,7 +72,7 @@ function ReturnContent() {
   }, [isAuthenticated, isSuccess, loading, refreshUser]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-[#0c0c0c] bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat px-4">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-background px-4">
       {/* Logo */}
       <Image
         src={Logo}
@@ -145,7 +145,7 @@ export default function CheckoutReturnPage() {
   return (
     <Suspense
       fallback={
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c0c0c]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }>
