@@ -73,7 +73,7 @@ function CheckoutContent() {
         {productLoading && (
           <div className="flex justify-center py-10">
             <Loader2
-              className="h-6 w-6 animate-spin text-primary"
+              className="h-6 w-6 animate-spin text-primary-light"
               aria-label={t("loading")}
             />
           </div>
@@ -100,7 +100,7 @@ function CheckoutContent() {
             {!clientSecret && !isFreeOrder ? (
               <div className="flex justify-center py-10">
                 <Loader2
-                  className="h-6 w-6 animate-spin text-primary"
+                  className="h-6 w-6 animate-spin text-primary-light"
                   aria-label={t("loading")}
                 />
               </div>
@@ -162,7 +162,7 @@ export default function CheckoutPage() {
     <Suspense
       fallback={
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary-light" />
         </div>
       }>
       <CheckoutContent />

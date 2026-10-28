@@ -141,7 +141,7 @@ export default function Character() {
   if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (
       <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary-light" />
       </div>
     );
   }

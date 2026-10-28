@@ -23,7 +23,7 @@ export default function CodexIconLegend({ showSelection = false, className }: Co
       {showSelection ? (
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
           <Check
-            className="size-3.5 shrink-0 text-purple"
+            className="size-3.5 shrink-0 text-primary-light"
             aria-hidden="true"
           />
           {t("selection")}

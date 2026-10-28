@@ -225,7 +225,7 @@ function CheckoutFormContent({
           {referralDiscount && !promoCode.applied && (
             <div className="flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-sm">
               <CheckCircle2
-                className="h-4 w-4 text-primary shrink-0"
+                className="h-4 w-4 text-primary-light shrink-0"
                 aria-hidden="true"
               />
               <span className="font-medium text-card-foreground">{t("referralDiscount")}</span>

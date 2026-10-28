@@ -33,6 +33,7 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -99,6 +100,8 @@
   --popover-foreground: #b7b7bb;
   --primary: #4e00de;
   --primary-foreground: #f7f7f7;
+  /* Same violet, lightened for text and icons on dark surfaces (>= 5:1 on every surface level) -> `text-primary-light` */
+  --primary-light: #a98bff;
   --secondary: #aa00ff;
   --secondary-foreground: #4e00de;
   --muted: #aa00ff;

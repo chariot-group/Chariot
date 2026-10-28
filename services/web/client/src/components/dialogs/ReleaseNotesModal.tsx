@@ -94,7 +94,7 @@ function ReleaseNoteContent({
             {formatDate(note.date, locale)}
           </p>
           {isLatest && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] lg:text-xs text-accent bg-accent/10 border border-accent/25 rounded-full px-2 py-0.5 lg:px-2.5 lg:py-1 leading-none">
+            <span className="inline-flex items-center gap-1.5 text-[11px] lg:text-xs text-primary-light bg-accent/10 border border-accent/25 rounded-full px-2 py-0.5 lg:px-2.5 lg:py-1 leading-none">
               <span className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-accent" aria-hidden="true" />
               {t("latest")}
             </span>
@@ -113,7 +113,7 @@ function ReleaseNoteContent({
           {translation.highlights.map((highlight, index) => (
             <li key={index} className="flex items-start gap-2.5 lg:gap-3.5">
               <svg
-                className="mt-0.5 lg:mt-1 shrink-0 text-accent/70 size-3 lg:size-4"
+                className="mt-0.5 lg:mt-1 shrink-0 text-primary-light/70 size-3 lg:size-4"
                 viewBox="0 0 12 12"
                 fill="none"
                 aria-hidden="true"

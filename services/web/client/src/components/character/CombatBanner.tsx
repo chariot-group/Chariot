@@ -254,7 +254,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
           <div
             className={cn(
               "flex max-w-[8rem] shrink-0 items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold transition-colors",
-              isMyTurn ? "text-purple" : "text-white/50",
+              isMyTurn ? "text-primary-light" : "text-white/50",
             )}>
             <Swords className={cn("size-2.5 shrink-0", isMyTurn && "animate-pulse")} />
             <span className={cn("truncate", isMyTurn && "animate-pulse")}>
