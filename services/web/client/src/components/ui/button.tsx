@@ -13,10 +13,10 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-white hover:text-white hover:bg-destructive/80 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border bg-background shadow-xs hover:bg-background/30 hover:border-input/30 focus-visible:bg-accent disabled:hover:bg-background disabled:hover:border-input disabled:hover:brightness-100 dark:bg-input/30 dark:border-input dark:hover:bg-primary/30 dark:disabled:hover:bg-input/30",
+          "border bg-background shadow-xs hover:bg-background/30 hover:border-input/30 focus-visible:bg-white/10 disabled:hover:bg-background disabled:hover:border-input disabled:hover:brightness-100 dark:bg-input/30 dark:border-input dark:hover:bg-white/10 dark:disabled:hover:bg-input/30",
         secondary: "bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground",
-        ghost: "hover:bg-primary/20 hover:text-primary-foreground disabled:hover:bg-transparent disabled:hover:text-inherit",
-        link: "underline-offset-4 hover:underline hover:text-primary disabled:hover:no-underline disabled:hover:text-inherit",
+        ghost: "hover:bg-white/10 hover:text-white disabled:hover:bg-transparent disabled:hover:text-inherit",
+        link: "underline-offset-4 hover:underline hover:text-primary-light disabled:hover:no-underline disabled:hover:text-inherit",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

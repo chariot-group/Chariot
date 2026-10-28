@@ -189,7 +189,7 @@ export default function CharacterInventoryView({
                   {canEditInSession ? (
                     <button
                       type="button"
-                      className="flex flex-1 min-w-0 flex-row items-center justify-center gap-1 rounded-[15px] border border-border/60 bg-background/60 px-3 py-2 text-center text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary sm:text-base 2xl:gap-2"
+                      className="flex flex-1 min-w-0 flex-row items-center justify-center gap-1 rounded-[15px] border border-border/60 bg-background/60 px-3 py-2 text-center text-sm font-medium transition-colors hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary sm:text-base 2xl:gap-2"
                       aria-label={`${tooltipLabel}. ${t("editCoinAmountAria", { coin: t(coin.labelKey as Parameters<typeof t>[0]) })}`}
                       aria-haspopup="dialog"
                       onClick={() => setSelectedCoin(coin.key)}>

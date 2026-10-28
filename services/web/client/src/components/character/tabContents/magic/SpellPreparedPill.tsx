@@ -68,7 +68,7 @@ export default function SpellPreparedPill({
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         isPrepared
           ? "border-emerald-500/55 bg-emerald-950/20 text-emerald-300 hover:bg-emerald-950/35"
-          : "border-border/90 bg-background/70 text-muted-foreground hover:bg-muted/50",
+          : "border-border/90 bg-background/70 text-muted-foreground hover:bg-white/10",
         !blocked && "cursor-pointer active:scale-[0.97]",
         blocked && "cursor-not-allowed opacity-45 border-dashed",
       )}

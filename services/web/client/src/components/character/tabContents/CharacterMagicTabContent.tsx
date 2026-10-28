@@ -522,7 +522,7 @@ export default function CharacterMagicTabContent({ character, accentColor }: Cha
           <button
             type="button"
             onClick={handleBackToList}
-            className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-muted rounded-lg transition-colors shrink-0"
+            className="lg:hidden flex items-center gap-2 py-3 px-4 text-sm font-medium hover:bg-white/10 rounded-lg transition-colors shrink-0"
             aria-label={tMagic("backToList")}>
             <ArrowLeft className="w-4 h-4" />
             <span>{tMagic("backToList")}</span>

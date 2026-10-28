@@ -84,7 +84,7 @@ export default function CodexPreviewLanguageBar({
               type="button"
               variant="outline"
               size="sm"
-              className="h-8 shrink-0 gap-1.5 px-2 sm:px-2.5 text-muted-foreground border-border/80 hover:text-foreground hover:bg-muted/50"
+              className="h-8 shrink-0 gap-1.5 px-2 sm:px-2.5 text-muted-foreground border-border/80 hover:text-foreground hover:bg-white/10"
               disabled={disabled}
               onClick={onUndo}
               aria-label={undoLabel}>
