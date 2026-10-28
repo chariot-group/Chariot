@@ -176,12 +176,8 @@ export default function CharacterDetailView({
   const [pendingAvatarRemove, setPendingAvatarRemove] = React.useState(false);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = React.useState<string | null>(null);
   const [isAvatarCommitting, setIsAvatarCommitting] = React.useState(false);
-  const [hasPendingCompanionChanges, setHasPendingCompanionChanges] = React.useState(false);
-  const companionPersistRef = useRef<(() => Promise<void>) | null>(null);
-  const companionRevertRef = useRef<(() => void) | null>(null);
-
   const isAvatarDirty = pendingAvatarFile !== null || pendingAvatarRemove;
-  const hasPendingChanges = isDirty || isAvatarDirty || hasPendingCompanionChanges;
+  const hasPendingChanges = isDirty || isAvatarDirty;
 
   const resetAvatarDraft = React.useCallback(() => {
     if (avatarPreviewUrl) {
@@ -251,8 +247,6 @@ export default function CharacterDetailView({
           }
         }
 
-        await companionPersistRef.current?.();
-
         const updatePayload = { ...data } as Record<string, unknown>;
         delete updatePayload.avatar;
 
@@ -287,7 +281,6 @@ export default function CharacterDetailView({
   );
 
   const handleCancelEditor = React.useCallback(() => {
-    companionRevertRef.current?.();
     resetAvatarDraft();
     onCancel();
     setIsEditing(false);
@@ -688,9 +681,6 @@ export default function CharacterDetailView({
               form={form}
               isEditing={isEditing}
               onCharacterUpdate={onCharacterUpdate}
-              onCompanionPendingChange={setHasPendingCompanionChanges}
-              companionPersistRef={companionPersistRef}
-              companionRevertRef={companionRevertRef}
               showSessionGmCompanionsTab={showSessionGmCompanionsTab}
               liaisonActionsEnabled={!showSessionGmCompanionsTab}
             />

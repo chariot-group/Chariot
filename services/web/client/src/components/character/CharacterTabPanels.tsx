@@ -13,16 +13,11 @@ import { NPC, Player } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
-import type { MutableRefObject } from "react";
-
 interface CharacterTabPanelsProps {
     character: Player | NPC;
     form: UseCharacterFormReturn["form"];
     isEditing: boolean;
     onCharacterUpdate?: (updated?: Player | NPC) => void;
-    onCompanionPendingChange?: (pending: boolean) => void;
-    companionPersistRef?: MutableRefObject<(() => Promise<void>) | null>;
-    companionRevertRef?: MutableRefObject<(() => void) | null>;
     /** @see FR-session-player-companion-combatants */
     showSessionGmCompanionsTab?: boolean;
     liaisonActionsEnabled?: boolean;
@@ -33,9 +28,6 @@ export default function CharacterTabPanels({
     form,
     isEditing,
     onCharacterUpdate,
-    onCompanionPendingChange,
-    companionPersistRef,
-    companionRevertRef,
     showSessionGmCompanionsTab = false,
     liaisonActionsEnabled = true,
 }: CharacterTabPanelsProps) {
@@ -115,11 +107,7 @@ export default function CharacterTabPanels({
                                     (contextMode === "player" || showSessionGmCompanionsTab) ? (
                                     <CharacterCompanionsTabContent
                                         player={character}
-                                        isEditing={isEditing}
                                         liaisonActionsEnabled={liaisonActionsEnabled}
-                                        onPendingChange={onCompanionPendingChange}
-                                        persistRef={companionPersistRef}
-                                        revertRef={companionRevertRef}
                                     />
                                 ) : null;
                             default:

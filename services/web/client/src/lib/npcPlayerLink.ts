@@ -121,8 +121,8 @@ export type CompanionLinkOp = {
 };
 
 /**
- * Queues a draft link/unlink. Selecting then reverting to the original value drops the op.
- * Persistence happens only when the Player form is saved.
+ * Queues a draft link/unlink for tests and legacy batch helpers.
+ * Companions tab and sidebar persist immediately via `persistSidebarNpcLinkedPlayer`.
  */
 export function queueCompanionLinkOp(
   ops: CompanionLinkOp[],
@@ -205,8 +205,9 @@ export function npcLinkedPlayerUpdatePayload(linkedPlayerId: string | null): {
 }
 
 /**
- * Persists `linkedPlayerId` immediately (sidebar, not Companions draft).
+ * Persists `linkedPlayerId` immediately (sidebar and Companions tab).
  * @see FR-sidebar-npc-link
+ * @see FR-npc-player-link
  */
 export async function persistSidebarNpcLinkedPlayer(
   npc: NPC,

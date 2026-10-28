@@ -4470,8 +4470,8 @@ Each initiative tracker row carries:
 - Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (same contrast treatment as the Combat/red tab). Do not invent a new color.
 - Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
 - Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST show the same identity as the NPC sheet header (FR-character-detail-view): avatar (4:5, User placeholder when missing), name, surname when present, and CR with abbreviated « ID » tooltip plus XP in parentheses. When the NPC belongs to a group, the first group label MAY appear as secondary metadata. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
-- Edit mode: list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
-- Link and unlink from this tab MUST be **draft-only** until the Player sheet form is saved (the same Save control as the other tabs). Selecting an NPC in the picker MUST NOT persist `linkedPlayerId`. Clicking unlink MUST immediately remove the NPC from the draft list **without** a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. Canceling edit MUST discard pending companion changes and MUST NOT call the NPC update API for those drafts.
+- Read and edit mode (Player space, liaison actions enabled): the same list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. Managing liaisons MUST NOT require entering full-sheet edit mode for the other tabs. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
+- Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST NOT open a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
 - Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
 
 **NPC character sheet — discreet linked Player**:
@@ -4512,7 +4512,7 @@ Each initiative tracker row carries:
 - Showing the Companions tab, « Lié à », link/unlink/create-linked actions, or GM-sidebar link labels when `contextMode === "gm"`, except the session-GM surfaces in FR-session-player-companion-combatants (character-data edit allowed; liaison management still forbidden).
 - Offering a Player choice in the Companions « create linked » dialog (NPC + Codex only).
 - Offering campaign-group NPCs in the Player-space link picker.
-- Persisting `linkedPlayerId` when the user only selects an NPC in the Companions picker (Save of the Player form is required).
+- Using draft-only companion liaisons on the Player sheet Companions tab (immediate persist is required).
 - Hiding unlinked without-group NPCs from the Player sidebar.
 - Showing a linked NPC both nested under its Player and as a root row.
 - Cascade-deleting NPCs when their linked Player is deleted.
@@ -4622,7 +4622,7 @@ Each initiative tracker row carries:
 
 **Scope**:
 
-- Complements FR-npc-player-link (cardinality, ownership, reassignment confirmation, sidebar nesting) without changing Companions-tab draft-until-save semantics.
+- Complements FR-npc-player-link (cardinality, ownership, reassignment confirmation, sidebar nesting). Companions-tab link/unlink uses the same immediate persistence path.
 - Complements FR-sidebar-context-actions (same action set on context menu and overflow; session-disabled when `disabledInSession`).
 - Complements FR-frontend-design (keyboard, visible focus, accessible names, i18n).
 
@@ -4632,9 +4632,9 @@ Each initiative tracker row carries:
 - **Linked nested NPC**: menu item **Unlink** (i18n: FR « Délier », EN « Unlink », ES « Desvincular »). MUST persist `linkedPlayerId: null` immediately. MUST NOT open a confirmation dialog (same as Companions-tab unlink). After success, the NPC MUST leave the nested list: without-group NPCs become a root row; NPCs that still belong to a campaign group MUST disappear from Mes personnages (they remain in the GM group list).
 - **Linked nested NPC**: menu item **Link to another character** (i18n: FR « Lier à un autre personnage », EN « Link to another character », ES « Vincular a otro personaje »). MUST open the same Player picker, excluding the currently linked Player. Confirming a different Player is a **reassignment** and MUST ask for confirmation (FR-npc-player-link). On confirm, persist the new `linkedPlayerId` immediately and nest under the new Player.
 
-**Persistence (distinct from Companions tab)**:
+**Persistence**:
 
-- Sidebar link/unlink/reassign MUST call the NPC update API immediately. They MUST NOT wait for a Player sheet Save.
+- Sidebar and Companions-tab link/unlink/reassign MUST call the NPC update API immediately. They MUST NOT wait for a Player sheet Save.
 - On success, Redux Player-space NPC lists MUST update so the sidebar re-nests without a full page reload (toast success).
 - On API failure, the sidebar MUST keep the previous nesting and show an error toast.
 
