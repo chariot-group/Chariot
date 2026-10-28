@@ -344,7 +344,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
         className="flex flex-col lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         <CharacterTabs
           activeTab={activeTab}
-          listClassName="gap-1 flex-nowrap w-full overflow-x-auto pb-1 pr-1"
+          listClassName="max-w-full overflow-x-auto"
           triggerClassName="grow-0 shrink-0"
         />
 

@@ -29,7 +29,11 @@ export default function CharacterTabs({ activeTab, listClassName, triggerClassNa
 
   return (
     <TabsList
-      className={cn("bg-transparent flex-row flex-nowrap justify-start gap-1 self-start", listClassName)}
+      className={cn(
+        // Joined button group: one rounded frame, square inner corners, thin dividers
+        "flex-row flex-nowrap items-stretch justify-start gap-0 self-start overflow-hidden rounded-[13px] border border-frame bg-card p-0",
+        listClassName,
+      )}
       role="tablist"
       aria-label={t("tabs.general")}>
       {CHARACTER_TABS.map((tab) => {
@@ -44,11 +48,13 @@ export default function CharacterTabs({ activeTab, listClassName, triggerClassNa
             aria-controls={`${tab}-content`}
             data-invalid={hasError || undefined}
             className={cn(
-              "relative shrink-0 grow-0 flex-none text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap focus:outline-none focus:ring focus:ring-offset-background focus:ring-white",
+              "relative shrink-0 grow-0 flex-none rounded-none border-0 border-l border-frame py-1.5 text-sm sm:text-base font-medium whitespace-nowrap transition-colors first:border-l-0",
+              // Keyboard-only focus, drawn inside the button (no white outline on click)
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
               activeTab === tab
-                ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
-                : "text-white bg-card hover:bg-gray",
-              hasError && "ring-2 ring-red/80 ring-offset-1 ring-offset-background",
+                ? `bg-${TAB_COLORS[tab]} text-black`
+                : "bg-transparent text-white hover:bg-white/10",
+              hasError && "ring-2 ring-inset ring-red/80",
               triggerClassName,
             )}>
             <span className="inline-flex items-center gap-1.5">
