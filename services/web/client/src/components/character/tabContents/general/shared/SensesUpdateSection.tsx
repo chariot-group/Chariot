@@ -100,7 +100,6 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? `sense-value-${index}-error` : undefined}
                       placeholder={`${t("senseValue")} (${unitLabel})`}
-                      type="number"
                       min="0"
                     />
                     {fieldState.error && (

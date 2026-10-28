@@ -2,10 +2,10 @@
 
 import * as React from "react";
 
-import { Input } from "@/components/ui/input";
+import { NumberInput, type NumberInputProps } from "@/components/ui/number-input";
 import { useStoredUnitInput, type StoredUnitEmptyValue } from "@/hooks/useStoredUnitInput";
 
-interface StoredUnitNumberInputProps extends Omit<React.ComponentProps<typeof Input>, "value" | "onChange"> {
+interface StoredUnitNumberInputProps extends Omit<NumberInputProps, "value" | "onChange"> {
   storedValue: number | string | null | undefined;
   onStoredChange: (value: number | string | null) => void;
   toStored: (displayValue: number) => number;
@@ -31,7 +31,7 @@ export function StoredUnitNumberInput({
   });
 
   return (
-    <Input
+    <NumberInput
       {...inputProps}
       ref={externalRef}
       value={unitInput.value}

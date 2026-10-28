@@ -177,7 +177,6 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-height-error" : undefined}
                     placeholder={`${t("height")} (${heightLabel})`}
-                    type="number"
                   />
                   {fieldState.error && (
                     <FieldError
@@ -218,7 +217,6 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? "appearance-weight-error" : undefined}
                     placeholder={`${t("weight")} (${weightLabel})`}
-                    type="number"
                   />
                   {fieldState.error && (
                     <FieldError

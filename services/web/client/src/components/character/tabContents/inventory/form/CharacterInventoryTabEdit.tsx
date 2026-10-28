@@ -1,6 +1,6 @@
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -60,11 +60,11 @@ export default function CharacterInventoryTabEdit({ accentColor, form }: Charact
                       className="shrink-0 w-auto"
                       data-invalid={fieldState.invalid}
                       orientation="horizontal">
-                      <div className="relative w-28">
+                      <div className="w-28">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Input
-                              className="w-full pl-8"
+                            <NumberInput
+                              className="w-full pl-2.5"
                               {...field}
                               value={field.value ?? ""}
                               id={id}
@@ -73,19 +73,20 @@ export default function CharacterInventoryTabEdit({ accentColor, form }: Charact
                               aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
                               placeholder={t(placeholderKey)}
                               min={0}
-                              type="number"
+                              startAdornment={
+                                <Image
+                                  src={icon}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="pointer-events-none size-4 sm:size-5"
+                                />
+                              }
                             />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>{t(labelKey)}</p>
                           </TooltipContent>
                         </Tooltip>
-                        <Image
-                          src={icon}
-                          alt=""
-                          aria-hidden="true"
-                          className="pointer-events-none absolute left-2.5 top-1/2 z-10 size-4 -translate-y-1/2 sm:size-5"
-                        />
                       </div>
                     </Field>
                   );
