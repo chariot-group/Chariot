@@ -206,7 +206,7 @@ export default function SidebarEnvironment() {
         <DropdownMenuContent
           align="start"
           sideOffset={8}
-          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto rounded-[14px] border-white/12 bg-[#1f1f24] p-1.5">
+          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto rounded-[14px] border-frame bg-popover p-1.5">
           {loading ? (
             <div className="flex justify-center py-3">
               <Loader2
@@ -228,7 +228,7 @@ export default function SidebarEnvironment() {
                     actions={campaignActions}
                     contextMenuLabel={t("campaignActions")}
                     className="rounded-[10px]"
-                    menuContentClassName="z-[100] w-56 rounded-[10px] border-white/12 bg-[#1f1f24] px-1.5 py-1.5 text-white shadow focus-visible:outline-none">
+                    menuContentClassName="z-[100] w-56 rounded-[10px] border-frame bg-popover px-1.5 py-1.5 text-white shadow focus-visible:outline-none">
                     <button
                       type="button"
                       onClick={() => void handleCampaignSelect(campaign._id)}

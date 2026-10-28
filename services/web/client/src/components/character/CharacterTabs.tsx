@@ -44,11 +44,11 @@ export default function CharacterTabs({ activeTab, listClassName, triggerClassNa
             aria-controls={`${tab}-content`}
             data-invalid={hasError || undefined}
             className={cn(
-              "relative shrink-0 grow-0 flex-none text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap focus:outline-none focus:ring focus:ring-offset-gray-dark focus:ring-white",
+              "relative shrink-0 grow-0 flex-none text-sm sm:text-base font-medium rounded-[13px] transition-all whitespace-nowrap focus:outline-none focus:ring focus:ring-offset-background focus:ring-white",
               activeTab === tab
                 ? `bg-${TAB_COLORS[tab]} ${tab === "battle" ? "text-white" : "text-black"}`
-                : "text-white bg-gray hover:bg-gray-middle",
-              hasError && "ring-2 ring-red/80 ring-offset-1 ring-offset-gray-dark",
+                : "text-white bg-card hover:bg-gray",
+              hasError && "ring-2 ring-red/80 ring-offset-1 ring-offset-background",
               triggerClassName,
             )}>
             <span className="inline-flex items-center gap-1.5">

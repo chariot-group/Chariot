@@ -508,7 +508,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
             ) : null}
 
             <nav
-              className="flex flex-col gap-2 sm:gap-3 max-xl:min-h-[min(50svh,32rem)] max-xl:overflow-visible max-xl:flex-none xl:min-h-0 xl:flex-1 xl:overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              className="flex flex-col gap-2 sm:gap-3 max-xl:min-h-[min(50svh,32rem)] max-xl:overflow-visible max-xl:flex-none xl:min-h-0 xl:flex-1 xl:overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full"
               role="navigation"
               aria-label={tMagic("spellListRegion")}
               aria-live="polite"
@@ -728,7 +728,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         </div>
         {/* Right column: Spell details (visible on mobile when showMobileDetails is true, always visible on desktop) */}
         <div
-          className={`flex flex-col gap-2 min-h-0 max-xl:h-auto xl:h-full max-xl:overflow-visible xl:overflow-hidden xl:border-l xl:pl-4 ${showMobileDetails ? "flex" : "hidden xl:flex"}`}
+          className={`flex flex-col gap-2 min-h-0 max-xl:h-auto xl:h-full max-xl:overflow-visible xl:overflow-hidden xl:border-l xl:border-frame xl:pl-4 ${showMobileDetails ? "flex" : "hidden xl:flex"}`}
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
           {/* Back button: single-column layouts through laptop */}

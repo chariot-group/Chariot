@@ -241,7 +241,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
         })}
       </div>
       {onCharacterUpdate && (
-        <div className="mt-1 border-t border-border/60 px-2 pt-3 flex flex-col items-end gap-1.5 w-full min-w-0">
+        <div className="mt-1 border-t border-border px-2 pt-3 flex flex-col items-end gap-1.5 w-full min-w-0">
           {!isInSession && (
             <p className="text-xs text-muted-foreground italic text-right w-full">
               {t("restSessionOnlyNote")}

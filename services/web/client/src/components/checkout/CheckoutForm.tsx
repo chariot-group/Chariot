@@ -93,7 +93,7 @@ function CheckoutFormContent({
   return (
     <div className="flex flex-col gap-6 w-full md:flex-row md:items-start md:justify-center md:h-full">
       {showPaymentPanel && (
-        <div className="w-full order-1 md:w-1/2 md:min-w-0 md:overflow-y-auto md:self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+        <div className="w-full order-1 md:w-1/2 md:min-w-0 md:overflow-y-auto md:self-stretch scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
           <Card className="gap-3 p-5">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               {t("paymentDetails")}
@@ -181,7 +181,7 @@ function CheckoutFormContent({
             </div>
           </div>
 
-          <div className="space-y-1.5 pt-1 border-t border-border/40">
+          <div className="space-y-1.5 pt-1 border-t border-border">
             <div
               className={`flex justify-between text-sm text-muted-foreground ${quantity <= 1 ? "invisible" : ""}`}
               aria-hidden={quantity <= 1}>
@@ -211,7 +211,7 @@ function CheckoutFormContent({
                 <span>-{formatPrice(giftAmount, currency)}</span>
               </div>
             )}
-            <div className="flex justify-between text-base font-bold text-card-foreground pt-1 border-t border-border/40">
+            <div className="flex justify-between text-base font-bold text-card-foreground pt-1 border-t border-border">
               <span>{t("total")}</span>
               <span className={discountAmount > 0 || giftAmount > 0 ? "text-green-400" : ""}>
                 {formatPrice(chargeableAmount, currency)}

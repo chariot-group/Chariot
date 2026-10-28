@@ -495,7 +495,7 @@ export function ConditionSelect({
             <SelectTrigger className="h-8 w-full bg-gray-middle-light text-sm text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="border-white/10 bg-card text-white">
+            <SelectContent className="border-frame bg-popover text-white">
               {durationUnits.map((unit) => (
                 <SelectItem
                   key={unit.value}
@@ -530,7 +530,7 @@ export function ConditionSelect({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-[min(calc(100vw-2rem),20rem)] border-white/10 bg-card p-3 text-white">
+          className="w-[min(calc(100vw-2rem),20rem)] border-frame bg-popover p-3 text-white">
           {pendingStandard && pendingMeta ? (
             <div className="flex flex-col gap-3">
               <button
@@ -670,7 +670,7 @@ export function ConditionSelect({
           ) : (
             <>
               {concentration?.enabled && concentration.canEdit ? (
-                <div className="mb-2 flex items-center gap-1 border-b border-white/10 pb-2">
+                <div className="mb-2 flex items-center gap-1 border-b border-border pb-2">
                   <button
                     type="button"
                     onClick={() =>

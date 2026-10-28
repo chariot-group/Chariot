@@ -253,7 +253,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
               </div>
 
               {/* Challenge Rating et Experience Points */}
-              <div className="flex flex-col gap-3 border-b border-gray pb-3">
+              <div className="flex flex-col gap-3 border-b border-border pb-3">
                 <div className="flex flex-row gap-2">
                   {/* Challenge Rating */}
                   <Controller

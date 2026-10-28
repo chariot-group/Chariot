@@ -38,7 +38,7 @@ export default function CodexPreviewLanguageBar({
   }
 
   return (
-    <div className="shrink-0 flex flex-wrap items-center gap-x-2 gap-y-2 my-3 pb-3 border-b border-border/70">
+    <div className="shrink-0 flex flex-wrap items-center gap-x-2 gap-y-2 my-3 pb-3 border-b border-border">
       <span className="text-xs font-medium text-muted-foreground w-full sm:w-auto sm:shrink-0">{label}</span>
       <div
         className={cn(

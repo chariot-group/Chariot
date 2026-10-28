@@ -210,7 +210,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
 
   if (!battleStarted || sortedRows.length === 0) {
     return footerActions ? (
-      <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+      <div className="shrink-0 border-t border-frame px-4 sm:px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
         <div className="flex w-full justify-end">{footerActions}</div>
       </div>
     ) : null;
@@ -226,7 +226,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
           (expandedRow.conditions.length > 0 || (expandedRow.customEffects?.length ?? 0) > 0))));
 
   return (
-    <div ref={containerRef} className="shrink-0 border-t border-white/10 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+    <div ref={containerRef} className="shrink-0 border-t border-frame pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
       <div aria-live="polite" aria-atomic="true" className="sr-only">{liveAnnouncement}</div>
 
       {/* Actions d'édition — mobile : au-dessus de la zone combat, desktop : inline dans la nav */}
@@ -289,7 +289,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
         {/* Carrousel des combattants */}
         <div
           ref={carouselRef}
-          className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20">
+          className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
           {sortedRows.map((row) => {
             const isActive = row.id === activeTurnRowId;
             const isExpanded = row.id === expandedRowId;
@@ -399,7 +399,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
 
         {/* Actions d'édition — inline sur sm+ avec séparateur visuel */}
         {footerActions && (
-          <div className="ml-1 hidden shrink-0 border-l border-white/10 pl-2 sm:block">
+          <div className="ml-1 hidden shrink-0 border-l border-border pl-2 sm:block">
             {footerActions}
           </div>
         )}

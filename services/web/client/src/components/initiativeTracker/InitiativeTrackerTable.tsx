@@ -480,7 +480,7 @@ export function InitiativeTrackerTable({
         </div>
 
         {groupedInitiativeActive && groupedInitiativeLabels ? (
-          <div className="w-full border-t border-white/10 px-5 py-2.5">
+          <div className="w-full border-t border-border px-5 py-2.5">
             <InitiativeTrackerGroupedInitiativeBar
               active={groupedInitiativeActive}
               canApply={selectedRowIds.size > 0}
@@ -497,7 +497,7 @@ export function InitiativeTrackerTable({
         ) : null}
 
         {bulkVisibilityActive && bulkVisibilityLabels ? (
-          <div className="w-full border-t border-white/10 px-5 py-2.5">
+          <div className="w-full border-t border-border px-5 py-2.5">
             <div
               className="flex min-w-0 flex-col gap-2 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between"
               role="status">
@@ -593,7 +593,7 @@ export function InitiativeTrackerTable({
 
           {selectionEnabled ? (
             <div
-              className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-white/10 pt-3"
+              className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-border pt-3"
               role="status">
               <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-white/85">
                 <Checkbox
@@ -611,7 +611,7 @@ export function InitiativeTrackerTable({
           ) : null}
 
           {groupedInitiativeActive && groupedInitiativeLabels ? (
-            <div className="mt-3 border-t border-white/10 pt-3">
+            <div className="mt-3 border-t border-border pt-3">
               <InitiativeTrackerGroupedInitiativeBar
                 active={groupedInitiativeActive}
                 canApply={selectedRowIds.size > 0}
@@ -628,7 +628,7 @@ export function InitiativeTrackerTable({
           ) : null}
 
           {bulkVisibilityActive && bulkVisibilityLabels ? (
-            <div className="mt-3 flex min-w-0 flex-wrap gap-2 border-t border-white/10 pt-3">
+            <div className="mt-3 flex min-w-0 flex-wrap gap-2 border-t border-border pt-3">
               <Button
                 type="button"
                 variant="outline"

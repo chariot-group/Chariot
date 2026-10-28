@@ -282,7 +282,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 </div>
 
                 {/* Niveau et XP avec synchronisation */}
-                <div className="flex flex-col border-b border-gray">
+                <div className="flex flex-col border-b border-border">
                   <div className="flex flex-row gap-2">
                     {/* Level Input */}
                     <Controller
@@ -428,7 +428,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     return (
                       <div
                         key={field.id}
-                        className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-gray"}`}>
+                        className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-border"}`}>
                         <div className="flex items-center justify-between">
                           <h4 className="text-sm font-semibold">
                             {t("class")} {index + 1}

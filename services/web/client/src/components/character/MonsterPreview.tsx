@@ -348,7 +348,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
           triggerClassName="grow-0 shrink-0"
         />
 
-        <div className="mt-1 lg:flex-1 lg:min-h-0 lg:overflow-y-auto pr-0 lg:pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+        <div className="mt-1 lg:flex-1 lg:min-h-0 lg:overflow-y-auto pr-0 lg:pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover">
           {CHARACTER_TABS.map((tab) => (
             <TabsContent
               key={tab}
