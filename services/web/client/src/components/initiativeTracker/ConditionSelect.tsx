@@ -495,7 +495,7 @@ export function ConditionSelect({
             <SelectTrigger className="h-8 w-full bg-gray-middle-light text-sm text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="border-frame bg-popover text-white">
+            <SelectContent>
               {durationUnits.map((unit) => (
                 <SelectItem
                   key={unit.value}

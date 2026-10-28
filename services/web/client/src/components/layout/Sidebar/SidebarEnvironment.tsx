@@ -26,6 +26,7 @@ import { useStore } from "react-redux";
 import { RootState } from "@/store";
 import NavigationService from "@/services/NavigationService";
 import { cn } from "@/lib/utils";
+import { menuItemClassName } from "@/components/ui/menu-styles";
 import * as React from "react";
 import { Campaign } from "@/types/campaign";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
@@ -206,7 +207,7 @@ export default function SidebarEnvironment() {
         <DropdownMenuContent
           align="start"
           sideOffset={8}
-          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto rounded-[14px] border-frame bg-popover p-1.5">
+          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-3">
               <Loader2
@@ -227,24 +228,23 @@ export default function SidebarEnvironment() {
                     key={campaign._id}
                     actions={campaignActions}
                     contextMenuLabel={t("campaignActions")}
-                    className="rounded-[10px]"
-                    menuContentClassName="z-[100] w-56 rounded-[10px] border-frame bg-popover px-1.5 py-1.5 text-white shadow focus-visible:outline-none">
+                    className="rounded-[10px]">
                     <button
                       type="button"
                       onClick={() => void handleCampaignSelect(campaign._id)}
                       className={cn(
-                        "flex w-full cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-white",
-                        "hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+                        menuItemClassName,
+                        "focus-visible:ring-1 focus-visible:ring-white/50",
                         isSelected && "font-medium",
                       )}>
                       <BookOpen
-                        className="h-4 w-4 shrink-0 text-white/40"
+                        className="h-4 w-4 shrink-0 text-white/60"
                         aria-hidden="true"
                       />
                       <span className="min-w-0 flex-1 truncate text-left">{campaign.label}</span>
                       {isSelected && (
                         <Check
-                          className="h-4 w-4 shrink-0 text-primary"
+                          className="h-4 w-4 shrink-0 text-white"
                           aria-hidden="true"
                         />
                       )}
@@ -271,16 +271,13 @@ export default function SidebarEnvironment() {
             </>
           )}
 
-          <DropdownMenuSeparator className="mx-1 bg-white/10" />
+          <DropdownMenuSeparator />
 
           <CreateCampaignDialog>
             <DropdownMenuItem
               asChild
-              onSelect={(event) => event.preventDefault()}
-              className="cursor-pointer rounded-[10px] px-3 py-2 text-sm text-white hover:bg-white/10 focus:bg-white/10">
-              <button
-                type="button"
-                className="flex w-full items-center gap-2">
+              onSelect={(event) => event.preventDefault()}>
+              <button type="button">
                 <PlusCircleIcon
                   className="h-4 w-4 shrink-0"
                   aria-hidden="true"

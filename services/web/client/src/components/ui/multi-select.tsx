@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { menuItemClassName, menuItemSelectedClassName, menuSurfaceClassName } from "@/components/ui/menu-styles";
 
 type MultiSelectOption = {
   label: string;
@@ -164,7 +165,7 @@ export function MultiSelect({
 
       {open && (
         <div
-          className="absolute top-[calc(100%+0.25rem)] z-50 w-full rounded-[15px] border border-frame bg-popover p-3 shadow-md"
+          className={cn(menuSurfaceClassName, "absolute top-[calc(100%+0.25rem)] z-50 w-full")}
           onPointerDown={(e) => {
             // Prevent the input from losing focus when tapping anywhere inside the
             // dropdown (non-interactive areas, badges, etc.). Each interactive element
@@ -172,7 +173,7 @@ export function MultiSelect({
             e.preventDefault();
           }}>
           <div
-            className="space-y-3"
+            className="space-y-1.5"
             onKeyDown={(event) => event.stopPropagation()}>
             {selectAllLabel && filteredOptions.length > 0 && (
               <div
@@ -189,7 +190,8 @@ export function MultiSelect({
                   }
                 }}
                 className={cn(
-                  "flex w-full cursor-pointer items-center justify-between gap-3 rounded-[15px] px-2 py-2 text-left text-sm font-medium transition-colors hover:bg-white/10",
+                  menuItemClassName,
+                  "justify-between gap-3 font-medium focus-visible:bg-white/10",
                   allFilteredSelected && "text-white",
                 )}>
                 <span className="truncate">{selectAllLabel}</span>
@@ -210,7 +212,7 @@ export function MultiSelect({
             )}
 
             {selectedOptions.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 px-1.5 py-1">
                 {selectedOptions.map((option) => {
                   const isDisabled = disabledSet.has(option.value);
 
@@ -248,9 +250,9 @@ export function MultiSelect({
               </div>
             )}
 
-            <div className="max-h-60 space-y-1 overflow-y-auto pr-1">
+            <div className="max-h-60 space-y-0.5 overflow-y-auto">
               {filteredOptions.length === 0 ? (
-                <p className="px-2 py-2 text-sm text-muted-foreground">{emptyText ?? t("emptyText")}</p>
+                <p className="px-3 py-2 text-sm text-muted-foreground">{emptyText ?? t("emptyText")}</p>
               ) : (
                 filteredOptions.map((option) => {
                   const isSelected = selectedValues.has(option.value);
@@ -280,9 +282,10 @@ export function MultiSelect({
                             }
                       }
                       className={cn(
-                        "flex w-full items-center justify-between gap-3 rounded-[15px] px-2 py-2 text-left text-sm transition-colors",
-                        isDisabled ? "cursor-default opacity-60" : "cursor-pointer hover:bg-white/10",
-                        isSelected && "bg-white/10 text-white",
+                        menuItemClassName,
+                        "justify-between gap-3 focus-visible:bg-white/10",
+                        isDisabled && "cursor-default opacity-60 hover:bg-transparent",
+                        isSelected && menuItemSelectedClassName,
                       )}>
                       <div className="min-w-0 flex-1">
                         <div className="truncate">{option.label}</div>
@@ -305,7 +308,7 @@ export function MultiSelect({
             </div>
 
             {hasSelectedOptions && (
-              <p className="px-1 text-xs text-muted-foreground">
+              <p className="px-3 pb-1 text-xs text-muted-foreground">
                 {t("selectedCount", { count: selectedOptions.length })}
               </p>
             )}

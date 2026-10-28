@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { menuItemClassName, menuSurfaceClassName } from "@/components/ui/menu-styles";
 
 interface TagInputProps {
   value: string[];
@@ -187,8 +189,11 @@ export function TagInput({
             ref={suggestionsRef}
             id={`${id}-suggestions`}
             role="listbox"
-            className="absolute z-50 w-full mt-1 bg-popover rounded-[15px] border border-frame shadow-md max-h-60 overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
-            <div className="p-1">
+            className={cn(
+              menuSurfaceClassName,
+              "absolute z-50 mt-1 max-h-60 w-full overflow-y-auto p-0 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
+            )}>
+            <div className="space-y-0.5 p-1.5">
               {allOptions.map((option, index) => {
                 const isCustom = index === 0 && isCustomEntry;
                 return (
@@ -200,9 +205,11 @@ export function TagInput({
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => addTag(option)}
                     onMouseEnter={() => setHighlightedIndex(index)}
-                    className={`w-full my-0.5 cursor-pointer text-left rounded-[15px] py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight,color,background-color] ${
-                      index === highlightedIndex ? " bg-white/10 text-white" : ""
-                    } ${isCustom ? "italic" : ""}`}>
+                    className={cn(
+                      menuItemClassName,
+                      index === highlightedIndex && "bg-white/10",
+                      isCustom && "italic",
+                    )}>
                     {option}
                     {isCustom && <span className="mx-1">(custom)</span>}
                   </button>

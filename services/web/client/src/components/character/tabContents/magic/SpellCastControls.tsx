@@ -455,7 +455,7 @@ export default function SpellCastControls({
               )}
               <DropdownMenuContent
                 align="end"
-                className="min-w-48 rounded-[15px] p-1">
+                className="min-w-48">
                 {upcastLevels.map((level) => {
                   const available = hasAvailableSpellSlot(spellcasting, level) && !busy;
                   const slotCount = getRemainingSpellSlots(spellcasting, level);
@@ -470,7 +470,7 @@ export default function SpellCastControls({
                           <span className="block w-full">
                             <DropdownMenuItem
                               disabled
-                              className="pointer-events-none rounded-[15px] w-full"
+                              className="pointer-events-none"
                               onSelect={(e) => e.preventDefault()}
                               aria-label={label}>
                               {label}
@@ -484,7 +484,6 @@ export default function SpellCastControls({
                   return (
                     <DropdownMenuItem
                       key={level}
-                      className="rounded-[15px]"
                       onSelect={(e) => {
                         e.preventDefault();
                         void castSlotsAtLevel(level);

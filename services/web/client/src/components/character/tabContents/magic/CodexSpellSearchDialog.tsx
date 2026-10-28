@@ -159,7 +159,7 @@ function SpellResultItem({
             <div className="flex gap-1.5">
               {isQueued && (
                 <Check
-                  className="size-5 text-purple"
+                  className="size-5 text-primary-light"
                   aria-label={tDialog("queuedInSelection")}
                 />
               )}
@@ -754,7 +754,7 @@ export default function CodexSpellSearchDialog({
                         <DropdownMenuContent
                           align="start"
                           className="max-h-60 min-w-48 w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden p-0">
-                          <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
+                          <div className="max-h-60 overflow-y-auto p-1.5 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
                             <DropdownMenuItem
                               className="font-medium"
                               onSelect={() => setSelectedClasses([])}>
@@ -795,7 +795,7 @@ export default function CodexSpellSearchDialog({
                         <DropdownMenuContent
                           align="start"
                           className="max-h-60 min-w-48 w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden p-0">
-                          <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
+                          <div className="max-h-60 overflow-y-auto p-1.5 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
                             <DropdownMenuItem
                               className="font-medium"
                               onSelect={() => setSelectedSchools([])}>
@@ -1001,7 +1001,7 @@ export default function CodexSpellSearchDialog({
               <CollapsibleTrigger
                 type="button"
                 aria-expanded={selectionDetailsOpen}
-                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-purple transition-colors hover:text-purple/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
+                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-primary-light transition-colors hover:text-primary-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
                 <ChevronDown
                   className={cn("size-4 shrink-0 transition-transform", !selectionDetailsOpen && "rotate-180")}
                   aria-hidden="true"
@@ -1076,7 +1076,7 @@ export default function CodexSpellSearchDialog({
                         "shrink-0 sm:size-auto sm:h-8 sm:px-3",
                         isCurrentSpellQueued
                           ? "border-destructive/50 text-destructive hover:bg-destructive/5"
-                          : "border-purple/40 text-purple hover:bg-purple/5",
+                          : "border-primary-light/40 text-primary-light hover:bg-primary-light/10",
                       )}>
                       {isCurrentSpellQueued ? (
                         <ListMinus
@@ -1119,7 +1119,7 @@ export default function CodexSpellSearchDialog({
                       disabled={spellActionsDisabled}
                       aria-pressed={isCurrentSpellQueued}
                       aria-label={tDialog("selectThisSpell")}
-                      className="shrink-0 border-purple/40 text-purple hover:bg-purple/5 sm:size-auto sm:h-8 sm:px-3">
+                      className="shrink-0 border-primary-light/40 text-primary-light hover:bg-primary-light/10 sm:size-auto sm:h-8 sm:px-3">
                       <ListPlus
                         className="size-4"
                         aria-hidden="true"

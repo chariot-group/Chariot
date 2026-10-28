@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { menuItemClassName, menuItemSelectedClassName, menuSurfaceClassName } from "@/components/ui/menu-styles";
 
 export type SearchableSelectOption = {
   label: string;
@@ -203,15 +204,15 @@ export function SearchableSelect({
           id={listboxId}
           role="listbox"
           aria-label={placeholder}
-          className="absolute top-[calc(100%+0.25rem)] z-50 w-full rounded-[15px] border border-frame bg-popover p-2 shadow-md"
+          className={cn(menuSurfaceClassName, "absolute top-[calc(100%+0.25rem)] z-50 w-full")}
           onPointerDown={(event) => {
             event.preventDefault();
           }}>
           <div
-            className="max-h-60 space-y-1 overflow-y-auto pr-1"
+            className="max-h-60 space-y-0.5 overflow-y-auto"
             onKeyDown={(event) => event.stopPropagation()}>
             {filteredOptions.length === 0 ? (
-              <p className="px-2 py-2 text-sm text-muted-foreground">{emptyText}</p>
+              <p className="px-3 py-2 text-sm text-muted-foreground">{emptyText}</p>
             ) : (
               filteredOptions.map((option) => {
                 const isSelected = option.value === value;
@@ -233,15 +234,16 @@ export function SearchableSelect({
                       }
                     }}
                     className={cn(
-                      "flex w-full cursor-pointer items-center justify-between gap-2 rounded-[12px] px-3 py-2 text-left text-sm transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
-                      isSelected && "bg-white font-semibold text-black",
+                      menuItemClassName,
+                      "justify-between focus-visible:bg-white/10",
+                      isSelected && menuItemSelectedClassName,
                     )}>
                     <span className="truncate">{option.label}</span>
                     {option.description ? (
                       <span
                         className={cn(
                           "shrink-0 rounded-[8px] px-1.5 py-0.5 text-xs",
-                          isSelected ? "bg-black/10 text-black/70" : "bg-white/10 text-white/60",
+                          "bg-white/10 text-white/60",
                         )}>
                         {option.description}
                       </span>

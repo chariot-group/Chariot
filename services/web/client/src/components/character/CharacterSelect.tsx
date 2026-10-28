@@ -64,7 +64,7 @@ export function CharacterSelect({
               key={character._id}
               value={character._id}
               title={label}
-              className="items-start whitespace-normal py-2.5 pl-3 leading-snug">
+              className="items-start whitespace-normal leading-snug">
               {label}
             </SelectItem>
           );
