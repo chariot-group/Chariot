@@ -20,7 +20,13 @@ The project relies on a dark theme with a plain background color (no background 
 - Main text: `--foreground: #b7b7bb`
 - Card/popover surface: `--card` / `--popover: #17171a`
 - Primary color: `--primary: #4e00de`
+- Primary light: `--primary-light: #a98bff` (same violet, lightened; `text-primary-light`)
 - Secondary/accent color: `--secondary` / `--accent: #aa00ff`
+
+Violet usage rule:
+
+- `primary` (`#4e00de`) is for **fills** only: button backgrounds, badges, selection highlight.
+- Violet **text and icons** (links, loaders, accent icons, "your turn" labels, selected-row bar) MUST use `primary-light`: `#4e00de` is unreadable on dark surfaces, while `#a98bff` reaches >= 5:1 on every surface level (background up to hover).
 
 ## 2.1.1 Neutral Scale (Grays)
 
@@ -164,6 +170,10 @@ Commonly used variants:
 - `link` (text-style navigation)
 - `destructive` (critical action)
 
+Hover and selection on transparent buttons (`ghost`, `outline`, icon triggers such as expand/collapse and the sidebar trigger) use neutral gray: `hover:bg-white/10`, keyboard focus `bg-white/10`. Violet (`primary`, `accent`, `muted`, all violet tokens) is reserved for filled buttons and never used as a hover or selected background on transparent buttons.
+
+Toggle buttons (`aria-pressed`, e.g. the Action / Bonus action / Reaction filter of the battle tab) keep the `outline` variant; the pressed one uses the selection gray `border-frame bg-white/15 font-semibold text-white`, never the violet `default` fill.
+
 ## 5.2 Tabs
 
 Tabs rely on Radix plus design overrides:
@@ -172,12 +182,55 @@ Tabs rely on Radix plus design overrides:
 - Active tab is color-coded by domain (blue/red/pink/yellow/green)
 - Inactive tab uses gray styling
 
+## 5.2.1 Character Sheet Tabs (Button Group)
+
+The character sheet tab bar (General, Battle, Magic, Inventory, History) is one joined button group, not separate pills:
+
+- Frame: `rounded-[13px] border border-frame bg-card overflow-hidden` (light structural border, like the layout), no gap between triggers
+- Triggers: square inner corners, `border-l border-frame` dividers (none on the first), `py-1.5`
+- Active trigger: domain color fill (section 2.3) with dark text `text-black` on every tab, Battle included (black on red: 5.7:1); inactive: transparent, white text, `hover:bg-white/10`
+- Focus: keyboard only (`focus-visible`), drawn inside the trigger (`ring-2 ring-inset ring-ring`); no outline on mouse click
+- Error state (FR-form-field-validation): inset `ring-red/80` plus the alert icon (never color alone)
+- Mobile: the group scrolls horizontally inside its container
+
 ## 5.3 Cards and Panels
 
 - Business cards mainly use `bg-card` or `bg-gray-middle-light`
 - Internal padding typically ranges from `p-3` to `p-6`
 - Pronounced radius (`rounded-[15px]` or higher)
 - Shadow is used selectively to reinforce visual focus (`shadow-lg`, `shadow-xl`)
+- A section card holds its heading **and** its content (e.g. saving throws, skills), for PCs and NPCs alike; rows inside a card are plain rows (`rounded-[10px]`, `hover:bg-gray-middle-light/50`), never nested cards
+- Free text (history, descriptions) wraps between words: `whitespace-pre-wrap wrap-break-word`; `break-all` is forbidden on text containers
+
+## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
+
+Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.
+
+- Surface: `bg-popover border-frame rounded-[14px] p-1.5`
+- Row: `rounded-[10px] px-3 py-2 text-sm text-white`, hover and keyboard highlight `bg-white/10`
+- Selected/checked row: `bg-white/15 font-medium`, check icon in white
+- Leading icons: `size-4`, `text-white/60`; destructive rows: `text-destructive`, hover `bg-destructive/10`
+- Separator: `mx-1 my-1 h-px bg-white/10`
+
+Consumers must not restyle menu rows or surfaces locally (sizing such as `w-*`, `max-h-*`, `z-*` is fine).
+
+Sidebar context menus and touch overflow menus show an icon per action (FR-sidebar-context-actions). Default icons are mapped by action id in `components/layout/Sidebar/shared/sidebarActionIcons.ts`.
+
+## 5.5 Sidebar Rows
+
+- Selected character row: `bg-white/15` (same gray as selected menu rows), white bold text, no left bar and no label shift; hover `bg-white/10`
+- Group header: no resting background (hover `bg-white/10`), label always bold. The label lines up with its characters: header `pl-1` + `size-4` chevron + `gap-2` = characters `ml-4` + `px-3` (28px)
+- Create buttons (character, group): white button, icon on the **left** of the label (`gap-2`)
+
+## 5.6 Numeric Inputs
+
+All numeric fields use `components/ui/number-input.tsx` (`Input type="number"` delegates to it):
+
+- `startAdornment` (icon) and `endAdornment` (unit) render inside the field
+- The frame (`inputFrameClassName`) owns background, radius, focus and invalid state, so the focus frame wraps the whole field (icon + input + unit + stepper), not only the native input
+- `className` styles the frame (width, height, radius, background); typography is inherited by the input
+- Custom stepper without border or divider, flush against the right edge, out of the tab order (keyboard uses arrow keys)
+- `StoredUnitNumberInput` and `StoredUnitFeetRangeInput` build on the same frame
 
 ## 6. Responsive Baseline
 
