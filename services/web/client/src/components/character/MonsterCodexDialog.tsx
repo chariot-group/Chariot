@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NPC } from "@/types/character";
 import { useLocale, useTranslations } from "next-intl";
@@ -21,6 +20,7 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
 import CodexIconLegend from "@/components/character/CodexIconLegend";
+import CodexResultRow from "@/components/character/CodexResultRow";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import {
   codexDeclaredPreviewLangs,
@@ -71,6 +71,30 @@ function formatPlayerListDetail(
   return classes.length > 0 ? classes.join(", ") : "—";
 }
 
+function PinnedLangFlag({
+  lang,
+  tDialog,
+}: {
+  lang?: string | null;
+  tDialog: (key: string, values?: Record<string, unknown>) => string;
+}) {
+  if (!lang || !codexLocaleFlagEmoji(lang)) return null;
+
+  return (
+    <InfoTooltip
+      content={tDialog(`languageFilter.${lang}`)}
+      side="top"
+      moreInfoLabel={tDialog(`languageFilter.${lang}`)}
+      className="relative z-10 shrink-0">
+      <span
+        className="text-[1.35rem] leading-none select-none cursor-help"
+        aria-label={tDialog(`languageFilter.${lang}`)}>
+        {codexLocaleFlagEmoji(lang)}
+      </span>
+    </InfoTooltip>
+  );
+}
+
 function MonsterResultItem({
   monsterItem,
   selectedLang,
@@ -95,62 +119,53 @@ function MonsterResultItem({
   const translation = monsterItem.translations[displayLang];
   if (!translation) return null;
 
+  const hasBadges = monsterItem.tag === 1 || translation.srd;
+
   return (
-    <Card
-      onClick={() => onMonsterClick(monsterItem, displayLang)}
-      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
-        isSelected ? "border-purple border-2 bg-purple/10" : ""
-      }`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-1 min-w-0 gap-2 items-start">
-            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
-              <InfoTooltip
-                content={tDialog(`languageFilter.${pinnedLang}`)}
-                side="top"
-                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
-                <span
-                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
-                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
-                  {codexLocaleFlagEmoji(pinnedLang)}
-                </span>
-              </InfoTooltip>
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-              <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1">
-                <InfoTooltip
-                  content={tCommon("challengeRatingTooltip")}
-                  side="top"
-                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                  <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
-                </InfoTooltip>
-                {tDialog("monsterInfo", {
-                  cr: formatChallengeRating(translation.challenge?.challengeRating),
-                  type: translation.profile?.type,
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <div className="flex gap-1.5">
-              {monsterItem.tag === 1 && (
-                <BadgeCheck
-                  className="size-5 text-green-600"
-                  aria-label={tDialog("validatedByChariot")}
-                />
-              )}
-              {translation.srd && (
-                <FileBadge
-                  className="size-5"
-                  aria-label={tDialog("srdContent")}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <CodexResultRow
+      name={translation.firstname}
+      isSelected={isSelected}
+      onSelect={() => onMonsterClick(monsterItem, displayLang)}
+      leading={
+        <PinnedLangFlag
+          lang={pinnedLang}
+          tDialog={tDialog}
+        />
+      }
+      meta={
+        <>
+          <InfoTooltip
+            content={tCommon("challengeRatingTooltip")}
+            side="top"
+            moreInfoLabel={tCommon("challengeRatingTooltip")}
+            className="relative z-10">
+            <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
+          </InfoTooltip>
+          {tDialog("monsterInfo", {
+            cr: formatChallengeRating(translation.challenge?.challengeRating),
+            type: translation.profile?.type,
+          })}
+        </>
+      }
+      badges={
+        hasBadges ? (
+          <>
+            {monsterItem.tag === 1 && (
+              <BadgeCheck
+                className="size-5 text-green-600"
+                aria-label={tDialog("validatedByChariot")}
+              />
+            )}
+            {translation.srd && (
+              <FileBadge
+                className="size-5"
+                aria-label={tDialog("srdContent")}
+              />
+            )}
+          </>
+        ) : null
+      }
+    />
   );
 }
 
@@ -179,47 +194,29 @@ function PlayerResultItem({
   if (!translation) return null;
 
   return (
-    <Card
-      onClick={() => onPlayerClick(playerItem, displayLang)}
-      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
-        isSelected ? "border-purple border-2 bg-purple/10" : ""
-      }`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-1 min-w-0 gap-2 items-start">
-            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
-              <InfoTooltip
-                content={tDialog(`languageFilter.${pinnedLang}`)}
-                side="top"
-                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
-                <span
-                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
-                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
-                  {codexLocaleFlagEmoji(pinnedLang)}
-                </span>
-              </InfoTooltip>
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {tDialog("playerInfo", {
-                  level: translation.progression?.level ?? 1,
-                  detail: formatPlayerListDetail(translation, tClasses),
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            {playerItem.tag === 1 ? (
-              <BadgeCheck
-                className="size-5 text-green-600"
-                aria-label={tDialog("validatedByChariot")}
-              />
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </Card>
+    <CodexResultRow
+      name={translation.firstname}
+      isSelected={isSelected}
+      onSelect={() => onPlayerClick(playerItem, displayLang)}
+      leading={
+        <PinnedLangFlag
+          lang={pinnedLang}
+          tDialog={tDialog}
+        />
+      }
+      meta={tDialog("playerInfo", {
+        level: translation.progression?.level ?? 1,
+        detail: formatPlayerListDetail(translation, tClasses),
+      })}
+      badges={
+        playerItem.tag === 1 ? (
+          <BadgeCheck
+            className="size-5 text-green-600"
+            aria-label={tDialog("validatedByChariot")}
+          />
+        ) : null
+      }
+    />
   );
 }
 
@@ -640,15 +637,16 @@ export default function MonsterCodexDialog({
   const dialogBody = (
     <>
       {!embedded ? (
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-frame shrink-0">
-          <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
+        <DialogHeader className="min-h-14 shrink-0 justify-center border-b border-frame py-3 pl-6 pr-12">
+          <DialogTitle className="text-xl leading-tight sm:text-2xl sm:leading-none">{tDialog("title")}</DialogTitle>
         </DialogHeader>
       ) : null}
 
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
           <div
-            className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
-            <div className="flex shrink-0 flex-col gap-1.5 w-full overflow-visible">
+            className={`flex min-h-0 w-full flex-col gap-3 p-4 lg:w-1/4 lg:border-r lg:border-frame ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
+            <div className="flex w-full shrink-0 flex-col gap-3 overflow-visible">
+              <CodexIconLegend />
               <div className="flex w-full min-w-0 items-center gap-2">
                 <div className="relative min-w-0 flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -693,7 +691,6 @@ export default function MonsterCodexDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <CodexIconLegend />
               <div className="flex w-full min-w-0 gap-2">
                 {!lockedEntityTypeFilter ? (
                   <Select
@@ -749,7 +746,7 @@ export default function MonsterCodexDialog({
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="scrollbar-none flex-1 overflow-y-auto scroll-smooth">
               {isSearching ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -771,7 +768,7 @@ export default function MonsterCodexDialog({
 
                   return (
                     <React.Fragment>
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-0.5">
                         {searchResults.flatMap((result) => {
                           if (result.kind === "monster") {
                             const monsterItem = result.item;
@@ -878,7 +875,7 @@ export default function MonsterCodexDialog({
           </div>
 
           <div
-            className={`flex flex-col flex-1 min-h-0 w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l border-frame pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
+            className={`min-h-[45vh] w-full flex-1 flex-col overflow-hidden p-4 md:p-6 lg:min-h-0 lg:w-3/4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
             <Button
               type="button"
               variant="ghost"
@@ -935,7 +932,7 @@ export default function MonsterCodexDialog({
         </div>
 
       {!embedded ? (
-        <DialogFooter className="px-6 pb-6 pt-4 border-t border-frame shrink-0">
+        <DialogFooter className="shrink-0 border-t border-frame px-6 py-4 sm:items-center">
           <Button
             type="button"
             variant="outline"
@@ -975,7 +972,7 @@ export default function MonsterCodexDialog({
         onOpenChange(nextOpen);
       }}>
       <DialogContent
-        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        className="flex h-[90vh] flex-col gap-0 p-0 sm:w-4/5 [&>[data-slot=dialog-close]]:top-5"
         onPointerDownOutside={(event) => {
           const target = event.detail.originalEvent?.target ?? event.target;
           if (shouldPreventDialogOutsideDismiss(target)) {
