@@ -109,12 +109,12 @@ export default function SidebarContext() {
         <button
           type="button"
           aria-label={t("createGroup")}
-          className="sidebar-btn-white flex w-full cursor-pointer items-center justify-between rounded-[12px] border border-frame bg-white px-3 py-1.5 text-left text-sm text-black transition-all duration-100 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
-          {t("createGroup")}
+          className="sidebar-btn-white flex w-full cursor-pointer items-center gap-2 rounded-[12px] border border-frame bg-white px-3 py-1.5 text-left text-sm text-black transition-all duration-100 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
           <LayersPlus
             className="h-4 w-4 shrink-0"
             aria-hidden="true"
           />
+          {t("createGroup")}
         </button>
       </CreateGroupDialog>
 

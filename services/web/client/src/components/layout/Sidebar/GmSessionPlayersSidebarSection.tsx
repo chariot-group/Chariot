@@ -374,20 +374,14 @@ export default function GmSessionPlayersSidebarSection() {
           const avatarStored = meta?.avatar;
 
           const rowClasses = cn(
-            "relative w-full shrink-0 py-1.5 px-3 rounded-[12px] transition-all duration-150 flex items-center gap-2 focus-visible:ring-1 focus-visible:ring-white/50",
+            "w-full shrink-0 py-1.5 px-3 rounded-[12px] transition-all duration-150 flex items-center gap-2 focus-visible:ring-1 focus-visible:ring-white/50",
             hasSheet
-              ? cn("cursor-pointer", isSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10")
+              ? cn("cursor-pointer", isSelected ? "bg-white/15 font-bold text-white" : "hover:bg-white/10")
               : "cursor-default opacity-60",
           );
 
           const innerLabel = (
             <>
-              {isSelected && hasSheet && (
-                <span
-                  className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                  aria-hidden="true"
-                />
-              )}
               {hasSheet ? (
                 <MediaAvatar
                   scope="character"
@@ -409,7 +403,7 @@ export default function GmSessionPlayersSidebarSection() {
                 <span className={cn("text-sm truncate w-full", !hasSheet && "italic")}>
                   {primaryLabel}
                 </span>
-                <span className={cn("text-xs truncate w-full", isSelected ? "text-black/50" : "text-white/50")}>
+                <span className={cn("text-xs truncate w-full", isSelected ? "text-white/70" : "text-white/50")}>
                   {userLabel}
                 </span>
               </span>
@@ -462,25 +456,19 @@ export default function GmSessionPlayersSidebarSection() {
               contextMenuLabel={t("characterActions")}
               className={cn(
                 "rounded-[12px] transition-all duration-100",
-                isSelected ? "bg-white text-black" : "hover:bg-white/10",
+                isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
               )}>
               <Link
                 href={href}
                 aria-current={isSelected ? "page" : undefined}
                 aria-label={`${label} – ${t("gmGuestCharacter")}`}
                 className={cn(
-                  "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
-                  isSelected && "pl-4 font-bold text-black",
+                  "flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                  isSelected && "font-bold",
                 )}
                 onClick={() => {
                   if (isMobile) setOpenMobile(false);
                 }}>
-                {isSelected && (
-                  <span
-                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                )}
                 <MediaAvatar
                   scope="character"
                   entityId={cid}
@@ -498,7 +486,7 @@ export default function GmSessionPlayersSidebarSection() {
                 />
                 <span className="flex min-w-0 flex-1 flex-col gap-0">
                   <span className="truncate w-full text-sm">{label}</span>
-                  <span className={cn("truncate w-full text-xs", isSelected ? "text-black/50" : "text-white/50")}>
+                  <span className={cn("truncate w-full text-xs", isSelected ? "text-white/70" : "text-white/50")}>
                     {t("gmGuestCharacter")}
                   </span>
                 </span>

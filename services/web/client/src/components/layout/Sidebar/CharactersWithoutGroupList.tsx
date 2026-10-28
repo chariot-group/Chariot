@@ -168,12 +168,12 @@ export default function CharactersWithoutGroupList() {
         href="/characters/new/players"
         onClick={() => setOpenMobile(false)}
         aria-label={t("createCharacter")}
-        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border border-frame bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
-        {t("createCharacter")}
+        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex items-center gap-2 transition-all duration-100 text-black border border-frame bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
         <UserPlus
           aria-hidden="true"
-          className="w-5 h-5"
+          className="h-4 w-4 shrink-0"
         />
+        {t("createCharacter")}
       </Link>
 
       <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
@@ -201,30 +201,21 @@ export default function CharactersWithoutGroupList() {
               contextMenuLabel={t("characterActions")}
               className={cn(
                 "rounded-[12px] transition-all duration-150",
-                isSelected ? "bg-white text-black" : "hover:bg-white/10",
-              )}
-              overflowTriggerClassName={
-                isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-              }>
+                isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+              )}>
               <Link
                 href={`/characters/${character._id}`}
                 aria-current={isSelected ? "page" : undefined}
                 aria-label={`${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
                 onClick={() => dispatch(clearSelectedCampaign())}
                 className={cn(
-                  "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
-                  isSelected && "pl-4 font-bold text-black",
+                  "flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                  isSelected && "font-bold",
                 )}>
-                {isSelected && (
-                  <span
-                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                )}
                 <span
                   className={cn(
                     "text-sm min-w-0 flex-1 truncate",
-                    isSelected && "font-bold text-black",
+                    isSelected && "font-bold",
                   )}>
                   {displayName}
                 </span>
@@ -232,7 +223,7 @@ export default function CharactersWithoutGroupList() {
                   <span
                     className={cn(
                       "text-sm shrink-0 whitespace-nowrap",
-                      isSelected && "font-bold text-black",
+                      isSelected && "font-bold",
                     )}>
                     ({classLabel})
                   </span>
@@ -240,10 +231,7 @@ export default function CharactersWithoutGroupList() {
                 {isSessionCharacter && (
                   <Swords
                     aria-label={t("sessionCharacter")}
-                    className={cn(
-                      "ml-1 h-3.5 w-3.5 shrink-0",
-                      isSelected ? "text-primary" : "text-yellow",
-                    )}
+                    className="ml-1 h-3.5 w-3.5 shrink-0 text-yellow"
                   />
                 )}
               </Link>

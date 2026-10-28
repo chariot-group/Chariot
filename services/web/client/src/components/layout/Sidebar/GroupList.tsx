@@ -483,7 +483,7 @@ export default function GroupList({
             key={group._id}
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
-            <div className="flex w-full items-center rounded-[12px] bg-card py-2 px-1.5 pl-3">
+            <div className="flex w-full items-center rounded-[12px] py-1.5 pr-1.5 pl-1 transition-colors duration-100 hover:bg-white/10">
               <SidebarItemWithActions
                 actions={groupActions}
                 disabled={actionsDisabled}
@@ -517,7 +517,7 @@ export default function GroupList({
                     aria-hidden="true"
                     className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
                   />
-                  <span className={cn("min-w-0 flex-1 truncate text-sm text-left", isOpen && "font-bold")}>
+                  <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">
                     {group.label}
                   </span>
                 </CollapsibleTrigger>
@@ -526,7 +526,7 @@ export default function GroupList({
 
             <CollapsibleContent
               id={`group-${group._id}-content`}
-              className="mt-1 ml-3 flex flex-col gap-1">
+              className="mt-1 ml-4 flex flex-col gap-1">
               {group.characters && group.characters.length > 0 ? (
                 group.characters.map((character) => {
                   const isSelected = selectedCharacterId === character._id;
@@ -540,29 +540,20 @@ export default function GroupList({
                       contextMenuLabel={t("characterActions")}
                       className={cn(
                         "rounded-[12px] transition-all duration-100",
-                        isSelected ? "bg-white text-black" : "hover:bg-white/10",
-                      )}
-                      overflowTriggerClassName={
-                        isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-                      }>
+                        isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+                      )}>
                       <Link
                         href={`/campaigns/${selectedCampaignId}/groups/${group._id}/characters/${character._id}`}
                         aria-current={isSelected ? "page" : undefined}
                         aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
                         title={`${character.firstname} ${character.lastname}`}
                         className={cn(
-                          "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
-                          isSelected && "pl-4 font-bold text-black",
+                          "flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                          isSelected && "font-bold",
                         )}
                         onClick={() => {
                           if (isMobile) setOpenMobile(false);
                         }}>
-                        {isSelected && (
-                          <span
-                            className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                            aria-hidden="true"
-                          />
-                        )}
                         <span className="min-w-0 flex-1 truncate">
                           {character.firstname} {character.lastname}
                         </span>
