@@ -37,6 +37,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-frame: var(--frame);
+  --color-scrollbar-track: var(--scrollbar-track);
+  --color-scrollbar-thumb: var(--scrollbar-thumb);
+  --color-scrollbar-thumb-hover: var(--scrollbar-thumb-hover);
   --color-blue: var(--blue);
   --color-green: var(--green);
   --color-red: var(--red);
@@ -54,6 +58,25 @@
   --animate-session-critical: session-live-pulse 0.8s ease-in-out infinite;
 }
 
+/*
+ * Neutral scale: every gray of the app shares the same hue/chroma
+ * (oklch, hue 285, chroma ~0.006 — subtle cool tint matching the violet primary).
+ * Tailwind's default `gray-*` utilities resolve to this scale.
+ */
+@theme {
+  --color-gray-50: #fafafb;
+  --color-gray-100: #f4f4f6;
+  --color-gray-200: #e4e4e8;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #9f9fa4;
+  --color-gray-500: #727276;
+  --color-gray-600: #535356;
+  --color-gray-700: #3f3f43;
+  --color-gray-800: #27272a;
+  --color-gray-900: #18181b;
+  --color-gray-950: #09090c;
+}
+
 @keyframes session-live-pulse {
   0%,
   100% {
@@ -66,57 +89,67 @@
 
 :root {
   --radius: 36px;
-  --background: #0c0c0c;
-  --foreground: #b2b2b2;
-  --card: #19191c;
+  /* Surface ladder (dark -> light): background < card/popover < gray-middle-light < gray */
+  --background: #0c0c0f;
+  --foreground: #b7b7bb;
+  --card: #17171a;
   --card-foreground: #f7f7f7;
-  --popover: #19191c;
-  --popover-foreground: #b2b2b2;
+  /* Menus, dropdowns, selects, popovers share the card surface */
+  --popover: var(--card);
+  --popover-foreground: #b7b7bb;
   --primary: #4e00de;
   --primary-foreground: #f7f7f7;
   --secondary: #aa00ff;
   --secondary-foreground: #4e00de;
   --muted: #aa00ff;
-  --muted-foreground: oklch(0.556 0 0);
+  --muted-foreground: #98989c;
   --accent: #aa00ff;
   --accent-foreground: #4e00de;
   --destructive: #ff2d2d;
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Minor separators and default `border` */
+  --border: #353538;
+  /* Structural borders: layout (sidebar), modals, sheets, menus -> `border-frame` */
+  --frame: #e5e5e5;
+  --input: #353538;
+  --ring: #a4a4a8;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar-foreground: #b2b2b2;
+  --sidebar-foreground: #b7b7bb;
   --sidebar-primary: #4e00de;
   --sidebar-primary-foreground: #f7f7f7;
   --sidebar-accent: #aa00ff;
   --sidebar-accent-foreground: #4e00de;
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-border: #353538;
+  --sidebar-ring: #a4a4a8;
   --blue: #61ebff;
   --green: #9ae201;
   --red: #ff2d2d;
   --pink: #ffadff;
   --yellow: #ffc400;
   --white: #f7f7f7;
-  --gray: #2b2b2b;
-  --gray-middle-light: #27272e;
-  --gray-light: #d6d6d6;
+  --gray: #27272b;
+  --gray-middle-light: #1f1f22;
+  --gray-light: #d7d7db;
   --purple: #4e00de;
 
+  /* Scrollbars -> `bg-scrollbar-track`, `bg-scrollbar-thumb`, `hover:bg-scrollbar-thumb-hover` */
+  --scrollbar-track: rgb(255 255 255 / 0.05);
+  --scrollbar-thumb: var(--color-gray-500);
+  --scrollbar-thumb-hover: var(--color-gray-400);
+
   /* Toast */
-  --toastify-color-light: #19191c;
+  --toastify-color-light: var(--card);
   --toastify-font-family: "Inter Tight", sans-serif;
-  --toastify-text-color-light: #565656;
+  --toastify-text-color-light: var(--foreground);
   --toastify-toast-bd-radius: var(--radius);
 }
 
 /* Sidebar white button hover */
 .sidebar-btn-white:hover {
-  background-color: #e8e8e8;
+  background-color: var(--color-gray-200);
 }
 
 /* Surcharger le positionnement du toast en mobile */

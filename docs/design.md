@@ -14,13 +14,44 @@ It first describes the current state (observable facts), then defines governance
 
 ## 2.1 Global Theme
 
-The project relies on a dark theme with a global background image:
+The project relies on a dark theme with a plain background color (no background image):
 
-- Global background: `--background: #0c0c0c`
-- Main text: `--foreground: #b2b2b2`
-- Card/popover surface: `--card: #19191c`
+- Global background: `--background: #0c0c0f`
+- Main text: `--foreground: #b7b7bb`
+- Card/popover surface: `--card` / `--popover: #17171a`
 - Primary color: `--primary: #4e00de`
 - Secondary/accent color: `--secondary` / `--accent: #aa00ff`
+
+## 2.1.1 Neutral Scale (Grays)
+
+All neutral colors share one hue/chroma (oklch, hue 285, chroma ~0.006: a subtle cool tint matching the violet primary). Pure grays and differently tinted grays must not be mixed.
+
+Surface ladder (dark to light, small regular steps):
+
+| Level | Token | Value | Usage |
+| --- | --- | --- | --- |
+| 0 | `--background` | `#0c0c0f` | App background, dialogs, sheets |
+| 1 | `--card` / `--popover` | `#17171a` | Cards, menus (dropdown, select, popover, combobox), toasts, inactive character tabs. `--popover` aliases `--card`. |
+| 2 | `--gray-middle-light` | `#1f1f22` | Raised element inside a card (inputs, selects, rows) |
+| 3 | `--gray` | `#27272b` | Hover / selected / highlighted |
+
+Borders (two levels):
+
+- Structural borders (layout sidebar, dialogs, sheets, menus and dropdowns): `--frame: #e5e5e5`, used through the `border-frame` utility.
+  This includes region dividers that split a page or a modal into zones: page footer action bars (character sheet, combat banner), modal header/footer/side-panel dividers, list/detail split of the magic tab.
+- Minor separators and default `border`: `--border: #353538`, used through `border-border` (no opacity variants). Applies to dividers between items inside a panel (form sections, tracker sub-bars, summaries). Form controls / outline buttons: `--input: #353538`. Sidebar separators: `--sidebar-border`.
+
+Lines and text:
+
+- Focus ring: `--ring`, `--sidebar-ring`: `#a4a4a8`
+- Secondary text: `--muted-foreground: #98989c` (>= 4.5:1 on every surface level)
+- Light gray text: `--gray-light: #d7d7db`
+
+Scrollbars: `--scrollbar-track`, `--scrollbar-thumb`, `--scrollbar-thumb-hover`, used through `[&::-webkit-scrollbar-track]:bg-scrollbar-track`, `[&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb` and `[&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover`.
+
+Tailwind `gray-50` ... `gray-950` utilities are redefined in `globals.css` on the same tinted scale.
+
+Rule: never hardcode a neutral color in a component; use these tokens so a palette change is a one-file edit in `globals.css`.
 
 ## 2.2 Recurring Custom Palette
 
@@ -32,9 +63,9 @@ Palette defined and reused through custom utilities:
 - `--pink: #ffadff`
 - `--yellow: #ffc400`
 - `--white: #f7f7f7`
-- `--gray: #2b2b2b`
-- `--gray-middle-light: #27272e`
-- `--gray-light: #d6d6d6`
+- `--gray: #27272b`
+- `--gray-middle-light: #1f1f22`
+- `--gray-light: #d7d7db`
 - `--purple: #4e00de`
 
 Dedicated utility classes exist for these colors: `bg-*`, `text-*` (for example `.blue`, `.pink`), and `border-*`.
