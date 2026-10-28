@@ -34,6 +34,7 @@ import {
   requiresNpcLinkReassignmentConfirm,
 } from "@/lib/npcPlayerLink";
 import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
+import { SidebarCompanionNest } from "@/components/layout/Sidebar/shared/SidebarCompanionNest";
 import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessionPlayersSidebarSection";
 
 /**
@@ -296,130 +297,189 @@ export default function CharactersWithoutGroupList() {
           const kindLabel = isNpcRow ? t("npcKind") : t("playerKind");
           const companions = row.type === "player" ? row.companions : [];
 
-          const rowLink = (
-            <SidebarItemWithActions
-              key={character._id ?? `character-${index}`}
-              actions={characterActions}
-              disabled={characterActions.length === 0}
-              contextMenuLabel={t("characterActions")}
+          const playerLinkLabel = `${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`;
+
+          const renderPlayerLink = (nestOpen: boolean, inNestHeader: boolean) => (
+            <Link
+              href={`/characters/${character._id}`}
+              aria-current={isSelected ? "page" : undefined}
+              aria-label={playerLinkLabel}
+              onClick={() => dispatch(clearSelectedCampaign())}
               className={cn(
-                "rounded-[12px] transition-all duration-150",
-                isSelected ? "bg-white text-black" : "hover:bg-white/10",
+                "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                inNestHeader ? "py-0 pr-1" : "rounded-[12px] py-1.5 px-3 transition-all duration-150",
+                !inNestHeader && !isSelected && "hover:bg-white/10",
+                !inNestHeader && isSelected && "bg-white pl-4 font-bold text-black",
+                inNestHeader && isSelected && "font-bold text-black",
+              )}>
+              {isSelected && !inNestHeader && (
+                <span
+                  className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                  aria-hidden="true"
+                />
               )}
-              overflowTriggerClassName={
-                isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-              }>
-              <Link
-                href={`/characters/${character._id}`}
-                aria-current={isSelected ? "page" : undefined}
-                aria-label={`${displayName}${isNpcRow ? ` (${kindLabel})` : classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
-                onClick={() => dispatch(clearSelectedCampaign())}
+              <span
                 className={cn(
-                  "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
-                  isSelected && "pl-4 font-bold text-black",
+                  "min-w-0 flex-1 truncate text-left",
+                  (isSelected || nestOpen) && "font-bold",
+                  isSelected && "text-black",
                 )}>
-                {isSelected && (
-                  <span
-                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                )}
+                {displayName}
+              </span>
+              {classLabel ? (
                 <span
                   className={cn(
-                    "text-sm min-w-0 flex-1 truncate",
+                    "shrink-0 whitespace-nowrap",
                     isSelected && "font-bold text-black",
                   )}>
-                  {displayName}
+                  ({classLabel})
                 </span>
-                {isNpcRow ? (
+              ) : null}
+              {isSessionCharacter && (
+                <Swords
+                  aria-label={t("sessionCharacter")}
+                  className={cn(
+                    "ml-1 h-3.5 w-3.5 shrink-0",
+                    isSelected ? "text-primary" : "text-yellow",
+                  )}
+                />
+              )}
+            </Link>
+          );
+
+          if (row.type !== "player") {
+            const npcRowHeader = (
+              <SidebarItemWithActions
+                actions={characterActions}
+                disabled={characterActions.length === 0}
+                contextMenuLabel={t("characterActions")}
+                className={cn(
+                  "rounded-[12px] transition-all duration-150",
+                  isSelected ? "bg-white text-black" : "hover:bg-white/10",
+                )}
+                overflowTriggerClassName={
+                  isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+                }>
+                <Link
+                  href={`/characters/${character._id}`}
+                  aria-current={isSelected ? "page" : undefined}
+                  aria-label={`${displayName} (${kindLabel})${isSelected ? ` (${t("selected")})` : ""}`}
+                  onClick={() => dispatch(clearSelectedCampaign())}
+                  className={cn(
+                    "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                    isSelected && "pl-4 font-bold text-black",
+                  )}>
+                  {isSelected && (
+                    <span
+                      className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span
+                    className={cn(
+                      "min-w-0 flex-1 truncate",
+                      isSelected && "font-bold text-black",
+                    )}>
+                    {displayName}
+                  </span>
                   <SidebarCharacterKindBadge
                     label={kindLabel}
                     selected={isSelected}
                   />
-                ) : classLabel ? (
-                  <span
-                    className={cn(
-                      "text-sm shrink-0 whitespace-nowrap",
-                      isSelected && "font-bold text-black",
-                    )}>
-                    ({classLabel})
-                  </span>
-                ) : null}
-                {isSessionCharacter && (
-                  <Swords
-                    aria-label={t("sessionCharacter")}
-                    className={cn(
-                      "ml-1 h-3.5 w-3.5 shrink-0",
-                      isSelected ? "text-primary" : "text-yellow",
-                    )}
-                  />
-                )}
-              </Link>
-            </SidebarItemWithActions>
-          );
+                </Link>
+              </SidebarItemWithActions>
+            );
+            return (
+              <div key={character._id ?? `character-${index}`}>{npcRowHeader}</div>
+            );
+          }
 
-          if (row.type !== "player" || companions.length === 0) {
-            return rowLink;
+          const companionIds = companions.map((npc) => npc._id).filter(Boolean) as string[];
+
+          if (companionIds.length === 0) {
+            return (
+              <SidebarItemWithActions
+                key={character._id ?? `character-${index}`}
+                actions={characterActions}
+                disabled={characterActions.length === 0}
+                contextMenuLabel={t("characterActions")}
+                className={cn(
+                  "rounded-[12px] transition-all duration-150",
+                  isSelected ? "bg-white text-black" : "hover:bg-white/10",
+                )}
+                overflowTriggerClassName={
+                  isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+                }>
+                {renderPlayerLink(false, false)}
+              </SidebarItemWithActions>
+            );
           }
 
           return (
-            <div
+            <SidebarCompanionNest
               key={character._id ?? `character-${index}`}
-              className="flex flex-col gap-1">
-              {rowLink}
-              <ul
-                className="relative ml-4 flex flex-col gap-1 border-l-2 border-purple pl-2"
-                aria-label={t("companionsListLabel", { name: displayName })}>
-                {companions.map((npc) => {
-                  const npcSelected = selectedCharacterId === npc._id;
-                  const npcName = characterDisplayName(npc) || t("unnamedCharacter");
-                  const npcActions = buildCharacterActions(npc);
-                  return (
-                    <li key={npc._id}>
-                      <SidebarItemWithActions
-                        actions={npcActions}
-                        disabled={npcActions.length === 0}
-                        contextMenuLabel={t("characterActions")}
+              nestId={character._id}
+              playerName={displayName}
+              companionCharacterIds={companionIds}
+              selectedCharacterId={selectedCharacterId}
+              headerSelected={isSelected}
+              companionRail
+              actions={characterActions}
+              actionsDisabled={characterActions.length === 0}
+              contextMenuLabel={t("characterActions")}
+              overflowTriggerClassName={
+                isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+              }
+              rowBody={({ isOpen }) => renderPlayerLink(isOpen, true)}>
+              {companions.map((npc) => {
+                const npcSelected = selectedCharacterId === npc._id;
+                const npcName = characterDisplayName(npc) || t("unnamedCharacter");
+                const npcActions = buildCharacterActions(npc);
+                return (
+                  <li key={npc._id}>
+                    <SidebarItemWithActions
+                      actions={npcActions}
+                      disabled={npcActions.length === 0}
+                      contextMenuLabel={t("characterActions")}
+                      className={cn(
+                        "rounded-[12px] transition-all duration-100",
+                        npcSelected ? "bg-white text-black" : "hover:bg-white/10",
+                      )}
+                      overflowTriggerClassName={
+                        npcSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+                      }>
+                      <Link
+                        href={`/characters/${npc._id}`}
+                        aria-current={npcSelected ? "page" : undefined}
+                        aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
+                        onClick={() => dispatch(clearSelectedCampaign())}
                         className={cn(
-                          "rounded-[12px] transition-all duration-150",
-                          npcSelected ? "bg-white text-black" : "hover:bg-white/10",
-                        )}
-                        overflowTriggerClassName={
-                          npcSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-                        }>
-                        <Link
-                          href={`/characters/${npc._id}`}
-                          aria-current={npcSelected ? "page" : undefined}
-                          aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
-                          onClick={() => dispatch(clearSelectedCampaign())}
-                          className={cn(
-                            "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
-                            npcSelected && "pl-4 font-bold text-black",
-                          )}>
-                          {npcSelected && (
-                            <span
-                              className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                              aria-hidden="true"
-                            />
-                          )}
+                          "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                          npcSelected && "pl-4 font-bold text-black",
+                        )}>
+                        {npcSelected && (
                           <span
-                            className={cn(
-                              "text-sm min-w-0 flex-1 truncate",
-                              npcSelected && "font-bold text-black",
-                            )}>
-                            {npcName}
-                          </span>
-                          <SidebarCharacterKindBadge
-                            label={t("npcKind")}
-                            selected={npcSelected}
+                            className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                            aria-hidden="true"
                           />
-                        </Link>
-                      </SidebarItemWithActions>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+                        )}
+                        <span
+                          className={cn(
+                            "text-sm min-w-0 flex-1 truncate",
+                            npcSelected && "font-bold text-black",
+                          )}>
+                          {npcName}
+                        </span>
+                        <SidebarCharacterKindBadge
+                          label={t("npcKind")}
+                          selected={npcSelected}
+                        />
+                      </Link>
+                    </SidebarItemWithActions>
+                  </li>
+                );
+              })}
+            </SidebarCompanionNest>
           );
         })}
 

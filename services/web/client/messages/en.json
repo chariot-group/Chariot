@@ -27,6 +27,8 @@
     "playerKind": "PC",
     "linkedToPlayer": "Linked to {name}",
     "companionsListLabel": "Companions of {name}",
+    "collapseCompanionsAria": "Collapse companions of {name}",
+    "expandCompanionsAria": "Expand companions of {name}",
     "linkNpc": "Link to a character",
     "unlinkNpc": "Remove from character",
     "unlinkNpcFrom": "Remove from {name}",

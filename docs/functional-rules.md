@@ -5019,3 +5019,40 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/__tests__/sessionEndNavigation.test.ts`
 - `services/web/client/src/services/__tests__/NavigationService.destinations.test.ts`
 - `docs/functional-rules.md` — FR-post-auth-navigation, FR-session-websocket-lifecycle, FR-session-lobby-navigation, FR-user-cache-isolation
+
+## FR-sidebar-linked-npc-nesting-collapse: Replier les PNJ liés sous un PJ dans la sidebar
+
+**Rule**: In Player space **Mes personnages** and in the in-session GM section **Joueurs (session)** (FR-npc-player-link, FR-session-player-companion-combatants), when a Player row has one or more nested linked NPCs, the user MUST be able to collapse and expand that nested list without losing navigation to the Player or NPC sheets.
+
+**Requirements**:
+
+- Applies only where nested companion rows already exist (Player sidebar and session GM roster); campaign group lists MUST NOT gain companion nesting or collapse (FR-npc-player-link).
+- Default state is **expanded** (same visibility as before this rule) when the user has not collapsed that Player nest.
+- A dedicated chevron control on the Player row MUST toggle collapse; clicking the Player name/row MUST still navigate to the Player sheet (chevron MUST NOT be the only way to open the sheet).
+- The collapsible **header** MUST reuse the same visual pattern as GM campaign **groups** in `GroupList` (`bg-card`, chevron inside the row beside the label, bold label when expanded). Nested NPC rows use the same content indent as group characters (`mt-1 ml-3`); Player-space Mes personnages MAY keep the existing `purple` vertical rail on the nested list (FR-npc-player-link).
+- Collapsed nests MUST hide nested NPC rows from view and from keyboard focus (`CollapsibleContent` / equivalent); the vertical `purple` rail and companions list MUST only render when expanded.
+- Persist per-Player nest collapse in Redux `sidebar` slice (same persistence contract as `openSessionPlayers` / `openArchivedGroups` via existing localStorage middleware).
+- When the currently selected character sheet is a nested NPC under a Player, that nest MUST auto-expand so the active NPC remains reachable in the sidebar tree.
+- Accessibility: chevron `aria-expanded`, dynamic `aria-label` (i18n: collapse/expand companions of `{name}`), visible focus, list `aria-label` unchanged (`companionsListLabel`). Align with FR-frontend-design and FR-sidebar-navigation.
+
+**Prohibitions**:
+
+- Removing nested NPC rows or duplicate root rows (FR-npc-player-link).
+- Collapsing by default on first visit without user action.
+- Using color alone to indicate collapsed vs expanded.
+- Adding link/unlink actions to the chevron control.
+
+**Tests**:
+
+- Nominal: Player with linked NPCs shows chevron; toggle hides and shows nested rows; Player link still navigates.
+- Edge: collapsed state survives reload (localStorage).
+- Edge: selecting a nested NPC sheet expands its parent nest.
+- Failure: Player with zero linked NPCs MUST NOT show a nest chevron.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/components/layout/Sidebar/shared/SidebarCompanionNest.tsx`
+- `services/web/client/src/store/slices/sidebarSlice.ts`
+- `docs/functional-rules.md` — FR-npc-player-link, FR-sidebar-navigation, FR-frontend-design, FR-session-player-companion-combatants

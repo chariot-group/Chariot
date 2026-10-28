@@ -27,6 +27,8 @@
     "playerKind": "PJ",
     "linkedToPlayer": "Lié à {name}",
     "companionsListLabel": "Compagnons de {name}",
+    "collapseCompanionsAria": "Replier les compagnons de {name}",
+    "expandCompanionsAria": "Déplier les compagnons de {name}",
     "linkNpc": "Lier à un personnage",
     "unlinkNpc": "Retirer du personnage",
     "unlinkNpcFrom": "Retirer de {name}",
