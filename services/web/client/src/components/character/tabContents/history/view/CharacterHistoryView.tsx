@@ -40,7 +40,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("eyes")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.eyes}</span>
+              <span className="text-sm pl-6 wrap-break-word min-w-0">{character?.appearance?.eyes}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -50,7 +50,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("age")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.age}</span>
+              <span className="text-sm pl-6 wrap-break-word min-w-0">{character?.appearance?.age}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -60,7 +60,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("skin")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.skin}</span>
+              <span className="text-sm pl-6 wrap-break-word min-w-0">{character?.appearance?.skin}</span>
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -70,7 +70,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("height")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0 flex flex-row items-center gap-1">
+              <span className="text-sm pl-6 wrap-break-word min-w-0 flex flex-row items-center gap-1">
                 {character?.appearance?.height != null ? (
                   <span className="flex items-baseline gap-1">
                     <span>{displayHeight(Number(character.appearance.height))}{heightLabel}</span>
@@ -97,7 +97,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("weight")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0 flex items-baseline gap-1">
+              <span className="text-sm pl-6 wrap-break-word min-w-0 flex items-baseline gap-1">
                 {character?.appearance?.weight != null ? (
                   <>
                     <span>{displayWeight(Number(character.appearance.weight))}{weightLabel}</span>
@@ -116,7 +116,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
                 />
                 <span className="text-xs font-medium">{t("hair")}</span>
               </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.hair}</span>
+              <span className="text-sm pl-6 wrap-break-word min-w-0">{character?.appearance?.hair}</span>
             </div>
           </div>
         </Card>
@@ -124,7 +124,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
 
       {/* Cols 2–4 row 1: Traits | Alliés | Liens */}
       <Card
-        className="gap-3 py-4 px-4 md:px-6 break-all"
+        className="gap-3 py-4 px-4 md:px-6"
         role="region"
         aria-labelledby="traits-title">
         <h2
@@ -137,7 +137,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
         </p>
       </Card>
       <Card
-        className="gap-3 py-4 px-4 md:px-6 break-all"
+        className="gap-3 py-4 px-4 md:px-6"
         role="region"
         aria-labelledby="allies-title">
         <h2
@@ -150,7 +150,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
         </p>
       </Card>
       <Card
-        className="gap-3 py-4 px-4 md:px-6 break-all"
+        className="gap-3 py-4 px-4 md:px-6"
         role="region"
         aria-labelledby="bonds-title">
         <h2
@@ -164,7 +164,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
       {/* Cols 2–4 row 2: Idéaux | Défauts (equal width) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 xl:col-start-2 xl:col-span-3">
         <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="ideals-title">
           <h2
@@ -175,7 +175,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
           <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.ideals}</p>
         </Card>
         <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="flaws-title">
           <h2
@@ -190,7 +190,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
       {/* Ligne 2: Histoire | Description */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 col-span-1 lg:col-span-2 xl:col-span-4">
         <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="backstory-title">
           <h2
@@ -201,7 +201,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
           <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.backstory}</p>
         </Card>
         <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
+          className="gap-3 py-4 px-4 md:px-6"
           role="region"
           aria-labelledby="description-title">
           <h2
