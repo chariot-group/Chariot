@@ -249,7 +249,27 @@ export default function CharacterCompanionsTabContent({
       ) : null}
 
       {sortedCompanions.length === 0 ? (
-        <p className="text-sm text-white/70">{t("empty")}</p>
+        <div
+          className="flex max-w-2xl flex-col gap-3 rounded-[15px] border border-white/10 bg-card/40 px-4 py-4"
+          role="status"
+          aria-labelledby="companions-empty-title">
+          <h3
+            id="companions-empty-title"
+            className="text-sm font-semibold text-white">
+            {t("emptyTitle")}
+          </h3>
+          <p className="text-sm text-white/70">{t("emptyDescription")}</p>
+          <div>
+            <p className="text-sm font-medium text-white/85">{t("emptyExamplesTitle")}</p>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-white/70">
+              <li>{t("emptyExampleFamiliar")}</li>
+              <li>{t("emptyExampleSecondaryNpc")}</li>
+            </ul>
+          </div>
+          {showLiaisonActions ? (
+            <p className="text-sm text-white/70">{t("emptyActionHint")}</p>
+          ) : null}
+        </div>
       ) : (
         <ul className="grid w-full min-w-0 grid-cols-1 gap-2 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
           {sortedCompanions.map((npc) => (

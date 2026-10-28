@@ -1016,7 +1016,12 @@
     },
     "companions": {
       "title": "Compañeros",
-      "empty": "Ningún PNJ vinculado a este personaje.",
+      "emptyTitle": "Aún no hay compañeros",
+      "emptyDescription": "Los compañeros son otros personajes vinculados a este. Cada uno tiene su propia ficha (vida, capacidades, equipo…) que puedes completar y actualizar como la de este personaje. En partida en línea, el director de juego también puede incluirlos en los combates contigo, sin que otra persona tenga que conectarse.",
+      "emptyExamplesTitle": "Algunos ejemplos",
+      "emptyExampleFamiliar": "Un animal que te acompaña y que controlas (lobo, halcón, gato…)",
+      "emptyExampleSecondaryNpc": "Un personaje que interpretas además de este (sirviente, guardaespaldas, aprendiz…)",
+      "emptyActionHint": "Vincula un personaje que ya hayas creado o crea uno nuevo con los botones de arriba.",
       "loading": "Cargando compañeros",
       "loadError": "No se pudieron cargar los compañeros.",
       "saveError": "No se pudo guardar el vínculo.",

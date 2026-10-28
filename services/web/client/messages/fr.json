@@ -1017,7 +1017,12 @@
     },
     "companions": {
       "title": "Compagnons",
-      "empty": "Aucun PNJ lié à ce personnage.",
+      "emptyTitle": "Aucun compagnon pour l'instant",
+      "emptyDescription": "Les compagnons sont d'autres personnages rattachés à celui-ci. Chacun a sa propre fiche (vie, capacités, équipement…) que vous pouvez remplir et mettre à jour comme pour ce personnage. En partie en ligne, le maître du jeu peut aussi les inclure dans les combats avec vous, sans qu'une autre personne doive se connecter.",
+      "emptyExamplesTitle": "Quelques exemples",
+      "emptyExampleFamiliar": "Un animal qui vous accompagne et que vous faites agir (loup, faucon, chat…)",
+      "emptyExampleSecondaryNpc": "Un personnage que vous jouez en plus de celui-ci (serviteur, garde du corps, apprenti…)",
+      "emptyActionHint": "Associez un personnage déjà créé ou créez-en un nouveau avec les boutons ci-dessus.",
       "loading": "Chargement des compagnons",
       "loadError": "Impossible de charger les compagnons.",
       "saveError": "Impossible d'enregistrer la liaison.",

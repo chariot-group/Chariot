@@ -1016,7 +1016,12 @@
     },
     "companions": {
       "title": "Companions",
-      "empty": "No NPC linked to this character.",
+      "emptyTitle": "No companions yet",
+      "emptyDescription": "Companions are other characters linked to this one. Each has its own sheet (health, abilities, gear…) that you can fill in and update like this character. During online play, the game master can include them in fights alongside you without someone else needing to log in.",
+      "emptyExamplesTitle": "A few examples",
+      "emptyExampleFamiliar": "An animal that travels with you and that you control (wolf, hawk, cat…)",
+      "emptyExampleSecondaryNpc": "A character you play in addition to this one (servant, bodyguard, apprentice…)",
+      "emptyActionHint": "Link a character you already created, or create a new one using the buttons above.",
       "loading": "Loading companions",
       "loadError": "Could not load companions.",
       "saveError": "Could not save the link.",
