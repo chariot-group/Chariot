@@ -54,8 +54,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <body
-        className={`${interTight.variable} antialiased font-sans overflow-hidden h-dvh`}>
+      <body className={`${interTight.variable} antialiased font-sans overflow-hidden h-dvh`}>
         <NextIntlClientProvider messages={messages}>
           <KeycloakProvider>
             <ReduxProvider>
