@@ -24,16 +24,24 @@ describe("FR-session-join-companion-visibility — CharacterSelect", () => {
     const lobby = readSource("dialogs/SessionLobbyContent.tsx");
     expect(join).toContain("loadCompanionCountsForPlayers");
     expect(join).toContain("joinSessionCompanionCount");
+    expect(join).toContain("joinSessionCompanionCountShort");
     expect(join).toContain("companionCountByCharacterId");
     expect(lobby).toContain("companionCountByCharacterId");
     expect(lobby).toContain('t("players.companionCount"');
+    expect(lobby).toContain("companionCountShort");
   });
 
-  it("edge: Player names truncate and the count stays secondary metadata", () => {
+  it("edge: single-line row with truncate and responsive count suffix", () => {
     const source = readSource("character/CharacterSelect.tsx");
     expect(source).toContain("truncate");
     expect(source).toContain("min-w-0");
     expect(source).toContain("text-xs font-normal");
+    expect(source).toContain("formatCompanionCountShort");
+    expect(source).toContain("sm:hidden");
+    expect(source).toContain("sm:inline");
+    expect(source).toContain("justify-between");
+    expect(source).toContain("select-value]]:flex-1");
+    expect(source).not.toContain("flex-col");
   });
 
   it("failure: a linked NPC is not added as a selectable option", () => {

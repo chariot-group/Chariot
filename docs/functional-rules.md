@@ -4709,14 +4709,15 @@ Each initiative tracker row carries:
 
 **Display**:
 
-- Primary line: Player display name (`firstname` + optional `lastname`), unchanged.
-- When the Player has **one or more** linked NPCs, a **discreet secondary metadata line** MUST appear under that name in both the open list and the closed trigger (so the relation remains visible after selection).
-- Secondary line MUST show **only the companion count** (no companion names), using i18n with pluralization:
+- Each option and the closed trigger MUST stay **single-line height** (standard select row height; no stacked name + count rows).
+- Layout: Player display name (`firstname` + optional `lastname`) on the start side with `truncate` / `min-w-0`; when the Player has **one or more** linked NPCs, the companion count MUST appear on the end side of the same row (`justify-between` or equivalent) so the relation remains visible after selection without increasing control height.
+- Count MUST show **only the companion count** (no companion names), using i18n with pluralization on viewports **`sm` and up**:
   - FR: `{count, plural, one {# compagnon} other {# compagnons}}`
   - EN: `{count, plural, one {# companion} other {# companions}}`
   - ES: `{count, plural, one {# compañero} other {# compañeros}}`
-- Style: secondary metadata (`text-xs`, `text-white/55` / muted). Color MUST NOT be the only channel: the count text is required.
-- A Player with **zero** linked NPCs MUST NOT show an empty « 0 compagnon » / « Aucun compagnon » line.
+- Below **`sm`**, a **short count suffix** MUST be used (e.g. `×{count}`) to save horizontal space; the full plural label MUST remain in the accessible name and `title`.
+- Style: count suffix as secondary metadata (`text-xs`, `text-white/55` / muted). Color MUST NOT be the only channel: the count text is required.
+- A Player with **zero** linked NPCs MUST NOT show an empty « 0 compagnon » / « Aucun compagnon » suffix.
 
 **Data**:
 
