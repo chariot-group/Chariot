@@ -21,7 +21,7 @@ describe("FR-sidebar-linked-npc-nesting-collapse — sidebar UI wiring", () => {
     const source = readFileSync(playerListPath, "utf8");
     expect(source).toContain("SidebarCompanionNest");
     expect(source).toContain("companionCharacterIds");
-    expect(source).toContain("companionRail");
+    expect(source).not.toContain("companionRail");
   });
 
   it("nominal: session GM section uses the same nest component", () => {
@@ -37,6 +37,7 @@ describe("FR-sidebar-linked-npc-nesting-collapse — sidebar UI wiring", () => {
     expect(source).toContain("selectedCompanionActive");
     expect(source).toContain("bg-card");
     expect(source).toContain("mt-1 ml-3");
+    expect(source).not.toContain("border-purple");
     expect(source).toContain("SidebarItemWithActions");
   });
 });

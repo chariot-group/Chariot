@@ -21,9 +21,9 @@ describe("FR-session-participant-labels — GM session players sidebar", () => {
 
   it("nominal: nests session companions under assigned players", () => {
     expect(source).toContain("companionsGroupedByPlayerId");
-    expect(source).toContain("companionsListLabel");
+    expect(source).toContain("SidebarCompanionNest");
     expect(source).toContain("npcKind");
-    expect(source).toContain("linkedToPlayer");
+    expect(source).not.toContain("linkedToPlayer");
     expect(source).toContain("ungroupedSessionCompanions");
   });
 

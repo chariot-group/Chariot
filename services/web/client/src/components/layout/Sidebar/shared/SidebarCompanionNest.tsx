@@ -21,8 +21,6 @@ export interface SidebarCompanionNestProps {
   selectedCharacterId: string | null;
   /** Player row selected (white header), same as group row selection on child sheets. */
   headerSelected?: boolean;
-  /** Purple rail under Player-space Mes personnages (FR-npc-player-link). */
-  companionRail?: boolean;
   rowBody: (state: { isOpen: boolean }) => ReactNode;
   children: ReactNode;
   actions?: SidebarActionItem[];
@@ -42,7 +40,6 @@ export function SidebarCompanionNest({
   companionCharacterIds,
   selectedCharacterId,
   headerSelected = false,
-  companionRail = false,
   rowBody,
   children,
   actions,
@@ -118,19 +115,11 @@ export function SidebarCompanionNest({
       <CollapsibleContent
         id={nestContentId}
         className="mt-1 ml-3 flex flex-col gap-1">
-        {companionRail ? (
-          <ul
-            className="relative flex flex-col gap-1 border-l-2 border-purple pl-2"
-            aria-label={t("companionsListLabel", { name: playerName })}>
-            {children}
-          </ul>
-        ) : (
-          <ul
-            className="relative flex flex-col gap-1"
-            aria-label={t("companionsListLabel", { name: playerName })}>
-            {children}
-          </ul>
-        )}
+        <ul
+          className="relative flex flex-col gap-1"
+          aria-label={t("companionsListLabel", { name: playerName })}>
+          {children}
+        </ul>
       </CollapsibleContent>
     </Collapsible>
   );

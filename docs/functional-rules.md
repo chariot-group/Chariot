@@ -4490,7 +4490,7 @@ Each initiative tracker row carries:
 
 - Complements FR-characters-without-group without changing that endpoint: `GET /characters/players/without-group` remains Player-only and MUST NOT return NPCs. Unlinked without-group NPCs are loaded via a dedicated NPC query (same owner, empty `groups`, `linkedPlayerId` absent/`null`). Linked NPCs are loaded by a batch query on the visible Player ids.
 - **Root rows**: Player characters without group, plus **unlinked** NPCs without group. Unlinked NPC rows use the same actions as other character rows (FR-sidebar-context-actions) plus link (FR-sidebar-npc-link), and a non-color-only PNJ kind badge.
-- **Nested rows**: NPCs linked to a visible Player appear **under that Player**, not as root rows (no duplicate: a linked NPC MUST NOT also appear at the root even if `groups` is empty). Nested rows MUST use a stronger indent than root rows and a vertical rail in the existing `purple` token, so the parent/child relationship is readable without a letter glyph. Color MUST NOT be the only channel: nesting, list structure, and the companions list accessible name remain required.
+- **Nested rows**: NPCs linked to a visible Player appear **under that Player**, not as root rows (no duplicate: a linked NPC MUST NOT also appear at the root even if `groups` is empty). Nested rows MUST use a stronger indent than root rows (`mt-1 ml-3` nest). A continuous vertical `purple` rail alongside the whole nested list MUST NOT be used. The **selected** nested NPC row MUST use the same sidebar selection rail as other character rows (`primary` / `purple` token). Color MUST NOT be the only channel: nesting, list structure, and the companions list accessible name remain required.
 - Nested and root NPC rows navigate to the NPC sheet, expose Edit / Delete / Duplicate / PDF coming-soon (FR-character-sheet-pdf-export), link/unlink (FR-sidebar-npc-link), and show a PNJ kind badge.
 - NPCs that belong to a campaign group remain in the GM group list; if they are also linked, they additionally nest under their Player in the Player sidebar.
 
@@ -4533,7 +4533,7 @@ Each initiative tracker row carries:
 - Nominal: Player with several linked NPCs shows all of them nested in the Player sidebar and listed on the tab as a responsive Card grid with avatar, name, and CR/XP (no kind badge).
 - Edge: unlinked without-group NPC appears as a root row in the Player sidebar; NPC sheet has no Companions tab and no « Lié à » metadata.
 - Edge: in Player space, linked NPC footer shows « Lié à {PlayerName} » navigating to the Player sheet; NPC header has no linked-Player line; no Companions tab on the NPC sheet.
-- Edge: nested linked NPC rows use a stronger indent and a purple rail; the companions list keeps an accessible name.
+- Edge: nested linked NPC rows use a stronger indent; only the selected nested NPC shows the sidebar selection rail; the companions list keeps an accessible name.
 - Edge: in GM campaign space, a Player sheet does not expose the Companions tab; an NPC sheet does not show « Lié à »; group lists do not show link labels or nested companions.
 - Edge: session GM may edit an assigned Player sheet and a linked NPC sheet; the Companions tab lists companions without link/unlink/create; PATCH of `linkedPlayerId` by the GM is rejected (FR-session-player-companion-combatants).
 - Edge: reassign NPC from Player A to Player B → only B lists it; confirmation required.
@@ -4792,7 +4792,7 @@ Each initiative tracker row carries:
 - The session GM MAY **edit persisted character data** of an assigned player PC and of each derived companion NPC (same session `gm-edit` as existing roster PCs: HP, AC, identity, tabs, etc.).
 - The session GM MUST NOT **manage liaisons**: no link, unlink, reassign, create-linked, and no write to `linkedPlayerId` (session `gm-edit` MUST ignore or reject that field).
 - **Lobby** (GM only): each non-GM participant card whose assigned Player has one or more companions MUST show companion **names** as secondary metadata under the character label (`text-xs`, muted / `text-white/55`). Zero companions: no extra line. Players other than the card owner MUST NOT see this line. The current player's own picker remains count-only (FR-session-join-companion-visibility).
-- **Sidebar « Joueurs (session) »** (GM only): companions nest under the assigned Player with the same nesting pattern as Player-space (indent + `purple` rail; color is not the only channel). Nested rows navigate to the NPC sheet with `sessionCode`. They MUST NOT expose link/unlink/reassign. Accessible names MUST include the NPC name and a PNJ kind label.
+- **Sidebar « Joueurs (session) »** (GM only): companions nest under the assigned Player with the same nesting and row pattern as Player-space **Mes personnages** (indent, name + PNJ kind badge, selection rail on the active row; no continuous list rail; color is not the only channel). Nested rows navigate to the NPC sheet with `sessionCode`. They MUST NOT expose link/unlink/reassign and MUST NOT show a visible « Lié à {Player} » line (parent context is structural nesting). Accessible names MUST include the NPC name and a PNJ kind label (same as Player-space nested rows).
 - **Player sheet opened by the GM in this session**: the sheet is **editable** (character data). The Companions tab is visible and lists companions for navigation only (cards open companion sheets; no link / unlink / create). Outside session, GM sheets keep five tabs (FR-npc-player-link).
 - **Companion NPC sheet** opened in this session by the GM (or the owner): the sheet is **editable** (character data). Existing NPC tabs; « Lié à {Player} » MAY show as non-editable secondary metadata. No link/unlink.
 
@@ -4844,7 +4844,8 @@ Each initiative tracker row carries:
 - Owner-only companion lookup that 403s the GM for another user's linked NPCs during a session they master.
 - Blocking session or combat flows because companion fetch failed.
 - Broadcasting companion lists as a second source of truth that can diverge from `linkedPlayerId`.
-- New undocumented colors; reuse `purple` rail and existing muted secondary text.
+- New undocumented colors; reuse existing sidebar selection rail and muted secondary text where applicable (lobby companion names only).
+- Showing « Lié à {Player} » on session-GM sidebar companion rows (lobby cards and NPC sheet footer remain unchanged).
 
 **Tests**:
 
@@ -5037,8 +5038,8 @@ Each initiative tracker row carries:
 - Applies only where nested companion rows already exist (Player sidebar and session GM roster); campaign group lists MUST NOT gain companion nesting or collapse (FR-npc-player-link).
 - Default state is **expanded** (same visibility as before this rule) when the user has not collapsed that Player nest.
 - A dedicated chevron control on the Player row MUST toggle collapse; clicking the Player name/row MUST still navigate to the Player sheet (chevron MUST NOT be the only way to open the sheet).
-- The collapsible **header** MUST reuse the same visual pattern as GM campaign **groups** in `GroupList` (`bg-card`, chevron inside the row beside the label, bold label when expanded). Nested NPC rows use the same content indent as group characters (`mt-1 ml-3`); Player-space Mes personnages MAY keep the existing `purple` vertical rail on the nested list (FR-npc-player-link).
-- Collapsed nests MUST hide nested NPC rows from view and from keyboard focus (`CollapsibleContent` / equivalent); the vertical `purple` rail and companions list MUST only render when expanded.
+- The collapsible **header** MUST reuse the same visual pattern as GM campaign **groups** in `GroupList` (`bg-card`, chevron inside the row beside the label, bold label when expanded). Nested NPC rows use the same content indent as group characters (`mt-1 ml-3`); no continuous `purple` list rail (FR-npc-player-link).
+- Collapsed nests MUST hide nested NPC rows from view and from keyboard focus (`CollapsibleContent` / equivalent); the companions list MUST only render when expanded.
 - Persist per-Player nest collapse in Redux `sidebar` slice (same persistence contract as `openSessionPlayers` / `openArchivedGroups` via existing localStorage middleware).
 - When the currently selected character sheet is a nested NPC under a Player, that nest MUST auto-expand so the active NPC remains reachable in the sidebar tree.
 - Accessibility: chevron `aria-expanded`, dynamic `aria-label` (i18n: collapse/expand companions of `{name}`), visible focus, list `aria-label` unchanged (`companionsListLabel`). Align with FR-frontend-design and FR-sidebar-navigation.

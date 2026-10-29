@@ -508,7 +508,6 @@ export default function CharactersWithoutGroupList() {
               companionCharacterIds={companionIds}
               selectedCharacterId={selectedCharacterId}
               headerSelected={isSelected}
-              companionRail
               actions={characterActions}
               actionsDisabled={characterActions.length === 0}
               contextMenuLabel={t("characterActions")}

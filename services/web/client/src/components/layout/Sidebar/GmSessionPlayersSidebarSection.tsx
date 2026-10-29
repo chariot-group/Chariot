@@ -33,7 +33,6 @@ import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/co
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { SidebarCompanionNest } from "@/components/layout/Sidebar/shared/SidebarCompanionNest";
 import { characterDisplayName } from "@/lib/duplicateName";
-import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
 import { companionsGroupedByPlayerId, ungroupedSessionCompanions } from "@/lib/sessionPlayerCompanions";
 import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
@@ -506,13 +505,12 @@ export default function GmSessionPlayersSidebarSection() {
                 const npcName = characterDisplayName(npc) || t("unnamedCharacter");
                 const npcHref = `/${locale}/characters/${encodeURIComponent(npc._id)}?sessionCode=${encodeURIComponent(sessionCode)}`;
                 const npcAvatar = npc.avatar?.trim() ?? "";
-                const linkedLabel = t("linkedToPlayer", { name: primaryLabel });
                 return (
                   <li key={npc._id}>
                     <Link
                       href={npcHref}
                       aria-current={npcSelected ? "page" : undefined}
-                      aria-label={`${npcName} (${linkedLabel})${npcSelected ? ` (${t("selected")})` : ""}`}
+                      aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
                       onClick={() => {
                         if (isMobile) setOpenMobile(false);
                       }}
@@ -539,13 +537,12 @@ export default function GmSessionPlayersSidebarSection() {
                           className="shrink-0"
                         />
                       ) : null}
-                      <span className="flex min-w-0 flex-1 flex-col gap-0">
-                        <span className={cn("text-sm min-w-0 truncate", npcSelected && "font-bold text-black")}>
-                          {npcName}
-                        </span>
-                        <span className={cn("text-xs truncate w-full", npcSelected ? "text-black/50" : "text-white/55")}>
-                          {linkedLabel}
-                        </span>
+                      <span
+                        className={cn(
+                          "text-sm min-w-0 flex-1 truncate",
+                          npcSelected && "font-bold text-black",
+                        )}>
+                        {npcName}
                       </span>
                       <SidebarCharacterKindBadge
                         label={t("npcKind")}
@@ -563,19 +560,12 @@ export default function GmSessionPlayersSidebarSection() {
           const npcName = characterDisplayName(npc) || t("unnamedCharacter");
           const npcHref = `/${locale}/characters/${encodeURIComponent(npc._id)}?sessionCode=${encodeURIComponent(sessionCode)}`;
           const npcAvatar = npc.avatar?.trim() ?? "";
-          const linkedPlayerId = linkedPlayerIdOf(npc);
-          const linkedPlayerLabel = linkedPlayerId
-            ? (characterMeta[linkedPlayerId]?.label ?? SESSION_PARTICIPANT_NAME_LOADING)
-            : "";
-          const linkedLabel = linkedPlayerLabel
-            ? t("linkedToPlayer", { name: linkedPlayerLabel })
-            : t("npcKind");
           return (
             <Link
               key={`ungrouped-companion-${npc._id}`}
               href={npcHref}
               aria-current={npcSelected ? "page" : undefined}
-              aria-label={`${npcName} (${linkedLabel})${npcSelected ? ` (${t("selected")})` : ""}`}
+              aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
               onClick={() => {
                 if (isMobile) setOpenMobile(false);
               }}
@@ -602,13 +592,12 @@ export default function GmSessionPlayersSidebarSection() {
                   className="shrink-0"
                 />
               ) : null}
-              <span className="flex min-w-0 flex-1 flex-col gap-0">
-                <span className={cn("text-sm min-w-0 truncate", npcSelected && "font-bold text-black")}>
-                  {npcName}
-                </span>
-                <span className={cn("text-xs truncate w-full", npcSelected ? "text-black/50" : "text-white/55")}>
-                  {linkedLabel}
-                </span>
+              <span
+                className={cn(
+                  "text-sm min-w-0 flex-1 truncate",
+                  npcSelected && "font-bold text-black",
+                )}>
+                {npcName}
               </span>
               <SidebarCharacterKindBadge
                 label={t("npcKind")}
