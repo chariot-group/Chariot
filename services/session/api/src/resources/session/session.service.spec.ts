@@ -17,6 +17,7 @@ import { SessionLiveMetrics } from '@/metrics/session-live.metrics';
 function makeSession(overrides: Record<string, any> = {}) {
     return {
         id: 'sess-uuid-1',
+        code: 'CODE123',
         creatorUserId: 'user-uuid-1',
         creatorCampaignId: 'camp-uuid-1',
         status: SessionStatus.activated,
@@ -1021,6 +1022,62 @@ describe('SessionService', () => {
             await expect(
                 service.validateCompanionLookupForAdventure('CODE123', 'user-uuid-2', [playerId]),
             ).rejects.toThrow(ForbiddenException);
+        });
+
+        describe('canBroadcastCharacterSheetUpdate', () => {
+            const sessionWithRoster = () => {
+                const gm = makeParticipant({
+                    userId: 'gm-uuid-1',
+                    status: ParticipantStatus.gameMaster,
+                    characterId: null,
+                });
+                const player = makeParticipant({
+                    userId: 'user-uuid-2',
+                    status: ParticipantStatus.connected,
+                    characterId: playerId,
+                });
+                return makeSession({ participants: [gm, player] });
+            };
+
+            it('nominal: GM can broadcast any character sheet update', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(session, 'gm-uuid-1', companionId),
+                ).toEqual({ ok: true });
+            });
+
+            it('nominal: player can broadcast their assigned PC', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(session, 'user-uuid-2', playerId),
+                ).toEqual({ ok: true });
+            });
+
+            it('nominal: player can broadcast their linked companion with linkedPlayerId', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(
+                        session,
+                        'user-uuid-2',
+                        companionId,
+                        playerId,
+                    ),
+                ).toEqual({ ok: true });
+            });
+
+            it('failure: player cannot broadcast a companion without linkedPlayerId', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(session, 'user-uuid-2', companionId),
+                ).toEqual({ ok: false, reason: 'Character is not on this session roster' });
+            });
+
+            it('failure: player cannot broadcast another participant PC', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(session, 'user-uuid-2', 'other-pc-id'),
+                ).toEqual({ ok: false, reason: 'Character is not on this session roster' });
+            });
         });
     });
 

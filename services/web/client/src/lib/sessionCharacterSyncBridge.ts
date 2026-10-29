@@ -35,7 +35,16 @@ function notifyRemoteCharacterSheetUpdated(characterId: string): void {
     remoteCharacterSheetUpdatedListener?.(characterId);
 }
 
-export function emitCharacterSheetUpdated(sessionCode: string, characterId: string): void {
+export type CharacterSheetUpdatedBroadcastOptions = {
+    /** PNJ lié (FR-session-player-companion-combatants) — requis pour la diffusion PJ → MJ. */
+    linkedPlayerId?: string | null;
+};
+
+export function emitCharacterSheetUpdated(
+    sessionCode: string,
+    characterId: string,
+    options?: CharacterSheetUpdatedBroadcastOptions,
+): void {
     const code = sessionCode.trim();
     const cid = characterId.trim();
     if (!code || !cid) return;
@@ -44,10 +53,12 @@ export function emitCharacterSheetUpdated(sessionCode: string, characterId: stri
     localCharacterSheetUpdatedListener?.(cid);
 
     if (!activeSessionSyncSocket?.connected) return;
+    const linkedPlayerId = options?.linkedPlayerId?.trim();
     // API historique : le champ s’appelle sessionId mais contient le code OTP (cf. session.gateway).
     activeSessionSyncSocket.emit("session:character-sheet-updated", {
         sessionId: code,
         characterId: cid,
+        ...(linkedPlayerId ? { linkedPlayerId } : {}),
     });
 }
 

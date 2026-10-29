@@ -74,6 +74,7 @@ const mockSessionService = {
     disconnectParticipant: jest.fn(),
     findParticipants: jest.fn(),
     findOne: jest.fn(),
+    canBroadcastCharacterSheetUpdate: jest.fn(),
 };
 
 const mockRedisService = {
@@ -770,10 +771,17 @@ describe('SessionGateway', () => {
         it('should broadcast for a player-assigned character (nominal)', async () => {
             const session = makeSession({ participants: [gmParticipant, playerParticipant] });
             mockSessionService.findOne.mockResolvedValue({ data: session });
+            mockSessionService.canBroadcastCharacterSheetUpdate.mockReturnValue({ ok: true });
             const client = makeSocket();
 
             await gateway.handleCharacterSheetUpdated(client, { sessionId: 'sess-otp-1', characterId: 'char-player-1' });
 
+            expect(mockSessionService.canBroadcastCharacterSheetUpdate).toHaveBeenCalledWith(
+                session,
+                'user-uuid-1',
+                'char-player-1',
+                undefined,
+            );
             expect(client.to).toHaveBeenCalledWith(session.id);
             expect(client.emit).not.toHaveBeenCalledWith('session:error', expect.anything());
         });
@@ -781,6 +789,7 @@ describe('SessionGateway', () => {
         it('should allow GM to broadcast for an NPC not assigned to any participant', async () => {
             const session = makeSession({ participants: [gmParticipant, playerParticipant] });
             mockSessionService.findOne.mockResolvedValue({ data: session });
+            mockSessionService.canBroadcastCharacterSheetUpdate.mockReturnValue({ ok: true });
             const client = makeSocket();
 
             await gateway.handleCharacterSheetUpdated(client, { sessionId: 'sess-otp-1', characterId: 'char-npc-99' });
@@ -794,6 +803,10 @@ describe('SessionGateway', () => {
                 { userId: 'user-uuid-1', characterId: 'char-player-1', status: 'connected' },
             ] });
             mockSessionService.findOne.mockResolvedValue({ data: session });
+            mockSessionService.canBroadcastCharacterSheetUpdate.mockReturnValue({
+                ok: false,
+                reason: 'Character is not on this session roster',
+            });
             const client = makeSocket();
 
             await gateway.handleCharacterSheetUpdated(client, { sessionId: 'sess-otp-1', characterId: 'char-unknown-99' });
@@ -801,9 +814,52 @@ describe('SessionGateway', () => {
             expect(client.emit).toHaveBeenCalledWith('session:error', { message: 'Character is not on this session roster' });
         });
 
+        it('should broadcast when a player updates their linked companion NPC', async () => {
+            const session = makeSession({ participants: [gmParticipant, playerParticipant] });
+            mockSessionService.findOne.mockResolvedValue({ data: session });
+            mockSessionService.canBroadcastCharacterSheetUpdate.mockReturnValue({ ok: true });
+            const client = makeSocket({ user: { keycloakId: 'player-uuid-2', username: 'player', email: 'p@test.com' } });
+
+            await gateway.handleCharacterSheetUpdated(client, {
+                sessionId: 'sess-otp-1',
+                characterId: 'char-companion-npc',
+                linkedPlayerId: 'char-player-1',
+            });
+
+            expect(mockSessionService.canBroadcastCharacterSheetUpdate).toHaveBeenCalledWith(
+                session,
+                'player-uuid-2',
+                'char-companion-npc',
+                'char-player-1',
+            );
+            expect(client.to).toHaveBeenCalledWith(session.id);
+            expect(client.emit).not.toHaveBeenCalledWith('session:error', expect.anything());
+        });
+
+        it('should reject a player broadcasting a companion without linkedPlayerId', async () => {
+            const session = makeSession({ participants: [gmParticipant, playerParticipant] });
+            mockSessionService.findOne.mockResolvedValue({ data: session });
+            mockSessionService.canBroadcastCharacterSheetUpdate.mockReturnValue({
+                ok: false,
+                reason: 'Character is not on this session roster',
+            });
+            const client = makeSocket({ user: { keycloakId: 'player-uuid-2', username: 'player', email: 'p@test.com' } });
+
+            await gateway.handleCharacterSheetUpdated(client, {
+                sessionId: 'sess-otp-1',
+                characterId: 'char-companion-npc',
+            });
+
+            expect(client.emit).toHaveBeenCalledWith('session:error', { message: 'Character is not on this session roster' });
+        });
+
         it('should reject a non-participant', async () => {
             const session = makeSession({ participants: [playerParticipant] });
             mockSessionService.findOne.mockResolvedValue({ data: session });
+            mockSessionService.canBroadcastCharacterSheetUpdate.mockReturnValue({
+                ok: false,
+                reason: 'Not a session participant',
+            });
             const client = makeSocket();
 
             await gateway.handleCharacterSheetUpdated(client, { sessionId: 'sess-otp-1', characterId: 'char-player-1' });

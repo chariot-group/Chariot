@@ -7,6 +7,7 @@ import sessionReducer, {
   createInitiativeTrackerRow,
   defaultPlayerFieldVisibilityForKind,
   setSessionCompanionNpcs,
+  upsertSessionCompanionNpc,
   type InitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
 import type { NPC } from "@/types/character";
@@ -41,6 +42,15 @@ describe("FR-session-player-companion-combatants — session companion combatant
   it("nominal: companion NPCs are stored as derived session state", () => {
     const next = sessionReducer(initialState, setSessionCompanionNpcs([companionNpc()]));
     expect(next.sessionCompanionNpcs).toEqual([companionNpc()]);
+  });
+
+  it("nominal: upsertSessionCompanionNpc patches name in derived cache", () => {
+    let state = sessionReducer(initialState, setSessionCompanionNpcs([companionNpc()]));
+    state = sessionReducer(
+      state,
+      upsertSessionCompanionNpc({ ...companionNpc(), firstname: "Renamed" }),
+    );
+    expect(state.sessionCompanionNpcs[0]?.firstname).toBe("Renamed");
   });
 
   it("nominal: companion tracker rows keep NPC visibility defaults", () => {

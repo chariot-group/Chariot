@@ -242,7 +242,9 @@ export default function CharacterDetailView({
         if (avatarChanged) {
           const snap = getSessionSnapshotForBroadcast();
           if (snap) {
-            emitCharacterSheetUpdated(snap.code, character._id);
+            emitCharacterSheetUpdated(snap.code, character._id, {
+              linkedPlayerId: linkedPlayerIdOf(character),
+            });
           }
         }
       } catch {
