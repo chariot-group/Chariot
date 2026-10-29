@@ -99,7 +99,22 @@ export class CharacterService {
     }
   }
 
-  async remove(id: Types.ObjectId): Promise<IResponse<Character>> {
+  private async applySoftDelete(
+    character: CharacterDocument,
+  ): Promise<void> {
+    character.deletedAt = new Date();
+    for (const groupId of character.groups) {
+      await this.groupModel
+        .updateOne({ _id: groupId }, { $pull: { characters: character._id } })
+        .exec();
+    }
+    await character.save();
+  }
+
+  async remove(
+    id: Types.ObjectId,
+    options?: { deleteLinkedCompanions?: boolean },
+  ): Promise<IResponse<Character>> {
     try {
       const start: number = Date.now();
 
@@ -118,16 +133,26 @@ export class CharacterService {
         throw new GoneException(message);
       }
 
-      character.deletedAt = new Date();
-      character.groups.forEach(async (groupId) => {
-        await this.groupModel
-          .updateOne({ _id: groupId }, { $pull: { characters: id } })
-          .exec();
-      });
-      await character.save();
-
       const kind = (character as Character & { kind?: string }).kind;
-      if (kind === 'player') {
+      const deleteLinkedCompanions =
+        kind === 'player' && options?.deleteLinkedCompanions === true;
+
+      if (deleteLinkedCompanions) {
+        const companions = await this.characterModel
+          .find({
+            kind: 'npc',
+            linkedPlayerId: id,
+            deletedAt: null,
+          })
+          .exec();
+        for (const companion of companions) {
+          await this.applySoftDelete(companion);
+        }
+      }
+
+      await this.applySoftDelete(character);
+
+      if (kind === 'player' && !deleteLinkedCompanions) {
         await this.characterModel
           .updateMany(
             { kind: 'npc', linkedPlayerId: id, deletedAt: null },

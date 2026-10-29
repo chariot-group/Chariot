@@ -438,4 +438,29 @@ describe('CharacterService.remove - FR-npc-player-link', () => {
     );
     expect(updateManyExec).toHaveBeenCalled();
   });
+
+  it('nominal: deleting a Player with deleteLinkedCompanions soft-deletes companions', async () => {
+    const companionSave = jest.fn().mockResolvedValue(true);
+    const companion = {
+      _id: new Types.ObjectId(),
+      kind: 'npc',
+      groups: ['group-a'],
+      deletedAt: null,
+      save: companionSave,
+    };
+    characterModel.find = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([companion]),
+    });
+
+    await service.remove(characterId, { deleteLinkedCompanions: true });
+
+    expect(characterModel.find).toHaveBeenCalledWith({
+      kind: 'npc',
+      linkedPlayerId: characterId,
+      deletedAt: null,
+    });
+    expect(companion.deletedAt).toBeInstanceOf(Date);
+    expect(companionSave).toHaveBeenCalled();
+    expect(characterModel.updateMany).not.toHaveBeenCalled();
+  });
 });

@@ -82,9 +82,15 @@ class CharacterService {
     /**
      * Supprime un personnage
      */
-    async deleteCharacter(characterId: string): Promise<void> {
+    async deleteCharacter(
+        characterId: string,
+        options?: { deleteLinkedCompanions?: boolean },
+    ): Promise<void> {
         try {
-            await apiClient().delete(`${this.BASE_PATH}/${characterId}`);
+            const deleteLinkedCompanions = options?.deleteLinkedCompanions === true;
+            await apiClient().delete(`${this.BASE_PATH}/${characterId}`, {
+                params: deleteLinkedCompanions ? { deleteLinkedCompanions: true } : undefined,
+            });
         } catch (error) {
             console.error(`Error deleting character ${characterId}:`, error);
             throw error;

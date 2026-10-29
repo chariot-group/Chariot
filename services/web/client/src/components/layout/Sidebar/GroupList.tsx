@@ -23,6 +23,12 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { cn } from "@/lib/utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import { DeletePlayerWithCompanionsDialog } from "@/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog";
+import {
+  deletePlayerCharacterWithCompanionChoice,
+  syncReduxAfterPlayerDelete,
+} from "@/lib/playerDeleteCompanions";
+import type { NPC } from "@/types/character";
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
@@ -98,6 +104,8 @@ export default function GroupList({
     character: GroupCharacter;
     groupId: string;
   } | null>(null);
+  const [deleteCompanionsPreview, setDeleteCompanionsPreview] = React.useState<NPC[]>([]);
+  const [loadingDeleteCompanions, setLoadingDeleteCompanions] = React.useState(false);
   const [characterToMove, setCharacterToMove] = React.useState<{
     character: GroupCharacter;
     groupId: string;
@@ -146,41 +154,112 @@ export default function GroupList({
     }
   }, [groupPendingDelete, isDeletingGroup, onDeleteGroup]);
 
-  const handleConfirmDeleteCharacter = React.useCallback(async () => {
-    if (!characterPendingDelete || isDeletingCharacter || !selectedCampaignId) return;
-
-    const { character, groupId } = characterPendingDelete;
-    const deletingCharacterId = character._id;
-
-    try {
-      setIsDeletingCharacter(true);
-      await CharacterService.deleteCharacter(deletingCharacterId);
-      setCharacterPendingDelete(null);
-      dispatch(removeCharacterFromGroup({ groupId, characterId: deletingCharacterId }));
-
-      if (selectedCharacterId === deletingCharacterId) {
-        const remainingGroup = groups.find((group) => group._id === groupId);
-        const nextCharacter = remainingGroup?.characters?.find((item) => item._id !== deletingCharacterId);
-        if (nextCharacter?._id) {
-          router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${nextCharacter._id}`);
-        } else {
-          router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/new/players`);
-        }
-      }
-    } catch (error) {
-      console.error("Error deleting character:", error);
-    } finally {
-      setIsDeletingCharacter(false);
+  React.useEffect(() => {
+    if (!characterPendingDelete || isNpcGroupCharacter(characterPendingDelete.character)) {
+      setDeleteCompanionsPreview([]);
+      setLoadingDeleteCompanions(false);
+      return;
     }
-  }, [
-    characterPendingDelete,
-    dispatch,
-    groups,
-    isDeletingCharacter,
-    router,
-    selectedCampaignId,
-    selectedCharacterId,
-  ]);
+
+    let cancelled = false;
+    setLoadingDeleteCompanions(true);
+    void CharacterService.getNpcsByLinkedPlayers([characterPendingDelete.character._id])
+      .then((npcs) => {
+        if (!cancelled) setDeleteCompanionsPreview(npcs);
+      })
+      .catch(() => {
+        if (!cancelled) setDeleteCompanionsPreview([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDeleteCompanions(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [characterPendingDelete]);
+
+  const isPendingGroupPlayer =
+    characterPendingDelete && !isNpcGroupCharacter(characterPendingDelete.character);
+
+  const showPlayerCompanionDeleteDialog = Boolean(
+    isPendingGroupPlayer && (loadingDeleteCompanions || deleteCompanionsPreview.length > 0),
+  );
+
+  const navigateAfterGroupCharacterDelete = React.useCallback(
+    (
+      deletingCharacterId: string,
+      groupId: string,
+      deleteLinkedCompanions: boolean,
+      companions: NPC[],
+    ) => {
+      const viewingDeletedSheet =
+        selectedCharacterId === deletingCharacterId ||
+        (deleteLinkedCompanions && companions.some((npc) => npc._id === selectedCharacterId));
+      if (!viewingDeletedSheet || !selectedCampaignId) return;
+      const remainingGroup = groups.find((group) => group._id === groupId);
+      const nextCharacter = remainingGroup?.characters?.find((item) => item._id !== deletingCharacterId);
+      if (nextCharacter?._id) {
+        router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${nextCharacter._id}`);
+      } else {
+        router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/new/players`);
+      }
+    },
+    [groups, router, selectedCampaignId, selectedCharacterId],
+  );
+
+  const executeGroupCharacterDelete = React.useCallback(
+    async (deleteLinkedCompanions: boolean) => {
+      if (!characterPendingDelete || isDeletingCharacter || !selectedCampaignId) return;
+
+      const { character, groupId } = characterPendingDelete;
+      const deletingCharacterId = character._id;
+      const deletingPlayer = !isNpcGroupCharacter(character);
+
+      try {
+        setIsDeletingCharacter(true);
+        if (deletingPlayer) {
+          await deletePlayerCharacterWithCompanionChoice(deletingCharacterId, deleteLinkedCompanions);
+          syncReduxAfterPlayerDelete(dispatch, {
+            playerId: deletingCharacterId,
+            deleteLinkedCompanions,
+            companions: deleteCompanionsPreview,
+            campaignGroupId: groupId,
+          });
+        } else {
+          await CharacterService.deleteCharacter(deletingCharacterId);
+          dispatch(removeCharacterFromGroup({ groupId, characterId: deletingCharacterId }));
+        }
+        setCharacterPendingDelete(null);
+        navigateAfterGroupCharacterDelete(
+          deletingCharacterId,
+          groupId,
+          deleteLinkedCompanions,
+          deleteCompanionsPreview,
+        );
+      } catch (error) {
+        console.error("Error deleting character:", error);
+      } finally {
+        setIsDeletingCharacter(false);
+      }
+    },
+    [
+      characterPendingDelete,
+      deleteCompanionsPreview,
+      dispatch,
+      isDeletingCharacter,
+      navigateAfterGroupCharacterDelete,
+      selectedCampaignId,
+    ],
+  );
+
+  const handleConfirmDeleteCharacter = React.useCallback(async () => {
+    await executeGroupCharacterDelete(false);
+  }, [executeGroupCharacterDelete]);
+
+  const pendingDeleteCharacterName = characterPendingDelete
+    ? characterDisplayName(characterPendingDelete.character)
+    : "";
 
   const handleDuplicateCharacter = React.useCallback(
     async (
@@ -591,7 +670,7 @@ export default function GroupList({
       />
 
       <ConfirmDialog
-        open={!!characterPendingDelete}
+        open={!!characterPendingDelete && !showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeletingCharacter) setCharacterPendingDelete(null);
         }}
@@ -601,6 +680,32 @@ export default function GroupList({
         cancelLabel={t("cancel")}
         onConfirm={handleConfirmDeleteCharacter}
         isLoading={isDeletingCharacter}
+      />
+
+      <DeletePlayerWithCompanionsDialog
+        open={showPlayerCompanionDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingCharacter) setCharacterPendingDelete(null);
+        }}
+        playerName={pendingDeleteCharacterName}
+        companions={deleteCompanionsPreview}
+        isLoading={isDeletingCharacter}
+        isLoadingCompanions={loadingDeleteCompanions}
+        title={t("deletePlayerWithCompanionsTitle")}
+        description={t("deletePlayerWithCompanionsDescription")}
+        companionsListLabel={t("deletePlayerWithCompanionsListLabel")}
+        choiceLegend={t("deletePlayerWithCompanionsChoiceLegend")}
+        cancelLabel={t("cancel")}
+        keepCompanionsLabel={t("deletePlayerKeepCompanions")}
+        keepCompanionsHint={t("deletePlayerKeepCompanionsHint")}
+        deleteAllLabel={t("deletePlayerAndCompanions", { count: deleteCompanionsPreview.length })}
+        deleteAllHint={t("deletePlayerAndCompanionsHint")}
+        keepCompanionsAriaLabel={t("deletePlayerKeepCompanionsAria")}
+        deleteAllAriaLabel={t("deletePlayerAndCompanionsAria", {
+          count: deleteCompanionsPreview.length,
+        })}
+        onKeepCompanions={() => executeGroupCharacterDelete(false)}
+        onDeleteWithCompanions={() => executeGroupCharacterDelete(true)}
       />
 
       <EditGroupDialog

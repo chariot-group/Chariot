@@ -19,6 +19,12 @@ import { Character, NPC } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import { DeletePlayerWithCompanionsDialog } from "@/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog";
+import {
+  deletePlayerCharacterWithCompanionChoice,
+  linkedCompanionsForPlayer,
+  syncReduxAfterPlayerDelete,
+} from "@/lib/playerDeleteCompanions";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import { LinkNpcToPlayerDialog } from "@/components/dialogs/LinkNpcToPlayerDialog";
@@ -76,38 +82,64 @@ export default function CharactersWithoutGroupList() {
     ? pathname.split("/characters/")[1]?.split("/")[0]?.split("?")[0]
     : null;
 
-  const handleDeleteCharacter = async () => {
+  const pendingDeleteCompanions = useMemo(() => {
+    if (!characterPendingDelete || !isPlayer(characterPendingDelete)) return [];
+    return linkedCompanionsForPlayer(linkedNpcs ?? [], characterPendingDelete._id);
+  }, [characterPendingDelete, linkedNpcs]);
+
+  const showPlayerCompanionDeleteDialog =
+    !!characterPendingDelete &&
+    isPlayer(characterPendingDelete) &&
+    pendingDeleteCompanions.length > 0;
+
+  const navigateAfterDelete = (
+    deletingCharacterId: string,
+    deleteLinkedCompanions: boolean,
+    companions: NPC[],
+  ) => {
+    const viewingDeletedSheet =
+      selectedCharacterId === deletingCharacterId ||
+      (deleteLinkedCompanions && companions.some((npc) => npc._id === selectedCharacterId));
+    if (!viewingDeletedSheet) return;
+    const nextCharacter = characters.find((character) => character._id !== deletingCharacterId);
+    if (nextCharacter?._id) {
+      router.replace(`/characters/${nextCharacter._id}`);
+    } else {
+      router.replace("/welcome");
+    }
+  };
+
+  const executeCharacterDelete = async (deleteLinkedCompanions: boolean) => {
     if (!characterPendingDelete || isDeleting) return;
 
     const deletingCharacterId = characterPendingDelete._id;
-    const nextCharacter = characters.find((character) => character._id !== deletingCharacterId);
+    const deletingPlayer = isPlayer(characterPendingDelete);
 
     try {
       setIsDeleting(true);
-      await CharacterService.deleteCharacter(deletingCharacterId);
+      if (deletingPlayer) {
+        await deletePlayerCharacterWithCompanionChoice(deletingCharacterId, deleteLinkedCompanions);
+        syncReduxAfterPlayerDelete(dispatch, {
+          playerId: deletingCharacterId,
+          deleteLinkedCompanions,
+          companions: pendingDeleteCompanions,
+        });
+      } else {
+        await CharacterService.deleteCharacter(deletingCharacterId);
+        dispatch(removeCharacterWithoutGroup(deletingCharacterId));
+        dispatch(removePlayerSpaceNpc(deletingCharacterId));
+      }
       setCharacterPendingDelete(null);
-      dispatch(removeCharacterWithoutGroup(deletingCharacterId));
-      dispatch(removePlayerSpaceNpc(deletingCharacterId));
-      if (isPlayer(characterPendingDelete)) {
-        for (const npc of linkedNpcs ?? []) {
-          if (npc.linkedPlayerId === deletingCharacterId) {
-            dispatch(upsertPlayerSpaceNpc({ ...npc, linkedPlayerId: null }));
-          }
-        }
-      }
-
-      if (selectedCharacterId === deletingCharacterId) {
-        if (nextCharacter?._id) {
-          router.replace(`/characters/${nextCharacter._id}`);
-        } else {
-          router.replace("/welcome");
-        }
-      }
+      navigateAfterDelete(deletingCharacterId, deleteLinkedCompanions, pendingDeleteCompanions);
     } catch (deleteError) {
       console.error("Error deleting character:", deleteError);
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleDeleteCharacter = async () => {
+    await executeCharacterDelete(false);
   };
 
   const sidebarRows = useMemo(
@@ -505,7 +537,7 @@ export default function CharactersWithoutGroupList() {
       </div>
 
       <ConfirmDialog
-        open={!!characterPendingDelete}
+        open={!!characterPendingDelete && !showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeleting) setCharacterPendingDelete(null);
         }}
@@ -515,6 +547,31 @@ export default function CharactersWithoutGroupList() {
         cancelLabel={t("cancel")}
         onConfirm={handleDeleteCharacter}
         isLoading={isDeleting}
+      />
+
+      <DeletePlayerWithCompanionsDialog
+        open={showPlayerCompanionDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setCharacterPendingDelete(null);
+        }}
+        playerName={characterDisplayName(characterPendingDelete!)}
+        companions={pendingDeleteCompanions}
+        isLoading={isDeleting}
+        title={t("deletePlayerWithCompanionsTitle")}
+        description={t("deletePlayerWithCompanionsDescription")}
+        companionsListLabel={t("deletePlayerWithCompanionsListLabel")}
+        choiceLegend={t("deletePlayerWithCompanionsChoiceLegend")}
+        cancelLabel={t("cancel")}
+        keepCompanionsLabel={t("deletePlayerKeepCompanions")}
+        keepCompanionsHint={t("deletePlayerKeepCompanionsHint")}
+        deleteAllLabel={t("deletePlayerAndCompanions", { count: pendingDeleteCompanions.length })}
+        deleteAllHint={t("deletePlayerAndCompanionsHint")}
+        keepCompanionsAriaLabel={t("deletePlayerKeepCompanionsAria")}
+        deleteAllAriaLabel={t("deletePlayerAndCompanionsAria", {
+          count: pendingDeleteCompanions.length,
+        })}
+        onKeepCompanions={() => executeCharacterDelete(false)}
+        onDeleteWithCompanions={() => executeCharacterDelete(true)}
       />
 
       <DuplicateCharacterDialog

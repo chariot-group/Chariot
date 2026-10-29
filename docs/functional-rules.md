@@ -4451,7 +4451,7 @@ Each initiative tracker row carries:
 - The NPC and the target Player MUST share the same `createdBy` (same owner). Cross-owner links (e.g. GM campaign NPC → another user's Player) are out of scope for this rule.
 - Reject linking to an NPC, to a deleted Player, or to a Player the requester does not own.
 - Create and update NPC DTOs MUST accept optional `linkedPlayerId` (`null` unlinks).
-- Soft-deleting a Player MUST unlink its NPCs (`linkedPlayerId` set to `null`). Soft-deleting an NPC removes it from the Player's companion list. NPCs themselves MUST NOT be cascade-deleted when the Player is deleted.
+- Soft-deleting a Player MUST either unlink its NPCs (`linkedPlayerId` set to `null`) or soft-delete those NPCs when the user explicitly chooses cascade deletion (FR-player-delete-companion-choice). Soft-deleting an NPC removes it from the Player's companion list.
 - Duplicating a Player (FR-character-duplicate) MUST NOT duplicate or reassign linked NPCs. Duplicating an NPC MUST copy `linkedPlayerId` when present (the copy stays linked to the same Player).
 
 **Player space vs GM space** (FR-sidebar-navigation):
@@ -4515,7 +4515,7 @@ Each initiative tracker row carries:
 - Using draft-only companion liaisons on the Player sheet Companions tab (immediate persist is required).
 - Hiding unlinked without-group NPCs from the Player sidebar.
 - Showing a linked NPC both nested under its Player and as a root row.
-- Cascade-deleting NPCs when their linked Player is deleted.
+- Cascade-deleting linked NPCs when deleting a Player without explicit user confirmation (FR-player-delete-companion-choice).
 - Using a new undocumented tab color instead of the existing `purple` token.
 - Cross-owner links in this version.
 
@@ -4532,7 +4532,8 @@ Each initiative tracker row carries:
 - Edge: in GM campaign space, a Player sheet does not expose the Companions tab; an NPC sheet does not show « Lié à »; group lists do not show link labels or nested companions.
 - Edge: session GM may edit an assigned Player sheet and a linked NPC sheet; the Companions tab lists companions without link/unlink/create; PATCH of `linkedPlayerId` by the GM is rejected (FR-session-player-companion-combatants).
 - Edge: reassign NPC from Player A to Player B → only B lists it; confirmation required.
-- Edge: delete Player → NPCs survive with `linkedPlayerId: null`.
+- Edge: delete Player with « keep companions » → NPCs survive with `linkedPlayerId: null` (FR-player-delete-companion-choice).
+- Edge: delete Player with « delete companions too » → linked NPCs are soft-deleted (including NPCs in campaign groups).
 - Edge: duplicate Player does not move/copy NPC links; duplicate NPC keeps the same `linkedPlayerId`.
 - Failure: `linkedPlayerId` pointing at an NPC, a deleted Player, or another user's Player is rejected.
 - Failure: without-group Player endpoint still excludes NPCs.
@@ -5056,3 +5057,50 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/layout/Sidebar/shared/SidebarCompanionNest.tsx`
 - `services/web/client/src/store/slices/sidebarSlice.ts`
 - `docs/functional-rules.md` — FR-npc-player-link, FR-sidebar-navigation, FR-frontend-design, FR-session-player-companion-combatants
+
+---
+
+## FR-player-delete-companion-choice: Player Deletion With Linked Companions
+
+**Rule**: When the user deletes a **Player** character (`kind: 'player'`) that has one or more non-deleted linked NPCs (`linkedPlayerId` equals that Player's id), the application MUST offer an explicit choice before proceeding: **keep companions** (current default unlink behavior) or **delete the Player and all linked companions**. Deleting an NPC alone or a Player with zero linked companions MUST keep the existing single confirmation dialog.
+
+**Scope**:
+
+- Applies to every Player deletion entry point in the sidebar: **Mes personnages** (`CharactersWithoutGroupList`) and **campaign group** character lists (`GroupList`).
+- Linked companions are all non-deleted NPCs owned by the requester with `linkedPlayerId` matching the Player, **including NPCs that belong to a campaign group** (same query semantics as backend unlink/cascade).
+- Complements FR-npc-player-link (cardinality and unlink default), FR-sidebar-context-actions (confirmation, keyboard), and FR-frontend-design (accessibility, i18n).
+- Does not change session roster, wheel quota, or combatant derivation (companions remain derived from live `linkedPlayerId` until deleted or unlinked).
+
+**UX**:
+
+- Dialog MUST list companion **display names** (or an accessible equivalent) so the user knows what is affected.
+- Primary destructive action MUST be **delete Player and companions**; secondary confirm MUST be **delete Player only / keep companions**; **Cancel** MUST abort with no deletion.
+- Enter MUST NOT auto-trigger destructive delete when multiple outcomes exist (explicit button activation only).
+- Escape and Cancel MUST close without deleting.
+
+**API**:
+
+- `DELETE /characters/:id` MAY accept `deleteLinkedCompanions=true` (query). When the target is a Player and the flag is true, the service MUST soft-delete all linked non-deleted NPCs (including group membership cleanup) before or after soft-deleting the Player. When false or omitted, MUST unlink only (`linkedPlayerId: null`). The flag MUST be ignored when deleting a non-Player.
+
+**Prohibitions**:
+
+- Silent cascade-delete of companions without the dedicated choice dialog.
+- Deleting linked NPCs owned by another user.
+- Blocking Player deletion when companion lookup fails (fallback: standard delete dialog without companion list; unlink behavior on confirm).
+
+**Tests**:
+
+- Nominal: Player with two linked NPCs → choice dialog; keep → Player deleted, NPCs remain with `linkedPlayerId: null`.
+- Nominal: same setup → delete with companions → Player and both NPCs soft-deleted.
+- Edge: Player with zero companions → existing single confirm only.
+- Edge: NPC delete → no companion dialog; no cascade param effect.
+- Failure: invalid cascade on non-Player → ignore flag, normal delete.
+
+**References**:
+
+- `services/adventure/api/src/resources/character/character.service.ts`
+- `services/web/client/src/lib/playerDeleteCompanions.ts`
+- `services/web/client/src/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog.tsx`
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `docs/functional-rules.md` — FR-npc-player-link, FR-sidebar-context-actions, FR-frontend-design
