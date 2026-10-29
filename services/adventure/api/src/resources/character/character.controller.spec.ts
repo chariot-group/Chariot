@@ -150,7 +150,9 @@ describe('CharacterController - remove', () => {
     const result = await controller.remove(characterId);
 
     expect(characterModel.findById).toHaveBeenCalled();
-    expect(characterService.remove).toHaveBeenCalledWith(characterId);
+    expect(characterService.remove).toHaveBeenCalledWith(characterId, {
+      deleteLinkedCompanions: false,
+    });
     expect(result).toEqual({ data: 'deleted' });
   });
 });
