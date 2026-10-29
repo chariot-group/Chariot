@@ -41,11 +41,10 @@ import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharac
 import { cn } from "@/lib/utils";
 import CharacterService from "@/services/CharacterService";
 import { characterDisplayName as formatCharacterName } from "@/lib/duplicateName";
+import { NpcLinkedPlayerFooterLink } from "@/components/character/NpcLinkedPlayerFooterLink";
 import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
 import { isPlayerOnSessionRoster } from "@/lib/sessionPlayerCompanions";
 import { buildSessionCharacterHref } from "@/lib/sessionInAppNavigation";
-import Link from "next/link";
-
 interface CharacterDetailViewProps {
   character: Player | NPC;
   /** GET personnage (même source que la page) pour resync après sauvegarde si besoin. */
@@ -331,12 +330,12 @@ export default function CharacterDetailView({
   }, [playedBySubjectId]);
 
   const npcLinkedPlayerId = !isPlayer(character) ? linkedPlayerIdOf(character) : null;
-  const showLinkedPlayerMeta = Boolean(
+  const showLinkedPlayerFooter = Boolean(
     npcLinkedPlayerId && (isPlayerSpace || (isGmViewingNpcSheet && isSessionGmEditContext)),
   );
 
   useEffect(() => {
-    if (!showLinkedPlayerMeta || !npcLinkedPlayerId) {
+    if (!showLinkedPlayerFooter || !npcLinkedPlayerId) {
       setLinkedPlayer(null);
       return;
     }
@@ -353,7 +352,7 @@ export default function CharacterDetailView({
     return () => {
       cancelled = true;
     };
-  }, [npcLinkedPlayerId, sessionCodeForMedia, showLinkedPlayerMeta]);
+  }, [npcLinkedPlayerId, sessionCodeForMedia, showLinkedPlayerFooter]);
 
   useEffect(() => {
     if (!showEditControls && isEditing) {
@@ -442,6 +441,30 @@ export default function CharacterDetailView({
     exportPdfButton
   );
 
+  const linkedPlayerFooterLink =
+    showLinkedPlayerFooter && npcLinkedPlayerId && !isEditing ? (
+      <NpcLinkedPlayerFooterLink
+        href={buildSessionCharacterHref(npcLinkedPlayerId, sessionCodeForMedia)}
+        playerName={
+          linkedPlayer ? formatCharacterName(linkedPlayer) || t("placeholder.noImage") : null
+        }
+      />
+    ) : null;
+
+  const exportPdfWithLinkedPlayer = (
+    <div className="inline-flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
+      {linkedPlayerFooterLink}
+      {linkedPlayerFooterLink ? (
+        <span
+          className="hidden shrink-0 text-sm text-white/40 sm:inline"
+          aria-hidden="true">
+          |
+        </span>
+      ) : null}
+      {exportPdfAction}
+    </div>
+  );
+
   const characterFooterActions = showEditControls ? (
     <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
       {isEditing ? (
@@ -517,11 +540,15 @@ export default function CharacterDetailView({
             />
             <span className="truncate">{t("editCharacter")}</span>
           </Button>
-          {exportPdfAction}
+          {exportPdfWithLinkedPlayer}
         </React.Fragment>
       )}
     </div>
+  ) : linkedPlayerFooterLink ? (
+    <div className="flex w-full min-w-0 justify-end">{exportPdfWithLinkedPlayer}</div>
   ) : null;
+
+  const sheetFooterBar = characterFooterActions;
 
   return (
     <main
@@ -606,15 +633,6 @@ export default function CharacterDetailView({
                               );
                             })()}
                           </div>
-                          {linkedPlayer ? (
-                            <Link
-                              href={buildSessionCharacterHref(linkedPlayer._id, sessionCodeForMedia)}
-                              className="min-w-0 truncate text-xs font-normal text-gray-light hover:text-white focus-visible:ring-1 focus-visible:ring-white/50">
-                              {t("npc.linkedTo", {
-                                name: formatCharacterName(linkedPlayer) || t("placeholder.noImage"),
-                              })}
-                            </Link>
-                          ) : null}
                         </div>
                       )
                     }
@@ -676,11 +694,11 @@ export default function CharacterDetailView({
         {isInSession ? (
           <CombatBanner
             characterId={character._id}
-            footerActions={characterFooterActions}
+            footerActions={sheetFooterBar}
           />
-        ) : characterFooterActions ? (
+        ) : sheetFooterBar ? (
           <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
-            <div className="flex w-full justify-end">{characterFooterActions}</div>
+            {sheetFooterBar}
           </div>
         ) : null}
       </form>

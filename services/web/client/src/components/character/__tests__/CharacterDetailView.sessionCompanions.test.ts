@@ -20,12 +20,13 @@ describe("FR-session-player-companion-combatants — session GM character sheets
     expect(source).toContain("sessionCode: sessionCodeForMedia");
   });
 
-  it("edge: companion NPC sheets show non-editable linked-player metadata in session", () => {
+  it("edge: companion NPC sheets show linked-player footer shortcut in session", () => {
     const source = readSource(detailViewPath);
 
-    expect(source).toContain("showLinkedPlayerMeta");
+    expect(source).toContain("showLinkedPlayerFooter");
+    expect(source).toContain("NpcLinkedPlayerFooterLink");
     expect(source).toContain("isGmViewingNpcSheet && isSessionGmEditContext");
-    expect(source).toContain("buildSessionCharacterHref(linkedPlayer._id, sessionCodeForMedia)");
+    expect(source).toContain("buildSessionCharacterHref(npcLinkedPlayerId");
   });
 
   it("failure: session NPC save strips linkedPlayerId", () => {

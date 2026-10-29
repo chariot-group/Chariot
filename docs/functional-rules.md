@@ -4460,8 +4460,8 @@ Each initiative tracker row carries:
 
 - Context is `environment.contextMode`, not the URL. Player space = `player`. GM space = `gm`.
 - Linking UX (link / unlink / create-linked, draft Companions-tab edits) MUST render only when `contextMode === "player"`.
-- In GM campaign space (no session, or campaign group lists / campaign character routes), the same Player or NPC sheet MUST keep the existing five tabs, MUST NOT show the Companions tab, MUST NOT show « Lié à {name} », and MUST NOT expose link / unlink / create-linked actions.
-- **Session exception (GM only)**: while the requester is the session GM, they MAY **edit character data** of a session-assigned Player and of its linked NPCs (FR-session-player-companion-combatants). They MUST NOT manage liaisons: no link, unlink, reassign, or create-linked, and `linkedPlayerId` MUST NOT be changed via session `gm-edit`. The assigned Player sheet MAY show the Companions tab without liaison actions (list + navigation only). Opening a companion NPC sheet in that session MAY show « Lié à {name} » as non-editable metadata. Campaign group lists stay unchanged.
+- In GM campaign space (no session, or campaign group lists / campaign character routes), the same Player or NPC sheet MUST keep the existing five tabs, MUST NOT show the Companions tab, MUST NOT show the linked-Player footer shortcut, and MUST NOT expose link / unlink / create-linked actions.
+- **Session exception (GM only)**: while the requester is the session GM, they MAY **edit character data** of a session-assigned Player and of its linked NPCs (FR-session-player-companion-combatants). They MUST NOT manage liaisons: no link, unlink, reassign, or create-linked, and `linkedPlayerId` MUST NOT be changed via session `gm-edit`. The assigned Player sheet MAY show the Companions tab without liaison actions (list + navigation only). Opening a companion NPC sheet in that session MAY show the linked-Player footer shortcut (navigation only). Campaign group lists stay unchanged.
 - Query param `linkedPlayerId` on NPC creation MUST be ignored in GM space.
 - The `linkedPlayerId` field MAY still exist on documents that also belong to a campaign group; GM campaign lists MUST treat those NPCs as ordinary group members (no link label, no nesting under the Player, no companion count).
 
@@ -4476,13 +4476,15 @@ Each initiative tracker row carries:
 - Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST NOT open a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
 - Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
 
-**NPC character sheet — discreet linked Player**:
+**NPC character sheet — linked Player footer shortcut**:
 
-- Complements FR-character-detail-view NPC header (name, CR/XP, group label). In **Player space only**, when `linkedPlayerId` is set, the header MUST show the linked Player display name as **secondary metadata**, at the same visual weight as the group label (smaller than the NPC name; no banner, no extra tab, no card).
-- Copy (i18n): FR « Lié à {name} », EN « Linked to {name} », ES « Vinculado a {name} ».
-- The name is a link to the Player sheet. Long names truncate (`truncate` / `min-w-0`) per `docs/design.md`.
-- When unlinked, this metadata MUST NOT render (no empty « Lié à »). When `contextMode === "gm"` outside the session-GM companion exception, it MUST NOT render. In session, the GM MAY see it as non-editable metadata (FR-session-player-companion-combatants).
-- The indicator MUST remain readable by assistive tech (visible text, not color-only). Clicking the link MUST be keyboard-operable with visible focus.
+- Complements FR-character-detail-view: the NPC header MUST stay limited to name and CR/XP (and group label when present). The linked Player MUST NOT appear in the NPC header (keeps the fixed header compact on mobile).
+- In **Player space only**, when `linkedPlayerId` is set, the character sheet **footer** (same sticky band as Edit / PDF — including when passed into `CombatBanner` during a session) MUST expose a discreet navigation control to the linked Player sheet.
+- Copy (i18n `characterDetail.npc.linkedTo`): FR « Lié à {name} », EN « Linked to {name} », ES « Vinculado a {name} ». Long names MUST truncate (`truncate` / `min-w-0`) with full text in `title` when truncated.
+- Visual treatment: **outline** button matching **Export PDF** in the same footer row (`variant="outline"`, same text/icon sizing). When both are visible, they MUST appear adjacent with a **pipe** separator (`|`) between linked-Player navigation and Export PDF (Lié à {name} | Export PDF). An icon MUST NOT be the only channel (visible text label required).
+- The footer shortcut MUST render even when Edit / PDF controls are hidden (e.g. session GM read-only on a companion), as long as the linked-Player navigation is allowed for that context.
+- When unlinked, the control MUST NOT render. When `contextMode === "gm"` outside the session-GM companion exception, it MUST NOT render. In session, the session GM MAY use it on companion NPC sheets (navigation only — FR-session-player-companion-combatants).
+- Keyboard-operable with visible focus; MUST NOT expose liaison management (unlink remains sidebar / Companions tab on the Player sheet).
 
 **Player sidebar (Mes personnages)**:
 
@@ -4509,7 +4511,8 @@ Each initiative tracker row carries:
 - Allowing an NPC to be linked to more than one Player at a time.
 - Storing the relation only on the Player (divergent lists).
 - Returning NPCs from `GET /characters/players/without-group`.
-- Showing the Companions tab on NPC sheets (the linked Player is header metadata only, and only in Player space).
+- Showing the Companions tab on NPC sheets.
+- Showing « Lié à {Player} » (or any linked-Player navigation) in the NPC sheet header or tab row.
 - Showing « Lié à {Player} » or a PNJ kind badge on Companions-tab cards.
 - Showing the Companions tab, « Lié à », link/unlink/create-linked actions, or GM-sidebar link labels when `contextMode === "gm"`, except the session-GM surfaces in FR-session-player-companion-combatants (character-data edit allowed; liaison management still forbidden).
 - Offering a Player choice in the Companions « create linked » dialog (NPC + Codex only).
@@ -4529,7 +4532,7 @@ Each initiative tracker row carries:
 - Nominal: Companions « create linked » opens the create-character dialog limited to NPC + Codex; a Codex monster pre-fills the NPC form with `linkedPlayerId`.
 - Nominal: Player with several linked NPCs shows all of them nested in the Player sidebar and listed on the tab as a responsive Card grid with avatar, name, and CR/XP (no kind badge).
 - Edge: unlinked without-group NPC appears as a root row in the Player sidebar; NPC sheet has no Companions tab and no « Lié à » metadata.
-- Edge: in Player space, linked NPC sheet header shows « Lié à {PlayerName} » as secondary text with a working link; no Companions tab.
+- Edge: in Player space, linked NPC footer shows « Lié à {PlayerName} » navigating to the Player sheet; NPC header has no linked-Player line; no Companions tab on the NPC sheet.
 - Edge: nested linked NPC rows use a stronger indent and a purple rail; the companions list keeps an accessible name.
 - Edge: in GM campaign space, a Player sheet does not expose the Companions tab; an NPC sheet does not show « Lié à »; group lists do not show link labels or nested companions.
 - Edge: session GM may edit an assigned Player sheet and a linked NPC sheet; the Companions tab lists companions without link/unlink/create; PATCH of `linkedPlayerId` by the GM is rejected (FR-session-player-companion-combatants).
@@ -4547,6 +4550,7 @@ Each initiative tracker row carries:
 - `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
 - `services/web/client/src/components/character/CharacterTabs.tsx`
 - `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `services/web/client/src/components/character/NpcLinkedPlayerFooterLink.tsx`
 - `services/web/client/src/components/character/tabContents/companions/CharacterCompanionsTabContent.tsx`
 - `services/web/client/src/components/character/tabContents/companions/CompanionNpcCard.tsx`
 - `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
