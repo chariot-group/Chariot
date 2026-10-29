@@ -2916,6 +2916,8 @@ Each initiative tracker row carries:
 1. **Créer** (action primaire) : crée le personnage dans le groupe courant (espace MJ) ou sans groupe (espace joueur), puis ferme la modale. Redirige vers la fiche du personnage créé.
 2. **Créer dans un autre groupe** (espace MJ uniquement) : crée le personnage dans le même groupe, puis ouvre immédiatement la `MoveCharacterDialog` sur le personnage nouvellement créé pour le déplacer. N'est pas disponible dans l'espace joueur.
 
+**Compagnons liés (joueur uniquement)** : lorsque le personnage source est un **joueur** avec au moins un compagnon lié (`linkedPlayerId`), la modale MUST additionally offer the three outcomes defined in **FR-player-duplicate-companion-choice** (liste des compagnons + choix explicite). Sans compagnon, la modale reste inchangée.
+
 **Logique de duplication (côté client)** :
 
 - Aucun nouvel endpoint backend n'est requis.
@@ -4452,7 +4454,7 @@ Each initiative tracker row carries:
 - Reject linking to an NPC, to a deleted Player, or to a Player the requester does not own.
 - Create and update NPC DTOs MUST accept optional `linkedPlayerId` (`null` unlinks).
 - Soft-deleting a Player MUST either unlink its NPCs (`linkedPlayerId` set to `null`) or soft-delete those NPCs when the user explicitly chooses cascade deletion (FR-player-delete-companion-choice). Soft-deleting an NPC removes it from the Player's companion list.
-- Duplicating a Player (FR-character-duplicate) MUST NOT duplicate or reassign linked NPCs. Duplicating an NPC MUST copy `linkedPlayerId` when present (the copy stays linked to the same Player).
+- Duplicating a Player with linked companions follows **FR-player-duplicate-companion-choice** (explicit user choice). Duplicating a Player with zero linked companions or duplicating with « Player only » MUST leave companions on the source Player. Duplicating an NPC MUST copy `linkedPlayerId` when present (the copy stays linked to the same Player).
 
 **Player space vs GM space** (FR-sidebar-navigation):
 
@@ -4534,7 +4536,7 @@ Each initiative tracker row carries:
 - Edge: reassign NPC from Player A to Player B → only B lists it; confirmation required.
 - Edge: delete Player with « keep companions » → NPCs survive with `linkedPlayerId: null` (FR-player-delete-companion-choice).
 - Edge: delete Player with « delete companions too » → linked NPCs are soft-deleted (including NPCs in campaign groups).
-- Edge: duplicate Player does not move/copy NPC links; duplicate NPC keeps the same `linkedPlayerId`.
+- Edge: duplicate Player with « Player only » does not move/copy NPC links; duplicate with companions follows FR-player-duplicate-companion-choice; duplicate NPC keeps the same `linkedPlayerId`.
 - Failure: `linkedPlayerId` pointing at an NPC, a deleted Player, or another user's Player is rejected.
 - Failure: without-group Player endpoint still excludes NPCs.
 - Failure: the Companions link picker does not include NPCs that have a group.
@@ -5104,3 +5106,55 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
 - `docs/functional-rules.md` — FR-npc-player-link, FR-sidebar-context-actions, FR-frontend-design
+
+---
+
+## FR-player-duplicate-companion-choice: Player Duplication With Linked Companions
+
+**Rule**: When the user duplicates a **Player** character (`kind: 'player'`) that has one or more non-deleted linked NPCs (`linkedPlayerId` equals that Player's id), the duplicate confirmation flow MUST offer an explicit companion outcome before creation completes: **duplicate Player only** (default — companions stay linked to the source Player), **duplicate Player and copy all linked companions** (each new Player copy receives its own NPC copies linked to that copy), or **duplicate Player and move existing companions** to the new Player (reassign `linkedPlayerId` on the existing NPCs). Duplicating an NPC alone or a Player with zero linked companions MUST keep the existing `DuplicateCharacterDialog` without companion choices.
+
+**Scope**:
+
+- Applies to every Player duplicate entry point in the sidebar: **Mes personnages** (`CharactersWithoutGroupList`) and **campaign group** character lists (`GroupList`).
+- Linked companions are all non-deleted NPCs owned by the requester with `linkedPlayerId` matching the Player, **including NPCs that belong to a campaign group** (same query semantics as FR-player-delete-companion-choice).
+- Complements FR-character-duplicate (name, count, create / create-and-move), FR-npc-player-link (cardinality), FR-sidebar-context-actions (keyboard), and FR-frontend-design (accessibility, i18n).
+- No new backend endpoint is required: Player and NPC copies use `CharacterService.createCharacter`; companion move uses `CharacterService.updateCharacter` on each linked NPC.
+
+**UX**:
+
+- When companions exist, the dialog MUST list companion **display names** (or an accessible equivalent).
+- A **radio-style** choice group MUST expose the three outcomes with distinct labels and hints (FR copy per product: « Dupliquer le personnage seulement », « Dupliquer le personnage et ses compagnons », « Dupliquer le personnage et déplacer ses compagnons vers le nouveau personnage »).
+- Default selection MUST be **Player only**.
+- **Move companions** MUST be disabled when copy **count > 1**, with a visible hint explaining why.
+- **Enter** in the name field MUST NOT trigger creation when companion choices are shown (explicit **Créer** activation only). Without companions, Enter MAY still trigger the primary **Créer** action (FR-character-duplicate).
+- Escape and Cancel MUST close without creating.
+
+**Companion logic**:
+
+- **Player only**: create Player copy(ies) only; no NPC create/update for links.
+- **Copy companions**: after each created Player copy, duplicate every linked NPC (same field exclusion as FR-character-duplicate: omit `_id`, `createdAt`, `updatedAt`, `deletedAt`, `createdBy`; preserve `groups` on the NPC copy) with `linkedPlayerId` set to that new Player's id. NPC copy names MUST use the next free suffix among visible names (same stem/suffix helper as FR-character-duplicate).
+- **Move companions**: allowed only when count = 1; create one Player copy, then set each linked NPC's `linkedPlayerId` to the new Player's id (source Player ends with zero of those companions).
+
+**Prohibitions**:
+
+- Copying or reassigning linked companions without the dedicated choice UI when the Player has linked companions.
+- Moving companions when count > 1.
+- Affecting NPCs owned by another user or not linked to the source Player.
+
+**Tests**:
+
+- Nominal: Player with two companions → three choices visible; Player only → two NPCs still linked to source.
+- Nominal: copy companions + count 1 → new Player plus two new NPCs linked to the new Player; source keeps original links.
+- Nominal: move companions → new Player owns both NPCs; source has none.
+- Edge: Player with zero companions → no companion block; Enter still submits primary create.
+- Edge: count 2 + copy companions → two Player copies each with duplicated companion sets.
+- Edge: count 2 → move option disabled.
+- Failure: API error → error toast; dialog remains open when applicable.
+
+**References**:
+
+- `services/web/client/src/lib/playerDuplicateCompanions.ts`
+- `services/web/client/src/components/dialogs/DuplicateCharacterDialog.tsx`
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `docs/functional-rules.md` — FR-character-duplicate, FR-npc-player-link, FR-sidebar-context-actions, FR-frontend-design

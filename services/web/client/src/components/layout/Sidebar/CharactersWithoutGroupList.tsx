@@ -26,6 +26,14 @@ import {
   syncReduxAfterPlayerDelete,
 } from "@/lib/playerDeleteCompanions";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
+import {
+  applyCompanionModeAfterPlayerCreated,
+  createPlayerDuplicateFromFull,
+  effectiveDuplicateCompanionMode,
+  syncReduxAfterCompanionMove,
+  syncReduxAfterCompanionNpcCreate,
+  type PlayerDuplicateCompanionMode,
+} from "@/lib/playerDuplicateCompanions";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import { LinkNpcToPlayerDialog } from "@/components/dialogs/LinkNpcToPlayerDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
@@ -152,23 +160,68 @@ export default function CharactersWithoutGroupList() {
     [characters],
   );
 
-  const handleDuplicateCharacter = async (character: Character, name: string, count: number) => {
+  const duplicateCompanionsPreview = useMemo(() => {
+    if (!characterToDuplicate || !isPlayer(characterToDuplicate)) return [];
+    return linkedCompanionsForPlayer(linkedNpcs ?? [], characterToDuplicate._id);
+  }, [characterToDuplicate, linkedNpcs]);
+
+  const existingNpcDisplayNames = useMemo(
+    () =>
+      [...(linkedNpcs ?? []), ...(unlinkedNpcs ?? [])]
+        .map((npc) => characterDisplayName(npc))
+        .filter(Boolean),
+    [linkedNpcs, unlinkedNpcs],
+  );
+
+  const handleDuplicateCharacter = async (
+    character: Character,
+    name: string,
+    count: number,
+    companionMode: PlayerDuplicateCompanionMode = "playerOnly",
+  ) => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { _id, createdBy, deletedAt, groups, ...rest } = character;
       const copyNames = buildSequentialCopyNames(name, count);
-      const type = isPlayer(character) ? "players" : "npcs";
+      const companions = isPlayer(character)
+        ? linkedCompanionsForPlayer(linkedNpcs ?? [], character._id)
+        : [];
+      const mode = effectiveDuplicateCompanionMode(companionMode, count);
+
+      if (!isPlayer(character)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _id, createdBy, deletedAt, groups, ...rest } = character;
+        let lastCreated: Character | null = null;
+        for (const copyName of copyNames) {
+          const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
+          const created = await CharacterService.createCharacter("npcs", payload);
+          dispatch(upsertPlayerSpaceNpc(created as NPC));
+          lastCreated = created as Character;
+        }
+        showToast(t("duplicateCharacterSuccess"), "success");
+        if (count === 1 && lastCreated) router.push(`/characters/${lastCreated._id}`);
+        return;
+      }
+
+      let npcNames = [...existingNpcDisplayNames];
       let lastCreated: Character | null = null;
       for (const copyName of copyNames) {
-        const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
-        const created = await CharacterService.createCharacter(type, payload);
-        if (isPlayer(created)) {
-          dispatch(upsertCharacterWithoutGroup(created as Character));
-        } else {
-          dispatch(upsertPlayerSpaceNpc(created as NPC));
-        }
+        const created = await createPlayerDuplicateFromFull(character, copyName, []);
+        dispatch(upsertCharacterWithoutGroup(created as Character));
         lastCreated = created as Character;
+
+        const { createdCompanions, movedCompanions, nextNpcNames } =
+          await applyCompanionModeAfterPlayerCreated({
+            mode,
+            newPlayerId: created._id,
+            companions,
+            existingNpcNames: npcNames,
+          });
+        npcNames = nextNpcNames;
+        for (const npc of createdCompanions) {
+          syncReduxAfterCompanionNpcCreate(dispatch, npc);
+        }
+        syncReduxAfterCompanionMove(dispatch, movedCompanions);
       }
+
       showToast(t("duplicateCharacterSuccess"), "success");
       if (count === 1 && lastCreated) router.push(`/characters/${lastCreated._id}`);
     } catch {
@@ -581,7 +634,10 @@ export default function CharactersWithoutGroupList() {
           if (!open) setCharacterToDuplicate(null);
         }}
         existingNames={existingCharacterNames}
-        onDuplicate={(name, count) => handleDuplicateCharacter(characterToDuplicate!, name, count)}
+        companions={duplicateCompanionsPreview}
+        onDuplicate={(name, count, companionMode) =>
+          handleDuplicateCharacter(characterToDuplicate!, name, count, companionMode)
+        }
       />
 
       <ExportCharacterSheetPdfDialog

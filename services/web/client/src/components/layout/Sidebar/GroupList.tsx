@@ -28,6 +28,14 @@ import {
   deletePlayerCharacterWithCompanionChoice,
   syncReduxAfterPlayerDelete,
 } from "@/lib/playerDeleteCompanions";
+import {
+  applyCompanionModeAfterPlayerCreated,
+  createPlayerDuplicateFromFull,
+  effectiveDuplicateCompanionMode,
+  syncReduxAfterCompanionMove,
+  syncReduxAfterCompanionNpcCreate,
+  type PlayerDuplicateCompanionMode,
+} from "@/lib/playerDuplicateCompanions";
 import type { NPC } from "@/types/character";
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
@@ -106,6 +114,8 @@ export default function GroupList({
   } | null>(null);
   const [deleteCompanionsPreview, setDeleteCompanionsPreview] = React.useState<NPC[]>([]);
   const [loadingDeleteCompanions, setLoadingDeleteCompanions] = React.useState(false);
+  const [duplicateCompanionsPreview, setDuplicateCompanionsPreview] = React.useState<NPC[]>([]);
+  const [loadingDuplicateCompanions, setLoadingDuplicateCompanions] = React.useState(false);
   const [characterToMove, setCharacterToMove] = React.useState<{
     character: GroupCharacter;
     groupId: string;
@@ -178,6 +188,31 @@ export default function GroupList({
       cancelled = true;
     };
   }, [characterPendingDelete]);
+
+  React.useEffect(() => {
+    if (!characterToDuplicate || isNpcGroupCharacter(characterToDuplicate.character)) {
+      setDuplicateCompanionsPreview([]);
+      setLoadingDuplicateCompanions(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingDuplicateCompanions(true);
+    void CharacterService.getNpcsByLinkedPlayers([characterToDuplicate.character._id])
+      .then((npcs) => {
+        if (!cancelled) setDuplicateCompanionsPreview(npcs);
+      })
+      .catch(() => {
+        if (!cancelled) setDuplicateCompanionsPreview([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDuplicateCompanions(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [characterToDuplicate]);
 
   const isPendingGroupPlayer =
     characterPendingDelete && !isNpcGroupCharacter(characterPendingDelete.character);
@@ -268,20 +303,41 @@ export default function GroupList({
       name: string,
       count: number,
       andMove = false,
+      companionMode: PlayerDuplicateCompanionMode = "playerOnly",
+      companions: NPC[] = [],
     ) => {
       if (!selectedCampaignId) return;
       try {
         const full = await CharacterService.getCharacterById(source._id);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { _id, createdBy, deletedAt, groups, ...rest } = full;
         const isNpc = !("progression" in full);
-        const type = isNpc ? "npcs" : "players";
+        const mode = effectiveDuplicateCompanionMode(companionMode, count);
 
         const createdChars: GroupCharacter[] = [];
         const copyNames = buildSequentialCopyNames(name, count);
+        let npcNames = existingCharacterNames;
+
         for (const copyName of copyNames) {
-          const payload = { ...rest, firstname: copyName, lastname: "", groups: [groupId] };
-          const created = await CharacterService.createCharacter(type, payload as typeof rest);
+          let created;
+          if (isNpc) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _id, createdBy, deletedAt, groups, ...rest } = full;
+            const payload = { ...rest, firstname: copyName, lastname: "", groups: [groupId] };
+            created = await CharacterService.createCharacter("npcs", payload as typeof rest);
+          } else {
+            created = await createPlayerDuplicateFromFull(full, copyName, [groupId]);
+            const { createdCompanions, movedCompanions, nextNpcNames } =
+              await applyCompanionModeAfterPlayerCreated({
+                mode,
+                newPlayerId: created._id,
+                companions,
+                existingNpcNames: npcNames,
+              });
+            npcNames = nextNpcNames;
+            for (const npc of createdCompanions) {
+              syncReduxAfterCompanionNpcCreate(dispatch, npc);
+            }
+            syncReduxAfterCompanionMove(dispatch, movedCompanions);
+          }
 
           dispatch(
             addCharacterToGroup({
@@ -317,7 +373,7 @@ export default function GroupList({
         throw new Error("duplicate failed");
       }
     },
-    [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
+    [dispatch, existingCharacterNames, isMobile, router, selectedCampaignId, setOpenMobile, t],
   );
 
   const handleDuplicateGroup = React.useCallback(
@@ -759,11 +815,29 @@ export default function GroupList({
           if (!open) setCharacterToDuplicate(null);
         }}
         existingNames={existingCharacterNames}
-        onDuplicate={(name, count) =>
-          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, false)
+        companions={duplicateCompanionsPreview}
+        isLoadingCompanions={loadingDuplicateCompanions}
+        onDuplicate={(name, count, companionMode) =>
+          handleDuplicateCharacter(
+            characterToDuplicate!.character,
+            characterToDuplicate!.groupId,
+            name,
+            count,
+            false,
+            companionMode,
+            duplicateCompanionsPreview,
+          )
         }
-        onDuplicateAndMove={(name, count) =>
-          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, true)
+        onDuplicateAndMove={(name, count, companionMode) =>
+          handleDuplicateCharacter(
+            characterToDuplicate!.character,
+            characterToDuplicate!.groupId,
+            name,
+            count,
+            true,
+            companionMode,
+            duplicateCompanionsPreview,
+          )
         }
       />
 

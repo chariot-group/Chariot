@@ -99,9 +99,7 @@ export class CharacterService {
     }
   }
 
-  private async applySoftDelete(
-    character: CharacterDocument,
-  ): Promise<void> {
+  private async applySoftDelete(character: CharacterDocument): Promise<void> {
     character.deletedAt = new Date();
     for (const groupId of character.groups) {
       await this.groupModel

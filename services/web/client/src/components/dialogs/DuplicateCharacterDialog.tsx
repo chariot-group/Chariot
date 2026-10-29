@@ -1,5 +1,7 @@
 "use client";
 
+/** @see FR-character-duplicate, FR-player-duplicate-companion-choice */
+
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +15,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { characterDisplayName, nextAvailableDuplicateName } from "@/lib/duplicateName";
-import { Loader2 } from "lucide-react";
+import type { PlayerDuplicateCompanionMode } from "@/lib/playerDuplicateCompanions";
+import { companionNamesLine } from "@/lib/sessionPlayerCompanions";
+import { cn } from "@/lib/utils";
+import type { NPC } from "@/types/character";
+import { Copy, Loader2, UserRound, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 /** Pure helper — exported for unit tests */
@@ -24,15 +30,25 @@ export function buildDuplicateName(
   return nextAvailableDuplicateName(characterDisplayName(character), existingNames);
 }
 
+const companionChoiceCardClass =
+  "flex w-full min-w-0 cursor-pointer items-start gap-3 rounded-[15px] border border-white/15 bg-gray-middle-light px-3 py-2.5 text-left transition-colors has-[:checked]:border-primary/60 has-[:checked]:bg-gray has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary disabled:cursor-not-allowed disabled:opacity-50";
+
 interface DuplicateCharacterDialogProps {
   character: { firstname: string; lastname?: string } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onDuplicate: (name: string, count: number) => Promise<void>;
+  onDuplicate: (name: string, count: number, companionMode: PlayerDuplicateCompanionMode) => Promise<void>;
   /** Visible character display names used to pick the next free suffix */
   existingNames?: readonly string[];
   /** When provided, shows a secondary "Create in another group" button */
-  onDuplicateAndMove?: (name: string, count: number) => Promise<void>;
+  onDuplicateAndMove?: (
+    name: string,
+    count: number,
+    companionMode: PlayerDuplicateCompanionMode,
+  ) => Promise<void>;
+  /** Linked companions — when non-empty, shows companion outcome choices */
+  companions?: NPC[];
+  isLoadingCompanions?: boolean;
 }
 
 export function DuplicateCharacterDialog({
@@ -42,6 +58,8 @@ export function DuplicateCharacterDialog({
   onDuplicate,
   existingNames = [],
   onDuplicateAndMove,
+  companions = [],
+  isLoadingCompanions = false,
 }: DuplicateCharacterDialogProps) {
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
@@ -53,26 +71,46 @@ export function DuplicateCharacterDialog({
 
   const [name, setName] = React.useState(defaultName);
   const [countStr, setCountStr] = React.useState("1");
+  const [companionMode, setCompanionMode] = React.useState<PlayerDuplicateCompanionMode>("playerOnly");
   const [isCreating, setIsCreating] = React.useState(false);
+
+  const showCompanionChoices = companions.length > 0;
 
   React.useEffect(() => {
     if (open) {
       setName(defaultName);
       setCountStr("1");
+      setCompanionMode("playerOnly");
       setIsCreating(false);
     }
   }, [open, defaultName]);
 
   const count = Math.max(1, Math.min(99, parseInt(countStr, 10) || 1));
+  const moveCompanionsDisabled = count > 1;
+
+  React.useEffect(() => {
+    if (moveCompanionsDisabled && companionMode === "moveCompanions") {
+      setCompanionMode("playerOnly");
+    }
+  }, [moveCompanionsDisabled, companionMode]);
 
   const trimmedName = name.trim();
-  const canSubmit = trimmedName.length > 0 && !isCreating;
+  const canSubmit = trimmedName.length > 0 && !isCreating && !isLoadingCompanions;
+
+  const sortedCompanionSummary = React.useMemo(() => {
+    const sorted = [...companions].sort((left, right) =>
+      characterDisplayName(left).localeCompare(characterDisplayName(right), undefined, {
+        sensitivity: "base",
+      }),
+    );
+    return companionNamesLine(sorted);
+  }, [companions]);
 
   const handleCreate = async () => {
     if (!canSubmit) return;
     setIsCreating(true);
     try {
-      await onDuplicate(trimmedName, count);
+      await onDuplicate(trimmedName, count, companionMode);
       onOpenChange(false);
     } catch {
       // error toast handled by caller
@@ -85,7 +123,7 @@ export function DuplicateCharacterDialog({
     if (!canSubmit || !onDuplicateAndMove) return;
     setIsCreating(true);
     try {
-      await onDuplicateAndMove(trimmedName, count);
+      await onDuplicateAndMove(trimmedName, count, companionMode);
       onOpenChange(false);
     } catch {
       // error toast handled by caller
@@ -95,6 +133,7 @@ export function DuplicateCharacterDialog({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (showCompanionChoices) return;
     if (e.key === "Enter" && canSubmit) {
       e.preventDefault();
       void handleCreate();
@@ -110,7 +149,11 @@ export function DuplicateCharacterDialog({
       <DialogContent className="sm:max-w-md rounded-[15px] bg-card">
         <DialogHeader>
           <DialogTitle>{t("duplicateCharacterDialogTitle")}</DialogTitle>
-          <DialogDescription>{t("duplicateCharacterDialogDescription")}</DialogDescription>
+          <DialogDescription>
+            {showCompanionChoices
+              ? t("duplicatePlayerWithCompanionsDescription")
+              : t("duplicateCharacterDialogDescription")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex items-end gap-3 py-2">
@@ -143,6 +186,116 @@ export function DuplicateCharacterDialog({
             />
           </div>
         </div>
+
+        {showCompanionChoices ? (
+          isLoadingCompanions ? (
+            <div
+              className="flex justify-center py-3"
+              aria-busy="true">
+              <Loader2
+                className="h-5 w-5 animate-spin text-white/70"
+                aria-hidden="true"
+              />
+            </div>
+          ) : (
+            <>
+              <fieldset className="min-w-0 space-y-1.5">
+                <legend className="text-xs font-semibold text-white/70">
+                  {t("duplicatePlayerWithCompanionsListLabel")} ({companions.length})
+                </legend>
+                <div className="max-h-24 overflow-y-auto rounded-[12px] border border-white/10 bg-gray-middle-light/40 px-3 py-2 pr-2">
+                  <p
+                    className="text-xs leading-relaxed text-white/70"
+                    title={sortedCompanionSummary}>
+                    {sortedCompanionSummary}
+                  </p>
+                </div>
+              </fieldset>
+
+              <fieldset
+                className="flex flex-col gap-2"
+                disabled={isCreating}>
+                <legend className="text-xs font-semibold text-white/70">
+                  {t("duplicatePlayerWithCompanionsChoiceLegend")}
+                </legend>
+
+                <label className={companionChoiceCardClass}>
+                  <input
+                    type="radio"
+                    name="duplicate-companion-mode"
+                    className="mt-1 size-4 shrink-0 accent-primary"
+                    checked={companionMode === "playerOnly"}
+                    onChange={() => setCompanionMode("playerOnly")}
+                    aria-label={t("duplicatePlayerOnlyAria")}
+                  />
+                  <UserRound
+                    className="mt-0.5 size-5 shrink-0 text-blue"
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-white">
+                      {t("duplicatePlayerOnly")}
+                    </span>
+                    <span className="block text-xs text-white/70">{t("duplicatePlayerOnlyHint")}</span>
+                  </span>
+                </label>
+
+                <label className={companionChoiceCardClass}>
+                  <input
+                    type="radio"
+                    name="duplicate-companion-mode"
+                    className="mt-1 size-4 shrink-0 accent-primary"
+                    checked={companionMode === "copyCompanions"}
+                    onChange={() => setCompanionMode("copyCompanions")}
+                    aria-label={t("duplicatePlayerAndCompanionsAria")}
+                  />
+                  <Copy
+                    className="mt-0.5 size-5 shrink-0 text-purple"
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-white">
+                      {t("duplicatePlayerAndCompanions")}
+                    </span>
+                    <span className="block text-xs text-white/70">
+                      {t("duplicatePlayerAndCompanionsHint")}
+                    </span>
+                  </span>
+                </label>
+
+                <label
+                  className={cn(
+                    companionChoiceCardClass,
+                    moveCompanionsDisabled && "cursor-not-allowed opacity-50",
+                  )}>
+                  <input
+                    type="radio"
+                    name="duplicate-companion-mode"
+                    className="mt-1 size-4 shrink-0 accent-primary"
+                    checked={companionMode === "moveCompanions"}
+                    disabled={moveCompanionsDisabled}
+                    onChange={() => setCompanionMode("moveCompanions")}
+                    aria-label={t("duplicatePlayerMoveCompanionsAria")}
+                  />
+                  <Users
+                    className="mt-0.5 size-5 shrink-0 text-primary"
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-white">
+                      {t("duplicatePlayerMoveCompanions")}
+                    </span>
+                    <span className="block text-xs text-white/70">
+                      {moveCompanionsDisabled
+                        ? t("duplicatePlayerMoveCompanionsDisabledHint")
+                        : t("duplicatePlayerMoveCompanionsHint")}
+                    </span>
+                  </span>
+                </label>
+              </fieldset>
+            </>
+          )
+        ) : null}
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
           <Button

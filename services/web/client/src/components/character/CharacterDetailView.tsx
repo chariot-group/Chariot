@@ -4,17 +4,13 @@ import { SquarePen, X, Save, FileDown } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import CharacterTabs, { CharacterTab, tabsForCharacterSheet } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
-import {
-  selectIsInSession,
-  selectSessionCode,
-  selectSessionParticipants,
-} from "@/store/slices/sessionSlice";
+import { selectIsInSession, selectSessionCode, selectSessionParticipants } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import UserService from "@/services/UserService";
 import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipantUserLabel";
@@ -80,17 +76,16 @@ export default function CharacterDetailView({
 
   const isSessionGmUser = Boolean(
     currentUserKeycloakId &&
-      participants.some(
-        (participant) => participant.userId === currentUserKeycloakId && participant.status === "gameMaster",
-      ),
+    participants.some(
+      (participant) => participant.userId === currentUserKeycloakId && participant.status === "gameMaster",
+    ),
   );
 
   const sessionCodeActive = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
   const sessionCodeForMedia = sessionCodeActive;
   const isSessionGmEditContext = Boolean(isInSession && isSessionGmUser && sessionCodeActive);
 
-  const isAssignedSessionPlayer =
-    isPlayer(character) && isPlayerOnSessionRoster(participants, character._id);
+  const isAssignedSessionPlayer = isPlayer(character) && isPlayerOnSessionRoster(participants, character._id);
 
   const isSessionCompanionNpc =
     !isPlayer(character) &&
@@ -98,14 +93,11 @@ export default function CharacterDetailView({
     isPlayerOnSessionRoster(participants, linkedPlayerIdOf(character) ?? "");
 
   const isForeignOwnedSheet =
-    currentUserKeycloakId != null &&
-    character.createdBy != null &&
-    character.createdBy !== currentUserKeycloakId;
+    currentUserKeycloakId != null && character.createdBy != null && character.createdBy !== currentUserKeycloakId;
 
   const isGmViewingPlayerSheet =
     isSessionGmUser && isPlayer(character) && (isForeignOwnedSheet || isAssignedSessionPlayer);
-  const isGmViewingNpcSheet =
-    isSessionGmUser && !isPlayer(character) && (isForeignOwnedSheet || isSessionCompanionNpc);
+  const isGmViewingNpcSheet = isSessionGmUser && !isPlayer(character) && (isForeignOwnedSheet || isSessionCompanionNpc);
 
   const playedBySubjectId = isGmViewingPlayerSheet && character.createdBy != null ? String(character.createdBy) : null;
 
@@ -125,16 +117,10 @@ export default function CharacterDetailView({
 
   const showEditControls = !isForeignOwnedSheet || canEditAsGm;
 
-  const showSessionGmCompanionsTab = Boolean(
-    isPlayer(character) && isSessionGmEditContext && isAssignedSessionPlayer,
-  );
+  const showSessionGmCompanionsTab = Boolean(isPlayer(character) && isSessionGmEditContext && isAssignedSessionPlayer);
 
   const isPlayerSpace = contextMode === "player";
-  const availableTabs = tabsForCharacterSheet(
-    isPlayer(character),
-    isPlayerSpace,
-    showSessionGmCompanionsTab,
-  );
+  const availableTabs = tabsForCharacterSheet(isPlayer(character), isPlayerSpace, showSessionGmCompanionsTab);
   const requestedTab = (searchParams.get("tab") as CharacterTab) || "general";
   const activeTab = availableTabs.includes(requestedTab) ? requestedTab : "general";
 
@@ -433,9 +419,7 @@ export default function CharacterDetailView({
         "max-w-full min-w-0 lg:text-sm text-xs font-semibold",
         isNpcPdfExportDisabled && "pointer-events-none",
       )}
-      aria-label={
-        isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")
-      }
+      aria-label={isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")}
       aria-disabled={isNpcPdfExportDisabled || undefined}>
       <FileDown
         className="lg:size-5 size-4 shrink-0"
@@ -605,28 +589,30 @@ export default function CharacterDetailView({
                         <div className="flex min-w-0 flex-col gap-1 font-semibold text-white">
                           <div>
                             {(() => {
-                            const challengeRating = character.challenge?.challengeRating ?? 0;
-                            const experiencePoints = character.challenge?.experiencePoints ?? 0;
-                            const displayChallengeRating = formatChallengeRating(challengeRating);
+                              const challengeRating = character.challenge?.challengeRating ?? 0;
+                              const experiencePoints = character.challenge?.experiencePoints ?? 0;
+                              const displayChallengeRating = formatChallengeRating(challengeRating);
 
-                            return (
-                              <React.Fragment>
-                                <InfoTooltip
-                                  content={tCommon("challengeRatingTooltip")}
-                                  side="bottom"
-                                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                                  <abbr className="cursor-help no-underline">{t("npc.challengeRatingAbbr")}</abbr>
-                                </InfoTooltip>{" "}
-                                {displayChallengeRating} ({experiencePoints} XP)
-                              </React.Fragment>
-                            );
-                          })()}
+                              return (
+                                <React.Fragment>
+                                  <InfoTooltip
+                                    content={tCommon("challengeRatingTooltip")}
+                                    side="bottom"
+                                    moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                                    <abbr className="cursor-help no-underline">{t("npc.challengeRatingAbbr")}</abbr>
+                                  </InfoTooltip>{" "}
+                                  {displayChallengeRating} ({experiencePoints} XP)
+                                </React.Fragment>
+                              );
+                            })()}
                           </div>
                           {linkedPlayer ? (
                             <Link
                               href={buildSessionCharacterHref(linkedPlayer._id, sessionCodeForMedia)}
                               className="min-w-0 truncate text-xs font-normal text-gray-light hover:text-white focus-visible:ring-1 focus-visible:ring-white/50">
-                              {t("npc.linkedTo", { name: formatCharacterName(linkedPlayer) || t("placeholder.noImage") })}
+                              {t("npc.linkedTo", {
+                                name: formatCharacterName(linkedPlayer) || t("placeholder.noImage"),
+                              })}
                             </Link>
                           ) : null}
                         </div>
