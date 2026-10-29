@@ -90,7 +90,7 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
 
             return (
               <div className="flex flex-col gap-2">
-                <div className="text-xs text-gray-middle-light">
+                <div className="text-xs text-muted-foreground">
                   <span>
                     ⚠️{" "}
                     {t("proficiencyBonusMismatch", {

@@ -371,7 +371,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
                     return (
                       <div className="flex flex-col gap-4">
-                        <div className="text-xs text-gray-middle-light mx-1 mt-2">
+                        <div className="text-xs text-muted-foreground mx-1 mt-2">
                           {calculatedLevel !== currentLevel && (
                             <span>
                               ⚠️{" "}
@@ -607,7 +607,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                         </div>
 
                         {/* Class level indicator */}
-                        <div className="text-xs text-gray-middle-light">
+                        <div className="text-xs text-muted-foreground">
                           {t("classLevelInfo", {
                             classLevel: currentClassLevel,
                             totalLevel: totalClassLevels,
@@ -880,7 +880,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                               <span>
                                 {t("level")} {level}
                               </span>
-                              <span className="text-xs text-gray-middle-light">{t(`exhaustionLevels.${level}`)}</span>
+                              <span className="text-xs text-muted-foreground">{t(`exhaustionLevels.${level}`)}</span>
                             </div>
                           </SelectItem>
                         ))}

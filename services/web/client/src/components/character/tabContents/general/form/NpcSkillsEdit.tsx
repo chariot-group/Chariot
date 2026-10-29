@@ -70,8 +70,8 @@ export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
-                    <p className="text-xs text-gray-middle-light truncate">{t(`abilities.${ability}`)}</p>
-                    <p className="text-xs text-gray-middle-light">
+                    <p className="text-xs text-muted-foreground truncate">{t(`abilities.${ability}`)}</p>
+                    <p className="text-xs text-muted-foreground">
                       ({abilityModifier >= 0 ? `+${abilityModifier}` : abilityModifier})
                     </p>
                   </div>
