@@ -201,8 +201,8 @@ export function ConcentrationSpellDialog({
                   <Button
                     key={`${option.className}:${option.spellName}:${option.spellLevel}`}
                     type="button"
-                    variant="outline"
-                    className="h-auto justify-start rounded-[15px] px-3 py-2 text-left"
+                    variant="secondary"
+                    className="h-auto justify-start px-3 py-2 text-left"
                     onClick={() => applyReplacement(option)}>
                     <span className="block text-sm font-medium text-white">{option.spellName}</span>
                     <span className="block text-xs text-white/60">
@@ -261,7 +261,7 @@ export function ConcentrationSpellDialog({
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={closeDialog}>
             {t("cancel")}
           </Button>

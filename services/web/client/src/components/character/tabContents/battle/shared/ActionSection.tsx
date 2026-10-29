@@ -4,7 +4,7 @@ import { Action, ActionUsageType } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import { ArrowUpDown, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatSignedBonus } from "@/utils/attack.utils";
 import { cn } from "@/lib/utils";
@@ -115,11 +115,10 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
                 size="sm"
                 className={cn(
                   "h-7 shrink-0 px-2 text-xs",
-                  // Neutral selection gray, same as the sidebar selection (no violet fill)
-                  isSelected && "border-frame bg-white/15 font-semibold text-white hover:border-frame hover:bg-white/15",
+                  isSelected && toggleButtonPressedClassName,
                   !isAvailable && "opacity-45 grayscale cursor-default!",
                 )}
-                variant="outline"
+                variant="secondary"
                 aria-disabled={!isAvailable}
                 aria-pressed={isSelected}
                 aria-label={t("usageTypePriorityButton", {

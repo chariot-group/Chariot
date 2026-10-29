@@ -178,7 +178,7 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
         </div>
 
         <div className="px-5 py-3 lg:px-8 lg:py-4 shrink-0 flex justify-end border-t border-frame">
-          <Button onClick={onClose} className="rounded-[15px] text-sm lg:text-base h-8 lg:h-10 lg:px-6">
+          <Button onClick={onClose} className="lg:px-6">
             {t("close")}
           </Button>
         </div>

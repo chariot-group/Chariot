@@ -72,6 +72,7 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
             aria-label={t("createCharacterDialogDescription")}>
             <Button
               type="button"
+              variant="primary"
               aria-label={t("createCharacterPlayerAriaLabel")}
               className={CREATE_CHARACTER_PLAYER_BUTTON}
               onClick={() => handleSelectType("players")}>
@@ -80,7 +81,7 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               aria-label={t("createCharacterNpcAriaLabel")}
               className={CREATE_CHARACTER_NPC_BUTTON}
               onClick={() => handleSelectType("npcs")}>

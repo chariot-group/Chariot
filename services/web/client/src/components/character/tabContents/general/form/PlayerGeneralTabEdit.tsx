@@ -373,13 +373,19 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       <div className="flex flex-col gap-4">
                         <div className="text-xs text-gray-middle-light mx-1 mt-2">
                           {calculatedLevel !== currentLevel && (
-                            <span>⚠️ {t("xpLevelMismatch", { xp: currentXp, level: calculatedLevel })}</span>
+                            <span>
+                              ⚠️{" "}
+                              {t("xpLevelMismatch", {
+                                xp: currentXp,
+                                level: calculatedLevel,
+                              })}
+                            </span>
                           )}
                         </div>
                         <div className="flex gap-2 mb-2">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => {
                               form.setValue("progression.level", calculatedLevel, { shouldDirty: true });
@@ -390,7 +396,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           </Button>
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => {
                               const xpForLevel = getExperienceForLevel(currentLevel);
@@ -622,8 +628,15 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   {classFields.length < 2 && (
                     <Button
                       type="button"
-                      variant="outline"
-                      onClick={() => appendClass({ name: undefined, subclass: "", level: 1, hitDice: 0 })}
+                      variant="secondary"
+                      onClick={() =>
+                        appendClass({
+                          name: undefined,
+                          subclass: "",
+                          level: 1,
+                          hitDice: 0,
+                        })
+                      }
                       className="flex items-center gap-2 border-dashed">
                       <Plus className="size-4" />
                       <span className="truncate">{t("addSecondClass")}</span>
@@ -1017,7 +1030,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       ) : (
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                           onClick={() => field.onChange(true)}>
                           {t("inspirationAddButton")}

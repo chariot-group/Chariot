@@ -135,7 +135,7 @@ export function ConcentrationStateBadge({
           type="button"
           size="icon-sm"
           variant="ghost"
-          className="size-5 shrink-0 rounded-full text-inherit/70 hover:bg-red/15 hover:text-red"
+          className="size-5 shrink-0 text-inherit/70 hover:bg-red/15 hover:text-red"
           aria-label={dropLabel}
           onClick={(event) => {
             event.stopPropagation();

@@ -18,21 +18,37 @@ const dialogSource = readFileSync(
 );
 
 describe("CreateCharacterDialog — styles", () => {
-  it("nominal: player button is the white primary button, NPC button the standard outline one", () => {
-    const player = cn(buttonVariants({ className: CREATE_CHARACTER_PLAYER_BUTTON }));
-    const npc = cn(buttonVariants({ variant: "outline", className: CREATE_CHARACTER_NPC_BUTTON }));
+  it("nominal: player button is the white primary button, NPC button the dark secondary one", () => {
+    const player = cn(
+      buttonVariants({
+        variant: "primary",
+        className: CREATE_CHARACTER_PLAYER_BUTTON,
+      }),
+    );
+    const npc = cn(
+      buttonVariants({
+        variant: "secondary",
+        className: CREATE_CHARACTER_NPC_BUTTON,
+      }),
+    );
 
     expect(player).toContain("bg-white text-black");
     expect(player).not.toContain("bg-primary");
     expect(player).toContain("focus-visible:ring-2");
-    expect(npc).toContain("border bg-background");
+    expect(npc).toContain("bg-gray-middle-light text-white");
     expect(npc).not.toMatch(/(^|\s)bg-white(\s|$)/);
+    expect(dialogSource).toMatch(/variant="primary"\s+aria-label=\{t\("createCharacterPlayerAriaLabel"\)\}/);
     expect(dialogSource).toMatch(/className=\{CREATE_CHARACTER_NPC_BUTTON\}/);
     expect(dialogSource).toMatch(/<Bot aria-hidden="true" \/>/);
   });
 
   it("edge: manual buttons stay on one line, side by side from sm and stacked on mobile", () => {
-    const player = cn(buttonVariants({ className: CREATE_CHARACTER_PLAYER_BUTTON }));
+    const player = cn(
+      buttonVariants({
+        variant: "primary",
+        className: CREATE_CHARACTER_PLAYER_BUTTON,
+      }),
+    );
 
     expect(player).toContain("whitespace-nowrap");
     expect(player).toContain("h-9");

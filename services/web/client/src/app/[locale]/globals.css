@@ -47,6 +47,15 @@
   --color-red: var(--red);
   --color-pink: var(--pink);
   --color-yellow: var(--yellow);
+  --color-gray: var(--gray);
+  --color-gray-middle-light: var(--gray-middle-light);
+  /* Button hover fills (FR-frontend-button-system): colored buttons get lighter on hover */
+  --color-primary-hover: var(--primary-hover);
+  --color-blue-hover: var(--blue-hover);
+  --color-red-hover: var(--red-hover);
+  --color-pink-hover: var(--pink-hover);
+  --color-yellow-hover: var(--yellow-hover);
+  --color-green-hover: var(--green-hover);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -138,6 +147,14 @@
   --gray-light: #d7d7db;
   --purple: #4e00de;
 
+  /* Colored button hovers: same hue mixed with white (lighter, contrast with dark text increases) */
+  --primary-hover: color-mix(in oklab, var(--primary), white 15%);
+  --blue-hover: color-mix(in oklab, var(--blue), white 40%);
+  --red-hover: color-mix(in oklab, var(--red), white 25%);
+  --pink-hover: color-mix(in oklab, var(--pink), white 40%);
+  --yellow-hover: color-mix(in oklab, var(--yellow), white 40%);
+  --green-hover: color-mix(in oklab, var(--green), white 35%);
+
   /* Scrollbars -> `bg-scrollbar-track`, `bg-scrollbar-thumb`, `hover:bg-scrollbar-thumb-hover` */
   --scrollbar-track: rgb(255 255 255 / 0.05);
   --scrollbar-thumb: var(--color-gray-500);
@@ -148,11 +165,6 @@
   --toastify-font-family: "Inter Tight", sans-serif;
   --toastify-text-color-light: var(--foreground);
   --toastify-toast-bd-radius: var(--radius);
-}
-
-/* Sidebar white button hover */
-.sidebar-btn-white:hover {
-  background-color: var(--color-gray-200);
 }
 
 /* Surcharger le positionnement du toast en mobile */

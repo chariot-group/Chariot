@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useLayoutEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
 import {
   CircleAlert,
   ArrowRightLeft,
@@ -133,7 +133,7 @@ function SyncRow({
       <TooltipTrigger asChild>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onSync}
           className="text-xs self-start">
@@ -651,7 +651,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               <Button
                 type="button"
                 onClick={addSpellcasting}
-                variant="outline"
+                variant="secondary"
                 size="lg"
                 disabled={isPlayer(character) && !hasAvailableSpellcastingClasses}
                 className="flex items-center gap-2">
@@ -1198,12 +1198,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 {showPreparedSpellsButton ? (
                   <Button
                     type="button"
-                    variant={preparationEditMode ? "default" : "outline"}
+                    variant="secondary"
                     size="sm"
-                    className={cn(
-                      "rounded-[15px] text-xs sm:text-sm gap-1.5",
-                      preparationEditMode && "ring-2 ring-ring ring-offset-2 ring-offset-background",
-                    )}
+                    aria-pressed={preparationEditMode}
+                    className={cn("text-xs sm:text-sm", preparationEditMode && toggleButtonPressedClassName)}
                     onClick={() => setPreparationEditMode((v) => !v)}>
                     {preparationEditMode ? (
                       <BookOpenCheck className="size-4 shrink-0" />
@@ -1252,10 +1250,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     <DropdownMenuContent className="min-w-40 border-none bg-transparent">
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={appendSpellHelper}
-                        className="flex items-center gap-2 border hover:bg-card">
+                        className="flex items-center gap-2">
                         <Plus className="size-4" />
                         <span className="hidden sm:block">{tMagic("addSpell")}</span>
                       </Button>
@@ -1976,7 +1974,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       </AccordionTrigger>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={(event) => {
                           event.stopPropagation();

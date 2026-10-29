@@ -258,7 +258,6 @@ export function QuickNumberCalculator({
               ref={addButtonRef}
               type="button"
               size="sm"
-              variant="default"
               disabled={!canApply}
               onClick={() => applyOperation("add")}
               onKeyDown={(event) => {
@@ -282,7 +281,6 @@ export function QuickNumberCalculator({
               ref={subtractButtonRef}
               type="button"
               size="sm"
-              variant="default"
               disabled={!canApply}
               onClick={() => applyOperation("subtract")}
               onKeyDown={(event) => {
@@ -306,7 +304,6 @@ export function QuickNumberCalculator({
               ref={setButtonRef}
               type="button"
               size="sm"
-              variant="default"
               disabled={!canApply}
               onClick={() => applyOperation("set")}
               onKeyDown={(event) => {

@@ -36,7 +36,7 @@ import { isPlayer } from "@/utils/global.utils";
 import SpellDisplay from "@/components/character/tabContents/magic/SpellDisplay";
 import SpellCastControls from "@/components/character/tabContents/magic/SpellCastControls";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
-import { Button } from "@/components/ui/button";
+import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
@@ -460,12 +460,10 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
                 {showPreparedSpellsControls ? (
                   <Button
                     type="button"
-                    variant={preparationEditMode ? "default" : "outline"}
+                    variant="secondary"
                     size="sm"
-                    className={cn(
-                      "rounded-[15px] text-xs sm:text-sm gap-1.5",
-                      preparationEditMode && "ring-2 ring-ring ring-offset-2 ring-offset-background",
-                    )}
+                    aria-pressed={preparationEditMode}
+                    className={cn("text-xs sm:text-sm", preparationEditMode && toggleButtonPressedClassName)}
                     onClick={() => setPreparationEditMode((v) => !v)}>
                     {preparationEditMode ? (
                       <BookOpenCheck className="size-4 shrink-0" />

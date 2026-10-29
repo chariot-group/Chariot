@@ -902,7 +902,7 @@ export default function CodexSpellSearchDialog({
                         <div className="flex justify-center pt-4 pb-2">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             onClick={loadMore}
                             disabled={isLoadingMore}
                             className="w-full">
@@ -1066,7 +1066,7 @@ export default function CodexSpellSearchDialog({
                   <>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="secondary"
                       size="icon-sm"
                       onClick={handleToggleQueueSelection}
                       disabled={spellActionsDisabled}
@@ -1074,9 +1074,7 @@ export default function CodexSpellSearchDialog({
                       aria-label={isCurrentSpellQueued ? tDialog("removeFromSelection") : tDialog("selectThisSpell")}
                       className={cn(
                         "shrink-0 sm:size-auto sm:h-8 sm:px-3",
-                        isCurrentSpellQueued
-                          ? "border-destructive/50 text-destructive hover:bg-destructive/5"
-                          : "border-primary-light/40 text-primary-light hover:bg-primary-light/10",
+                        isCurrentSpellQueued && "border-destructive/50 text-destructive hover:bg-destructive/5",
                       )}>
                       {isCurrentSpellQueued ? (
                         <ListMinus
@@ -1098,7 +1096,7 @@ export default function CodexSpellSearchDialog({
                       size="sm"
                       onClick={handleAddSelection}
                       aria-label={tDialog("addSelection", { count: spellQueue.length })}
-                      className="h-8 shrink-0 gap-1 bg-purple px-2 hover:bg-purple/90 text-white sm:px-3">
+                      className="shrink-0 gap-1 px-2 sm:px-3">
                       <Layers
                         className="size-4 shrink-0"
                         aria-hidden="true"
@@ -1113,13 +1111,13 @@ export default function CodexSpellSearchDialog({
                   <>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="secondary"
                       size="icon-sm"
                       onClick={handleToggleQueueSelection}
                       disabled={spellActionsDisabled}
                       aria-pressed={isCurrentSpellQueued}
                       aria-label={tDialog("selectThisSpell")}
-                      className="shrink-0 border-primary-light/40 text-primary-light hover:bg-primary-light/10 sm:size-auto sm:h-8 sm:px-3">
+                      className="shrink-0 sm:size-auto sm:h-8 sm:px-3">
                       <ListPlus
                         className="size-4"
                         aria-hidden="true"
@@ -1132,7 +1130,7 @@ export default function CodexSpellSearchDialog({
                       onClick={handleUseThisSpell}
                       disabled={spellActionsDisabled}
                       aria-label={tDialog("useThisSpell")}
-                      className="shrink-0 bg-purple hover:bg-purple/90 text-white sm:size-auto sm:h-8 sm:px-3">
+                      className="shrink-0 sm:size-auto sm:h-8 sm:px-3">
                       <Check
                         className="size-4"
                         aria-hidden="true"

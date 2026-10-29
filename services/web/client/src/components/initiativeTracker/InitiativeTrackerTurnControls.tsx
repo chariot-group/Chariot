@@ -71,11 +71,11 @@ export function InitiativeTrackerTurnControls({
             <span className="inline-flex">
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 disabled={!battleStarted || !canGoPrevious}
                 aria-label={labels.previous}
                 onClick={onPrevious}
-                className="h-9 rounded-[15px] border-white/20 bg-gray px-3 text-sm font-medium text-white hover:bg-gray-middle-light disabled:opacity-40 sm:min-w-0">
+                className="px-3 sm:min-w-0">
                 <ChevronLeft className="size-4" />
                 <span className="sr-only sm:not-sr-only">{labels.previous}</span>
               </Button>
@@ -93,9 +93,14 @@ export function InitiativeTrackerTurnControls({
             onConfirm={onEndCombat}>
             <Button
               type="button"
+              variant="accent"
+              tone="red"
               aria-label={labels.endCombat}
-              className="h-9 rounded-[15px] bg-red px-3 text-sm font-semibold text-white hover:bg-[#e02020] sm:px-4">
-              <OctagonX className="size-4 sm:hidden" aria-hidden="true" />
+              className="px-3 sm:px-4">
+              <OctagonX
+                className="size-4 sm:hidden"
+                aria-hidden="true"
+              />
               <span className="sr-only sm:not-sr-only">{labels.endCombat}</span>
             </Button>
           </ConfirmDialog>
@@ -109,19 +114,27 @@ export function InitiativeTrackerTurnControls({
               onConfirm={onCancelCombat}>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 aria-label={labels.cancelCombat}
-                className="h-9 rounded-[15px] border-red/50 bg-transparent px-3 text-sm font-semibold text-red hover:bg-red/15 sm:px-4">
-                <XCircle className="size-4 sm:hidden" aria-hidden="true" />
+                className="border-red/50 bg-transparent px-3 text-red hover:bg-red/15 sm:px-4">
+                <XCircle
+                  className="size-4 sm:hidden"
+                  aria-hidden="true"
+                />
                 <span className="sr-only sm:not-sr-only">{labels.cancelCombat}</span>
               </Button>
             </ConfirmDialog>
             <Button
               type="button"
               onClick={onStartCombat}
+              variant="accent"
+              tone="green"
               aria-label={labels.startCombat}
-              className="h-9 rounded-[15px] bg-green px-3 text-sm font-semibold text-black hover:bg-[#7dc400] sm:px-4">
-              <Play className="size-4 sm:hidden" aria-hidden="true" />
+              className="px-3 sm:px-4">
+              <Play
+                className="size-4 sm:hidden"
+                aria-hidden="true"
+              />
               <span className="sr-only sm:not-sr-only">{labels.startCombat}</span>
             </Button>
           </>
@@ -129,11 +142,11 @@ export function InitiativeTrackerTurnControls({
 
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={!battleStarted}
           aria-label={labels.next}
           onClick={onNext}
-          className="h-9 rounded-[15px] border-white/20 bg-gray px-3 text-sm font-medium text-white hover:bg-gray-middle-light disabled:opacity-40">
+          className="px-3">
           <span className="sr-only sm:not-sr-only">{labels.next}</span>
           <ChevronRight className="size-4" />
         </Button>

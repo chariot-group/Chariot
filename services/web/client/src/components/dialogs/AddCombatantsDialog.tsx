@@ -441,7 +441,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">{tCommon("cancel")}</Button>
+            <Button variant="secondary">{tCommon("cancel")}</Button>
           </DialogClose>
           <Button
             disabled={!canValidate || isValidating || eligibleGroups.length === 0}

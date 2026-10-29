@@ -194,7 +194,7 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
     const triggerButton = (
         <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size={showLabel ? "sm" : "icon"}
             disabled={!isInSession || pending || dialogOpen}
             className={buttonClass}
@@ -316,7 +316,7 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
                                                         <div className="flex gap-1 shrink-0">
                                                             <Button
                                                                 type="button"
-                                                                variant="outline"
+                                                                variant="secondary"
                                                                 size="icon"
                                                                 className="size-8"
                                                                 disabled={pending || !canAddForClass(classIndex)}
@@ -329,7 +329,7 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
                                                             </Button>
                                                             <Button
                                                                 type="button"
-                                                                variant="outline"
+                                                                variant="secondary"
                                                                 size="icon"
                                                                 className="size-8"
                                                                 disabled={pending || !canRemove}
@@ -406,7 +406,7 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
                     <DialogFooter className="flex-row justify-end gap-2 shrink-0 border-t border-border pt-2">
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             disabled={pending}
                             onClick={() => setDialogOpen(false)}>
                             {t("cancel")}

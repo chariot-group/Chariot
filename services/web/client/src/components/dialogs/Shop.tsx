@@ -92,7 +92,7 @@ export default function Shop({ open, onOpenChange }: ShopProps) {
             role="alert">
             <p className="text-destructive text-sm">{tShop("errorProducts")}</p>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => onOpenChange(false)}>
               {tShop("close")}

@@ -272,7 +272,7 @@ function CheckoutFormContent({
                 />
               </div>
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={promoCode.onApply}
                 disabled={!promoCode.input.trim() || promoCode.loading || piRefreshing || !!referralDiscount}
                 aria-label={tShop("applyCode")}>
@@ -308,7 +308,7 @@ function CheckoutFormContent({
         )}
         <Button
           size="lg"
-          className="w-full rounded-2xl font-semibold text-base h-14"
+          className="w-full"
           onClick={handleConfirm}
           disabled={payLoading || confirmDisabled}
           aria-busy={payLoading}>

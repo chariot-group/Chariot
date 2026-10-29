@@ -105,7 +105,7 @@ function ReturnContent() {
           <p className="text-sm text-muted-foreground">{t("successDescription")}</p>
           <Button
             size="lg"
-            className="mt-2 w-full rounded-2xl font-semibold"
+            className="mt-2 w-full"
             onClick={() => router.push(`/${locale}/welcome`)}>
             {t("backToApp")}
           </Button>
@@ -124,7 +124,7 @@ function ReturnContent() {
           <p className="text-sm text-muted-foreground">{t("failureDescription")}</p>
           <Button
             size="lg"
-            className="mt-2 w-full rounded-2xl font-semibold"
+            className="mt-2 w-full"
             onClick={() => router.push(`/${locale}/profile`)}>
             {t("retryButton")}
           </Button>

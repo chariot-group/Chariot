@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { type ButtonTone } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CircleAlert } from "lucide-react";
 import { useHorizontalWheelScroll } from "@/hooks/useHorizontalWheelScroll";
@@ -18,7 +19,8 @@ interface CharacterTabsProps {
 
 export const CHARACTER_TABS: CharacterTab[] = ["general", "battle", "magic", "inventory", "history"];
 
-export const TAB_COLORS: Record<CharacterTab, string> = {
+/** Domain color of each tab, also the tone of the sheet footer primary button (FR-frontend-button-system). */
+export const TAB_COLORS: Record<CharacterTab, Exclude<ButtonTone, "violet">> = {
   general: "blue",
   battle: "red",
   magic: "pink",

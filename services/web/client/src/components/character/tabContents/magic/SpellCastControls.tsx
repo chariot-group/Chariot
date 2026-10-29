@@ -132,7 +132,7 @@ export default function SpellCastControls({
         <DialogFooter className="gap-2 sm:gap-0">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => setConcentrationPromptOpen(false)}>
             {tMagic("concentrationPromptDecline")}
           </Button>
@@ -271,7 +271,7 @@ export default function SpellCastControls({
           {lightCastFeedback}
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="default"
             className={compactSingleButton}
             aria-label={tMagic("castSpellNpcInnateAria", { name: selectedSpell.name })}
@@ -289,7 +289,7 @@ export default function SpellCastControls({
     const innateButton = (
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="default"
         disabled={noUsesLeft || busy}
         className={compactSingleButton}
@@ -329,7 +329,7 @@ export default function SpellCastControls({
     const blockedBtn = (
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         disabled
         className={compactBlocked}
         aria-label={tMagic("spellCastNotPreparedAria")}>
@@ -362,7 +362,7 @@ export default function SpellCastControls({
         {lightCastFeedback}
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="default"
           className={compactSingleButton}
           aria-label={tMagic("castSpellAtLevelAria", { level: 0, name: selectedSpell.name })}
@@ -389,7 +389,7 @@ export default function SpellCastControls({
   const mainButton = (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       size="default"
       disabled={noSlotForBase || busy}
       className={cn(compactBtn, mainRounded)}
@@ -410,7 +410,7 @@ export default function SpellCastControls({
   const chevronButton = (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       size="default"
       className={cn(compactBtn, "border", chevronRounded, "px-2.5")}
       disabled={chevronDisabled}

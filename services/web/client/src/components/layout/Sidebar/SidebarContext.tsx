@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
@@ -109,11 +110,8 @@ export default function SidebarContext() {
         <button
           type="button"
           aria-label={t("createGroup")}
-          className="sidebar-btn-white flex w-full cursor-pointer items-center gap-2 rounded-[12px] border border-frame bg-white px-3 py-1.5 text-left text-sm text-black transition-all duration-100 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
-          <LayersPlus
-            className="h-4 w-4 shrink-0"
-            aria-hidden="true"
-          />
+          className={cn(buttonVariants({ variant: "primary", align: "start" }), "w-full")}>
+          <LayersPlus aria-hidden="true" />
           {t("createGroup")}
         </button>
       </CreateGroupDialog>

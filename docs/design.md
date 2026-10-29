@@ -51,6 +51,7 @@ Lines and text:
 
 - Focus ring: `--ring`, `--sidebar-ring`: `#a4a4a8`
 - Secondary text: `--muted-foreground: #98989c` (>= 4.5:1 on every surface level)
+- Surface tokens (`gray`, `gray-middle-light`) are fills only: never use them as text color (`text-gray-middle-light` is invisible on cards); gray text uses `text-muted-foreground`
 - Light gray text: `--gray-light: #d7d7db`
 
 Scrollbars: `--scrollbar-track`, `--scrollbar-thumb`, `--scrollbar-thumb-hover`, used through `[&::-webkit-scrollbar-track]:bg-scrollbar-track`, `[&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb` and `[&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover`.
@@ -95,7 +96,7 @@ Dedicated utility classes exist for these colors: `bg-*`, `text-*` (for example 
 The design system is strongly rounded:
 
 - Root variable: `--radius: 36px`
-- Standard button: `rounded-[15px]`
+- Buttons, owned by `buttonVariants` (FR-frontend-button-system): `rounded-[13px]` for `default` / `sm` (Player / GM selector included), `rounded-[15px]` for `lg`
 - Tabs trigger: `rounded-[13px]`
 - Business cards and badges: `rounded-[15px]` to `rounded-[30px]`
 - Pill-shaped controls: `rounded-full`
@@ -156,24 +157,38 @@ Frequent pattern:
 
 ## 5.1 Button
 
-Base (`components/ui/button.tsx`):
+All buttons go through `components/ui/button.tsx` (`Button`, or `buttonVariants` for links and custom triggers such as the Player / GM selector). Rule: FR-frontend-button-system. Consumers set layout (`w-full`, `flex-1`, `min-w-0`, padding tweaks) but never the fill, text color, hover, height or radius.
 
-- Standard height: `h-9` (`default`)
-- Standard padding: `px-4 py-2`
-- Radius: `rounded-[15px]`
-- Icon + text spacing: `gap-2`
+Main types:
 
-Commonly used variants:
+| Type | Props | Rest | Hover | Usage |
+| --- | --- | --- | --- | --- |
+| Primary white | `variant="primary"` | `bg-white` + `border-frame`, `text-black` | `bg-gray-300` (slightly darker) | Main action of a screen, sheet footer « Modifier le personnage » / « Sauvegarder », sidebar create buttons, active segmented option |
+| Primary colored | `variant="accent"` + `tone` | domain color, `text-black` | `bg-{tone}-hover` (lighter) | Color-coded context: sheet creation submit (tab tone), sidebar session action, combat turn controls |
+| Primary violet | default (`accent` + `tone="violet"`) | `bg-primary`, `text-primary-foreground` | `bg-primary-hover` (lighter) | Dialog validations, welcome / shop calls to action. Only colored tone with light text |
+| Secondary | `variant="secondary"` | `bg-gray-middle-light` + `border-input`, `text-white` | `bg-gray` (lighter) | Alternative actions: cancel, export, back, inactive segmented option |
 
-- `default` (primary)
-- `outline` (secondary actions)
-- `ghost` (UI triggers)
-- `link` (text-style navigation)
-- `destructive` (critical action)
+Hover tokens (`--{tone}-hover`, `--primary-hover`) live in `globals.css` (`color-mix` with white), so a palette change stays a one-file edit. Every hover has a `disabled:hover:` reset.
 
-Hover and selection on transparent buttons (`ghost`, `outline`, icon triggers such as expand/collapse and the sidebar trigger) use neutral gray: `hover:bg-white/10`, keyboard focus `bg-white/10`. Violet (`primary`, `accent`, `muted`, all violet tokens) is reserved for filled buttons and never used as a hover or selected background on transparent buttons.
+Utility types (minority): `ghost` (transparent, `hover:bg-white/10`), `link`, `destructive`, icon-only sizes.
 
-Toggle buttons (`aria-pressed`, e.g. the Action / Bonus action / Reaction filter of the battle tab) keep the `outline` variant; the pressed one uses the selection gray `border-frame bg-white/15 font-semibold text-white`, never the violet `default` fill.
+Sizes:
+
+- `lg`: `h-12`, `rounded-[15px]`, `text-lg`, icons `size-6` (sidebar session action)
+- `default`: `h-9`, `rounded-[13px]`, `text-sm` (create character, dialog and sheet footers)
+- `sm`: `h-8`, `rounded-[13px]` (dense toolbars and rows)
+- `icon` / `icon-sm` / `icon-lg`: `size-9` / `size-8` / `size-12` (radius of the matching text size)
+
+Content and alignment:
+
+- Centered by default; `align="start"` left-aligns (sidebar create buttons)
+- Optional icon on the **left** of the label only (`gap-2`, `gap-3` in `lg`); the only trailing glyphs allowed are a menu disclosure chevron and the forward arrow of a "next" action
+- Focus: `focus-visible:ring-2 ring-ring ring-offset-2 ring-offset-background` on every type
+
+Toggles (`aria-pressed`), never a violet fill:
+
+- Segmented selector (one option among a few: Player / GM, attack ability suggestion, codex preview language): active = `primary`, inactive = `secondary`
+- On/off filter toggle (Action / Bonus action / Reaction priority, prepared spells edit mode, tracker selection modes): `secondary` + `toggleButtonPressedClassName` when pressed (`border-frame bg-white/15 font-semibold text-white`)
 
 ## 5.2 Tabs
 
@@ -221,7 +236,7 @@ Sidebar context menus and touch overflow menus show an icon per action (FR-sideb
 
 - Selected character row: `bg-white/15` (same gray as selected menu rows), white bold text, no left bar and no label shift; hover `bg-white/10`
 - Group header: no resting background (hover `bg-white/10`), label always bold. The label lines up with its characters: header `pl-1` + `size-4` chevron + `gap-2` = characters `ml-4` + `px-3` (28px)
-- Create buttons (character, group): white button, icon on the **left** of the label (`gap-2`)
+- Create buttons (character, group): `buttonVariants({ variant: "primary", align: "start" })`, full width, icon on the **left** of the label
 
 ## 5.6 Numeric Inputs
 

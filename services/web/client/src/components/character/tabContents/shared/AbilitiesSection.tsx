@@ -241,7 +241,7 @@ const AbilitiesSection = ({
                           <span className="inline-flex w-full sm:w-auto sm:justify-end">
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="secondary"
                               size="sm"
                               className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                               disabled
@@ -255,7 +255,7 @@ const AbilitiesSection = ({
                     ) : (
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                         disabled={!canPressUse || useBusy}

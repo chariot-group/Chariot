@@ -843,7 +843,7 @@ export default function MonsterCodexDialog({
                         <div className="flex justify-center pt-4 pb-2">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             onClick={loadMore}
                             disabled={isLoadingMore}
                             className="w-full">
@@ -935,7 +935,7 @@ export default function MonsterCodexDialog({
         <DialogFooter className="shrink-0 border-t border-frame px-6 py-4 sm:items-center">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={handleClose}>
             {tDialog("cancel")}
           </Button>
@@ -943,8 +943,7 @@ export default function MonsterCodexDialog({
             <Button
               type="button"
               onClick={handleValidate}
-              disabled={!selectedMonster}
-              className="bg-purple hover:bg-purple/90 text-white">
+              disabled={!selectedMonster}>
               {tDialog("validate")}
             </Button>
           ) : null}

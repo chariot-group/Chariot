@@ -91,11 +91,17 @@ export default function Column2Edit({ form, accentColor, className }: Column2Edi
             return (
               <div className="flex flex-col gap-2">
                 <div className="text-xs text-gray-middle-light">
-                  <span>⚠️ {t("proficiencyBonusMismatch", { level: currentLevel, bonus: calculatedBonus })}</span>
+                  <span>
+                    ⚠️{" "}
+                    {t("proficiencyBonusMismatch", {
+                      level: currentLevel,
+                      bonus: calculatedBonus,
+                    })}
+                  </span>
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => {
                     form.setValue("stats.proficiencyBonus", calculatedBonus, { shouldDirty: true });

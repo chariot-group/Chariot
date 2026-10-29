@@ -87,12 +87,12 @@ export default function ProfileReferralSection({
           </h4>
           <div className="flex flex-row items-center gap-2 flex-wrap">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               aria-label={t("copyLinkAriaLabel")}
               className={cn(
                 "transition-colors whitespace-nowrap",
-                linkCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
+                linkCopyState === "success" && "border-green bg-green text-black hover:bg-green",
               )}
               disabled={linkCopyState !== "idle"}
               onClick={onCopyLink}>

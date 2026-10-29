@@ -358,25 +358,19 @@ export default function CharacterDetailView({
   const exportPdfButton = (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       onClick={() => {
         if (isNpcPdfExportDisabled) return;
         setIsExportPdfDialogOpen(true);
       }}
       disabled={isNpcPdfExportDisabled}
       tabIndex={0}
-      className={cn(
-        "max-w-full min-w-0 lg:text-sm text-xs font-semibold",
-        isNpcPdfExportDisabled && "pointer-events-none",
-      )}
+      className={cn("max-w-full min-w-0", isNpcPdfExportDisabled && "pointer-events-none")}
       aria-label={
         isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")
       }
       aria-disabled={isNpcPdfExportDisabled || undefined}>
-      <FileDown
-        className="lg:size-5 size-4 shrink-0"
-        aria-hidden="true"
-      />
+      <FileDown aria-hidden="true" />
       <span className="truncate">{t("exportPdf")}</span>
     </Button>
   );
@@ -403,25 +397,16 @@ export default function CharacterDetailView({
             form="character-update-form"
             disabled={isSaving || isAvatarCommitting || !hasPendingChanges}
             tabIndex={0}
-            className={`
-              max-w-full min-w-0 lg:text-sm text-xs font-semibold
-              ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-              ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-              ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-              ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-              ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-            `}
+            variant="primary"
+            className="max-w-full min-w-0"
             aria-label={t("saveChanges")}
             aria-busy={isSaving || isAvatarCommitting}>
-            <Save
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <Save aria-hidden="true" />
             <span className="truncate">{isSaving || isAvatarCommitting ? t("saving") : t("saveChanges")}</span>
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={handleCancelEditor}
             disabled={isSaving || isAvatarCommitting}
             tabIndex={0}
@@ -431,12 +416,9 @@ export default function CharacterDetailView({
                 handleCancelEditor();
               }
             }}
-            className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+            className="max-w-full min-w-0"
             aria-label={t("cancel")}>
-            <X
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <X aria-hidden="true" />
             <span className="truncate">{t("cancel")}</span>
           </Button>
         </React.Fragment>
@@ -452,19 +434,10 @@ export default function CharacterDetailView({
                 setIsEditing(true);
               }
             }}
-            className={`
-            max-w-full min-w-0 lg:text-sm text-xs font-semibold
-            ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-            ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-            ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-            ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-            ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-          `}
+            variant="primary"
+            className="max-w-full min-w-0"
             aria-label={t("editCharacter")}>
-            <SquarePen
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <SquarePen aria-hidden="true" />
             <span className="truncate">{t("editCharacter")}</span>
           </Button>
           {exportPdfAction}

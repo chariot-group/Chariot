@@ -172,7 +172,7 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
     const triggerButton = (
         <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size={showLabel ? "sm" : "icon"}
             disabled={!isInSession || pending || dialogOpen}
             className={buttonClass}
@@ -233,7 +233,7 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
                     <DialogFooter className="flex-row justify-end gap-2">
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             disabled={pending}
                             onClick={() => setDialogOpen(false)}>
                             {t("cancel")}

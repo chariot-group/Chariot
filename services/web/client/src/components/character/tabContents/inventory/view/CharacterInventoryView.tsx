@@ -219,7 +219,7 @@ export default function CharacterInventoryView({
             {canEditInSession && !isEditingTextField ? (
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 className="shrink-0"
                 onClick={() => openTextEditor("equipment")}>
@@ -240,7 +240,7 @@ export default function CharacterInventoryView({
               <div className="flex flex-row justify-end gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   disabled={busyState !== null}
                   onClick={() => {
                     setEditingField(null);
@@ -274,7 +274,7 @@ export default function CharacterInventoryView({
           {canEditInSession && !isEditingTextField ? (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="shrink-0"
               onClick={() => openTextEditor("treasure")}>
@@ -295,7 +295,7 @@ export default function CharacterInventoryView({
             <div className="flex flex-row justify-end gap-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 disabled={busyState !== null}
                 onClick={() => {
                   setEditingField(null);
@@ -359,7 +359,7 @@ export default function CharacterInventoryView({
             />
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="min-w-9 px-2 text-lg font-semibold"
               disabled={coinAmount.trim() === "" || busyState !== null}
@@ -370,7 +370,7 @@ export default function CharacterInventoryView({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="min-w-9 px-2 text-lg font-semibold"
               disabled={coinAmount.trim() === "" || busyState !== null}
@@ -381,7 +381,7 @@ export default function CharacterInventoryView({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="min-w-9 px-2 text-lg font-semibold"
               disabled={coinAmount.trim() === "" || busyState !== null}

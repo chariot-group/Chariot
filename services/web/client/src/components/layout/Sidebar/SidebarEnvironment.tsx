@@ -25,6 +25,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useStore } from "react-redux";
 import { RootState } from "@/store";
 import NavigationService from "@/services/NavigationService";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { menuItemClassName } from "@/components/ui/menu-styles";
 import * as React from "react";
@@ -165,17 +166,8 @@ export default function SidebarEnvironment() {
         onClick={switchToPlayer}
         aria-pressed={joueurActive}
         aria-label={t("playerSpace")}
-        className={cn(
-          "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[13px] border py-2 px-3 text-sm transition-all duration-150",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
-          joueurActive
-            ? "border-white bg-white font-semibold text-black"
-            : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
-        )}>
-        <User
-          className="h-4 w-4 shrink-0"
-          aria-hidden="true"
-        />
+        className={cn(buttonVariants({ variant: joueurActive ? "primary" : "secondary" }), "min-w-0 flex-1")}>
+        <User aria-hidden="true" />
         <span className="truncate">{t("playerSpaceShort")}</span>
       </button>
 
@@ -185,20 +177,11 @@ export default function SidebarEnvironment() {
             type="button"
             aria-pressed={isGmMode}
             aria-label={t("gmSpace")}
-            className={cn(
-              "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[13px] border py-2 px-3 text-sm transition-all duration-150",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
-              isGmMode
-                ? "border-white bg-white font-semibold text-black"
-                : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
-            )}>
-            <BookOpen
-              className="h-4 w-4 shrink-0"
-              aria-hidden="true"
-            />
+            className={cn(buttonVariants({ variant: isGmMode ? "primary" : "secondary" }), "min-w-0 flex-1")}>
+            <BookOpen aria-hidden="true" />
             <span className="truncate">{t("gmSpaceAbbr")}</span>
             <ChevronDown
-              className="ml-auto h-3 w-3 shrink-0 transition-transform duration-150 [[data-state=open]_&]:rotate-180"
+              className="ml-auto size-3 transition-transform duration-150 [[data-state=open]_&]:rotate-180"
               aria-hidden="true"
             />
           </button>

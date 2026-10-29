@@ -114,7 +114,7 @@ export function CreateGroupDialog({ children, onCreateGroup, onRefreshGroups }: 
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline" disabled={isCreating}>
+                        <Button variant="secondary" disabled={isCreating}>
                             {tCommon("cancel")}
                         </Button>
                     </DialogClose>

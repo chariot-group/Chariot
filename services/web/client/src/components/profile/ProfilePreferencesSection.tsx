@@ -56,9 +56,9 @@ export default function ProfilePreferencesSection({ onViewReleaseNotes }: Profil
                 {t("releaseNotes.label")}
               </span>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
-                className="rounded-[13px] text-xs h-8 shrink-0"
+                className="shrink-0 text-xs"
                 onClick={onViewReleaseNotes}
                 aria-haspopup="dialog">
                 {t("releaseNotes.openButton")}

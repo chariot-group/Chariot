@@ -275,7 +275,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   disabled={!canGoPrevious}
                   aria-label={t("previousTurn")}
                   onClick={handlePrevious}
-                  className="h-7 w-7 rounded-full text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
+                  className="h-7 w-7 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
                   <ChevronLeft className="size-4" />
                 </Button>
               </span>
@@ -386,7 +386,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   disabled={!battleStarted}
                   aria-label={t("nextTurn")}
                   onClick={handleNext}
-                  className="h-7 w-7 rounded-full text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
+                  className="h-7 w-7 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
                   <ChevronRight className="size-4" />
                 </Button>
               </TooltipTrigger>

@@ -97,7 +97,7 @@ export default function ProfileGdprActions() {
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={isExporting || !user}
             aria-busy={isExporting}
             aria-label={t("exportAriaLabel")}
@@ -118,7 +118,7 @@ export default function ProfileGdprActions() {
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={!user}
             aria-label={t("dataRequestAriaLabel")}
             className="w-full sm:w-auto shrink-0"
@@ -161,7 +161,7 @@ export default function ProfileGdprActions() {
               <DialogFooter className="flex-col sm:flex-row gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => setDeleteDialogOpen(false)}>
                   {t("deleteDialogCancel")}
                 </Button>
@@ -184,7 +184,7 @@ export default function ProfileGdprActions() {
             </div>
             <Button
               asChild
-              variant="outline"
+              variant="secondary"
               className="w-full sm:w-auto shrink-0">
               <Link
                 href={PRIVACY_POLICY_URL}

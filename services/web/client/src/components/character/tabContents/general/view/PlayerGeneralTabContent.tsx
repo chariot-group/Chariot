@@ -248,7 +248,7 @@ export default function PlayerGeneralTabContent({
               player.inspiration ? (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   disabled={isInspirationLoading}
                   onClick={async () => {

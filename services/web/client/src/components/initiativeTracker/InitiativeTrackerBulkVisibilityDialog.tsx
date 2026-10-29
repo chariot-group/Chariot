@@ -198,9 +198,9 @@ function InitiativeTrackerBulkVisibilityDialogContent({
 
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={!hasSelection}
-          className="w-full rounded-[15px] border-red/40 text-red hover:bg-red/15 hover:text-red"
+          className="w-full border-red/40 text-red hover:bg-red/15 hover:text-red"
           onClick={() => {
             onLeaveInitiative();
             onOpenChange(false);
@@ -212,7 +212,7 @@ function InitiativeTrackerBulkVisibilityDialogContent({
       <DialogFooter className="gap-2 sm:gap-2">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={() => onOpenChange(false)}>
           {labels.cancel}
         </Button>

@@ -5,7 +5,7 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useCallback } from "react";
-import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabs, { CharacterTab, TAB_COLORS } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
@@ -531,26 +531,18 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         form="character-create-form"
         disabled={isSaving}
         tabIndex={0}
-        className={`
-          max-w-full min-w-0 lg:text-sm text-xs font-semibold
-          ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-          ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-          ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-          ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-          ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-        `}
+        variant="accent"
+        tone={TAB_COLORS[activeTab]}
+        className="max-w-full min-w-0"
         aria-label={tCreate("create")}
         aria-busy={isSaving}>
-        <Save
-          className="lg:size-5 size-4 shrink-0"
-          aria-hidden="true"
-        />
+        <Save aria-hidden="true" />
         <span className="truncate">{isSaving ? tCreate("saving") : tCreate("create")}</span>
       </Button>
 
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         onClick={handleCancel}
         disabled={isSaving}
         tabIndex={0}
@@ -560,12 +552,9 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
             handleCancel();
           }
         }}
-        className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+        className="max-w-full min-w-0"
         aria-label={tCreate("cancel")}>
-        <X
-          className="lg:size-5 size-4 shrink-0"
-          aria-hidden="true"
-        />
+        <X aria-hidden="true" />
         <span className="truncate">{tCreate("cancel")}</span>
       </Button>
     </div>

@@ -4570,3 +4570,69 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/__tests__/sessionEndNavigation.test.ts`
 - `services/web/client/src/services/__tests__/NavigationService.destinations.test.ts`
 - `docs/functional-rules.md` — FR-post-auth-navigation, FR-session-websocket-lifecycle, FR-session-lobby-navigation, FR-user-cache-isolation
+
+---
+
+## FR-frontend-button-system: Unified Button Types, Sizes and Shape
+
+**Rule**: Every button of the web client MUST belong to one of three main types, or to a documented utility type, and MUST use one of three sizes. Type, size, alignment and shape are owned by the shared `Button` primitive (`components/ui/button.tsx`, `buttonVariants`); consumers MUST NOT re-style the fill, text color, hover, height or radius of a button locally.
+
+**Main types**:
+
+- **Primary white** (`variant="primary"`): white fill (`--white`), dark text; hover makes it slightly **darker** (`gray-300`), a light but visible change. Default type for the main action of a screen or dialog.
+- **Primary colored** (`variant="accent"` + `tone`): colored fill, hover makes it **lighter**.
+  - Domain tones `blue`, `red`, `pink`, `yellow`, `green` (section 2.3 of `docs/design.md`): dark text on **every** tone (red included). Used when the action belongs to a color-coded context (character sheet tab, session actions in the sidebar, combat turn controls).
+  - Brand tone `violet` (`--primary`, default tone): light text (`--primary-foreground`), the only colored tone with light text because dark text is unreadable on `#4e00de`. Keeps its current role (dialog validations, welcome and shop calls to action).
+  - `accent` + `violet` is the default of the primitive, so a `<Button>` without variant keeps the violet look.
+- **Secondary** (`variant="secondary"`): dark fill (`--gray-middle-light`) with the minor border (`--input`), light text; hover makes it **lighter** (`--gray`). Used for alternative actions next to a primary (cancel, export, back).
+
+**Utility types** (minority, kept): `ghost` (transparent, `hover:bg-white/10`), `link` (text), `destructive` (critical action), icon-only triggers, and toggles (`aria-pressed`), which never use a violet fill:
+  - Segmented selector (exactly one option active among a few, e.g. Player / GM, attack ability suggestion): active option = **primary white**, inactive options = **secondary**.
+  - Filter toggle (independent on/off chip, e.g. Action / Bonus action / Reaction priority): `secondary`, pressed state = documented selection gray (`docs/design.md` section 5.1).
+
+**Sizes**:
+
+- `lg` — large call to action (e.g. sidebar « Lancer une session », « Rejoindre la session »): slightly larger label (`text-lg`) and icon (`size-6`)
+- `default` — normal (e.g. « Créer un personnage », dialog footers, character sheet footer)
+- `sm` — small (dense toolbars, rows, tracker controls)
+- Icon-only sizes (`icon`, `icon-sm`, `icon-lg`) follow the same heights as their text counterparts
+
+**Shape and content**:
+
+- Corner radius: `rounded-[13px]` for `default`, `sm` and their icon sizes (same as the Player / GM selector and the character sheet tabs); `rounded-[15px]` for `lg` / `icon-lg` (the app's card radius, slightly rounder for taller buttons) (`docs/design.md` section 2.4). No button may be pill-shaped or use another radius, except the documented joined group of the character sheet tabs.
+- Content is centered by default; `align="start"` left-aligns it when the layout requires it (sidebar lists, full-width rows).
+- An icon is optional and MUST be placed on the **left** of the label. The only trailing glyphs allowed are the disclosure chevron of a menu trigger and the forward arrow of a "next" action (e.g. tracker « Suivant »).
+
+**Explicit mappings**:
+
+- Sidebar session action (« Lancer une session », « Rejoindre la session », « Retour à la session », « Lancer le combat », « Retour à la fiche »): primary colored, `lg`, standard radius.
+- Player / GM space selector (« Joueur » / « MJ »): segmented toggle following the toggle rule above (active = primary white, inactive = secondary), `default` size, standard radius, built on `buttonVariants` even though it stays a distinct component.
+- Character sheet footer: « Modifier le personnage » and « Sauvegarder » = primary white, `default`, independent of the active tab; « Exporter en PDF » and « Annuler » = secondary, `default`.
+- Sidebar « Créer un personnage » / « Créer un groupe »: primary white, `default`, `align="start"`.
+
+**Accessibility**:
+
+- Every type keeps a visible keyboard focus (`focus-visible` ring) on dark and light fills.
+- Text/fill contrast MUST be >= 4.5:1 at rest and on hover for every type and tone.
+- Disabled state is conveyed by `disabled`/`aria-disabled`, reduced opacity and no hover change.
+
+**Prohibitions**:
+
+- Local overrides of button fill, hover color (hardcoded hex such as `hover:bg-[#e6b000]`), height or radius (`rounded-2xl`, `rounded-md`, `rounded-full`) in consumers
+- Trailing icons other than a menu disclosure chevron
+- Light text on a domain-colored (non-violet) button
+
+**Tests**:
+
+- Nominal: `buttonVariants` returns the documented classes for each type (`primary`, `accent` per tone, `secondary`) and each size; the default is `accent` + `violet`
+- Edge: `accent` with `tone="red"` renders dark text; `align="start"` left-aligns content; `lg` uses the 15px radius, the other sizes 13px
+- Failure/guard: disabled buttons expose no hover style change; an inactive segmented option renders the secondary style
+
+**References**:
+
+- `services/web/client/src/components/ui/button.tsx`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/layout/Sidebar/SidebarEnvironment.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `docs/design.md` — sections 2.3, 2.4, 5.1
+- `docs/functional-rules.md` — FR-frontend-design, FR-character-sheet-pdf-export

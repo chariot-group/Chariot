@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import { removeCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { useMemo, useState } from "react";
@@ -168,11 +169,8 @@ export default function CharactersWithoutGroupList() {
         href="/characters/new/players"
         onClick={() => setOpenMobile(false)}
         aria-label={t("createCharacter")}
-        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex items-center gap-2 transition-all duration-100 text-black border border-frame bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
-        <UserPlus
-          aria-hidden="true"
-          className="h-4 w-4 shrink-0"
-        />
+        className={cn(buttonVariants({ variant: "primary", align: "start" }), "w-full")}>
+        <UserPlus aria-hidden="true" />
         {t("createCharacter")}
       </Link>
 

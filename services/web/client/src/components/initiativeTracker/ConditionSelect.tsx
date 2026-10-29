@@ -96,7 +96,10 @@ type ConditionSelectProps = {
   formatConditionEntryDuration: (
     entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">,
   ) => string | null;
-  getConditionDurationUnits: () => { value: InitiativeTrackerConditionDurationUnit; label: string }[];
+  getConditionDurationUnits: () => {
+    value: InitiativeTrackerConditionDurationUnit;
+    label: string;
+  }[];
   onAddCondition: (
     row: InitiativeTrackerRow,
     condition: ActiveInitiativeTrackerCondition,
@@ -524,7 +527,7 @@ export function ConditionSelect({
             variant="ghost"
             size="icon-sm"
             aria-label={label}
-            className="shrink-0 rounded-full text-white/80 hover:bg-white/10 hover:text-white">
+            className="shrink-0 text-white/80 hover:bg-white/10 hover:text-white">
             <Pencil className="size-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -561,9 +564,8 @@ export function ConditionSelect({
 
               <Button
                 type="button"
-                variant="default"
                 onClick={confirmAddCondition}
-                className="h-9 w-full rounded-[15px] text-sm font-semibold">
+                className="w-full">
                 {addConfirmLabel}
               </Button>
             </div>
@@ -599,9 +601,8 @@ export function ConditionSelect({
 
               <Button
                 type="button"
-                variant="default"
                 onClick={confirmAddCondition}
-                className="h-9 w-full rounded-[15px] text-sm font-semibold">
+                className="w-full">
                 {customEffects?.addConfirmLabel ?? addConfirmLabel}
               </Button>
             </div>
@@ -661,9 +662,8 @@ export function ConditionSelect({
 
               <Button
                 type="button"
-                variant="default"
                 onClick={confirmAddCondition}
-                className="h-9 w-full rounded-[15px] text-sm font-semibold">
+                className="w-full">
                 {customEffects.addConfirmLabel}
               </Button>
             </div>
@@ -745,7 +745,7 @@ export function ConditionSelect({
                         disabled={rowConditions.length === 0 && rowCustomEffects.length === 0}
                         aria-label={clearAllConditionsLabel}
                         onClick={() => onClearConditions(row)}
-                        className="rounded-full text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40">
+                        className="text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40">
                         <Eraser className="size-4" />
                       </Button>
                     </span>

@@ -329,7 +329,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex flex-col items-end gap-1">
               <Button
-                className="rounded-[15px] w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
+                className="w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
                 onClick={() => setShowShopDialog(true)}
                 aria-label={t("reloadTokens")}>
                 <ShoppingCart

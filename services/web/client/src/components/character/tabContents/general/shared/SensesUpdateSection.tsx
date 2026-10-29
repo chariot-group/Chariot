@@ -130,7 +130,7 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
 
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="sm"
         onClick={() => appendSense({ name: "", value: null })}
         className="w-fit"

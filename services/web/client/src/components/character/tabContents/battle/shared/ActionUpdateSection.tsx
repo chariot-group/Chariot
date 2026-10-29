@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { StoredUnitFeetRangeInput } from "@/components/ui/stored-unit-feet-range-input";
 import { Textarea } from "@/components/ui/textarea";
@@ -87,7 +88,11 @@ const ActionUpdateSection = ({
     | Array<{
         attackAbility?: AbilityScoreKey;
         attackBonus?: number;
-        damage?: Array<{ dice?: string; type?: string; applyAbilityBonus?: boolean }>;
+        damage?: Array<{
+          dice?: string;
+          type?: string;
+          applyAbilityBonus?: boolean;
+        }>;
       }>
     | undefined;
   const watchedAbilityScores = form.watch("stats.abilityScores") as Partial<AbilityScores> | undefined;
@@ -474,7 +479,7 @@ const ActionUpdateSection = ({
                             <Button
                               key={suggestion.key}
                               type="button"
-                              variant={isSelected ? "default" : "outline"}
+                              variant={isSelected ? "primary" : "secondary"}
                               size="sm"
                               onClick={() => {
                                 clearAutoDamageBonusForAction(index, true);
@@ -584,7 +589,7 @@ const ActionUpdateSection = ({
                                       </div>
                                       <Button
                                         type="button"
-                                        variant={damage?.applyAbilityBonus ? "default" : "outline"}
+                                        variant="secondary"
                                         size="sm"
                                         disabled={!hasSelectedAttackAbility}
                                         onClick={() => {
@@ -615,7 +620,11 @@ const ActionUpdateSection = ({
                                             ? `${tAbilities(selectedAttackSuggestion.key)} ${formatSignedBonus(selectedDamageModifier)}`
                                             : t("attackDC")
                                         }
-                                        className="h-9 w-22 px-0 text-xs shrink-0 justify-center self-end">
+                                        aria-pressed={Boolean(damage?.applyAbilityBonus)}
+                                        className={cn(
+                                          "h-9 w-22 px-0 text-xs shrink-0 self-end",
+                                          damage?.applyAbilityBonus && toggleButtonPressedClassName,
+                                        )}>
                                         AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
                                       </Button>
                                     </div>
@@ -647,7 +656,7 @@ const ActionUpdateSection = ({
                               })}
                               <Button
                                 type="button"
-                                variant="outline"
+                                variant="secondary"
                                 size="sm"
                                 onClick={() =>
                                   damageField.onChange([...damages, { dice: "", type: "", applyAbilityBonus: false }])

@@ -587,7 +587,7 @@ export function InitiativeTrackerRow({
         aria-controls={tabletDetailsId}
         aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
         onClick={onToggleExpanded}
-        className="absolute left-2 top-1/2 hidden size-7 -translate-y-1/2 rounded-full text-white/65 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 md:inline-flex lg:hidden">
+        className="absolute left-2 top-1/2 hidden size-7 -translate-y-1/2 text-white/65 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 md:inline-flex lg:hidden">
         {isExpanded ? (
           <ChevronDown className="size-4" aria-hidden="true" />
         ) : (
@@ -748,7 +748,7 @@ export function InitiativeTrackerRow({
                 variant="ghost"
                 size="icon-sm"
                 aria-label={labels.conditionFor}
-                className="shrink-0 rounded-full text-white/80 hover:bg-white/10 hover:text-white"
+                className="shrink-0 text-white/80 hover:bg-white/10 hover:text-white"
                 onClick={() => openConcentrationDialog("set")}>
                 <Pencil className="size-4" />
               </Button>
@@ -859,7 +859,7 @@ export function InitiativeTrackerRow({
               aria-controls={detailsId}
               aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
               onClick={onToggleExpanded}
-              className="size-9 shrink-0 rounded-[12px] text-white/75 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40">
+              className="size-9 shrink-0 text-white/75 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40">
               {isExpanded ? (
                 <ChevronDown className="size-5" aria-hidden="true" />
               ) : (
