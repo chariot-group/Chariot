@@ -8,11 +8,11 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { CompanionLinkedInlineList } from "@/components/character/CompanionLinkedInlineList";
 import { characterDisplayName } from "@/lib/duplicateName";
 import { companionNamesLine } from "@/lib/sessionPlayerCompanions";
 import { cn } from "@/lib/utils";
@@ -80,7 +80,7 @@ export function DeletePlayerWithCompanionsDialog({
         onOpenChange(nextOpen);
       }}>
       <DialogContent
-        className="rounded-[15px] bg-card sm:max-w-sm"
+        className="min-w-0 overflow-x-hidden rounded-[15px] bg-card sm:max-w-md"
         onEscapeKeyDown={(event) => {
           if (isLoading) event.preventDefault();
         }}>
@@ -100,32 +100,25 @@ export function DeletePlayerWithCompanionsDialog({
             <span className="sr-only">{playerName}</span>
           </div>
         ) : (
-          <fieldset className="min-w-0 space-y-1.5">
-            <legend className="text-xs font-semibold text-white/70">
-              {companionsListLabel} ({sortedCompanions.length})
-            </legend>
-            <div className="max-h-24 overflow-y-auto rounded-[12px] border border-white/10 bg-gray-middle-light/40 px-3 py-2 pr-2">
-              <p
-                className="text-xs leading-relaxed text-white/70"
-                title={companionSummary}>
-                {companionSummary}
-              </p>
-            </div>
-          </fieldset>
+          <CompanionLinkedInlineList
+            label={companionsListLabel}
+            count={sortedCompanions.length}
+            namesLine={companionSummary}
+          />
         )}
 
-        <DialogFooter className="!flex-col gap-2 sm:!flex-col sm:justify-stretch">
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row">
+        <div className="flex w-full min-w-0 flex-col gap-2">
+          <div className="grid w-full min-w-0 grid-cols-2 gap-2">
             <Button
               type="button"
               variant="destructive"
-              className="min-w-0 flex-1 whitespace-normal sm:whitespace-nowrap"
+              className="min-w-0 px-3"
               disabled={actionsDisabled}
               aria-label={keepCompanionsAriaLabel}
               onClick={() => void onKeepCompanions()}>
               {isLoading ? (
                 <Loader2
-                  className="mr-2 h-4 w-4 shrink-0 animate-spin"
+                  className="size-4 shrink-0 animate-spin"
                   aria-hidden="true"
                 />
               ) : null}
@@ -135,7 +128,7 @@ export function DeletePlayerWithCompanionsDialog({
               type="button"
               variant="outline"
               className={cn(
-                "min-w-0 flex-1 whitespace-normal sm:whitespace-nowrap",
+                "min-w-0 px-3",
                 "border-red/35 text-red hover:bg-red/10 hover:text-red dark:hover:bg-red/15",
               )}
               disabled={actionsDisabled}
@@ -143,7 +136,7 @@ export function DeletePlayerWithCompanionsDialog({
               onClick={() => void onDeleteWithCompanions()}>
               {isLoading ? (
                 <Loader2
-                  className="mr-2 h-4 w-4 shrink-0 animate-spin"
+                  className="size-4 shrink-0 animate-spin"
                   aria-hidden="true"
                 />
               ) : null}
@@ -153,12 +146,12 @@ export function DeletePlayerWithCompanionsDialog({
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full min-w-0"
             disabled={isLoading}
             onClick={() => onOpenChange(false)}>
             {cancelLabel}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

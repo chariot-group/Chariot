@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CompanionLinkedInlineList } from "@/components/character/CompanionLinkedInlineList";
 import { characterDisplayName, nextAvailableDuplicateName } from "@/lib/duplicateName";
 import type { PlayerDuplicateCompanionMode } from "@/lib/playerDuplicateCompanions";
 import { companionNamesLine } from "@/lib/sessionPlayerCompanions";
@@ -199,18 +200,11 @@ export function DuplicateCharacterDialog({
             </div>
           ) : (
             <>
-              <fieldset className="min-w-0 space-y-1.5">
-                <legend className="text-xs font-semibold text-white/70">
-                  {t("duplicatePlayerWithCompanionsListLabel")} ({companions.length})
-                </legend>
-                <div className="max-h-24 overflow-y-auto rounded-[12px] border border-white/10 bg-gray-middle-light/40 px-3 py-2 pr-2">
-                  <p
-                    className="text-xs leading-relaxed text-white/70"
-                    title={sortedCompanionSummary}>
-                    {sortedCompanionSummary}
-                  </p>
-                </div>
-              </fieldset>
+              <CompanionLinkedInlineList
+                label={t("duplicatePlayerWithCompanionsListLabel")}
+                count={companions.length}
+                namesLine={sortedCompanionSummary}
+              />
 
               <fieldset
                 className="flex flex-col gap-2"
