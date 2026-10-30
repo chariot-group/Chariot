@@ -111,6 +111,22 @@ updates:
       - dependency-name: "@nestjs/*"
         update-types: ["version-update:semver-major"]
 
+  # npm — payment
+  - package-ecosystem: "npm"
+    directory: "/services/payment/api"
+    multi-ecosystem-group: "weekend-nightly"
+    patterns:
+      - "*"
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: "stripe"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # @nestjs/swagger 12 requires Nest 12: migrate all services together
+      - dependency-name: "@nestjs/*"
+        update-types: ["version-update:semver-major"]
+
   # Docker — media
   - package-ecosystem: "docker"
     directory: "/services/media/api"
