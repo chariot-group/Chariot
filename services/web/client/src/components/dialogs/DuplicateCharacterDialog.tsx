@@ -20,7 +20,7 @@ import type { PlayerDuplicateCompanionMode } from "@/lib/playerDuplicateCompanio
 import { companionNamesLine } from "@/lib/sessionPlayerCompanions";
 import { cn } from "@/lib/utils";
 import type { NPC } from "@/types/character";
-import { Copy, Loader2, UserRound, Users } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 /** Pure helper — exported for unit tests */
@@ -31,8 +31,8 @@ export function buildDuplicateName(
   return nextAvailableDuplicateName(characterDisplayName(character), existingNames);
 }
 
-const companionChoiceCardClass =
-  "flex w-full min-w-0 cursor-pointer items-start gap-3 rounded-[15px] border border-white/15 bg-gray-middle-light px-3 py-2.5 text-left transition-colors has-[:checked]:border-primary/60 has-[:checked]:bg-gray has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary disabled:cursor-not-allowed disabled:opacity-50";
+const companionChoiceRowClass =
+  "flex w-full min-w-0 cursor-pointer items-start gap-2 rounded-md py-1.5 text-left has-[:focus-visible]:outline-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-card disabled:cursor-not-allowed disabled:opacity-50";
 
 interface DuplicateCharacterDialogProps {
   character: { firstname: string; lastname?: string } | null;
@@ -157,7 +157,7 @@ export function DuplicateCharacterDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-end gap-3 py-2">
+        <div className="flex items-end gap-3">
           <div className="flex-1 grid gap-2">
             <Label htmlFor="duplicate-character-name">{t("duplicateCharacterNameLabel")}</Label>
             <Input
@@ -199,7 +199,7 @@ export function DuplicateCharacterDialog({
               />
             </div>
           ) : (
-            <>
+            <div className="flex min-w-0 flex-col gap-3">
               <CompanionLinkedInlineList
                 label={t("duplicatePlayerWithCompanionsListLabel")}
                 count={companions.length}
@@ -207,51 +207,45 @@ export function DuplicateCharacterDialog({
               />
 
               <fieldset
-                className="flex flex-col gap-2"
+                className="m-0 flex min-w-0 flex-col gap-1 border-0 p-0"
                 disabled={isCreating}>
-                <legend className="text-xs font-semibold text-white/70">
+                <legend className="mb-1 text-sm font-semibold text-white/80">
                   {t("duplicatePlayerWithCompanionsChoiceLegend")}
                 </legend>
 
-                <label className={companionChoiceCardClass}>
+                <label className={companionChoiceRowClass}>
                   <input
                     type="radio"
                     name="duplicate-companion-mode"
-                    className="mt-1 size-4 shrink-0 accent-primary"
+                    className="mt-0.5 size-4 shrink-0 accent-primary"
                     checked={companionMode === "playerOnly"}
                     onChange={() => setCompanionMode("playerOnly")}
                     aria-label={t("duplicatePlayerOnlyAria")}
                   />
-                  <UserRound
-                    className="mt-0.5 size-5 shrink-0 text-blue"
-                    aria-hidden="true"
-                  />
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-white">
+                    <span className="block text-sm font-medium text-white">
                       {t("duplicatePlayerOnly")}
                     </span>
-                    <span className="block text-xs text-white/70">{t("duplicatePlayerOnlyHint")}</span>
+                    <span className="mt-0.5 block text-xs leading-snug text-white/70">
+                      {t("duplicatePlayerOnlyHint")}
+                    </span>
                   </span>
                 </label>
 
-                <label className={companionChoiceCardClass}>
+                <label className={companionChoiceRowClass}>
                   <input
                     type="radio"
                     name="duplicate-companion-mode"
-                    className="mt-1 size-4 shrink-0 accent-primary"
+                    className="mt-0.5 size-4 shrink-0 accent-primary"
                     checked={companionMode === "copyCompanions"}
                     onChange={() => setCompanionMode("copyCompanions")}
                     aria-label={t("duplicatePlayerAndCompanionsAria")}
                   />
-                  <Copy
-                    className="mt-0.5 size-5 shrink-0 text-purple"
-                    aria-hidden="true"
-                  />
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-white">
+                    <span className="block text-sm font-medium text-white">
                       {t("duplicatePlayerAndCompanions")}
                     </span>
-                    <span className="block text-xs text-white/70">
+                    <span className="mt-0.5 block text-xs leading-snug text-white/70">
                       {t("duplicatePlayerAndCompanionsHint")}
                     </span>
                   </span>
@@ -259,27 +253,23 @@ export function DuplicateCharacterDialog({
 
                 <label
                   className={cn(
-                    companionChoiceCardClass,
+                    companionChoiceRowClass,
                     moveCompanionsDisabled && "cursor-not-allowed opacity-50",
                   )}>
                   <input
                     type="radio"
                     name="duplicate-companion-mode"
-                    className="mt-1 size-4 shrink-0 accent-primary"
+                    className="mt-0.5 size-4 shrink-0 accent-primary"
                     checked={companionMode === "moveCompanions"}
                     disabled={moveCompanionsDisabled}
                     onChange={() => setCompanionMode("moveCompanions")}
                     aria-label={t("duplicatePlayerMoveCompanionsAria")}
                   />
-                  <Users
-                    className="mt-0.5 size-5 shrink-0 text-primary"
-                    aria-hidden="true"
-                  />
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-white">
+                    <span className="block text-sm font-medium text-white">
                       {t("duplicatePlayerMoveCompanions")}
                     </span>
-                    <span className="block text-xs text-white/70">
+                    <span className="mt-0.5 block text-xs leading-snug text-white/70">
                       {moveCompanionsDisabled
                         ? t("duplicatePlayerMoveCompanionsDisabledHint")
                         : t("duplicatePlayerMoveCompanionsHint")}
@@ -287,7 +277,7 @@ export function DuplicateCharacterDialog({
                   </span>
                 </label>
               </fieldset>
-            </>
+            </div>
           )
         ) : null}
 
