@@ -7,6 +7,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
+import { PublicUserInfoDto } from '@/resources/user/dto/sub/public-user-info.dto';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { IResponse } from '@/common/dtos/reponse.dto';
 import { User, UserDocument } from '@/resources/user/schemas/user.schema';
@@ -81,6 +82,52 @@ export class UserService {
 
       // Only transform unexpected errors into 500
       const message = `Error while fetching user #${id}: ${error.message}`;
+      this.logger.error(message, error.stack, this.SERVICE_NAME);
+      throw new InternalServerErrorException(message);
+    }
+  }
+
+  /**
+   * Get another user's public profile by Keycloak ID.
+   * Returns only non-sensitive, display-oriented fields — never email,
+   * balance or history, regardless of the requested id (including the
+   * caller's own id, which should go through `findOne`/`GET /user/me`
+   * instead).
+   * @see FR-user-public-profile-read-access: User Profile Read Access by ID
+   */
+  async findPublicProfile(id: string): Promise<IResponse<PublicUserInfoDto>> {
+    try {
+      const start: number = Date.now();
+      const keycloakUser: UserRepresentation =
+        await this.keycloakService.getUserById(id);
+      if (!keycloakUser) {
+        const message: string = `User #${id} not found in Keycloak`;
+        this.logger.error(message, null, this.SERVICE_NAME);
+        throw new NotFoundException(message);
+      }
+
+      const data: PublicUserInfoDto = {
+        keycloakId: keycloakUser.id,
+        username: keycloakUser.username,
+        firstName: keycloakUser.firstName,
+        lastName: keycloakUser.lastName,
+        avatar: keycloakUser.attributes?.avatar?.[0] || null,
+      };
+
+      const end: number = Date.now();
+      const message: string = `Public profile for user #${id} found in ${end - start}ms`;
+      this.logger.debug(message, this.SERVICE_NAME);
+
+      return {
+        message,
+        data,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      const message = `Error while fetching public profile for user #${id}: ${error.message}`;
       this.logger.error(message, error.stack, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);
     }
