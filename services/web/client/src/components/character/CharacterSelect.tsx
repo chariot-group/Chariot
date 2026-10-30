@@ -34,7 +34,7 @@ function getCharacterItemLabel(character: Character): string {
 }
 
 const CHARACTER_SELECT_TRIGGER_CLASS =
-  "h-9 whitespace-normal border border-border/60 bg-card font-medium text-white shadow-xs hover:border-white/25 hover:bg-gray-middle-light data-[state=open]:border-primary/40 data-[state=open]:ring-2 data-[state=open]:ring-primary/20 [&_svg]:opacity-80 [&_[data-slot=select-value]]:w-0 [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:overflow-hidden";
+  "h-9 whitespace-normal border border-border/60 bg-card font-medium text-white shadow-xs hover:border-white/25 hover:bg-gray-middle-light data-[state=open]:border-primary/40 data-[state=open]:ring-2 data-[state=open]:ring-primary/20 [&_svg]:opacity-80 [&_[data-slot=select-value]]:w-0 [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:overflow-hidden [&_[data-slot=select-value]]:text-left";
 
 function CharacterOptionRow({
   name,
@@ -112,7 +112,11 @@ export function CharacterSelect({
                 fullCountLabel={selectedCompanionLabel}
                 shortCountLabel={selectedCompanionShortLabel}
               />
-            ) : undefined}
+            ) : (
+              <span className="block w-full min-w-0 truncate text-left font-normal text-muted-foreground">
+                {placeholder}
+              </span>
+            )}
           </SelectValue>
         </SelectTrigger>
         <SelectContent
