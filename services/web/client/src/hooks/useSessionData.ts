@@ -183,7 +183,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
                 const profileEntries = await Promise.all(
                     data.participants.map(async (p) => {
                         try {
-                            const user = await UserService.getUserById(p.userId);
+                            const user = await UserService.getUserById(p.userId, code);
                             return {
                                 userId: p.userId,
                                 label: formatSessionParticipantUserLabel(user) ?? SESSION_PARTICIPANT_NAME_LOADING,

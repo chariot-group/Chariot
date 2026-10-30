@@ -233,7 +233,7 @@ export default function GmSessionPlayersSidebarSection() {
         for (const p of roster) {
           const existing = displayNames[p.userId];
           if (!existing || existing === SESSION_PARTICIPANT_NAME_LOADING) {
-            const label = await fetchSessionParticipantDisplayName(p.userId);
+            const label = await fetchSessionParticipantDisplayName(p.userId, sessionCode);
             if (label !== SESSION_PARTICIPANT_NAME_LOADING) {
               nameUpdates[p.userId] = label;
             }

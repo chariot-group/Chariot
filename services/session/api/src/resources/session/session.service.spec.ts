@@ -1081,6 +1081,121 @@ describe('SessionService', () => {
         });
     });
 
+    // ── validateCoParticipant ───────────────────────────────────────────────────
+    // @see FR-user-public-profile-read-access
+
+    describe('validateCoParticipant', () => {
+        it('nominal: returns ok when requester and target are both regular participants', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [
+                    makeParticipant({ userId: 'user-uuid-2' }),
+                    makeParticipant({ userId: 'user-uuid-3' }),
+                ],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            const result = await service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3');
+
+            expect(result.data).toEqual({ ok: true });
+            expect(result.message).toBe('Access granted');
+        });
+
+        it('edge: returns ok when the target is the game master (creatorUserId, not a participant row)', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            const result = await service.validateCoParticipant('CODE123', 'user-uuid-2', 'gm-uuid-1');
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('edge: returns ok while a participant is disconnected (reconnect grace window)', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [
+                    makeParticipant({ userId: 'user-uuid-2' }),
+                    makeParticipant({ userId: 'user-uuid-3', status: ParticipantStatus.disconnected }),
+                ],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            const result = await service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3');
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('race: throws ForbiddenException once the target has left the session', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('error: throws GoneException when the session is closed', async () => {
+            const session = makeSession({
+                status: SessionStatus.closed,
+                participants: [
+                    makeParticipant({ userId: 'user-uuid-2' }),
+                    makeParticipant({ userId: 'user-uuid-3' }),
+                ],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3'),
+            ).rejects.toThrow(GoneException);
+        });
+
+        it('error: throws ForbiddenException when requester is not a participant of this session', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'not-a-participant', 'user-uuid-2'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('error: throws ForbiddenException when target is not a participant of this session', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'user-uuid-2', 'some-stranger'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('error: throws NotFoundException when session does not exist', async () => {
+            mockPrismaSession.findFirst.mockResolvedValue(null);
+
+            await expect(
+                service.validateCoParticipant('BADCODE', 'user-uuid-2', 'user-uuid-3'),
+            ).rejects.toThrow(NotFoundException);
+        });
+
+        it('error: throws InternalServerErrorException on unexpected prisma error', async () => {
+            mockPrismaSession.findFirst.mockRejectedValue(new Error('DB failure'));
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3'),
+            ).rejects.toThrow(InternalServerErrorException);
+        });
+    });
+
     // ── expireSession ─────────────────────────────────────────────────────────
 
     describe('expireSession', () => {
