@@ -286,7 +286,7 @@ export default function CharacterDetailView({
       return;
     }
     let cancelled = false;
-    void UserService.getUserById(playedBySubjectId)
+    void UserService.getUserById(playedBySubjectId, sessionCodeForMedia)
       .then((u) => {
         if (!cancelled) {
           const label = formatSessionParticipantUserLabel(u);
@@ -303,7 +303,7 @@ export default function CharacterDetailView({
     return () => {
       cancelled = true;
     };
-  }, [playedBySubjectId]);
+  }, [playedBySubjectId, sessionCodeForMedia]);
 
   useEffect(() => {
     if (!showEditControls && isEditing) {

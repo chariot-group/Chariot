@@ -56,6 +56,7 @@ export function resolveSessionParticipantBattleFallbackName(
 async function enrichParticipantDisplayNames(
     participants: SessionParticipant[],
     displayNames: Record<string, string>,
+    sessionCode?: string | null,
 ): Promise<Record<string, string>> {
     const enriched = { ...displayNames };
     const missing = participants.filter((participant) => {
@@ -66,7 +67,7 @@ async function enrichParticipantDisplayNames(
 
     await Promise.all(
         missing.map(async (participant) => {
-            enriched[participant.userId] = await fetchSessionParticipantDisplayName(participant.userId);
+            enriched[participant.userId] = await fetchSessionParticipantDisplayName(participant.userId, sessionCode);
         }),
     );
 
@@ -85,6 +86,7 @@ export async function buildSessionParticipantsGroup(
     const resolvedDisplayNames = await enrichParticipantDisplayNames(
         nonGameMasterParticipants,
         participantDisplayNames,
+        sessionCode,
     );
 
     const characterById = new Map<string, SessionParticipantsGroupCharacter>();
