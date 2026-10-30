@@ -750,12 +750,9 @@ export default function GroupList({
         title={t("deletePlayerWithCompanionsTitle")}
         description={t("deletePlayerWithCompanionsDescription")}
         companionsListLabel={t("deletePlayerWithCompanionsListLabel")}
-        choiceLegend={t("deletePlayerWithCompanionsChoiceLegend")}
         cancelLabel={t("cancel")}
         keepCompanionsLabel={t("deletePlayerKeepCompanions")}
-        keepCompanionsHint={t("deletePlayerKeepCompanionsHint")}
         deleteAllLabel={t("deletePlayerAndCompanions", { count: deleteCompanionsPreview.length })}
-        deleteAllHint={t("deletePlayerAndCompanionsHint")}
         keepCompanionsAriaLabel={t("deletePlayerKeepCompanionsAria")}
         deleteAllAriaLabel={t("deletePlayerAndCompanionsAria", {
           count: deleteCompanionsPreview.length,

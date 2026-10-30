@@ -612,12 +612,9 @@ export default function CharactersWithoutGroupList() {
         title={t("deletePlayerWithCompanionsTitle")}
         description={t("deletePlayerWithCompanionsDescription")}
         companionsListLabel={t("deletePlayerWithCompanionsListLabel")}
-        choiceLegend={t("deletePlayerWithCompanionsChoiceLegend")}
         cancelLabel={t("cancel")}
         keepCompanionsLabel={t("deletePlayerKeepCompanions")}
-        keepCompanionsHint={t("deletePlayerKeepCompanionsHint")}
         deleteAllLabel={t("deletePlayerAndCompanions", { count: pendingDeleteCompanions.length })}
-        deleteAllHint={t("deletePlayerAndCompanionsHint")}
         keepCompanionsAriaLabel={t("deletePlayerKeepCompanionsAria")}
         deleteAllAriaLabel={t("deletePlayerAndCompanionsAria", {
           count: pendingDeleteCompanions.length,

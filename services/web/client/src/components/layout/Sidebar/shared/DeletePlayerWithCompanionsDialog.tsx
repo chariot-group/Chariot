@@ -3,7 +3,7 @@
 /** @see FR-player-delete-companion-choice */
 
 import * as React from "react";
-import { Loader2, Trash2, UserRound } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,20 +28,14 @@ export interface DeletePlayerWithCompanionsDialogProps {
   title: string;
   description: string;
   companionsListLabel: string;
-  choiceLegend: string;
   cancelLabel: string;
   keepCompanionsLabel: string;
   deleteAllLabel: string;
-  keepCompanionsHint: string;
-  deleteAllHint: string;
   keepCompanionsAriaLabel: string;
   deleteAllAriaLabel: string;
   onKeepCompanions: () => void | Promise<void>;
   onDeleteWithCompanions: () => void | Promise<void>;
 }
-
-const choiceCardClassName =
-  "flex w-full min-w-0 cursor-pointer items-start gap-3 rounded-[15px] border border-white/15 bg-gray-middle-light px-3 py-2.5 text-left transition-colors hover:bg-gray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50";
 
 export function DeletePlayerWithCompanionsDialog({
   open,
@@ -53,12 +47,9 @@ export function DeletePlayerWithCompanionsDialog({
   title,
   description,
   companionsListLabel,
-  choiceLegend,
   cancelLabel,
   keepCompanionsLabel,
   deleteAllLabel,
-  keepCompanionsHint,
-  deleteAllHint,
   keepCompanionsAriaLabel,
   deleteAllAriaLabel,
   onKeepCompanions,
@@ -109,62 +100,60 @@ export function DeletePlayerWithCompanionsDialog({
             <span className="sr-only">{playerName}</span>
           </div>
         ) : (
-          <>
-            <fieldset className="min-w-0 space-y-1.5">
-              <legend className="text-xs font-semibold text-white/70">
-                {companionsListLabel} ({sortedCompanions.length})
-              </legend>
-              <div className="max-h-24 overflow-y-auto rounded-[12px] border border-white/10 bg-gray-middle-light/40 px-3 py-2 pr-2">
-                <p
-                  className="text-xs leading-relaxed text-white/70"
-                  title={companionSummary}>
-                  {companionSummary}
-                </p>
-              </div>
-            </fieldset>
-
-            <fieldset
-              className="flex flex-col gap-2"
-              disabled={actionsDisabled}>
-              <legend className="sr-only">{choiceLegend}</legend>
-              <button
-                type="button"
-                className={choiceCardClassName}
-                aria-label={keepCompanionsAriaLabel}
-                disabled={actionsDisabled}
-                onClick={() => void onKeepCompanions()}>
-                <UserRound
-                  className="mt-0.5 size-5 shrink-0 text-blue"
-                  aria-hidden="true"
-                />
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-white">{keepCompanionsLabel}</span>
-                  <span className="block text-xs text-white/70">{keepCompanionsHint}</span>
-                </span>
-              </button>
-              <button
-                type="button"
-                className={cn(choiceCardClassName, "hover:border-red/40")}
-                aria-label={deleteAllAriaLabel}
-                disabled={actionsDisabled}
-                onClick={() => void onDeleteWithCompanions()}>
-                <Trash2
-                  className="mt-0.5 size-5 shrink-0 text-red"
-                  aria-hidden="true"
-                />
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold text-white">{deleteAllLabel}</span>
-                  <span className="block text-xs text-white/70">{deleteAllHint}</span>
-                </span>
-              </button>
-            </fieldset>
-          </>
+          <fieldset className="min-w-0 space-y-1.5">
+            <legend className="text-xs font-semibold text-white/70">
+              {companionsListLabel} ({sortedCompanions.length})
+            </legend>
+            <div className="max-h-24 overflow-y-auto rounded-[12px] border border-white/10 bg-gray-middle-light/40 px-3 py-2 pr-2">
+              <p
+                className="text-xs leading-relaxed text-white/70"
+                title={companionSummary}>
+                {companionSummary}
+              </p>
+            </div>
+          </fieldset>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="!flex-col gap-2 sm:!flex-col sm:justify-stretch">
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row">
+            <Button
+              type="button"
+              variant="destructive"
+              className="min-w-0 flex-1 whitespace-normal sm:whitespace-nowrap"
+              disabled={actionsDisabled}
+              aria-label={keepCompanionsAriaLabel}
+              onClick={() => void onKeepCompanions()}>
+              {isLoading ? (
+                <Loader2
+                  className="mr-2 h-4 w-4 shrink-0 animate-spin"
+                  aria-hidden="true"
+                />
+              ) : null}
+              {keepCompanionsLabel}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className={cn(
+                "min-w-0 flex-1 whitespace-normal sm:whitespace-nowrap",
+                "border-red/35 text-red hover:bg-red/10 hover:text-red dark:hover:bg-red/15",
+              )}
+              disabled={actionsDisabled}
+              aria-label={deleteAllAriaLabel}
+              onClick={() => void onDeleteWithCompanions()}>
+              {isLoading ? (
+                <Loader2
+                  className="mr-2 h-4 w-4 shrink-0 animate-spin"
+                  aria-hidden="true"
+                />
+              ) : null}
+              {deleteAllLabel}
+            </Button>
+          </div>
           <Button
             type="button"
             variant="outline"
+            className="w-full"
             disabled={isLoading}
             onClick={() => onOpenChange(false)}>
             {cancelLabel}
