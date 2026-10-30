@@ -35,13 +35,15 @@ import { SidebarCompanionNest } from "@/components/layout/Sidebar/shared/Sidebar
 import { characterDisplayName } from "@/lib/duplicateName";
 import { companionsGroupedByPlayerId, ungroupedSessionCompanions } from "@/lib/sessionPlayerCompanions";
 import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
-import { MediaAvatar } from "@/components/media/MediaAvatar";
+import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
+import {
+  buildSidebarCharacterAvatarBatchItems,
+  sidebarCharacterAvatarImageUrl,
+} from "@/lib/buildSidebarCharacterAvatarBatch";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
-import type { MediaAvatarSize } from "@/utils/media.utils";
 
 const ROSTER_FETCH_DEBOUNCE_MS = 220;
 const CHARACTER_FETCH_RETRY_DELAY_MS = 350;
-const SIDEBAR_AVATAR_SIZE: MediaAvatarSize = "xs";
 
 type SessionCharacterMeta = {
   label: string;
@@ -299,43 +301,17 @@ export default function GmSessionPlayersSidebarSection() {
   }, [gmGuestCharacterIds]);
 
   const avatarBatchItems = React.useMemo(() => {
-    const items: Array<{
-      scope: "character";
-      entityId: string;
-      storedValue: string;
-      size: MediaAvatarSize;
-    }> = [];
+    const sources: Array<{ _id?: string; avatar?: string | null }> = [];
     for (const [cid, meta] of Object.entries(characterMeta)) {
-      if (meta.avatar?.trim()) {
-        items.push({
-          scope: "character",
-          entityId: cid,
-          storedValue: meta.avatar,
-          size: SIDEBAR_AVATAR_SIZE,
-        });
-      }
+      sources.push({ _id: cid, avatar: meta.avatar });
     }
     for (const [cid, meta] of Object.entries(guestMeta)) {
-      if (meta.avatar?.trim()) {
-        items.push({
-          scope: "character",
-          entityId: cid,
-          storedValue: meta.avatar,
-          size: SIDEBAR_AVATAR_SIZE,
-        });
-      }
+      sources.push({ _id: cid, avatar: meta.avatar });
     }
     for (const npc of sessionCompanionNpcs) {
-      if (npc._id && npc.avatar?.trim()) {
-        items.push({
-          scope: "character",
-          entityId: npc._id,
-          storedValue: npc.avatar,
-          size: SIDEBAR_AVATAR_SIZE,
-        });
-      }
+      sources.push({ _id: npc._id, avatar: npc.avatar });
     }
-    return items;
+    return buildSidebarCharacterAvatarBatchItems(sources);
   }, [characterMeta, guestMeta, sessionCompanionNpcs]);
 
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
@@ -426,21 +402,13 @@ export default function GmSessionPlayersSidebarSection() {
                     aria-hidden="true"
                   />
                 )}
-                {hasSheet ? (
-                  <MediaAvatar
-                    scope="character"
-                    entityId={cid!}
+                {cid ? (
+                  <SidebarCharacterAvatar
+                    characterId={cid}
                     storedValue={avatarStored}
-                    size={SIDEBAR_AVATAR_SIZE}
                     sessionCode={sessionCode}
                     alt={primaryLabel}
-                    enabled={Boolean(avatarStored?.trim())}
-                    avatarImageUrl={
-                      avatarStored?.trim()
-                        ? getAvatarUrl("character", cid!, SIDEBAR_AVATAR_SIZE)
-                        : undefined
-                    }
-                    className="shrink-0"
+                    avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, cid, avatarStored)}
                   />
                 ) : null}
                 <span className="flex min-w-0 flex-1 flex-col gap-0">
@@ -504,7 +472,6 @@ export default function GmSessionPlayersSidebarSection() {
                 const npcSelected = selectedCharacterId === npc._id;
                 const npcName = characterDisplayName(npc) || t("unnamedCharacter");
                 const npcHref = `/${locale}/characters/${encodeURIComponent(npc._id)}?sessionCode=${encodeURIComponent(sessionCode)}`;
-                const npcAvatar = npc.avatar?.trim() ?? "";
                 return (
                   <li key={npc._id}>
                     <Link
@@ -524,19 +491,13 @@ export default function GmSessionPlayersSidebarSection() {
                           aria-hidden="true"
                         />
                       )}
-                      {npcAvatar ? (
-                        <MediaAvatar
-                          scope="character"
-                          entityId={npc._id}
-                          storedValue={npc.avatar}
-                          size={SIDEBAR_AVATAR_SIZE}
-                          sessionCode={sessionCode}
-                          alt={npcName}
-                          enabled
-                          avatarImageUrl={getAvatarUrl("character", npc._id, SIDEBAR_AVATAR_SIZE)}
-                          className="shrink-0"
-                        />
-                      ) : null}
+                      <SidebarCharacterAvatar
+                        characterId={npc._id}
+                        storedValue={npc.avatar}
+                        sessionCode={sessionCode}
+                        alt={npcName}
+                        avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, npc._id, npc.avatar)}
+                      />
                       <span
                         className={cn(
                           "text-sm min-w-0 flex-1 truncate",
@@ -559,7 +520,6 @@ export default function GmSessionPlayersSidebarSection() {
           const npcSelected = selectedCharacterId === npc._id;
           const npcName = characterDisplayName(npc) || t("unnamedCharacter");
           const npcHref = `/${locale}/characters/${encodeURIComponent(npc._id)}?sessionCode=${encodeURIComponent(sessionCode)}`;
-          const npcAvatar = npc.avatar?.trim() ?? "";
           return (
             <Link
               key={`ungrouped-companion-${npc._id}`}
@@ -570,7 +530,7 @@ export default function GmSessionPlayersSidebarSection() {
                 if (isMobile) setOpenMobile(false);
               }}
               className={cn(
-                "relative flex min-w-0 w-full shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 rounded-[12px] focus-visible:ring-1 focus-visible:ring-white/50",
+                "relative flex min-w-0 w-full shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 rounded-[12px] focus-visible:ring-1 focus-visible:ring-white/50",
                 npcSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10",
               )}>
               {npcSelected && (
@@ -579,19 +539,13 @@ export default function GmSessionPlayersSidebarSection() {
                   aria-hidden="true"
                 />
               )}
-              {npcAvatar ? (
-                <MediaAvatar
-                  scope="character"
-                  entityId={npc._id}
-                  storedValue={npc.avatar}
-                  size={SIDEBAR_AVATAR_SIZE}
-                  sessionCode={sessionCode}
-                  alt={npcName}
-                  enabled
-                  avatarImageUrl={getAvatarUrl("character", npc._id, SIDEBAR_AVATAR_SIZE)}
-                  className="shrink-0"
-                />
-              ) : null}
+              <SidebarCharacterAvatar
+                characterId={npc._id}
+                storedValue={npc.avatar}
+                sessionCode={sessionCode}
+                alt={npcName}
+                avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, npc._id, npc.avatar)}
+              />
               <span
                 className={cn(
                   "text-sm min-w-0 flex-1 truncate",
@@ -650,20 +604,12 @@ export default function GmSessionPlayersSidebarSection() {
                     aria-hidden="true"
                   />
                 )}
-                <MediaAvatar
-                  scope="character"
-                  entityId={cid}
+                <SidebarCharacterAvatar
+                  characterId={cid}
                   storedValue={avatarStored}
-                  size={SIDEBAR_AVATAR_SIZE}
                   sessionCode={sessionCode}
                   alt={label}
-                  enabled={Boolean(avatarStored?.trim())}
-                  avatarImageUrl={
-                    avatarStored?.trim()
-                      ? getAvatarUrl("character", cid, SIDEBAR_AVATAR_SIZE)
-                      : undefined
-                  }
-                  className="shrink-0"
+                  avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, cid, avatarStored)}
                 />
                 <span className="flex min-w-0 flex-1 flex-col gap-0">
                   <span className="truncate w-full text-sm">{label}</span>

@@ -56,8 +56,9 @@ function SidebarActionMenuItems({
               return;
             }
             action.onSelect();
-          }}>
-          {action.label}
+          }}
+          title={action.labelTitle ?? action.label}>
+          <span className="block min-w-0 truncate">{action.label}</span>
         </ContextMenuItem>
       );
 
@@ -92,8 +93,9 @@ function SidebarActionMenuItems({
             return;
           }
           action.onSelect();
-        }}>
-        {action.label}
+        }}
+        title={action.labelTitle ?? action.label}>
+        <span className="block min-w-0 truncate">{action.label}</span>
       </DropdownMenuItem>
     );
 

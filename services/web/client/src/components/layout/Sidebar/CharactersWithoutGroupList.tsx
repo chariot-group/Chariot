@@ -12,7 +12,12 @@ import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { selectCurrentUserParticipant, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import {
+  selectCurrentUserParticipant,
+  selectIsInSession,
+  selectSessionCode,
+  selectSessionStatus,
+} from "@/store/slices/sessionSlice";
 import { useUser } from "@/hooks/useUser";
 import CharacterService from "@/services/CharacterService";
 import { Character, NPC } from "@/types/character";
@@ -50,6 +55,14 @@ import {
 import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
 import { SidebarCompanionNest } from "@/components/layout/Sidebar/shared/SidebarCompanionNest";
 import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessionPlayersSidebarSection";
+import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
+import {
+  buildSidebarCharacterAvatarBatchItems,
+  sidebarAvatarSourcesFromPlayerRows,
+  sidebarCharacterAvatarImageUrl,
+} from "@/lib/buildSidebarCharacterAvatarBatch";
+import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
+import { truncateForSidebarMenuLabel } from "@/lib/truncateForSidebarMenuLabel";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -58,7 +71,6 @@ import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessio
  */
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");
-  const tClass = useTranslations("classes");
   const { characters, linkedNpcs, unlinkedNpcs, loading, loadingMore, hasMore, loadMoreCharacters, error } =
     usePlayersWithoutGroup(10, {
       autoFetch: false,
@@ -68,6 +80,7 @@ export default function CharactersWithoutGroupList() {
   const dispatch = useAppDispatch();
   const { user } = useUser();
   const isInSession = useAppSelector(selectIsInSession);
+  const sessionCode = useAppSelector(selectSessionCode);
   const sessionStatus = useAppSelector(selectSessionStatus);
   const currentParticipant = useAppSelector((state) =>
     selectCurrentUserParticipant(state, user?.keycloakId ?? ""),
@@ -153,6 +166,26 @@ export default function CharactersWithoutGroupList() {
   const sidebarRows = useMemo(
     () => buildPlayerSidebarRows(characters, unlinkedNpcs ?? [], linkedNpcs ?? []),
     [characters, linkedNpcs, unlinkedNpcs],
+  );
+
+  const avatarBatchItems = useMemo(
+    () => buildSidebarCharacterAvatarBatchItems(sidebarAvatarSourcesFromPlayerRows(sidebarRows)),
+    [sidebarRows],
+  );
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
+    avatarBatchItems,
+    isInSession ? sessionCode : null,
+    avatarBatchItems.length > 0,
+  );
+
+  const renderRowAvatar = (characterId: string, storedValue: string | undefined, alt: string) => (
+    <SidebarCharacterAvatar
+      characterId={characterId}
+      storedValue={storedValue}
+      alt={alt}
+      sessionCode={isInSession ? sessionCode : null}
+      avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, characterId, storedValue)}
+    />
   );
 
   const existingCharacterNames = useMemo(
@@ -258,11 +291,25 @@ export default function CharactersWithoutGroupList() {
     void persistNpcLink(npcPendingLink, player._id);
   };
 
-  const unlinkNpcLabel = (npc: Character): string => {
+  const unlinkNpcMenuLabels = (
+    npc: Character,
+  ): { label: string; labelTitle?: string } => {
     const linkedPlayerId = isPlayer(npc) ? null : linkedPlayerIdOf(npc as NPC);
     const linkedPlayer = linkedPlayerId ? characters.find((c) => c._id === linkedPlayerId) : undefined;
     const linkedPlayerName = linkedPlayer ? characterDisplayName(linkedPlayer) : "";
-    return linkedPlayerName ? t("unlinkNpcFrom", { name: linkedPlayerName }) : t("unlinkNpc");
+    if (!linkedPlayerName) {
+      return { label: t("unlinkNpc") };
+    }
+    const fullLabel = t("unlinkNpcFrom", { name: linkedPlayerName });
+    const shortName = truncateForSidebarMenuLabel(linkedPlayerName);
+    const label =
+      shortName === linkedPlayerName.trim()
+        ? fullLabel
+        : t("unlinkNpcFrom", { name: shortName });
+    return {
+      label,
+      labelTitle: label === fullLabel ? undefined : fullLabel,
+    };
   };
 
   const buildCharacterActions = (character: Character): SidebarActionItem[] => {
@@ -285,7 +332,7 @@ export default function CharactersWithoutGroupList() {
       },
       unlink: {
         id: "unlink",
-        label: unlinkNpcLabel(character),
+        ...unlinkNpcMenuLabels(character),
         onSelect: () => {
           void persistNpcLink(character as NPC, null);
         },
@@ -370,19 +417,13 @@ export default function CharactersWithoutGroupList() {
           const character = row.character;
           const isNpcRow = row.type === "npc" || !isPlayer(character);
           const isSelected = selectedCharacterId === character._id;
-          const classLabel = isPlayer(character)
-            ? character.class
-                .map((cls) => (cls?.name ? tClass(cls.name).trim() : ""))
-                .filter((label) => label.length > 0)
-                .join(" / ")
-            : "";
           const displayName = characterDisplayName(character) || t("unnamedCharacter");
           const isSessionCharacter = sessionCharacterId === character._id;
           const characterActions = buildCharacterActions(character);
           const kindLabel = isNpcRow ? t("npcKind") : t("playerKind");
           const companions = row.type === "player" ? row.companions : [];
 
-          const playerLinkLabel = `${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`;
+          const playerLinkLabel = `${displayName}${isSelected ? ` (${t("selected")})` : ""}`;
 
           const renderPlayerLink = (nestOpen: boolean, inNestHeader: boolean) => (
             <Link
@@ -391,8 +432,8 @@ export default function CharactersWithoutGroupList() {
               aria-label={playerLinkLabel}
               onClick={() => dispatch(clearSelectedCampaign())}
               className={cn(
-                "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
-                inNestHeader ? "py-0 pr-1" : "rounded-[12px] py-1.5 px-3 transition-all duration-150",
+                "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                inNestHeader ? "justify-between py-0 pr-1" : "justify-between rounded-[12px] py-1.5 px-3 transition-all duration-150",
                 !inNestHeader && !isSelected && "hover:bg-white/10",
                 !inNestHeader && isSelected && "bg-white pl-4 font-bold text-black",
                 inNestHeader && isSelected && "font-bold text-black",
@@ -403,6 +444,7 @@ export default function CharactersWithoutGroupList() {
                   aria-hidden="true"
                 />
               )}
+              {renderRowAvatar(character._id, character.avatar, displayName)}
               <span
                 className={cn(
                   "min-w-0 flex-1 truncate text-left",
@@ -411,15 +453,6 @@ export default function CharactersWithoutGroupList() {
                 )}>
                 {displayName}
               </span>
-              {classLabel ? (
-                <span
-                  className={cn(
-                    "shrink-0 whitespace-nowrap",
-                    isSelected && "font-bold text-black",
-                  )}>
-                  ({classLabel})
-                </span>
-              ) : null}
               {isSessionCharacter && (
                 <Swords
                   aria-label={t("sessionCharacter")}
@@ -451,7 +484,7 @@ export default function CharactersWithoutGroupList() {
                   aria-label={`${displayName} (${kindLabel})${isSelected ? ` (${t("selected")})` : ""}`}
                   onClick={() => dispatch(clearSelectedCampaign())}
                   className={cn(
-                    "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                    "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
                     isSelected && "pl-4 font-bold text-black",
                   )}>
                   {isSelected && (
@@ -460,6 +493,7 @@ export default function CharactersWithoutGroupList() {
                       aria-hidden="true"
                     />
                   )}
+                  {renderRowAvatar(character._id, character.avatar, displayName)}
                   <span
                     className={cn(
                       "min-w-0 flex-1 truncate",
@@ -538,7 +572,7 @@ export default function CharactersWithoutGroupList() {
                         aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
                         onClick={() => dispatch(clearSelectedCampaign())}
                         className={cn(
-                          "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                          "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
                           npcSelected && "pl-4 font-bold text-black",
                         )}>
                         {npcSelected && (
@@ -547,6 +581,7 @@ export default function CharactersWithoutGroupList() {
                             aria-hidden="true"
                           />
                         )}
+                        {renderRowAvatar(npc._id, npc.avatar, npcName)}
                         <span
                           className={cn(
                             "text-sm min-w-0 flex-1 truncate",

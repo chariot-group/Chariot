@@ -28,6 +28,8 @@ export interface Character {
     lastname: string;
     surname: string;
     userId: string;
+    /** @see FR-sidebar-character-avatars */
+    avatar?: string;
     /** Present on Player characters when groups API populates `progression`. @see FR-character-sheet-pdf-export */
     progression?: unknown;
     /** Present on NPC characters when groups API populates `challenge`. @see FR-character-sheet-pdf-export */

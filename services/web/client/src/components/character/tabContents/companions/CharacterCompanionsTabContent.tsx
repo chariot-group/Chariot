@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import CharacterService from "@/services/CharacterService";
 import { characterDisplayName } from "@/lib/duplicateName";
+import { sortCompanionsByDisplayName } from "@/lib/sessionPlayerCompanions";
 import {
   applyCompanionLinkChange,
   persistSidebarNpcLinkedPlayer,
@@ -191,13 +192,7 @@ export default function CharacterCompanionsTabContent({
   }, []);
 
   const unnamed = t("unnamedNpc");
-  const sortedCompanions = useMemo(
-    () =>
-      [...companions].sort((left, right) =>
-        characterDisplayName(left).localeCompare(characterDisplayName(right), undefined, { sensitivity: "base" }),
-      ),
-    [companions],
-  );
+  const sortedCompanions = useMemo(() => sortCompanionsByDisplayName(companions), [companions]);
 
   if (loading) {
     return (

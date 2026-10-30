@@ -51,6 +51,7 @@ import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherG
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import {
   selectIsInSession,
+  selectSessionCode,
   selectSessionStatus,
   selectGmGuestCharacterIds,
   addGmGuestCharacterToSession,
@@ -64,6 +65,9 @@ import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/co
 import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
 import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
 import { isNpcGroupCharacter } from "@/lib/isNpcGroupCharacter";
+import { buildSidebarCharacterAvatarBatchItems, sidebarCharacterAvatarImageUrl } from "@/lib/buildSidebarCharacterAvatarBatch";
+import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
+import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 
 interface GroupListProps {
   groups: Group[];
@@ -101,10 +105,24 @@ export default function GroupList({
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
+  const sessionCode = useAppSelector(selectSessionCode);
   const sessionStatus = useAppSelector(selectSessionStatus);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const actionsDisabled = isInSession && sessionStatus === "launched";
+
+  const avatarBatchItems = React.useMemo(
+    () =>
+      buildSidebarCharacterAvatarBatchItems(
+        groups.flatMap((group) => group.characters ?? []),
+      ),
+    [groups],
+  );
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
+    avatarBatchItems,
+    isInSession ? sessionCode : null,
+    avatarBatchItems.length > 0,
+  );
 
   const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
   const [groupToEdit, setGroupToEdit] = React.useState<Group | null>(null);
@@ -699,6 +717,17 @@ export default function GroupList({
                             aria-hidden="true"
                           />
                         )}
+                        <SidebarCharacterAvatar
+                          characterId={character._id}
+                          storedValue={character.avatar}
+                          alt={displayName}
+                          sessionCode={isInSession ? sessionCode : null}
+                          avatarImageUrl={sidebarCharacterAvatarImageUrl(
+                            getAvatarUrl,
+                            character._id,
+                            character.avatar,
+                          )}
+                        />
                         <span className="min-w-0 flex-1 truncate">{displayName}</span>
                       </Link>
                     </SidebarItemWithActions>

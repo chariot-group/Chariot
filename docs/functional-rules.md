@@ -1859,7 +1859,7 @@ Each initiative tracker row carries:
 - When a participant has an assigned `characterId`, the session lobby participant card and the GM sidebar `Joueurs (session)` section MUST show the character display name (`firstname` + optional `lastname`), never the Mongo `characterId`.
 - While the character sheet is loading or the fetch failed, those surfaces MUST show `...` (same loading placeholder), not the raw character id.
 - Both surfaces MUST show the character avatar when an avatar stored value is available, resolving the presigned URL with `sessionCode` (FR-media-avatar-read-access).
-- The GM sidebar MUST show character avatars for roster players and GM guest characters (size `xs`, accessible `alt` derived from the character label).
+- Session roster rows in the GM sidebar MUST follow **FR-sidebar-character-avatars** (same avatar rules as campaign and Player-space lists).
 
 **Prohibitions**:
 
@@ -4655,6 +4655,7 @@ Each initiative tracker row carries:
 
 - Menu items, picker rows, and confirmation controls MUST be keyboard-operable (Tab, Enter/Space, Escape to close) with visible focus.
 - Dialogs MUST have a title, description, and accessible names. Long Player names truncate (`truncate` / `min-w-0`).
+- The **Retirer de {name}** / unlink menu label MUST truncate the embedded PJ name for display; the full label MUST remain available via `title` (and `labelTitle` when truncated).
 - Color MUST NOT be the only channel for linked vs unlinked (menu labels differ; nesting already encodes the relation).
 
 **Prohibitions**:
@@ -5164,3 +5165,40 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
 - `docs/functional-rules.md` — FR-character-duplicate, FR-npc-player-link, FR-sidebar-context-actions, FR-frontend-design
+
+---
+
+## FR-sidebar-character-avatars: Character avatars in sidebar lists (Player and GM)
+
+**Rule**: Every sidebar list row that navigates to a Player character (PJ) or NPC (PNJ) sheet MUST show that character’s avatar via `MediaAvatar` (scope `character`, size `xs`), in **Player space** and **GM space**, whether or not a session is active.
+
+**Requirements**:
+
+- Applies to: **Mes personnages** (players, nested linked companions, unlinked NPCs), **campaign group** character rows (active and archived), and **Joueurs (session)** roster / GM guest / session companion rows (`GmSessionPlayersSidebarSection`).
+- When no stored avatar exists, the standard `MediaAvatar` placeholder (User icon) MUST still render so row layout stays aligned.
+- Presigned reads MUST follow **FR-media-avatar-read-access**; pass `sessionCode` from Redux when the user is in an active session, otherwise omit it (owner read).
+- Batch presigned resolution SHOULD use `useMediaAvatarBatch` per list surface to avoid N+1 requests.
+- Accessible `alt` MUST be derived from the same display name as the row label (never raw Mongo id).
+- Player-space sidebar rows for PJ (`Mes personnages`) MUST show the character display name only (no class or multi-class label in parentheses on the row).
+
+**Prohibitions**:
+
+- Omitting avatars on Player-space sidebar rows while showing them in GM session sidebar only.
+- Using user profile photos (`scope user`) for PJ/PNJ rows (character scope only).
+- Sidebar-only exceptions for NPC vs Player kind (both MUST show avatars).
+
+**Tests**:
+
+- Nominal: Player-space PJ and PNJ rows render `SidebarCharacterAvatar` / `MediaAvatar` with scope `character` and size `xs`.
+- Nominal: GM `GroupList` character rows render the same avatar primitive.
+- Nominal: batch builder deduplicates character ids and skips empty stored values.
+- Edge: missing avatar still renders placeholder without breaking truncation/selection styles.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/shared/SidebarCharacterAvatar.tsx`
+- `services/web/client/src/lib/buildSidebarCharacterAvatarBatch.ts`
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `docs/functional-rules.md` — FR-media-avatar-read-access, FR-sidebar-navigation, FR-session-participant-labels

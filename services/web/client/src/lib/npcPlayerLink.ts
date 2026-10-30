@@ -2,6 +2,7 @@
 
 import { characterDisplayName } from "@/lib/duplicateName";
 import { normalizeCharacterId } from "@/lib/normalizeCharacterId";
+import { sortCompanionsByDisplayName } from "@/lib/sessionPlayerCompanions";
 import type { Character, NPC } from "@/types/character";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 
@@ -53,7 +54,7 @@ export function buildPlayerSidebarRows(
     .map((player) => ({
       type: "player" as const,
       character: player,
-      companions: companionsByPlayerId.get(player._id) ?? [],
+      companions: sortCompanionsByDisplayName(companionsByPlayerId.get(player._id) ?? []),
     }));
 
   for (const npc of unlinkedNpcs) {
