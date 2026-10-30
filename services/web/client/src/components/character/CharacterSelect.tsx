@@ -23,7 +23,7 @@ interface CharacterSelectProps {
   companionCountByCharacterId?: Record<string, number>;
   /** Full count label, e.g. `2 compagnons` (shown from `sm` up). */
   formatCompanionCount?: (count: number) => string;
-  /** Compact count label for narrow viewports, e.g. `×2`. */
+  /** Compact count label for narrow viewports, e.g. `+2`. */
   formatCompanionCountShort?: (count: number) => string;
 }
 

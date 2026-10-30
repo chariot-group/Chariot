@@ -4715,7 +4715,7 @@ Each initiative tracker row carries:
   - FR: `{count, plural, one {# compagnon} other {# compagnons}}`
   - EN: `{count, plural, one {# companion} other {# companions}}`
   - ES: `{count, plural, one {# compañero} other {# compañeros}}`
-- Below **`sm`**, a **short count suffix** MUST be used (e.g. `×{count}`) to save horizontal space; the full plural label MUST remain in the accessible name and `title`.
+- Below **`sm`**, a **short count suffix** MUST be used (e.g. `+{count}`) to save horizontal space; the full plural label MUST remain in the accessible name and `title`.
 - Style: count suffix as secondary metadata (`text-xs`, `text-white/55` / muted). Color MUST NOT be the only channel: the count text is required.
 - A Player with **zero** linked NPCs MUST NOT show an empty « 0 compagnon » / « Aucun compagnon » suffix.
 

@@ -106,7 +106,7 @@
     "joinSessionErrorClosed": "This session is closed.",
     "joinSessionSelectCharacterPlaceholder": "Select a character",
     "joinSessionCompanionCount": "{count, plural, one {# companion} other {# companions}}",
-    "joinSessionCompanionCountShort": "×{count}",
+    "joinSessionCompanionCountShort": "+{count}",
     "comingSoon": "Coming soon",
     "alreadyInSession": "Action cannot be performed; you are already logged in.",
     "returnToSheet": "Character",
@@ -1822,7 +1822,7 @@
       "noCharacter": "No character",
       "selectCharacterPlaceholder": "Change character",
       "companionCount": "{count, plural, one {# companion} other {# companions}}",
-      "companionCountShort": "×{count}",
+      "companionCountShort": "+{count}",
       "loadingCharacters": "Loading..."
     },
     "sessionCode": {

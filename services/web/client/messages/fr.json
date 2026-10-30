@@ -106,7 +106,7 @@
     "joinSessionErrorClosed": "Cette session est clôturée.",
     "joinSessionSelectCharacterPlaceholder": "Sélectionner un personnage",
     "joinSessionCompanionCount": "{count, plural, one {# compagnon} other {# compagnons}}",
-    "joinSessionCompanionCountShort": "×{count}",
+    "joinSessionCompanionCountShort": "+{count}",
     "comingSoon": "Bientôt disponible",
     "alreadyInSession": "Action impossible, vous êtes déjà dans une session",
     "returnToSheet": "Personnage",
@@ -1827,7 +1827,7 @@
       "noCharacter": "Aucun personnage",
       "selectCharacterPlaceholder": "Changer de personnage",
       "companionCount": "{count, plural, one {# compagnon} other {# compagnons}}",
-      "companionCountShort": "×{count}",
+      "companionCountShort": "+{count}",
       "loadingCharacters": "Chargement..."
     },
     "sessionCode": {
