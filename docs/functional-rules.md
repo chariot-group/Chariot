@@ -5102,3 +5102,72 @@ Each initiative tracker row carries:
 - `services/web/client/src/providers/KeycloakProvider.tsx`
 - `docs/functional-rules.md` — FR-player-space-codex-character-creation, FR-codex-npc-search-entity-type, FR-post-auth-navigation, FR-frontend-design
 - `docs/design.md`
+
+---
+
+## FR-user-public-profile-read-access: User Profile Read Access by ID
+
+**Rule**: Looking up a user's profile by Keycloak ID (`GET /user/:id`) MUST be distinguished from looking up one's own profile (`GET /user/me`). An authenticated caller fetching **another** user's profile MUST receive only a minimal set of public fields, never that user's personal or financial data.
+
+**Context**: `GET /user/:id` is used by the frontend solely to resolve display data (name, avatar) for another participant in a shared context (session, roster, character sheet) — see `UserService.getUserById` and its callers. None of these usages need the target's email, balance, or transaction history.
+
+**Requirements**:
+
+| Caller / Target | Fields returned |
+|---|---|
+| `requesterId === targetId` (`GET /user/me`) | Full `UserInfoDto`: `keycloakId`, `email`, `username`, `firstName`, `lastName`, `avatar`, `balance`, `history`, `preferredLocale`, `preferredMeasurementUnit`, `showBothUnits` |
+| `requesterId !== targetId` (`GET /user/:id`) | Public fields only: `keycloakId`, `firstName`, `lastName`, `username`, `avatar` |
+
+- `GET /user/:id` MUST use a distinct DTO (`PublicUserInfoDto`), structurally unable to carry `email`, `balance`, or `history`, rather than field filtering at serialization time.
+- `GET /user/me` continues to return the full `UserInfoDto` and is not affected by this rule.
+- The `internal/*` routes (balance, tokens, avatar — protected by `InternalGuard`, service-to-service) are out of scope for this rule.
+- Field minimization alone does not grant blanket read access to another user's public profile — see the relationship check below.
+
+**Relationship check**:
+
+- `GET /user/:id`, when `id` is not the caller's own `keycloakId`, MUST additionally require proof of a legitimate relationship between caller and target: both MUST be participants (including the game master) of the **same active session**, identified by a `sessionCode` query parameter.
+  - `sessionCode` missing, blank, or malformed (e.g. duplicated parameter) → `403 ForbiddenException` ("session context required"), regardless of whether `id` happens to be valid.
+  - `sessionCode` present → the adventure service validates co-participation with the session service (`POST /sessions/:code/validate-co-participant`, body `{ targetUserId }`, JWT forwarded), mirroring the existing `validate-gm-ownership` / `validate-character-access` pattern (FR-media-avatar-read-access). Both caller and `targetUserId` must be participants (participant row or `creatorUserId`) of that session; otherwise `403 ForbiddenException`.
+  - A disconnected participant still counts as a participant (reconnect window). A participant who left the session no longer does. A closed, deleted, or expired session grants no access (`403 ForbiddenException`).
+  - `requesterId === targetId` is always allowed without a `sessionCode` (self-lookup also works through `:id`, though the frontend should prefer `GET /user/me`).
+- The relationship check MUST run before any Keycloak lookup, so that a denied caller cannot learn whether `id` exists.
+- Every frontend caller of `UserService.getUserById` MUST pass the `sessionCode` already available in its own context (session hooks, sidebar, battle dialogs, character detail view) rather than omitting it.
+
+**Prohibitions**:
+
+- Exposing another user's `email`, `balance`, or `history` via `GET /user/:id`.
+- Reusing `UserInfoDto` (or any DTO carrying these fields) as the return type of `findById`.
+- Relying on frontend-only filtering to hide sensitive fields already present in the HTTP response.
+- Returning any field of another user's profile — public or not — via `GET /user/:id` without a successful co-participation check.
+- Trusting a client-supplied `sessionCode` without server-side validation against the session service.
+
+**Tests**:
+
+- Nominal: `GET /user/:id?sessionCode=X` where caller and target are both participants of session `X` → response contains only `keycloakId`, `firstName`, `lastName`, `username`, `avatar`.
+- Edge: `GET /user/:id` with `id` equal to the caller's own `keycloakId`, no `sessionCode` → same restricted (public-fields) behavior as for another user, allowed without session context.
+- Edge: `GET /user/:id?sessionCode=X` where the target is the game master (`creatorUserId`, not a participant row) → access granted.
+- Edge: `GET /user/:id?sessionCode=X` where the target is temporarily disconnected from session `X` → access granted.
+- Race: `GET /user/:id?sessionCode=X` after the target left session `X` → `403 ForbiddenException`.
+- Failure: `GET /user/:id` for another user with no `sessionCode`, a blank one, or a duplicated one → `403 ForbiddenException`.
+- Failure: `GET /user/:id?sessionCode=X` where session `X` is closed → `403 ForbiddenException`.
+- Failure: `GET /user/:id?sessionCode=X` where the caller is not a participant of session `X` → `403 ForbiddenException`.
+- Failure: `GET /user/:id?sessionCode=X` where the target is not a participant of session `X` → `403 ForbiddenException`.
+- Failure: `GET /user/:id?sessionCode=X` with a non-existent session code → `404 NotFoundException` (propagated from the session service).
+- Failure: session service unreachable or answering `5xx` during validation → `503 ServiceUnavailableException`.
+- Non-regression: `GET /user/me` keeps returning `email`, `balance`, and `history` for the authenticated user, unaffected by the relationship check.
+
+**References**:
+
+- `services/adventure/api/src/resources/user/user.controller.ts`
+- `services/adventure/api/src/resources/user/user.service.ts`
+- `services/adventure/api/src/resources/user/dto/user-info.dto.ts`
+- `services/adventure/api/src/common/session/session-access.service.ts`
+- `services/session/api/src/resources/session/session.controller.ts`
+- `services/session/api/src/resources/session/session.service.ts`
+- `services/web/client/src/services/UserService.ts`
+- `services/web/client/src/hooks/useSessionSocket.ts`
+- `services/web/client/src/hooks/useSessionData.ts`
+- `services/web/client/src/lib/sessionParticipantDisplayNames.ts`
+- `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `docs/functional-rules.md` — FR-user-balance-history, FR-media-avatar-read-access

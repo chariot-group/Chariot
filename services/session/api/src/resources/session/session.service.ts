@@ -681,6 +681,43 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
         }
     }
 
+    /**
+     * Vérifie qu'un utilisateur authentifié est participant de la session ET que
+     * targetUserId est également participant (ou MJ) de cette même session.
+     * Utilisé par le service adventure pour la lecture de profil public d'un
+     * autre utilisateur (nom, avatar) — relation = co-participation à une session active.
+     * @see FR-user-public-profile-read-access
+     */
+    async validateCoParticipant(
+        code: string,
+        requesterId: string,
+        targetUserId: string,
+    ): Promise<IResponse<{ ok: true }>> {
+        try {
+            const session = await this._findSession(code);
+
+            const isParticipant = (userId: string) =>
+                session.creatorUserId === userId || session.participants.some((p) => p.userId === userId);
+
+            if (!isParticipant(requesterId)) {
+                throw new ForbiddenException('User is not a session participant');
+            }
+
+            if (!isParticipant(targetUserId)) {
+                throw new ForbiddenException('Target user is not a participant of this session');
+            }
+
+            return { message: 'Access granted', data: { ok: true } };
+        } catch (error: unknown) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            const message = `Error validating co-participation for session ${code}: ${(error as Error).message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
     async findParticipants(code: string): Promise<IResponse<SessionParticipantsDetails>> {
         try {
             const start: number = Date.now();

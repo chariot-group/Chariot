@@ -98,6 +98,14 @@ describe("buildSessionParticipantsGroup", () => {
         });
     });
 
+    it("nominal: forwards the session code when resolving a missing display name", async () => {
+        vi.mocked(UserService.getUserById).mockResolvedValue({ keycloakId: "user-1", username: "player" } as never);
+
+        await buildSessionParticipantsGroup([], [participant()], "campaign-1", {}, "ABC123");
+
+        expect(UserService.getUserById).toHaveBeenCalledWith(participant().userId, "ABC123");
+    });
+
     it("error: falls back to loading placeholder when profile fetch fails", async () => {
         vi.mocked(UserService.getUserById).mockRejectedValue(new Error("network"));
 

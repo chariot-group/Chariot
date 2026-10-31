@@ -15,9 +15,14 @@ export function resolveSessionParticipantLabelFromSource(
     return formatSessionParticipantUserLabel(source) ?? formatSessionParticipantLabelFromWsUsername(wsUsername);
 }
 
-export async function fetchSessionParticipantDisplayName(userId: string): Promise<string> {
+/**
+ * `sessionCode` est requis par le serveur (sauf pour soi-même) : il prouve que
+ * l'appelant et `userId` sont co-participants d'une même session.
+ * @see FR-user-public-profile-read-access
+ */
+export async function fetchSessionParticipantDisplayName(userId: string, sessionCode?: string | null): Promise<string> {
     try {
-        const user = await UserService.getUserById(userId);
+        const user = await UserService.getUserById(userId, sessionCode);
         return formatSessionParticipantUserLabel(user) ?? SESSION_PARTICIPANT_NAME_LOADING;
     } catch {
         return SESSION_PARTICIPANT_NAME_LOADING;
