@@ -1,17 +1,14 @@
-import { cn } from "@/lib/utils";
+/** Default dialog padding and corner close button, like the other app dialogs. */
+export const CREATE_CHARACTER_DIALOG_CONTENT = "gap-6 sm:max-w-md";
 
-export type ManualCharacterOptionAccent = "player" | "npc";
+/** Manual creation buttons: side by side from sm, stacked on mobile so labels stay on one line. */
+export const CREATE_CHARACTER_MANUAL_GROUP = "grid grid-cols-1 gap-2 sm:grid-cols-2";
 
-export function getManualCharacterButtonClasses(accent: ManualCharacterOptionAccent) {
-  return cn(
-    "group h-auto w-full flex-col gap-2 rounded-[12px] border border-white/10 bg-background/40 px-3 py-3.5",
-    "text-sm font-semibold text-white/85 hover:text-white",
-    "hover:bg-gray-middle-light hover:shadow-sm hover:shadow-black/20",
-    accent === "player" && "hover:border-blue/40",
-    accent === "npc" && "hover:border-pink/40",
-  );
-}
+/** Player character: `variant="primary"` (white, same as the sidebar create buttons). */
+export const CREATE_CHARACTER_PLAYER_BUTTON = "w-full";
 
-export const CREATE_CHARACTER_LIBRARY_STRIP = cn(
-  "flex flex-col gap-3 rounded-[12px] border border-white/10 bg-gray-middle-light/90 p-3",
-);
+/** NPC: `variant="secondary"` (dark). */
+export const CREATE_CHARACTER_NPC_BUTTON = "w-full";
+
+/** Community library section: plain content, no card frame. */
+export const CREATE_CHARACTER_LIBRARY_SECTION = "flex flex-col gap-3";

@@ -136,7 +136,7 @@ const AbilitiesUpdateSection = ({
                   key={field.id}
                   id={`ability-${index}`}
                   value={`ability-${index}`}
-                  className="border-b border-gray">
+                  className="border-b border-border">
                   <div className="relative">
                     <AccordionTrigger
                       className={`min-w-0 w-full items-center text-left hover:no-underline pr-10 gap-2 ${hasError ? "ring-destructive ring" : ""}`}

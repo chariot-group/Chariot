@@ -436,7 +436,7 @@ When adding a rule:
 **Page Structure**:
 
 - Full-screen layout with tabbed navigation interface
-- Fixed header section containing character identity and navigation tabs
+- Fixed top section containing **only the tab navigation bar** (no identity header: no name, surname, class/level, CR/XP or « Joué par » line above the tabs), to maximize the vertical space available to tab content. Applies to both the character sheet (`CharacterDetailView`) and the creation form (`CharacterFormView`).
 - Content area displaying tab-specific information
 - Responsive design adapting to mobile (overlay), tablet, and desktop viewports
 - Maximum content width of 480px centered on screen with appropriate padding
@@ -454,7 +454,7 @@ When adding a rule:
 - Inactive tabs display gray background with hover state
 - Tab labels must be internationalized using `next-intl` with key `characterDetail.tabs.{tabName}`
 
-**Character Header Information**:
+**Character Identity Summary** (reference format for surfaces that summarize a character, e.g. companion cards — not displayed above the sheet tabs):
 
 **For Player Characters**:
 
@@ -480,7 +480,8 @@ When adding a rule:
 - Fixed width with consistent 4:5 aspect ratio: `w-20` (mobile), `w-24` (sm), `w-28` (md+)
 - Rounded corners (`rounded-[18px]`)
 - Gray background (`bg-gray`)
-- Positioned to the right of character information
+- Positioned in the **General** tab, inside the « Personnage » card, to the right of the character information (read mode) or of the card heading (edit mode)
+- In edit mode, the avatar upload control (deferred upload until save) lives at the same place; the creation form shows no avatar (the character does not exist yet)
 - Image crop: `object-cover object-center` (see FR-media-avatar-format)
 
 **Accessibility Requirements**:
@@ -4471,7 +4472,7 @@ Each initiative tracker row carries:
 - Tab id: `companions`. Labels (i18n `characterDetail.tabs.companions`): FR « Compagnons », EN « Companions », ES « Compañeros ».
 - Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (same contrast treatment as the Combat/red tab). Do not invent a new color.
 - Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
-- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST show the same identity as the NPC sheet header (FR-character-detail-view): avatar (4:5, User placeholder when missing), name, surname when present, and CR with abbreviated « ID » tooltip plus XP in parentheses. When the NPC belongs to a group, the first group label MAY appear as secondary metadata. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
+- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST show the NPC identity summary (FR-character-detail-view): avatar (4:5, User placeholder when missing), name, surname when present, and CR with abbreviated « ID » tooltip plus XP in parentheses. When the NPC belongs to a group, the first group label MAY appear as secondary metadata. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
 - Read and edit mode (Player space, liaison actions enabled): the same list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. Managing liaisons MUST NOT require entering full-sheet edit mode for the other tabs. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
 - Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST NOT open a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
 - Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
@@ -5030,6 +5031,71 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/__tests__/NavigationService.destinations.test.ts`
 - `docs/functional-rules.md` — FR-post-auth-navigation, FR-session-websocket-lifecycle, FR-session-lobby-navigation, FR-user-cache-isolation
 
+---
+
+## FR-frontend-button-system: Unified Button Types, Sizes and Shape
+
+**Rule**: Every button of the web client MUST belong to one of three main types, or to a documented utility type, and MUST use one of three sizes. Type, size, alignment and shape are owned by the shared `Button` primitive (`components/ui/button.tsx`, `buttonVariants`); consumers MUST NOT re-style the fill, text color, hover, height or radius of a button locally.
+
+**Main types**:
+
+- **Primary white** (`variant="primary"`): white fill (`--white`), dark text; hover makes it slightly **darker** (`gray-300`), a light but visible change. Default type for the main action of a screen or dialog.
+- **Primary colored** (`variant="accent"` + `tone`): colored fill, hover makes it **lighter**.
+  - Domain tones `blue`, `red`, `pink`, `yellow`, `green` (section 2.3 of `docs/design.md`): dark text on **every** tone (red included). Used when the action belongs to a color-coded context (character sheet tab, session actions in the sidebar, combat turn controls).
+  - Brand tone `violet` (`--primary`, default tone): light text (`--primary-foreground`), the only colored tone with light text because dark text is unreadable on `#4e00de`. Keeps its current role (dialog validations, welcome and shop calls to action).
+  - `accent` + `violet` is the default of the primitive, so a `<Button>` without variant keeps the violet look.
+- **Secondary** (`variant="secondary"`): dark fill (`--gray-middle-light`) with the minor border (`--input`), light text; hover makes it **lighter** (`--gray`). Used for alternative actions next to a primary (cancel, export, back).
+
+**Utility types** (minority, kept): `ghost` (transparent, `hover:bg-white/10`), `link` (text), `destructive` (critical action), icon-only triggers, and toggles (`aria-pressed`), which never use a violet fill:
+  - Segmented selector (exactly one option active among a few, e.g. Player / GM, attack ability suggestion): active option = **primary white**, inactive options = **secondary**.
+  - Filter toggle (independent on/off chip, e.g. Action / Bonus action / Reaction priority): `secondary`, pressed state = documented selection gray (`docs/design.md` section 5.1).
+
+**Sizes**:
+
+- `lg` — large call to action (e.g. sidebar « Lancer une session », « Rejoindre la session »): slightly larger label (`text-lg`) and icon (`size-6`)
+- `default` — normal (e.g. « Créer un personnage », dialog footers, character sheet footer)
+- `sm` — small (dense toolbars, rows, tracker controls)
+- Icon-only sizes (`icon`, `icon-sm`, `icon-lg`) follow the same heights as their text counterparts
+
+**Shape and content**:
+
+- Corner radius: `rounded-[13px]` for `default`, `sm` and their icon sizes (same as the Player / GM selector and the character sheet tabs); `rounded-[15px]` for `lg` / `icon-lg` (the app's card radius, slightly rounder for taller buttons) (`docs/design.md` section 2.4). No button may be pill-shaped or use another radius, except the documented joined group of the character sheet tabs.
+- Content is centered by default; `align="start"` left-aligns it when the layout requires it (sidebar lists, full-width rows).
+- An icon is optional and MUST be placed on the **left** of the label. The only trailing glyphs allowed are the disclosure chevron of a menu trigger and the forward arrow of a "next" action (e.g. tracker « Suivant »).
+
+**Explicit mappings**:
+
+- Sidebar session action (« Lancer une session », « Rejoindre la session », « Retour à la session », « Lancer le combat », « Retour à la fiche »): primary colored, `lg`, standard radius.
+- Player / GM space selector (« Joueur » / « MJ »): segmented toggle following the toggle rule above (active = primary white, inactive = secondary), `default` size, standard radius, built on `buttonVariants` even though it stays a distinct component.
+- Character sheet footer: « Modifier le personnage » and « Sauvegarder » = primary white, `default`, independent of the active tab; « Exporter en PDF » and « Annuler » = secondary, `default`.
+- Sidebar « Créer un personnage » / « Créer un groupe »: primary white, `default`, `align="start"`.
+
+**Accessibility**:
+
+- Every type keeps a visible keyboard focus (`focus-visible` ring) on dark and light fills.
+- Text/fill contrast MUST be >= 4.5:1 at rest and on hover for every type and tone.
+- Disabled state is conveyed by `disabled`/`aria-disabled`, reduced opacity and no hover change.
+
+**Prohibitions**:
+
+- Local overrides of button fill, hover color (hardcoded hex such as `hover:bg-[#e6b000]`), height or radius (`rounded-2xl`, `rounded-md`, `rounded-full`) in consumers
+- Trailing icons other than a menu disclosure chevron
+- Light text on a domain-colored (non-violet) button
+
+**Tests**:
+
+- Nominal: `buttonVariants` returns the documented classes for each type (`primary`, `accent` per tone, `secondary`) and each size; the default is `accent` + `violet`
+- Edge: `accent` with `tone="red"` renders dark text; `align="start"` left-aligns content; `lg` uses the 15px radius, the other sizes 13px
+- Failure/guard: disabled buttons expose no hover style change; an inactive segmented option renders the secondary style
+
+**References**:
+
+- `services/web/client/src/components/ui/button.tsx`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/layout/Sidebar/SidebarEnvironment.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `docs/design.md` — sections 2.3, 2.4, 5.1
+- `docs/functional-rules.md` — FR-frontend-design, FR-character-sheet-pdf-export
 ## FR-sidebar-linked-npc-nesting-collapse: Replier les PNJ liés sous un PJ dans la sidebar
 
 **Rule**: In Player space **Mes personnages** and in the in-session GM section **Joueurs (session)** (FR-npc-player-link, FR-session-player-companion-combatants), when a Player row has one or more nested linked NPCs, the user MUST be able to collapse and expand that nested list without losing navigation to the Player or NPC sheets.

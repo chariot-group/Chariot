@@ -5,7 +5,7 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useCallback } from "react";
-import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabs, { CharacterTab, TAB_COLORS } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
@@ -26,8 +26,6 @@ import {
 } from "@/utils/keyboard.utils";
 import { toast } from "react-toastify";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
-import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
-import { CharacterSheetHeader } from "@/components/character/CharacterSheetHeader";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -347,12 +345,6 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const { errors } = useFormState({ control: form.control });
   const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
 
-  const watchedFirstname = form.watch("firstname");
-  const watchedLastname = form.watch("lastname");
-  const watchedSurname = form.watch("surname");
-  const headerFullName = [watchedFirstname?.trim(), watchedLastname?.trim()].filter(Boolean).join(" ");
-  const createTitleFallback = characterType === "players" ? tCreate("titlePlayer") : tCreate("titleNpc");
-
   const hasAppliedCodexDefaultsRef = useRef(false);
 
   useEffect(() => {
@@ -623,26 +615,18 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         form="character-create-form"
         disabled={isSaving}
         tabIndex={0}
-        className={`
-          max-w-full min-w-0 lg:text-sm text-xs font-semibold
-          ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-          ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-          ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-          ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-          ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-        `}
+        variant="accent"
+        tone={TAB_COLORS[activeTab]}
+        className="max-w-full min-w-0"
         aria-label={tCreate("create")}
         aria-busy={isSaving}>
-        <Save
-          className="lg:size-5 size-4 shrink-0"
-          aria-hidden="true"
-        />
+        <Save aria-hidden="true" />
         <span className="truncate">{isSaving ? tCreate("saving") : tCreate("create")}</span>
       </Button>
 
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         onClick={handleCancel}
         disabled={isSaving}
         tabIndex={0}
@@ -652,12 +636,9 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
             handleCancel();
           }
         }}
-        className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+        className="max-w-full min-w-0"
         aria-label={tCreate("cancel")}>
-        <X
-          className="lg:size-5 size-4 shrink-0"
-          aria-hidden="true"
-        />
+        <X aria-hidden="true" />
         <span className="truncate">{tCreate("cancel")}</span>
       </Button>
     </div>
@@ -681,28 +662,12 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           value={activeTab}
           onValueChange={handleTabChange}
           className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Header avec onglets et titre de création */}
+          {/* Navbar des onglets (pas d'en-tête d'identité, cf. FR-character-detail-view) */}
           <div className="shrink-0">
-            <div className="mx-auto sm:px-6 md:px-8 px-2">
-              <CharacterSheetHeader
-                identity={
-                  <CharacterSheetHeaderIdentity
-                    fullName={headerFullName}
-                    surname={watchedSurname}
-                    emptyNameFallback={createTitleFallback}
-                    subtitle={
-                      <div className="font-semibold text-white">
-                        <span>{tCreate("description")}</span>
-                      </div>
-                    }
-                  />
-                }
-                tabs={
-                  <CharacterTabs
-                    activeTab={activeTab}
-                    tabsWithErrors={tabsWithErrors}
-                  />
-                }
+            <div className="mx-auto sm:px-6 md:px-8 px-2 pb-2">
+              <CharacterTabs
+                activeTab={activeTab}
+                tabsWithErrors={tabsWithErrors}
               />
             </div>
           </div>
@@ -710,7 +675,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           {/* Contenu des onglets - scrollable (min-h-0 pour que les enfants h-full / flex-1 se calent sur la hauteur utile) */}
           <div
             id="characterScrollView"
-            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover">
             <CharacterTabPanels
               character={placeholderCharacter}
               form={form}
@@ -719,7 +684,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           </div>
         </Tabs>
 
-        <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+        <div className="shrink-0 border-t border-frame px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
           <div className="flex w-full justify-end">{characterFooterActions}</div>
         </div>
       </form>

@@ -159,7 +159,7 @@ function SpellResultItem({
             <div className="flex gap-1.5">
               {isQueued && (
                 <Check
-                  className="size-5 text-purple"
+                  className="size-5 text-primary-light"
                   aria-label={tDialog("queuedInSelection")}
                 />
               )}
@@ -554,7 +554,7 @@ export default function CodexSpellSearchDialog({
   const dialogBody = (
     <>
       {!embedded ? (
-        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-frame shrink-0">
           <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
         </DialogHeader>
       ) : null}
@@ -754,7 +754,7 @@ export default function CodexSpellSearchDialog({
                         <DropdownMenuContent
                           align="start"
                           className="max-h-60 min-w-48 w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden p-0">
-                          <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                          <div className="max-h-60 overflow-y-auto p-1.5 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
                             <DropdownMenuItem
                               className="font-medium"
                               onSelect={() => setSelectedClasses([])}>
@@ -795,7 +795,7 @@ export default function CodexSpellSearchDialog({
                         <DropdownMenuContent
                           align="start"
                           className="max-h-60 min-w-48 w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden p-0">
-                          <div className="max-h-60 overflow-y-auto p-1 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                          <div className="max-h-60 overflow-y-auto p-1.5 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
                             <DropdownMenuItem
                               className="font-medium"
                               onSelect={() => setSelectedSchools([])}>
@@ -821,7 +821,7 @@ export default function CodexSpellSearchDialog({
             </div>
 
             {/* Résultats de recherche */}
-            <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
               {isSearching ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -902,7 +902,7 @@ export default function CodexSpellSearchDialog({
                         <div className="flex justify-center pt-4 pb-2">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             onClick={loadMore}
                             disabled={isLoadingMore}
                             className="w-full">
@@ -936,7 +936,7 @@ export default function CodexSpellSearchDialog({
 
           {/* Partie droite : Affichage du sort sélectionné */}
           <div
-            className={`flex flex-col flex-1 min-h-0 w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
+            className={`flex flex-col flex-1 min-h-0 w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l border-frame pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
             <Button
               type="button"
               variant="ghost"
@@ -974,7 +974,7 @@ export default function CodexSpellSearchDialog({
                 })()}
                 <div
                   ref={spellPreviewScrollRef}
-                  className="min-h-0 flex-1 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                  className="min-h-0 flex-1 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
                   <SpellDisplay
                     key={selectedSpellKey}
                     spell={selectedSpell as Spell}
@@ -992,7 +992,7 @@ export default function CodexSpellSearchDialog({
 
       {!embedded ? (
         <DialogFooter
-          className={`shrink-0 gap-2 border-t px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${!browseOnly && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
+          className={`shrink-0 gap-2 border-t border-frame px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${!browseOnly && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
           {!browseOnly && isMultiSelectionMode ? (
             <Collapsible
               open={selectionDetailsOpen}
@@ -1001,7 +1001,7 @@ export default function CodexSpellSearchDialog({
               <CollapsibleTrigger
                 type="button"
                 aria-expanded={selectionDetailsOpen}
-                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-purple transition-colors hover:text-purple/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
+                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-primary-light transition-colors hover:text-primary-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
                 <ChevronDown
                   className={cn("size-4 shrink-0 transition-transform", !selectionDetailsOpen && "rotate-180")}
                   aria-hidden="true"
@@ -1066,7 +1066,7 @@ export default function CodexSpellSearchDialog({
                   <>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="secondary"
                       size="icon-sm"
                       onClick={handleToggleQueueSelection}
                       disabled={spellActionsDisabled}
@@ -1074,9 +1074,7 @@ export default function CodexSpellSearchDialog({
                       aria-label={isCurrentSpellQueued ? tDialog("removeFromSelection") : tDialog("selectThisSpell")}
                       className={cn(
                         "shrink-0 sm:size-auto sm:h-8 sm:px-3",
-                        isCurrentSpellQueued
-                          ? "border-destructive/50 text-destructive hover:bg-destructive/5"
-                          : "border-purple/40 text-purple hover:bg-purple/5",
+                        isCurrentSpellQueued && "border-destructive/50 text-destructive hover:bg-destructive/5",
                       )}>
                       {isCurrentSpellQueued ? (
                         <ListMinus
@@ -1098,7 +1096,7 @@ export default function CodexSpellSearchDialog({
                       size="sm"
                       onClick={handleAddSelection}
                       aria-label={tDialog("addSelection", { count: spellQueue.length })}
-                      className="h-8 shrink-0 gap-1 bg-purple px-2 hover:bg-purple/90 text-white sm:px-3">
+                      className="shrink-0 gap-1 px-2 sm:px-3">
                       <Layers
                         className="size-4 shrink-0"
                         aria-hidden="true"
@@ -1113,13 +1111,13 @@ export default function CodexSpellSearchDialog({
                   <>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="secondary"
                       size="icon-sm"
                       onClick={handleToggleQueueSelection}
                       disabled={spellActionsDisabled}
                       aria-pressed={isCurrentSpellQueued}
                       aria-label={tDialog("selectThisSpell")}
-                      className="shrink-0 border-purple/40 text-purple hover:bg-purple/5 sm:size-auto sm:h-8 sm:px-3">
+                      className="shrink-0 sm:size-auto sm:h-8 sm:px-3">
                       <ListPlus
                         className="size-4"
                         aria-hidden="true"
@@ -1132,7 +1130,7 @@ export default function CodexSpellSearchDialog({
                       onClick={handleUseThisSpell}
                       disabled={spellActionsDisabled}
                       aria-label={tDialog("useThisSpell")}
-                      className="shrink-0 bg-purple hover:bg-purple/90 text-white sm:size-auto sm:h-8 sm:px-3">
+                      className="shrink-0 sm:size-auto sm:h-8 sm:px-3">
                       <Check
                         className="size-4"
                         aria-hidden="true"

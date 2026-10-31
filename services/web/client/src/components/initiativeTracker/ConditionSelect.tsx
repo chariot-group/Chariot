@@ -96,7 +96,10 @@ type ConditionSelectProps = {
   formatConditionEntryDuration: (
     entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">,
   ) => string | null;
-  getConditionDurationUnits: () => { value: InitiativeTrackerConditionDurationUnit; label: string }[];
+  getConditionDurationUnits: () => {
+    value: InitiativeTrackerConditionDurationUnit;
+    label: string;
+  }[];
   onAddCondition: (
     row: InitiativeTrackerRow,
     condition: ActiveInitiativeTrackerCondition,
@@ -495,7 +498,7 @@ export function ConditionSelect({
             <SelectTrigger className="h-8 w-full bg-gray-middle-light text-sm text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="border-white/10 bg-card text-white">
+            <SelectContent>
               {durationUnits.map((unit) => (
                 <SelectItem
                   key={unit.value}
@@ -524,13 +527,13 @@ export function ConditionSelect({
             variant="ghost"
             size="icon-sm"
             aria-label={label}
-            className="shrink-0 rounded-full text-white/80 hover:bg-white/10 hover:text-white">
+            className="shrink-0 text-white/80 hover:bg-white/10 hover:text-white">
             <Pencil className="size-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="w-[min(calc(100vw-2rem),20rem)] border-white/10 bg-card p-3 text-white">
+          className="w-[min(calc(100vw-2rem),20rem)] border-frame bg-popover p-3 text-white">
           {pendingStandard && pendingMeta ? (
             <div className="flex flex-col gap-3">
               <button
@@ -561,9 +564,8 @@ export function ConditionSelect({
 
               <Button
                 type="button"
-                variant="default"
                 onClick={confirmAddCondition}
-                className="h-9 w-full rounded-[15px] text-sm font-semibold">
+                className="w-full">
                 {addConfirmLabel}
               </Button>
             </div>
@@ -599,9 +601,8 @@ export function ConditionSelect({
 
               <Button
                 type="button"
-                variant="default"
                 onClick={confirmAddCondition}
-                className="h-9 w-full rounded-[15px] text-sm font-semibold">
+                className="w-full">
                 {customEffects?.addConfirmLabel ?? addConfirmLabel}
               </Button>
             </div>
@@ -661,16 +662,15 @@ export function ConditionSelect({
 
               <Button
                 type="button"
-                variant="default"
                 onClick={confirmAddCondition}
-                className="h-9 w-full rounded-[15px] text-sm font-semibold">
+                className="w-full">
                 {customEffects.addConfirmLabel}
               </Button>
             </div>
           ) : (
             <>
               {concentration?.enabled && concentration.canEdit ? (
-                <div className="mb-2 flex items-center gap-1 border-b border-white/10 pb-2">
+                <div className="mb-2 flex items-center gap-1 border-b border-border pb-2">
                   <button
                     type="button"
                     onClick={() =>
@@ -745,7 +745,7 @@ export function ConditionSelect({
                         disabled={rowConditions.length === 0 && rowCustomEffects.length === 0}
                         aria-label={clearAllConditionsLabel}
                         onClick={() => onClearConditions(row)}
-                        className="rounded-full text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40">
+                        className="text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40">
                         <Eraser className="size-4" />
                       </Button>
                     </span>

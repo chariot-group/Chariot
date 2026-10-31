@@ -24,12 +24,9 @@ import {
   isModalOverlayOpen,
   isTypingInInputElement,
 } from "@/utils/keyboard.utils";
-import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
-import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
-import { CharacterSheetHeader } from "@/components/character/CharacterSheetHeader";
 import { CombatBanner } from "@/components/character/CombatBanner";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
@@ -60,8 +57,6 @@ export default function CharacterDetailView({
 }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tForm = useTranslations("characterForm");
-  const tClass = useTranslations("classes");
-  const tCommon = useTranslations("common");
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -285,16 +280,7 @@ export default function CharacterDetailView({
 
   const displayedAvatarStoredValue = form.watch("avatar") || character.avatar;
 
-  const watchedFirstname = form.watch("firstname");
-  const watchedLastname = form.watch("lastname");
-  const watchedSurname = form.watch("surname");
-
-  const headerFirstname = isEditing ? (watchedFirstname ?? character.firstname) : character.firstname;
-  const headerLastname = isEditing ? (watchedLastname ?? character.lastname) : character.lastname;
-  const headerSurname = isEditing ? (watchedSurname ?? character.surname) : character.surname;
-
-  const headerFullName = [headerFirstname?.trim(), headerLastname?.trim()].filter(Boolean).join(" ");
-  const characterDisplayName = headerFullName || t("placeholder.noImage");
+  const avatarAlt = formatCharacterName(character) || t("placeholder.noImage");
 
   const handleInvalid = React.useCallback(
     (errors: Record<string, unknown>) => {
@@ -409,7 +395,7 @@ export default function CharacterDetailView({
   const exportPdfButton = (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       onClick={() => {
         if (isNpcPdfExportDisabled) return;
         setIsExportPdfDialogOpen(true);
@@ -422,10 +408,7 @@ export default function CharacterDetailView({
       )}
       aria-label={isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")}
       aria-disabled={isNpcPdfExportDisabled || undefined}>
-      <FileDown
-        className="lg:size-5 size-4 shrink-0"
-        aria-hidden="true"
-      />
+      <FileDown aria-hidden="true" />
       <span className="truncate">{t("exportPdf")}</span>
     </Button>
   );
@@ -447,9 +430,7 @@ export default function CharacterDetailView({
     showLinkedPlayerFooter && npcLinkedPlayerId && !isEditing ? (
       <NpcLinkedPlayerFooterLink
         href={buildSessionCharacterHref(npcLinkedPlayerId, sessionCodeForMedia)}
-        playerName={
-          linkedPlayer ? formatCharacterName(linkedPlayer) || t("placeholder.noImage") : null
-        }
+        playerName={linkedPlayer ? formatCharacterName(linkedPlayer) || t("placeholder.noImage") : null}
       />
     ) : null;
 
@@ -487,15 +468,12 @@ export default function CharacterDetailView({
             `}
             aria-label={t("saveChanges")}
             aria-busy={isSaving || isAvatarCommitting}>
-            <Save
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <Save aria-hidden="true" />
             <span className="truncate">{isSaving || isAvatarCommitting ? t("saving") : t("saveChanges")}</span>
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={handleCancelEditor}
             disabled={isSaving || isAvatarCommitting}
             tabIndex={0}
@@ -505,12 +483,9 @@ export default function CharacterDetailView({
                 handleCancelEditor();
               }
             }}
-            className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+            className="max-w-full min-w-0"
             aria-label={t("cancel")}>
-            <X
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <X aria-hidden="true" />
             <span className="truncate">{t("cancel")}</span>
           </Button>
         </React.Fragment>
@@ -536,10 +511,7 @@ export default function CharacterDetailView({
             ${activeTab === "companions" ? "bg-purple hover:bg-purple/75 text-white" : ""}
           `}
             aria-label={t("editCharacter")}>
-            <SquarePen
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <SquarePen aria-hidden="true" />
             <span className="truncate">{t("editCharacter")}</span>
           </Button>
           {exportPdfWithLinkedPlayer}
@@ -551,6 +523,33 @@ export default function CharacterDetailView({
   ) : null;
 
   const sheetFooterBar = characterFooterActions;
+
+  const generalTabAvatar =
+    isEditing && showEditControls ? (
+      <MediaAvatarUpload
+        scope="character"
+        entityId={character._id}
+        storedValue={editingAvatarStoredValue}
+        sessionCode={sessionCodeForMedia}
+        size="sheet"
+        alt={avatarAlt}
+        deferUpload
+        previewUrl={avatarPreviewUrl}
+        onPendingFile={handlePendingAvatarFile}
+        onPendingRemove={handlePendingAvatarRemove}
+        disabled={isSaving || isAvatarCommitting}
+      />
+    ) : (
+      <MediaAvatar
+        scope="character"
+        entityId={character._id}
+        storedValue={displayedAvatarStoredValue}
+        sessionCode={sessionCodeForMedia}
+        size="sheet"
+        alt={avatarAlt}
+        priority
+      />
+    );
 
   return (
     <main
@@ -577,103 +576,13 @@ export default function CharacterDetailView({
           value={activeTab}
           onValueChange={handleTabChange}
           className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Header avec onglets et infos du personnage */}
+          {/* Navbar des onglets (pas d'en-tête d'identité, cf. FR-character-detail-view) */}
           <div className="shrink-0">
-            <div className="mx-auto sm:px-6 md:px-8 px-2">
-              <CharacterSheetHeader
-                identity={
-                  <CharacterSheetHeaderIdentity
-                    fullName={headerFullName}
-                    surname={headerSurname}
-                    emptyNameFallback={t("placeholder.noImage")}
-                    tooltipContent={
-                      <div className="flex flex-col gap-1">
-                        <span>
-                          {headerFullName}
-                          {headerSurname?.trim() ? ` (${headerSurname.trim()})` : ""}
-                        </span>
-                        {isGmViewingPlayerSheet && playedByLabel ? (
-                          <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
-                        ) : null}
-                      </div>
-                    }
-                    subtitle={
-                      isPlayer(character) ? (
-                        <div className="flex flex-col gap-1 font-semibold text-white">
-                          <div>
-                            {character.class.map((cls: { name: string; level: number }, index: number) => (
-                              <span key={index}>
-                                {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
-                                {index < character.class.length - 1 && " / "}
-                              </span>
-                            ))}
-                          </div>
-                          {isGmViewingPlayerSheet && playedByLabel ? (
-                            <span className="text-xs font-normal text-gray-light">
-                              {t("playedBy", { name: playedByLabel })}
-                            </span>
-                          ) : null}
-                        </div>
-                      ) : (
-                        <div className="flex min-w-0 flex-col gap-1 font-semibold text-white">
-                          <div>
-                            {(() => {
-                              const challengeRating = character.challenge?.challengeRating ?? 0;
-                              const experiencePoints = character.challenge?.experiencePoints ?? 0;
-                              const displayChallengeRating = formatChallengeRating(challengeRating);
-
-                              return (
-                                <React.Fragment>
-                                  <InfoTooltip
-                                    content={tCommon("challengeRatingTooltip")}
-                                    side="bottom"
-                                    moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                                    <abbr className="cursor-help no-underline">{t("npc.challengeRatingAbbr")}</abbr>
-                                  </InfoTooltip>{" "}
-                                  {displayChallengeRating} ({experiencePoints} XP)
-                                </React.Fragment>
-                              );
-                            })()}
-                          </div>
-                        </div>
-                      )
-                    }
-                  />
-                }
-                tabs={
-                  <CharacterTabs
-                    activeTab={activeTab}
-                    tabs={availableTabs}
-                    tabsWithErrors={isEditing ? tabsWithErrors : undefined}
-                  />
-                }
-                avatar={
-                  isEditing && showEditControls ? (
-                    <MediaAvatarUpload
-                      scope="character"
-                      entityId={character._id}
-                      storedValue={editingAvatarStoredValue}
-                      sessionCode={sessionCodeForMedia}
-                      size="sheet"
-                      alt={characterDisplayName}
-                      deferUpload
-                      previewUrl={avatarPreviewUrl}
-                      onPendingFile={handlePendingAvatarFile}
-                      onPendingRemove={handlePendingAvatarRemove}
-                      disabled={isSaving || isAvatarCommitting}
-                    />
-                  ) : (
-                    <MediaAvatar
-                      scope="character"
-                      entityId={character._id}
-                      storedValue={displayedAvatarStoredValue}
-                      sessionCode={sessionCodeForMedia}
-                      size="sheet"
-                      alt={characterDisplayName}
-                      priority
-                    />
-                  )
-                }
+            <div className="mx-auto sm:px-6 md:px-8 px-2 pb-2">
+              <CharacterTabs
+                activeTab={activeTab}
+                tabs={availableTabs}
+                tabsWithErrors={isEditing ? tabsWithErrors : undefined}
               />
             </div>
           </div>
@@ -681,7 +590,7 @@ export default function CharacterDetailView({
           {/* Contenu des onglets - scrollable (min-h-0 pour que les enfants h-full / flex-1 se calent sur la hauteur utile) */}
           <div
             id="characterScrollView"
-            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover">
             <CharacterTabPanels
               character={character}
               form={form}
@@ -689,6 +598,7 @@ export default function CharacterDetailView({
               onCharacterUpdate={onCharacterUpdate}
               showSessionGmCompanionsTab={showSessionGmCompanionsTab}
               liaisonActionsEnabled={!showSessionGmCompanionsTab}
+              generalAvatar={generalTabAvatar}
             />
           </div>
         </Tabs>
@@ -698,9 +608,9 @@ export default function CharacterDetailView({
             characterId={character._id}
             footerActions={sheetFooterBar}
           />
-        ) : sheetFooterBar ? (
+        ) : characterFooterActions ? (
           <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
-            {sheetFooterBar}
+            <div className="flex w-full justify-end">{characterFooterActions}</div>
           </div>
         ) : null}
       </form>

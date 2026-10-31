@@ -194,7 +194,7 @@ export function AddQuickLinkDialog({
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" disabled={isSaving}>
+            <Button variant="secondary" disabled={isSaving}>
               {tCommon("cancel")}
             </Button>
           </DialogClose>

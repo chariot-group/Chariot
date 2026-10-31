@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useLayoutEffect, KeyboardEvent, type CSSPr
 import { createPortal } from "react-dom";
 import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { menuItemClassName, menuItemSelectedClassName, menuSurfaceClassName } from "@/components/ui/menu-styles";
 import { getComboboxSuggestionsStyle } from "@/utils/combobox-suggestions.utils";
 
 interface ComboboxInputProps {
@@ -167,8 +169,11 @@ export function ComboboxInput({
             id={suggestionsListId}
             role="listbox"
             style={dropdownStyle}
-            className="z-100 bg-gray-middle-light rounded-[15px] border shadow-md overflow-y-auto animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
-            <div className="p-1">
+            className={cn(
+              menuSurfaceClassName,
+              "z-100 overflow-y-auto p-0 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2",
+            )}>
+            <div className="space-y-0.5 p-1.5">
               {allOptions.map((option, index) => {
                 const isCustom = index === 0 && isCustomEntry;
                 const isSelected = option === value;
@@ -182,9 +187,13 @@ export function ComboboxInput({
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => selectOption(option)}
                     onMouseEnter={() => setHighlightedIndex(index)}
-                    className={`w-full my-0.5 cursor-pointer text-left rounded-[15px] py-1.5 pr-8 pl-2 text-sm outline-hidden select-none transition-[font-weight,color,background-color] flex items-center justify-between ${
-                      index === highlightedIndex ? "bg-white/10 text-white" : isSelected ? "bg-white/15 text-white" : ""
-                    } ${isCustom ? "italic" : ""}`}>
+                    className={cn(
+                      menuItemClassName,
+                      "justify-between",
+                      isSelected && menuItemSelectedClassName,
+                      index === highlightedIndex && "bg-white/10",
+                      isCustom && "italic",
+                    )}>
                     <span>
                       {option}
                       {isCustom && <span className="mx-1">(custom)</span>}
@@ -192,7 +201,7 @@ export function ComboboxInput({
                     {isSelected && (
                       <Check
                         size={16}
-                        className="text-blue"
+                        className="text-white"
                       />
                     )}
                   </button>

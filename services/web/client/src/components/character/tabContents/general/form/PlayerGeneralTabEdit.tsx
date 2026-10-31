@@ -1,6 +1,6 @@
 import { Player } from "@/types/character";
 import { Controller, UseFormReturn, useFieldArray, FieldValues, useFormState } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -23,10 +23,12 @@ import SensesUpdateSection from "@/components/character/tabContents/general/shar
 interface PlayerGeneralTabEditProps {
   player: Player;
   accentColor: string;
+  /** @see FR-character-detail-view */
+  avatar?: ReactNode;
   form: UseFormReturn<FieldValues>;
 }
 
-export default function PlayerGeneralTabEdit({ player, accentColor, form }: PlayerGeneralTabEditProps) {
+export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form }: PlayerGeneralTabEditProps) {
   type PlayerClassEntry = { name?: string; level?: number | string };
 
   const t = useTranslations("characterDetail.player.general");
@@ -109,11 +111,14 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-profile">
-            <h2
-              id="character-profile-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("character")}
-            </h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2
+                id="character-profile-edit"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("character")}
+              </h2>
+              {avatar ? <div className="shrink-0">{avatar}</div> : null}
+            </div>
             <div className="flex flex-col gap-4">
               {/* Noms du personnage */}
               <div className="grid grid-cols-2 gap-3">
@@ -282,7 +287,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 </div>
 
                 {/* Niveau et XP avec synchronisation */}
-                <div className="flex flex-col border-b border-gray">
+                <div className="flex flex-col border-b border-border">
                   <div className="flex flex-row gap-2">
                     {/* Level Input */}
                     <Controller
@@ -371,15 +376,21 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
 
                     return (
                       <div className="flex flex-col gap-4">
-                        <div className="text-xs text-gray-middle-light mx-1 mt-2">
+                        <div className="text-xs text-muted-foreground mx-1 mt-2">
                           {calculatedLevel !== currentLevel && (
-                            <span>⚠️ {t("xpLevelMismatch", { xp: currentXp, level: calculatedLevel })}</span>
+                            <span>
+                              ⚠️{" "}
+                              {t("xpLevelMismatch", {
+                                xp: currentXp,
+                                level: calculatedLevel,
+                              })}
+                            </span>
                           )}
                         </div>
                         <div className="flex gap-2 mb-2">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => {
                               form.setValue("progression.level", calculatedLevel, { shouldDirty: true });
@@ -390,7 +401,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                           </Button>
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => {
                               const xpForLevel = getExperienceForLevel(currentLevel);
@@ -428,7 +439,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                     return (
                       <div
                         key={field.id}
-                        className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-gray"}`}>
+                        className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-border"}`}>
                         <div className="flex items-center justify-between">
                           <h4 className="text-sm font-semibold">
                             {t("class")} {index + 1}
@@ -601,7 +612,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                         </div>
 
                         {/* Class level indicator */}
-                        <div className="text-xs text-gray-middle-light">
+                        <div className="text-xs text-muted-foreground">
                           {t("classLevelInfo", {
                             classLevel: currentClassLevel,
                             totalLevel: totalClassLevels,
@@ -622,8 +633,15 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   {classFields.length < 2 && (
                     <Button
                       type="button"
-                      variant="outline"
-                      onClick={() => appendClass({ name: undefined, subclass: "", level: 1, hitDice: 0 })}
+                      variant="secondary"
+                      onClick={() =>
+                        appendClass({
+                          name: undefined,
+                          subclass: "",
+                          level: 1,
+                          hitDice: 0,
+                        })
+                      }
                       className="flex items-center gap-2 border-dashed">
                       <Plus className="size-4" />
                       <span className="truncate">{t("addSecondClass")}</span>
@@ -867,7 +885,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                               <span>
                                 {t("level")} {level}
                               </span>
-                              <span className="text-xs text-gray-middle-light">{t(`exhaustionLevels.${level}`)}</span>
+                              <span className="text-xs text-muted-foreground">{t(`exhaustionLevels.${level}`)}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -1017,7 +1035,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       ) : (
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                           onClick={() => field.onChange(true)}>
                           {t("inspirationAddButton")}

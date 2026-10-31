@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import { removeCharacterWithoutGroup, removePlayerSpaceNpc, upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
 import { useMemo, useState } from "react";
@@ -403,16 +404,16 @@ export default function CharactersWithoutGroupList() {
         <button
           type="button"
           aria-label={t("createCharacter")}
-          className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
+          className={cn(buttonVariants({ variant: "primary", align: "start" }), "w-full shrink-0")}>
           {t("createCharacter")}
           <UserPlus
             aria-hidden="true"
-            className="w-5 h-5"
+            className="size-5"
           />
         </button>
       </CreateCharacterDialog>
 
-      <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 scrollbar-none">
         {sidebarRows.map((row, index) => {
           const character = row.character;
           const isNpcRow = row.type === "npc" || !isPlayer(character);

@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useLayoutEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
 import {
   CircleAlert,
   ArrowRightLeft,
@@ -133,7 +133,7 @@ function SyncRow({
       <TooltipTrigger asChild>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onSync}
           className="text-xs self-start">
@@ -651,7 +651,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               <Button
                 type="button"
                 onClick={addSpellcasting}
-                variant="outline"
+                variant="secondary"
                 size="lg"
                 disabled={isPlayer(character) && !hasAvailableSpellcastingClasses}
                 className="flex items-center gap-2">
@@ -1198,12 +1198,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                 {showPreparedSpellsButton ? (
                   <Button
                     type="button"
-                    variant={preparationEditMode ? "default" : "outline"}
+                    variant="secondary"
                     size="sm"
-                    className={cn(
-                      "rounded-[15px] text-xs sm:text-sm gap-1.5",
-                      preparationEditMode && "ring-2 ring-ring ring-offset-2 ring-offset-background",
-                    )}
+                    aria-pressed={preparationEditMode}
+                    className={cn("text-xs sm:text-sm", preparationEditMode && toggleButtonPressedClassName)}
                     onClick={() => setPreparationEditMode((v) => !v)}>
                     {preparationEditMode ? (
                       <BookOpenCheck className="size-4 shrink-0" />
@@ -1252,10 +1250,10 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                     <DropdownMenuContent className="min-w-40 border-none bg-transparent">
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={appendSpellHelper}
-                        className="flex items-center gap-2 border hover:bg-card">
+                        className="flex items-center gap-2">
                         <Plus className="size-4" />
                         <span className="hidden sm:block">{tMagic("addSpell")}</span>
                       </Button>
@@ -1294,7 +1292,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             ) : null}
 
             <nav
-              className="flex flex-col gap-2 max-xl:min-h-[min(50svh,32rem)] max-xl:overflow-visible max-xl:flex-none xl:min-h-0 xl:flex-1 xl:overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+              className="flex flex-col gap-2 max-xl:min-h-[min(50svh,32rem)] max-xl:overflow-visible max-xl:flex-none xl:min-h-0 xl:flex-1 xl:overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full"
               aria-label={tMagic("spellListRegion")}>
               {!isInnate ? (
                 /* ── Accordion by level ── */
@@ -1639,7 +1637,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
 
         {/* ══ Right column: spell detail edit ══ */}
         <div
-          className={`flex flex-col gap-2 min-h-0 max-xl:h-auto xl:h-full max-xl:overflow-visible xl:overflow-hidden xl:border-l xl:pl-4 ${showMobileDetails ? "flex" : "hidden xl:flex"}`}
+          className={`flex flex-col gap-2 min-h-0 max-xl:h-auto xl:h-full max-xl:overflow-visible xl:overflow-hidden xl:border-l xl:border-frame xl:pl-4 ${showMobileDetails ? "flex" : "hidden xl:flex"}`}
           role="region"
           aria-label={tMagic("spellDetailRegion")}>
           {/* Back button: single-column layouts (mobile through laptop lg) */}
@@ -1660,7 +1658,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
               <p className="text-muted-foreground text-sm text-center px-4">{tMagic("selectSpellToEdit")}</p>
             </div>
           ) : (
-            <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
               {/* Name */}
               <Card className="gap-2 sm:gap-3 py-3 sm:py-4 px-3 sm:px-4 md:px-6 flex flex-row">
                 <Controller
@@ -1976,7 +1974,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
                       </AccordionTrigger>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={(event) => {
                           event.stopPropagation();

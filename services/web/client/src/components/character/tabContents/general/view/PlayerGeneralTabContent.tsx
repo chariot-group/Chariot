@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Player } from "@/types/character";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -17,12 +17,15 @@ import SensesSection from "@/components/character/tabContents/general/shared/Sen
 interface PlayerGeneralTabContentProps {
   player: Player;
   accentColor: string;
+  /** @see FR-character-detail-view */
+  avatar?: ReactNode;
   onCharacterUpdate?: (updated?: Player) => void;
 }
 
 export default function PlayerGeneralTabContent({
   player,
   accentColor,
+  avatar,
   onCharacterUpdate,
 }: PlayerGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
@@ -52,57 +55,62 @@ export default function PlayerGeneralTabContent({
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-heading">
-            <h2
-              id="character-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("character")}
-            </h2>
-            <dl className="flex flex-col gap-2 justify-between">
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
-                <dd className="text-sm sm:text-base">{player?.firstname}</dd>
+            <div className="flex items-start gap-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
+                <h2
+                  id="character-heading"
+                  className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                  {t("character")}
+                </h2>
+                <dl className="flex flex-col gap-2 justify-between">
+                  <div className="flex flex-wrap gap-1">
+                    <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
+                    <dd className="text-sm sm:text-base">{player?.firstname}</dd>
+                  </div>
+                  {player.lastname && (
+                    <div className="flex flex-wrap gap-1">
+                      <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
+                      <dd className="text-sm sm:text-base">{player?.lastname}</dd>
+                    </div>
+                  )}
+                  {player.surname && (
+                    <div className="flex flex-wrap gap-1">
+                      <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
+                      <dd className="text-sm sm:text-base">{player?.surname}</dd>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-1">
+                    <dt className="text-sm sm:text-base font-semibold">{t("raceLabel")} :</dt>
+                    <dd className="text-sm sm:text-base">
+                      {player?.profile?.race} {player?.profile?.subrace?.length > 0 && `(${player?.profile?.subrace})`}
+                    </dd>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    <dt className="text-sm sm:text-base font-semibold">{t("globalLevel")} :</dt>
+                    <dd className="text-sm sm:text-base">
+                      {player?.progression?.level ?? 0} ({player?.progression?.experience ?? 0} XP)
+                    </dd>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <dt className="text-sm sm:text-base font-semibold">{t("classes")} :</dt>
+                    <dd className="text-sm sm:text-base">
+                      {player?.class.map((c) => `${tClass(c.name)} ${t("levelLabel")} ${c.level}`).join(" / ")}
+                    </dd>
+                  </div>
+                  {player?.class.map((c) => (
+                    <div
+                      key={c.name}
+                      className="flex flex-wrap gap-1">
+                      <dt className="text-sm sm:text-base font-semibold">
+                        {t("subclassOf")} {tClass(c.name)} :
+                      </dt>
+                      <dd className="text-sm sm:text-base">{c.subclass}</dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
-              {player.lastname && (
-                <div className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
-                  <dd className="text-sm sm:text-base">{player?.lastname}</dd>
-                </div>
-              )}
-              {player.surname && (
-                <div className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
-                  <dd className="text-sm sm:text-base">{player?.surname}</dd>
-                </div>
-              )}
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{t("raceLabel")} :</dt>
-                <dd className="text-sm sm:text-base">
-                  {player?.profile?.race} {player?.profile?.subrace?.length > 0 && `(${player?.profile?.subrace})`}
-                </dd>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{t("globalLevel")} :</dt>
-                <dd className="text-sm sm:text-base">
-                  {player?.progression?.level ?? 0} ({player?.progression?.experience ?? 0} XP)
-                </dd>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <dt className="text-sm sm:text-base font-semibold">{t("classes")} :</dt>
-                <dd className="text-sm sm:text-base">
-                  {player?.class.map((c) => `${tClass(c.name)} ${t("levelLabel")} ${c.level}`).join(" / ")}
-                </dd>
-              </div>
-              {player?.class.map((c) => (
-                <div
-                  key={c.name}
-                  className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">
-                    {t("subclassOf")} {tClass(c.name)} :
-                  </dt>
-                  <dd className="text-sm sm:text-base">{c.subclass}</dd>
-                </div>
-              ))}
-            </dl>
+              {avatar ? <div className="shrink-0">{avatar}</div> : null}
+            </div>
           </Card>
 
           {/* Statistiques */}
@@ -248,7 +256,7 @@ export default function PlayerGeneralTabContent({
               player.inspiration ? (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   disabled={isInspirationLoading}
                   onClick={async () => {

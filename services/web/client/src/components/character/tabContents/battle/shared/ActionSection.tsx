@@ -4,9 +4,10 @@ import { Action, ActionUsageType } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 import { ArrowUpDown, ListChevronsDownUp, ListChevronsUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatSignedBonus } from "@/utils/attack.utils";
+import { cn } from "@/lib/utils";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
 interface ActionSectionProps {
@@ -112,8 +113,12 @@ const ActionSection = ({ title, actions, accentColor }: ActionSectionProps) => {
               <Button
                 type="button"
                 size="sm"
-                className={`h-7 shrink-0 px-2 text-xs ${!isAvailable ? "opacity-45 grayscale cursor-default!" : ""}`}
-                variant={isSelected ? "default" : "outline"}
+                className={cn(
+                  "h-7 shrink-0 px-2 text-xs",
+                  isSelected && toggleButtonPressedClassName,
+                  !isAvailable && "opacity-45 grayscale cursor-default!",
+                )}
+                variant="secondary"
                 aria-disabled={!isAvailable}
                 aria-pressed={isSelected}
                 aria-label={t("usageTypePriorityButton", {

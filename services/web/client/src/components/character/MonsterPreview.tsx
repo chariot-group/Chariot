@@ -262,14 +262,14 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
   const readOnlyForm = {} as unknown as UseFormReturn<FieldValues>;
 
   return (
-    <div className="w-full flex flex-col gap-2 px-1 min-h-0 h-full overflow-y-auto lg:overflow-hidden">
+    <div className="flex h-full min-h-0 w-full flex-col gap-3 overflow-y-auto lg:overflow-hidden">
       <Card
-        className="gap-1.5 py-2 px-3 md:px-4"
+        className="shrink-0 gap-2 p-4"
         role="region"
         aria-labelledby="monster-preview-character-heading">
         <h2
           id="monster-preview-character-heading"
-          className="text-sm sm:text-base font-semibold purple">
+          className="text-sm font-semibold text-white sm:text-base">
           {tGeneral("character")}
         </h2>
         <dl className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-x-4 gap-y-0.5 text-xs sm:text-sm">
@@ -312,7 +312,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
             </dt>
             <dd className="min-w-0">
               {formatChallengeRating(normalizedMonster.challenge.challengeRating)}
-              <span className="text-gray-middle-light">
+              <span className="text-muted-foreground">
                 {" "}
                 ({normalizedMonster.challenge.experiencePoints} {tPreview("experiencePointsShort")})
               </span>
@@ -344,11 +344,10 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
         className="flex flex-col lg:flex-1 lg:min-h-0 lg:overflow-hidden">
         <CharacterTabs
           activeTab={activeTab}
-          listClassName="gap-1 flex-nowrap w-full overflow-x-auto pb-1 pr-1"
           triggerClassName="grow-0 shrink-0"
         />
 
-        <div className="mt-1 lg:flex-1 lg:min-h-0 lg:overflow-y-auto pr-0 lg:pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+        <div className="mt-1 lg:flex-1 lg:min-h-0 lg:overflow-y-auto pr-0 lg:pr-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover">
           {CHARACTER_TABS.map((tab) => (
             <TabsContent
               key={tab}

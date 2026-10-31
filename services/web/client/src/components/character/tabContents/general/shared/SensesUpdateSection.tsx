@@ -100,7 +100,6 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? `sense-value-${index}-error` : undefined}
                       placeholder={`${t("senseValue")} (${unitLabel})`}
-                      type="number"
                       min="0"
                     />
                     {fieldState.error && (
@@ -131,7 +130,7 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
 
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="sm"
         onClick={() => appendSense({ name: "", value: null })}
         className="w-fit"

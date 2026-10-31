@@ -115,7 +115,7 @@ export function CreateCampaignDialog({ children, open: controlledOpen, onOpenCha
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline" disabled={isCreating}>
+                        <Button variant="secondary" disabled={isCreating}>
                             {tCommon("cancel")}
                         </Button>
                     </DialogClose>

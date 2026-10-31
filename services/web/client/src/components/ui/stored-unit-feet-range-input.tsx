@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { Input } from "@/components/ui/input";
+import { framedInputClassName, inputFrameClassName, NumberInput } from "@/components/ui/number-input";
 import { useStoredFeetRangeInput } from "@/hooks/useStoredFeetRangeInput";
 import { parseStoredFeetRange } from "@/utils/unit.utils";
 import { cn } from "@/lib/utils";
@@ -43,30 +44,50 @@ export function StoredUnitFeetRangeInput({
   const { type: explicitType, ...restInputProps } = inputProps;
   const resolvedType = explicitType ?? (isNumericRange ? "number" : "text");
 
+  const sharedProps = {
+    ...restInputProps,
+    ref: externalRef,
+    value: rangeInput.value,
+    onChange: rangeInput.onChange,
+    className: cn("min-w-0 flex-1 w-full", restInputProps.className),
+    onFocus: (event: React.FocusEvent<HTMLInputElement>) => {
+      rangeInput.onFocus(event);
+      onFocus?.(event);
+    },
+    onBlur: (event: React.FocusEvent<HTMLInputElement>) => {
+      rangeInput.onBlur(event);
+      onBlur?.(event);
+    },
+  };
+
   return (
     <div className={cn("flex min-w-0 items-center gap-1 w-full max-w-full", containerClassName)}>
-      <Input
-        {...restInputProps}
-        ref={externalRef}
-        type={resolvedType}
-        inputMode={isNumericRange ? "decimal" : "text"}
-        min={resolvedType === "number" && isNumericRange ? 0 : undefined}
-        step={resolvedType === "number" && isNumericRange ? "any" : undefined}
-        value={rangeInput.value}
-        onChange={rangeInput.onChange}
-        className={cn("min-w-0 flex-1 w-full", restInputProps.className)}
-        onFocus={(event) => {
-          rangeInput.onFocus(event);
-          onFocus?.(event);
-        }}
-        onBlur={(event) => {
-          rangeInput.onBlur(event);
-          onBlur?.(event);
-        }}
-      />
-      {showUnitLabel && unitLabel ? (
-        <span className="text-xs text-muted-foreground shrink-0">{unitLabel}</span>
-      ) : null}
+      {resolvedType === "number" ? (
+        <NumberInput
+          {...sharedProps}
+          inputMode={isNumericRange ? "decimal" : "text"}
+          min={isNumericRange ? 0 : undefined}
+          step={isNumericRange ? "any" : undefined}
+          endAdornment={showUnitLabel && unitLabel ? unitLabel : undefined}
+        />
+      ) : (
+        // Free text (e.g. "Touch") keeps the same frame so focus wraps the input and its unit
+        <div
+          data-slot="text-unit-input"
+          data-disabled={sharedProps.disabled || undefined}
+          className={cn(inputFrameClassName, sharedProps.className)}>
+          <input
+            {...sharedProps}
+            className={framedInputClassName}
+            data-slot="input"
+            type={resolvedType}
+            inputMode={isNumericRange ? "decimal" : "text"}
+          />
+          {showUnitLabel && unitLabel ? (
+            <span className="shrink-0 text-xs text-muted-foreground">{unitLabel}</span>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }

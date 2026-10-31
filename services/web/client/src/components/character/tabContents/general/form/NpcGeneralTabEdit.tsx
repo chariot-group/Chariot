@@ -12,16 +12,18 @@ import AbilitiesUpdateSection from "@/components/character/tabContents/shared/Ab
 import NpcColumn2Edit from "@/components/character/tabContents/general/form/NpcColumn2Edit";
 import NpcStatisticsUpdate from "@/components/character/tabContents/shared/NpcStatisticsUpdate";
 import { formatChallengeRating, parseChallengeRatingInput } from "@/utils/challengeRating.utils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import SensesUpdateSection from "@/components/character/tabContents/general/shared/SensesUpdateSection";
 
 interface NpcGeneralTabEditProps {
   npc: NPC;
   accentColor: string;
+  /** @see FR-character-detail-view */
+  avatar?: ReactNode;
   form: UseFormReturn<FieldValues>;
 }
 
-export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneralTabEditProps) {
+export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: NpcGeneralTabEditProps) {
   void npc;
   const t = useTranslations("characterDetail.player.general");
   const tNpc = useTranslations("characterDetail.npc");
@@ -79,11 +81,14 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-profile">
-            <h2
-              id="character-profile-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("character")}
-            </h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2
+                id="character-profile-edit"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("character")}
+              </h2>
+              {avatar ? <div className="shrink-0">{avatar}</div> : null}
+            </div>
             <div className="flex flex-col gap-4">
               {/* Noms du personnage */}
               <div className="flex flex-col gap-3">
@@ -253,7 +258,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, form }: NpcGeneral
               </div>
 
               {/* Challenge Rating et Experience Points */}
-              <div className="flex flex-col gap-3 border-b border-gray pb-3">
+              <div className="flex flex-col gap-3 border-b border-border pb-3">
                 <div className="flex flex-row gap-2">
                   {/* Challenge Rating */}
                   <Controller

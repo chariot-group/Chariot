@@ -50,15 +50,15 @@ export default function ProfilePreferencesSection({ onViewReleaseNotes }: Profil
         </div>
 
         {onViewReleaseNotes && (
-          <div className="flex flex-col gap-2.5 border-t border-white/10 pt-4 mt-4">
+          <div className="flex flex-col gap-2.5 border-t border-border pt-4 mt-4">
             <div className="flex items-center gap-3 flex-wrap">
               <span className="text-sm font-medium">
                 {t("releaseNotes.label")}
               </span>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
-                className="rounded-[13px] text-xs h-8 shrink-0"
+                className="shrink-0 text-xs"
                 onClick={onViewReleaseNotes}
                 aria-haspopup="dialog">
                 {t("releaseNotes.openButton")}

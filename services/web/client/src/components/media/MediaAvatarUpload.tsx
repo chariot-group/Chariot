@@ -221,13 +221,12 @@ export function MediaAvatarUpload({
           />
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={disabled || isUploading}
             onClick={() => inputRef.current?.click()}
             aria-controls={`avatar-upload-${scope}-${entityId}`}
-            aria-describedby={requirementsId}
-            className="border-white/25 bg-gray text-white hover:border-primary hover:bg-primary hover:text-white">
+            aria-describedby={requirementsId}>
             <ImagePlus
               className="size-4"
               aria-hidden="true"

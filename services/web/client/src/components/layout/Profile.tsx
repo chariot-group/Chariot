@@ -84,7 +84,7 @@ export default function Profile() {
         ref={collapsibleContentRef}
         role="menu"
         aria-label={t("profile")}
-        className="min-w-max flex-col bg-card py-1.5 px-3 transition-all duration-100 flex absolute top-12 sm:top-14 right-0 text-popover-foreground rounded-[15px] border shadow-lg z-50">
+        className="min-w-max flex-col bg-popover py-1.5 px-3 transition-all duration-100 flex absolute top-12 sm:top-14 right-0 text-popover-foreground rounded-[15px] border border-frame shadow-lg z-50">
         <div
           className="px-2 py-1.5 text-sm whitespace-nowrap border-b border-border"
           role="status"

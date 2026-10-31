@@ -50,7 +50,7 @@ const SESSION_LOBBY_CARD_CLASS = "gap-3 rounded-[15px] p-3 shadow-sm sm:p-4";
 
 function getSessionLobbyParticipantListClassName(participantCount: number): string {
   const base =
-    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scroll-smooth focus-visible:outline-none sm:gap-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar]:w-2";
+    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scroll-smooth focus-visible:outline-none sm:gap-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar]:w-2";
 
   if (participantCount < 5) {
     return base;
@@ -330,7 +330,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
         ) : (
           <div className="flex shrink-0 flex-wrap justify-end gap-2 px-4 pb-4 sm:px-6 sm:pb-6">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleLeave}
               disabled={isLeaving}>
@@ -377,11 +377,11 @@ function SessionLobbyCopyActions({
     return (
       <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           className={cn(
             "h-8 w-full min-w-0 px-3 transition-colors sm:h-9",
-            codeCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+            codeCopyState === "success" && "border-green bg-green text-black hover:bg-green",
           )}
           aria-label={t("sessionCode.copyAriaLabel")}
           disabled={codeCopyState !== "idle"}
@@ -394,12 +394,12 @@ function SessionLobbyCopyActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="outline"
+              variant="secondary"
               size="icon"
               aria-label={t("sessionCode.copyLinkAriaLabel")}
               className={cn(
                 "h-8 w-8 shrink-0 transition-colors sm:h-9 sm:w-9",
-                linkCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+                linkCopyState === "success" && "border-green bg-green text-black hover:bg-green",
               )}
               disabled={linkCopyState !== "idle"}
               onClick={onCopyLink}>
@@ -417,11 +417,11 @@ function SessionLobbyCopyActions({
   return (
     <div className={cn("flex w-full items-center gap-2", align === "center" ? "justify-center" : "justify-start")}>
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         className={cn(
           "h-8 w-auto shrink-0 px-3 transition-colors",
-          codeCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+          codeCopyState === "success" && "border-green bg-green text-black hover:bg-green",
         )}
         aria-label={t("sessionCode.copyAriaLabel")}
         disabled={codeCopyState !== "idle"}
@@ -434,12 +434,12 @@ function SessionLobbyCopyActions({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="outline"
+            variant="secondary"
             size="icon-sm"
             aria-label={t("sessionCode.copyLinkAriaLabel")}
             className={cn(
               "shrink-0 transition-colors",
-              linkCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+              linkCopyState === "success" && "border-green bg-green text-black hover:bg-green",
             )}
             disabled={linkCopyState !== "idle"}
             onClick={onCopyLink}>
@@ -504,7 +504,7 @@ function SessionLobbyCodeSection({
               <CollapsibleTrigger asChild>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="shrink-0 gap-1.5"
                   aria-expanded={inviteDetailsOpen}

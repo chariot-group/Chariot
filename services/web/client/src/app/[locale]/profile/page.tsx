@@ -131,7 +131,7 @@ export default function ProfilePage() {
 
   return (
     <main
-      className="flex flex-col items-center pt-4 sm:pt-6 md:pt-8 px-3 sm:px-4 md:px-6 lg:px-8 overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+      className="flex flex-col items-center pt-4 sm:pt-6 md:pt-8 px-3 sm:px-4 md:px-6 lg:px-8 overflow-y-auto scroll-smooth focus-visible:outline-none [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full"
       role="main"
       aria-label={t("pageTitle")}>
       <h1 className="sr-only">{t("pageTitle")}</h1>
@@ -247,7 +247,7 @@ export default function ProfilePage() {
             </fieldset>
             <div className="flex-1 overflow-hidden">
               <div
-                className="h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+                className="h-full overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full"
                 role="list"
                 aria-label={t("tokenHistory")}
                 tabIndex={0}
@@ -329,7 +329,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex flex-col items-end gap-1">
               <Button
-                className="rounded-[15px] w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
+                className="w-full sm:w-auto text-sm sm:text-base flex items-center justify-center gap-2"
                 onClick={() => setShowShopDialog(true)}
                 aria-label={t("reloadTokens")}>
                 <ShoppingCart

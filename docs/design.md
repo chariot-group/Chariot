@@ -14,13 +14,51 @@ It first describes the current state (observable facts), then defines governance
 
 ## 2.1 Global Theme
 
-The project relies on a dark theme with a global background image:
+The project relies on a dark theme with a plain background color (no background image):
 
-- Global background: `--background: #0c0c0c`
-- Main text: `--foreground: #b2b2b2`
-- Card/popover surface: `--card: #19191c`
+- Global background: `--background: #0c0c0f`
+- Main text: `--foreground: #b7b7bb`
+- Card/popover surface: `--card` / `--popover: #17171a`
 - Primary color: `--primary: #4e00de`
+- Primary light: `--primary-light: #a98bff` (same violet, lightened; `text-primary-light`)
 - Secondary/accent color: `--secondary` / `--accent: #aa00ff`
+
+Violet usage rule:
+
+- `primary` (`#4e00de`) is for **fills** only: button backgrounds, badges, selection highlight.
+- Violet **text and icons** (links, loaders, accent icons, "your turn" labels, selected-row bar) MUST use `primary-light`: `#4e00de` is unreadable on dark surfaces, while `#a98bff` reaches >= 5:1 on every surface level (background up to hover).
+
+## 2.1.1 Neutral Scale (Grays)
+
+All neutral colors share one hue/chroma (oklch, hue 285, chroma ~0.006: a subtle cool tint matching the violet primary). Pure grays and differently tinted grays must not be mixed.
+
+Surface ladder (dark to light, small regular steps):
+
+| Level | Token | Value | Usage |
+| --- | --- | --- | --- |
+| 0 | `--background` | `#0c0c0f` | App background, dialogs, sheets |
+| 1 | `--card` / `--popover` | `#17171a` | Cards, menus (dropdown, select, popover, combobox), toasts, inactive character tabs. `--popover` aliases `--card`. |
+| 2 | `--gray-middle-light` | `#1f1f22` | Raised element inside a card (inputs, selects, rows) |
+| 3 | `--gray` | `#27272b` | Hover / selected / highlighted |
+
+Borders (two levels):
+
+- Structural borders (layout sidebar, dialogs, sheets, menus and dropdowns): `--frame: #e5e5e5`, used through the `border-frame` utility.
+  This includes region dividers that split a page or a modal into zones: page footer action bars (character sheet, combat banner), modal header/footer/side-panel dividers, list/detail split of the magic tab.
+- Minor separators and default `border`: `--border: #353538`, used through `border-border` (no opacity variants). Applies to dividers between items inside a panel (form sections, tracker sub-bars, summaries). Form controls / outline buttons: `--input: #353538`. Sidebar separators: `--sidebar-border`.
+
+Lines and text:
+
+- Focus ring: `--ring`, `--sidebar-ring`: `#a4a4a8`
+- Secondary text: `--muted-foreground: #98989c` (>= 4.5:1 on every surface level)
+- Surface tokens (`gray`, `gray-middle-light`) are fills only: never use them as text color (`text-gray-middle-light` is invisible on cards); gray text uses `text-muted-foreground`
+- Light gray text: `--gray-light: #d7d7db`
+
+Scrollbars: `--scrollbar-track`, `--scrollbar-thumb`, `--scrollbar-thumb-hover`, used through `[&::-webkit-scrollbar-track]:bg-scrollbar-track`, `[&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb` and `[&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover`.
+
+Tailwind `gray-50` ... `gray-950` utilities are redefined in `globals.css` on the same tinted scale.
+
+Rule: never hardcode a neutral color in a component; use these tokens so a palette change is a one-file edit in `globals.css`.
 
 ## 2.2 Recurring Custom Palette
 
@@ -32,9 +70,9 @@ Palette defined and reused through custom utilities:
 - `--pink: #ffadff`
 - `--yellow: #ffc400`
 - `--white: #f7f7f7`
-- `--gray: #2b2b2b`
-- `--gray-middle-light: #27272e`
-- `--gray-light: #d6d6d6`
+- `--gray: #27272b`
+- `--gray-middle-light: #1f1f22`
+- `--gray-light: #d7d7db`
 - `--purple: #4e00de`
 
 Dedicated utility classes exist for these colors: `bg-*`, `text-*` (for example `.blue`, `.pink`), and `border-*`.
@@ -58,7 +96,7 @@ Dedicated utility classes exist for these colors: `bg-*`, `text-*` (for example 
 The design system is strongly rounded:
 
 - Root variable: `--radius: 36px`
-- Standard button: `rounded-[15px]`
+- Buttons, owned by `buttonVariants` (FR-frontend-button-system): `rounded-[13px]` for `default` / `sm` (Player / GM selector included), `rounded-[15px]` for `lg`
 - Tabs trigger: `rounded-[13px]`
 - Business cards and badges: `rounded-[15px]` to `rounded-[30px]`
 - Pill-shaped controls: `rounded-full`
@@ -85,6 +123,7 @@ A compact Tailwind scale is used most frequently:
 - Scrollable regions:
   - `overflow-y-auto` with custom scrollbar styling (`::-webkit-scrollbar`)
   - recurring `pr-2` to prevent content from sitting under the scrollbar
+  - Exception: navigation lists and bars hide their scrollbar with the `scrollbar-none` utility (`globals.css`); wheel, touch and keyboard scrolling still work. Applies to the layout sidebar, the character sheet tab bar and the community library result list.
 - Grids:
   - Welcome/Profile: `grid-cols-1`, then `xl:grid-cols-2` or `xl:grid-cols-3`
 
@@ -118,20 +157,38 @@ Frequent pattern:
 
 ## 5.1 Button
 
-Base (`components/ui/button.tsx`):
+All buttons go through `components/ui/button.tsx` (`Button`, or `buttonVariants` for links and custom triggers such as the Player / GM selector). Rule: FR-frontend-button-system. Consumers set layout (`w-full`, `flex-1`, `min-w-0`, padding tweaks) but never the fill, text color, hover, height or radius.
 
-- Standard height: `h-9` (`default`)
-- Standard padding: `px-4 py-2`
-- Radius: `rounded-[15px]`
-- Icon + text spacing: `gap-2`
+Main types:
 
-Commonly used variants:
+| Type | Props | Rest | Hover | Usage |
+| --- | --- | --- | --- | --- |
+| Primary white | `variant="primary"` | `bg-white` + `border-frame`, `text-black` | `bg-gray-300` (slightly darker) | Main action of a screen, sheet footer « Modifier le personnage » / « Sauvegarder », sidebar create buttons, active segmented option |
+| Primary colored | `variant="accent"` + `tone` | domain color, `text-black` | `bg-{tone}-hover` (lighter) | Color-coded context: sheet creation submit (tab tone), sidebar session action, combat turn controls |
+| Primary violet | default (`accent` + `tone="violet"`) | `bg-primary`, `text-primary-foreground` | `bg-primary-hover` (lighter) | Dialog validations, welcome / shop calls to action. Only colored tone with light text |
+| Secondary | `variant="secondary"` | `bg-gray-middle-light` + `border-input`, `text-white` | `bg-gray` (lighter) | Alternative actions: cancel, export, back, inactive segmented option |
 
-- `default` (primary)
-- `outline` (secondary actions)
-- `ghost` (UI triggers)
-- `link` (text-style navigation)
-- `destructive` (critical action)
+Hover tokens (`--{tone}-hover`, `--primary-hover`) live in `globals.css` (`color-mix` with white), so a palette change stays a one-file edit. Every hover has a `disabled:hover:` reset.
+
+Utility types (minority): `ghost` (transparent, `hover:bg-white/10`), `link`, `destructive`, icon-only sizes.
+
+Sizes:
+
+- `lg`: `h-12`, `rounded-[15px]`, `text-lg`, icons `size-6` (sidebar session action)
+- `default`: `h-9`, `rounded-[13px]`, `text-sm` (create character, dialog and sheet footers)
+- `sm`: `h-8`, `rounded-[13px]` (dense toolbars and rows)
+- `icon` / `icon-sm` / `icon-lg`: `size-9` / `size-8` / `size-12` (radius of the matching text size)
+
+Content and alignment:
+
+- Centered by default; `align="start"` left-aligns (sidebar create buttons)
+- Optional icon on the **left** of the label only (`gap-2`, `gap-3` in `lg`); the only trailing glyphs allowed are a menu disclosure chevron and the forward arrow of a "next" action
+- Focus: `focus-visible:ring-2 ring-ring ring-offset-2 ring-offset-background` on every type
+
+Toggles (`aria-pressed`), never a violet fill:
+
+- Segmented selector (one option among a few: Player / GM, attack ability suggestion, codex preview language): active = `primary`, inactive = `secondary`
+- On/off filter toggle (Action / Bonus action / Reaction priority, prepared spells edit mode, tracker selection modes): `secondary` + `toggleButtonPressedClassName` when pressed (`border-frame bg-white/15 font-semibold text-white`)
 
 ## 5.2 Tabs
 
@@ -141,12 +198,55 @@ Tabs rely on Radix plus design overrides:
 - Active tab is color-coded by domain (blue/red/pink/yellow/green)
 - Inactive tab uses gray styling
 
+## 5.2.1 Character Sheet Tabs (Button Group)
+
+The character sheet tab bar (General, Battle, Magic, Inventory, History) is one joined button group, not separate pills:
+
+- Frame: `rounded-[13px] border border-frame bg-card overflow-hidden` (light structural border, like the layout), no gap between triggers
+- Triggers: square inner corners, `border-l border-frame` dividers (none on the first), `py-1.5`
+- Active trigger: domain color fill (section 2.3) with dark text `text-black` on every tab, Battle included (black on red: 5.7:1); inactive: transparent, white text, `hover:bg-white/10`
+- Focus: keyboard only (`focus-visible`), drawn inside the trigger (`ring-2 ring-inset ring-ring`); no outline on mouse click
+- Error state (FR-form-field-validation): inset `ring-red/80` plus the alert icon (never color alone)
+- Mobile: the group scrolls horizontally inside a `scrollbar-none` wrapper; the rounded frame (`w-max`) scrolls with the tabs, so the rounded ends stay on the first (General) and last (History) tabs. Never put `overflow-x-auto` on the frame itself. Because the scrollbar is hidden, `useHorizontalWheelScroll` maps the vertical mouse wheel to horizontal scrolling; touch, trackpad and keyboard focus scroll natively.
+
 ## 5.3 Cards and Panels
 
 - Business cards mainly use `bg-card` or `bg-gray-middle-light`
 - Internal padding typically ranges from `p-3` to `p-6`
 - Pronounced radius (`rounded-[15px]` or higher)
 - Shadow is used selectively to reinforce visual focus (`shadow-lg`, `shadow-xl`)
+- A section card holds its heading **and** its content (e.g. saving throws, skills), for PCs and NPCs alike; rows inside a card are plain rows (`rounded-[10px]`, `hover:bg-gray-middle-light/50`), never nested cards
+- Free text (history, descriptions) wraps between words: `whitespace-pre-wrap wrap-break-word`; `break-all` is forbidden on text containers
+
+## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
+
+Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.
+
+- Surface: `bg-popover border-frame rounded-[14px] p-1.5`
+- Row: `rounded-[10px] px-3 py-2 text-sm text-white`, hover and keyboard highlight `bg-white/10`
+- Selected/checked row: `bg-white/15 font-medium`, check icon in white
+- Leading icons: `size-4`, `text-white/60`; destructive rows: `text-destructive`, hover `bg-destructive/10`
+- Separator: `mx-1 my-1 h-px bg-white/10`
+
+Consumers must not restyle menu rows or surfaces locally (sizing such as `w-*`, `max-h-*`, `z-*` is fine).
+
+Sidebar context menus and touch overflow menus show an icon per action (FR-sidebar-context-actions). Default icons are mapped by action id in `components/layout/Sidebar/shared/sidebarActionIcons.ts`.
+
+## 5.5 Sidebar Rows
+
+- Selected character row: `bg-white/15` (same gray as selected menu rows), white bold text, no left bar and no label shift; hover `bg-white/10`
+- Group header: no resting background (hover `bg-white/10`), label always bold. The label lines up with its characters: header `pl-1` + `size-4` chevron + `gap-2` = characters `ml-4` + `px-3` (28px)
+- Create buttons (character, group): `buttonVariants({ variant: "primary", align: "start" })`, full width, icon on the **left** of the label
+
+## 5.6 Numeric Inputs
+
+All numeric fields use `components/ui/number-input.tsx` (`Input type="number"` delegates to it):
+
+- `startAdornment` (icon) and `endAdornment` (unit) render inside the field
+- The frame (`inputFrameClassName`) owns background, radius, focus and invalid state, so the focus frame wraps the whole field (icon + input + unit + stepper), not only the native input
+- `className` styles the frame (width, height, radius, background); typography is inherited by the input
+- Custom stepper without border or divider, flush against the right edge, out of the tab order (keyboard uses arrow keys)
+- `StoredUnitNumberInput` and `StoredUnitFeetRangeInput` build on the same frame
 
 ## 6. Responsive Baseline
 

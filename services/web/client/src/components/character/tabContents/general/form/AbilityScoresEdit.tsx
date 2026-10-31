@@ -58,7 +58,7 @@ export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
                     </div>
                   </div>
                   <div className="flex flex-col min-w-10 items-center gap-3">
-                    <label className="text-xs text-gray-middle-light leading-none">{t("abilityBonus")}</label>
+                    <label className="text-xs text-muted-foreground leading-none">{t("abilityBonus")}</label>
                     <span className="text-sm font-bold text-center leading-tight">{modifierText}</span>
                   </div>
                   {fieldState.error && (

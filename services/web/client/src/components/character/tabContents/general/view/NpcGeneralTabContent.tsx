@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import NpcColumn2 from "@/components/character/tabContents/general/view/NpcColumn2";
@@ -10,10 +11,12 @@ import SensesSection from "@/components/character/tabContents/general/shared/Sen
 interface NpcGeneralTabContentProps {
   npc: NPC;
   accentColor: string;
+  /** @see FR-character-detail-view */
+  avatar?: ReactNode;
   onCharacterUpdate?: (updated?: NPC) => void;
 }
 
-export default function NpcGeneralTabContent({ npc, accentColor, onCharacterUpdate }: NpcGeneralTabContentProps) {
+export default function NpcGeneralTabContent({ npc, accentColor, avatar, onCharacterUpdate }: NpcGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
   const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
@@ -36,35 +39,40 @@ export default function NpcGeneralTabContent({ npc, accentColor, onCharacterUpda
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-heading">
-            <h2
-              id="character-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("character")}
-            </h2>
-            <dl className="flex flex-col gap-2">
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
-                <dd className="text-sm sm:text-base">{npc?.firstname}</dd>
+            <div className="flex items-start gap-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-3">
+                <h2
+                  id="character-heading"
+                  className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                  {t("character")}
+                </h2>
+                <dl className="flex flex-col gap-2">
+                  <div className="flex flex-wrap gap-1">
+                    <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
+                    <dd className="text-sm sm:text-base">{npc?.firstname}</dd>
+                  </div>
+                  {npc.lastname && (
+                    <div className="flex flex-wrap gap-1">
+                      <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
+                      <dd className="text-sm sm:text-base">{npc?.lastname}</dd>
+                    </div>
+                  )}
+                  {npc.surname && (
+                    <div className="flex flex-wrap gap-1">
+                      <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
+                      <dd className="text-sm sm:text-base">{npc?.surname}</dd>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-1">
+                    <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
+                    <dd className="text-sm sm:text-base">
+                      {npc?.profile?.type} {npc?.profile?.subtype?.length > 0 && `(${npc?.profile?.subtype})`}
+                    </dd>
+                  </div>
+                </dl>
               </div>
-              {npc.lastname && (
-                <div className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
-                  <dd className="text-sm sm:text-base">{npc?.lastname}</dd>
-                </div>
-              )}
-              {npc.surname && (
-                <div className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
-                  <dd className="text-sm sm:text-base">{npc?.surname}</dd>
-                </div>
-              )}
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
-                <dd className="text-sm sm:text-base">
-                  {npc?.profile?.type} {npc?.profile?.subtype?.length > 0 && `(${npc?.profile?.subtype})`}
-                </dd>
-              </div>
-            </dl>
+              {avatar ? <div className="shrink-0">{avatar}</div> : null}
+            </div>
           </Card>
 
           <NpcStatistics

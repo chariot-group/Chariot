@@ -126,7 +126,7 @@ describe("FR-character-history-appearance-fit — CharacterHistoryView", () => {
 
     expect(html).toContain(LONG_EYES);
     expect(html).not.toContain("truncate");
-    expect(html).toContain("wrap-break-words");
+    expect(html).toContain("wrap-break-word");
     expect(html).toContain("items-start");
     expect(html).toContain("min-w-0");
     expect(cardTag).toContain("h-fit");
@@ -180,5 +180,30 @@ describe("FR-character-history-appearance-fit — CharacterHistoryTabEdit", () =
     expect(html).toContain(">Appearance</h2>");
     expect(cardTag).toContain("h-fit");
     expect(cardTag).not.toContain("h-full");
+  });
+});
+
+/** @see FR-frontend-design — history text wraps between words, never letter by letter */
+describe("CharacterHistoryView — word wrapping", () => {
+  it("nominal: background cards wrap by word (no break-all on any card)", () => {
+    const html = renderView(createCharacter(shortAppearance));
+
+    expect(html).not.toContain("break-all");
+    expect(html).toMatch(/<p[^>]*whitespace-pre-wrap wrap-break-word[^>]*>A very long personality text/);
+  });
+
+  it("edge: a single unbreakable token can still wrap inside its card", () => {
+    const longToken = "Ruisseau-des-Lames-Oubliées-du-Nord-Lointain".repeat(3);
+    const html = renderView({
+      ...createCharacter(shortAppearance),
+      background: { personalityTraits: longToken },
+    } as Character);
+
+    expect(html).toContain(longToken);
+    expect(html).toMatch(/<p[^>]*wrap-break-word[^>]*>Ruisseau/);
+  });
+
+  it("failure guard: the invalid `wrap-break-words` utility is not used", () => {
+    expect(renderView(createCharacter({ ...shortAppearance, eyes: LONG_EYES }))).not.toContain("wrap-break-words");
   });
 });

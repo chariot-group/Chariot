@@ -169,7 +169,7 @@ const AbilitiesSection = ({
             <AccordionItem
               key={`${ability.name}-${index}`}
               value={`${ability.name}-${index}`}
-              className="border-b border-gray py-1.5">
+              className="border-b border-border py-1.5">
               <AccordionTrigger
                 className="min-w-0 w-full items-start py-1.5 text-left hover:no-underline gap-2 [&>svg]:mt-1 [&>svg]:self-start"
                 aria-label={[
@@ -241,7 +241,7 @@ const AbilitiesSection = ({
                           <span className="inline-flex w-full sm:w-auto sm:justify-end">
                             <Button
                               type="button"
-                              variant="outline"
+                              variant="secondary"
                               size="sm"
                               className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                               disabled
@@ -255,7 +255,7 @@ const AbilitiesSection = ({
                     ) : (
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
                         disabled={!canPressUse || useBusy}

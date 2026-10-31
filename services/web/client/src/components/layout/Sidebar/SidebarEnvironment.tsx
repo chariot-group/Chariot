@@ -25,7 +25,9 @@ import { useRouter, usePathname } from "next/navigation";
 import { useStore } from "react-redux";
 import { RootState } from "@/store";
 import NavigationService from "@/services/NavigationService";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { menuItemClassName } from "@/components/ui/menu-styles";
 import * as React from "react";
 import { Campaign } from "@/types/campaign";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
@@ -164,17 +166,8 @@ export default function SidebarEnvironment() {
         onClick={switchToPlayer}
         aria-pressed={joueurActive}
         aria-label={t("playerSpace")}
-        className={cn(
-          "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[13px] border py-2 px-3 text-sm transition-all duration-150",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
-          joueurActive
-            ? "border-white bg-white font-semibold text-black"
-            : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
-        )}>
-        <User
-          className="h-4 w-4 shrink-0"
-          aria-hidden="true"
-        />
+        className={cn(buttonVariants({ variant: joueurActive ? "primary" : "secondary" }), "min-w-0 flex-1")}>
+        <User aria-hidden="true" />
         <span className="truncate">{t("playerSpaceShort")}</span>
       </button>
 
@@ -184,20 +177,11 @@ export default function SidebarEnvironment() {
             type="button"
             aria-pressed={isGmMode}
             aria-label={t("gmSpace")}
-            className={cn(
-              "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[13px] border py-2 px-3 text-sm transition-all duration-150",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
-              isGmMode
-                ? "border-white bg-white font-semibold text-black"
-                : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
-            )}>
-            <BookOpen
-              className="h-4 w-4 shrink-0"
-              aria-hidden="true"
-            />
+            className={cn(buttonVariants({ variant: isGmMode ? "primary" : "secondary" }), "min-w-0 flex-1")}>
+            <BookOpen aria-hidden="true" />
             <span className="truncate">{t("gmSpaceAbbr")}</span>
             <ChevronDown
-              className="ml-auto h-3 w-3 shrink-0 transition-transform duration-150 [[data-state=open]_&]:rotate-180"
+              className="ml-auto size-3 transition-transform duration-150 [[data-state=open]_&]:rotate-180"
               aria-hidden="true"
             />
           </button>
@@ -206,7 +190,7 @@ export default function SidebarEnvironment() {
         <DropdownMenuContent
           align="start"
           sideOffset={8}
-          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto rounded-[14px] border-white/12 bg-[#1f1f24] p-1.5">
+          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-3">
               <Loader2
@@ -227,24 +211,23 @@ export default function SidebarEnvironment() {
                     key={campaign._id}
                     actions={campaignActions}
                     contextMenuLabel={t("campaignActions")}
-                    className="rounded-[10px]"
-                    menuContentClassName="z-[100] w-56 rounded-[10px] border-white/12 bg-[#1f1f24] px-1.5 py-1.5 text-white shadow focus-visible:outline-none">
+                    className="rounded-[10px]">
                     <button
                       type="button"
                       onClick={() => void handleCampaignSelect(campaign._id)}
                       className={cn(
-                        "flex w-full cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-white",
-                        "hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+                        menuItemClassName,
+                        "focus-visible:ring-1 focus-visible:ring-white/50",
                         isSelected && "font-medium",
                       )}>
                       <BookOpen
-                        className="h-4 w-4 shrink-0 text-white/40"
+                        className="h-4 w-4 shrink-0 text-white/60"
                         aria-hidden="true"
                       />
                       <span className="min-w-0 flex-1 truncate text-left">{campaign.label}</span>
                       {isSelected && (
                         <Check
-                          className="h-4 w-4 shrink-0 text-primary"
+                          className="h-4 w-4 shrink-0 text-white"
                           aria-hidden="true"
                         />
                       )}
@@ -271,16 +254,13 @@ export default function SidebarEnvironment() {
             </>
           )}
 
-          <DropdownMenuSeparator className="mx-1 bg-white/10" />
+          <DropdownMenuSeparator />
 
           <CreateCampaignDialog>
             <DropdownMenuItem
               asChild
-              onSelect={(event) => event.preventDefault()}
-              className="cursor-pointer rounded-[10px] px-3 py-2 text-sm text-white hover:bg-white/10 focus:bg-white/10">
-              <button
-                type="button"
-                className="flex w-full items-center gap-2">
+              onSelect={(event) => event.preventDefault()}>
+              <button type="button">
                 <PlusCircleIcon
                   className="h-4 w-4 shrink-0"
                   aria-hidden="true"

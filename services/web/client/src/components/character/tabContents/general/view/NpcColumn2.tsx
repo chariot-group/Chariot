@@ -30,22 +30,22 @@ export default function NpcColumn2({ npc, accentColor, className }: NpcColumn2Pr
             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {t("savingThrows")}
           </h2>
+          <div
+            className="grid grid-cols-3 gap-x-2 gap-y-1"
+            role="list">
+            {npc?.stats &&
+              Object.entries(npc?.stats?.savingThrows).map(([key]) => {
+                return (
+                  <SavingThrow
+                    key={key}
+                    skillName={key as keyof typeof npc.stats.abilityScores}
+                    accentColor={accentColor}
+                    stats={npc?.stats}
+                  />
+                );
+              })}
+          </div>
         </Card>
-        <div
-          className="grid grid-cols-3 gap-x-2 gap-y-1"
-          role="list">
-          {npc?.stats &&
-            Object.entries(npc?.stats?.savingThrows).map(([key]) => {
-              return (
-                <SavingThrow
-                  key={key}
-                  skillName={key as keyof typeof npc.stats.abilityScores}
-                  accentColor={accentColor}
-                  stats={npc?.stats}
-                />
-              );
-            })}
-        </div>
       </div>
 
       {/* Compétences */}
@@ -59,8 +59,8 @@ export default function NpcColumn2({ npc, accentColor, className }: NpcColumn2Pr
             className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
             {t("skills")}
           </h2>
+          <SkillsNpc stats={npc?.stats} />
         </Card>
-        <SkillsNpc stats={npc?.stats} />
       </div>
     </section>
   );
