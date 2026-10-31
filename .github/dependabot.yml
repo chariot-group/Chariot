@@ -31,9 +31,6 @@ updates:
       # typescript-eslint peer is still <6.1.0; TS 7 breaks npm ci
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
-      # nest-winston / nestjs-prometheus peers still stop at Nest 11
-      - dependency-name: "@nestjs/*"
-        update-types: ["version-update:semver-major"]
 
   # npm — gateway
   - package-ecosystem: "npm"
@@ -54,9 +51,6 @@ updates:
       - dependency-name: "@stripe/*"
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
-      # nest-winston / nestjs-prometheus peers still stop at Nest 11
-      - dependency-name: "@nestjs/*"
-        update-types: ["version-update:semver-major"]
 
   # npm — session
   - package-ecosystem: "npm"
@@ -76,9 +70,6 @@ updates:
       - dependency-name: "stripe"
       - dependency-name: "@stripe/*"
       - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
-      # nest-winston / nestjs-prometheus peers still stop at Nest 11
-      - dependency-name: "@nestjs/*"
         update-types: ["version-update:semver-major"]
 
   # npm — web
@@ -137,9 +128,6 @@ updates:
     ignore:
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
-      # nest-winston peers still stop at Nest 11
-      - dependency-name: "@nestjs/*"
-        update-types: ["version-update:semver-major"]
 
   # npm — payment
   - package-ecosystem: "npm"
@@ -159,9 +147,6 @@ updates:
       - dependency-name: "stripe"
         update-types: ["version-update:semver-major"]
       - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
-      # @nestjs/swagger 12 requires Nest 12: migrate all services together
-      - dependency-name: "@nestjs/*"
         update-types: ["version-update:semver-major"]
 
   # npm — load-test
