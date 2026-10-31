@@ -1,28 +1,32 @@
 version: 2
 
-multi-ecosystem-groups:
-  weekend-nightly:
-    schedule:
-      interval: "cron"
-      cronjob: "0 2 * * 0,6"
-      timezone: "Europe/Paris"
-    open-pull-requests-limit: 1
-
 updates:
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
 
   # npm — adventure
   - package-ecosystem: "npm"
     directory: "/services/adventure/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
     versioning-strategy: increase
+    groups:
+      adventure-minor-and-patch:
+        update-types: ["minor", "patch"]
+      adventure-major:
+        update-types: ["major"]
     ignore:
       # typescript-eslint peer is still <6.1.0; TS 7 breaks npm ci
       - dependency-name: "typescript"
@@ -34,10 +38,17 @@ updates:
   # npm — gateway
   - package-ecosystem: "npm"
     directory: "/services/gateway/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
     versioning-strategy: increase
+    groups:
+      gateway-minor-and-patch:
+        update-types: ["minor", "patch"]
+      gateway-major:
+        update-types: ["major"]
     ignore:
       - dependency-name: "stripe"
       - dependency-name: "@stripe/*"
@@ -50,10 +61,17 @@ updates:
   # npm — session
   - package-ecosystem: "npm"
     directory: "/services/session/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
     versioning-strategy: increase
+    groups:
+      session-minor-and-patch:
+        update-types: ["minor", "patch"]
+      session-major:
+        update-types: ["major"]
     ignore:
       - dependency-name: "stripe"
       - dependency-name: "@stripe/*"
@@ -66,44 +84,56 @@ updates:
   # npm — web
   - package-ecosystem: "npm"
     directory: "/services/web/client"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
     versioning-strategy: increase
+    groups:
+      web-minor-and-patch:
+        update-types: ["minor", "patch"]
+      web-major:
+        update-types: ["major"]
     ignore:
       # typescript-eslint peer is still <6.1.0; TS 7 has no programmatic API
       # (crash: Cannot read properties of undefined (reading 'Cjs'))
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
 
-  # Docker — adventure
-  - package-ecosystem: "docker"
-    directory: "/services/adventure/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
-
-  # Docker — gateway
-  - package-ecosystem: "docker"
-    directory: "/services/gateway/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
-
-  # Docker — session
-  - package-ecosystem: "docker"
-    directory: "/services/session/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+  # npm — admin
+  - package-ecosystem: "npm"
+    directory: "/services/admin/client"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    groups:
+      admin-minor-and-patch:
+        update-types: ["minor", "patch"]
+      admin-major:
+        update-types: ["major"]
+    ignore:
+      # typescript-eslint peer is still <6.1.0; TS 7 has no programmatic API
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # npm — media
   - package-ecosystem: "npm"
     directory: "/services/media/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
     versioning-strategy: increase
+    groups:
+      media-minor-and-patch:
+        update-types: ["minor", "patch"]
+      media-major:
+        update-types: ["major"]
     ignore:
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
@@ -114,10 +144,17 @@ updates:
   # npm — payment
   - package-ecosystem: "npm"
     directory: "/services/payment/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
     versioning-strategy: increase
+    groups:
+      payment-minor-and-patch:
+        update-types: ["minor", "patch"]
+      payment-major:
+        update-types: ["major"]
     ignore:
       - dependency-name: "stripe"
         update-types: ["version-update:semver-major"]
@@ -127,23 +164,113 @@ updates:
       - dependency-name: "@nestjs/*"
         update-types: ["version-update:semver-major"]
 
+  # npm — load-test
+  - package-ecosystem: "npm"
+    directory: "/tools/load-test"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    groups:
+      load-test-minor-and-patch:
+        update-types: ["minor", "patch"]
+      load-test-major:
+        update-types: ["major"]
+
+  # Docker — adventure
+  - package-ecosystem: "docker"
+    directory: "/services/adventure/api"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      docker-adventure:
+        patterns: ["*"]
+
+  # Docker — gateway
+  - package-ecosystem: "docker"
+    directory: "/services/gateway/api"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      docker-gateway:
+        patterns: ["*"]
+
+  # Docker — session
+  - package-ecosystem: "docker"
+    directory: "/services/session/api"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      docker-session:
+        patterns: ["*"]
+
   # Docker — media
   - package-ecosystem: "docker"
     directory: "/services/media/api"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      docker-media:
+        patterns: ["*"]
+
+  # Docker — payment
+  - package-ecosystem: "docker"
+    directory: "/services/payment/api"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      docker-payment:
+        patterns: ["*"]
+
+  # Docker — admin
+  - package-ecosystem: "docker"
+    directory: "/services/admin/client"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      docker-admin:
+        patterns: ["*"]
 
   # Docker — sso
   - package-ecosystem: "docker"
     directory: "/services/sso"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      docker-sso:
+        patterns: ["*"]
 
   # Docker — web
   - package-ecosystem: "docker"
     directory: "/services/web/client"
-    multi-ecosystem-group: "weekend-nightly"
-    patterns:
-      - "*"
+    schedule:
+      interval: "cron"
+      cronjob: "0 2 * * 0,6"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 5
+    groups:
+      docker-web:
+        patterns: ["*"]
