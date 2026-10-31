@@ -1,6 +1,6 @@
 import { Player } from "@/types/character";
 import { Controller, UseFormReturn, useFieldArray, FieldValues, useFormState } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -23,10 +23,12 @@ import SensesUpdateSection from "@/components/character/tabContents/general/shar
 interface PlayerGeneralTabEditProps {
   player: Player;
   accentColor: string;
+  /** @see FR-character-detail-view */
+  avatar?: ReactNode;
   form: UseFormReturn<FieldValues>;
 }
 
-export default function PlayerGeneralTabEdit({ player, accentColor, form }: PlayerGeneralTabEditProps) {
+export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form }: PlayerGeneralTabEditProps) {
   type PlayerClassEntry = { name?: string; level?: number | string };
 
   const t = useTranslations("characterDetail.player.general");
@@ -109,11 +111,14 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
             className="gap-3 py-4 px-4 md:px-6"
             role="region"
             aria-labelledby="character-profile">
-            <h2
-              id="character-profile-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("character")}
-            </h2>
+            <div className="flex items-start justify-between gap-3">
+              <h2
+                id="character-profile-edit"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("character")}
+              </h2>
+              {avatar ? <div className="shrink-0">{avatar}</div> : null}
+            </div>
             <div className="flex flex-col gap-4">
               {/* Noms du personnage */}
               <div className="grid grid-cols-2 gap-3">

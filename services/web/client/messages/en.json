@@ -789,9 +789,6 @@
     }
   },
   "characterCreate": {
-    "titlePlayer": "Create a player character",
-    "titleNpc": "Create an NPC",
-    "description": "Fill in the complete character sheet. You can modify this information later from the sheet.",
     "cancel": "Cancel",
     "create": "Create",
     "saving": "Creating..."
@@ -902,7 +899,6 @@
       "success": "Sheet exported as PDF.",
       "error": "Could not export sheet as PDF."
     },
-    "playedBy": "Played by {name}",
     "classLevelShort": "{className} Lvl {level}",
     "saveChanges": "Save changes",
     "saving": "Saving...",

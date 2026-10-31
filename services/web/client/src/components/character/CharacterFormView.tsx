@@ -26,8 +26,6 @@ import {
 } from "@/utils/keyboard.utils";
 import { toast } from "react-toastify";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
-import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
-import { CharacterSheetHeader } from "@/components/character/CharacterSheetHeader";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -347,12 +345,6 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const { errors } = useFormState({ control: form.control });
   const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
 
-  const watchedFirstname = form.watch("firstname");
-  const watchedLastname = form.watch("lastname");
-  const watchedSurname = form.watch("surname");
-  const headerFullName = [watchedFirstname?.trim(), watchedLastname?.trim()].filter(Boolean).join(" ");
-  const createTitleFallback = characterType === "players" ? tCreate("titlePlayer") : tCreate("titleNpc");
-
   const hasAppliedCodexDefaultsRef = useRef(false);
 
   useEffect(() => {
@@ -670,28 +662,12 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           value={activeTab}
           onValueChange={handleTabChange}
           className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Header avec onglets et titre de création */}
+          {/* Navbar des onglets (pas d'en-tête d'identité, cf. FR-character-detail-view) */}
           <div className="shrink-0">
-            <div className="mx-auto sm:px-6 md:px-8 px-2">
-              <CharacterSheetHeader
-                identity={
-                  <CharacterSheetHeaderIdentity
-                    fullName={headerFullName}
-                    surname={watchedSurname}
-                    emptyNameFallback={createTitleFallback}
-                    subtitle={
-                      <div className="font-semibold text-white">
-                        <span>{tCreate("description")}</span>
-                      </div>
-                    }
-                  />
-                }
-                tabs={
-                  <CharacterTabs
-                    activeTab={activeTab}
-                    tabsWithErrors={tabsWithErrors}
-                  />
-                }
+            <div className="mx-auto sm:px-6 md:px-8 px-2 pb-2">
+              <CharacterTabs
+                activeTab={activeTab}
+                tabsWithErrors={tabsWithErrors}
               />
             </div>
           </div>

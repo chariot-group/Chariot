@@ -24,12 +24,9 @@ import {
   isModalOverlayOpen,
   isTypingInInputElement,
 } from "@/utils/keyboard.utils";
-import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
-import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
-import { CharacterSheetHeader } from "@/components/character/CharacterSheetHeader";
 import { CombatBanner } from "@/components/character/CombatBanner";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
@@ -60,8 +57,6 @@ export default function CharacterDetailView({
 }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tForm = useTranslations("characterForm");
-  const tClass = useTranslations("classes");
-  const tCommon = useTranslations("common");
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -285,16 +280,7 @@ export default function CharacterDetailView({
 
   const displayedAvatarStoredValue = form.watch("avatar") || character.avatar;
 
-  const watchedFirstname = form.watch("firstname");
-  const watchedLastname = form.watch("lastname");
-  const watchedSurname = form.watch("surname");
-
-  const headerFirstname = isEditing ? (watchedFirstname ?? character.firstname) : character.firstname;
-  const headerLastname = isEditing ? (watchedLastname ?? character.lastname) : character.lastname;
-  const headerSurname = isEditing ? (watchedSurname ?? character.surname) : character.surname;
-
-  const headerFullName = [headerFirstname?.trim(), headerLastname?.trim()].filter(Boolean).join(" ");
-  const characterDisplayName = headerFullName || t("placeholder.noImage");
+  const avatarAlt = formatCharacterName(character) || t("placeholder.noImage");
 
   const handleInvalid = React.useCallback(
     (errors: Record<string, unknown>) => {
@@ -538,6 +524,33 @@ export default function CharacterDetailView({
 
   const sheetFooterBar = characterFooterActions;
 
+  const generalTabAvatar =
+    isEditing && showEditControls ? (
+      <MediaAvatarUpload
+        scope="character"
+        entityId={character._id}
+        storedValue={editingAvatarStoredValue}
+        sessionCode={sessionCodeForMedia}
+        size="sheet"
+        alt={avatarAlt}
+        deferUpload
+        previewUrl={avatarPreviewUrl}
+        onPendingFile={handlePendingAvatarFile}
+        onPendingRemove={handlePendingAvatarRemove}
+        disabled={isSaving || isAvatarCommitting}
+      />
+    ) : (
+      <MediaAvatar
+        scope="character"
+        entityId={character._id}
+        storedValue={displayedAvatarStoredValue}
+        sessionCode={sessionCodeForMedia}
+        size="sheet"
+        alt={avatarAlt}
+        priority
+      />
+    );
+
   return (
     <main
       className="flex flex-col flex-1 min-h-0 overflow-hidden"
@@ -563,103 +576,13 @@ export default function CharacterDetailView({
           value={activeTab}
           onValueChange={handleTabChange}
           className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Header avec onglets et infos du personnage */}
+          {/* Navbar des onglets (pas d'en-tête d'identité, cf. FR-character-detail-view) */}
           <div className="shrink-0">
-            <div className="mx-auto sm:px-6 md:px-8 px-2">
-              <CharacterSheetHeader
-                identity={
-                  <CharacterSheetHeaderIdentity
-                    fullName={headerFullName}
-                    surname={headerSurname}
-                    emptyNameFallback={t("placeholder.noImage")}
-                    tooltipContent={
-                      <div className="flex flex-col gap-1">
-                        <span>
-                          {headerFullName}
-                          {headerSurname?.trim() ? ` (${headerSurname.trim()})` : ""}
-                        </span>
-                        {isGmViewingPlayerSheet && playedByLabel ? (
-                          <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
-                        ) : null}
-                      </div>
-                    }
-                    subtitle={
-                      isPlayer(character) ? (
-                        <div className="flex flex-col gap-1 font-semibold text-white">
-                          <div>
-                            {character.class.map((cls: { name: string; level: number }, index: number) => (
-                              <span key={index}>
-                                {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
-                                {index < character.class.length - 1 && " / "}
-                              </span>
-                            ))}
-                          </div>
-                          {isGmViewingPlayerSheet && playedByLabel ? (
-                            <span className="text-xs font-normal text-gray-light">
-                              {t("playedBy", { name: playedByLabel })}
-                            </span>
-                          ) : null}
-                        </div>
-                      ) : (
-                        <div className="flex min-w-0 flex-col gap-1 font-semibold text-white">
-                          <div>
-                            {(() => {
-                              const challengeRating = character.challenge?.challengeRating ?? 0;
-                              const experiencePoints = character.challenge?.experiencePoints ?? 0;
-                              const displayChallengeRating = formatChallengeRating(challengeRating);
-
-                              return (
-                                <React.Fragment>
-                                  <InfoTooltip
-                                    content={tCommon("challengeRatingTooltip")}
-                                    side="bottom"
-                                    moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                                    <abbr className="cursor-help no-underline">{t("npc.challengeRatingAbbr")}</abbr>
-                                  </InfoTooltip>{" "}
-                                  {displayChallengeRating} ({experiencePoints} XP)
-                                </React.Fragment>
-                              );
-                            })()}
-                          </div>
-                        </div>
-                      )
-                    }
-                  />
-                }
-                tabs={
-                  <CharacterTabs
-                    activeTab={activeTab}
-                    tabs={availableTabs}
-                    tabsWithErrors={isEditing ? tabsWithErrors : undefined}
-                  />
-                }
-                avatar={
-                  isEditing && showEditControls ? (
-                    <MediaAvatarUpload
-                      scope="character"
-                      entityId={character._id}
-                      storedValue={editingAvatarStoredValue}
-                      sessionCode={sessionCodeForMedia}
-                      size="sheet"
-                      alt={characterDisplayName}
-                      deferUpload
-                      previewUrl={avatarPreviewUrl}
-                      onPendingFile={handlePendingAvatarFile}
-                      onPendingRemove={handlePendingAvatarRemove}
-                      disabled={isSaving || isAvatarCommitting}
-                    />
-                  ) : (
-                    <MediaAvatar
-                      scope="character"
-                      entityId={character._id}
-                      storedValue={displayedAvatarStoredValue}
-                      sessionCode={sessionCodeForMedia}
-                      size="sheet"
-                      alt={characterDisplayName}
-                      priority
-                    />
-                  )
-                }
+            <div className="mx-auto sm:px-6 md:px-8 px-2 pb-2">
+              <CharacterTabs
+                activeTab={activeTab}
+                tabs={availableTabs}
+                tabsWithErrors={isEditing ? tabsWithErrors : undefined}
               />
             </div>
           </div>
@@ -675,6 +598,7 @@ export default function CharacterDetailView({
               onCharacterUpdate={onCharacterUpdate}
               showSessionGmCompanionsTab={showSessionGmCompanionsTab}
               liaisonActionsEnabled={!showSessionGmCompanionsTab}
+              generalAvatar={generalTabAvatar}
             />
           </div>
         </Tabs>

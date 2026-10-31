@@ -790,9 +790,6 @@
     }
   },
   "characterCreate": {
-    "titlePlayer": "Créer un personnage joueur",
-    "titleNpc": "Créer un PNJ",
-    "description": "Remplissez la fiche complète du personnage. Vous pourrez modifier ces informations plus tard depuis la fiche.",
     "cancel": "Annuler",
     "create": "Créer",
     "saving": "Création..."
@@ -903,7 +900,6 @@
       "success": "Fiche exportée en PDF.",
       "error": "Impossible d'exporter la fiche en PDF."
     },
-    "playedBy": "Joué par {name}",
     "classLevelShort": "{className} Niv. {level}",
     "saveChanges": "Sauvegarder",
     "saving": "Sauvegarde...",

@@ -13,6 +13,7 @@ import { NPC, Player } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
+import type { ReactNode } from "react";
 interface CharacterTabPanelsProps {
     character: Player | NPC;
     form: UseCharacterFormReturn["form"];
@@ -21,6 +22,8 @@ interface CharacterTabPanelsProps {
     /** @see FR-session-player-companion-combatants */
     showSessionGmCompanionsTab?: boolean;
     liaisonActionsEnabled?: boolean;
+    /** Avatar shown in the General tab « Personnage » card. @see FR-character-detail-view */
+    generalAvatar?: ReactNode;
 }
 
 export default function CharacterTabPanels({
@@ -30,6 +33,7 @@ export default function CharacterTabPanels({
     onCharacterUpdate,
     showSessionGmCompanionsTab = false,
     liaisonActionsEnabled = true,
+    generalAvatar,
 }: CharacterTabPanelsProps) {
     const contextMode = useAppSelector(selectContextMode);
     const tabs: readonly CharacterTab[] = tabsForCharacterSheet(
@@ -59,6 +63,7 @@ export default function CharacterTabPanels({
                                         form={form}
                                         isEditing={isEditing}
                                         onCharacterUpdate={onCharacterUpdate}
+                                        avatar={generalAvatar}
                                     />
                                 );
                             case "battle":
