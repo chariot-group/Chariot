@@ -146,6 +146,18 @@ export function buildCodexPreselectionPath(
   });
 }
 
+/**
+ * Whether closing the Codex dialog must leave the route for the user's Player space.
+ * Only for an opened share link in Player space: there is no history to go back to. Other flows keep `router.back()`.
+ */
+export function shouldRedirectOnCodexClose(flow: {
+  context?: unknown;
+  linkedPlayerId?: string | null;
+  fromShareLink: boolean;
+}): boolean {
+  return flow.fromShareLink && !flow.context && !flow.linkedPlayerId?.trim();
+}
+
 /** Parses the dialog's `kind:id:lang` selection key (see MonsterCodexDialog). */
 export function parseCodexSelectionKey(
   key: string | null,

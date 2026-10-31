@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  shouldRedirectOnCodexClose,
   buildCodexDraftFormPath,
   buildCreateCharacterPath,
   campaignContextFromParams,
@@ -188,5 +189,25 @@ describe("FR-codex-share-link-preselection — URL mirroring", () => {
     expect(parseCodexSelectionKey(null)).toBeNull();
     expect(parseCodexSelectionKey("npc:abc:fr")).toBeNull();
     expect(parseCodexSelectionKey("player")).toBeNull();
+  });
+});
+
+describe("FR-codex-share-link-preselection — close without confirming", () => {
+  it("nominal: an opened share link in Player space redirects on close", () => {
+    expect(shouldRedirectOnCodexClose({ fromShareLink: true })).toBe(true);
+  });
+
+  it("edge: blank linkedPlayerId still counts as Player space", () => {
+    expect(shouldRedirectOnCodexClose({ linkedPlayerId: "  ", fromShareLink: true })).toBe(true);
+  });
+
+  it("guard: free search (no share link) keeps the default back navigation", () => {
+    expect(shouldRedirectOnCodexClose({ fromShareLink: false })).toBe(false);
+  });
+
+  it("guard: campaign and create-linked flows do not redirect", () => {
+    const context = { campaignId: "c", groupId: "g" };
+    expect(shouldRedirectOnCodexClose({ context, fromShareLink: true })).toBe(false);
+    expect(shouldRedirectOnCodexClose({ linkedPlayerId: "p1", fromShareLink: true })).toBe(false);
   });
 });

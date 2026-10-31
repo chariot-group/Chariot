@@ -1,15 +1,15 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useLocale } from "next-intl";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import MonsterCodexDialog from "@/components/character/MonsterCodexDialog";
+import { useStore } from "react-redux";
+import type { RootState } from "@/store";
+import NavigationService from "@/services/NavigationService";
+import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useAppDispatch } from "@/store/hooks";
-import {
-  clearCodexDrafts,
-  setNpcCodexDraft,
-  setPlayerCodexDraft,
-} from "@/store/slices/codexDraftSlice";
+import { clearCodexDrafts, setNpcCodexDraft, setPlayerCodexDraft } from "@/store/slices/codexDraftSlice";
 import { useSidebar } from "@/components/ui/sidebar";
 import {
   buildCodexDraftFormPath,
@@ -17,6 +17,7 @@ import {
   campaignContextFromParams,
   linkedCreateCodexEntityLock,
   parseCodexPreselection,
+  shouldRedirectOnCodexClose,
   type CodexCreateSelection,
   type CodexPreselectionKind,
 } from "@/lib/codexCharacterCreate";
@@ -28,11 +29,12 @@ import {
  * @see FR-npc-player-link
  * @see FR-codex-share-link-preselection
  */
-export default function CreateCharacterFromCodexView() {
+function CreateCharacterFromCodexContent() {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
+  const store = useStore<RootState>();
   const { setOpenMobile } = useSidebar();
   const [isDialogOpen, setIsDialogOpen] = useState(true);
   const linkedPlayerId = searchParams.get("linkedPlayerId");
@@ -60,10 +62,12 @@ export default function CreateCharacterFromCodexView() {
 
   // Mirror the previewed entry in the URL (Player space only) so it can be copied and shared.
   const shouldMirrorUrl = !context && !linkedPlayerId?.trim();
+  // Closing clears the previewed entry: mirroring that would swap the route and reopen the dialog.
+  const isClosingRef = useRef(false);
 
   const handlePreviewedEntryChange = useCallback(
     (entry: { kind: CodexPreselectionKind; id: string; lang: string | null } | null) => {
-      if (!shouldMirrorUrl) return;
+      if (!shouldMirrorUrl || isClosingRef.current) return;
       // Next.js syncs native history calls with its router: the URL changes without a navigation.
       window.history.replaceState(null, "", buildCodexPreselectionPath(locale, entry));
     },
@@ -80,10 +84,23 @@ export default function CreateCharacterFromCodexView() {
     router.push(buildCodexDraftFormPath(selection.kind, context, { linkedPlayerId }));
   };
 
+  const redirectOnClose = shouldRedirectOnCodexClose({
+    context,
+    linkedPlayerId,
+    fromShareLink: Boolean(codexId),
+  });
+
   const handleDialogClose = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
+      isClosingRef.current = true;
       dispatch(clearCodexDrafts());
+      if (redirectOnClose) {
+        // First Player-space character, else the welcome page.
+        void NavigationService.determinePlayerSpaceDestination(locale, dispatch, store.getState.bind(store)).then(
+          (destination) => router.replace(destination.path),
+        );
+      }
     }
   };
 
@@ -97,7 +114,18 @@ export default function CreateCharacterFromCodexView() {
         initialSelection={preselection}
         initialSelectionInvalid={preselectionInvalid}
         onPreviewedEntryChange={handlePreviewedEntryChange}
+        skipBackOnClose={redirectOnClose}
       />
     </div>
   );
+}
+
+/**
+ * The share link loads its entry on open: mount only once the SSO session is ready. The link params
+ * are frozen when the content mounts, so they must be read after the login redirect has settled.
+ */
+export default function CreateCharacterFromCodexView() {
+  const { loading, authenticated, userTransitioning } = useKeycloak();
+  if (loading || userTransitioning || !authenticated) return null;
+  return <CreateCharacterFromCodexContent />;
 }

@@ -42,6 +42,7 @@ import {
   type CodexCreateSelection,
   type CodexPreselection,
 } from "@/lib/codexCharacterCreate";
+import { createStackedDialogGate } from "@/lib/stackedDialogGate";
 import React from "react";
 
 type CodexEntityTypeFilter = "both" | "monsters" | "players";
@@ -65,6 +66,8 @@ interface MonsterCodexDialogProps {
   onPreviewedEntryChange?: (entry: { kind: "player" | "monster"; id: string; lang: string | null } | null) => void;
   /** The link carried a Codex ID but its params were invalid: show the fallback error. */
   initialSelectionInvalid?: boolean;
+  /** The parent navigates on close: skip the default `router.back()`. */
+  skipBackOnClose?: boolean;
   /** Shared portaled filter tracker when embedded in a parent dialog. */
   sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
 }
@@ -246,6 +249,7 @@ export default function MonsterCodexDialog({
   onMonsterSelected,
   browseOnly = false,
   embedded = false,
+  skipBackOnClose = false,
   lockedEntityTypeFilter,
   initialSelection,
   initialSelectionInvalid = false,
@@ -295,9 +299,26 @@ export default function MonsterCodexDialog({
     [portaledFilterOpenTracker],
   );
 
+  // Another dialog stacked on top (e.g. release notes) must close alone, not take this one with it.
+  const stackedDialogGateRef = useRef<ReturnType<typeof createStackedDialogGate> | null>(null);
+  useEffect(() => {
+    const gate = createStackedDialogGate(document);
+    stackedDialogGateRef.current = gate;
+    window.addEventListener("keydown", gate.snapshot, true);
+    window.addEventListener("pointerdown", gate.snapshot, true);
+    return () => {
+      window.removeEventListener("keydown", gate.snapshot, true);
+      window.removeEventListener("pointerdown", gate.snapshot, true);
+      stackedDialogGateRef.current = null;
+    };
+  }, []);
+
   const shouldPreventDialogOutsideDismiss = useCallback(
     (target: EventTarget | null) => {
-      return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target);
+      return (
+        stackedDialogGateRef.current?.shouldIgnoreDismiss() === true ||
+        shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target)
+      );
     },
     [portaledFilterOpenTracker],
   );
@@ -721,7 +742,7 @@ export default function MonsterCodexDialog({
 
   const handleClose = () => {
     onOpenChange(false);
-    if (!browseOnly && !embedded) {
+    if (!browseOnly && !embedded && !skipBackOnClose) {
       router.back();
     }
   };
@@ -1106,6 +1127,12 @@ export default function MonsterCodexDialog({
       }}>
       <DialogContent
         className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        data-own-dialog=""
+        onEscapeKeyDown={(event) => {
+          if (stackedDialogGateRef.current?.shouldIgnoreDismiss()) {
+            event.preventDefault();
+          }
+        }}
         onPointerDownOutside={(event) => {
           const target = event.detail.originalEvent?.target ?? event.target;
           if (shouldPreventDialogOutsideDismiss(target)) {

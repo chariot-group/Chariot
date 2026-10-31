@@ -5052,13 +5052,15 @@ Each initiative tracker row carries:
 - On open, the Codex dialog MUST load the entry by ID and `kind`, hydrate its translation for the resolved `lang` (same logic as a manual row click), show the preview, and enable the confirm action.
 - The entity-type filter MUST be locked to the link `kind`.
 - Confirming MUST follow the existing flow: store the kind-preserving draft, then continue to `/characters/new/players?fromCodex=1` or `/characters/new/npcs?fromCodex=1`. Created characters MUST have empty `groups`.
-- Closing the dialog without confirming MUST clear drafts (FR-player-space-codex-character-creation).
+- Closing the dialog without confirming (cancel, Escape, overlay) MUST clear drafts (FR-player-space-codex-character-creation). When the dialog was opened from a share link in Player space (no history to go back to), it MUST also leave the create route and land on the user's Player space: their first character without group (`/{locale}/characters/{id}`), or `/{locale}/welcome` only when they have none (same resolution as `determinePlayerSpaceDestination`); navigation uses `router.replace`, no `router.back()`; the dialog MUST NOT reopen, and URL mirroring MUST NOT rewrite the URL back to `/{locale}/characters/new/codex` as a consequence of closing. The free-search route, the campaign-group flow and the « create linked » flow keep their existing close behavior.
 - If `kind` is missing/invalid, `codexId` has an invalid format, the entry is not found, or Codex is unavailable (`useCodexHealth`), the dialog MUST fall back to the normal Codex search and show an accessible error message (`role="alert"`, i18n). It MUST NOT crash or leave an empty preview.
+- Another dialog stacked over the Codex dialog (e.g. the release notes shown right after login) MUST close alone: the dismiss gesture that closes it (Escape, outside press) MUST NOT also close the Codex dialog.
 - The preselection MUST be applied once per opening and MUST NOT be overwritten by the dialog's reset-on-open logic.
 
 **Authentication (SSO)**:
 
 - If the user is not authenticated when opening the link, the application MUST redirect to SSO and, after login, return to the **original link including path and query** (Keycloak `login-required` returns to the current URL), instead of `/{locale}/welcome`.
+- The Codex dialog MUST NOT mount (and so MUST NOT load the entry) until the SSO session is ready, otherwise the load fails without a token and shows the fallback error.
 - The post-login automatic redirect (FR-post-auth-navigation, `shouldRedirectAfterLogin`) MUST NOT fire on `/characters/...` paths, so it never replaces the link.
 - The application MUST NOT introduce a custom `redirectUri` built from a query value (no open redirect).
 - The return URL MUST be allowed by the SSO client configuration (valid redirect URIs).
