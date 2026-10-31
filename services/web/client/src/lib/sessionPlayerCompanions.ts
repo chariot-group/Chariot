@@ -34,12 +34,24 @@ export function assignedPlayerIdsSignature(playerIds: string[]): string {
   return [...playerIds].sort().join("|");
 }
 
+/** Stable display order for nested companion lists (sidebar, lobby, sheets). */
+export function sortCompanionsByDisplayName(npcs: NPC[]): NPC[] {
+  return [...npcs].sort((left, right) =>
+    characterDisplayName(left).localeCompare(characterDisplayName(right), undefined, {
+      sensitivity: "base",
+    }),
+  );
+}
+
 export function companionsGroupedByPlayerId(npcs: NPC[]): Record<string, NPC[]> {
   const grouped: Record<string, NPC[]> = {};
   for (const npc of npcs) {
     const playerId = linkedPlayerIdOf(npc);
     if (!playerId) continue;
     (grouped[playerId] ??= []).push(npc);
+  }
+  for (const playerId of Object.keys(grouped)) {
+    grouped[playerId] = sortCompanionsByDisplayName(grouped[playerId] ?? []);
   }
   return grouped;
 }
@@ -68,7 +80,9 @@ export function ungroupedSessionCompanions(
 export function companionsOfPlayer(npcs: NPC[], playerId: string): NPC[] {
   const target = normalizeCharacterId(playerId);
   if (!target) return [];
-  return npcs.filter((npc) => linkedPlayerIdOf(npc) === target);
+  return sortCompanionsByDisplayName(
+    npcs.filter((npc) => linkedPlayerIdOf(npc) === target),
+  );
 }
 
 export function withNormalizedLinkedPlayerId(npc: NPC): NPC {

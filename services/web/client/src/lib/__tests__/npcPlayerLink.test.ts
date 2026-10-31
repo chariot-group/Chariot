@@ -49,6 +49,16 @@ describe("FR-npc-player-link — player sidebar rows", () => {
     expect(rows[0].companions.map((c) => c._id)).toEqual(["n1", "n2"]);
   });
 
+  it("nominal: nested companions are sorted by display name", () => {
+    const hawk = npc("n-hawk", "p1");
+    hawk.firstname = "Hawk";
+    const wolf = npc("n-wolf", "p1");
+    wolf.firstname = "Wolf";
+    const rows = buildPlayerSidebarRows([player("p1")], [], [wolf, hawk]);
+    if (rows[0].type !== "player") throw new Error("expected player row");
+    expect(rows[0].companions.map((c) => c._id)).toEqual(["n-hawk", "n-wolf"]);
+  });
+
   it("edge: unlinked without-group NPCs appear as root rows", () => {
     const rows = buildPlayerSidebarRows([player("p1")], [npc("n-root")], [npc("n-linked", "p1")]);
 

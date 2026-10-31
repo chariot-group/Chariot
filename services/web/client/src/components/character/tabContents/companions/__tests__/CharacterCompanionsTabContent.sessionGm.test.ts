@@ -26,6 +26,7 @@ describe("FR-session-player-companion-combatants — companions tab without liai
     expect(tab).toContain("sessionCode: sessionCodeForLookup");
     expect(tab).toContain("showLiaisonActions");
     expect(tab).toContain("isEditing={showLiaisonActions}");
+    expect(tab).toContain("showLiaisonActions = canManageLiaisons");
   });
 
   it("edge: owner fetch in Player space does not send sessionCode", () => {
@@ -34,9 +35,10 @@ describe("FR-session-player-companion-combatants — companions tab without liai
     expect(tab).not.toContain("canManageLiaisons ? null : sessionCode");
   });
 
-  it("failure: session GM does not persist linkedPlayerId from the companions tab", () => {
+  it("failure: session GM does not expose liaison persist actions", () => {
     const tab = readSource(tabPath);
-    expect(tab).toContain("if (!canManageLiaisons)");
-    expect(tab).toContain("persistRef.current = null");
+    expect(tab).toContain("canManageLiaisons = liaisonActionsEnabled");
+    expect(tab).toContain("showLiaisonActions = canManageLiaisons");
+    expect(tab).toContain("persistSidebarNpcLinkedPlayer");
   });
 });

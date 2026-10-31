@@ -2,6 +2,7 @@
 
 import { characterDisplayName } from "@/lib/duplicateName";
 import { normalizeCharacterId } from "@/lib/normalizeCharacterId";
+import { sortCompanionsByDisplayName } from "@/lib/sessionPlayerCompanions";
 import type { Character, NPC } from "@/types/character";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 
@@ -53,7 +54,7 @@ export function buildPlayerSidebarRows(
     .map((player) => ({
       type: "player" as const,
       character: player,
-      companions: companionsByPlayerId.get(player._id) ?? [],
+      companions: sortCompanionsByDisplayName(companionsByPlayerId.get(player._id) ?? []),
     }));
 
   for (const npc of unlinkedNpcs) {
@@ -121,8 +122,8 @@ export type CompanionLinkOp = {
 };
 
 /**
- * Queues a draft link/unlink. Selecting then reverting to the original value drops the op.
- * Persistence happens only when the Player form is saved.
+ * Queues a draft link/unlink for tests and legacy batch helpers.
+ * Companions tab and sidebar persist immediately via `persistSidebarNpcLinkedPlayer`.
  */
 export function queueCompanionLinkOp(
   ops: CompanionLinkOp[],
@@ -205,8 +206,9 @@ export function npcLinkedPlayerUpdatePayload(linkedPlayerId: string | null): {
 }
 
 /**
- * Persists `linkedPlayerId` immediately (sidebar, not Companions draft).
+ * Persists `linkedPlayerId` immediately (sidebar and Companions tab).
  * @see FR-sidebar-npc-link
+ * @see FR-npc-player-link
  */
 export async function persistSidebarNpcLinkedPlayer(
   npc: NPC,

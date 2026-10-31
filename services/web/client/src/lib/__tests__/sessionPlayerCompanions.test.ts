@@ -10,6 +10,7 @@ import {
   companionsGroupedByPlayerId,
   companionsOfPlayer,
   diffCharacterIds,
+  sortCompanionsByDisplayName,
   ungroupedSessionCompanions,
 } from "@/lib/sessionPlayerCompanions";
 import type { SessionParticipant } from "@/services/SessionService";
@@ -45,14 +46,27 @@ describe("FR-session-player-companion-combatants", () => {
     ).toEqual(["gm-char", "pj-1"]);
   });
 
+  it("nominal: companions sort by display name regardless of input order", () => {
+    expect(
+      sortCompanionsByDisplayName([
+        npc("n2", "pj-1", "Hawk"),
+        npc("n1", "pj-1", "Wolf"),
+      ]).map((item) => item.firstname),
+    ).toEqual(["Hawk", "Wolf"]);
+    expect(companionsOfPlayer([npc("n2", "pj-1", "Hawk"), npc("n1", "pj-1", "Wolf")], "pj-1").map((item) => item._id)).toEqual([
+      "n2",
+      "n1",
+    ]);
+  });
+
   it("nominal: companion names line lists linked NPCs for a player", () => {
     const grouped = companionsGroupedByPlayerId([
       npc("n1", "pj-1", "Wolf"),
       npc("n2", "pj-1", "Hawk"),
       npc("n3", "pj-2", "Cat"),
     ]);
-    expect(companionNamesLine(grouped["pj-1"] ?? [])).toBe("Wolf, Hawk");
-    expect(companionCharacterIds(grouped["pj-1"] ?? [])).toEqual(["n1", "n2"]);
+    expect(companionNamesLine(grouped["pj-1"] ?? [])).toBe("Hawk, Wolf");
+    expect(companionCharacterIds(grouped["pj-1"] ?? [])).toEqual(["n2", "n1"]);
     expect(companionsOfPlayer([npc("n1", "pj-1"), npc("n3", "pj-2")], "pj-1").map((item) => item._id)).toEqual(["n1"]);
   });
 

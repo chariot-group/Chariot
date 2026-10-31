@@ -622,6 +622,48 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
         return trimmed.length > 0 ? trimmed : null;
     }
 
+    /**
+     * Autorise la diffusion WS `session:character-sheet-updated` (émetteur exclu par le gateway).
+     * @see FR-session-player-companion-combatants — PNJ liés hors `participant.characterId`
+     */
+    canBroadcastCharacterSheetUpdate(
+        session: SessionWithParticipants,
+        userId: string,
+        characterId: string,
+        linkedPlayerId?: string,
+    ): { ok: true } | { ok: false; reason: string } {
+        const me = session.participants.find((participant) => participant.userId === userId);
+        if (!me) {
+            return { ok: false, reason: 'Not a session participant' };
+        }
+
+        const cid = this.normalizeSessionCharacterId(characterId);
+        if (!cid) {
+            return { ok: false, reason: 'Missing characterId' };
+        }
+
+        if (me.status === ParticipantStatus.gameMaster) {
+            return { ok: true };
+        }
+
+        const myCharacterId = this.normalizeSessionCharacterId(me.characterId);
+        if (myCharacterId && myCharacterId === cid) {
+            return { ok: true };
+        }
+
+        const linkedId = this.normalizeSessionCharacterId(linkedPlayerId);
+        if (
+            linkedId &&
+            myCharacterId &&
+            linkedId === myCharacterId &&
+            this.isAssignedNonGmCharacter(session, linkedId)
+        ) {
+            return { ok: true };
+        }
+
+        return { ok: false, reason: 'Character is not on this session roster' };
+    }
+
     private isAssignedNonGmCharacter(
         session: { participants: Array<{ status: ParticipantStatus; characterId?: string | null }> },
         characterId: string,

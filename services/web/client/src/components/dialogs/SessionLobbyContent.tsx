@@ -707,9 +707,10 @@ function SessionLobbyParticipantCard({
             placeholder={t("players.selectCharacterPlaceholder")}
             disabled={isChangingCharacter}
             selectedLabel={characterLabel || undefined}
-            triggerClassName="min-h-10 h-auto w-full text-sm data-[size=default]:min-h-10"
+            triggerClassName="w-full text-sm"
             companionCountByCharacterId={companionCountByCharacterId}
             formatCompanionCount={(count) => t("players.companionCount", { count })}
+            formatCompanionCountShort={(count) => t("players.companionCountShort", { count })}
           />
         ) : null}
       </div>

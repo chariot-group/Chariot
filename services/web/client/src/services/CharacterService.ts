@@ -2,6 +2,7 @@ import apiClient from '@/services/ApiService';
 import { emitCharacterSheetUpdated } from '@/lib/sessionCharacterSyncBridge';
 import { getSessionSnapshotForBroadcast } from '@/lib/sessionSnapshot';
 import { Character, PaginatedCharactersResponse, Player, NPC } from '@/types/character';
+import { linkedPlayerIdOf } from '@/lib/npcPlayerLink';
 
 type CharacterType = 'players' | 'npcs';
 
@@ -70,7 +71,9 @@ class CharacterService {
             const updated = response.data.data as Player | NPC;
             const snap = getSessionSnapshotForBroadcast();
             if (snap) {
-                emitCharacterSheetUpdated(snap.code, characterId);
+                emitCharacterSheetUpdated(snap.code, characterId, {
+                    linkedPlayerId: type === 'npcs' ? linkedPlayerIdOf(updated) : undefined,
+                });
             }
             return updated;
         } catch (error) {
@@ -82,9 +85,15 @@ class CharacterService {
     /**
      * Supprime un personnage
      */
-    async deleteCharacter(characterId: string): Promise<void> {
+    async deleteCharacter(
+        characterId: string,
+        options?: { deleteLinkedCompanions?: boolean },
+    ): Promise<void> {
         try {
-            await apiClient().delete(`${this.BASE_PATH}/${characterId}`);
+            const deleteLinkedCompanions = options?.deleteLinkedCompanions === true;
+            await apiClient().delete(`${this.BASE_PATH}/${characterId}`, {
+                params: deleteLinkedCompanions ? { deleteLinkedCompanions: true } : undefined,
+            });
         } catch (error) {
             console.error(`Error deleting character ${characterId}:`, error);
             throw error;

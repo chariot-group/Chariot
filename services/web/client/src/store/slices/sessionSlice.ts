@@ -832,6 +832,21 @@ const sessionSlice = createSlice({
     setSessionCompanionNpcs: (state, action: PayloadAction<NPC[]>) => {
       state.sessionCompanionNpcs = action.payload;
     },
+    /** Met à jour un PNJ dérivé après édition de fiche (sidebar MJ, lobby). */
+    upsertSessionCompanionNpc: (state, action: PayloadAction<NPC>) => {
+      const npc = action.payload;
+      const id = npc._id?.trim();
+      if (!id) return;
+      const list = state.sessionCompanionNpcs ?? [];
+      const index = list.findIndex((item) => item._id === id);
+      if (index === -1) {
+        state.sessionCompanionNpcs = [...list, npc];
+        return;
+      }
+      const next = [...list];
+      next[index] = npc;
+      state.sessionCompanionNpcs = next;
+    },
     /** FR-session-lobby-modal — ouvre la modale lobby session. */
     openSessionLobby: (state) => {
       state.sessionLobbyOpen = true;
@@ -877,6 +892,7 @@ export const {
   addGmGuestCharacterToSession,
   removeGmGuestCharacterFromSession,
   setSessionCompanionNpcs,
+  upsertSessionCompanionNpc,
   openSessionLobby,
   closeSessionLobby,
   setCustomEffectCatalog,

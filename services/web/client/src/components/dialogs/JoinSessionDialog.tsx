@@ -136,7 +136,7 @@ export function JoinSessionDialog({
         <DialogHeader>
           <DialogTitle>{t("joinSessionDialogTitle")}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4 w-full">
+        <div className="flex w-full min-w-0 flex-col gap-4 py-4">
           <InputOTP
             maxLength={6}
             value={code}
@@ -146,7 +146,7 @@ export function JoinSessionDialog({
             }}
             disabled={isJoining}
             autoFocus
-            containerClassName="w-full max-w-full justify-center gap-1 sm:gap-2">
+            containerClassName="mx-auto w-full max-w-full justify-center gap-1 sm:gap-2">
             <InputOTPGroup>
               <InputOTPSlot
                 index={0}
@@ -186,6 +186,7 @@ export function JoinSessionDialog({
             triggerClassName="w-full text-xs"
             companionCountByCharacterId={companionCountByCharacterId}
             formatCompanionCount={(count) => t("joinSessionCompanionCount", { count })}
+            formatCompanionCountShort={(count) => t("joinSessionCompanionCountShort", { count })}
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>

@@ -229,10 +229,16 @@ export class CharacterController {
   @Delete(':id')
   async remove(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+    @Query('deleteLinkedCompanions') deleteLinkedCompanions?: string,
   ): Promise<IResponse<Character>> {
     await this.validateResource(id);
 
-    return this.characterService.remove(id);
+    const cascade =
+      deleteLinkedCompanions === 'true' || deleteLinkedCompanions === '1';
+
+    return this.characterService.remove(id, {
+      deleteLinkedCompanions: cascade,
+    });
   }
 
   @Get('internal/:characterId/owner')
