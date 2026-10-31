@@ -6,7 +6,7 @@ on:
       node-version:
         required: false
         type: string
-        default: '20'
+        default: '24'
     outputs:
       has-critical-web:
         description: "Web has critical vulnerabilities"
