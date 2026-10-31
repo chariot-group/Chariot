@@ -46,6 +46,8 @@ describe("FR-post-auth-navigation / FR-user-cache-isolation — post-login redir
     it("edge: does not redirect from character or welcome paths", () => {
       expect(shouldRedirectAfterLogin("/fr/characters/abc")).toBe(false);
       expect(shouldRedirectAfterLogin("/fr/welcome")).toBe(false);
+      // FR-codex-share-link-preselection: the share link must survive SSO return.
+      expect(shouldRedirectAfterLogin("/fr/characters/new/codex/65f1a2b3")).toBe(false);
       expect(shouldRedirectAfterLogin("/fr/campaigns/c1/groups/g1/characters/ch1")).toBe(false);
     });
   });

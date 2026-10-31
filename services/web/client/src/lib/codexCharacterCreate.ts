@@ -85,3 +85,85 @@ export function resolveCodexCreateSelection(args: {
   }
   return null;
 }
+
+/** @see FR-codex-share-link-preselection */
+export type CodexPreselectionKind = "player" | "monster";
+
+export interface CodexPreselection {
+  kind: CodexPreselectionKind;
+  id: string;
+  /** Requested preview language from the link (`lang` query), when supported. */
+  lang: string | null;
+}
+
+const CODEX_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+const CODEX_PREVIEW_LANGS = ["fr", "en", "es"] as const;
+
+/**
+ * Validates the share-link params. Returns null (→ normal Codex search) when `kind` or
+ * `codexId` is missing/invalid; an unsupported `lang` is dropped, not fatal.
+ * @see FR-codex-share-link-preselection
+ */
+export function parseCodexPreselection(
+  codexId: string | null | undefined,
+  kind: string | null | undefined,
+  lang: string | null | undefined,
+): CodexPreselection | null {
+  const id = codexId?.trim();
+  if (!id || !CODEX_ID_PATTERN.test(id)) return null;
+  if (kind !== "player" && kind !== "monster") return null;
+  const requestedLang = lang?.trim().toLowerCase() ?? "";
+  return {
+    kind,
+    id,
+    lang: (CODEX_PREVIEW_LANGS as readonly string[]).includes(requestedLang) ? requestedLang : null,
+  };
+}
+
+/** Link `lang` if the entry has it, else the user's locale, else `en`, else its first language. */
+export function resolvePreselectionLang(args: {
+  requested: string | null;
+  userLocale: string;
+  available: string[];
+}): string | null {
+  const { requested, userLocale, available } = args;
+  if (requested && available.includes(requested)) return requested;
+  if (available.includes(userLocale)) return userLocale;
+  if (available.includes("en")) return "en";
+  return available[0] ?? null;
+}
+
+/** Path of the Player-space Codex create flow, optionally for one entry (shareable). */
+export function buildCodexPreselectionPath(
+  locale: string,
+  selection?: { kind: CodexPreselectionKind; id: string; lang?: string | null } | null,
+): string {
+  const base = `/${locale}/characters/new/codex`;
+  if (!selection) return base;
+  return withQuery(`${base}/${encodeURIComponent(selection.id)}`, {
+    kind: selection.kind,
+    lang: selection.lang,
+  });
+}
+
+/**
+ * Whether closing the Codex dialog must leave the route for the user's Player space.
+ * Only for an opened share link in Player space: there is no history to go back to. Other flows keep `router.back()`.
+ */
+export function shouldRedirectOnCodexClose(flow: {
+  context?: unknown;
+  linkedPlayerId?: string | null;
+  fromShareLink: boolean;
+}): boolean {
+  return flow.fromShareLink && !flow.context && !flow.linkedPlayerId?.trim();
+}
+
+/** Parses the dialog's `kind:id:lang` selection key (see MonsterCodexDialog). */
+export function parseCodexSelectionKey(
+  key: string | null,
+): { kind: CodexPreselectionKind; id: string; lang: string | null } | null {
+  if (!key) return null;
+  const [kind, id, lang] = key.split(":");
+  if ((kind !== "player" && kind !== "monster") || !id) return null;
+  return { kind, id, lang: lang || null };
+}

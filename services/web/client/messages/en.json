@@ -1713,6 +1713,7 @@
         "cancel": "Cancel",
         "loadMore": "Load more",
         "error": "Error while searching",
+        "preselectionError": "This character could not be loaded from the link. You can search the library below.",
         "validatedByChariot": "Validated by Chariot",
         "srdContent": "SRD Content (System Reference Document)",
         "entityTypeFilter": {

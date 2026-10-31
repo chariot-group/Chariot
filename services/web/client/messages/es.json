@@ -1714,6 +1714,7 @@
         "cancel": "Cancelar",
         "loadMore": "Cargar más",
         "error": "Error al buscar",
+        "preselectionError": "No se pudo cargar este personaje desde el enlace. Puede buscarlo en la biblioteca a continuación.",
         "validatedByChariot": "Validado por Chariot",
         "srdContent": "Contenido SRD (System Reference Document)",
         "entityTypeFilter": {
