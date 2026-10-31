@@ -5,12 +5,12 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useMemo, useState } from "react";
-import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabs, { CharacterTab, tabsForCharacterSheet } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
-import { selectIsInSession, selectSessionCode } from "@/store/slices/sessionSlice";
+import { selectIsInSession, selectSessionCode, selectSessionParticipants } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import UserService from "@/services/UserService";
 import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipantUserLabel";
@@ -39,7 +39,12 @@ import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
 import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import { cn } from "@/lib/utils";
-
+import CharacterService from "@/services/CharacterService";
+import { characterDisplayName as formatCharacterName } from "@/lib/duplicateName";
+import { NpcLinkedPlayerFooterLink } from "@/components/character/NpcLinkedPlayerFooterLink";
+import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
+import { isPlayerOnSessionRoster } from "@/lib/sessionPlayerCompanions";
+import { buildSessionCharacterHref } from "@/lib/sessionInAppNavigation";
 interface CharacterDetailViewProps {
   character: Player | NPC;
   /** GET personnage (même source que la page) pour resync après sauvegarde si besoin. */
@@ -64,15 +69,34 @@ export default function CharacterDetailView({
   const contextMode = useAppSelector(selectContextMode);
   const currentUser = useAppSelector(selectUser);
   const sessionCodeRedux = useAppSelector(selectSessionCode);
+  const participants = useAppSelector(selectSessionParticipants);
   const sessionCodeFromUrl = searchParams.get("sessionCode");
   const currentUserKeycloakId = currentUser?.keycloakId ?? null;
 
+  const isSessionGmUser = Boolean(
+    currentUserKeycloakId &&
+    participants.some(
+      (participant) => participant.userId === currentUserKeycloakId && participant.status === "gameMaster",
+    ),
+  );
+
+  const sessionCodeActive = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
+  const sessionCodeForMedia = sessionCodeActive;
+  const isSessionGmEditContext = Boolean(isInSession && isSessionGmUser && sessionCodeActive);
+
+  const isAssignedSessionPlayer = isPlayer(character) && isPlayerOnSessionRoster(participants, character._id);
+
+  const isSessionCompanionNpc =
+    !isPlayer(character) &&
+    Boolean(linkedPlayerIdOf(character)) &&
+    isPlayerOnSessionRoster(participants, linkedPlayerIdOf(character) ?? "");
+
+  const isForeignOwnedSheet =
+    currentUserKeycloakId != null && character.createdBy != null && character.createdBy !== currentUserKeycloakId;
+
   const isGmViewingPlayerSheet =
-    contextMode === "gm" &&
-    isPlayer(character) &&
-    currentUserKeycloakId != null &&
-    character.createdBy != null &&
-    character.createdBy !== currentUserKeycloakId;
+    isSessionGmUser && isPlayer(character) && (isForeignOwnedSheet || isAssignedSessionPlayer);
+  const isGmViewingNpcSheet = isSessionGmUser && !isPlayer(character) && (isForeignOwnedSheet || isSessionCompanionNpc);
 
   const playedBySubjectId = isGmViewingPlayerSheet && character.createdBy != null ? String(character.createdBy) : null;
 
@@ -80,23 +104,24 @@ export default function CharacterDetailView({
     createdByKey: string;
     label: string;
   } | null>(null);
+  const [linkedPlayer, setLinkedPlayer] = useState<Player | null>(null);
 
   const playedByLabel =
     playedBySubjectId != null && resolvedPlayedBy != null && resolvedPlayedBy.createdByKey === playedBySubjectId
       ? resolvedPlayedBy.label
       : null;
 
-  const sessionCodeForMedia = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
+  const canEditAsGm =
+    isSessionGmEditContext && (isForeignOwnedSheet || isAssignedSessionPlayer || isSessionCompanionNpc);
 
-  const canEditAsGm = useMemo(
-    () => isGmViewingPlayerSheet && isInSession && !!sessionCodeFromUrl && sessionCodeFromUrl === sessionCodeRedux,
-    [isGmViewingPlayerSheet, isInSession, sessionCodeFromUrl, sessionCodeRedux],
-  );
+  const showEditControls = !isForeignOwnedSheet || canEditAsGm;
 
-  const showEditControls = !isGmViewingPlayerSheet || canEditAsGm;
+  const showSessionGmCompanionsTab = Boolean(isPlayer(character) && isSessionGmEditContext && isAssignedSessionPlayer);
 
-  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
-  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
+  const isPlayerSpace = contextMode === "player";
+  const availableTabs = tabsForCharacterSheet(isPlayer(character), isPlayerSpace, showSessionGmCompanionsTab);
+  const requestedTab = (searchParams.get("tab") as CharacterTab) || "general";
+  const activeTab = availableTabs.includes(requestedTab) ? requestedTab : "general";
 
   // Fonction pour changer d'onglet et mettre à jour l'URL
   const handleTabChange = React.useCallback(
@@ -119,7 +144,7 @@ export default function CharacterDetailView({
     type: characterType,
     sourceCharacter: character,
     refetchCharacter,
-    sessionCode: sessionCodeFromUrl,
+    sessionCode: sessionCodeForMedia,
     onSuccess: () => {
       // Rafraîchir les données du parent après la mise à jour
       if (onCharacterUpdate) {
@@ -136,7 +161,6 @@ export default function CharacterDetailView({
   const [pendingAvatarRemove, setPendingAvatarRemove] = React.useState(false);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = React.useState<string | null>(null);
   const [isAvatarCommitting, setIsAvatarCommitting] = React.useState(false);
-
   const isAvatarDirty = pendingAvatarFile !== null || pendingAvatarRemove;
   const hasPendingChanges = isDirty || isAvatarDirty;
 
@@ -218,7 +242,9 @@ export default function CharacterDetailView({
         if (avatarChanged) {
           const snap = getSessionSnapshotForBroadcast();
           if (snap) {
-            emitCharacterSheetUpdated(snap.code, character._id);
+            emitCharacterSheetUpdated(snap.code, character._id, {
+              linkedPlayerId: linkedPlayerIdOf(character),
+            });
           }
         }
       } catch {
@@ -305,6 +331,31 @@ export default function CharacterDetailView({
     };
   }, [playedBySubjectId, sessionCodeForMedia]);
 
+  const npcLinkedPlayerId = !isPlayer(character) ? linkedPlayerIdOf(character) : null;
+  const showLinkedPlayerFooter = Boolean(
+    npcLinkedPlayerId && (isPlayerSpace || (isGmViewingNpcSheet && isSessionGmEditContext)),
+  );
+
+  useEffect(() => {
+    if (!showLinkedPlayerFooter || !npcLinkedPlayerId) {
+      setLinkedPlayer(null);
+      return;
+    }
+    let cancelled = false;
+    CharacterService.getCharacterById(npcLinkedPlayerId, { sessionCode: sessionCodeForMedia })
+      .then((fetched) => {
+        if (!cancelled && isPlayer(fetched)) {
+          setLinkedPlayer(fetched);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLinkedPlayer(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [npcLinkedPlayerId, sessionCodeForMedia, showLinkedPlayerFooter]);
+
   useEffect(() => {
     if (!showEditControls && isEditing) {
       handleCancelEditor();
@@ -369,9 +420,7 @@ export default function CharacterDetailView({
         "max-w-full min-w-0 lg:text-sm text-xs font-semibold",
         isNpcPdfExportDisabled && "pointer-events-none",
       )}
-      aria-label={
-        isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")
-      }
+      aria-label={isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")}
       aria-disabled={isNpcPdfExportDisabled || undefined}>
       <FileDown
         className="lg:size-5 size-4 shrink-0"
@@ -394,6 +443,30 @@ export default function CharacterDetailView({
     exportPdfButton
   );
 
+  const linkedPlayerFooterLink =
+    showLinkedPlayerFooter && npcLinkedPlayerId && !isEditing ? (
+      <NpcLinkedPlayerFooterLink
+        href={buildSessionCharacterHref(npcLinkedPlayerId, sessionCodeForMedia)}
+        playerName={
+          linkedPlayer ? formatCharacterName(linkedPlayer) || t("placeholder.noImage") : null
+        }
+      />
+    ) : null;
+
+  const exportPdfWithLinkedPlayer = (
+    <div className="inline-flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
+      {linkedPlayerFooterLink}
+      {linkedPlayerFooterLink ? (
+        <span
+          className="hidden shrink-0 text-sm text-white/40 sm:inline"
+          aria-hidden="true">
+          |
+        </span>
+      ) : null}
+      {exportPdfAction}
+    </div>
+  );
+
   const characterFooterActions = showEditControls ? (
     <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
       {isEditing ? (
@@ -410,6 +483,7 @@ export default function CharacterDetailView({
               ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
               ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
               ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+              ${activeTab === "companions" ? "bg-purple hover:bg-purple/75 text-white" : ""}
             `}
             aria-label={t("saveChanges")}
             aria-busy={isSaving || isAvatarCommitting}>
@@ -459,6 +533,7 @@ export default function CharacterDetailView({
             ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
             ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
             ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
+            ${activeTab === "companions" ? "bg-purple hover:bg-purple/75 text-white" : ""}
           `}
             aria-label={t("editCharacter")}>
             <SquarePen
@@ -467,11 +542,15 @@ export default function CharacterDetailView({
             />
             <span className="truncate">{t("editCharacter")}</span>
           </Button>
-          {exportPdfAction}
+          {exportPdfWithLinkedPlayer}
         </React.Fragment>
       )}
     </div>
+  ) : linkedPlayerFooterLink ? (
+    <div className="flex w-full min-w-0 justify-end">{exportPdfWithLinkedPlayer}</div>
   ) : null;
+
+  const sheetFooterBar = characterFooterActions;
 
   return (
     <main
@@ -536,24 +615,26 @@ export default function CharacterDetailView({
                           ) : null}
                         </div>
                       ) : (
-                        <div className="font-semibold text-white">
-                          {(() => {
-                            const challengeRating = character.challenge?.challengeRating ?? 0;
-                            const experiencePoints = character.challenge?.experiencePoints ?? 0;
-                            const displayChallengeRating = formatChallengeRating(challengeRating);
+                        <div className="flex min-w-0 flex-col gap-1 font-semibold text-white">
+                          <div>
+                            {(() => {
+                              const challengeRating = character.challenge?.challengeRating ?? 0;
+                              const experiencePoints = character.challenge?.experiencePoints ?? 0;
+                              const displayChallengeRating = formatChallengeRating(challengeRating);
 
-                            return (
-                              <React.Fragment>
-                                <InfoTooltip
-                                  content={tCommon("challengeRatingTooltip")}
-                                  side="bottom"
-                                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                                  <abbr className="cursor-help no-underline">{t("npc.challengeRatingAbbr")}</abbr>
-                                </InfoTooltip>{" "}
-                                {displayChallengeRating} ({experiencePoints} XP)
-                              </React.Fragment>
-                            );
-                          })()}
+                              return (
+                                <React.Fragment>
+                                  <InfoTooltip
+                                    content={tCommon("challengeRatingTooltip")}
+                                    side="bottom"
+                                    moreInfoLabel={tCommon("challengeRatingTooltip")}>
+                                    <abbr className="cursor-help no-underline">{t("npc.challengeRatingAbbr")}</abbr>
+                                  </InfoTooltip>{" "}
+                                  {displayChallengeRating} ({experiencePoints} XP)
+                                </React.Fragment>
+                              );
+                            })()}
+                          </div>
                         </div>
                       )
                     }
@@ -562,6 +643,7 @@ export default function CharacterDetailView({
                 tabs={
                   <CharacterTabs
                     activeTab={activeTab}
+                    tabs={availableTabs}
                     tabsWithErrors={isEditing ? tabsWithErrors : undefined}
                   />
                 }
@@ -605,6 +687,8 @@ export default function CharacterDetailView({
               form={form}
               isEditing={isEditing}
               onCharacterUpdate={onCharacterUpdate}
+              showSessionGmCompanionsTab={showSessionGmCompanionsTab}
+              liaisonActionsEnabled={!showSessionGmCompanionsTab}
             />
           </div>
         </Tabs>
@@ -612,11 +696,11 @@ export default function CharacterDetailView({
         {isInSession ? (
           <CombatBanner
             characterId={character._id}
-            footerActions={characterFooterActions}
+            footerActions={sheetFooterBar}
           />
-        ) : characterFooterActions ? (
+        ) : sheetFooterBar ? (
           <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
-            <div className="flex w-full justify-end">{characterFooterActions}</div>
+            {sheetFooterBar}
           </div>
         ) : null}
       </form>

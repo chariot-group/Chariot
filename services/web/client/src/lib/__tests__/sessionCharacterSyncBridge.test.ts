@@ -40,6 +40,23 @@ describe("sessionCharacterSyncBridge — local sheet sync (FR-session-combat-syn
     registerSessionSyncSocket(null);
   });
 
+  it("nominal: forwards linkedPlayerId for companion NPC sheet updates", () => {
+    const emit = vi.fn();
+    registerSessionSyncSocket({ connected: true, emit } as never);
+    registerLocalCharacterSheetUpdatedListener(vi.fn());
+
+    emitCharacterSheetUpdated("ABC123", "npc-1", { linkedPlayerId: "pj-9" });
+
+    expect(emit).toHaveBeenCalledWith("session:character-sheet-updated", {
+      sessionId: "ABC123",
+      characterId: "npc-1",
+      linkedPlayerId: "pj-9",
+    });
+
+    registerLocalCharacterSheetUpdatedListener(null);
+    registerSessionSyncSocket(null);
+  });
+
   it("edge: trims sessionCode and characterId before broadcasting", () => {
     const localListener = vi.fn();
     const emit = vi.fn();

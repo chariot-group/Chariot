@@ -26,12 +26,14 @@ export class SessionAccessService {
     authHeader: string | undefined,
     sessionCode: string,
     characterId: string,
+    linkedPlayerId?: string,
   ): Promise<void> {
     await this.postValidate(
       authHeader,
       sessionCode,
       characterId,
       'roster-read',
+      linkedPlayerId,
     );
   }
 
@@ -39,8 +41,49 @@ export class SessionAccessService {
     authHeader: string | undefined,
     sessionCode: string,
     characterId: string,
+    linkedPlayerId?: string,
   ): Promise<void> {
-    await this.postValidate(authHeader, sessionCode, characterId, 'gm-edit');
+    await this.postValidate(
+      authHeader,
+      sessionCode,
+      characterId,
+      'gm-edit',
+      linkedPlayerId,
+    );
+  }
+
+  /** @see FR-session-player-companion-combatants */
+  async assertGmCompanionLookup(
+    authHeader: string | undefined,
+    sessionCode: string,
+    playerIds: string[],
+  ): Promise<void> {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new ForbiddenException(
+        'Missing or invalid authorization for session access',
+      );
+    }
+
+    const idsKey = playerIds
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .sort()
+      .join(',');
+    const key = `${authHeader}\0${sessionCode.trim()}\0companion-lookup\0${idsKey}`;
+    const pending = this.inflight.get(key);
+    if (pending) {
+      return pending;
+    }
+
+    const run = this.executeCompanionLookup(
+      authHeader,
+      sessionCode,
+      playerIds,
+    ).finally(() => {
+      this.inflight.delete(key);
+    });
+    this.inflight.set(key, run);
+    return run;
   }
 
   /**
@@ -114,8 +157,9 @@ export class SessionAccessService {
     sessionCode: string,
     characterId: string,
     mode: 'roster-read' | 'gm-edit',
+    linkedPlayerId?: string,
   ): string {
-    return `${authHeader}\0${sessionCode.trim()}\0${characterId.trim()}\0${mode}`;
+    return `${authHeader}\0${sessionCode.trim()}\0${characterId.trim()}\0${mode}\0${linkedPlayerId?.trim() ?? ''}`;
   }
 
   private async postValidate(
@@ -123,6 +167,7 @@ export class SessionAccessService {
     sessionCode: string,
     characterId: string,
     mode: 'roster-read' | 'gm-edit',
+    linkedPlayerId?: string,
   ): Promise<void> {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new ForbiddenException(
@@ -130,7 +175,13 @@ export class SessionAccessService {
       );
     }
 
-    const key = this.dedupeKey(authHeader, sessionCode, characterId, mode);
+    const key = this.dedupeKey(
+      authHeader,
+      sessionCode,
+      characterId,
+      mode,
+      linkedPlayerId,
+    );
     const pending = this.inflight.get(key);
     if (pending) {
       return pending;
@@ -141,6 +192,7 @@ export class SessionAccessService {
       sessionCode,
       characterId,
       mode,
+      linkedPlayerId,
     ).finally(() => {
       this.inflight.delete(key);
     });
@@ -154,6 +206,7 @@ export class SessionAccessService {
     sessionCode: string,
     characterId: string,
     mode: 'roster-read' | 'gm-edit',
+    linkedPlayerId?: string,
   ): Promise<void> {
     const url = `${this.baseUrl}/sessions/${encodeURIComponent(sessionCode)}/validate-character-access`;
 
@@ -164,7 +217,13 @@ export class SessionAccessService {
           'Content-Type': 'application/json',
           Authorization: authHeader,
         },
-        body: JSON.stringify({ characterId, mode }),
+        body: JSON.stringify({
+          characterId,
+          mode,
+          ...(linkedPlayerId?.trim()
+            ? { linkedPlayerId: linkedPlayerId.trim() }
+            : {}),
+        }),
       });
 
       if (res.ok) {
@@ -183,6 +242,43 @@ export class SessionAccessService {
         err as Error & { cause?: { code?: string; message?: string } }
       ).cause;
       const message = `Session service unreachable at ${url}: ${(err as Error).message}${cause ? ` (${cause.code ?? cause.message})` : ''}`;
+      this.logger.error(message, (err as Error).stack);
+      throw new ServiceUnavailableException(
+        'Could not validate session access',
+      );
+    }
+  }
+
+  private async executeCompanionLookup(
+    authHeader: string,
+    sessionCode: string,
+    playerIds: string[],
+  ): Promise<void> {
+    const url = `${this.baseUrl}/sessions/${encodeURIComponent(sessionCode)}/validate-companion-lookup`;
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({ playerIds }),
+      });
+
+      if (res.ok) {
+        return;
+      }
+
+      this.logger.warn(
+        `Session companion lookup denied: HTTP ${res.status} in session ${sessionCode}`,
+      );
+      throw new ForbiddenException('Session companion lookup denied');
+    } catch (err) {
+      if (err instanceof ForbiddenException) {
+        throw err;
+      }
+      const message = `Session service unreachable: ${(err as Error).message}`;
       this.logger.error(message, (err as Error).stack);
       throw new ServiceUnavailableException(
         'Could not validate session access',

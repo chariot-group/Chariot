@@ -1,30 +1,68 @@
 "use client";
 
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
-import { removeCharacterWithoutGroup } from "@/store/slices/characterSlice";
+import { removeCharacterWithoutGroup, removePlayerSpaceNpc, upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
 import { useMemo, useState } from "react";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { usePathname, useRouter } from "next/navigation";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { selectCurrentUserParticipant, selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import {
+  selectCurrentUserParticipant,
+  selectIsInSession,
+  selectSessionCode,
+  selectSessionStatus,
+} from "@/store/slices/sessionSlice";
 import { useUser } from "@/hooks/useUser";
 import CharacterService from "@/services/CharacterService";
-import { Character } from "@/types/character";
+import { Character, NPC } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import { DeletePlayerWithCompanionsDialog } from "@/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog";
+import {
+  deletePlayerCharacterWithCompanionChoice,
+  linkedCompanionsForPlayer,
+  syncReduxAfterPlayerDelete,
+} from "@/lib/playerDeleteCompanions";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
+import {
+  applyCompanionModeAfterPlayerCreated,
+  createPlayerDuplicateFromFull,
+  effectiveDuplicateCompanionMode,
+  syncReduxAfterCompanionMove,
+  syncReduxAfterCompanionNpcCreate,
+  type PlayerDuplicateCompanionMode,
+} from "@/lib/playerDuplicateCompanions";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
+import { LinkNpcToPlayerDialog } from "@/components/dialogs/LinkNpcToPlayerDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import { showToast } from "@/lib/toast";
-import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
 import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
+import {
+  buildPlayerSidebarRows,
+  linkedPlayerIdOf,
+  persistSidebarNpcLinkedPlayer,
+  playerSpaceSidebarActionIds,
+  requiresNpcLinkReassignmentConfirm,
+} from "@/lib/npcPlayerLink";
+import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
+import { SidebarCompanionNest } from "@/components/layout/Sidebar/shared/SidebarCompanionNest";
+import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessionPlayersSidebarSection";
+import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
+import {
+  buildSidebarCharacterAvatarBatchItems,
+  sidebarAvatarSourcesFromPlayerRows,
+  sidebarCharacterAvatarImageUrl,
+} from "@/lib/buildSidebarCharacterAvatarBatch";
+import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
+import { truncateForSidebarMenuLabel } from "@/lib/truncateForSidebarMenuLabel";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -33,15 +71,16 @@ import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExpo
  */
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");
-  const tClass = useTranslations("classes");
-  const { characters, loading, loadingMore, hasMore, loadMoreCharacters, error } = usePlayersWithoutGroup(10, {
-    autoFetch: false,
-  });
+  const { characters, linkedNpcs, unlinkedNpcs, loading, loadingMore, hasMore, loadMoreCharacters, error } =
+    usePlayersWithoutGroup(10, {
+      autoFetch: false,
+    });
   const router = useRouter();
 
   const dispatch = useAppDispatch();
   const { user } = useUser();
   const isInSession = useAppSelector(selectIsInSession);
+  const sessionCode = useAppSelector(selectSessionCode);
   const sessionStatus = useAppSelector(selectSessionStatus);
   const currentParticipant = useAppSelector((state) =>
     selectCurrentUserParticipant(state, user?.keycloakId ?? ""),
@@ -53,6 +92,9 @@ export default function CharactersWithoutGroupList() {
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [characterToDuplicate, setCharacterToDuplicate] = useState<Character | null>(null);
+  const [npcPendingLink, setNpcPendingLink] = useState<NPC | null>(null);
+  const [npcPendingReassign, setNpcPendingReassign] = useState<{ npc: NPC; player: Character } | null>(null);
+  const [isLinkingNpc, setIsLinkingNpc] = useState(false);
   const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
   const pathname = usePathname();
@@ -61,25 +103,55 @@ export default function CharactersWithoutGroupList() {
     ? pathname.split("/characters/")[1]?.split("/")[0]?.split("?")[0]
     : null;
 
-  const handleDeleteCharacter = async () => {
+  const pendingDeleteCompanions = useMemo(() => {
+    if (!characterPendingDelete || !isPlayer(characterPendingDelete)) return [];
+    return linkedCompanionsForPlayer(linkedNpcs ?? [], characterPendingDelete._id);
+  }, [characterPendingDelete, linkedNpcs]);
+
+  const showPlayerCompanionDeleteDialog =
+    !!characterPendingDelete &&
+    isPlayer(characterPendingDelete) &&
+    pendingDeleteCompanions.length > 0;
+
+  const navigateAfterDelete = (
+    deletingCharacterId: string,
+    deleteLinkedCompanions: boolean,
+    companions: NPC[],
+  ) => {
+    const viewingDeletedSheet =
+      selectedCharacterId === deletingCharacterId ||
+      (deleteLinkedCompanions && companions.some((npc) => npc._id === selectedCharacterId));
+    if (!viewingDeletedSheet) return;
+    const nextCharacter = characters.find((character) => character._id !== deletingCharacterId);
+    if (nextCharacter?._id) {
+      router.replace(`/characters/${nextCharacter._id}`);
+    } else {
+      router.replace("/welcome");
+    }
+  };
+
+  const executeCharacterDelete = async (deleteLinkedCompanions: boolean) => {
     if (!characterPendingDelete || isDeleting) return;
 
     const deletingCharacterId = characterPendingDelete._id;
-    const nextCharacter = characters.find((character) => character._id !== deletingCharacterId);
+    const deletingPlayer = isPlayer(characterPendingDelete);
 
     try {
       setIsDeleting(true);
-      await CharacterService.deleteCharacter(deletingCharacterId);
-      setCharacterPendingDelete(null);
-      dispatch(removeCharacterWithoutGroup(deletingCharacterId));
-
-      if (selectedCharacterId === deletingCharacterId) {
-        if (nextCharacter?._id) {
-          router.replace(`/characters/${nextCharacter._id}`);
-        } else {
-          router.replace("/welcome");
-        }
+      if (deletingPlayer) {
+        await deletePlayerCharacterWithCompanionChoice(deletingCharacterId, deleteLinkedCompanions);
+        syncReduxAfterPlayerDelete(dispatch, {
+          playerId: deletingCharacterId,
+          deleteLinkedCompanions,
+          companions: pendingDeleteCompanions,
+        });
+      } else {
+        await CharacterService.deleteCharacter(deletingCharacterId);
+        dispatch(removeCharacterWithoutGroup(deletingCharacterId));
+        dispatch(removePlayerSpaceNpc(deletingCharacterId));
       }
+      setCharacterPendingDelete(null);
+      navigateAfterDelete(deletingCharacterId, deleteLinkedCompanions, pendingDeleteCompanions);
     } catch (deleteError) {
       console.error("Error deleting character:", deleteError);
     } finally {
@@ -87,24 +159,102 @@ export default function CharactersWithoutGroupList() {
     }
   };
 
+  const handleDeleteCharacter = async () => {
+    await executeCharacterDelete(false);
+  };
+
+  const sidebarRows = useMemo(
+    () => buildPlayerSidebarRows(characters, unlinkedNpcs ?? [], linkedNpcs ?? []),
+    [characters, linkedNpcs, unlinkedNpcs],
+  );
+
+  const avatarBatchItems = useMemo(
+    () => buildSidebarCharacterAvatarBatchItems(sidebarAvatarSourcesFromPlayerRows(sidebarRows)),
+    [sidebarRows],
+  );
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
+    avatarBatchItems,
+    isInSession ? sessionCode : null,
+    avatarBatchItems.length > 0,
+  );
+
+  const renderRowAvatar = (characterId: string, storedValue: string | undefined, alt: string) => (
+    <SidebarCharacterAvatar
+      characterId={characterId}
+      storedValue={storedValue}
+      alt={alt}
+      sessionCode={isInSession ? sessionCode : null}
+      avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, characterId, storedValue)}
+    />
+  );
+
   const existingCharacterNames = useMemo(
     () => characters.map((c) => characterDisplayName(c)).filter(Boolean),
     [characters],
   );
 
-  const handleDuplicateCharacter = async (character: Character, name: string, count: number) => {
-    if (!isPlayer(character)) return;
+  const duplicateCompanionsPreview = useMemo(() => {
+    if (!characterToDuplicate || !isPlayer(characterToDuplicate)) return [];
+    return linkedCompanionsForPlayer(linkedNpcs ?? [], characterToDuplicate._id);
+  }, [characterToDuplicate, linkedNpcs]);
+
+  const existingNpcDisplayNames = useMemo(
+    () =>
+      [...(linkedNpcs ?? []), ...(unlinkedNpcs ?? [])]
+        .map((npc) => characterDisplayName(npc))
+        .filter(Boolean),
+    [linkedNpcs, unlinkedNpcs],
+  );
+
+  const handleDuplicateCharacter = async (
+    character: Character,
+    name: string,
+    count: number,
+    companionMode: PlayerDuplicateCompanionMode = "playerOnly",
+  ) => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { _id, createdBy, deletedAt, groups, ...rest } = character;
       const copyNames = buildSequentialCopyNames(name, count);
+      const companions = isPlayer(character)
+        ? linkedCompanionsForPlayer(linkedNpcs ?? [], character._id)
+        : [];
+      const mode = effectiveDuplicateCompanionMode(companionMode, count);
+
+      if (!isPlayer(character)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _id, createdBy, deletedAt, groups, ...rest } = character;
+        let lastCreated: Character | null = null;
+        for (const copyName of copyNames) {
+          const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
+          const created = await CharacterService.createCharacter("npcs", payload);
+          dispatch(upsertPlayerSpaceNpc(created as NPC));
+          lastCreated = created as Character;
+        }
+        showToast(t("duplicateCharacterSuccess"), "success");
+        if (count === 1 && lastCreated) router.push(`/characters/${lastCreated._id}`);
+        return;
+      }
+
+      let npcNames = [...existingNpcDisplayNames];
       let lastCreated: Character | null = null;
       for (const copyName of copyNames) {
-        const payload = { ...rest, firstname: copyName, lastname: "", groups: [] as [] };
-        const created = await CharacterService.createCharacter("players", payload);
+        const created = await createPlayerDuplicateFromFull(character, copyName, []);
         dispatch(upsertCharacterWithoutGroup(created as Character));
         lastCreated = created as Character;
+
+        const { createdCompanions, movedCompanions, nextNpcNames } =
+          await applyCompanionModeAfterPlayerCreated({
+            mode,
+            newPlayerId: created._id,
+            companions,
+            existingNpcNames: npcNames,
+          });
+        npcNames = nextNpcNames;
+        for (const npc of createdCompanions) {
+          syncReduxAfterCompanionNpcCreate(dispatch, npc);
+        }
+        syncReduxAfterCompanionMove(dispatch, movedCompanions);
       }
+
       showToast(t("duplicateCharacterSuccess"), "success");
       if (count === 1 && lastCreated) router.push(`/characters/${lastCreated._id}`);
     } catch {
@@ -113,23 +263,91 @@ export default function CharactersWithoutGroupList() {
     }
   };
 
-  const buildCharacterActions = (character: Character): SidebarActionItem[] => {
-    const exportAction: SidebarActionItem = {
-      id: "exportPdf",
-      label: t("exportPdf"),
-      onSelect: () => void requestCharacterPdfExport(character._id),
+  const persistNpcLink = async (npc: NPC, linkedPlayerId: string | null) => {
+    if (isLinkingNpc) return;
+    setIsLinkingNpc(true);
+    try {
+      const updated = await persistSidebarNpcLinkedPlayer(npc, linkedPlayerId, (id, payload) =>
+        CharacterService.updateCharacter("npcs", id, payload) as Promise<NPC>,
+      );
+      dispatch(upsertPlayerSpaceNpc(updated));
+      showToast(linkedPlayerId ? t("linkNpcSuccess") : t("unlinkNpcSuccess"), "success");
+      setNpcPendingLink(null);
+      setNpcPendingReassign(null);
+    } catch {
+      showToast(linkedPlayerId ? t("linkNpcError") : t("unlinkNpcError"), "error");
+    } finally {
+      setIsLinkingNpc(false);
+    }
+  };
+
+  const handlePickLinkPlayer = (player: Character) => {
+    if (!npcPendingLink || isLinkingNpc) return;
+    if (requiresNpcLinkReassignmentConfirm(linkedPlayerIdOf(npcPendingLink), player._id)) {
+      setNpcPendingLink(null);
+      setNpcPendingReassign({ npc: npcPendingLink, player });
+      return;
+    }
+    void persistNpcLink(npcPendingLink, player._id);
+  };
+
+  const unlinkNpcMenuLabels = (
+    npc: Character,
+  ): { label: string; labelTitle?: string } => {
+    const linkedPlayerId = isPlayer(npc) ? null : linkedPlayerIdOf(npc as NPC);
+    const linkedPlayer = linkedPlayerId ? characters.find((c) => c._id === linkedPlayerId) : undefined;
+    const linkedPlayerName = linkedPlayer ? characterDisplayName(linkedPlayer) : "";
+    if (!linkedPlayerName) {
+      return { label: t("unlinkNpc") };
+    }
+    const fullLabel = t("unlinkNpcFrom", { name: linkedPlayerName });
+    const shortName = truncateForSidebarMenuLabel(linkedPlayerName);
+    const label =
+      shortName === linkedPlayerName.trim()
+        ? fullLabel
+        : t("unlinkNpcFrom", { name: shortName });
+    return {
+      label,
+      labelTitle: label === fullLabel ? undefined : fullLabel,
     };
+  };
 
-    if (actionsDisabled) return [exportAction];
-
-    return [
-      exportAction,
-      {
+  const buildCharacterActions = (character: Character): SidebarActionItem[] => {
+    const npcPdfExportDisabled = !isPlayer(character);
+    const actionMap: Record<string, SidebarActionItem> = {
+      exportPdf: {
+        id: "exportPdf",
+        label: t("exportPdf"),
+        disabled: npcPdfExportDisabled,
+        disabledTooltip: npcPdfExportDisabled ? t("exportPdfNpcComingSoon") : undefined,
+        onSelect: () => {
+          if (npcPdfExportDisabled) return;
+          void requestCharacterPdfExport(character._id);
+        },
+      },
+      link: {
+        id: "link",
+        label: t("linkNpc"),
+        onSelect: () => setNpcPendingLink(character as NPC),
+      },
+      unlink: {
+        id: "unlink",
+        ...unlinkNpcMenuLabels(character),
+        onSelect: () => {
+          void persistNpcLink(character as NPC, null);
+        },
+      },
+      reassign: {
+        id: "reassign",
+        label: t("reassignNpc"),
+        onSelect: () => setNpcPendingLink(character as NPC),
+      },
+      duplicate: {
         id: "duplicate",
         label: t("duplicate"),
         onSelect: () => setCharacterToDuplicate(character),
       },
-      {
+      edit: {
         id: "edit",
         label: t("edit"),
         onSelect: () => {
@@ -137,117 +355,250 @@ export default function CharactersWithoutGroupList() {
           setOpenMobile(false);
         },
       },
-      {
+      delete: {
         id: "delete",
         label: t("delete"),
         variant: "destructive",
         onSelect: () => setCharacterPendingDelete(character),
       },
-    ];
+    };
+
+    return playerSpaceSidebarActionIds(character, { actionsDisabled })
+      .map((id) => actionMap[id])
+      .filter((item): item is SidebarActionItem => Boolean(item));
   };
 
   if (loading && characters.length === 0) {
     return (
-      <div className="flex justify-center items-center py-4">
-        <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
-      </div>
+      <nav
+        className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-4 focus-visible:outline-none"
+        aria-label={t("playerNavigation")}>
+        <GmSessionPlayersSidebarSection />
+        <div className="flex justify-center items-center py-4">
+          <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+        </div>
+      </nav>
     );
   }
 
   if (error) {
-    return null;
+    return (
+      <nav
+        className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-4 focus-visible:outline-none"
+        aria-label={t("playerNavigation")}>
+        <GmSessionPlayersSidebarSection />
+      </nav>
+    );
   }
 
   return (
     <nav
       className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-4 focus-visible:outline-none"
       aria-label={t("playerNavigation")}>
+      <GmSessionPlayersSidebarSection />
+
       <h2 className="shrink-0 text-lg text-white">{t("yourCharacters")}</h2>
 
-      <Link
-        href="/characters/new/players"
-        onClick={() => setOpenMobile(false)}
-        aria-label={t("createCharacter")}
-        className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
-        {t("createCharacter")}
-        <UserPlus
-          aria-hidden="true"
-          className="w-5 h-5"
-        />
-      </Link>
+      <CreateCharacterDialog>
+        <button
+          type="button"
+          aria-label={t("createCharacter")}
+          className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
+          {t("createCharacter")}
+          <UserPlus
+            aria-hidden="true"
+            className="w-5 h-5"
+          />
+        </button>
+      </CreateCharacterDialog>
 
       <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-        {characters.map((character, index) => {
+        {sidebarRows.map((row, index) => {
+          const character = row.character;
+          const isNpcRow = row.type === "npc" || !isPlayer(character);
           const isSelected = selectedCharacterId === character._id;
-          const classLabel = isPlayer(character)
-            ? character.class
-                .map((cls) => (cls?.name ? tClass(cls.name).trim() : ""))
-                .filter((label) => label.length > 0)
-                .join(" / ")
-            : "";
-          const displayName =
-            [character.firstname, character.lastname]
-              .map((part) => (typeof part === "string" ? part.trim() : ""))
-              .filter((part) => part.length > 0)
-              .join(" ") || t("unnamedCharacter");
+          const displayName = characterDisplayName(character) || t("unnamedCharacter");
           const isSessionCharacter = sessionCharacterId === character._id;
           const characterActions = buildCharacterActions(character);
+          const kindLabel = isNpcRow ? t("npcKind") : t("playerKind");
+          const companions = row.type === "player" ? row.companions : [];
 
-          return (
-            <SidebarItemWithActions
-              key={character._id ?? `character-${index}`}
-              actions={characterActions}
-              disabled={characterActions.length === 0}
-              contextMenuLabel={t("characterActions")}
+          const playerLinkLabel = `${displayName}${isSelected ? ` (${t("selected")})` : ""}`;
+
+          const renderPlayerLink = (nestOpen: boolean, inNestHeader: boolean) => (
+            <Link
+              href={`/characters/${character._id}`}
+              aria-current={isSelected ? "page" : undefined}
+              aria-label={playerLinkLabel}
+              onClick={() => dispatch(clearSelectedCampaign())}
               className={cn(
-                "rounded-[12px] transition-all duration-150",
-                isSelected ? "bg-white text-black" : "hover:bg-white/10",
-              )}
-              overflowTriggerClassName={
-                isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-              }>
-              <Link
-                href={`/characters/${character._id}`}
-                aria-current={isSelected ? "page" : undefined}
-                aria-label={`${displayName}${classLabel ? ` (${classLabel})` : ""}${isSelected ? ` (${t("selected")})` : ""}`}
-                onClick={() => dispatch(clearSelectedCampaign())}
-                className={cn(
-                  "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center justify-between gap-1 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
-                  isSelected && "pl-4 font-bold text-black",
-                )}>
-                {isSelected && (
-                  <span
-                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                )}
+                "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                inNestHeader ? "justify-between py-0 pr-1" : "justify-between rounded-[12px] py-1.5 px-3 transition-all duration-150",
+                !inNestHeader && !isSelected && "hover:bg-white/10",
+                !inNestHeader && isSelected && "bg-white pl-4 font-bold text-black",
+                inNestHeader && isSelected && "font-bold text-black",
+              )}>
+              {isSelected && !inNestHeader && (
                 <span
+                  className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+              )}
+              {renderRowAvatar(character._id, character.avatar, displayName)}
+              <span
+                className={cn(
+                  "min-w-0 flex-1 truncate text-left",
+                  (isSelected || nestOpen) && "font-bold",
+                  isSelected && "text-black",
+                )}>
+                {displayName}
+              </span>
+              {isSessionCharacter && (
+                <Swords
+                  aria-label={t("sessionCharacter")}
                   className={cn(
-                    "text-sm min-w-0 flex-1 truncate",
-                    isSelected && "font-bold text-black",
+                    "ml-1 h-3.5 w-3.5 shrink-0",
+                    isSelected ? "text-primary" : "text-yellow",
+                  )}
+                />
+              )}
+            </Link>
+          );
+
+          if (row.type !== "player") {
+            const npcRowHeader = (
+              <SidebarItemWithActions
+                actions={characterActions}
+                disabled={characterActions.length === 0}
+                contextMenuLabel={t("characterActions")}
+                className={cn(
+                  "rounded-[12px] transition-all duration-150",
+                  isSelected ? "bg-white text-black" : "hover:bg-white/10",
+                )}
+                overflowTriggerClassName={
+                  isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+                }>
+                <Link
+                  href={`/characters/${character._id}`}
+                  aria-current={isSelected ? "page" : undefined}
+                  aria-label={`${displayName} (${kindLabel})${isSelected ? ` (${t("selected")})` : ""}`}
+                  onClick={() => dispatch(clearSelectedCampaign())}
+                  className={cn(
+                    "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                    isSelected && "pl-4 font-bold text-black",
                   )}>
-                  {displayName}
-                </span>
-                {classLabel && (
+                  {isSelected && (
+                    <span
+                      className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {renderRowAvatar(character._id, character.avatar, displayName)}
                   <span
                     className={cn(
-                      "text-sm shrink-0 whitespace-nowrap",
+                      "min-w-0 flex-1 truncate",
                       isSelected && "font-bold text-black",
                     )}>
-                    ({classLabel})
+                    {displayName}
                   </span>
-                )}
-                {isSessionCharacter && (
-                  <Swords
-                    aria-label={t("sessionCharacter")}
-                    className={cn(
-                      "ml-1 h-3.5 w-3.5 shrink-0",
-                      isSelected ? "text-primary" : "text-yellow",
-                    )}
+                  <SidebarCharacterKindBadge
+                    label={kindLabel}
+                    selected={isSelected}
                   />
+                </Link>
+              </SidebarItemWithActions>
+            );
+            return (
+              <div key={character._id ?? `character-${index}`}>{npcRowHeader}</div>
+            );
+          }
+
+          const companionIds = companions.map((npc) => npc._id).filter(Boolean) as string[];
+
+          if (companionIds.length === 0) {
+            return (
+              <SidebarItemWithActions
+                key={character._id ?? `character-${index}`}
+                actions={characterActions}
+                disabled={characterActions.length === 0}
+                contextMenuLabel={t("characterActions")}
+                className={cn(
+                  "rounded-[12px] transition-all duration-150",
+                  isSelected ? "bg-white text-black" : "hover:bg-white/10",
                 )}
-              </Link>
-            </SidebarItemWithActions>
+                overflowTriggerClassName={
+                  isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+                }>
+                {renderPlayerLink(false, false)}
+              </SidebarItemWithActions>
+            );
+          }
+
+          return (
+            <SidebarCompanionNest
+              key={character._id ?? `character-${index}`}
+              nestId={character._id}
+              playerName={displayName}
+              companionCharacterIds={companionIds}
+              selectedCharacterId={selectedCharacterId}
+              headerSelected={isSelected}
+              actions={characterActions}
+              actionsDisabled={characterActions.length === 0}
+              contextMenuLabel={t("characterActions")}
+              overflowTriggerClassName={
+                isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+              }
+              rowBody={({ isOpen }) => renderPlayerLink(isOpen, true)}>
+              {companions.map((npc) => {
+                const npcSelected = selectedCharacterId === npc._id;
+                const npcName = characterDisplayName(npc) || t("unnamedCharacter");
+                const npcActions = buildCharacterActions(npc);
+                return (
+                  <li key={npc._id}>
+                    <SidebarItemWithActions
+                      actions={npcActions}
+                      disabled={npcActions.length === 0}
+                      contextMenuLabel={t("characterActions")}
+                      className={cn(
+                        "rounded-[12px] transition-all duration-100",
+                        npcSelected ? "bg-white text-black" : "hover:bg-white/10",
+                      )}
+                      overflowTriggerClassName={
+                        npcSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
+                      }>
+                      <Link
+                        href={`/characters/${npc._id}`}
+                        aria-current={npcSelected ? "page" : undefined}
+                        aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
+                        onClick={() => dispatch(clearSelectedCampaign())}
+                        className={cn(
+                          "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                          npcSelected && "pl-4 font-bold text-black",
+                        )}>
+                        {npcSelected && (
+                          <span
+                            className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {renderRowAvatar(npc._id, npc.avatar, npcName)}
+                        <span
+                          className={cn(
+                            "text-sm min-w-0 flex-1 truncate",
+                            npcSelected && "font-bold text-black",
+                          )}>
+                          {npcName}
+                        </span>
+                        <SidebarCharacterKindBadge
+                          label={t("npcKind")}
+                          selected={npcSelected}
+                        />
+                      </Link>
+                    </SidebarItemWithActions>
+                  </li>
+                );
+              })}
+            </SidebarCompanionNest>
           );
         })}
 
@@ -273,7 +624,7 @@ export default function CharactersWithoutGroupList() {
       </div>
 
       <ConfirmDialog
-        open={!!characterPendingDelete}
+        open={!!characterPendingDelete && !showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeleting) setCharacterPendingDelete(null);
         }}
@@ -285,6 +636,28 @@ export default function CharactersWithoutGroupList() {
         isLoading={isDeleting}
       />
 
+      <DeletePlayerWithCompanionsDialog
+        open={showPlayerCompanionDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setCharacterPendingDelete(null);
+        }}
+        playerName={characterDisplayName(characterPendingDelete!)}
+        companions={pendingDeleteCompanions}
+        isLoading={isDeleting}
+        title={t("deletePlayerWithCompanionsTitle")}
+        description={t("deletePlayerWithCompanionsDescription")}
+        companionsListLabel={t("deletePlayerWithCompanionsListLabel")}
+        cancelLabel={t("cancel")}
+        keepCompanionsLabel={t("deletePlayerKeepCompanions")}
+        deleteAllLabel={t("deletePlayerAndCompanions", { count: pendingDeleteCompanions.length })}
+        keepCompanionsAriaLabel={t("deletePlayerKeepCompanionsAria")}
+        deleteAllAriaLabel={t("deletePlayerAndCompanionsAria", {
+          count: pendingDeleteCompanions.length,
+        })}
+        onKeepCompanions={() => executeCharacterDelete(false)}
+        onDeleteWithCompanions={() => executeCharacterDelete(true)}
+      />
+
       <DuplicateCharacterDialog
         character={characterToDuplicate}
         open={!!characterToDuplicate}
@@ -292,13 +665,48 @@ export default function CharactersWithoutGroupList() {
           if (!open) setCharacterToDuplicate(null);
         }}
         existingNames={existingCharacterNames}
-        onDuplicate={(name, count) => handleDuplicateCharacter(characterToDuplicate!, name, count)}
+        companions={duplicateCompanionsPreview}
+        onDuplicate={(name, count, companionMode) =>
+          handleDuplicateCharacter(characterToDuplicate!, name, count, companionMode)
+        }
       />
 
       <ExportCharacterSheetPdfDialog
         character={characterToExport}
         open={!!characterToExport}
         onOpenChange={closeExportDialog}
+      />
+
+      <LinkNpcToPlayerDialog
+        npc={npcPendingLink}
+        players={characters}
+        open={!!npcPendingLink}
+        onOpenChange={(open) => {
+          if (!open && !isLinkingNpc) setNpcPendingLink(null);
+        }}
+        onSelectPlayer={handlePickLinkPlayer}
+        isLoading={isLinkingNpc}
+      />
+
+      <ConfirmDialog
+        open={!!npcPendingReassign}
+        onOpenChange={(open) => {
+          if (!open && !isLinkingNpc) setNpcPendingReassign(null);
+        }}
+        title={t("reassignNpcDialogTitle")}
+        description={t("reassignNpcDialogDescription", {
+          name: npcPendingReassign
+            ? characterDisplayName(npcPendingReassign.player) || t("unnamedCharacter")
+            : t("unnamedCharacter"),
+        })}
+        confirmLabel={t("reassignNpcConfirm")}
+        cancelLabel={t("cancel")}
+        onConfirm={() => {
+          if (!npcPendingReassign) return;
+          void persistNpcLink(npcPendingReassign.npc, npcPendingReassign.player._id);
+        }}
+        isLoading={isLinkingNpc}
+        destructive={false}
       />
     </nav>
   );

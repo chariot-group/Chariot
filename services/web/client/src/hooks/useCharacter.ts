@@ -19,8 +19,13 @@ import {
     selectCharactersWithoutGroupHasMore,
     selectCharactersWithoutGroupCurrentPage,
     selectCharactersWithoutGroupLastFetch,
+    selectLinkedNpcs,
+    selectUnlinkedNpcsWithoutGroup,
+    setLinkedNpcs,
+    setUnlinkedNpcsWithoutGroup,
     clearCharacters,
 } from '@/store/slices/characterSlice';
+import type { NPC } from '@/types/character';
 
 /**
  * True when refetching an already-loaded sheet (WS sync / local echo) — no full-screen loader.
@@ -46,6 +51,8 @@ interface UseCharacterReturn {
 
 interface UsePlayersWithoutGroupReturn {
     characters: Character[];
+    linkedNpcs: NPC[];
+    unlinkedNpcs: NPC[];
     loading: boolean;
     loadingMore: boolean;
     error: string | null;
@@ -202,6 +209,18 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
     const hasMore = useAppSelector(selectCharactersWithoutGroupHasMore);
     const currentPage = useAppSelector(selectCharactersWithoutGroupCurrentPage);
     const lastFetchWithoutGroup = useAppSelector(selectCharactersWithoutGroupLastFetch);
+    const linkedNpcs = useAppSelector(selectLinkedNpcs) ?? [];
+    const unlinkedNpcs = useAppSelector(selectUnlinkedNpcsWithoutGroup) ?? [];
+
+    const loadPlayerSpaceNpcs = useCallback(async (players: Character[]) => {
+        const playerIds = players.map((player) => player._id).filter(Boolean);
+        const [unlinkedResponse, linked] = await Promise.all([
+            CharacterService.getUnlinkedNpcsWithoutGroup(1, 50),
+            CharacterService.getNpcsByLinkedPlayers(playerIds),
+        ]);
+        dispatch(setUnlinkedNpcsWithoutGroup((unlinkedResponse.data ?? []) as NPC[]));
+        dispatch(setLinkedNpcs(linked));
+    }, [dispatch]);
 
     /**
      * Récupère la première page des joueurs sans groupe
@@ -214,11 +233,12 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
                 characters: response.data,
                 total: response.pagination.totalItems
             }));
+            await loadPlayerSpaceNpcs(response.data);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch characters without group';
             dispatch(fetchCharactersWithoutGroupFailure(errorMessage));
         }
-    }, [dispatch, pageSize]);
+    }, [dispatch, pageSize, loadPlayerSpaceNpcs]);
 
     /**
      * Charge la page suivante des joueurs sans groupe
@@ -234,11 +254,13 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
                 characters: response.data,
                 total: response.pagination.totalItems
             }));
+            const allPlayers = [...characters, ...response.data];
+            await loadPlayerSpaceNpcs(allPlayers);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to load more characters';
             dispatch(fetchCharactersWithoutGroupFailure(errorMessage));
         }
-    }, [dispatch, currentPage, pageSize, loadingMore, hasMore]);
+    }, [dispatch, currentPage, pageSize, loadingMore, hasMore, characters, loadPlayerSpaceNpcs]);
 
     /**
      * Rafraîchit les données en invalidant le cache
@@ -269,6 +291,8 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
 
     return {
         characters,
+        linkedNpcs,
+        unlinkedNpcs,
         loading,
         loadingMore,
         error,

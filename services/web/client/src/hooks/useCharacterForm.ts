@@ -10,8 +10,9 @@ import { Player, NPC, Spell } from '@/types/character';
 import { createPlayerSchema, createNpcSchema } from '@/schemas/character';
 import { makeZodMessages } from '@/lib/zodErrorMap';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectIsInSession } from '@/store/slices/sessionSlice';
-import { upsertCharacterWithoutGroup } from '@/store/slices/characterSlice';
+import { selectIsInSession, selectSessionCompanionNpcs, upsertSessionCompanionNpc } from '@/store/slices/sessionSlice';
+import { upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from '@/store/slices/characterSlice';
+import { withNormalizedLinkedPlayerId } from '@/lib/sessionPlayerCompanions';
 import { upsertCharacterInGroups } from '@/store/slices/groupSlice';
 import { pruneOrphanSpellSlotsByLevel } from '@/utils/magic.utils';
 
@@ -149,6 +150,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
     const toast = useToast();
     const dispatch = useAppDispatch();
     const isInSession = useAppSelector(selectIsInSession);
+    const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
     const t = useTranslations('characterForm');
     const tZod = useTranslations('zodErrors');
 
@@ -368,11 +370,15 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
             // Transformer les données avec le schéma Zod (convertit les strings numériques en numbers)
             const parsedData = await resolvedSchema.parseAsync(sanitizedData);
+            const updatePayload = { ...(parsedData as Record<string, unknown>) };
+            if (type === 'npcs' && sessionCode?.trim()) {
+                delete updatePayload.linkedPlayerId;
+            }
 
             const updatedCharacter = await CharacterService.updateCharacter(
                 type,
                 characterId,
-                parsedData,
+                updatePayload as Partial<Player> | Partial<NPC>,
                 sessionCode,
             );
 
@@ -381,6 +387,16 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
             // Keep sidebar lists synchronized after update (name/group display).
             dispatch(upsertCharacterWithoutGroup(updatedCharacter));
+            if (!('progression' in updatedCharacter)) {
+                const updatedNpc = updatedCharacter as NPC;
+                dispatch(upsertPlayerSpaceNpc(updatedNpc));
+                if (
+                    sessionCode?.trim() &&
+                    sessionCompanionNpcs.some((npc) => npc._id === updatedNpc._id)
+                ) {
+                    dispatch(upsertSessionCompanionNpc(withNormalizedLinkedPlayerId(updatedNpc)));
+                }
+            }
             dispatch(upsertCharacterInGroups({
                 _id: updatedCharacter._id,
                 firstname: updatedCharacter.firstname,

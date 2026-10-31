@@ -23,10 +23,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
 import { SessionWheelDepositBar } from "@/components/dialogs/SessionWheelDepositBar";
-import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/sessionSlice";
+import { selectSessionStatus, selectSessionTokensByUser, selectSessionCompanionNpcs } from "@/store/slices/sessionSlice";
 import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import {
+  companionNamesLine,
+  companionsGroupedByPlayerId,
+} from "@/lib/sessionPlayerCompanions";
 import {
   buildSessionLobbyAvatarBatchItems,
   getSessionLobbyParticipantAvatarUrl,
@@ -79,6 +83,11 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
   const [codeCopyState, setCodeCopyState] = useState<SessionLobbyCopyState>("idle");
   const [linkCopyState, setLinkCopyState] = useState<SessionLobbyCopyState>("idle");
   const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
+  const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
+  const companionsByPlayerId = useMemo(
+    () => companionsGroupedByPlayerId(sessionCompanionNpcs),
+    [sessionCompanionNpcs],
+  );
 
   const {
     campaignLabel,
@@ -88,6 +97,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     participantAvatars,
     characterDetails,
     myCharacters,
+    companionCountByCharacterId,
     fetchCharacterDetails,
     getCharacterLabel,
     isLoading,
@@ -277,6 +287,13 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                       isPlayer={participant.status === "connected"}
                       sessionIsActive={sessionIsActive}
                       myCharacters={myCharacters}
+                      companionCountByCharacterId={companionCountByCharacterId}
+                      companionNames={
+                        isMJ && participant.characterId
+                          ? companionNamesLine(companionsByPlayerId[participant.characterId] ?? [])
+                          : ""
+                      }
+                      showCompanionNames={isMJ}
                       isChangingCharacter={isChangingCharacter}
                       onCharacterChange={handleCharacterChange}
                       sessionCode={code}
@@ -595,6 +612,9 @@ interface SessionLobbyParticipantCardProps {
   isPlayer: boolean;
   sessionIsActive: boolean;
   myCharacters: Character[];
+  companionCountByCharacterId: Record<string, number>;
+  companionNames: string;
+  showCompanionNames: boolean;
   isChangingCharacter: boolean;
   onCharacterChange: (characterId: string) => void;
   sessionCode: string;
@@ -611,6 +631,9 @@ function SessionLobbyParticipantCard({
   isPlayer,
   sessionIsActive,
   myCharacters,
+  companionCountByCharacterId,
+  companionNames,
+  showCompanionNames,
   isChangingCharacter,
   onCharacterChange,
   sessionCode,
@@ -670,6 +693,9 @@ function SessionLobbyParticipantCard({
             {!(isMe && isPlayer && sessionIsActive) ? (
               <p className="truncate text-sm text-muted-foreground">{characterLabel ?? " "}</p>
             ) : null}
+            {showCompanionNames && !isGameMaster && companionNames ? (
+              <p className="truncate text-xs text-white/55">{companionNames}</p>
+            ) : null}
           </div>
         </div>
 
@@ -681,7 +707,10 @@ function SessionLobbyParticipantCard({
             placeholder={t("players.selectCharacterPlaceholder")}
             disabled={isChangingCharacter}
             selectedLabel={characterLabel || undefined}
-            triggerClassName="h-10 w-full text-sm"
+            triggerClassName="w-full text-sm"
+            companionCountByCharacterId={companionCountByCharacterId}
+            formatCompanionCount={(count) => t("players.companionCount", { count })}
+            formatCompanionCountShort={(count) => t("players.companionCountShort", { count })}
           />
         ) : null}
       </div>

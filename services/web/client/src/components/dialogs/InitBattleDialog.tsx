@@ -21,6 +21,7 @@ import {
   selectCurrentSession,
   selectSessionParticipantDisplayNames,
   selectGmGuestCharacterIds,
+  selectSessionCompanionNpcs,
   setInitiativeTrackerRows,
   setSessionInitBattleDraft,
   createInitiativeTrackerRow,
@@ -93,6 +94,7 @@ const parseChallengeRating = (value: unknown): number => {
 };
 
 const isNpcCharacter = (character: BattleGroupCharacter): boolean => {
+  if (character.kind === "npc" || Boolean(character.linkedPlayerId)) return true;
   const cr = parseChallengeRating(character.challenge?.challengeRating);
   return cr > 0 || !character.createdBy || !!character.profile?.type;
 };
@@ -111,6 +113,18 @@ const getPlayerLevel = (character: BattleGroupCharacter): number => {
 const formatCharacterName = (character: BattleGroupCharacter): string => {
   const fullName = `${character.firstname ?? ""} ${character.lastname ?? ""}`.trim();
   return fullName || character.surname || "-";
+};
+
+const linkedPlayerNameOf = (
+  member: BattleGroupCharacter,
+  members: BattleGroupCharacter[],
+): string | null => {
+  const linkedId = member.linkedPlayerId?.trim();
+  if (!linkedId) return null;
+  const player = members.find((candidate) => candidate._id === linkedId);
+  if (!player) return null;
+  const name = formatCharacterName(player);
+  return name === "-" ? null : name;
 };
 
 const formatCr = (value: number): string => {
@@ -133,6 +147,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
   const session = useAppSelector(selectCurrentSession);
   const participantDisplayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
 
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -189,6 +204,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
           participantDisplayNames,
           session?.code,
           gmGuestCharacterIds,
+          sessionCompanionNpcs,
         );
 
         const groupsWithSessionParticipants = [...allGroups, sessionParticipantsGroup];
@@ -232,7 +248,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initBattleDraft is only read once on open to restore draft state; including it would retrigger loadGroups on every user interaction
-  }, [open, selectedCampaignId, session?.code, session?.participants, gmGuestCharacterIds, participantDisplayNames]);
+  }, [open, selectedCampaignId, session?.code, session?.participants, gmGuestCharacterIds, participantDisplayNames, sessionCompanionNpcs]);
 
   const selectedGroups = React.useMemo(() => {
     const selectedIds = new Set(selectedGroupIds);
@@ -371,11 +387,20 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
         }
       });
 
+      const companionIdSet = new Set(sessionCompanionNpcs.map((npc) => npc._id));
+      const guestIdSet = new Set(gmGuestCharacterIds);
+      const seenRowCharacterIds = new Set<string>();
+
       const rows = selectedGroups.flatMap((group) => {
         const excludedMembers = new Set(excludedMembersByGroup[group._id] ?? []);
 
         return (group.characters ?? [])
-          .filter((member) => !excludedMembers.has(member._id))
+          .filter((member) => {
+            if (excludedMembers.has(member._id)) return false;
+            if (seenRowCharacterIds.has(member._id)) return false;
+            seenRowCharacterIds.add(member._id);
+            return true;
+          })
           .map((member) => {
             const character = detailsById.get(member._id) ?? member;
             const stats = character.stats;
@@ -399,7 +424,8 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
               : 0;
 
-            return createInitiativeTrackerRow({
+            return {
+              ...createInitiativeTrackerRow({
               groupId: group._id,
               groupLabel: group.label,
               characterId: member._id,
@@ -416,7 +442,10 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               kind,
               deathSavesFailures,
               initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats.initiative) : 0,
-            });
+            }),
+              isGmGuest: guestIdSet.has(member._id),
+              isPlayerCompanion: companionIdSet.has(member._id) && !guestIdSet.has(member._id),
+            };
           });
       });
 
@@ -573,6 +602,12 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                               ) : (
                                 members.map((member) => {
                                   const memberIncluded = !excludedMembers.has(member._id);
+                                  const linkedName = linkedPlayerNameOf(member, members);
+                                  const linkedLabel = member.linkedPlayerId
+                                    ? linkedName
+                                      ? t("initBattleLinkedTo", { name: linkedName })
+                                      : t("initBattleLinkedCompanion")
+                                    : null;
                                   return (
                                     <label
                                       key={member._id}
@@ -580,6 +615,9 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                                       <div className="flex flex-col gap-2 px-2 py-2 text-sm sm:flex-row sm:items-center sm:justify-between">
                                         <span className="min-w-0 break-words sm:truncate">
                                           {formatCharacterName(member)}
+                                          {linkedLabel ? (
+                                            <span className="ml-1 text-xs text-muted-foreground">{linkedLabel}</span>
+                                          ) : null}
                                           {isNpcCharacter(member) && getNpcCr(member) > 0 && (
                                             <span className="ml-1 text-xs text-muted-foreground">
                                               (

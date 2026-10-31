@@ -377,24 +377,23 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @SubscribeMessage('session:character-sheet-updated')
     async handleCharacterSheetUpdated(
         @ConnectedSocket() client: AuthenticatedSocket,
-        @MessageBody() data: { sessionId: string; characterId: string },
+        @MessageBody() data: { sessionId: string; characterId: string; linkedPlayerId?: string },
     ) {
         try {
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
-            const me = session.participants.find((p) => p.userId === client.user.keycloakId);
-            if (!me) {
-                client.emit('session:error', { message: 'Not a session participant' });
-                return;
-            }
             const cid = (data.characterId ?? '').trim();
             if (!cid) {
                 client.emit('session:error', { message: 'Missing characterId' });
                 return;
             }
-            const isGm = me.status === 'gameMaster';
-            const onRoster = isGm || session.participants.some((p) => p.characterId === cid);
-            if (!onRoster) {
-                client.emit('session:error', { message: 'Character is not on this session roster' });
+            const decision = this.sessionService.canBroadcastCharacterSheetUpdate(
+                session,
+                client.user.keycloakId,
+                cid,
+                data.linkedPlayerId,
+            );
+            if (decision.ok === false) {
+                client.emit('session:error', { message: decision.reason });
                 return;
             }
             client.to(session.id).emit('session:character-sheet-updated', { characterId: cid });
