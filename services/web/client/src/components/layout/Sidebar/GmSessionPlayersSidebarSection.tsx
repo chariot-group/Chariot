@@ -8,7 +8,6 @@ import { ChevronRight, Swords } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import {
   selectIsInSession,
@@ -19,6 +18,7 @@ import {
   mergeSessionParticipantDisplayNames,
   pruneSessionParticipantDisplayNames,
   selectGmGuestCharacterIds,
+  selectSessionCompanionNpcs,
   removeGmGuestCharacterFromSession,
   selectBattleInitialized,
   removeInitiativeTrackerRow,
@@ -31,13 +31,19 @@ import { useSidebar } from "@/components/ui/sidebar";
 import characterService from "@/services/CharacterService";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
-import { MediaAvatar } from "@/components/media/MediaAvatar";
+import { SidebarCompanionNest } from "@/components/layout/Sidebar/shared/SidebarCompanionNest";
+import { characterDisplayName } from "@/lib/duplicateName";
+import { companionsGroupedByPlayerId, ungroupedSessionCompanions } from "@/lib/sessionPlayerCompanions";
+import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
+import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
+import {
+  buildSidebarCharacterAvatarBatchItems,
+  sidebarCharacterAvatarImageUrl,
+} from "@/lib/buildSidebarCharacterAvatarBatch";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
-import type { MediaAvatarSize } from "@/utils/media.utils";
 
 const ROSTER_FETCH_DEBOUNCE_MS = 220;
 const CHARACTER_FETCH_RETRY_DELAY_MS = 350;
-const SIDEBAR_AVATAR_SIZE: MediaAvatarSize = "xs";
 
 type SessionCharacterMeta = {
   label: string;
@@ -53,7 +59,6 @@ export default function GmSessionPlayersSidebarSection() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { isMobile, setOpenMobile } = useSidebar();
-  const contextMode = useAppSelector(selectContextMode);
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
@@ -63,6 +68,15 @@ export default function GmSessionPlayersSidebarSection() {
 
   const displayNames = useAppSelector(selectSessionParticipantDisplayNames);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
+  const companionsByPlayerId = React.useMemo(
+    () => companionsGroupedByPlayerId(sessionCompanionNpcs),
+    [sessionCompanionNpcs],
+  );
+  const ungroupedCompanions = React.useMemo(
+    () => ungroupedSessionCompanions(sessionCompanionNpcs, companionsByPlayerId),
+    [sessionCompanionNpcs, companionsByPlayerId],
+  );
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const [characterMeta, setCharacterMeta] = React.useState<Record<string, SessionCharacterMeta>>({});
   const [guestMeta, setGuestMeta] = React.useState<Record<string, SessionCharacterMeta>>({});
@@ -73,8 +87,14 @@ export default function GmSessionPlayersSidebarSection() {
     !!currentUser?.keycloakId &&
     participants.some((p) => p.userId === currentUser.keycloakId && p.status === "gameMaster");
 
-  /** Tous les humains hors MJ dans la session (y compris avant choix de personnage). */
-  const presenceRoster = React.useMemo(() => participants.filter((p) => p.status !== "gameMaster"), [participants]);
+  /** Joueurs connectés + MJ ayant choisi un PJ (rejoin créateur). */
+  const presenceRoster = React.useMemo(
+    () =>
+      participants.filter(
+        (p) => p.status !== "gameMaster" || Boolean(p.characterId?.trim()),
+      ),
+    [participants],
+  );
 
   /**
    * Signature ordre-indépendante : réordonnement HTTP uniquement sans changer les paires
@@ -153,7 +173,7 @@ export default function GmSessionPlayersSidebarSection() {
     const roster = participantsRef.current.filter(
       (p) => p.status !== "gameMaster" && p.characterId != null && p.characterId.length > 0,
     );
-    if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || roster.length === 0) {
+    if (!isInSession || !isGm || !sessionCode || roster.length === 0) {
       prevRemoteVersionsRef.current = {};
       return;
     }
@@ -195,11 +215,11 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [contextMode, fetchCharacterMeta, isGm, isInSession, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
+  }, [fetchCharacterMeta, isGm, isInSession, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
 
   /** Chargement initial / changement de roster : requêtes espacées pour rester sous le rate limit gateway. */
   React.useEffect(() => {
-    if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode) {
+    if (!isInSession || !isGm || !sessionCode) {
       return;
     }
 
@@ -213,7 +233,7 @@ export default function GmSessionPlayersSidebarSection() {
         for (const p of roster) {
           const existing = displayNames[p.userId];
           if (!existing || existing === SESSION_PARTICIPANT_NAME_LOADING) {
-            const label = await fetchSessionParticipantDisplayName(p.userId);
+            const label = await fetchSessionParticipantDisplayName(p.userId, sessionCode);
             if (label !== SESSION_PARTICIPANT_NAME_LOADING) {
               nameUpdates[p.userId] = label;
             }
@@ -243,10 +263,10 @@ export default function GmSessionPlayersSidebarSection() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [contextMode, dispatch, displayNames, fetchCharacterMeta, isGm, isInSession, rosterStableKey, sessionCode]);
+  }, [dispatch, displayNames, fetchCharacterMeta, isGm, isInSession, rosterStableKey, sessionCode]);
 
   React.useEffect(() => {
-    if (!isInSession || contextMode !== "gm" || !isGm || gmGuestCharacterIds.length === 0 || !sessionCode) return;
+    if (!isInSession || !isGm || gmGuestCharacterIds.length === 0 || !sessionCode) return;
     let cancelled = false;
     void (async () => {
       const updates: Record<string, SessionCharacterMeta> = {};
@@ -264,7 +284,7 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [contextMode, fetchCharacterMeta, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
+  }, [fetchCharacterMeta, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
 
   React.useEffect(() => {
     setGuestMeta((prev) => {
@@ -281,34 +301,18 @@ export default function GmSessionPlayersSidebarSection() {
   }, [gmGuestCharacterIds]);
 
   const avatarBatchItems = React.useMemo(() => {
-    const items: Array<{
-      scope: "character";
-      entityId: string;
-      storedValue: string;
-      size: MediaAvatarSize;
-    }> = [];
+    const sources: Array<{ _id?: string; avatar?: string | null }> = [];
     for (const [cid, meta] of Object.entries(characterMeta)) {
-      if (meta.avatar?.trim()) {
-        items.push({
-          scope: "character",
-          entityId: cid,
-          storedValue: meta.avatar,
-          size: SIDEBAR_AVATAR_SIZE,
-        });
-      }
+      sources.push({ _id: cid, avatar: meta.avatar });
     }
     for (const [cid, meta] of Object.entries(guestMeta)) {
-      if (meta.avatar?.trim()) {
-        items.push({
-          scope: "character",
-          entityId: cid,
-          storedValue: meta.avatar,
-          size: SIDEBAR_AVATAR_SIZE,
-        });
-      }
+      sources.push({ _id: cid, avatar: meta.avatar });
     }
-    return items;
-  }, [characterMeta, guestMeta]);
+    for (const npc of sessionCompanionNpcs) {
+      sources.push({ _id: npc._id, avatar: npc.avatar });
+    }
+    return buildSidebarCharacterAvatarBatchItems(sources);
+  }, [characterMeta, guestMeta, sessionCompanionNpcs]);
 
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
     avatarBatchItems,
@@ -316,7 +320,7 @@ export default function GmSessionPlayersSidebarSection() {
     Boolean(isInSession && isGm && sessionCode && avatarBatchItems.length > 0),
   );
 
-  if (!isInSession || contextMode !== "gm" || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
+  if (!isInSession || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
     return null;
   }
 
@@ -373,62 +377,187 @@ export default function GmSessionPlayersSidebarSection() {
           const inlineLabel = `${primaryLabel} – ${userLabel}`;
           const avatarStored = meta?.avatar;
 
-          const rowClasses = cn(
-            "w-full shrink-0 py-1.5 px-3 rounded-[12px] transition-all duration-150 flex items-center gap-2 focus-visible:ring-1 focus-visible:ring-white/50",
-            hasSheet
-              ? cn("cursor-pointer", isSelected ? "bg-white/15 font-bold text-white" : "hover:bg-white/10")
-              : "cursor-default opacity-60",
-          );
+          const nestedCompanions = cid ? (companionsByPlayerId[cid] ?? []) : [];
+          const nestedCompanionIds = nestedCompanions.map((npc) => npc._id).filter(Boolean) as string[];
 
-          const innerLabel = (
-            <>
-              {hasSheet ? (
-                <MediaAvatar
-                  scope="character"
-                  entityId={cid!}
-                  storedValue={avatarStored}
-                  size={SIDEBAR_AVATAR_SIZE}
-                  sessionCode={sessionCode}
-                  alt={primaryLabel}
-                  enabled={Boolean(avatarStored?.trim())}
-                  avatarImageUrl={
-                    avatarStored?.trim()
-                      ? getAvatarUrl("character", cid!, SIDEBAR_AVATAR_SIZE)
-                      : undefined
-                  }
-                  className="shrink-0"
-                />
-              ) : null}
-              <span className="flex min-w-0 flex-1 flex-col gap-0">
-                <span className={cn("text-sm truncate w-full", !hasSheet && "italic")}>
-                  {primaryLabel}
-                </span>
-                <span className={cn("text-xs truncate w-full", isSelected ? "text-white/70" : "text-white/50")}>
-                  {userLabel}
-                </span>
-              </span>
-            </>
-          );
+          const renderPlayerRowBody = (nestOpen: boolean, inNestHeader: boolean) => {
+            const rowClasses = cn(
+              "relative w-full shrink-0 flex items-center gap-2 focus-visible:ring-1 focus-visible:ring-white/50",
+              inNestHeader ? "py-0 pr-1 text-sm" : "py-1.5 px-3 rounded-[12px] transition-all duration-150",
+              hasSheet
+                ? cn(
+                    "cursor-pointer",
+                    !inNestHeader && isSelected && "bg-white pl-4 font-bold text-black",
+                    !inNestHeader && !isSelected && "hover:bg-white/10",
+                    inNestHeader && isSelected && "font-bold text-black",
+                  )
+                : "cursor-default opacity-60",
+            );
 
-          return hasSheet ? (
-            <Link
+            const innerLabel = (
+              <>
+                {isSelected && hasSheet && !inNestHeader && (
+                  <span
+                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                )}
+                {cid ? (
+                  <SidebarCharacterAvatar
+                    characterId={cid}
+                    storedValue={avatarStored}
+                    sessionCode={sessionCode}
+                    alt={primaryLabel}
+                    avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, cid, avatarStored)}
+                  />
+                ) : null}
+                <span className="flex min-w-0 flex-1 flex-col gap-0">
+                  <span
+                    className={cn(
+                      "truncate w-full",
+                      !hasSheet && "italic",
+                      (nestOpen || isSelected) && hasSheet && "font-bold",
+                    )}>
+                    {primaryLabel}
+                  </span>
+                  <span className={cn("text-xs truncate w-full", isSelected ? "text-black/50" : "text-white/50")}>
+                    {userLabel}
+                  </span>
+                </span>
+              </>
+            );
+
+            if (hasSheet) {
+              return (
+                <Link
+                  href={href}
+                  aria-current={isSelected ? "page" : undefined}
+                  aria-label={inlineLabel}
+                  className={rowClasses}
+                  onClick={() => {
+                    if (isMobile) setOpenMobile(false);
+                  }}>
+                  {innerLabel}
+                </Link>
+              );
+            }
+
+            return (
+              <div
+                className={rowClasses}
+                aria-label={inlineLabel}>
+                {innerLabel}
+              </div>
+            );
+          };
+
+          if (nestedCompanionIds.length === 0) {
+            return (
+              <React.Fragment key={`${p.userId}-${cid ?? "pending"}`}>
+                {renderPlayerRowBody(false, false)}
+              </React.Fragment>
+            );
+          }
+
+          return (
+            <SidebarCompanionNest
               key={`${p.userId}-${cid ?? "pending"}`}
-              href={href}
-              aria-current={isSelected ? "page" : undefined}
-              aria-label={inlineLabel}
-              className={rowClasses}
+              nestId={cid ?? `${p.userId}-pending`}
+              playerName={primaryLabel}
+              companionCharacterIds={nestedCompanionIds}
+              selectedCharacterId={selectedCharacterId}
+              headerSelected={isSelected}
+              rowBody={({ isOpen }) => renderPlayerRowBody(isOpen, true)}>
+              {nestedCompanions.map((npc) => {
+                const npcSelected = selectedCharacterId === npc._id;
+                const npcName = characterDisplayName(npc) || t("unnamedCharacter");
+                const npcHref = `/${locale}/characters/${encodeURIComponent(npc._id)}?sessionCode=${encodeURIComponent(sessionCode)}`;
+                return (
+                  <li key={npc._id}>
+                    <Link
+                      href={npcHref}
+                      aria-current={npcSelected ? "page" : undefined}
+                      aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false);
+                      }}
+                      className={cn(
+                        "relative flex min-w-0 w-full shrink-0 cursor-pointer items-center justify-between gap-1 py-2 px-3 rounded-[12px] text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+                        npcSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10",
+                      )}>
+                      {npcSelected && (
+                        <span
+                          className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <SidebarCharacterAvatar
+                        characterId={npc._id}
+                        storedValue={npc.avatar}
+                        sessionCode={sessionCode}
+                        alt={npcName}
+                        avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, npc._id, npc.avatar)}
+                      />
+                      <span
+                        className={cn(
+                          "text-sm min-w-0 flex-1 truncate",
+                          npcSelected && "font-bold text-black",
+                        )}>
+                        {npcName}
+                      </span>
+                      <SidebarCharacterKindBadge
+                        label={t("npcKind")}
+                        selected={npcSelected}
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
+            </SidebarCompanionNest>
+          );
+        })}
+        {ungroupedCompanions.map((npc) => {
+          const npcSelected = selectedCharacterId === npc._id;
+          const npcName = characterDisplayName(npc) || t("unnamedCharacter");
+          const npcHref = `/${locale}/characters/${encodeURIComponent(npc._id)}?sessionCode=${encodeURIComponent(sessionCode)}`;
+          return (
+            <Link
+              key={`ungrouped-companion-${npc._id}`}
+              href={npcHref}
+              aria-current={npcSelected ? "page" : undefined}
+              aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
               onClick={() => {
                 if (isMobile) setOpenMobile(false);
-              }}>
-              {innerLabel}
+              }}
+              className={cn(
+                "relative flex min-w-0 w-full shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 rounded-[12px] focus-visible:ring-1 focus-visible:ring-white/50",
+                npcSelected ? "bg-white pl-4 font-bold text-black" : "hover:bg-white/10",
+              )}>
+              {npcSelected && (
+                <span
+                  className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+              )}
+              <SidebarCharacterAvatar
+                characterId={npc._id}
+                storedValue={npc.avatar}
+                sessionCode={sessionCode}
+                alt={npcName}
+                avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, npc._id, npc.avatar)}
+              />
+              <span
+                className={cn(
+                  "text-sm min-w-0 flex-1 truncate",
+                  npcSelected && "font-bold text-black",
+                )}>
+                {npcName}
+              </span>
+              <SidebarCharacterKindBadge
+                label={t("npcKind")}
+                selected={npcSelected}
+              />
             </Link>
-          ) : (
-            <div
-              key={`${p.userId}-${cid ?? "pending"}`}
-              className={rowClasses}
-              aria-label={inlineLabel}>
-              {innerLabel}
-            </div>
           );
         })}
         {gmGuestCharacterIds.map((cid) => {
@@ -456,37 +585,35 @@ export default function GmSessionPlayersSidebarSection() {
               contextMenuLabel={t("characterActions")}
               className={cn(
                 "rounded-[12px] transition-all duration-100",
-                isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+                isSelected ? "bg-white text-black" : "hover:bg-white/10",
               )}>
               <Link
                 href={href}
                 aria-current={isSelected ? "page" : undefined}
                 aria-label={`${label} – ${t("gmGuestCharacter")}`}
                 className={cn(
-                  "flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
-                  isSelected && "font-bold",
+                  "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                  isSelected && "pl-4 font-bold text-black",
                 )}
                 onClick={() => {
                   if (isMobile) setOpenMobile(false);
                 }}>
-                <MediaAvatar
-                  scope="character"
-                  entityId={cid}
+                {isSelected && (
+                  <span
+                    className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
+                )}
+                <SidebarCharacterAvatar
+                  characterId={cid}
                   storedValue={avatarStored}
-                  size={SIDEBAR_AVATAR_SIZE}
                   sessionCode={sessionCode}
                   alt={label}
-                  enabled={Boolean(avatarStored?.trim())}
-                  avatarImageUrl={
-                    avatarStored?.trim()
-                      ? getAvatarUrl("character", cid, SIDEBAR_AVATAR_SIZE)
-                      : undefined
-                  }
-                  className="shrink-0"
+                  avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, cid, avatarStored)}
                 />
                 <span className="flex min-w-0 flex-1 flex-col gap-0">
                   <span className="truncate w-full text-sm">{label}</span>
-                  <span className={cn("truncate w-full text-xs", isSelected ? "text-white/70" : "text-white/50")}>
+                  <span className={cn("truncate w-full text-xs", isSelected ? "text-black/50" : "text-white/50")}>
                     {t("gmGuestCharacter")}
                   </span>
                 </span>

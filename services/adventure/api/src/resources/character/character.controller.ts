@@ -153,7 +153,7 @@ export class CharacterController {
 
     const minimal = await this.characterModel
       .findById(id)
-      .select('createdBy')
+      .select('createdBy kind linkedPlayerId')
       .exec();
 
     if (!minimal) {
@@ -170,10 +170,18 @@ export class CharacterController {
           'You can only view your own characters without an active session context',
         );
       }
+      const rosterView = minimal as unknown as {
+        kind?: string;
+        linkedPlayerId?: unknown;
+      };
+      const rawLinked = rosterView.linkedPlayerId;
+      const linkedPlayerId =
+        rosterView.kind === 'npc' && rawLinked ? String(rawLinked) : undefined;
       await this.sessionAccessService.assertRosterRead(
         req.headers.authorization,
         code,
         id.toString(),
+        linkedPlayerId,
       );
     }
 
@@ -221,10 +229,16 @@ export class CharacterController {
   @Delete(':id')
   async remove(
     @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+    @Query('deleteLinkedCompanions') deleteLinkedCompanions?: string,
   ): Promise<IResponse<Character>> {
     await this.validateResource(id);
 
-    return this.characterService.remove(id);
+    const cascade =
+      deleteLinkedCompanions === 'true' || deleteLinkedCompanions === '1';
+
+    return this.characterService.remove(id, {
+      deleteLinkedCompanions: cascade,
+    });
   }
 
   @Get('internal/:characterId/owner')
@@ -236,7 +250,12 @@ export class CharacterController {
   })
   async getCharacterOwnerInternal(
     @Param('characterId') characterId: string,
-  ): Promise<{ createdBy: string; avatar: string | null; kind: string }> {
+  ): Promise<{
+    createdBy: string;
+    avatar: string | null;
+    kind: string;
+    linkedPlayerId: string | null;
+  }> {
     if (!Types.ObjectId.isValid(characterId)) {
       throw new NotFoundException(`Character ${characterId} not found`);
     }
@@ -247,12 +266,17 @@ export class CharacterController {
       throw new NotFoundException(`Character ${characterId} not found`);
     }
 
+    const kind =
+      ((character as unknown as Record<string, unknown>)['kind'] as string) ??
+      'player';
+    const rawLinked = (character as unknown as { linkedPlayerId?: unknown })
+      .linkedPlayerId;
+
     return {
       createdBy: character.createdBy,
       avatar: character.avatar ?? null,
-      kind:
-        ((character as unknown as Record<string, unknown>)['kind'] as string) ??
-        'player',
+      kind,
+      linkedPlayerId: rawLinked ? String(rawLinked) : null,
     };
   }
 

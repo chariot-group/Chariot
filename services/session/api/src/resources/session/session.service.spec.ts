@@ -17,6 +17,7 @@ import { SessionLiveMetrics } from '@/metrics/session-live.metrics';
 function makeSession(overrides: Record<string, any> = {}) {
     return {
         id: 'sess-uuid-1',
+        code: 'CODE123',
         creatorUserId: 'user-uuid-1',
         creatorCampaignId: 'camp-uuid-1',
         status: SessionStatus.activated,
@@ -871,6 +872,326 @@ describe('SessionService', () => {
 
             await expect(
                 service.validateGmOwnership('CODE123', 'user-uuid-2', 'gm-uuid-1'),
+            ).rejects.toThrow(InternalServerErrorException);
+        });
+    });
+
+    // ── validateCharacterAccess companion ─────────────────────────────────────
+
+    describe('FR-session-player-companion-combatants', () => {
+        const playerId = '507f1f77bcf86cd799439011';
+        const companionId = '507f1f77bcf86cd799439099';
+
+        it('nominal: roster-read succeeds for a companion linked to an assigned player', async () => {
+            const gm = makeParticipant({
+                userId: 'gm-uuid-1',
+                status: ParticipantStatus.gameMaster,
+                characterId: null,
+            });
+            const player = makeParticipant({
+                userId: 'user-uuid-2',
+                status: ParticipantStatus.connected,
+                characterId: playerId,
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(
+                makeSession({ participants: [gm, player] }),
+            );
+
+            const result = await service.validateCharacterAccessForAdventure(
+                'CODE123',
+                'gm-uuid-1',
+                companionId,
+                'roster-read',
+                playerId,
+            );
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('nominal: gm-edit succeeds for the GM on a companion NPC', async () => {
+            const gm = makeParticipant({
+                userId: 'gm-uuid-1',
+                status: ParticipantStatus.gameMaster,
+                characterId: null,
+            });
+            const player = makeParticipant({
+                userId: 'user-uuid-2',
+                status: ParticipantStatus.connected,
+                characterId: playerId,
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(
+                makeSession({ participants: [gm, player] }),
+            );
+
+            const result = await service.validateCharacterAccessForAdventure(
+                'CODE123',
+                'gm-uuid-1',
+                companionId,
+                'gm-edit',
+                playerId,
+            );
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('nominal: GM companion lookup succeeds for assigned player ids', async () => {
+            const gm = makeParticipant({
+                userId: 'gm-uuid-1',
+                status: ParticipantStatus.gameMaster,
+                characterId: null,
+            });
+            const player = makeParticipant({
+                userId: 'user-uuid-2',
+                status: ParticipantStatus.connected,
+                characterId: playerId,
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(
+                makeSession({ participants: [gm, player] }),
+            );
+
+            const result = await service.validateCompanionLookupForAdventure(
+                'CODE123',
+                'gm-uuid-1',
+                [playerId],
+            );
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('edge: companion lookup with empty player ids is allowed for the GM', async () => {
+            const gm = makeParticipant({
+                userId: 'gm-uuid-1',
+                status: ParticipantStatus.gameMaster,
+                characterId: null,
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(makeSession({ participants: [gm] }));
+
+            const result = await service.validateCompanionLookupForAdventure(
+                'CODE123',
+                'gm-uuid-1',
+                [],
+            );
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('edge: GM companion lookup succeeds when the GM chose a PC on the roster', async () => {
+            const gm = makeParticipant({
+                userId: 'gm-uuid-1',
+                status: ParticipantStatus.gameMaster,
+                characterId: playerId,
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(makeSession({ participants: [gm] }));
+
+            const result = await service.validateCompanionLookupForAdventure(
+                'CODE123',
+                'gm-uuid-1',
+                [playerId],
+            );
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('failure: non-participant cannot roster-read a companion', async () => {
+            const player = makeParticipant({
+                userId: 'user-uuid-2',
+                status: ParticipantStatus.connected,
+                characterId: playerId,
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(makeSession({ participants: [player] }));
+
+            await expect(
+                service.validateCharacterAccessForAdventure(
+                    'CODE123',
+                    'outsider',
+                    companionId,
+                    'roster-read',
+                    playerId,
+                ),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('failure: non-GM cannot list companions of another player', async () => {
+            const player = makeParticipant({
+                userId: 'user-uuid-2',
+                status: ParticipantStatus.connected,
+                characterId: playerId,
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(makeSession({ participants: [player] }));
+
+            await expect(
+                service.validateCompanionLookupForAdventure('CODE123', 'user-uuid-2', [playerId]),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        describe('canBroadcastCharacterSheetUpdate', () => {
+            const sessionWithRoster = () => {
+                const gm = makeParticipant({
+                    userId: 'gm-uuid-1',
+                    status: ParticipantStatus.gameMaster,
+                    characterId: null,
+                });
+                const player = makeParticipant({
+                    userId: 'user-uuid-2',
+                    status: ParticipantStatus.connected,
+                    characterId: playerId,
+                });
+                return makeSession({ participants: [gm, player] });
+            };
+
+            it('nominal: GM can broadcast any character sheet update', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(session, 'gm-uuid-1', companionId),
+                ).toEqual({ ok: true });
+            });
+
+            it('nominal: player can broadcast their assigned PC', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(session, 'user-uuid-2', playerId),
+                ).toEqual({ ok: true });
+            });
+
+            it('nominal: player can broadcast their linked companion with linkedPlayerId', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(
+                        session,
+                        'user-uuid-2',
+                        companionId,
+                        playerId,
+                    ),
+                ).toEqual({ ok: true });
+            });
+
+            it('failure: player cannot broadcast a companion without linkedPlayerId', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(session, 'user-uuid-2', companionId),
+                ).toEqual({ ok: false, reason: 'Character is not on this session roster' });
+            });
+
+            it('failure: player cannot broadcast another participant PC', () => {
+                const session = sessionWithRoster();
+                expect(
+                    service.canBroadcastCharacterSheetUpdate(session, 'user-uuid-2', 'other-pc-id'),
+                ).toEqual({ ok: false, reason: 'Character is not on this session roster' });
+            });
+        });
+    });
+
+    // ── validateCoParticipant ───────────────────────────────────────────────────
+    // @see FR-user-public-profile-read-access
+
+    describe('validateCoParticipant', () => {
+        it('nominal: returns ok when requester and target are both regular participants', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [
+                    makeParticipant({ userId: 'user-uuid-2' }),
+                    makeParticipant({ userId: 'user-uuid-3' }),
+                ],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            const result = await service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3');
+
+            expect(result.data).toEqual({ ok: true });
+            expect(result.message).toBe('Access granted');
+        });
+
+        it('edge: returns ok when the target is the game master (creatorUserId, not a participant row)', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            const result = await service.validateCoParticipant('CODE123', 'user-uuid-2', 'gm-uuid-1');
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('edge: returns ok while a participant is disconnected (reconnect grace window)', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [
+                    makeParticipant({ userId: 'user-uuid-2' }),
+                    makeParticipant({ userId: 'user-uuid-3', status: ParticipantStatus.disconnected }),
+                ],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            const result = await service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3');
+
+            expect(result.data).toEqual({ ok: true });
+        });
+
+        it('race: throws ForbiddenException once the target has left the session', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('error: throws GoneException when the session is closed', async () => {
+            const session = makeSession({
+                status: SessionStatus.closed,
+                participants: [
+                    makeParticipant({ userId: 'user-uuid-2' }),
+                    makeParticipant({ userId: 'user-uuid-3' }),
+                ],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3'),
+            ).rejects.toThrow(GoneException);
+        });
+
+        it('error: throws ForbiddenException when requester is not a participant of this session', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'not-a-participant', 'user-uuid-2'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('error: throws ForbiddenException when target is not a participant of this session', async () => {
+            const session = makeSession({
+                creatorUserId: 'gm-uuid-1',
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValue(session);
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'user-uuid-2', 'some-stranger'),
+            ).rejects.toThrow(ForbiddenException);
+        });
+
+        it('error: throws NotFoundException when session does not exist', async () => {
+            mockPrismaSession.findFirst.mockResolvedValue(null);
+
+            await expect(
+                service.validateCoParticipant('BADCODE', 'user-uuid-2', 'user-uuid-3'),
+            ).rejects.toThrow(NotFoundException);
+        });
+
+        it('error: throws InternalServerErrorException on unexpected prisma error', async () => {
+            mockPrismaSession.findFirst.mockRejectedValue(new Error('DB failure'));
+
+            await expect(
+                service.validateCoParticipant('CODE123', 'user-uuid-2', 'user-uuid-3'),
             ).rejects.toThrow(InternalServerErrorException);
         });
     });

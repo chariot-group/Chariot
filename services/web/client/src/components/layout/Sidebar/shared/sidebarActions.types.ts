@@ -5,6 +5,8 @@ export type SidebarActionVariant = "default" | "destructive";
 export interface SidebarActionItem {
   id: string;
   label: string;
+  /** Full label when `label` embeds a truncated name (context menu `title` / SR). */
+  labelTitle?: string;
   onSelect: () => void;
   variant?: SidebarActionVariant;
   icon?: ReactNode;

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -36,5 +38,11 @@ describe("CharactersWithoutGroupList — session character indicator", () => {
     const sessionCharacterId = deriveSessionCharacterId(true, "launched", "char-abc");
     expect(sessionCharacterId === "char-abc").toBe(true);
     expect(sessionCharacterId === "char-xyz").toBe(false);
+  });
+
+  it("nominal: player-space sidebar still shows session companions for the GM", () => {
+    const listPath = resolve(process.cwd(), "src/components/layout/Sidebar/CharactersWithoutGroupList.tsx");
+    const source = readFileSync(listPath, "utf8");
+    expect(source).toContain("GmSessionPlayersSidebarSection");
   });
 });

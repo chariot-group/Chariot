@@ -8,16 +8,29 @@ import { cn } from "@/lib/utils";
 import { CircleAlert } from "lucide-react";
 import { useHorizontalWheelScroll } from "@/hooks/useHorizontalWheelScroll";
 
-export type CharacterTab = "general" | "battle" | "magic" | "inventory" | "history";
+export const CHARACTER_TABS = ["general", "battle", "magic", "inventory", "history"] as const;
+export type BaseCharacterTab = (typeof CHARACTER_TABS)[number];
+export type CharacterTab = BaseCharacterTab | "companions";
+export const PLAYER_CHARACTER_TABS: CharacterTab[] = [...CHARACTER_TABS, "companions"];
+
+/** @see FR-npc-player-link — Companions tab is Player-space Player sheets, plus session-GM assigned Players. */
+export function tabsForCharacterSheet(
+  isPlayerCharacter: boolean,
+  isPlayerSpace: boolean,
+  showSessionGmCompanionsTab = false,
+): readonly CharacterTab[] {
+  return isPlayerCharacter && (isPlayerSpace || showSessionGmCompanionsTab)
+    ? PLAYER_CHARACTER_TABS
+    : CHARACTER_TABS;
+}
 
 interface CharacterTabsProps {
   activeTab: CharacterTab;
+  tabs?: readonly CharacterTab[];
   listClassName?: string;
   triggerClassName?: string;
   tabsWithErrors?: Partial<Record<CharacterTab, boolean>>;
 }
-
-export const CHARACTER_TABS: CharacterTab[] = ["general", "battle", "magic", "inventory", "history"];
 
 /** Domain color of each tab, also the tone of the sheet footer primary button (FR-frontend-button-system). */
 export const TAB_COLORS: Record<CharacterTab, Exclude<ButtonTone, "violet">> = {
@@ -26,10 +39,14 @@ export const TAB_COLORS: Record<CharacterTab, Exclude<ButtonTone, "violet">> = {
   magic: "pink",
   inventory: "yellow",
   history: "green",
+  companions: "purple",
 };
+
+const WHITE_TEXT_TABS: CharacterTab[] = ["battle", "companions"];
 
 export default function CharacterTabs({
   activeTab,
+  tabs = CHARACTER_TABS,
   listClassName,
   triggerClassName,
   tabsWithErrors,
@@ -51,23 +68,29 @@ export default function CharacterTabs({
           listClassName,
         )}
         role="tablist"
-        aria-label={t("tabs.general")}>
-        {CHARACTER_TABS.map((tab) => {
+        aria-label={t("tabs.listLabel")}>
+        {tabs.map((tab) => {
           const hasError = Boolean(tabsWithErrors?.[tab]);
+          const isActive = activeTab === tab;
 
           return (
             <TabsTrigger
               key={tab}
               value={tab}
               role="tab"
-              aria-selected={activeTab === tab}
+              aria-selected={isActive}
               aria-controls={`${tab}-content`}
               data-invalid={hasError || undefined}
               className={cn(
                 "relative shrink-0 grow-0 flex-none rounded-none border-0 border-l border-frame py-1.5 text-sm sm:text-base font-medium whitespace-nowrap transition-colors first:border-l-0",
                 // Keyboard-only focus, drawn inside the button (no white outline on click)
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-                activeTab === tab ? `bg-${TAB_COLORS[tab]} text-black` : "bg-transparent text-white hover:bg-white/10",
+                isActive
+                  ? cn(
+                      `bg-${TAB_COLORS[tab]}`,
+                      WHITE_TEXT_TABS.includes(tab) ? "text-white" : "text-black",
+                    )
+                  : "bg-transparent text-white hover:bg-white/10",
                 hasError && "ring-2 ring-inset ring-red/80",
                 triggerClassName,
               )}>

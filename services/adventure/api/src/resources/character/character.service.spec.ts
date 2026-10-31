@@ -257,6 +257,9 @@ describe('CharacterService - remove', () => {
     characterModel = {
       findById: jest.fn().mockReturnThis(),
       exec: jest.fn(),
+      updateMany: jest.fn().mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ modifiedCount: 0 }),
+      }),
     };
     groupModel = {
       updateOne: jest.fn().mockReturnThis(),
@@ -389,5 +392,75 @@ describe('CharacterService - remove', () => {
     characterModel.exec.mockRejectedValue(goneError);
 
     await expect(service.remove(characterId)).rejects.toThrow(GoneException);
+  });
+});
+
+describe('CharacterService.remove - FR-npc-player-link', () => {
+  let service: CharacterService;
+  let characterModel: any;
+  const characterId = new Types.ObjectId();
+  const updateManyExec = jest.fn().mockResolvedValue({ modifiedCount: 2 });
+
+  beforeEach(async () => {
+    const mockPlayer = {
+      _id: characterId,
+      kind: 'player',
+      groups: [],
+      deletedAt: null,
+      save: jest.fn().mockResolvedValue(true),
+    };
+    characterModel = {
+      findById: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue(mockPlayer),
+      updateMany: jest.fn().mockReturnValue({ exec: updateManyExec }),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CharacterService,
+        { provide: getModelToken(Character.name), useValue: characterModel },
+        {
+          provide: getModelToken(Group.name),
+          useValue: { updateOne: jest.fn().mockReturnThis(), exec: jest.fn() },
+        },
+      ],
+    }).compile();
+
+    service = module.get<CharacterService>(CharacterService);
+  });
+
+  it('nominal: deleting a Player unlinks its NPCs', async () => {
+    await service.remove(characterId);
+
+    expect(characterModel.updateMany).toHaveBeenCalledWith(
+      { kind: 'npc', linkedPlayerId: characterId, deletedAt: null },
+      { $set: { linkedPlayerId: null } },
+    );
+    expect(updateManyExec).toHaveBeenCalled();
+  });
+
+  it('nominal: deleting a Player with deleteLinkedCompanions soft-deletes companions', async () => {
+    const companionSave = jest.fn().mockResolvedValue(true);
+    const companion = {
+      _id: new Types.ObjectId(),
+      kind: 'npc',
+      groups: ['group-a'],
+      deletedAt: null,
+      save: companionSave,
+    };
+    characterModel.find = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([companion]),
+    });
+
+    await service.remove(characterId, { deleteLinkedCompanions: true });
+
+    expect(characterModel.find).toHaveBeenCalledWith({
+      kind: 'npc',
+      linkedPlayerId: characterId,
+      deletedAt: null,
+    });
+    expect(companion.deletedAt).toBeInstanceOf(Date);
+    expect(companionSave).toHaveBeenCalled();
+    expect(characterModel.updateMany).not.toHaveBeenCalled();
   });
 });

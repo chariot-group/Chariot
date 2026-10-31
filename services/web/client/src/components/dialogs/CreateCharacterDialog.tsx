@@ -25,20 +25,37 @@ import {
   CREATE_CHARACTER_PLAYER_BUTTON,
 } from "@/components/dialogs/createCharacterDialogStyles";
 import { cn } from "@/lib/utils";
+import {
+  buildCreateCharacterPath,
+  type CampaignCreateContext,
+  type CreateCharacterChoice,
+} from "@/lib/codexCharacterCreate";
 
 interface CreateCharacterDialogProps {
   /** The element that opens the dialog (e.g. a Button). */
   children: React.ReactNode;
-  /** Campaign ID for the URL */
-  campaignId: string;
-  /** Group ID for the URL */
-  groupId: string;
+  /** Campaign ID for the URL (GM group create). Omit in Player space. */
+  campaignId?: string;
+  /** Group ID for the URL (GM group create). Omit in Player space. */
+  groupId?: string;
+  /** Hide the Player choice (Companions « create linked »). */
+  npcOnly?: boolean;
+  /** Forwarded on NPC and Codex create routes (Player space). */
+  linkedPlayerId?: string | null;
 }
 
 /**
  * Dialog for choosing how to create a character (manual player/NPC or community library import)
+ * @see FR-player-space-codex-character-creation
+ * @see FR-npc-player-link
  */
-export function CreateCharacterDialog({ children, campaignId, groupId }: CreateCharacterDialogProps) {
+export function CreateCharacterDialog({
+  children,
+  campaignId,
+  groupId,
+  npcOnly = false,
+  linkedPlayerId,
+}: CreateCharacterDialogProps) {
   const t = useTranslations("sidebar");
   const tMagic = useTranslations("characterDetail.magic");
   const [open, setOpen] = useState(false);
@@ -46,12 +63,14 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
   const { setOpenMobile } = useSidebar();
 
   const { isAvailable: isCodexAvailable } = useCodexHealth();
-  const libraryUnavailableMessageId = "create-character-library-unavailable";
+  const libraryUnavailableMessageId = `${React.useId()}-create-character-library-unavailable`;
+  const campaignContext: CampaignCreateContext | undefined =
+    campaignId && groupId ? { campaignId, groupId } : undefined;
 
-  const handleSelectType = (type: "players" | "npcs" | "npcs-codex") => {
+  const handleSelectType = (type: CreateCharacterChoice) => {
     setOpen(false);
     setOpenMobile(false);
-    router.push(`/campaigns/${campaignId}/groups/${groupId}/characters/new/${type}`);
+    router.push(buildCreateCharacterPath(type, campaignContext, { linkedPlayerId }));
   };
 
   return (
@@ -67,18 +86,20 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
 
         <div className="flex flex-col gap-4">
           <div
-            className={CREATE_CHARACTER_MANUAL_GROUP}
+            className={cn(CREATE_CHARACTER_MANUAL_GROUP, npcOnly && "sm:grid-cols-1")}
             role="group"
             aria-label={t("createCharacterDialogDescription")}>
-            <Button
-              type="button"
-              variant="primary"
-              aria-label={t("createCharacterPlayerAriaLabel")}
-              className={CREATE_CHARACTER_PLAYER_BUTTON}
-              onClick={() => handleSelectType("players")}>
-              <User aria-hidden="true" />
-              {t("playerCharacter")}
-            </Button>
+            {!npcOnly ? (
+              <Button
+                type="button"
+                variant="primary"
+                aria-label={t("createCharacterPlayerAriaLabel")}
+                className={CREATE_CHARACTER_PLAYER_BUTTON}
+                onClick={() => handleSelectType("players")}>
+                <User aria-hidden="true" />
+                {t("playerCharacter")}
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="secondary"
@@ -125,7 +146,7 @@ export function CreateCharacterDialog({ children, campaignId, groupId }: CreateC
               disabled={!isCodexAvailable}
               aria-label={t("createCharacterLibraryBrowseAriaLabel")}
               aria-describedby={!isCodexAvailable ? libraryUnavailableMessageId : undefined}
-              onClick={() => handleSelectType("npcs-codex")}>
+              onClick={() => handleSelectType("codex")}>
               {t("createCharacterLibraryBrowse")}
               <ArrowRight aria-hidden="true" />
             </Button>

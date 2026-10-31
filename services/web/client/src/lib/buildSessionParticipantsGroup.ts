@@ -1,9 +1,11 @@
 import characterService from "@/services/CharacterService";
 import type { SessionParticipant } from "@/services/SessionService";
-import type { Player } from "@/types/character";
+import type { NPC, Player } from "@/types/character";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import { fetchSessionParticipantDisplayName } from "@/lib/sessionParticipantDisplayNames";
+import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
+import { assignedPlayerCharacterIds } from "@/lib/sessionPlayerCompanions";
 
 export const SESSION_PARTICIPANTS_GROUP_LABEL = "Participants session";
 
@@ -14,6 +16,8 @@ export type SessionParticipantsGroupCharacter = {
     surname?: string;
     avatar?: string;
     createdBy?: string;
+    kind?: string;
+    linkedPlayerId?: string | null;
     stats?: {
         currentHitPoints?: number;
         maxHitPoints?: number;
@@ -31,6 +35,26 @@ export type SessionParticipantsGroupCharacter = {
         level?: number;
     };
 };
+
+function companionToGroupCharacter(
+    companion: SessionParticipantsGroupCharacter | NPC,
+): SessionParticipantsGroupCharacter {
+    const npc = companion as NPC;
+    return {
+        _id: companion._id,
+        firstname: companion.firstname,
+        lastname: companion.lastname,
+        surname: companion.surname,
+        avatar: companion.avatar,
+        createdBy: companion.createdBy,
+        kind: companion.kind ?? "npc",
+        linkedPlayerId: linkedPlayerIdOf(npc) ?? companion.linkedPlayerId ?? null,
+        stats: companion.stats,
+        challenge: npc.challenge,
+        profile: npc.profile,
+        progression: (companion as Player).progression,
+    };
+}
 
 export type SessionParticipantsBattleGroup = {
     _id: string;
@@ -56,6 +80,7 @@ export function resolveSessionParticipantBattleFallbackName(
 async function enrichParticipantDisplayNames(
     participants: SessionParticipant[],
     displayNames: Record<string, string>,
+    sessionCode?: string | null,
 ): Promise<Record<string, string>> {
     const enriched = { ...displayNames };
     const missing = participants.filter((participant) => {
@@ -66,7 +91,7 @@ async function enrichParticipantDisplayNames(
 
     await Promise.all(
         missing.map(async (participant) => {
-            enriched[participant.userId] = await fetchSessionParticipantDisplayName(participant.userId);
+            enriched[participant.userId] = await fetchSessionParticipantDisplayName(participant.userId, sessionCode);
         }),
     );
 
@@ -80,11 +105,13 @@ export async function buildSessionParticipantsGroup(
     participantDisplayNames: Record<string, string>,
     sessionCode?: string | null,
     gmGuestCharacterIds?: string[],
+    companionCharacters?: SessionParticipantsGroupCharacter[],
 ): Promise<SessionParticipantsBattleGroup> {
     const nonGameMasterParticipants = participants.filter((participant) => participant.status !== "gameMaster");
     const resolvedDisplayNames = await enrichParticipantDisplayNames(
         nonGameMasterParticipants,
         participantDisplayNames,
+        sessionCode,
     );
 
     const characterById = new Map<string, SessionParticipantsGroupCharacter>();
@@ -172,6 +199,32 @@ export async function buildSessionParticipantsGroup(
                 uniqueCharacters.set(guestId, existing);
             }
         }
+    }
+
+    const companionsById = new Map<string, SessionParticipantsGroupCharacter>();
+    for (const companion of companionCharacters ?? []) {
+        if (!companion._id) continue;
+        companionsById.set(companion._id, companionToGroupCharacter(companion));
+    }
+
+    const playerIds = assignedPlayerCharacterIds(participants);
+    if (sessionCode && playerIds.length > 0) {
+        try {
+            const fetchedCompanions = await characterService.getNpcsByLinkedPlayers(playerIds, {
+                sessionCode,
+            });
+            for (const companion of fetchedCompanions) {
+                if (!companion._id || companionsById.has(companion._id)) continue;
+                companionsById.set(companion._id, companionToGroupCharacter(companion));
+            }
+        } catch {
+            // FR-session-player-companion-combatants: lookup failure must not block battle start.
+        }
+    }
+
+    for (const companion of companionsById.values()) {
+        if (uniqueCharacters.has(companion._id)) continue;
+        uniqueCharacters.set(companion._id, companion);
     }
 
     const now = new Date().toISOString();

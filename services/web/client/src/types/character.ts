@@ -308,6 +308,8 @@ export interface Character {
     conditions: Conditions;
     groups: Group[];
     deletedAt?: string | null;
+    /** Discriminator returned by the adventure API. */
+    kind?: "player" | "npc";
 }
 
 export interface Player extends Character {
@@ -370,6 +372,8 @@ export interface NPC extends Character {
     challenge: Challenge;
     profile: NPCProfile;
     hitPointsRoll?: string;
+    /** @see FR-npc-player-link */
+    linkedPlayerId?: string | null;
 }
 
 export interface PaginatedCharactersResponse {

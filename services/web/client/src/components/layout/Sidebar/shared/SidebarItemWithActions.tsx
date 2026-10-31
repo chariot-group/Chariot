@@ -70,7 +70,8 @@ function SidebarActionMenuItems({
               return;
             }
             action.onSelect();
-          }}>
+          }}
+          title={action.labelTitle ?? action.label}>
           <SidebarActionLabel action={action} />
         </ContextMenuItem>
       );
@@ -102,7 +103,8 @@ function SidebarActionMenuItems({
             return;
           }
           action.onSelect();
-        }}>
+        }}
+        title={action.labelTitle ?? action.label}>
         <SidebarActionLabel action={action} />
       </DropdownMenuItem>
     );
