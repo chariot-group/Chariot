@@ -18,10 +18,10 @@ const dialogSource = readFileSync(
 );
 
 describe("CreateCharacterDialog — styles", () => {
-  it("nominal: player button is the white primary button, NPC button the dark secondary one", () => {
+  it("nominal: player and NPC buttons share the same dark secondary hierarchy", () => {
     const player = cn(
       buttonVariants({
-        variant: "primary",
+        variant: "secondary",
         className: CREATE_CHARACTER_PLAYER_BUTTON,
       }),
     );
@@ -32,20 +32,26 @@ describe("CreateCharacterDialog — styles", () => {
       }),
     );
 
-    expect(player).toContain("bg-white text-black");
-    expect(player).not.toContain("bg-primary");
+    expect(player).toBe(npc);
+    expect(player).toContain("bg-gray-middle-light text-white");
+    expect(player).not.toMatch(/(^|\s)bg-white(\s|$)/);
     expect(player).toContain("focus-visible:ring-2");
-    expect(npc).toContain("bg-gray-middle-light text-white");
-    expect(npc).not.toMatch(/(^|\s)bg-white(\s|$)/);
-    expect(dialogSource).toMatch(/variant="primary"\s+aria-label=\{t\("createCharacterPlayerAriaLabel"\)\}/);
+    expect(dialogSource).toMatch(/variant="secondary"\s+aria-label=\{t\("createCharacterPlayerAriaLabel"\)\}/);
+    expect(dialogSource).toMatch(/variant="secondary"\s+aria-label=\{t\("createCharacterNpcAriaLabel"\)\}/);
+    expect(dialogSource).not.toMatch(/variant="primary"/);
     expect(dialogSource).toMatch(/className=\{CREATE_CHARACTER_NPC_BUTTON\}/);
     expect(dialogSource).toMatch(/<Bot aria-hidden="true" \/>/);
+  });
+
+  it("edge: NPC-only mode keeps the NPC button alone on a single column", () => {
+    expect(dialogSource).toContain('npcOnly && "sm:grid-cols-1"');
+    expect(dialogSource).toMatch(/\{!npcOnly \? \(\s*<Button/);
   });
 
   it("edge: manual buttons stay on one line, side by side from sm and stacked on mobile", () => {
     const player = cn(
       buttonVariants({
-        variant: "primary",
+        variant: "secondary",
         className: CREATE_CHARACTER_PLAYER_BUTTON,
       }),
     );

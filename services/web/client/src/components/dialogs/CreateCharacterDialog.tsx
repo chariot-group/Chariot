@@ -92,7 +92,7 @@ export function CreateCharacterDialog({
             {!npcOnly ? (
               <Button
                 type="button"
-                variant="primary"
+                variant="secondary"
                 aria-label={t("createCharacterPlayerAriaLabel")}
                 className={CREATE_CHARACTER_PLAYER_BUTTON}
                 onClick={() => handleSelectType("players")}>
