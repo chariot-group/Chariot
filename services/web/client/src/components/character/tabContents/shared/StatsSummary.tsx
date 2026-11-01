@@ -22,7 +22,8 @@ const SPEEDS: Array<{ key: SpeedKey; tooltipKey: string; Icon: typeof Footprints
 
 const ICON_CLASS = "size-4 shrink-0 text-muted-foreground sm:size-5";
 
-function KeyStat({
+/** One tinted label/value cell (statistics, spellcasting). */
+export function KeyStat({
   label,
   accessibleLabel,
   icon,

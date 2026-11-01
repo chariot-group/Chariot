@@ -5698,3 +5698,67 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/general/shared/generalBentoLayout.ts`, `GeneralSectionCard.tsx`
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-inventory-bento-layout, FR-character-history-appearance-fit (superseded), FR-distance-unit-conversion, FR-form-field-validation, FR-tooltip-accessibility, FR-frontend-design
 - `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §6 responsive, §9 accessibility
+
+---
+
+## FR-character-magic-list-card: Magic Tab as Bento Grid and Spell List Card (PC and NPC)
+
+**Rule**: The character sheet **Magic** tab (Player and NPC, read and edit modes, including the Codex monster preview) MUST drop the list / detail split and use the bento grid (FR-character-general-bento-layout) with two cards: a **Spellcasting** card and one **Spells** list card following FR-character-list-card. A spell is a row of that list: it expands in place to show its details (read) or its form (edit). Data model, slot rules, preparation rules and in-session casting behavior are unchanged.
+
+**Requirements**:
+
+- **Layout** (same grid and tokens as the other tabs: 2 / 4 / 12 columns, gap `gap-3 md:gap-4`, `GeneralSectionCard`, accent `pink`):
+  - Order, all full width at every breakpoint: the **block selector** (when shown), then Spellcasting as a **compact band** (heading and key stats on as few lines as the width allows), then Spells. The selector sits **above** the Spellcasting card, outside it, because it switches both cards (functional decision 2026-11-01). The Spellcasting card MUST NOT hold the slot list nor stretch to the height of the spell list (functional decision 2026-11-01: the side card took too much space).
+  - No inner screen switching: the « back to list » view, `showMobileDetails` and the separate detail column are removed in read and edit modes.
+- **Spellcasting card** (one per active spellcasting block):
+  - **Block selector** (above the card, see Layout) when the character has several spellcasting blocks, or in edit mode when a class can still be added: a segmented toggle (FR-frontend-button-system: active = primary white, inactive = secondary) labelled with the class name and level (PC) or the block name (NPC). Edit mode ends the selector with « Add a class »; « Remove this class » stays in the Spellcasting card header (existing rules on available classes unchanged).
+  - **Key stats row** (same cell style as FR-character-statistics-card): spellcasting ability, spell attack bonus, save DC and, for PC classes that prepare spells, prepared count `current / max`. Each cell has a visible short label and an accessible full name (fixes the read-mode cell that showed the attack label next to the ability).
+  - **Edit mode**: class name and ability selects; save DC and attack bonus inputs with the existing auto-calculated value and « sync » action (behavior unchanged).
+  - Spell slots are **not** shown in this card: they live on the level groups of the Spells list (below).
+- **Spells list card** (FR-character-list-card: one card, header, plain rows, bounded):
+  - **Header**: title « Spells », total count badge, expand / collapse all. Edit mode shows **two visible buttons**: « Add a spell » (primary action of the card) and « Add from Codex » (secondary, disabled with its explanation when the Codex is unavailable). No add action hidden in a menu.
+  - **Toolbar line** (PC classes that prepare spells): the existing « change prepared spells » toggle (`secondary` + pressed state) and its status banner.
+  - **Level groups inside the single list**: rows are grouped by level (cantrips, level 1…9) or, for innate blocks, by uses per day. Each group starts with a **group header** (`h3`, tinted bar, sticky at the top of the scroll area while its rows are visible) so spells are easy to scan by level. A group appears only when it has at least one spell (FR-magic-spell-level-categories). Groups are not collapsible; rows are.
+  - **Slots on the group header** (by-level blocks, level ≥ 1): read mode shows the castable count `remaining / total` next to the level name (cantrips show « ∞ »); edit mode shows the `total` number input there (`used` stays driven by casting and rests, as today). **Innate blocks**: each spell row shows its own `used / uses per day` counter.
+  - **Collapsed row**: line 1 the name (« New spell » when empty); line 2 (muted, one line) the main traits joined with ` · `: school · casting time · range · effect (damage entries joined with ` + `, FR-character-spell-multi-damage, or healing). Right side: « Concentration » text tag when the spell requires it, prepared marker for prepared classes (level ≥ 1), chevron; edit mode adds the delete button.
+  - **Expanded row, read mode**: description (pre-wrap), then a compact definition list (school, casting time, range, duration, components, damage / healing, uses per day for NPC). In session, the existing **cast controls** (slot choice with upcast, cantrip cast, concentration prompt — FR-tracker-concentration) sit under the description; their behavior and session messages are unchanged.
+  - **Expanded row, edit mode** (tinted row, `ListFormSection` groups): **General** (name — wide —, level, school, effect type; NPC innate: uses per day), **Casting** (casting time, range, duration, components), **Effects** (damage entries — one line each, add / remove, FR-character-spell-multi-damage —, healing dice), **Description** (full width).
+  - **Preparation mode** (PC prepared classes): each level ≥ 1 row shows a labelled prepare toggle; the max prepared limit is enforced as today (blocked toggle with its explanation).
+- **Focus and stable rows (fixes the broken autofocus)**:
+  - Expanding a row never moves focus by itself; focus stays on the row trigger.
+  - « Add a spell » appends the spell in its level group, expands it, scrolls it into view inside the bounded list and moves focus to its **name** field — every time, on every breakpoint.
+  - « Add from Codex »: when the dialog closes after an import, the imported row is expanded, scrolled into view and focused (row trigger).
+  - Changing a spell's level in edit mode moves the row to its new group **without remounting it**: the row stays expanded and focus stays in the level field (rows are siblings of one list with a stable key).
+  - Deleting a spell moves focus to the next row, else the previous row, else « Add a spell » (FR-character-list-card). Switching spellcasting block moves focus to the selected toggle option.
+- **Validation** (FR-form-field-validation): a spell with an invalid field gets the row error ring, auto-expands on submit and the first invalid row is scrolled into view; group sub-headings and the block selector show the existing error indicator (text + icon) when they contain errors.
+- **Single render per card**, `min-w-0`, long names and values wrap (expanded) or truncate (collapsed), no duplicated mobile / desktop markup.
+
+**Accessibility (FR-frontend-design)**:
+
+- Spellcasting and Spells cards are `region`s labelled by their headings; group sub-headings are real headings; rows are accordion triggers with an accessible name (spell name + level or uses group, + « contains errors » when invalid).
+- The block selector is a toggle group with `aria-pressed`; key stat cells are `group`s with full accessible names.
+- Every add / delete / prepare / cast control has an explicit accessible name including the spell name; no information by color only (concentration and prepared state are text or labelled icons).
+- Tab order follows the DOM; no positive `tabIndex`; keyboard users can add, fill, reorder by level and remove spells without the mouse.
+
+**Prohibitions**:
+
+- List / detail split, « back to list » screens or hiding the list to show a spell.
+- Programmatic focus on selection or expansion (focus moves only on add, Codex import and delete).
+- An add action reachable only through a dropdown.
+- Nested cards inside the Spells list (per spell, per field or per level).
+- Changing slot, preparation, Codex import or session cast behavior as part of this layout change.
+
+**Tests**:
+
+- Nominal: read and edit render one grid with the Spellcasting and Spells cards; when shown, the block selector is the grid child before the Spellcasting card; spells are rows grouped by level with only non-empty groups; collapsed row shows school · casting time · range · damage; expanded read row shows the definition list and, in session, the cast controls.
+- Edge: « Add a spell » expands the new row and focuses its name field without any prior selection; changing a spell level keeps the same row element expanded under its new group; innate block groups by uses per day; several spellcasting blocks switch through the toggle.
+- Failure / guard: an invalid spell gets the error ring; heading ids are unique, every `aria-labelledby` resolves, no positive `tabindex`, no nested `data-slot="card"` inside rows. Focus moves (Add, Codex import, Delete, level change) are checked manually: the web client has no DOM test runner.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/view/CharacterMagicView.tsx`
+- `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/magic/SpellCastControls.tsx`, `SpellPreparedPill.tsx`, `CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/tabContents/shared/listCard/ListCard.tsx`, `ListRow.tsx`, `ListFormSection.tsx`
+- `docs/functional-rules.md` — FR-character-list-card, FR-character-general-bento-layout, FR-character-statistics-card, FR-magic-spell-level-categories, FR-character-spell-multi-damage, FR-tracker-concentration, FR-form-field-validation, FR-frontend-button-system, FR-frontend-design
+- `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §5.3.3 list card, §9 accessibility

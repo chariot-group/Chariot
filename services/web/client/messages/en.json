@@ -1763,6 +1763,19 @@
           "previousLanguageButton": "Back",
           "loadTranslationError": "Could not load this language. Try again or pick another."
         }
+      },
+      "spellcastingTitle": "Spellcasting",
+      "abilityShort": "Abil.",
+      "concentration": "Concentration",
+      "noSpells": "No spells",
+      "addCodexSpellShort": "Codex",
+      "spellRowLabel": "{name} — {group}",
+      "slotsRemainingAria": "Level {level} slots: {current} of {total} left",
+      "formSections": {
+        "general": "General",
+        "casting": "Casting",
+        "effects": "Effects",
+        "description": "Description"
       }
     }
   },

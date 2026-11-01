@@ -86,6 +86,8 @@ export default function ListRow({
       <AccordionContent
         className={cn("px-2 pb-3 text-sm sm:text-base", contentClassName)}
         role="region"
+        // A custom trigger id replaces Radix's one: point the region back to the real trigger.
+        aria-labelledby={triggerId}
         aria-label={contentLabel}>
         {children}
       </AccordionContent>

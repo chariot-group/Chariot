@@ -82,9 +82,17 @@ export default function SpellPreparedPill({
         }
       }}>
       {isPrepared ? (
-        <Check className="size-3.5 stroke-[2.5]" strokeLinecap="round" strokeLinejoin="round" aria-hidden />
+        <Check
+          className="size-3.5 stroke-[2.5]"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        />
       ) : (
-        <Circle className="size-3.5 stroke-[1.75]" aria-hidden />
+        <Circle
+          className="size-3.5 stroke-[1.75]"
+          aria-hidden
+        />
       )}
     </button>
   );

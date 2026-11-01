@@ -281,6 +281,18 @@ The History tab reuses the General tab grid and `GeneralSectionCard` (FR-charact
 - Text cards: `BENTO_BOUNDED_LIST_CLASS` in read mode, muted `notSpecified` line when empty; edit textareas fill the card with an `sr-only` label
 - No positive `tabIndex`: tab order follows the DOM
 
+## 5.3.7 Character Magic Tab
+
+The Magic tab (FR-character-magic-list-card) uses the bento grid with full-width slots in `tabContents/magic/shared/spellList.ts`:
+
+- Block selector (`SpellcastingSelector`, segmented toggle, primary white / secondary): its own grid row above the Spellcasting card, only with several blocks (edit: also when a class can be added, « Add » at the end)
+- Spellcasting: compact band — key stat cells (`KeyStat`: ability, attack, DC, prepared) on one line when the width allows; edit: class, ability, DC, attack on one row (`@3xl:grid-cols-4`) with their sync hints. No slot list here
+- Spells: one `ListCard` (bounded). Each level (or uses-per-day) group starts with `SpellGroupHeader`: tinted bar (`bg-gray-middle-light`), sticky at the top of the scroll area, level name in the accent color, slots on the right — read `SpellSlotsBadge` (pips + `remaining/total`, cantrips `∞`), edit the slot `total` input
+- Collapsed row: name + `school · casting time · range · effect`; trailing concentration tag, prepared pill (`SpellPreparedPill`), delete (edit)
+- Expanded row: read → `SpellDetails` (description + inline definition list + in-session cast controls); edit → `SpellEditForm` (`ListFormSection`: General / Casting / Effects / Description)
+- Edit keeps the list order inside a group (no re-sorting while typing); group headers and rows are siblings of one `Accordion`, so a level change moves the row without remounting it
+- Add a spell (`primary`, `sm`) and Codex (`secondary`, `sm`) are both visible in the card header
+
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 
 Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.

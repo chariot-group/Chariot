@@ -1768,6 +1768,19 @@
           "previousLanguageButton": "Retour",
           "loadTranslationError": "Impossible de charger cette langue. Réessayez ou choisissez une autre langue."
         }
+      },
+      "spellcastingTitle": "Incantation",
+      "abilityShort": "Carac.",
+      "concentration": "Concentration",
+      "noSpells": "Aucun sort",
+      "addCodexSpellShort": "Codex",
+      "spellRowLabel": "{name} — {group}",
+      "slotsRemainingAria": "Emplacements de niveau {level} : {current} restants sur {total}",
+      "formSections": {
+        "general": "Général",
+        "casting": "Incantation",
+        "effects": "Effets",
+        "description": "Description"
       }
     }
   },

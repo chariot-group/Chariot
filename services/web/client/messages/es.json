@@ -1764,6 +1764,19 @@
           "previousLanguageButton": "Volver",
           "loadTranslationError": "No se pudo cargar este idioma. Inténtalo de nuevo u elige otro."
         }
+      },
+      "spellcastingTitle": "Lanzamiento de conjuros",
+      "abilityShort": "Car.",
+      "concentration": "Concentración",
+      "noSpells": "Ningún conjuro",
+      "addCodexSpellShort": "Codex",
+      "spellRowLabel": "{name} — {group}",
+      "slotsRemainingAria": "Espacios de nivel {level}: quedan {current} de {total}",
+      "formSections": {
+        "general": "General",
+        "casting": "Lanzamiento",
+        "effects": "Efectos",
+        "description": "Descripción"
       }
     }
   },
