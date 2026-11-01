@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
 import { AlignmentEnum } from "@/schemas/character";
 import { TagInput } from "@/components/ui/tag-input";
+import CharacterNameFields from "@/components/character/tabContents/general/form/CharacterNameFields";
 import AbilityScoresEdit from "@/components/character/tabContents/general/form/AbilityScoresEdit";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
 import SavingThrowsEdit from "@/components/character/tabContents/general/form/SavingThrowsEdit";
@@ -84,112 +85,19 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
         className={`min-w-0 gap-3 p-4 md:px-6 ${SLOTS.character}`}
         role="region"
         aria-labelledby="character-profile-edit">
-        <div className="flex items-start justify-between gap-3">
-          <h2
-            id="character-profile-edit"
-            className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-            {t("character")}
-          </h2>
+        {/* Names next to the avatar, like the read-mode identity list (no empty column beside the avatar) */}
+        <div className="flex items-start gap-3">
+          <div className="@container flex min-w-0 flex-1 flex-col gap-3">
+            <h2
+              id="character-profile-edit"
+              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+              {t("character")}
+            </h2>
+            <CharacterNameFields form={form} />
+          </div>
           {avatar ? <div className="shrink-0">{avatar}</div> : null}
         </div>
         <div className="flex flex-col gap-4">
-          {/* Noms du personnage */}
-          <div className="flex flex-col gap-3">
-            {/* Prénom */}
-            <Controller
-              name="firstname"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="character-firstname"
-                    className="text-sm font-medium">
-                    {tEdit("firstname")}
-                  </label>
-                  <Input
-                    {...field}
-                    value={field.value || ""}
-                    id="character-firstname"
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "character-firstname-error" : undefined}
-                    placeholder={tEdit("firstname")}
-                    type="text"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="character-firstname-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-            {/* Nom */}
-            <Controller
-              name="lastname"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="character-lastname"
-                    className="text-sm font-medium">
-                    {tEdit("lastname")}
-                  </label>
-                  <Input
-                    {...field}
-                    value={field.value || ""}
-                    id="character-lastname"
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "character-lastname-error" : undefined}
-                    placeholder={tEdit("lastname")}
-                    type="text"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="character-lastname-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-            {/* Surnom */}
-            <Controller
-              name="surname"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="character-surname"
-                    className="text-sm font-medium">
-                    {tEdit("surname")}
-                  </label>
-                  <Input
-                    {...field}
-                    value={field.value || ""}
-                    id="character-surname"
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "character-surname-error" : undefined}
-                    placeholder={tEdit("surname")}
-                    type="text"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="character-surname-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-          </div>
-
           {/* Type et Subtype */}
           <div className="flex flex-col gap-3">
             <div className="flex flex-row gap-2">

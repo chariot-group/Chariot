@@ -21,8 +21,7 @@ import {
   type MediaAvatarScope,
 } from "@/utils/media.utils";
 
-const requirementsHintId = (scope: MediaAvatarScope, entityId: string) =>
-  `avatar-requirements-${scope}-${entityId}`;
+const requirementsHintId = (scope: MediaAvatarScope, entityId: string) => `avatar-requirements-${scope}-${entityId}`;
 
 type MediaAvatarUploadProps = {
   scope: MediaAvatarScope;
@@ -142,7 +141,13 @@ export function MediaAvatarUpload({
   });
 
   return (
-    <div className={cn("flex flex-col items-center gap-1.5", className)}>
+    <div
+      className={cn(
+        "flex flex-col items-center gap-1.5",
+        // Sheet: the block is as wide as the avatar, the requirements hint wraps under it (FR-frontend-design §6.4)
+        size === "sheet" && "w-min max-w-full",
+        className,
+      )}>
       <div className={cn("relative overflow-hidden", MEDIA_AVATAR_SIZE_CLASS[size], roundedClass)}>
         <MediaAvatar
           scope={scope}
@@ -255,7 +260,7 @@ export function MediaAvatarUpload({
       <p
         id={requirementsId}
         className={cn(
-          "text-xs text-gray-light leading-snug text-center max-w-56",
+          "text-xs text-gray-light leading-snug text-center max-w-56 wrap-break-word",
           size === "sheet" && "max-sm:sr-only",
         )}>
         {requirementsHint}

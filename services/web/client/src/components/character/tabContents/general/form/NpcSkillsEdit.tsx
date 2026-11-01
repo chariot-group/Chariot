@@ -51,7 +51,7 @@ export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
   ] as const;
 
   return (
-    <div className="grid flex-1 content-between grid-cols-1 @md:grid-cols-2 @4xl:grid-cols-3 gap-2">
+    <div className="grid flex-1 content-between grid-cols-1 @sm:grid-cols-2 @xl:grid-cols-3 gap-2">
       {skills.map(({ key, icon: Icon, ability }) => {
         const abilityScore = form.watch(`stats.abilityScores.${ability}`) || 10;
         const abilityModifier = Math.floor((abilityScore - 10) / 2);

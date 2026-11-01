@@ -230,6 +230,9 @@ The General tab (PC and NPC, read and edit) is one bento grid (FR-character-gene
 - No inner scroll on General cards, except the abilities list (read and edit) (`AbilitiesSection boundedList`: `max-h-[28rem] overflow-y-auto`, focusable `role="group"` labelled by the card heading, project scrollbar tokens)
 - Read mode short values use `GeneralTile` (label on top, value pushed to the bottom); sections use `GeneralSectionCard` (region + own heading)
 - `GeneralSectionCard` is a size container (`@container`): long inner lists (skills) use container variants (`@sm:grid-cols-2 @xl:grid-cols-3`) so they follow the card width, not the viewport
+- Skills keep the same column steps in read and edit modes (`@sm:grid-cols-2 @xl:grid-cols-3`)
+- The sheet avatar block (`MediaAvatarUpload size="sheet"`) is as wide as the avatar (`w-min`): its requirements hint wraps under the avatar instead of widening the « Personnage » card
+- « Personnage » edit card: the name fields (`CharacterNameFields`, shared PC/NPC) sit next to the avatar under the heading, like the read-mode identity list; they stack in a narrow column and go side by side from `@sm`
 - A new card MUST get a slot in every layout of `generalBentoLayout.ts` and keep the placement test (no empty cell at 2 / 4 / 12 columns) green
 
 ## 5.3.2 Character Combat Tab Bento Grid

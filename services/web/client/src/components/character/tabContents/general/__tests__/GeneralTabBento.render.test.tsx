@@ -187,4 +187,32 @@ describe("General tab — single bento grid", () => {
     expect(CASES["player edit"]()).not.toContain("data-bounded");
     expect(CASES["npc edit"]()).not.toContain("data-bounded");
   });
+
+  it("nominal: PC and NPC « Personnage » edit cards share the same name layout (first/last name side by side, nickname below)", () => {
+    const nameBlock = (html: string) => {
+      const start = html.lastIndexOf(
+        '<div class="grid grid-cols-1 gap-3 @sm:grid-cols-2">',
+        html.indexOf('id="character-firstname"'),
+      );
+      // Same structure regardless of the field values
+      return html.slice(start, html.indexOf('id="character-surname"', start)).replace(/ value="[^"]*"/g, "");
+    };
+    const player = nameBlock(CASES["player edit"]());
+    const npc = nameBlock(CASES["npc edit"]());
+
+    expect(player).toContain('for="character-lastname"');
+    expect(player).toMatch(/@sm:col-span-2[^>]*>\s*<label[^>]*for="character-surname"/);
+    expect(npc).toEqual(player);
+  });
+
+  it("edge: in edit mode the name fields sit next to the avatar, under the card heading", () => {
+    for (const name of ["player edit", "npc edit"] as const) {
+      const html = CASES[name]();
+      const heading = html.indexOf('id="character-profile-edit"');
+      const column = html.lastIndexOf('<div class="@container flex min-w-0 flex-1 flex-col gap-3">', heading);
+
+      expect(column).toBeGreaterThan(-1);
+      expect(html.indexOf('id="character-surname"')).toBeGreaterThan(heading);
+    }
+  });
 });
