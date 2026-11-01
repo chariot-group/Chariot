@@ -13,8 +13,21 @@ export const GENERAL_BENTO_GRID_CLASS = "grid w-full min-w-0 grid-cols-2 gap-3 s
 /** Spacing between cards stacked inside one slot (same token as the grid gap). */
 export const GENERAL_BENTO_STACK_GAP_CLASS = "gap-3 md:gap-4";
 
-const FULL = "min-w-0 col-span-2 sm:col-span-4";
-const HALF = "min-w-0 col-span-2";
+/**
+ * Bounded list (read mode only): caps an unbounded list and scrolls inside its card.
+ * Pair it with `role="group"`, `aria-labelledby` (card heading) and `tabIndex={0}`.
+ * @see FR-character-general-bento-layout, FR-character-battle-bento-layout
+ */
+export const BENTO_BOUNDED_LIST_CLASS =
+  "max-h-[28rem] overflow-y-auto pr-2 rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover";
+
+/** Full width below `xl` (2 cols on mobile, 4 on tablet). */
+export const BENTO_FULL_SLOT = "min-w-0 col-span-2 sm:col-span-4";
+/** Full width on mobile, half width on tablet. */
+export const BENTO_HALF_SLOT = "min-w-0 col-span-2";
+
+const FULL = BENTO_FULL_SLOT;
+const HALF = BENTO_HALF_SLOT;
 
 export const PLAYER_VIEW_SLOTS = {
   character: `${FULL} xl:col-span-4 xl:row-span-2`,

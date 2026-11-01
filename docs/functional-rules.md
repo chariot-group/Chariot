@@ -5481,3 +5481,59 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/general/form/PlayerGeneralTabEdit.tsx`, `NpcGeneralTabEdit.tsx`
 - `docs/functional-rules.md` — FR-character-detail-view, FR-frontend-design
 - `docs/design.md` — §3 spacing, §5.3 cards, §6 responsive, §9 accessibility
+
+---
+
+## FR-character-battle-bento-layout: Combat Tab Bento Layout (PC and NPC)
+
+**Rule**: The character sheet **Combat** tab (Player and NPC, read and edit modes) MUST use the same bento grid as the General tab (FR-character-general-bento-layout): one grid container whose direct children are the cards, one uniform gap, explicit spans per breakpoint, no empty cell and no card showing a blank area below its content.
+
+**Requirements**:
+
+- **Same grid and tokens** as the General tab: 2 columns below `sm`, 4 from `sm`, 12 from `xl`; gap `gap-3 md:gap-4`; card padding `p-4 md:px-6`; shared `GeneralSectionCard` / slot helpers. Stacked grids with different gaps (`gap-2`, `gap-4`) MUST NOT remain.
+- **Placement intent** (≥ xl, PC):
+  - Band 1: Statistics (5 cols, spans 2 rows) · Saving throws (4) and Death saves (3) · Affinities (7) below them.
+  - Band 2: Actions (6) and Abilities and traits (6) side by side.
+- **Placement intent** (≥ xl, NPC):
+  - Band 1: Statistics (5 cols, spans 2 rows) · Saving throws (7) · Affinities (7) below.
+  - Band 2: Actions (6) and Legendary actions (6) side by side, then Lair actions (6) and Abilities and traits (6) side by side.
+- **Tablet / mobile**: same reading order. Statistics, Affinities (PC) and the list cards take the full width; Saving throws and Death saves (PC) or Saving throws and Affinities (NPC) share a row at `sm`; everything is full width below `sm`.
+- **Reading order = DOM order**: Actions come before Abilities at every breakpoint; `order-*` utilities are removed.
+- **List cards side by side**: list cards (each action section, abilities and traits) are paired with another list card from `xl` (6 + 6 cols), never with a fixed-size card. Below `xl` they take the full width.
+  - Action sections: header card (title, expand/collapse all, usage-type filter) then the collapsed action items, as many per row as the card width allows; the items of the last row widen to complete it. An expanded item grows on its own (items are top-aligned); collapsed items keep a uniform height.
+  - In read mode, each action section's item list is **bounded** (same max height as the abilities list) and scrolls inside the section, so long NPC action lists do not push the following sections down the page. The header card (title, expand/collapse all, usage-type filter) stays outside the scroll area; the scroll area is keyboard-focusable and labelled by the section heading. Edit mode does not scroll.
+  - Abilities and traits: read mode uses the bounded list (max height + inner scroll) defined for the General tab; edit mode does not scroll.
+  - When two paired lists differ in length, the shorter one ends earlier inside its band; this is the accepted trade-off of pairing lists. Past the max height both lists end at the same height.
+- **Compact cards**: label/value lists start on the label line (e.g. `Résistances : feu, froid`, wrapping under it only when the line is full), and bands are balanced so that cards need little extra stretching.
+- **Fill**: grid children never use `h-fit`. Statistics, Saving throws, Death saves and Affinities spread their content over the card height (same techniques as the General tab: `flex-1 content-evenly` for value grids, `justify-between` for stacks).
+- **Affinities empty state**: when resistances, vulnerabilities and immunities are all empty, the card shows an explicit "none" line instead of a bare heading (i18n `characterDetail.battle.noAffinities`, en/fr/es).
+- **Edit mode**: same cards, same order, same zones as read mode. Action and ability editors stay full width; edit tiles holding form controls never go below half width at `sm`.
+- **FR-character-action-section-visibility** still applies: empty action sections keep their heading in read mode (rendered as a compact full-width header card, no placeholder items).
+- **Single render per card**, `min-w-0` on every grid child, long values wrap (FR-frontend-design §6.4).
+
+**Accessibility (FR-frontend-design)**:
+
+- DOM order equals visual reading order at every breakpoint (no `order-*`, no `grid-flow-dense`).
+- Each card keeps `role="region"` with an `aria-labelledby` pointing to its own unique heading; death-save status keeps its `role="status"` label.
+- The bounded abilities list is keyboard-focusable and labelled by its heading.
+
+**Prohibitions**:
+
+- Several stacked grids or flex columns to place top-level Combat cards.
+- Placing a list card (actions, abilities) side by side with a fixed-size card.
+- `h-fit` on grid children, `order-*` reordering.
+
+**Tests**:
+
+- Nominal: PC and NPC Combat tabs (read and edit) render one grid container whose direct children are the cards, each with its slot classes.
+- Edge: slot spans fill every row at 2 / 4 / 12 columns; list cards pair side by side at `xl`; NPC with empty legendary and lair lists still renders both headings.
+- Edge: Affinities with no entry shows the "none" line.
+- Failure / guard: heading ids are unique and every `aria-labelledby` resolves; Actions appear before Abilities in the DOM.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/battle/view/PlayerBattleTabContent.tsx`, `NPCBattleTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/battle/form/PlayerBattleTabEdit.tsx`, `NPCBattleTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`, `ActionUpdateSection.tsx`
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-action-section-visibility, FR-character-detail-view, FR-frontend-design
+- `docs/design.md` — §5.3.1 bento grid, §6 responsive, §9 accessibility

@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { BENTO_BOUNDED_LIST_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ListChevronsDownUp, ListChevronsUpDown, Loader2, Moon, Clock } from "lucide-react";
 import { useState, useCallback } from "react";
@@ -290,7 +291,7 @@ const AbilitiesSection = ({
       )}
       {boundedList ? (
         <div
-          className="max-h-[28rem] overflow-y-auto pr-2 rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover"
+          className={BENTO_BOUNDED_LIST_CLASS}
           role="group"
           aria-labelledby={headingId}
           tabIndex={0}>

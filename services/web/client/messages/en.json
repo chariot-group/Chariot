@@ -1181,6 +1181,7 @@
       "vulnerabilities": "Vulnerabilities",
       "vulnerabilitiesPlaceholder": "Fire, Cold...",
       "immunities": "Immunities",
+      "noAffinities": "No resistance, vulnerability or immunity",
       "immunitiesPlaceholder": "Fire, Cold..."
     },
     "history": {

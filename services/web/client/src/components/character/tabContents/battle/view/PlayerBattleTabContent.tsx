@@ -1,14 +1,19 @@
-import { Card } from "@/components/ui/card";
-import { Player } from "@/types/character";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { useId } from "react";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
-import Skill from "@/components/character/tabContents/general/shared/SavingThrow";
+import { Player } from "@/types/character";
+import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
+import AffinitiesCard from "@/components/character/tabContents/battle/shared/AffinitiesCard";
+import {
+  BATTLE_BENTO_GRID_CLASS,
+  PLAYER_BATTLE_SLOTS as SLOTS,
+} from "@/components/character/tabContents/battle/shared/battleBentoLayout";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import Statistics from "@/components/character/tabContents/shared/Statistics";
-import { useId } from "react";
 
 interface Props {
   player: Player;
@@ -16,6 +21,7 @@ interface Props {
   onCharacterUpdate?: (updated?: Player) => void;
 }
 
+/** @see FR-character-battle-bento-layout */
 const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Props) => {
   const t = useTranslations("characterDetail.battle");
   const sectionId = useId();
@@ -24,149 +30,104 @@ const PlayerBattleTabContent = ({ player, accentColor, onCharacterUpdate }: Prop
   const abilitiesHeadingId = `${sectionId}-abilities-traits-heading`;
   const affinitiesHeadingId = `${sectionId}-battle-affinities-heading-player`;
 
-  // Configuration des badges de statistiques
-
   return (
-    <div className="w-full flex flex-col gap-4 items-start">
-      <div className="grid grid-cols-2 lg:grid-cols-3 max-[376px]:grid-cols-1 gap-3 md:gap-4 w-full">
-        {/* Statistiques */}
-        <Statistics
-          player={player}
-          accentColor={accentColor}
-          onCharacterUpdate={onCharacterUpdate}
-        />
-        {/* Jet de sauvegarde */}
-        <div className="flex flex-col gap-2 col-span-2 sm:col-span-1">
-          <Card
-            className="gap-3 p-4 md:px-6 h-fit"
-            role="region"
-            aria-labelledby={savingThrowsHeadingId}>
-            <h2
-              id={savingThrowsHeadingId}
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("savingThrows")}
-            </h2>
+    <div className={BATTLE_BENTO_GRID_CLASS}>
+      <Statistics
+        player={player}
+        accentColor={accentColor}
+        onCharacterUpdate={onCharacterUpdate}
+        className={`${SLOTS.statistics} justify-between`}
+      />
 
-            <div
-              className="grid grid-cols-3 gap-x-2 gap-y-1"
-              role="list">
-              {player?.stats &&
-                Object.entries(player?.stats?.savingThrows).map(([key]) => {
-                  return (
-                    <Skill
-                      key={key}
-                      skillName={key as keyof typeof player.stats.abilityScores}
-                      accentColor={accentColor}
-                      stats={player?.stats}
-                    />
-                  );
-                })}
-            </div>
-          </Card>
+      <GeneralSectionCard
+        headingId={savingThrowsHeadingId}
+        title={t("savingThrows")}
+        accentColor={accentColor}
+        className={SLOTS.savingThrows}>
+        <div
+          className="grid flex-1 grid-cols-3 content-evenly gap-x-2 gap-y-1"
+          role="list">
+          {player?.stats &&
+            Object.keys(player.stats.savingThrows).map((key) => (
+              <SavingThrow
+                key={key}
+                skillName={key as keyof typeof player.stats.abilityScores}
+                accentColor={accentColor}
+                stats={player.stats}
+              />
+            ))}
         </div>
+      </GeneralSectionCard>
 
-        {/* Jets de sauvegarde contre la mort */}
-        <Card
-          className="gap-3 p-4 md:px-6 h-fit col-span-2 sm:col-span-1 items-end"
-          role="region"
-          aria-labelledby={deathSavesHeadingId}>
-          <h2
-            id={deathSavesHeadingId}
-            className={`text-xl sm:text-2xl font-semibold self-start ${accentColor}`}>
-            {t("deathSaves")}
-          </h2>
-          <div className="grid grid-cols-2 gap-2 items-center w-full">
-            <span>{t("successes")}</span>
-            <div
-              className="grid grid-cols-3 gap-1 w-full max-w-[60px] justify-self-end"
-              role="status"
-              aria-label={t("deathSaveSuccessesStatus", { count: player.deathSaves.successes })}>
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Image
-                  key={"death-save-success-" + index}
-                  src={index < player.deathSaves.successes ? RedCircle : WhiteCircle}
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="shrink-0 w-5 h-5"
-                  aria-hidden="true"
-                />
-              ))}
-            </div>
-            <span>{t("failures")}</span>
-            <div
-              className="grid grid-cols-3 gap-1 w-full max-w-[60px] justify-self-end"
-              role="status"
-              aria-label={t("deathSaveFailuresStatus", { count: player.deathSaves.failures })}>
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Image
-                  key={"death-save-failure-" + index}
-                  src={index < player.deathSaves.failures ? RedCircle : WhiteCircle}
-                  alt=""
-                  width={20}
-                  height={20}
-                  className="shrink-0 w-5 h-5"
-                  aria-hidden="true"
-                />
-              ))}
-            </div>
+      <GeneralSectionCard
+        headingId={deathSavesHeadingId}
+        title={t("deathSaves")}
+        accentColor={accentColor}
+        className={SLOTS.deathSaves}>
+        <div className="grid w-full flex-1 grid-cols-[auto_1fr] content-evenly items-center gap-x-4 gap-y-2">
+          <span>{t("successes")}</span>
+          <div
+            className="grid grid-cols-3 gap-1 w-full max-w-[60px] justify-self-start"
+            role="status"
+            aria-label={t("deathSaveSuccessesStatus", { count: player.deathSaves.successes })}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Image
+                key={"death-save-success-" + index}
+                src={index < player.deathSaves.successes ? RedCircle : WhiteCircle}
+                alt=""
+                width={20}
+                height={20}
+                className="shrink-0 w-5 h-5"
+                aria-hidden="true"
+              />
+            ))}
           </div>
-        </Card>
-      </div>
+          <span>{t("failures")}</span>
+          <div
+            className="grid grid-cols-3 gap-1 w-full max-w-[60px] justify-self-start"
+            role="status"
+            aria-label={t("deathSaveFailuresStatus", { count: player.deathSaves.failures })}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <Image
+                key={"death-save-failure-" + index}
+                src={index < player.deathSaves.failures ? RedCircle : WhiteCircle}
+                alt=""
+                width={20}
+                height={20}
+                className="shrink-0 w-5 h-5"
+                aria-hidden="true"
+              />
+            ))}
+          </div>
+        </div>
+      </GeneralSectionCard>
 
-      <div className="grid lg:grid-cols-3 max-[376px]:grid-cols-1 gap-2 w-full">
-        {/* Capacités et traits */}
-        <div className="order-2 lg:order-1 min-w-0">
-          <AbilitiesSection
-            abilities={player.abilities}
-            accentColor={accentColor}
-            title={t("abilitiesAndTraits")}
-            headingId={abilitiesHeadingId}
-            characterId={player._id}
-            characterKind="players"
-            onAfterAbilityUse={onCharacterUpdate}
-          />
-        </div>
-        <div className="order-1 lg:order-2 min-w-0 w-full">
-          {/* Actions */}
-          <ActionSection
-            title={t("actions")}
-            actions={player.actions}
-            accentColor={accentColor}
-          />
-        </div>
+      <AffinitiesCard
+        affinities={player.affinities}
+        headingId={affinitiesHeadingId}
+        accentColor={accentColor}
+        className={SLOTS.affinities}
+      />
 
-        <div className="order-3 lg:order-3 min-w-0">
-          <Card
-            className="gap-3 p-4 md:px-6 h-fit"
-            role="region"
-            aria-labelledby={affinitiesHeadingId}>
-            <h2
-              id={affinitiesHeadingId}
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("affinities")}
-            </h2>
-            <div className="flex flex-col gap-1">
-              {player?.affinities?.resistances?.length > 0 && (
-                <p className="text-sm sm:text-base wrap-break-word">
-                  <span className="font-semibold">{t("resistances")} :</span> {player.affinities.resistances.join(", ")}
-                </p>
-              )}
-              {player?.affinities?.vulnerabilities?.length > 0 && (
-                <p className="text-sm sm:text-base wrap-break-word">
-                  <span className="font-semibold">{t("vulnerabilities")} :</span>{" "}
-                  {player.affinities.vulnerabilities.join(", ")}
-                </p>
-              )}
-              {player?.affinities?.immunities?.length > 0 && (
-                <p className="text-sm sm:text-base wrap-break-word">
-                  <span className="font-semibold">{t("immunities")} :</span> {player.affinities.immunities.join(", ")}
-                </p>
-              )}
-            </div>
-          </Card>
-        </div>
-      </div>
+      <ActionSection
+        title={t("actions")}
+        actions={player.actions}
+        accentColor={accentColor}
+        className={SLOTS.actions}
+        boundedList
+      />
+
+      <AbilitiesSection
+        abilities={player.abilities}
+        accentColor={accentColor}
+        title={t("abilitiesAndTraits")}
+        headingId={abilitiesHeadingId}
+        className={`gap-3 ${SLOTS.abilities}`}
+        boundedList
+        characterId={player._id}
+        characterKind="players"
+        onAfterAbilityUse={onCharacterUpdate}
+      />
     </div>
   );
 };

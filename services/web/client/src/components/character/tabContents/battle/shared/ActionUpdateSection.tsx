@@ -37,6 +37,8 @@ interface ActionUpdateSectionProps {
   append: UseFieldArrayAppend<FieldValues, string>;
   remove: UseFieldArrayRemove;
   accentColor: string;
+  /** Layout classes of the section (bento slot). @see FR-character-battle-bento-layout */
+  className?: string;
 }
 
 const ACTION_USAGE_OPTIONS: ActionUsageType[] = ["action", "bonus_action", "reaction"];
@@ -69,6 +71,7 @@ const ActionUpdateSection = ({
   append,
   remove,
   accentColor,
+  className,
 }: ActionUpdateSectionProps) => {
   const t = useTranslations("characterDetail.battle");
   const tMagic = useTranslations("characterDetail.magic");
@@ -196,7 +199,7 @@ const ActionUpdateSection = ({
 
   return (
     <section
-      className="flex flex-col gap-2 w-full"
+      className={cn("@container flex w-full flex-col gap-3 md:gap-4", className)}
       aria-labelledby={headingId}>
       <Card className="sticky top-0 z-10 gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between min-w-0 w-full bg-card">
         <h2
@@ -279,7 +282,7 @@ const ActionUpdateSection = ({
           type="multiple"
           value={openAccordionValues}
           onValueChange={setOpenAccordionValues}
-          className="w-full flex flex-col gap-2">
+          className="flex w-full flex-wrap items-start gap-3 md:gap-4">
           {fields.map((field, index) => {
             const actionName = form.watch(`${fieldArrayName}.${index}.name`);
             const usageType = normalizeUsageType(form.watch(`${fieldArrayName}.${index}.usageType`));
@@ -314,7 +317,7 @@ const ActionUpdateSection = ({
                 id={`action-${index}`}
                 key={field.id}
                 value={`action-${index}`}
-                className="flex flex-col gap-2">
+                className="flex min-w-0 grow basis-[28rem] flex-col gap-2">
                 <Card className={`gap-2 p-0 flex-col ${hasError ? "ring-destructive ring" : ""}`}>
                   <div className="relative py-3 px-3 md:py-2 md:px-6">
                     <AccordionTrigger

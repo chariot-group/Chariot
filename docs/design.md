@@ -232,6 +232,16 @@ The General tab (PC and NPC, read and edit) is one bento grid (FR-character-gene
 - `GeneralSectionCard` is a size container (`@container`): long inner lists (skills) use container variants (`@sm:grid-cols-2 @xl:grid-cols-3`) so they follow the card width, not the viewport
 - A new card MUST get a slot in every layout of `generalBentoLayout.ts` and keep the placement test (no empty cell at 2 / 4 / 12 columns) green
 
+## 5.3.2 Character Combat Tab Bento Grid
+
+The Combat tab reuses the General tab grid and card primitives (FR-character-battle-bento-layout), with its slots in `tabContents/battle/shared/battleBentoLayout.ts`:
+
+- Fixed-size cards (statistics, saving throws, death saves, affinities) share the first band; unbounded lists (each action section, abilities and traits) get their own full-width band
+- Action items wrap (`flex-wrap`, `grow basis-72`; edit `basis-[28rem]`): as many per row as the card width allows, and the items of the last row grow to complete it (no hole). Items are top-aligned so an expanded item grows alone
+- Empty affinities show an explicit "none" line (`characterDetail.battle.noAffinities`)
+- Read mode: each action section's item list uses `BENTO_BOUNDED_LIST_CLASS` (shared with the abilities list): max height + inner scroll, header controls outside the scroll area, focusable `role="group"` labelled by the section heading
+- List cards are paired side by side from `xl` (6 + 6); affinity values start on the label line
+
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 
 Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.

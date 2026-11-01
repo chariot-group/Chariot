@@ -1182,6 +1182,7 @@
       "vulnerabilities": "Vulnérabilités",
       "vulnerabilitiesPlaceholder": "Feu, Froid...",
       "immunities": "Immunités",
+      "noAffinities": "Aucune résistance, vulnérabilité ni immunité",
       "immunitiesPlaceholder": "Feu, Froid..."
     },
     "history": {

@@ -1,7 +1,4 @@
-import { NextIntlClientProvider } from "next-intl";
-import type { ReactElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { useForm, type FieldValues, type UseFormReturn } from "react-hook-form";
+import type { FieldValues } from "react-hook-form";
 import { describe, expect, it, vi } from "vitest";
 import PlayerGeneralTabContent from "@/components/character/tabContents/general/view/PlayerGeneralTabContent";
 import NpcGeneralTabContent from "@/components/character/tabContents/general/view/NpcGeneralTabContent";
@@ -9,6 +6,8 @@ import PlayerGeneralTabEdit from "@/components/character/tabContents/general/for
 import NpcGeneralTabEdit from "@/components/character/tabContents/general/form/NpcGeneralTabEdit";
 import { GENERAL_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import type { NPC, Player } from "@/types/character";
+import { directChildren, ids, labelledBy } from "@/components/character/tabContents/__tests__/bentoMarkup";
+import { render, WithForm } from "@/components/character/tabContents/__tests__/bentoRender";
 
 /** Stub for sections covered by their own tests: renders one grid child carrying the slot classes. */
 const { stubSection } = await vi.hoisted(async () => {
@@ -74,54 +73,6 @@ const npc = {
   challenge: { challengeRating: 0.25, experiencePoints: 50 },
   abilities: [],
 } as unknown as NPC;
-
-const render = (ui: ReactElement) =>
-  renderToStaticMarkup(
-    <NextIntlClientProvider
-      locale="en"
-      timeZone="UTC"
-      messages={{}}
-      onError={() => {}}
-      getMessageFallback={({ key }) => key}>
-      {ui}
-    </NextIntlClientProvider>,
-  );
-
-function WithForm({
-  values,
-  children,
-}: {
-  values: FieldValues;
-  children: (form: UseFormReturn<FieldValues>) => ReactElement;
-}) {
-  const form = useForm<FieldValues>({ defaultValues: values });
-  return children(form);
-}
-
-const VOID_TAGS = new Set(["img", "input", "br", "hr", "meta", "link", "source", "area", "col", "wbr"]);
-
-/** Opening tags of the direct children of the first element carrying `rootMarker`. */
-const directChildren = (html: string, rootMarker: string) => {
-  const start = html.indexOf(rootMarker);
-  const tagRe = /<(\/?)([a-zA-Z0-9]+)([^>]*?)(\/?)>/g;
-  tagRe.lastIndex = html.lastIndexOf("<", start);
-  const children: string[] = [];
-  let depth = 0;
-  for (let m = tagRe.exec(html); m; m = tagRe.exec(html)) {
-    const [tag, closing, name, , selfClosing] = m;
-    if (closing) {
-      depth--;
-      if (depth === 0) break;
-      continue;
-    }
-    if (depth === 1) children.push(tag);
-    if (!selfClosing && !VOID_TAGS.has(name.toLowerCase())) depth++;
-  }
-  return children;
-};
-
-const ids = (html: string) => [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
-const labelledBy = (html: string) => [...html.matchAll(/aria-labelledby="([^"]+)"/g)].map((m) => m[1]);
 
 const CASES = {
   "player view": () =>
