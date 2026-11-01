@@ -5,7 +5,7 @@ import storage from 'redux-persist/lib/storage';
 import environmentReducer from '@/store/slices/environmentSlice';
 import campaignReducer from '@/store/slices/campaignSlice';
 import campaignContextReducer from '@/store/slices/campaignContextSlice';
-import groupReducer from '@/store/slices/groupSlice';
+import groupReducer, { rehydratePersistedGroupState } from '@/store/slices/groupSlice';
 import sidebarReducer from '@/store/slices/sidebarSlice';
 import characterReducer from '@/store/slices/characterSlice';
 import userReducer from '@/store/slices/userSlice';
@@ -58,13 +58,7 @@ const groupTransform = createTransform(
         void error;
         return rest;
     },
-    (outboundState: Partial<GroupState>) => {
-        return {
-            ...outboundState,
-            loading: false,
-            error: null,
-        } as GroupState;
-    },
+    (outboundState: Partial<GroupState>) => rehydratePersistedGroupState(outboundState),
     { whitelist: ['group'] }
 );
 

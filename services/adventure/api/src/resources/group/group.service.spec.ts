@@ -250,6 +250,28 @@ describe('GroupService', () => {
       expect(filtersArg).toHaveProperty('_id');
       expect(filtersArg._id).toEqual({ $in: expectedGroupIds });
     });
+    it('should populate character avatar for sidebar rows (FR-sidebar-character-avatars)', async () => {
+      campaignModel.findById.mockReturnValue({
+        lean: jest.fn().mockResolvedValue({
+          groups: { active: [new Types.ObjectId()], archived: [] },
+        }),
+      });
+      groupModel.exec = jest.fn().mockResolvedValue([createDto]);
+      groupModel.countDocuments.mockResolvedValue(1);
+
+      await service.findAllByUser(
+        userId,
+        { page: 1, offset: 10 },
+        undefined,
+        'all',
+      );
+
+      const populateArg = groupModel.populate.mock.calls.at(-1)?.[0];
+      expect(populateArg.path).toBe('characters');
+      expect(populateArg.select.split(' ')).toEqual(
+        expect.arrayContaining(['_id', 'firstname', 'avatar']),
+      );
+    });
     it('should find groups with filters and pagination', async () => {
       campaignModel.findById.mockReturnValue({
         lean: jest.fn().mockResolvedValue({

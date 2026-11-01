@@ -20,6 +20,23 @@ const initialState: GroupState = {
     archivedTotal: 0,
 };
 
+/**
+ * Restores persisted groups for instant display, but forces one background refetch per app load
+ * (`lastFetch: null`) so rows pick up fields added since they were cached (e.g. character avatars).
+ * @see FR-sidebar-character-avatars
+ */
+export function rehydratePersistedGroupState(outboundState: Partial<GroupState> | null | undefined): GroupState {
+    return {
+        ...initialState,
+        ...outboundState,
+        loading: false,
+        loadingMoreActive: false,
+        loadingMoreArchived: false,
+        error: null,
+        lastFetch: null,
+    };
+}
+
 const groupSlice = createSlice({
     name: 'group',
     initialState,
@@ -218,6 +235,8 @@ const groupSlice = createSlice({
                 lastname: string;
                 surname: string;
                 userId?: string;
+                /** @see FR-sidebar-character-avatars */
+                avatar?: string;
             }>,
         ) => {
             const updatedCharacter = action.payload;
@@ -232,6 +251,7 @@ const groupSlice = createSlice({
                                   lastname: updatedCharacter.lastname,
                                   surname: updatedCharacter.surname,
                                   userId: updatedCharacter.userId ?? existing.userId,
+                                  avatar: updatedCharacter.avatar ?? existing.avatar,
                               }
                             : existing,
                     );

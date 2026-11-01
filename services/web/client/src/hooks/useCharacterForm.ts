@@ -404,6 +404,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
                 lastname: updatedCharacter.lastname,
                 surname: updatedCharacter.surname,
                 userId,
+                avatar: updatedCharacter.avatar,
             }));
 
             toast.success(t('updateSuccess'));
