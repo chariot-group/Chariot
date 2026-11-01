@@ -1182,6 +1182,16 @@
       "vulnerabilitiesPlaceholder": "Fire, Cold...",
       "immunities": "Immunities",
       "noAffinities": "No resistance, vulnerability or immunity",
+      "noActions": "No actions",
+      "noAbilities": "No abilities or traits",
+      "attackSuggestions": "Suggestions",
+      "formSections": {
+        "general": "General",
+        "attack": "Attack",
+        "damage": "Damage",
+        "description": "Description",
+        "counter": "Uses"
+      },
       "immunitiesPlaceholder": "Fire, Cold..."
     },
     "history": {

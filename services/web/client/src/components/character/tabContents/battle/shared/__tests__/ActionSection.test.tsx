@@ -33,6 +33,9 @@ const messages = {
       notSelected: "not selected",
       expandSectionActions: "Expand actions in {section}",
       collapseSectionActions: "Collapse actions in {section}",
+      noActions: "No actions",
+      range: "Range",
+      feetAbbr: "ft",
     },
     magic: {
       collapseAll: "Collapse all",
@@ -56,6 +59,9 @@ const renderActionSection = (actions: Action[], title = "Actions") => renderToSt
   </Provider>,
 );
 
+/** Heading of the list card, whatever extra markup (item count) it holds. */
+const headingText = (html: string) => html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)?.[1].replace(/<[^>]+>/g, " ") ?? "";
+
 /** @see FR-character-action-section-visibility: Combat Action Section Visible When Empty */
 describe("FR-character-action-section-visibility — ActionSection", () => {
   it("nominal: exposes section, priority group, pressed state, and action details region", () => {
@@ -69,13 +75,15 @@ describe("FR-character-action-section-visibility — ActionSection", () => {
       },
     ]);
 
-    expect(html).toContain(">Actions</h2>");
+    expect(headingText(html)).toContain("Actions");
     expect(html).toContain('aria-label="Action type priority for Actions"');
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain('aria-label="Action, 1 available, selected"');
     expect(html).toContain('aria-label="Expand actions in Actions"');
     expect(html).toContain('role="region"');
     expect(html).toContain("Details for action: Longsword");
+    // Collapsed row summary (FR-character-list-card): usage type, attack, damage
+    expect(html).toMatch(/Action<\/span>[\s\S]*\+5<\/span>[\s\S]*1d8\+3 slashing<\/span>/);
   });
 
   it("edge: unavailable usage type remains announced as disabled and not selected", () => {
@@ -95,24 +103,25 @@ describe("FR-character-action-section-visibility — ActionSection", () => {
   it("edge: empty section still shows the heading with expand-all disabled and no action cards", () => {
     const html = renderActionSection([]);
 
-    expect(html).toContain(">Actions</h2>");
+    expect(headingText(html)).toContain("Actions");
     expect(html).toContain('aria-labelledby=');
     expect(html).toContain("disabled");
     expect(html).toContain('aria-label="Expand actions in Actions"');
     expect(html).not.toContain("Details for action:");
-    expect(html).not.toContain('role="region"');
+    expect(html).not.toContain('data-slot="accordion-item"');
+    expect(html).toContain("No actions");
   });
 
   it("edge: empty legendary and lair sections still show their headings", () => {
-    expect(renderActionSection([], "Legendary actions")).toContain(">Legendary actions</h2>");
-    expect(renderActionSection([], "Lair actions")).toContain(">Lair actions</h2>");
+    expect(headingText(renderActionSection([], "Legendary actions"))).toContain("Legendary actions");
+    expect(headingText(renderActionSection([], "Lair actions"))).toContain("Lair actions");
   });
 
   it("failure: empty section MUST NOT omit the heading or invent placeholder actions", () => {
     const html = renderActionSection([]);
 
     expect(html.length).toBeGreaterThan(0);
-    expect(html).toContain(">Actions</h2>");
+    expect(headingText(html)).toContain("Actions");
     expect(html).not.toContain("Longsword");
     expect(html).not.toContain("Details for action:");
   });

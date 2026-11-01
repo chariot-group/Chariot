@@ -8,13 +8,13 @@ const abilitiesUpdateSectionPath = resolve(
   "AbilitiesUpdateSection.tsx",
 );
 
-/** @see FR-frontend-design: sticky add header remains reachable while the list scrolls */
-describe("FR-frontend-design — abilities sticky add header", () => {
+/** @see FR-character-list-card: the add control stays in the card header, above the bounded rows */
+describe("FR-character-list-card — abilities edit header", () => {
   const source = readFileSync(abilitiesUpdateSectionPath, "utf8");
 
-  it("nominal: keeps title and add controls in a sticky header card", () => {
-    expect(source).toContain("sticky top-0 z-10");
-    expect(source).toContain("bg-card");
+  it("nominal: keeps title and add controls in the list card header, above the bounded rows", () => {
+    expect(source).toContain("<ListCard");
+    expect(source).toContain("boundedClassName={EDIT_LIST_MAX_HEIGHT_CLASS}");
     expect(source).toContain('aria-label={tBattle("abilityAdd")}');
   });
 
@@ -24,11 +24,10 @@ describe("FR-frontend-design — abilities sticky add header", () => {
     expect(source).toContain('scrollIntoView({ behavior: "smooth", block: "nearest" })');
   });
 
-  it("error: does not wrap the accordion list inside the sticky header card", () => {
-    const stickyCardMatch = source.match(
-      /<Card className="sticky top-0 z-10[\s\S]*?<\/Card>/,
-    );
-    expect(stickyCardMatch?.[0]).toBeTruthy();
-    expect(stickyCardMatch?.[0]).not.toContain("<Accordion");
+  it("error: the add control lives in the header actions, not among the rows", () => {
+    const actionsProp = source.match(/actions=\{[\s\S]*?\n {6}\}/)?.[0];
+    expect(actionsProp).toBeTruthy();
+    expect(actionsProp).toContain("abilityAdd");
+    expect(actionsProp).not.toContain("<Accordion");
   });
 });

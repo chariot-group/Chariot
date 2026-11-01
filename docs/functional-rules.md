@@ -5449,7 +5449,7 @@ Each initiative tracker row carries:
   - Lists and label/value stacks (Character, Statistics, Skills, Proficiencies) spread their items from the top to the bottom of the card (first item under the heading, last item at the bottom).
   - Tiles keep the label at the top and push the value (or, in edit mode, the session-only note) to the bottom.
   - Bands are still balanced by placement (multi-column skills list, paired cards of similar size) so the extra spacing stays small.
-- **No inner scroll** on cards, except the read-mode **Abilities** list, which is the only unbounded list: past a maximum height it scrolls inside its card. The scroll area is keyboard-focusable and labelled; edit mode does not scroll (form fields stay fully visible).
+- **No inner scroll** on cards, except the **Abilities** list, which is the only unbounded list: past a maximum height it scrolls inside its card, in read and edit modes (FR-character-list-card). The scroll area is keyboard-focusable and labelled.
 - **Single render per card**: a card MUST be rendered once; responsive placement is done by grid classes, not by rendering the same card twice and hiding one (`hidden sm:flex` duplicates are forbidden). In edit mode this also guarantees one form control per field.
 - **Card style** unchanged (`docs/design.md` §5.3): `bg-card`, rounded card, internal padding `p-4 md:px-6`, heading in the accent color.
 - **Overflow** (`docs/design.md` §6.4): every grid child has `min-w-0`; long values wrap (`wrap-break-word`) and never overflow a card.
@@ -5501,8 +5501,8 @@ Each initiative tracker row carries:
 - **Reading order = DOM order**: Actions come before Abilities at every breakpoint; `order-*` utilities are removed.
 - **List cards side by side**: list cards (each action section, abilities and traits) are paired with another list card from `xl` (6 + 6 cols), never with a fixed-size card. Below `xl` they take the full width.
   - Action sections: header card (title, expand/collapse all, usage-type filter) then the collapsed action items, as many per row as the card width allows; the items of the last row widen to complete it. An expanded item grows on its own (items are top-aligned); collapsed items keep a uniform height.
-  - In read mode, each action section's item list is **bounded** (same max height as the abilities list) and scrolls inside the section, so long NPC action lists do not push the following sections down the page. The header card (title, expand/collapse all, usage-type filter) stays outside the scroll area; the scroll area is keyboard-focusable and labelled by the section heading. Edit mode does not scroll.
-  - Abilities and traits: read mode uses the bounded list (max height + inner scroll) defined for the General tab; edit mode does not scroll.
+  - In read mode, each action section's item list is **bounded** (same max height as the abilities list) and scrolls inside the section, so long NPC action lists do not push the following sections down the page. The header (title, expand/collapse all, usage-type filter) stays outside the scroll area; the scroll area is keyboard-focusable and labelled by the section heading. Edit mode is bounded too (taller cap, FR-character-list-card).
+  - Abilities and traits: bounded list (max height + inner scroll) in read and edit modes (FR-character-list-card).
   - When two paired lists differ in length, the shorter one ends earlier inside its band; this is the accepted trade-off of pairing lists. Past the max height both lists end at the same height.
 - **Compact cards**: label/value lists start on the label line (e.g. `Résistances : feu, froid`, wrapping under it only when the line is full), and bands are balanced so that cards need little extra stretching.
 - **Fill**: grid children never use `h-fit`. Statistics, Saving throws, Death saves and Affinities spread their content over the card height (same techniques as the General tab: `flex-1 content-evenly` for value grids, `justify-between` for stacks).
@@ -5537,3 +5537,54 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`, `ActionUpdateSection.tsx`
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-action-section-visibility, FR-character-detail-view, FR-frontend-design
 - `docs/design.md` — §5.3.1 bento grid, §6 responsive, §9 accessibility
+
+---
+
+## FR-character-list-card: Unified List Card for Actions and Abilities
+
+**Rule**: Every character list (Actions, Legendary actions, Lair actions, Abilities and traits), on the General and Combat tabs, in read and edit modes, MUST use one shared **list card** format: a single card holding its header and its rows, rows being plain separated lines (never nested cards), with the same row anatomy for actions and abilities.
+
+**Requirements**:
+
+- **One card per list** (`docs/design.md` §5.3): the card holds the header and the rows. No separate header card, no card per item, no card per field.
+- **Header** (same for every list): title in the accent color and item count on the left (count shown as a small badge vertically centered on the title); controls on the right: expand/collapse all (read and edit), **Add** (edit). Actions add the usage-type filter (Action / Bonus action / Reaction) under the title. The header always stays outside the rows scroll area.
+- **Rows**: plain rows separated by a divider (`border-b`), hover background, accordion behavior; collapsed rows have a uniform height.
+- **Collapsed row anatomy** (read and edit), so key information is visible without opening:
+  - Line 1: name (truncated when collapsed, wrapped when expanded).
+  - Line 2 (muted, one line): Action → usage type · attack bonus or DC · damage (dice + type, several entries joined by " + ") · range. Ability → short/long rest reset icons · remaining uses `remaining / max` (FR-character-ability-counter-display).
+  - Right side: chevron; in edit mode, delete button (accessible name includes the item name or index).
+- **Expanded row, read mode**: description (pre-wrap), then for actions a compact definition list (`Attaque/DD : +5 · Dégâts : 1d8 tranchant · Portée : 1,5 m`) — no nested cards. Abilities keep the **Use** button (FR-character-ability-counter-display) under the description.
+- **Expanded row, edit mode**: the open row is tinted to anchor its form, and the form is split into titled sections separated by a divider, so it reads top-down:
+  - Action: **General** (name — wide — and usage type), **Attack** (attack bonus / DC with its ability suggestions labelled "Suggestions", range — FR-character-action-dual-range — with a labelled text button under the field to add or remove the long range, never an icon-only control), **Damage** (one line per entry: dice, AUTO bonus, type, delete; column labels shown on the first entry only), **Description** (full width).
+  - Ability: **General** (name, description), **Uses** (counter toggle, max uses, current uses — session rules unchanged — and rest resets).
+  - Section titles are small uppercase muted headings (`h3`); field labels stay visible (or screen-reader only when the section title already names the single field).
+- **Add**: appends a new row at the end, expands it, scrolls it into view and moves focus to its name field.
+- **Validation**: a row with an invalid field shows a destructive ring on the row and keeps its errors next to the fields (FR-form-field-validation); the row auto-expands when the form is submitted with errors.
+- **Bounded list, read and edit modes** (FR-character-general-bento-layout, FR-character-battle-bento-layout): the rows area has a max height and scrolls inside the card, so long lists never push the following cards down. Read mode uses the shared bounded height; edit mode uses a taller cap (`min(40rem, 70dvh)`) so an expanded form stays usable. Dropdowns of the form (usage type, damage type) render in a portal and are never clipped by the scroll area. Add scrolls the new row into view inside the area; submitting with errors scrolls to the first invalid row.
+- **Empty list**: the header stays visible (FR-character-action-section-visibility) and the body shows a one-line empty state (e.g. "Aucune action").
+- **Single shared implementation** used by `AbilitiesSection`, `ActionSection`, `AbilitiesUpdateSection` and `ActionUpdateSection`, so both lists cannot drift apart again.
+
+**Accessibility (FR-frontend-design)**:
+
+- The card is a `region` labelled by its heading; rows are accordion triggers with an accessible name (item name + type or counter); the bounded scroll area is focusable and labelled.
+- Delete and Add buttons have explicit accessible names; focus moves to the new row's name field on Add and to the next row (or the Add button) after Delete.
+- No information conveyed by color only (usage type is text, errors have text).
+
+**Prohibitions**:
+
+- Nested cards inside a list card (per item or per field).
+- Different row anatomy between actions and abilities.
+- Separate header card and list card for the same list.
+
+**Tests**:
+
+- Nominal: actions and abilities lists (read and edit) render one card with header + rows and no nested `data-slot="card"` inside rows; collapsed action row shows usage type, attack/DC and damage; collapsed ability row shows remaining uses.
+- Edge: empty list keeps header and shows the empty-state line; Add expands the new row and focuses its name field; long names truncate collapsed and wrap expanded.
+- Failure: a row with an invalid field shows the error ring and its error text; delete button accessible name identifies the item.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/shared/AbilitiesSection.tsx`, `AbilitiesUpdateSection.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`, `ActionUpdateSection.tsx`
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-action-section-visibility, FR-character-ability-counter-display, FR-character-action-dual-range, FR-form-field-validation, FR-frontend-design
+- `docs/design.md` — §5.3 cards (rows inside a card are plain rows, never nested cards)

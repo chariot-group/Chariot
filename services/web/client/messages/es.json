@@ -1182,6 +1182,16 @@
       "vulnerabilitiesPlaceholder": "Fuego, Frío...",
       "immunities": "Inmunidades",
       "noAffinities": "Sin resistencias, vulnerabilidades ni inmunidades",
+      "noActions": "Ninguna acción",
+      "noAbilities": "Ninguna capacidad ni rasgo",
+      "attackSuggestions": "Sugerencias",
+      "formSections": {
+        "general": "General",
+        "attack": "Ataque",
+        "damage": "Daño",
+        "description": "Descripción",
+        "counter": "Usos"
+      },
       "immunitiesPlaceholder": "Fuego, Frío..."
     },
     "history": {

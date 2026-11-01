@@ -1183,6 +1183,16 @@
       "vulnerabilitiesPlaceholder": "Feu, Froid...",
       "immunities": "Immunités",
       "noAffinities": "Aucune résistance, vulnérabilité ni immunité",
+      "noActions": "Aucune action",
+      "noAbilities": "Aucune capacité ni trait",
+      "attackSuggestions": "Suggestions",
+      "formSections": {
+        "general": "Général",
+        "attack": "Attaque",
+        "damage": "Dégâts",
+        "description": "Description",
+        "counter": "Utilisations"
+      },
       "immunitiesPlaceholder": "Feu, Froid..."
     },
     "history": {

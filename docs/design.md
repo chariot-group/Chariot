@@ -227,7 +227,7 @@ The General tab (PC and NPC, read and edit) is one bento grid (FR-character-gene
 - Every card is a direct grid child with a slot class (`col-span-*` / `row-span-*`); no flex columns, no duplicated mobile/desktop markup, no `order-*` or dense packing
 - Grid children never use `h-fit`: they stretch to their track so a row has no visual hole
 - A stretched card must not show a blank bottom: every card spreads its content over its height. Value grids (ability scores, saving throws) use `flex-1 content-evenly`; lists and label/value stacks (character, statistics, skills, proficiencies) use `flex-1 justify-between` / `flex-1 content-between`; tiles push their value / session note to the bottom (`justify-between`, `mt-auto`). Placement keeps bands balanced so the added spacing stays small
-- No inner scroll on General cards, except the read-mode abilities list (`AbilitiesSection boundedList`: `max-h-[28rem] overflow-y-auto`, focusable `role="group"` labelled by the card heading, project scrollbar tokens)
+- No inner scroll on General cards, except the abilities list (read and edit) (`AbilitiesSection boundedList`: `max-h-[28rem] overflow-y-auto`, focusable `role="group"` labelled by the card heading, project scrollbar tokens)
 - Read mode short values use `GeneralTile` (label on top, value pushed to the bottom); sections use `GeneralSectionCard` (region + own heading)
 - `GeneralSectionCard` is a size container (`@container`): long inner lists (skills) use container variants (`@sm:grid-cols-2 @xl:grid-cols-3`) so they follow the card width, not the viewport
 - A new card MUST get a slot in every layout of `generalBentoLayout.ts` and keep the placement test (no empty cell at 2 / 4 / 12 columns) green
@@ -239,8 +239,18 @@ The Combat tab reuses the General tab grid and card primitives (FR-character-bat
 - Fixed-size cards (statistics, saving throws, death saves, affinities) share the first band; unbounded lists (each action section, abilities and traits) get their own full-width band
 - Action items wrap (`flex-wrap`, `grow basis-72`; edit `basis-[28rem]`): as many per row as the card width allows, and the items of the last row grow to complete it (no hole). Items are top-aligned so an expanded item grows alone
 - Empty affinities show an explicit "none" line (`characterDetail.battle.noAffinities`)
-- Read mode: each action section's item list uses `BENTO_BOUNDED_LIST_CLASS` (shared with the abilities list): max height + inner scroll, header controls outside the scroll area, focusable `role="group"` labelled by the section heading
+- Read and edit modes: each action section's item list uses `BENTO_BOUNDED_LIST_CLASS` (shared with the abilities list): max height + inner scroll, header controls outside the scroll area, focusable `role="group"` labelled by the section heading
 - List cards are paired side by side from `xl` (6 + 6); affinity values start on the label line
+
+## 5.3.3 List Card (Actions, Abilities and Traits)
+
+Every character list uses `tabContents/shared/listCard/ListCard` + `ListRow` (FR-character-list-card), in read and edit modes:
+
+- One card: header (accent title, muted item count, Add in edit, expand/collapse all; optional toolbar line such as the usage-type filter or rest legend) then plain rows (`border-b`, `rounded-[10px]` hover) — never a card per item or per field
+- Collapsed row: name + one muted summary line joined with `·` (action: usage · attack/DC · damage · range; ability: rest icons · remaining uses)
+- Header count: small rounded badge (`bg-gray-middle-light`, `text-xs`) vertically centered on the title
+- Expanded row: the open row is tinted (`bg-gray-middle-light/30`); read → description + inline definition list; edit → `ListFormSection` groups (uppercase muted `h3` + divider): actions General / Attack / Damage / Description, abilities General / Uses; damage entries one line each with labels on the first entry only
+- Rows are bounded in read and edit modes (`BENTO_BOUNDED_LIST_CLASS`; edit adds `max-h-[min(40rem,70dvh)]`), header outside the scroll area; form dropdowns are portalled; invalid rows get `ring-2 ring-destructive`
 
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 

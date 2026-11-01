@@ -1,7 +1,7 @@
-import { Card } from "@/components/ui/card";
-import { BENTO_BOUNDED_LIST_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ListChevronsDownUp, ListChevronsUpDown, Loader2, Moon, Clock } from "lucide-react";
+import { Accordion } from "@/components/ui/accordion";
+import { Loader2, Moon, Clock } from "lucide-react";
+import ListCard from "@/components/character/tabContents/shared/listCard/ListCard";
+import ListRow from "@/components/character/tabContents/shared/listCard/ListRow";
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -93,88 +93,108 @@ const AbilitiesSection = ({
     [abilities, characterId, characterKind, onAfterAbilityUse, sessionCode, toast, t],
   );
 
-  const abilityList = (
-    <Accordion
-      type="multiple"
-      value={openAccordionValues}
-      onValueChange={setOpenAccordionValues}
-      className="w-full">
-      {abilities.map((ability, index) => {
-        const current = ability.counterCurrent ?? 0;
-        const hasCounter = ability.hasCounter === true;
-        const max = ability.counterMax;
-        const remaining = typeof max === "number" ? max - current : 0;
-        const atLimit = hasCounter && typeof max === "number" && current >= max;
-        const canPressUse = hasCounter && typeof max === "number" && !atLimit;
-        const useBusy = loadingIndex === index;
-        const isOpen = openAccordionValues.includes(`${ability.name}-${index}`);
+  const restLegend = showRestLegend ? (
+    <div
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground sm:text-xs"
+      aria-label={t("abilityCounterResetLegend")}>
+      {hasShortRestReset && (
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+          <Clock
+            className="size-3.5 shrink-0 text-white sm:size-4"
+            aria-hidden
+          />
+          <span>{t("abilityCounterResetShortRestShort")}</span>
+        </span>
+      )}
+      {hasLongRestReset && (
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+          <Moon
+            className="size-3.5 shrink-0 text-white sm:size-4"
+            aria-hidden
+          />
+          <span>{t("abilityCounterResetLongRestShort")}</span>
+        </span>
+      )}
+    </div>
+  ) : undefined;
 
-        return (
-          <AccordionItem
-            key={`${ability.name}-${index}`}
-            value={`${ability.name}-${index}`}
-            className="border-b border-border py-1.5">
-            <AccordionTrigger
-              className="min-w-0 w-full items-start py-1.5 text-left hover:no-underline gap-2 [&>svg]:mt-1 [&>svg]:self-start"
-              aria-label={[
+  return (
+    <ListCard
+      headingId={headingId}
+      title={title}
+      count={abilities.length}
+      accentColor={accentColor}
+      className={className}
+      toolbar={restLegend}
+      expanded={openAccordionValues.length > 0}
+      onToggleAll={() => {
+        if (!hasAbilities) return;
+        setOpenAccordionValues(
+          openAccordionValues.length > 0 ? [] : abilities.map((ability, index) => `${ability.name}-${index}`),
+        );
+      }}
+      expandLabel={tMagic("expandAll")}
+      collapseLabel={tMagic("collapseAll")}
+      emptyLabel={t("noAbilities")}
+      bounded={boundedList}>
+      <Accordion
+        type="multiple"
+        value={openAccordionValues}
+        onValueChange={setOpenAccordionValues}
+        className="w-full">
+        {abilities.map((ability, index) => {
+          const current = ability.counterCurrent ?? 0;
+          const hasCounter = ability.hasCounter === true;
+          const max = ability.counterMax;
+          const remaining = typeof max === "number" ? max - current : 0;
+          const atLimit = hasCounter && typeof max === "number" && current >= max;
+          const canPressUse = hasCounter && typeof max === "number" && !atLimit;
+          const useBusy = loadingIndex === index;
+          const value = `${ability.name}-${index}`;
+          const meta = [
+            ability.counterResetsOnShortRest === true && (
+              <Clock
+                key="short"
+                role="img"
+                className="inline size-3.5 text-white sm:size-4"
+                aria-label={t("abilityCounterResetShortRest")}
+              />
+            ),
+            ability.counterResetsOnLongRest === true && (
+              <Moon
+                key="long"
+                role="img"
+                className="inline size-3.5 text-white sm:size-4"
+                aria-label={t("abilityCounterResetLongRest")}
+              />
+            ),
+            hasCounter && typeof max === "number" && (
+              <span
+                key="counter"
+                className="tabular-nums font-medium"
+                aria-label={t("abilityCounterShort", { current: remaining, max })}>
+                {t("abilityCounterShort", { current: remaining, max })}
+              </span>
+            ),
+          ].filter(Boolean);
+
+          return (
+            <ListRow
+              key={value}
+              value={value}
+              name={ability.name}
+              meta={meta}
+              triggerLabel={[
                 t("details"),
                 ability.name,
                 ability.counterResetsOnShortRest === true ? t("abilityCounterResetShortRest") : null,
                 ability.counterResetsOnLongRest === true ? t("abilityCounterResetLongRest") : null,
               ]
                 .filter(Boolean)
-                .join(" ")}>
-              <span className="flex min-w-0 min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
-                <span
-                  className={`min-w-0 leading-tight text-sm font-semibold sm:text-lg ${isOpen ? "whitespace-normal break-words" : "truncate"}`}>
-                  {ability.name}
-                </span>
-                {(ability.counterResetsOnShortRest === true ||
-                  ability.counterResetsOnLongRest === true ||
-                  (hasCounter && typeof max === "number")) && (
-                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:text-sm">
-                    {(ability.counterResetsOnShortRest === true || ability.counterResetsOnLongRest === true) && (
-                      <span
-                        className="flex min-w-0 flex-wrap items-center gap-1"
-                        role="group"
-                        aria-label={t("abilityCounterResetLegend")}>
-                        {ability.counterResetsOnShortRest === true && (
-                          <span
-                            className="inline-flex rounded-md p-0.5 text-muted-foreground"
-                            aria-label={t("abilityCounterResetShortRest")}>
-                            <Clock
-                              className="size-3.5 shrink-0 text-white sm:size-4"
-                              aria-hidden
-                            />
-                          </span>
-                        )}
-                        {ability.counterResetsOnLongRest === true && (
-                          <span
-                            className="inline-flex rounded-md p-0.5 text-muted-foreground"
-                            aria-label={t("abilityCounterResetLongRest")}>
-                            <Moon
-                              className="size-3.5 shrink-0 text-white sm:size-4"
-                              aria-hidden
-                            />
-                          </span>
-                        )}
-                      </span>
-                    )}
-                    {hasCounter && typeof max === "number" && (
-                      <span
-                        className="tabular-nums font-medium whitespace-nowrap"
-                        aria-label={t("abilityCounterShort", { current: remaining, max })}>
-                        {t("abilityCounterShort", { current: remaining, max })}
-                      </span>
-                    )}
-                  </span>
-                )}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent
-              className="text-sm sm:text-base pb-3 space-y-3"
-              role="region"
-              aria-label={`${t("descriptionPrefix")} ${ability.name}`}>
+                .join(" ")}
+              isOpen={openAccordionValues.includes(value)}
+              contentClassName="space-y-3"
+              contentLabel={`${t("descriptionPrefix")} ${ability.name}`}>
               <p className="whitespace-pre-wrap wrap-break-word">{ability.description}</p>
               {showUseControls && hasCounter && typeof max === "number" && (
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
@@ -216,91 +236,11 @@ const AbilitiesSection = ({
                   )}
                 </div>
               )}
-            </AccordionContent>
-          </AccordionItem>
-        );
-      })}
-    </Accordion>
-  );
-
-  return (
-    <Card
-      className={`gap-0.5 p-4 md:px-6 h-fit min-w-0 w-full ${className}`}
-      role="region"
-      aria-labelledby={headingId}>
-      <div className="flex min-w-0 flex-row justify-between gap-2">
-        <h2
-          id={headingId}
-          className={`min-w-0 flex-1 truncate text-xl sm:text-2xl font-semibold ${accentColor}`}>
-          {title}
-        </h2>
-        <div className="flex justify-end shrink-0">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              if (!hasAbilities) return;
-              if (openAccordionValues.length > 0) {
-                setOpenAccordionValues([]);
-              } else {
-                setOpenAccordionValues(abilities.map((ability, index) => `${ability.name}-${index}`));
-              }
-            }}
-            disabled={!hasAbilities}
-            className={accentColor}
-            aria-label={openAccordionValues.length > 0 ? tMagic("collapseAll") : tMagic("expandAll")}
-            aria-expanded={openAccordionValues.length > 0}>
-            {openAccordionValues.length > 0 ? (
-              <ListChevronsDownUp
-                className="size-5"
-                aria-hidden="true"
-              />
-            ) : (
-              <ListChevronsUpDown
-                className="size-5"
-                aria-hidden="true"
-              />
-            )}
-          </Button>
-        </div>
-      </div>
-      {showRestLegend && (
-        <div
-          className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground sm:text-xs"
-          aria-label={t("abilityCounterResetLegend")}>
-          {hasShortRestReset && (
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-              <Clock
-                className="size-3.5 shrink-0 text-white sm:size-4"
-                aria-hidden
-              />
-              <span>{t("abilityCounterResetShortRestShort")}</span>
-            </span>
-          )}
-          {hasLongRestReset && (
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-              <Moon
-                className="size-3.5 shrink-0 text-white sm:size-4"
-                aria-hidden
-              />
-              <span>{t("abilityCounterResetLongRestShort")}</span>
-            </span>
-          )}
-        </div>
-      )}
-      {boundedList ? (
-        <div
-          className={BENTO_BOUNDED_LIST_CLASS}
-          role="group"
-          aria-labelledby={headingId}
-          tabIndex={0}>
-          {abilityList}
-        </div>
-      ) : (
-        abilityList
-      )}
-    </Card>
+            </ListRow>
+          );
+        })}
+      </Accordion>
+    </ListCard>
   );
 };
 
