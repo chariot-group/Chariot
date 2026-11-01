@@ -1214,7 +1214,8 @@
       "personalityTraits": "Personality Traits",
       "ideals": "Ideals",
       "flaws": "Flaws",
-      "backstory": "Backstory"
+      "backstory": "Backstory",
+      "notSpecified": "Not specified"
     },
     "player": {
       "level": "Level",

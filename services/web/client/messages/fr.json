@@ -1215,7 +1215,8 @@
       "personalityTraits": "Traits de personnalité",
       "ideals": "Idéaux",
       "flaws": "Défauts",
-      "backstory": "Histoire"
+      "backstory": "Histoire",
+      "notSpecified": "Non renseigné"
     },
     "player": {
       "level": "Niveau",

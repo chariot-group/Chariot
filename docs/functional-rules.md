@@ -4302,36 +4302,7 @@ Each initiative tracker row carries:
 
 ## FR-character-history-appearance-fit: History Appearance Card Sizes to Content
 
-**Rule**: On the character History tab, the Appearance card and its fields MUST size to their own content in view and edit modes; they MUST NOT stretch to match neighboring cards or sibling field height.
-
-**Requirements**:
-
-- Applies to the History tab Appearance region (eyes, age, skin, height, weight, hair) in both read and edit modes.
-- The Appearance card height MUST follow its fields; it MUST NOT fill leftover column height from a multi-row grid span or from taller neighboring cards (traits, allies, bonds, ideals, flaws).
-- Each appearance field MUST size to its own value. A long wrapping value in one field MUST NOT inflate empty vertical space inside other appearance fields of the same row.
-- Long values remain fully readable: they wrap inside the field (`min-w-0`, wrap) and MUST NOT overflow the card (FR-frontend-design overflow containment).
-- View mode MUST NOT truncate appearance values to keep a uniform row height.
-- Edit-mode appearance controls stay compact (single-line inputs for the six identity fields); they MUST NOT grow to fill the card.
-- Accessibility: existing labels, `aria-labelledby` on the Appearance region, and field-error linking remain unchanged; wrapping MUST NOT clip text or hide values from keyboard/screen-reader users.
-
-**Prohibitions**:
-
-- Stretching the Appearance card with full-height fill (`h-full` or equivalent) across spanned grid rows.
-- Uniform grid-row stretching that leaves large empty areas inside short appearance fields.
-- Truncating appearance values in view mode solely to keep sibling fields the same height.
-
-**Tests**:
-
-- Nominal: short values (age, height, weight plus brief eyes/skin/hair) keep the Appearance card compact; neighboring long background cards do not enlarge it.
-- Edge: a long wrapping value in one appearance field (e.g. eyes or hair) grows that field only; sibling fields stay compact and the card does not overflow horizontally.
-- Failure: empty or missing appearance values MUST NOT leave a stretched empty Appearance card matching the height of the two-row neighboring stack.
-
-**References**:
-
-- `services/web/client/src/components/character/tabContents/history/view/CharacterHistoryView.tsx`
-- `services/web/client/src/components/character/tabContents/history/form/CharacterHistoryTabEdit.tsx`
-- `docs/functional-rules.md` — FR-character-universal-fields, FR-character-detail-view, FR-frontend-design
-- `docs/design.md` — §3 spacing, §5.3 cards, §6.4 overflow and text containment
+**Status**: Superseded by **FR-character-history-bento-layout** (functional decision 2026-11-01, option "adopt the bento rule"). The Appearance card no longer sizes to its content with `h-fit`: like every bento card it stretches to its track and spreads its fields over its height. The remaining intents (long values wrap and are never truncated, edit inputs stay single-line, no horizontal overflow) are carried by the new rule.
 
 ---
 
@@ -5674,4 +5645,56 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/inventory/form/CharacterInventoryTabEdit.tsx`
 - `services/web/client/src/components/character/tabContents/general/shared/generalBentoLayout.ts`, `GeneralSectionCard.tsx`
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-statistics-card, FR-form-field-validation, FR-tooltip-accessibility, FR-frontend-design
+- `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §6 responsive, §9 accessibility
+
+---
+
+## FR-character-history-bento-layout: History Tab Bento Layout (PC and NPC)
+
+**Rule**: The character sheet **History** tab (Player and NPC, read and edit modes, including the Codex monster preview) MUST use the same bento grid and card primitives as the General, Combat and Inventory tabs (FR-character-general-bento-layout): one grid container whose direct children are the cards, one uniform gap, explicit spans per breakpoint, no empty cell and no card showing a blank area below its content. It supersedes FR-character-history-appearance-fit. Data is unchanged.
+
+**Requirements**:
+
+- **Same grid and tokens**: 2 columns below `sm`, 4 from `sm`, 12 from `xl`; gap `gap-3 md:gap-4`; card padding `p-4 md:px-6`; cards are `GeneralSectionCard` (region labelled by its own heading, accent color `green`). The former nested grids (`lg` 2 columns / `xl` 4 columns, `xl:row-span-2` Appearance, inner 2-column grids) MUST NOT remain.
+- **Cards** (DOM order = reading order): Appearance · Description · Personality traits · Ideals · Bonds · Flaws · Allies and organizations · Backstory.
+- **Placement intent**:
+  - `≥ xl`: Band 1: Appearance (5) · Description (7). Band 2: Personality traits, Ideals, Bonds, Flaws (3 each). Band 3: Allies and organizations (4) · Backstory (8).
+  - `sm` → `xl`: Appearance and Description half width each; the four personality cards half width (two rows of two); Allies and organizations and Backstory full width.
+  - `< sm`: every card full width.
+- **Appearance card** (read mode): the six fields (eyes, age, skin, height, weight, hair) are label/value cells using the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), small muted uppercase label with its icon, value below. Cells follow the card width (container queries): 2 columns in a narrow card, 3 from `@sm`. The card **stretches** to its track like every bento card (no `h-fit`) and spreads its cell rows over its height (`flex-1 content-evenly`). Long values wrap (`wrap-break-word`), are never truncated and never overflow. Height and weight follow FR-preferred-measurement-unit / FR-distance-unit-conversion (secondary unit kept). The size category next to the height shows its full localized name (e.g. "Moyenne") instead of an abbreviation in a raw tooltip. An empty value shows a muted dash (`—`) with an accessible "not specified" name.
+- **Text cards** (read mode): free text with `whitespace-pre-wrap wrap-break-word`; long text is **bounded** (`BENTO_BOUNDED_LIST_CLASS`: max height + inner scroll, focusable, labelled by the card heading); an empty value shows a muted empty-state line (i18n `characterDetail.history.notSpecified`, en/fr/es) instead of a blank card.
+- **Edit mode**: same cards, same order, same zones as read mode so the tab does not reshuffle when toggling edit.
+  - Appearance: six single-line inputs (eyes, skin, hair text; age, height, weight number, height/weight in the preferred unit) with their visible label and icon, laid out in 2 columns in a narrow card and 3 from `@sm`; validation errors stay under their input (FR-form-field-validation).
+  - Text cards: one textarea each that fills the card height (minimum height kept); label visually hidden because the card heading names the field (accessible label kept — no placeholder-only labelling).
+  - Positive `tabIndex` values and the wrapper `role="main"` are removed: tab order follows the DOM order.
+- **Fill**: grid children never use `h-fit`; Appearance spreads its cells, text and textareas start under the heading and fill the remaining height.
+- **Single render per card**, `min-w-0` on every grid child, no duplicated mobile/desktop markup, no `order-*`.
+- **Cleanup**: the unused duplicate component `tabContents/CharacterHistoryTabContent.tsx` (root, superseded by `tabContents/history/…`) is removed.
+
+**Accessibility (FR-frontend-design)**:
+
+- Every card is a `region` with `aria-labelledby` pointing to its own unique heading (`history-{field}-heading`), in read **and** edit modes; heading and control `id`s appear once in the DOM.
+- Appearance cells are `group`s with an accessible name `label + value` (e.g. "Yeux : bleus"); icons are `aria-hidden`.
+- Every textarea and input has an associated `<label>`; error text stays linked with `aria-describedby`.
+- Contrast of muted labels and empty-state lines stays WCAG AA on the card and cell surfaces.
+
+**Prohibitions**:
+
+- Nested grids or flex columns to place top-level History cards.
+- `h-fit` / `self-start` on grid children, `order-*` reordering.
+- Truncating appearance values; raw `Tooltip` for the size abbreviation.
+- Positive `tabIndex`, placeholder-only labelled fields.
+
+**Tests**:
+
+- Nominal: History tab (read and edit) renders one grid container whose eight direct children are the cards with their slot classes; slot spans fill every row at 2 / 4 / 12 columns.
+- Edge: a long appearance value wraps without truncation; empty text fields show the empty-state line; long text is in the bounded area; the size shows its full name.
+- Failure / guard: heading ids are unique and every `aria-labelledby` resolves; no positive `tabindex`, no `h-fit`, no `role="main"`; every textarea has a label.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/history/view/CharacterHistoryView.tsx`
+- `services/web/client/src/components/character/tabContents/history/form/CharacterHistoryTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/general/shared/generalBentoLayout.ts`, `GeneralSectionCard.tsx`
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-inventory-bento-layout, FR-character-history-appearance-fit (superseded), FR-distance-unit-conversion, FR-form-field-validation, FR-tooltip-accessibility, FR-frontend-design
 - `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §6 responsive, §9 accessibility

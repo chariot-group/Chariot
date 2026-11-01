@@ -272,6 +272,15 @@ The Inventory tab reuses the General tab grid and `GeneralSectionCard` (FR-chara
 - Equipment and Treasure: paired half width from `sm` (6 + 6 at `xl`); read text uses `BENTO_BOUNDED_LIST_CLASS`, empty state is a muted line; edit textareas fill the card (label `sr-only`, the heading names the field)
 - In-session edit button sits at the end of the heading line (`GeneralSectionCard headerAction`)
 
+## 5.3.6 Character History Tab Bento Grid
+
+The History tab reuses the General tab grid and `GeneralSectionCard` (FR-character-history-bento-layout), with its slots in `tabContents/history/shared/historyBentoLayout.ts`:
+
+- Bands at `xl`: Appearance (5) · Description (7); Personality traits, Ideals, Bonds, Flaws (3 each); Allies and organizations (4) · Backstory (8). From `sm` the first two bands go two by two, the last one full width
+- Appearance: tinted label/value cells (`bg-gray-middle-light/50`, `rounded-[10px]`), 2 columns, 3 from `@sm`; the card stretches like any bento card and spreads its cells (`flex-1 content-evenly`); empty values show a muted `—`; the size category shows its full name next to the height (no raw tooltip)
+- Text cards: `BENTO_BOUNDED_LIST_CLASS` in read mode, muted `notSpecified` line when empty; edit textareas fill the card with an `sr-only` label
+- No positive `tabIndex`: tab order follows the DOM
+
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 
 Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.
