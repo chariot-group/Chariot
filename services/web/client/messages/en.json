@@ -1503,10 +1503,7 @@
       "setCoins": "Set",
       "sessionInventoryUpdateError": "Unable to update inventory during the session.",
       "noEquipment": "No equipment at the moment.",
-      "noTreasure": "No treasure at the moment.",
-      "coinsRegion": "Coins section",
-      "equipmentRegion": "Equipment section",
-      "treasureRegion": "Treasure section"
+      "noTreasure": "No treasure at the moment."
     },
     "magic": {
       "noMagicAbilities": "This character has no magical abilities.",

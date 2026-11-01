@@ -5623,3 +5623,55 @@ Each initiative tracker row carries:
 
 - `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
 - `docs/functional-rules.md` — FR-distance-unit-conversion, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-frontend-design
+
+---
+
+## FR-character-inventory-bento-layout: Inventory Tab Bento Layout (PC and NPC)
+
+**Rule**: The character sheet **Inventory** tab (Player and NPC, read and edit modes, including the Codex monster preview) MUST use the same bento grid and card primitives as the General and Combat tabs (FR-character-general-bento-layout, FR-character-battle-bento-layout): one grid container whose direct children are the cards, one uniform gap, explicit spans per breakpoint, no empty cell and no card showing a blank area below its content. Data and in-session editing behavior are unchanged.
+
+**Requirements**:
+
+- **Same grid and tokens**: 2 columns below `sm`, 4 from `sm`, 12 from `xl`; gap `gap-3 md:gap-4`; card padding `p-4 md:px-6`; cards are `GeneralSectionCard` (region labelled by its own heading, accent color `yellow`). The former `lg` flex columns (2/5 – 3/5) MUST NOT remain.
+- **Cards** (DOM order = reading order): Coins · Equipment · Treasure.
+- **Placement intent**:
+  - `≥ xl`: Coins (12, full-width strip), then Equipment (6) and Treasure (6) side by side.
+  - `sm` → `xl`: Coins full width; Equipment and Treasure half width each (side by side).
+  - `< sm`: every card full width.
+- **Coins card, read mode** (same visual language as FR-character-statistics-card): the five coins (pp, gp, ep, sp, cp, in this order) are five equal cells on **one row at every breakpoint** (no orphan cell). Each cell: coin icon, value (bold), short visible label (`po`, `pa`…, muted small). Cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not bordered pills. Values ≥ 1 000 are abbreviated (`formatCompactNumber`); the full value stays available as the cell accessible name and, outside session, as a tooltip (`InfoTooltip`, FR-tooltip-accessibility) only when the displayed value is abbreviated (in session, the coin dialog shows the full current value).
+- **Coins card, read mode in session** (behavior unchanged): when the sheet allows in-session updates, each cell is a button that opens the existing coin dialog (subtract / add / set, value floored at 0, error toast on failure). Outside session, cells are not interactive and not focusable.
+- **Equipment and Treasure cards, read mode**: free text with `whitespace-pre-wrap wrap-break-word`; an empty value shows the existing muted empty-state line (`noEquipment`, `noTreasure`). Long text is **bounded** (`BENTO_BOUNDED_LIST_CLASS`: max height + inner scroll, focusable, labelled by the card heading) so a long inventory does not push the page; the two paired cards end at the same height past the max height. In session, the existing **Modifier** button stays in the card header and the inline editor (textarea + Cancel / Save) replaces the text in place; only one text field is edited at a time.
+- **Edit mode**: same cards, same order, same zones as read mode so the tab does not reshuffle when toggling edit.
+  - Coins: five labelled number inputs (icon adornment, `min=0`), one row of five from the card width `@2xl`, otherwise one input per line with its visible label (never a partial row leaving a hole). Validation errors stay under the inputs (FR-form-field-validation).
+  - Equipment / Treasure: one textarea each that fills the card height (minimum height kept), label visually hidden because the card heading names the field (accessible label kept).
+- **Fill**: grid children never use `h-fit`; cards spread their content over the track height (coins row centered vertically, text and textarea start under the heading).
+- **Single render per card**, `min-w-0` on every grid child, no duplicated mobile/desktop markup, no `order-*`.
+- **Cleanup**: the unused duplicate component `tabContents/CharacterInventoryTabContent.tsx` (root, superseded by `tabContents/inventory/…`) is removed.
+
+**Accessibility (FR-frontend-design)**:
+
+- Every card is a `region` with `aria-labelledby` pointing to its own unique heading (`coins-heading`, `equipment-heading`, `treasure-heading`), in read **and** edit modes.
+- Each coin cell has an accessible name with the full value and full coin name (e.g. "1 250 pièces d'or"); coin icons are `aria-hidden`. The invalid `role="text"` and the focusable non-interactive spans are removed.
+- In session, coin buttons announce the dialog (`aria-haspopup="dialog"`) and their action (`editCoinAmountAria`); the dialog's −, +, = buttons keep explicit accessible names.
+- The bounded text area is keyboard-focusable and labelled; contrast of values and muted labels stays WCAG AA.
+
+**Prohibitions**:
+
+- Flex columns or several stacked grids to place top-level Inventory cards.
+- Coin pills with borders, or a coin row that wraps leaving an orphan cell.
+- Changing the inventory data model (`treasure`: cp, sp, ep, gp, pp, equipment, treasure) or the session update path as part of this layout change.
+
+**Tests**:
+
+- Nominal: Inventory tab (read and edit) renders one grid container whose direct children are the three cards with their slot classes; read mode shows five coin cells in pp → cp order with accessible full values.
+- Edge: slot spans fill every row at 2 / 4 / 12 columns; a value ≥ 1 000 is abbreviated with the full value in its accessible name; empty equipment / treasure shows the empty-state line.
+- Edge (session): in session, a coin cell is a button opening the dialog; outside session it is not focusable.
+- Failure / guard: heading ids are unique and every `aria-labelledby` resolves; an invalid amount (non-numeric, negative) counts as 0 and subtracting never goes below 0 (a failed session update keeps the error toast, checked manually: no DOM test runner in the web client).
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/inventory/view/CharacterInventoryView.tsx`
+- `services/web/client/src/components/character/tabContents/inventory/form/CharacterInventoryTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/general/shared/generalBentoLayout.ts`, `GeneralSectionCard.tsx`
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-statistics-card, FR-form-field-validation, FR-tooltip-accessibility, FR-frontend-design
+- `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §6 responsive, §9 accessibility

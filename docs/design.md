@@ -263,6 +263,15 @@ Every character list uses `tabContents/shared/listCard/ListCard` + `ListRow` (FR
 - Speeds: a single wrapping text line `Vitesses : icon value · icon value`, only non-zero speeds, secondary unit in muted small text
 - No white pills, no "?" tooltip buttons: the visible label carries the meaning, accessible names keep the full wording
 
+## 5.3.5 Character Inventory Tab Bento Grid
+
+The Inventory tab reuses the General tab grid and `GeneralSectionCard` (FR-character-inventory-bento-layout), with its slots in `tabContents/inventory/shared/inventoryBentoLayout.ts`:
+
+- Coins: full-width strip; read mode shows five equal cells on one row (`grid-cols-5`, `bg-gray-middle-light/50`, `rounded-[10px]`): icon + short uppercase muted label, then the bold value (abbreviated ≥ 1 000, full value in the accessible name and an `InfoTooltip` outside session). In session, cells are buttons (`hover:bg-gray`) opening the coin dialog
+- Coins edit: one labelled input per line in a narrow card, one row of five from `@2xl` (card width)
+- Equipment and Treasure: paired half width from `sm` (6 + 6 at `xl`); read text uses `BENTO_BOUNDED_LIST_CLASS`, empty state is a muted line; edit textareas fill the card (label `sr-only`, the heading names the field)
+- In-session edit button sits at the end of the heading line (`GeneralSectionCard headerAction`)
+
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 
 Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.

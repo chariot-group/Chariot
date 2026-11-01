@@ -1507,10 +1507,7 @@
       "setCoins": "Fixer",
       "sessionInventoryUpdateError": "Impossible de mettre à jour l'inventaire en session.",
       "noEquipment": "Aucun équipement pour le moment.",
-      "noTreasure": "Aucun trésor pour le moment.",
-      "coinsRegion": "Section des pièces de monnaie",
-      "equipmentRegion": "Section de l'équipement",
-      "treasureRegion": "Section du trésor"
+      "noTreasure": "Aucun trésor pour le moment."
     },
     "magic": {
       "noMagicAbilities": "Ce personnage n'a pas de capacités magiques.",

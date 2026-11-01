@@ -1,185 +1,132 @@
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { NumberInput } from "@/components/ui/number-input";
-import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-
-import GP from "@public/assets/pieces/golden-piece.svg";
-import SP from "@public/assets/pieces/silver-piece.svg";
-import EP from "@public/assets/pieces/electrum-piece.svg";
-import PP from "@public/assets/pieces/platinum-piece.svg";
-import CP from "@public/assets/pieces/copper-piece.svg";
 import { Textarea } from "@/components/ui/textarea";
-
-const COIN_FIELDS = [
-  { key: "pp", icon: PP, labelKey: "platinumPieces", placeholderKey: "pp", id: "inventory-pp" },
-  { key: "gp", icon: GP, labelKey: "goldPieces", placeholderKey: "gp", id: "inventory-gp" },
-  { key: "ep", icon: EP, labelKey: "electrumPieces", placeholderKey: "ep", id: "inventory-ep" },
-  { key: "sp", icon: SP, labelKey: "silverPieces", placeholderKey: "sp", id: "inventory-sp" },
-  { key: "cp", icon: CP, labelKey: "copperPieces", placeholderKey: "cp", id: "inventory-cp" },
-] as const;
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
+import {
+  INVENTORY_BENTO_GRID_CLASS,
+  INVENTORY_SLOTS,
+} from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
+import { COIN_CONFIG, type CoinKey } from "@/components/character/tabContents/inventory/shared/coins";
 
 interface CharacterInventoryTabEditProps {
   accentColor: string;
   form: UseFormReturn<FieldValues>;
 }
 
+const TEXT_FIELDS = ["equipment", "treasure"] as const;
+
+/**
+ * Inventory tab, edit mode: same cards and zones as read mode.
+ * @see FR-character-inventory-bento-layout
+ */
 export default function CharacterInventoryTabEdit({ accentColor, form }: CharacterInventoryTabEditProps) {
   const t = useTranslations("characterDetail.inventory");
 
-  const treasureErrors = form.formState.errors.treasure as
-    | Partial<Record<"pp" | "gp" | "ep" | "sp" | "cp", { message?: string }>>
-    | undefined;
+  const treasureErrors = form.formState.errors.treasure as Partial<Record<CoinKey, { message?: string }>> | undefined;
+  const coinErrors = COIN_CONFIG.map(({ key }) => treasureErrors?.[key]).filter(Boolean);
 
   return (
-    <div className="w-full flex flex-col lg:flex-row gap-2 md:gap-4 items-start">
-      <div className="flex flex-col gap-2 md:gap-4 w-full lg:w-2/5">
-        <Card
-          className="gap-3 py-4 px-4 md:px-6"
-          role="region"
-          aria-labelledby="coins-heading">
-          <h2
-            id="coins-heading"
-            className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
-            {t("coins")}
-          </h2>
-          <div
-            className="flex flex-wrap gap-2 "
-            role="group"
-            aria-label={t("coins")}>
-            {COIN_FIELDS.map(({ key, icon, labelKey, placeholderKey, id }) => (
+    <div className={INVENTORY_BENTO_GRID_CLASS}>
+      <GeneralSectionCard
+        headingId="coins-heading"
+        title={t("coins")}
+        accentColor={accentColor}
+        className={INVENTORY_SLOTS.coins}>
+        {/* One input per line in a narrow card, one row of five from a wide card (never a partial row). */}
+        <div className="grid min-w-0 grid-cols-1 gap-2 @2xl:grid-cols-5 @2xl:gap-3">
+          {COIN_CONFIG.map(({ key, icon, labelKey, shortKey }) => {
+            const id = `inventory-${key}`;
+            return (
               <Controller
                 key={key}
                 name={`treasure.${key}`}
                 control={form.control}
-                render={({ field, fieldState }) => {
-                  return (
-                    <Field
-                      className="shrink-0 w-auto"
-                      data-invalid={fieldState.invalid}
-                      orientation="horizontal">
-                      <div className="w-28">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <NumberInput
-                              className="w-full pl-2.5"
-                              {...field}
-                              value={field.value ?? ""}
-                              id={id}
-                              aria-label={t(labelKey)}
-                              aria-invalid={fieldState.invalid}
-                              aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
-                              placeholder={t(placeholderKey)}
-                              min={0}
-                              startAdornment={
-                                <Image
-                                  src={icon}
-                                  alt=""
-                                  aria-hidden="true"
-                                  className="pointer-events-none size-4 sm:size-5"
-                                />
-                              }
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t(labelKey)}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </Field>
-                  );
-                }}
-              />
-            ))}
-          </div>
-          {(treasureErrors?.pp ||
-            treasureErrors?.gp ||
-            treasureErrors?.ep ||
-            treasureErrors?.sp ||
-            treasureErrors?.cp) && (
-            <FieldError
-              id="inventory-coins-error"
-              errors={[
-                treasureErrors?.pp,
-                treasureErrors?.gp,
-                treasureErrors?.ep,
-                treasureErrors?.sp,
-                treasureErrors?.cp,
-              ].filter(Boolean)}
-            />
-          )}
-        </Card>
-        <Card
-          className="gap-3 py-4 px-4 md:px-6"
-          role="region"
-          aria-labelledby="equipment-heading">
-          <h2
-            id="equipment-heading"
-            className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
-            {t("equipment")}
-          </h2>
-          <Controller
-            name="treasure.equipment"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <FieldLabel htmlFor="inventory-equipment">{t("equipment")}</FieldLabel>
-                <Textarea
-                  {...field}
-                  id="inventory-equipment"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "inventory-equipment-error" : undefined}
-                  placeholder={t("equipment")}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="inventory-equipment-error"
-                    errors={[fieldState.error]}
-                  />
+                render={({ field, fieldState }) => (
+                  <Field
+                    className="min-w-0 justify-between gap-3 @2xl:flex-col @2xl:items-stretch @2xl:gap-1"
+                    data-invalid={fieldState.invalid}
+                    orientation="horizontal">
+                    <FieldLabel
+                      htmlFor={id}
+                      className="min-w-0 items-center text-sm text-muted-foreground">
+                      <Image
+                        src={icon}
+                        alt=""
+                        aria-hidden="true"
+                        className="size-4 shrink-0 sm:size-5"
+                      />
+                      <span className="truncate">{t(labelKey)}</span>
+                    </FieldLabel>
+                    <NumberInput
+                      className="w-32 shrink-0 @2xl:w-full"
+                      {...field}
+                      value={field.value ?? ""}
+                      id={id}
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={fieldState.error ? "inventory-coins-error" : undefined}
+                      placeholder={t(shortKey)}
+                      min={0}
+                    />
+                  </Field>
                 )}
-              </Field>
-            )}
-          />
-        </Card>
-      </div>
-      <Card
-        className="w-full lg:min-w-3/5 lg:max-w-3/5 gap-3 py-4 px-4 md:px-6"
-        role="region"
-        aria-labelledby="treasure-heading">
-        <h2
-          id="treasure-heading"
-          className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
-          {t("treasure")}
-        </h2>
-        <Controller
-          name="treasure.treasure"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              data-invalid={fieldState.invalid}
-              orientation="vertical">
-              <FieldLabel htmlFor="inventory-treasure">{t("treasure")}</FieldLabel>
-              <Textarea
-                {...field}
-                id="inventory-treasure"
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.error ? "inventory-treasure-error" : undefined}
-                placeholder={t("treasure")}
               />
-              {fieldState.error && (
-                <FieldError
-                  id="inventory-treasure-error"
-                  errors={[fieldState.error]}
-                />
+            );
+          })}
+        </div>
+        {coinErrors.length > 0 && (
+          <FieldError
+            id="inventory-coins-error"
+            errors={coinErrors}
+          />
+        )}
+      </GeneralSectionCard>
+      {TEXT_FIELDS.map((key) => {
+        const id = `inventory-${key}`;
+        return (
+          <GeneralSectionCard
+            key={key}
+            headingId={`${key}-heading`}
+            title={t(key)}
+            accentColor={accentColor}
+            className={INVENTORY_SLOTS[key]}>
+            <Controller
+              name={`treasure.${key}`}
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  className="flex-1"
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  {/* The card heading already names the field. */}
+                  <FieldLabel
+                    htmlFor={id}
+                    className="sr-only">
+                    {t(key)}
+                  </FieldLabel>
+                  <Textarea
+                    {...field}
+                    value={field.value ?? ""}
+                    id={id}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? `${id}-error` : undefined}
+                    placeholder={t(key)}
+                    className="min-h-36 flex-1"
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id={`${id}-error`}
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
               )}
-            </Field>
-          )}
-        />
-      </Card>
+            />
+          </GeneralSectionCard>
+        );
+      })}
     </div>
   );
 }
