@@ -69,7 +69,7 @@ export default function CharacterTabs({
       <TabsList
         className={cn(
           // Joined button group: one rounded frame, square inner corners, thin dividers
-          "w-max shrink-0 flex-row flex-nowrap items-stretch justify-start gap-0 self-start overflow-hidden rounded-[13px] border border-frame bg-card p-0",
+          "w-max shrink-0 flex-row flex-nowrap items-stretch justify-start gap-0 self-start overflow-hidden rounded-[13px] border-[0.5px] border-frame bg-card p-0",
           listClassName,
         )}
         role="tablist"
@@ -87,7 +87,7 @@ export default function CharacterTabs({
               aria-controls={`${tab}-content`}
               data-invalid={hasError || undefined}
               className={cn(
-                "relative shrink-0 grow-0 flex-none rounded-none border-0 border-l border-frame py-1.5 text-sm sm:text-base font-medium whitespace-nowrap transition-colors first:border-l-0",
+                "relative shrink-0 grow-0 flex-none rounded-none border-0 border-l-[0.5px] border-frame py-1.5 text-sm sm:text-base font-medium whitespace-nowrap transition-colors first:border-l-0",
                 // Keyboard-only focus, drawn inside the button (no white outline on click)
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                 isActive

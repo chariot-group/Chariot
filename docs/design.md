@@ -203,8 +203,8 @@ Tabs rely on Radix plus design overrides:
 
 The character sheet tab bar (General, Battle, Magic, Inventory, History) is one joined button group, not separate pills:
 
-- Frame: `rounded-[13px] border border-frame bg-card overflow-hidden` (light structural border, like the layout), no gap between triggers
-- Triggers: square inner corners, `border-l border-frame` dividers (none on the first), `py-1.5`
+- Frame: `rounded-[13px] border-[0.5px] border-frame bg-card overflow-hidden` (hairline structural border, kept thin so it does not stand out), no gap between triggers
+- Triggers: square inner corners, `border-l-[0.5px] border-frame` dividers (none on the first), `py-1.5`
 - Active trigger: domain color fill (section 2.3) with dark text `text-black` on every tab, Battle included (black on red: 5.7:1), except Companions (violet `purple` fill: white text); inactive: transparent, white text, `hover:bg-white/10`
 - Focus: keyboard only (`focus-visible`), drawn inside the trigger (`ring-2 ring-inset ring-ring`); no outline on mouse click
 - Error state (FR-form-field-validation): inset `ring-red/80` plus the alert icon (never color alone)

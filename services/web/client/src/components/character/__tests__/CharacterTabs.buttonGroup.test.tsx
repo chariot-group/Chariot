@@ -44,12 +44,12 @@ describe("CharacterTabs — joined button group", () => {
     expect(list).toContain("gap-0");
     expect(list).toContain("rounded-[13px]");
     expect(list).toContain("overflow-hidden");
-    expect(list).toContain("border-frame");
+    expect(list).toContain("border-[0.5px] border-frame");
     expect(triggerOf(html, "Battle")).toContain("bg-red text-black");
     expect(triggerOf(html, "Battle")).not.toContain("text-white");
     expect(triggerOf(html, "Battle")).toContain('aria-selected="true"');
     expect(triggerOf(html, "Magic")).toContain("rounded-none");
-    expect(triggerOf(html, "Magic")).toContain("border-l border-frame");
+    expect(triggerOf(html, "Magic")).toContain("border-l-[0.5px] border-frame");
     expect(triggerOf(html, "Magic")).toContain("bg-transparent");
   });
 
