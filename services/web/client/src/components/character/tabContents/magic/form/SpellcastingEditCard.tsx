@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toSpellcastingAbilityKey } from "@/utils/magic.utils";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
@@ -196,7 +197,7 @@ export default function SpellcastingEditCard({
                 {tEdit("spellcastingAbility")}
               </span>
               <Select
-                value={(field.value as string | undefined) ?? ""}
+                value={toSpellcastingAbilityKey(field.value) ?? ""}
                 onValueChange={field.onChange}>
                 <SelectTrigger
                   id={`sc-${sc}-ability`}

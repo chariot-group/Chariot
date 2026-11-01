@@ -27,6 +27,7 @@ import {
   numberSpellsPrepare,
   pruneOrphanSpellSlotsByLevel,
   spellSlotLevelKeysEqual,
+  toSpellcastingAbilityKey,
 } from "@/utils/magic.utils";
 import { ensureSpellDamageEditRows, hydrateSpellDamageDetails } from "@/utils/spell-damage.utils";
 import { cn } from "@/lib/utils";
@@ -173,7 +174,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const watchedBlocks =
     (useWatch({ control: form.control, name: "spellcasting" }) as Array<Partial<Spellcasting>> | undefined) ?? [];
   const abilityKey =
-    (useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.ability`) }) as string) ?? "";
+    toSpellcastingAbilityKey(useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.ability`) })) ?? "";
   const saveDC = useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.saveDC`) }) as number | null;
   const attackBonus = useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.attackBonus`) }) as
     number | null;
@@ -400,7 +401,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     );
   }
 
-  const abilityScore = abilityKey ? (abilityScores[abilityKey as keyof AbilityScores] ?? 10) : 10;
+  const abilityScore = abilityKey ? (abilityScores[abilityKey] ?? 10) : 10;
   const modifier = calculateAbilityBonus(abilityScore);
   const calculatedAttackBonus = calculateSpellAttackBonus(proficiencyBonus, abilityScore);
   const maxPrepared =

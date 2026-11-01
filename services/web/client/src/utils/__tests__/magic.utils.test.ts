@@ -5,6 +5,7 @@ import {
   hasLevel1OrHigherSpells,
   pruneOrphanSpellSlotsByLevel,
   rebindSelectedSpellToList,
+  toSpellcastingAbilityKey,
 } from "@/utils/magic.utils";
 
 /** Minimal spell fixture: the helpers under test only read name, level and prepared. */
@@ -130,5 +131,23 @@ describe("rebindSelectedSpellToList — conservation du sort sélectionné", () 
 
   it("edge: retourne null si aucun sort n’est sélectionné", () => {
     expect(rebindSelectedSpellToList([spell({ name: "X", level: 0 })], null)).toBeNull();
+  });
+});
+
+describe("toSpellcastingAbilityKey", () => {
+  it("nominal: keeps sheet keys", () => {
+    expect(toSpellcastingAbilityKey("wisdom")).toBe("wisdom");
+  });
+
+  it("edge: maps Codex abbreviations, any case and padding", () => {
+    expect(toSpellcastingAbilityKey("WIS")).toBe("wisdom");
+    expect(toSpellcastingAbilityKey(" Cha ")).toBe("charisma");
+    expect(toSpellcastingAbilityKey("Intelligence")).toBe("intelligence");
+  });
+
+  it("failure: unknown or missing values return null", () => {
+    expect(toSpellcastingAbilityKey("luck")).toBeNull();
+    expect(toSpellcastingAbilityKey("")).toBeNull();
+    expect(toSpellcastingAbilityKey(undefined)).toBeNull();
   });
 });

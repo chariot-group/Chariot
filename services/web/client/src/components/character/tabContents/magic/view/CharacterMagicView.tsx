@@ -12,6 +12,7 @@ import {
   getRemainingSpellSlots,
   hasLevel1OrHigherSpells,
   numberSpellsPrepare,
+  toSpellcastingAbilityKey,
 } from "@/utils/magic.utils";
 import { isPlayer } from "@/utils/global.utils";
 import { cn } from "@/lib/utils";
@@ -71,6 +72,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
   const activeSpellcasting: Spellcasting | null = spellcastingList[activeIndex] ?? null;
   const spells = activeSpellcasting?.spells ?? [];
   const isInnate = activeSpellcasting?.isInnate ?? false;
+  const abilityKey = toSpellcastingAbilityKey(activeSpellcasting?.ability);
   const appliesPrepMechanic =
     activeSpellcasting !== null && isPlayer(character) && classWithSpellPrepared(activeSpellcasting) && !isInnate;
   const showPreparedControls =
@@ -281,9 +283,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         className={MAGIC_SLOTS.spellcasting}>
         <SpellcastingStats
           className="min-w-0 @3xl:max-w-2xl"
-          abilityName={
-            activeSpellcasting.ability ? tAbilities(activeSpellcasting.ability as Parameters<typeof tAbilities>[0]) : ""
-          }
+          abilityName={abilityKey ? tAbilities(abilityKey) : (activeSpellcasting.ability ?? "")}
           attackBonus={activeSpellcasting.attackBonus}
           saveDC={activeSpellcasting.saveDC}
           prepared={appliesPrepMechanic ? { current: preparedCount, max: maxPrepared } : null}

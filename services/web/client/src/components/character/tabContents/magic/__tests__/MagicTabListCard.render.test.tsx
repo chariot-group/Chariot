@@ -221,4 +221,20 @@ describe("Magic tab — bento grid and spell list card", () => {
     expect(html).not.toContain('aria-label="spellcastingClass"');
     expect(html).not.toContain("aria-pressed");
   });
+
+  it("edge: a Codex abbreviation (WIS) is shown as the translated ability, not a missing key", () => {
+    const codexNpc = {
+      ...player,
+      spellcasting: [{ ...player.spellcasting[0], ability: "WIS" }],
+    } as unknown as Player;
+    const html = render(
+      <CharacterMagicView
+        character={codexNpc}
+        accentColor="pink"
+      />,
+    );
+
+    expect(html).toContain('aria-label="spellcastingAbility wisdom"');
+    expect(html).not.toContain("WIS");
+  });
 });
