@@ -44,7 +44,8 @@ const messages = {
   },
 };
 
-const renderActionSection = (actions: Action[], title = "Actions") => renderToStaticMarkup(
+/** Partial actions: the section only reads the fields set in each fixture. */
+const renderActionSection = (actions: Partial<Action>[], title = "Actions") => renderToStaticMarkup(
   <Provider store={createTestStore()}>
     <NextIntlClientProvider
       locale="en"
@@ -52,7 +53,7 @@ const renderActionSection = (actions: Action[], title = "Actions") => renderToSt
       messages={messages}>
       <ActionSection
         title={title}
-        actions={actions}
+        actions={actions as Action[]}
         accentColor="text-red"
       />
     </NextIntlClientProvider>
