@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, copySuccessButtonClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { cn } from "@/lib/utils";
@@ -92,7 +92,7 @@ export default function ProfileReferralSection({
               aria-label={t("copyLinkAriaLabel")}
               className={cn(
                 "transition-colors whitespace-nowrap",
-                linkCopyState === "success" && "border-green bg-green text-black hover:bg-green",
+                linkCopyState === "success" && copySuccessButtonClassName,
               )}
               disabled={linkCopyState !== "idle"}
               onClick={onCopyLink}>

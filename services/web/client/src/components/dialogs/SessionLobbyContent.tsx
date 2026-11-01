@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, copySuccessButtonClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
@@ -381,7 +381,7 @@ function SessionLobbyCopyActions({
           size="sm"
           className={cn(
             "h-8 w-full min-w-0 px-3 transition-colors sm:h-9",
-            codeCopyState === "success" && "border-green bg-green text-black hover:bg-green",
+            codeCopyState === "success" && copySuccessButtonClassName,
           )}
           aria-label={t("sessionCode.copyAriaLabel")}
           disabled={codeCopyState !== "idle"}
@@ -399,7 +399,7 @@ function SessionLobbyCopyActions({
               aria-label={t("sessionCode.copyLinkAriaLabel")}
               className={cn(
                 "h-8 w-8 shrink-0 transition-colors sm:h-9 sm:w-9",
-                linkCopyState === "success" && "border-green bg-green text-black hover:bg-green",
+                linkCopyState === "success" && copySuccessButtonClassName,
               )}
               disabled={linkCopyState !== "idle"}
               onClick={onCopyLink}>
@@ -421,7 +421,7 @@ function SessionLobbyCopyActions({
         size="sm"
         className={cn(
           "h-8 w-auto shrink-0 px-3 transition-colors",
-          codeCopyState === "success" && "border-green bg-green text-black hover:bg-green",
+          codeCopyState === "success" && copySuccessButtonClassName,
         )}
         aria-label={t("sessionCode.copyAriaLabel")}
         disabled={codeCopyState !== "idle"}
@@ -439,7 +439,7 @@ function SessionLobbyCopyActions({
             aria-label={t("sessionCode.copyLinkAriaLabel")}
             className={cn(
               "shrink-0 transition-colors",
-              linkCopyState === "success" && "border-green bg-green text-black hover:bg-green",
+              linkCopyState === "success" && copySuccessButtonClassName,
             )}
             disabled={linkCopyState !== "idle"}
             onClick={onCopyLink}>

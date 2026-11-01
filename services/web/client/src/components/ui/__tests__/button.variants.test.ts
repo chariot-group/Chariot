@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buttonVariants, toggleButtonPressedClassName } from "@/components/ui/button";
+import { buttonVariants, copySuccessButtonClassName, toggleButtonPressedClassName } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const classes = (value: string) => value.split(/\s+/);
@@ -106,5 +106,21 @@ describe("Button variants — guards", () => {
     expect(pressed).not.toContain("bg-primary");
     expect(pressed).not.toContain("bg-gray-middle-light");
     expect(pressed).not.toContain("hover:bg-gray");
+  });
+
+  it("nominal: a confirmed copy button is a green fill with dark text", () => {
+    const copied = classes(cn(buttonVariants({ variant: "secondary" }), copySuccessButtonClassName));
+
+    expect(copied).toEqual(expect.arrayContaining(["bg-green", "border-green", "text-black", "hover:bg-green"]));
+    expect(copied).not.toContain("bg-gray-middle-light");
+    expect(copied).not.toContain("border-input");
+  });
+
+  it("edge: a confirmed copy button stays fully green while disabled and hovered", () => {
+    const copied = classes(cn(buttonVariants({ variant: "secondary", size: "icon-sm" }), copySuccessButtonClassName));
+
+    expect(copied).toEqual(expect.arrayContaining(["disabled:opacity-100", "disabled:hover:bg-green"]));
+    expect(copied).not.toContain("disabled:opacity-50");
+    expect(copied).not.toContain("disabled:hover:bg-gray-middle-light");
   });
 });

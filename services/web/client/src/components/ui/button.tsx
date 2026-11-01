@@ -96,6 +96,13 @@ const buttonVariants = (props?: Parameters<typeof buttonVariantsBase>[0]) => cn(
  */
 const toggleButtonPressedClassName = "border-frame bg-white/15 font-semibold text-white hover:bg-white/15";
 
+/**
+ * Confirmed state of a copy button (`variant="secondary"`, disabled while copying):
+ * stays a full-opacity green fill even disabled and hovered, so it never flashes dark.
+ */
+const copySuccessButtonClassName =
+  "border-green bg-green text-black hover:bg-green disabled:cursor-default disabled:opacity-100 disabled:hover:bg-green";
+
 type ButtonVariantProps = VariantProps<typeof buttonVariantsBase>;
 type ButtonTone = NonNullable<ButtonVariantProps["tone"]>;
 
@@ -125,4 +132,4 @@ function Button({
   );
 }
 
-export { Button, buttonVariants, toggleButtonPressedClassName, type ButtonTone };
+export { Button, buttonVariants, copySuccessButtonClassName, toggleButtonPressedClassName, type ButtonTone };
