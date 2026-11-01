@@ -558,7 +558,7 @@ export default function InitiativeTrackerPage() {
       getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => t(`conditions.${condition}`),
       getConditionDescription: (condition: ActiveInitiativeTrackerCondition) =>
         t(`conditionDescriptions.${condition}`),
-      formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => {
+      formatConditionEntryDuration: (entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">) => {
         if (entry.duration?.unit === "untilCombatEnd") {
           return t("conditionDurationUntilCombatEnd");
         }

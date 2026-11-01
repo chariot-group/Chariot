@@ -457,15 +457,8 @@ export default function CharacterDetailView({
             form="character-update-form"
             disabled={isSaving || isAvatarCommitting || !hasPendingChanges}
             tabIndex={0}
-            className={`
-              max-w-full min-w-0 lg:text-sm text-xs font-semibold
-              ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-              ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-              ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-              ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-              ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-              ${activeTab === "companions" ? "bg-purple hover:bg-purple/75 text-white" : ""}
-            `}
+            variant="primary"
+            className="max-w-full min-w-0"
             aria-label={t("saveChanges")}
             aria-busy={isSaving || isAvatarCommitting}>
             <Save aria-hidden="true" />
@@ -501,15 +494,8 @@ export default function CharacterDetailView({
                 setIsEditing(true);
               }
             }}
-            className={`
-            max-w-full min-w-0 lg:text-sm text-xs font-semibold
-            ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-            ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-            ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-            ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-            ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-            ${activeTab === "companions" ? "bg-purple hover:bg-purple/75 text-white" : ""}
-          `}
+            variant="primary"
+            className="max-w-full min-w-0"
             aria-label={t("editCharacter")}>
             <SquarePen aria-hidden="true" />
             <span className="truncate">{t("editCharacter")}</span>
@@ -521,8 +507,6 @@ export default function CharacterDetailView({
   ) : linkedPlayerFooterLink ? (
     <div className="flex w-full min-w-0 justify-end">{exportPdfWithLinkedPlayer}</div>
   ) : null;
-
-  const sheetFooterBar = characterFooterActions;
 
   const generalTabAvatar =
     isEditing && showEditControls ? (
@@ -606,7 +590,7 @@ export default function CharacterDetailView({
         {isInSession ? (
           <CombatBanner
             characterId={character._id}
-            footerActions={sheetFooterBar}
+            footerActions={characterFooterActions}
           />
         ) : characterFooterActions ? (
           <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">

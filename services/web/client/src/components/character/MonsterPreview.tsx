@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { DEFAULT_GAME_SYSTEM } from "@/constants/gameSystems";
 import CharacterTabs, { CharacterTab, CHARACTER_TABS, TAB_COLORS } from "@/components/character/CharacterTabs";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
 import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
@@ -157,6 +158,7 @@ export default function MonsterPreview({ monster }: MonsterPreviewProps) {
 
   const normalizedMonster: NPC = {
     _id: monster._id || "",
+    gameSystem: (monster as Partial<NPC>).gameSystem ?? DEFAULT_GAME_SYSTEM,
     firstname: monster.firstname || "",
     lastname: monster.lastname || "",
     surname: monster.surname || "",

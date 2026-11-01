@@ -205,7 +205,7 @@ The character sheet tab bar (General, Battle, Magic, Inventory, History) is one 
 
 - Frame: `rounded-[13px] border border-frame bg-card overflow-hidden` (light structural border, like the layout), no gap between triggers
 - Triggers: square inner corners, `border-l border-frame` dividers (none on the first), `py-1.5`
-- Active trigger: domain color fill (section 2.3) with dark text `text-black` on every tab, Battle included (black on red: 5.7:1); inactive: transparent, white text, `hover:bg-white/10`
+- Active trigger: domain color fill (section 2.3) with dark text `text-black` on every tab, Battle included (black on red: 5.7:1), except Companions (violet `purple` fill: white text); inactive: transparent, white text, `hover:bg-white/10`
 - Focus: keyboard only (`focus-visible`), drawn inside the trigger (`ring-2 ring-inset ring-ring`); no outline on mouse click
 - Error state (FR-form-field-validation): inset `ring-red/80` plus the alert icon (never color alone)
 - Mobile: the group scrolls horizontally inside a `scrollbar-none` wrapper; the rounded frame (`w-max`) scrolls with the tabs, so the rounded ends stay on the first (General) and last (History) tabs. Never put `overflow-x-auto` on the frame itself. Because the scrollbar is hidden, `useHorizontalWheelScroll` maps the vertical mouse wheel to horizontal scrolling; touch, trackpad and keyboard focus scroll natively.

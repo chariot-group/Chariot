@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Spell } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { formatSpellDamageList } from "@/utils/spell-damage.utils";
+import { formatDamageFormula, formatSpellDamageList } from "@/utils/spell-damage.utils";
 import { formatSignedBonus } from "@/utils/attack.utils";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 

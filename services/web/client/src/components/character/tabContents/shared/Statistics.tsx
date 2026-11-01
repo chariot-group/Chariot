@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import StatsSummary from "@/components/character/tabContents/shared/StatsSummary";
-import { Player } from "@/types/character";
+import { NPC, Player } from "@/types/character";
 import { useTranslations } from "next-intl";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 import { getHitDiceRemainingForClass } from "@/utils/rest.utils";
@@ -16,7 +16,7 @@ import { isPlayer } from "@/utils/global.utils";
 interface StatisticsProps {
   player: Player;
   accentColor: string;
-  onCharacterUpdate?: (updated?: Player) => void;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
   /** Layout classes; replaces the default battle-tab spans. */
   className?: string;
 }

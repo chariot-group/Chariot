@@ -893,8 +893,8 @@ export function ConditionSelect({
               <div className="min-w-0 max-w-full shrink overflow-x-clip">
                 <ConcentrationStateBadge
                 concentration={activeConcentration}
-                badgeLabel={concentration.badgeLabel}
-                badgeShort={concentration.badgeShort}
+                badgeLabel={concentration?.badgeLabel ?? ""}
+                badgeShort={concentration?.badgeShort ?? ""}
                 detailLabel={concentration?.formatDetailLabel(activeConcentration) ?? ""}
                 pendingCheck={activePendingConcentrationCheck}
                 pendingCheckLabel={

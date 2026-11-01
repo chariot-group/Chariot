@@ -7,11 +7,11 @@ const footerLinkPath = resolve(fileURLToPath(new URL("..", import.meta.url)), "N
 const detailPath = resolve(fileURLToPath(new URL("..", import.meta.url)), "CharacterDetailView.tsx");
 
 describe("FR-npc-player-link — linked Player footer shortcut", () => {
-  it("nominal: footer link uses linkedTo label and outline button", () => {
+  it("nominal: footer link uses linkedTo label and secondary button (same as Export PDF)", () => {
     const source = readFileSync(footerLinkPath, "utf8");
 
     expect(source).toContain("npc.linkedTo");
-    expect(source).toContain('variant="outline"');
+    expect(source).toContain('variant="secondary"');
   });
 
   it("nominal: CharacterDetailView mounts footer link and removes header linkedTo", () => {

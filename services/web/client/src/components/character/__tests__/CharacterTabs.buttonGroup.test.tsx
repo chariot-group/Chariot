@@ -12,6 +12,7 @@ const messages = {
       magic: "Magic",
       inventory: "Inventory",
       history: "History",
+      listLabel: "Character sheet tabs",
       containsErrors: "This tab contains invalid fields",
     },
   },

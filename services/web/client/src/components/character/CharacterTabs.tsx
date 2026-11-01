@@ -19,9 +19,7 @@ export function tabsForCharacterSheet(
   isPlayerSpace: boolean,
   showSessionGmCompanionsTab = false,
 ): readonly CharacterTab[] {
-  return isPlayerCharacter && (isPlayerSpace || showSessionGmCompanionsTab)
-    ? PLAYER_CHARACTER_TABS
-    : CHARACTER_TABS;
+  return isPlayerCharacter && (isPlayerSpace || showSessionGmCompanionsTab) ? PLAYER_CHARACTER_TABS : CHARACTER_TABS;
 }
 
 interface CharacterTabsProps {
@@ -32,8 +30,10 @@ interface CharacterTabsProps {
   tabsWithErrors?: Partial<Record<CharacterTab, boolean>>;
 }
 
-/** Domain color of each tab, also the tone of the sheet footer primary button (FR-frontend-button-system). */
-export const TAB_COLORS: Record<CharacterTab, Exclude<ButtonTone, "violet">> = {
+type TabColor = Exclude<ButtonTone, "violet"> | "purple";
+
+/** Domain color of each tab (custom `bg-*` / text utilities in globals.css). */
+export const TAB_COLORS: Record<CharacterTab, TabColor> = {
   general: "blue",
   battle: "red",
   magic: "pink",
@@ -42,7 +42,12 @@ export const TAB_COLORS: Record<CharacterTab, Exclude<ButtonTone, "violet">> = {
   companions: "purple",
 };
 
-const WHITE_TEXT_TABS: CharacterTab[] = ["battle", "companions"];
+/** Dark text on every domain color (Battle included), except the violet Companions tab: black is unreadable on `#4e00de`. */
+/** Button tone matching a tab color: `purple` is the brand violet (`#4e00de`), i.e. the `violet` tone. */
+export const tabButtonTone = (tab: CharacterTab): ButtonTone =>
+  TAB_COLORS[tab] === "purple" ? "violet" : (TAB_COLORS[tab] as ButtonTone);
+
+const WHITE_TEXT_TABS: CharacterTab[] = ["companions"];
 
 export default function CharacterTabs({
   activeTab,
@@ -86,10 +91,7 @@ export default function CharacterTabs({
                 // Keyboard-only focus, drawn inside the button (no white outline on click)
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                 isActive
-                  ? cn(
-                      `bg-${TAB_COLORS[tab]}`,
-                      WHITE_TEXT_TABS.includes(tab) ? "text-white" : "text-black",
-                    )
+                  ? cn(`bg-${TAB_COLORS[tab]}`, WHITE_TEXT_TABS.includes(tab) ? "text-white" : "text-black")
                   : "bg-transparent text-white hover:bg-white/10",
                 hasError && "ring-2 ring-inset ring-red/80",
                 triggerClassName,

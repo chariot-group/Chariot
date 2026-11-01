@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { NPC } from "@/types/character";
+import { NPC, Player } from "@/types/character";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
@@ -20,7 +20,7 @@ interface NpcGeneralTabContentProps {
   accentColor: string;
   /** @see FR-character-detail-view */
   avatar?: ReactNode;
-  onCharacterUpdate?: (updated?: NPC) => void;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 export default function NpcGeneralTabContent({

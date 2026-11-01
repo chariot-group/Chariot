@@ -1,5 +1,6 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer, Persistor, createTransform } from 'redux-persist';
+import { configureStore, combineReducers, type Reducer } from '@reduxjs/toolkit';
+import { persistStore, persistReducer, Persistor, createTransform, type PersistConfig } from 'redux-persist';
+import type { PersistPartial } from 'redux-persist/es/persistReducer';
 import storage from 'redux-persist/lib/storage';
 import environmentReducer from '@/store/slices/environmentSlice';
 import campaignReducer from '@/store/slices/campaignSlice';
@@ -250,8 +251,12 @@ export const makeStore = (userId: string | null = null) => {
 
     const persistConfig = makePersistConfig(effectiveUserId);
 
-    // @ts-expect-error - Redux Persist type compatibility issue with transforms
-    const persistedReducer = persistReducer(persistConfig, rootReducer);
+    // Redux Persist types the state as `Partial<RootState>` with transforms; every slice is
+    // always present at runtime, so the persisted reducer is typed with the full state.
+    const persistedReducer = persistReducer(
+        persistConfig as unknown as PersistConfig<RootState>,
+        rootReducer,
+    ) as unknown as Reducer<RootState & PersistPartial>;
 
     const store = configureStore({
         reducer: persistedReducer,

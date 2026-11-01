@@ -1,11 +1,14 @@
 import {
   Archive,
   ArchiveRestore,
+  ArrowLeftRight,
   Copy,
   FileDown,
   FolderInput,
+  Link,
   Pencil,
   Trash2,
+  Unlink,
   UserMinus,
   type LucideIcon,
 } from "lucide-react";
@@ -24,4 +27,8 @@ export const SIDEBAR_ACTION_ICONS: Readonly<Record<string, LucideIcon>> = {
   delete: Trash2,
   "delete-all-archived": Trash2,
   removeFromSession: UserMinus,
+  /** NPC ↔ Player liaison (FR-sidebar-npc-link). */
+  link: Link,
+  unlink: Unlink,
+  reassign: ArrowLeftRight,
 };

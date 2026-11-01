@@ -278,7 +278,9 @@ export default function SidebarEnvironment() {
         onOpenChange={(open) => {
           if (!open) setCampaignToEdit(null);
         }}
-        onUpdated={refreshCampaigns}
+        onUpdated={async () => {
+          await refreshCampaigns();
+        }}
       />
 
       <ConfirmDialog

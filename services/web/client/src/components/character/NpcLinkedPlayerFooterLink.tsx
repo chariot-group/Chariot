@@ -22,7 +22,7 @@ export function NpcLinkedPlayerFooterLink({ href, playerName, className }: NpcLi
     <Button
       asChild
       type="button"
-      variant="outline"
+      variant="secondary"
       className={cn("max-w-full min-w-0 lg:text-sm text-xs font-semibold", className)}>
       <Link
         href={href}

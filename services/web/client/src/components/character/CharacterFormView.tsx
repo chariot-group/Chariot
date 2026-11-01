@@ -5,7 +5,8 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useCallback } from "react";
-import CharacterTabs, { CharacterTab, TAB_COLORS } from "@/components/character/CharacterTabs";
+import { DEFAULT_GAME_SYSTEM } from "@/constants/gameSystems";
+import CharacterTabs, { CharacterTab, tabButtonTone } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
@@ -327,7 +328,10 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
               firstname: createdCharacter.firstname,
               lastname: createdCharacter.lastname,
               surname: createdCharacter.surname,
-              userId: "userId" in createdCharacter ? createdCharacter.userId : undefined,
+              userId:
+                "userId" in createdCharacter && typeof createdCharacter.userId === "string"
+                  ? createdCharacter.userId
+                  : undefined,
             },
           }),
         );
@@ -386,6 +390,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     characterType === "players"
       ? ({
           _id: "",
+          gameSystem: DEFAULT_GAME_SYSTEM,
           firstname: "",
           lastname: "",
           surname: "",
@@ -496,6 +501,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         } as Player)
       : ({
           _id: "",
+          gameSystem: DEFAULT_GAME_SYSTEM,
           firstname: "",
           lastname: "",
           surname: "",
@@ -616,7 +622,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         disabled={isSaving}
         tabIndex={0}
         variant="accent"
-        tone={TAB_COLORS[activeTab]}
+        tone={tabButtonTone(activeTab)}
         className="max-w-full min-w-0"
         aria-label={tCreate("create")}
         aria-busy={isSaving}>

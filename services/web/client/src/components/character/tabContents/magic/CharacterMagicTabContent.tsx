@@ -23,7 +23,7 @@ export default function CharacterMagicTabContent({
       <CharacterMagicTabEdit
         character={character}
         accentColor={accentColor}
-        form={form}
+        form={form as unknown as UseFormReturn<Character>}
       />
     );
   }

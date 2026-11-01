@@ -335,7 +335,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
               deathSavesFailures: isHydrated
                 ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
                 : 0,
-              initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats.initiative) : 0,
+              initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats?.initiative) : 0,
             }),
               isGmGuest: guestIdSet.has(member._id),
               isPlayerCompanion: companionIdSet.has(member._id) && !guestIdSet.has(member._id),

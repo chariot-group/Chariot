@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { useId } from "react";
 import RedCircle from "@public/assets/icons/red-circle.svg";
 import WhiteCircle from "@public/assets/icons/white-circle.svg";
-import { Player } from "@/types/character";
+import { NPC, Player } from "@/types/character";
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
@@ -18,7 +18,7 @@ import Statistics from "@/components/character/tabContents/shared/Statistics";
 interface Props {
   player: Player;
   accentColor: string;
-  onCharacterUpdate?: (updated?: Player) => void;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 /** @see FR-character-battle-bento-layout */

@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { useId } from "react";
-import { NPC } from "@/types/character";
+import { NPC, Player } from "@/types/character";
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import ActionSection from "@/components/character/tabContents/battle/shared/ActionSection";
@@ -15,7 +15,7 @@ import NpcStatistics from "@/components/character/tabContents/shared/NpcStatisti
 interface Props {
   npc: NPC;
   accentColor: string;
-  onCharacterUpdate?: (updated?: NPC) => void;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 /** @see FR-character-battle-bento-layout */

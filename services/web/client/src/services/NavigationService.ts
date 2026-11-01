@@ -108,7 +108,7 @@ class NavigationService {
 
         dispatch(fetchCampaignsStart());
         try {
-            const result = await CampaignService.getCampaigns({ page: 1, limit: 10 });
+            const result = await CampaignService.getCampaigns({ page: 1, offset: 10 });
             dispatch(fetchCampaignsSuccess({
                 campaigns: result.data,
                 total: result.totalItems,

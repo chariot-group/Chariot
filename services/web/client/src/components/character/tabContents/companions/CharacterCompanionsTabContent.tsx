@@ -214,7 +214,7 @@ export default function CharacterCompanionsTabContent({
         <div className="flex flex-wrap gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => void openLinkDialog()}
             disabled={isLinking}
             aria-label={t("linkExisting")}
@@ -322,7 +322,7 @@ export default function CharacterCompanionsTabContent({
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={() => setLinkOpen(false)}>
               {t("cancel")}
             </Button>

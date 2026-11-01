@@ -1,5 +1,5 @@
 import { Player } from "@/types/character";
-import { Controller, UseFormReturn, useFieldArray, FieldValues, useFormState } from "react-hook-form";
+import { Controller, UseFormReturn, useFieldArray, FieldValues, useFormState, type FieldError as RhfFieldError } from "react-hook-form";
 import { useEffect, type ReactNode } from "react";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -47,6 +47,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
   const isInSession = useAppSelector(selectIsInSession);
   void player; // Silence unused player prop warning
   const { errors } = useFormState({ control: form.control });
+  const classErrors = errors.class as Array<{ hitDiceRemaining?: RhfFieldError } | undefined> | undefined;
 
   const {
     fields: abilitiesFields,
@@ -346,7 +347,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                 const selectedClasses = classLevels
                   .map((c, i: number) => (i !== index ? c?.name : null))
                   .filter(Boolean);
-                const hitDiceRemainingError = errors.class?.[index]?.hitDiceRemaining;
+                const hitDiceRemainingError = classErrors?.[index]?.hitDiceRemaining;
 
                 return (
                   <div
@@ -436,7 +437,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                               aria-describedby={
                                 fieldState.error
                                   ? `class-level-${index}-error`
-                                  : errors.class?.[index]?.hitDiceRemaining
+                                  : classErrors?.[index]?.hitDiceRemaining
                                     ? `class-level-${index}-hd-error`
                                     : undefined
                               }

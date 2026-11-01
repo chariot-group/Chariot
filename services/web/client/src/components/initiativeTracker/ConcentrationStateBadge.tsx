@@ -205,7 +205,7 @@ export function ConcentrationStateBadge({
 
     return badgeShell(
       <button
-        ref={badgeRef}
+        ref={badgeRef as React.RefObject<HTMLButtonElement>}
         type="button"
         className={badgeClassName}
         aria-label={pendingCheckActivateLabel ?? interactiveAriaLabel}
@@ -235,7 +235,7 @@ export function ConcentrationStateBadge({
 
     return badgeShell(
       <button
-        ref={badgeRef}
+        ref={badgeRef as React.RefObject<HTMLButtonElement>}
         type="button"
         className={badgeClassName}
         aria-label={interactiveAriaLabel}

@@ -694,7 +694,7 @@ export default function StatisticsUpdate({ accentColor, form, className }: Stati
                               const remPath = `class.${index}.hitDiceRemaining`;
                               const raw = form.getValues(remPath as never);
                               if (raw === undefined || raw === null) {
-                                form.setValue(remPath as never, dicePoolCeiling, {
+                                form.setValue(remPath as never, dicePoolCeiling as never, {
                                   shouldDirty: true,
                                   shouldValidate: true,
                                 });

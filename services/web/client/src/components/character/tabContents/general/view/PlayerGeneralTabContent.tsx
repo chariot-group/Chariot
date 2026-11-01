@@ -7,7 +7,7 @@ import {
   GENERAL_BENTO_GRID_CLASS,
   PLAYER_VIEW_SLOTS as SLOTS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
-import { Player } from "@/types/character";
+import { NPC, Player } from "@/types/character";
 import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
@@ -26,7 +26,7 @@ interface PlayerGeneralTabContentProps {
   accentColor: string;
   /** @see FR-character-detail-view */
   avatar?: ReactNode;
-  onCharacterUpdate?: (updated?: Player) => void;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 export default function PlayerGeneralTabContent({

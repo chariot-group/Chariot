@@ -121,7 +121,9 @@ export type InitiativeTrackerTableProps = {
     selectRowForVisibility: string;
     getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => string;
     getConditionDescription: (condition: ActiveInitiativeTrackerCondition) => string;
-    formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => string | null;
+    formatConditionEntryDuration: (
+      entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">,
+    ) => string | null;
     getConditionDurationUnits: () => {
       value: InitiativeTrackerConditionDurationUnit;
       label: string;
@@ -173,6 +175,7 @@ export type InitiativeTrackerTableProps = {
       lifeStatus: string;
       armorClass: string;
       conditions: string;
+      concentration: string;
       groupLabel: string;
     };
   };
