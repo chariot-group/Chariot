@@ -66,7 +66,7 @@ describe("Character avatar in General tab", () => {
       const source = readSource(path);
 
       expect(source).toContain("avatar?: ReactNode;");
-      expect(source).toContain('{avatar ? <div className="shrink-0">{avatar}</div> : null}');
+      expect(source).toMatch(/\{avatar \? <div className="shrink-0[^"]*">\{avatar\}<\/div> : null\}/);
     }
   });
 

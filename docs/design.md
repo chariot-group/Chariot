@@ -126,6 +126,7 @@ A compact Tailwind scale is used most frequently:
   - Exception: navigation lists and bars hide their scrollbar with the `scrollbar-none` utility (`globals.css`); wheel, touch and keyboard scrolling still work. Applies to the layout sidebar, the character sheet tab bar and the community library result list.
 - Grids:
   - Welcome/Profile: `grid-cols-1`, then `xl:grid-cols-2` or `xl:grid-cols-3`
+  - Character General tab: bento grid 2 / 4 / 12 columns (section 5.3.1)
 
 ## 3.3 Vertical Rhythm
 
@@ -217,6 +218,19 @@ The character sheet tab bar (General, Battle, Magic, Inventory, History) is one 
 - Shadow is used selectively to reinforce visual focus (`shadow-lg`, `shadow-xl`)
 - A section card holds its heading **and** its content (e.g. saving throws, skills), for PCs and NPCs alike; rows inside a card are plain rows (`rounded-[10px]`, `hover:bg-gray-middle-light/50`), never nested cards
 - Free text (history, descriptions) wraps between words: `whitespace-pre-wrap wrap-break-word`; `break-all` is forbidden on text containers
+
+## 5.3.1 Character General Tab Bento Grid
+
+The General tab (PC and NPC, read and edit) is one bento grid (FR-character-general-bento-layout), defined in `tabContents/general/shared/generalBentoLayout.ts`:
+
+- Grid: `grid-cols-2` → `sm:grid-cols-4` → `xl:grid-cols-12`, one gap `gap-3 md:gap-4` on both axes
+- Every card is a direct grid child with a slot class (`col-span-*` / `row-span-*`); no flex columns, no duplicated mobile/desktop markup, no `order-*` or dense packing
+- Grid children never use `h-fit`: they stretch to their track so a row has no visual hole
+- A stretched card must not show a blank bottom: every card spreads its content over its height. Value grids (ability scores, saving throws) use `flex-1 content-evenly`; lists and label/value stacks (character, statistics, skills, proficiencies) use `flex-1 justify-between` / `flex-1 content-between`; tiles push their value / session note to the bottom (`justify-between`, `mt-auto`). Placement keeps bands balanced so the added spacing stays small
+- No inner scroll on General cards, except the read-mode abilities list (`AbilitiesSection boundedList`: `max-h-[28rem] overflow-y-auto`, focusable `role="group"` labelled by the card heading, project scrollbar tokens)
+- Read mode short values use `GeneralTile` (label on top, value pushed to the bottom); sections use `GeneralSectionCard` (region + own heading)
+- `GeneralSectionCard` is a size container (`@container`): long inner lists (skills) use container variants (`@sm:grid-cols-2 @xl:grid-cols-3`) so they follow the card width, not the viewport
+- A new card MUST get a slot in every layout of `generalBentoLayout.ts` and keep the placement test (no empty cell at 2 / 4 / 12 columns) green
 
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 

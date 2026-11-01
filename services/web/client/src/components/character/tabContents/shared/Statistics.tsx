@@ -22,9 +22,11 @@ interface StatisticsProps {
   player: Player;
   accentColor: string;
   onCharacterUpdate?: (updated?: Player) => void;
+  /** Layout classes; replaces the default battle-tab spans. */
+  className?: string;
 }
 
-export default function Statistics({ player, accentColor, onCharacterUpdate }: StatisticsProps) {
+export default function Statistics({ player, accentColor, onCharacterUpdate, className }: StatisticsProps) {
   const t = useTranslations("characterDetail.battle");
   const tClass = useTranslations("classes");
   const isInSession = useAppSelector(selectIsInSession);
@@ -96,7 +98,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
 
   return (
     <Card
-      className="gap-3 p-4 md:px-6 col-span-2 lg:col-span-1 h-fit min-w-0 w-full"
+      className={`gap-3 p-4 md:px-6 min-w-0 w-full ${className ?? "col-span-2 lg:col-span-1 h-fit"}`}
       role="region"
       aria-labelledby="stats-heading">
       <h2

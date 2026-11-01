@@ -24,6 +24,8 @@ interface AbilitiesSectionProps {
   characterKind: CharacterTypeFilter;
   /** Personnage retourné par l’API — mise à jour locale sans rechargement global */
   onAfterAbilityUse?: (updated: Player | NPC) => void;
+  /** Caps the list height and scrolls inside the card (General tab). @see FR-character-general-bento-layout */
+  boundedList?: boolean;
 }
 
 const AbilitiesSection = ({
@@ -35,6 +37,7 @@ const AbilitiesSection = ({
   characterId,
   characterKind,
   onAfterAbilityUse,
+  boundedList = false,
 }: AbilitiesSectionProps) => {
   const tMagic = useTranslations("characterDetail.magic");
   const t = useTranslations("characterDetail.battle");
@@ -64,15 +67,20 @@ const AbilitiesSection = ({
         const next = abilities.map((a, i) =>
           i === index
             ? {
-              ...a,
-              counterCurrent: current + 1,
-            }
-            : a
+                ...a,
+                counterCurrent: current + 1,
+              }
+            : a,
         );
         const type = characterKind === "npcs" ? "npcs" : "players";
-        const updated = (await CharacterService.updateCharacter(type, characterId, {
-          abilities: next,
-        }, sessionCode)) as Player | NPC;
+        const updated = (await CharacterService.updateCharacter(
+          type,
+          characterId,
+          {
+            abilities: next,
+          },
+          sessionCode,
+        )) as Player | NPC;
         onAfterAbilityUse?.(updated);
       } catch (e) {
         console.error(e);
@@ -81,7 +89,137 @@ const AbilitiesSection = ({
         setLoadingIndex(null);
       }
     },
-    [abilities, characterId, characterKind, onAfterAbilityUse, sessionCode, toast, t]
+    [abilities, characterId, characterKind, onAfterAbilityUse, sessionCode, toast, t],
+  );
+
+  const abilityList = (
+    <Accordion
+      type="multiple"
+      value={openAccordionValues}
+      onValueChange={setOpenAccordionValues}
+      className="w-full">
+      {abilities.map((ability, index) => {
+        const current = ability.counterCurrent ?? 0;
+        const hasCounter = ability.hasCounter === true;
+        const max = ability.counterMax;
+        const remaining = typeof max === "number" ? max - current : 0;
+        const atLimit = hasCounter && typeof max === "number" && current >= max;
+        const canPressUse = hasCounter && typeof max === "number" && !atLimit;
+        const useBusy = loadingIndex === index;
+        const isOpen = openAccordionValues.includes(`${ability.name}-${index}`);
+
+        return (
+          <AccordionItem
+            key={`${ability.name}-${index}`}
+            value={`${ability.name}-${index}`}
+            className="border-b border-border py-1.5">
+            <AccordionTrigger
+              className="min-w-0 w-full items-start py-1.5 text-left hover:no-underline gap-2 [&>svg]:mt-1 [&>svg]:self-start"
+              aria-label={[
+                t("details"),
+                ability.name,
+                ability.counterResetsOnShortRest === true ? t("abilityCounterResetShortRest") : null,
+                ability.counterResetsOnLongRest === true ? t("abilityCounterResetLongRest") : null,
+              ]
+                .filter(Boolean)
+                .join(" ")}>
+              <span className="flex min-w-0 min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
+                <span
+                  className={`min-w-0 leading-tight text-sm font-semibold sm:text-lg ${isOpen ? "whitespace-normal break-words" : "truncate"}`}>
+                  {ability.name}
+                </span>
+                {(ability.counterResetsOnShortRest === true ||
+                  ability.counterResetsOnLongRest === true ||
+                  (hasCounter && typeof max === "number")) && (
+                  <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:text-sm">
+                    {(ability.counterResetsOnShortRest === true || ability.counterResetsOnLongRest === true) && (
+                      <span
+                        className="flex min-w-0 flex-wrap items-center gap-1"
+                        role="group"
+                        aria-label={t("abilityCounterResetLegend")}>
+                        {ability.counterResetsOnShortRest === true && (
+                          <span
+                            className="inline-flex rounded-md p-0.5 text-muted-foreground"
+                            aria-label={t("abilityCounterResetShortRest")}>
+                            <Clock
+                              className="size-3.5 shrink-0 text-white sm:size-4"
+                              aria-hidden
+                            />
+                          </span>
+                        )}
+                        {ability.counterResetsOnLongRest === true && (
+                          <span
+                            className="inline-flex rounded-md p-0.5 text-muted-foreground"
+                            aria-label={t("abilityCounterResetLongRest")}>
+                            <Moon
+                              className="size-3.5 shrink-0 text-white sm:size-4"
+                              aria-hidden
+                            />
+                          </span>
+                        )}
+                      </span>
+                    )}
+                    {hasCounter && typeof max === "number" && (
+                      <span
+                        className="tabular-nums font-medium whitespace-nowrap"
+                        aria-label={t("abilityCounterShort", { current: remaining, max })}>
+                        {t("abilityCounterShort", { current: remaining, max })}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent
+              className="text-sm sm:text-base pb-3 space-y-3"
+              role="region"
+              aria-label={`${t("descriptionPrefix")} ${ability.name}`}>
+              <p className="whitespace-pre-wrap wrap-break-word">{ability.description}</p>
+              {showUseControls && hasCounter && typeof max === "number" && (
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+                  {atLimit && !useBusy ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex w-full sm:w-auto sm:justify-end">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                            disabled
+                            aria-label={`${t("abilityUseAria", { name: ability.name, current: remaining, max })}. ${t("abilityUseLimitReached")}`}>
+                            {t("abilityUse")}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>{t("abilityUseLimitReached")}</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
+                      disabled={!canPressUse || useBusy}
+                      aria-busy={useBusy}
+                      aria-label={t("abilityUseAria", { name: ability.name, current: remaining, max })}
+                      onClick={() => handleUse(index)}>
+                      {useBusy ? (
+                        <Loader2
+                          className="size-4 animate-spin shrink-0"
+                          aria-hidden
+                        />
+                      ) : null}
+                      {t("abilityUse")}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        );
+      })}
+    </Accordion>
   );
 
   return (
@@ -150,134 +288,17 @@ const AbilitiesSection = ({
           )}
         </div>
       )}
-      <Accordion
-        type="multiple"
-        value={openAccordionValues}
-        onValueChange={setOpenAccordionValues}
-        className="w-full">
-        {abilities.map((ability, index) => {
-          const current = ability.counterCurrent ?? 0;
-          const hasCounter = ability.hasCounter === true;
-          const max = ability.counterMax;
-          const remaining = typeof max === "number" ? max - current : 0;
-          const atLimit = hasCounter && typeof max === "number" && current >= max;
-          const canPressUse = hasCounter && typeof max === "number" && !atLimit;
-          const useBusy = loadingIndex === index;
-          const isOpen = openAccordionValues.includes(`${ability.name}-${index}`);
-
-          return (
-            <AccordionItem
-              key={`${ability.name}-${index}`}
-              value={`${ability.name}-${index}`}
-              className="border-b border-border py-1.5">
-              <AccordionTrigger
-                className="min-w-0 w-full items-start py-1.5 text-left hover:no-underline gap-2 [&>svg]:mt-1 [&>svg]:self-start"
-                aria-label={[
-                  t("details"),
-                  ability.name,
-                  ability.counterResetsOnShortRest === true ? t("abilityCounterResetShortRest") : null,
-                  ability.counterResetsOnLongRest === true ? t("abilityCounterResetLongRest") : null,
-                ]
-                  .filter(Boolean)
-                  .join(" ")}>
-                <span className="flex min-w-0 min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
-                  <span className={`min-w-0 leading-tight text-sm font-semibold sm:text-lg ${isOpen ? "whitespace-normal break-words" : "truncate"}`}>
-                    {ability.name}
-                  </span>
-                  {((ability.counterResetsOnShortRest === true ||
-                    ability.counterResetsOnLongRest === true) ||
-                    (hasCounter && typeof max === "number")) && (
-                    <span
-                      className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:text-sm">
-                      {(ability.counterResetsOnShortRest === true ||
-                        ability.counterResetsOnLongRest === true) && (
-                        <span
-                          className="flex min-w-0 flex-wrap items-center gap-1"
-                          role="group"
-                          aria-label={t("abilityCounterResetLegend")}>
-                          {ability.counterResetsOnShortRest === true && (
-                            <span
-                              className="inline-flex rounded-md p-0.5 text-muted-foreground"
-                              aria-label={t("abilityCounterResetShortRest")}>
-                              <Clock
-                                className="size-3.5 shrink-0 text-white sm:size-4"
-                                aria-hidden
-                              />
-                            </span>
-                          )}
-                          {ability.counterResetsOnLongRest === true && (
-                            <span
-                              className="inline-flex rounded-md p-0.5 text-muted-foreground"
-                              aria-label={t("abilityCounterResetLongRest")}>
-                              <Moon
-                                className="size-3.5 shrink-0 text-white sm:size-4"
-                                aria-hidden
-                              />
-                            </span>
-                          )}
-                        </span>
-                      )}
-                      {hasCounter && typeof max === "number" && (
-                        <span
-                          className="tabular-nums font-medium whitespace-nowrap"
-                          aria-label={t("abilityCounterShort", { current: remaining, max })}>
-                          {t("abilityCounterShort", { current: remaining, max })}
-                        </span>
-                      )}
-                    </span>
-                  )}
-                </span>
-              </AccordionTrigger>
-              <AccordionContent
-                className="text-sm sm:text-base pb-3 space-y-3"
-                role="region"
-                aria-label={`${t("descriptionPrefix")} ${ability.name}`}>
-                <p className="whitespace-pre-wrap wrap-break-word">{ability.description}</p>
-                {showUseControls && hasCounter && typeof max === "number" && (
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
-                    {atLimit && !useBusy ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex w-full sm:w-auto sm:justify-end">
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              size="sm"
-                              className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
-                              disabled
-                              aria-label={`${t("abilityUseAria", { name: ability.name, current: remaining, max })}. ${t("abilityUseLimitReached")}`}>
-                              {t("abilityUse")}
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>{t("abilityUseLimitReached")}</TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2"
-                        disabled={!canPressUse || useBusy}
-                        aria-busy={useBusy}
-                        aria-label={t("abilityUseAria", { name: ability.name, current: remaining, max })}
-                        onClick={() => handleUse(index)}>
-                        {useBusy ? (
-                          <Loader2
-                            className="size-4 animate-spin shrink-0"
-                            aria-hidden
-                          />
-                        ) : null}
-                        {t("abilityUse")}
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          );
-        })}
-      </Accordion>
+      {boundedList ? (
+        <div
+          className="max-h-[28rem] overflow-y-auto pr-2 rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover"
+          role="group"
+          aria-labelledby={headingId}
+          tabIndex={0}>
+          {abilityList}
+        </div>
+      ) : (
+        abilityList
+      )}
     </Card>
   );
 };

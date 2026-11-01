@@ -12,9 +12,11 @@ import CharacterHealthBar from "@/components/character/CharacterHealthBar";
 interface NpcStatisticsProps {
   npc: NPC;
   accentColor: string;
+  /** Layout classes; replaces the default `h-fit`. */
+  className?: string;
 }
 
-export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) {
+export default function NpcStatistics({ npc, accentColor, className }: NpcStatisticsProps) {
   const t = useTranslations("characterDetail.battle");
   const { displayFt, unitLabel, secondaryFt, secondaryUnitLabel } = useDistanceUnit();
   const speed = npc.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
@@ -84,7 +86,7 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
   ];
   return (
     <Card
-      className="gap-3 p-4 md:px-6 h-fit"
+      className={`gap-3 p-4 md:px-6 ${className ?? "h-fit"}`}
       role="region"
       aria-labelledby="stats-heading-npc">
       <h2

@@ -439,7 +439,7 @@ When adding a rule:
 - Fixed top section containing **only the tab navigation bar** (no identity header: no name, surname, class/level, CR/XP or « Joué par » line above the tabs), to maximize the vertical space available to tab content. Applies to both the character sheet (`CharacterDetailView`) and the creation form (`CharacterFormView`).
 - Content area displaying tab-specific information
 - Responsive design adapting to mobile (overlay), tablet, and desktop viewports
-- Maximum content width of 480px centered on screen with appropriate padding
+- Content uses the full available width of the main area; the General tab follows FR-character-general-bento-layout
 
 **Tab Navigation System**:
 
@@ -5419,3 +5419,65 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
 - `services/web/client/src/components/character/CharacterDetailView.tsx`
 - `docs/functional-rules.md` — FR-user-balance-history, FR-media-avatar-read-access
+
+---
+
+## FR-character-general-bento-layout: General Tab Bento Layout (PC and NPC)
+
+**Rule**: The character sheet **General** tab (Player and NPC, read **and** edit modes) MUST lay out its cards as a single **bento grid**: one grid container whose direct children are the cards, each card placed on explicit column/row spans per breakpoint, with one uniform gap, no empty cells, and no visible column stripes.
+
+**Requirements**:
+
+- **Single grid**: every General-tab card (Character, Statistics, compact tiles, Ability scores, Saving throws, Skills, Proficiencies, Abilities) is a direct child of one grid container. Independent flex columns (`Column 1 / 2 / 3`) MUST NOT be used to place cards.
+- **Grid units** (mobile-first, `docs/design.md` §6):
+  - `< sm`: 2 columns.
+  - `sm` → `xl`: 4 columns.
+  - `≥ xl`: 12 columns.
+- **Uniform spacing**: a single gap token for both axes (`gap-3`, `md:gap-4`). Cards MUST NOT add outer margins or wrapper elements that introduce extra spacing between cards.
+- **Compact tiles** (read mode): short label/value cards (PC: proficiency bonus, passive perception, inspiration, exhaustion, alignment, background; NPC: passive perception, alignment) render as compact tiles (label on top, prominent value below) that share a row instead of each taking a full-width row.
+- **Placement intent** (≥ xl, PC read mode):
+  - Band 1: Character (4 cols, spans 2 rows) · Statistics (8 cols) · 4 tiles of 2 cols below Statistics (proficiency bonus, passive perception, inspiration, exhaustion).
+  - Band 2: Ability scores (4, 2 rows) · Saving throws (4, 2 rows) · Alignment then Background tiles stacked (4).
+  - Band 3: Skills (8, list on several columns) · Proficiencies (4).
+  - Band 4: Abilities (12, full width).
+- **Placement intent** (≥ xl, NPC read mode): Character (4) · Statistics (8) · Ability scores (4) · Saving throws (4) · Proficiencies (4) · Skills (8, spans 2 rows) with passive perception then alignment tiles stacked next to it (4) · Abilities (12). The Character card does not span rows, so a sparse NPC identity is not stretched.
+- **Wide lists**: long lists (skills) lay out by card width, not viewport width (container queries on the card), so a wide card shows 2–3 columns and stays balanced with its neighbours.
+- **Edit mode**: same cards, same order and same zones as read mode so the sheet does not reshuffle when toggling edit. Edit tiles hold form controls, so they are wider: 4 cols at `xl` (two per row, Character spans 3 rows for PC), half width at `sm`, full width below `sm`.
+- **Tablet / mobile**: same reading order; Character, Statistics, Skills, Proficiencies (PC) and Abilities take the full width; Ability scores and Saving throws take half width at `sm` and full width below; read tiles take 1 column on mobile so a tiles row never leaves an orphan cell.
+- **No holes, no empty cards**: grid items stretch to their track height (no `h-fit` on grid children), and **every** card distributes its own content over that height, so no card shows a blank area below its content:
+  - Grids of values (ability scores, saving throws) spread their rows evenly over the card height.
+  - Lists and label/value stacks (Character, Statistics, Skills, Proficiencies) spread their items from the top to the bottom of the card (first item under the heading, last item at the bottom).
+  - Tiles keep the label at the top and push the value (or, in edit mode, the session-only note) to the bottom.
+  - Bands are still balanced by placement (multi-column skills list, paired cards of similar size) so the extra spacing stays small.
+- **No inner scroll** on cards, except the read-mode **Abilities** list, which is the only unbounded list: past a maximum height it scrolls inside its card. The scroll area is keyboard-focusable and labelled; edit mode does not scroll (form fields stay fully visible).
+- **Single render per card**: a card MUST be rendered once; responsive placement is done by grid classes, not by rendering the same card twice and hiding one (`hidden sm:flex` duplicates are forbidden). In edit mode this also guarantees one form control per field.
+- **Card style** unchanged (`docs/design.md` §5.3): `bg-card`, rounded card, internal padding `p-4 md:px-6`, heading in the accent color.
+- **Overflow** (`docs/design.md` §6.4): every grid child has `min-w-0`; long values wrap (`wrap-break-word`) and never overflow a card.
+
+**Accessibility (FR-frontend-design)**:
+
+- DOM order equals visual reading order at every breakpoint (no `order-*`, no `grid-flow-dense`).
+- Each card keeps its `role="region"` and an `aria-labelledby` that points to its own heading `id`; heading `id`s are unique in the page.
+- Tile values keep their accessible label (e.g. `aria-label="Passive perception : 14"`); focus rings remain visible inside tiles.
+- Contrast of tile values and headings stays WCAG AA on `bg-card`.
+
+**Prohibitions**:
+
+- Mixing flex columns and grid to place top-level cards.
+- Different gaps between cards on the same breakpoint.
+- Duplicated card markup for mobile vs desktop.
+- Fixed pixel heights on cards to force alignment (content must stay fully readable).
+
+**Tests**:
+
+- Nominal: PC and NPC General tabs (read and edit) render one grid container whose direct children are the cards, each carrying its slot classes.
+- Edge: slot spans fill every row at each breakpoint (2 / 4 / 12 columns) without an empty cell.
+- Failure / guard: heading `id`s (`saving-throws-heading`, `skills-heading`, …) and form control `id`s (`proficiency-bonus`, …) appear once in the DOM; every `aria-labelledby` resolves to an existing heading.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/general/shared/generalBentoLayout.ts`
+- `services/web/client/src/components/character/tabContents/general/view/PlayerGeneralTabContent.tsx`, `NpcGeneralTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/general/form/PlayerGeneralTabEdit.tsx`, `NpcGeneralTabEdit.tsx`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-frontend-design
+- `docs/design.md` — §3 spacing, §5.3 cards, §6 responsive, §9 accessibility

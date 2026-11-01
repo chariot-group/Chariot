@@ -130,7 +130,7 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
+    <div className="grid flex-1 content-between grid-cols-1 @md:grid-cols-2 @4xl:grid-cols-3 gap-2">
       {skillsConfig.map(({ key, translationKey, abilityKey, icon }) => {
         const masteryLevel = form.watch(`stats.masteries.${key}`) || 0;
         const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;

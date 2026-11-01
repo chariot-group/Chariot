@@ -50,7 +50,7 @@ export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
   ] as const;
 
   return (
-    <div className="grid grid-cols-1 min-[1440px]:grid-cols-2 gap-1">
+    <div className="grid flex-1 content-between grid-cols-1 @sm:grid-cols-2 @xl:grid-cols-3 gap-1">
       {skills.map(({ key, icon: Icon, ability }) => {
         const abilityScore = stats.abilityScores[ability] || 10;
         const skillValue = stats?.skills?.[key] ? stats?.skills?.[key] : Math.floor((abilityScore - 10) / 2);
@@ -71,9 +71,7 @@ export default function NpcSkillsEdit({ stats }: NpcSkillsEditProps) {
               <div className="min-w-0">
                 <p className="text-sm leading-tight truncate">{skillFullName}</p>
               </div>
-              <p className="text-xs text-muted-foreground leading-tight">
-                {t(`abilities.${ability}`)}
-              </p>
+              <p className="text-xs text-muted-foreground leading-tight">{t(`abilities.${ability}`)}</p>
             </div>
 
             {/* Bonus */}

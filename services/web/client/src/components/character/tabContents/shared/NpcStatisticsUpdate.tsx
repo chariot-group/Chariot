@@ -20,9 +20,11 @@ const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as cons
 interface NpcStatisticsUpdateProps {
   accentColor: string;
   form: UseFormReturn<FieldValues>;
+  /** Layout classes; replaces the default battle-tab spans. */
+  className?: string;
 }
 
-export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatisticsUpdateProps) {
+export default function NpcStatisticsUpdate({ accentColor, form, className }: NpcStatisticsUpdateProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const { displayFt, toFeet, unitLabel } = useDistanceUnit();
@@ -67,7 +69,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
 
   return (
     <Card
-      className="gap-3 p-4 md:px-6 col-span-3 2xl:col-span-2 h-fit"
+      className={`gap-3 p-4 md:px-6 ${className ?? "col-span-3 2xl:col-span-2 h-fit"}`}
       role="region"
       aria-labelledby="stats-heading-edit">
       <h2

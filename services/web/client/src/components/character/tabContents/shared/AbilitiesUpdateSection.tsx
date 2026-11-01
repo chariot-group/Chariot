@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ interface AbilitiesUpdateSectionProps {
   accentColor: string;
   /** Joueur : l'ajustement de l'usage courant n'est proposé qu'en session (MJ / joueur) */
   abilityCounterMode: AbilityCounterMode;
+  /** Layout classes of the wrapping section (e.g. bento slot + gap). */
+  className?: string;
 }
 
 const AbilitiesUpdateSection = ({
@@ -43,6 +46,7 @@ const AbilitiesUpdateSection = ({
   remove,
   accentColor,
   abilityCounterMode,
+  className,
 }: AbilitiesUpdateSectionProps) => {
   const tMagic = useTranslations("characterDetail.magic");
   const tEdit = useTranslations("characterDetail.edit");
@@ -55,7 +59,7 @@ const AbilitiesUpdateSection = ({
 
   return (
     <section
-      className="flex flex-col gap-2 w-full"
+      className={cn("flex flex-col gap-2 w-full", className)}
       role="region"
       aria-label={title}>
       <Card className="sticky top-0 z-10 gap-3 p-4 md:px-6 h-fit flex-row items-center justify-between min-w-0 w-full bg-card">

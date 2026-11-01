@@ -18,8 +18,10 @@ const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as cons
 interface StatisticsProps {
   accentColor: string;
   form: UseFormReturn<FieldValues>;
+  /** Layout classes; replaces the default battle-tab spans. */
+  className?: string;
 }
-export default function StatisticsUpdate({ accentColor, form }: StatisticsProps) {
+export default function StatisticsUpdate({ accentColor, form, className }: StatisticsProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
@@ -82,7 +84,7 @@ export default function StatisticsUpdate({ accentColor, form }: StatisticsProps)
 
   return (
     <Card
-      className="gap-3 p-4 md:px-6 col-span-3 2xl:col-span-2 h-fit"
+      className={`gap-3 p-4 md:px-6 ${className ?? "col-span-3 2xl:col-span-2 h-fit"}`}
       role="region"
       aria-labelledby="stats-heading-edit">
       <h2

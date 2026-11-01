@@ -2,34 +2,36 @@ import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 interface AbilityScoresEditProps {
-    form: UseFormReturn<FieldValues>;
+  form: UseFormReturn<FieldValues>;
+  className?: string;
 }
 
-export default function AbilityScoresEdit({ form }: AbilityScoresEditProps) {
-    const t = useTranslations("characterDetail.player.general");
+export default function AbilityScoresEdit({ form, className }: AbilityScoresEditProps) {
+  const t = useTranslations("characterDetail.player.general");
 
-    const abilityScores = [
-        { key: "strength", label: t("abilities.strength") },
-        { key: "dexterity", label: t("abilities.dexterity") },
-        { key: "constitution", label: t("abilities.constitution") },
-        { key: "intelligence", label: t("abilities.intelligence") },
-        { key: "wisdom", label: t("abilities.wisdom") },
-        { key: "charisma", label: t("abilities.charisma") },
-    ] as const;
+  const abilityScores = [
+    { key: "strength", label: t("abilities.strength") },
+    { key: "dexterity", label: t("abilities.dexterity") },
+    { key: "constitution", label: t("abilities.constitution") },
+    { key: "intelligence", label: t("abilities.intelligence") },
+    { key: "wisdom", label: t("abilities.wisdom") },
+    { key: "charisma", label: t("abilities.charisma") },
+  ] as const;
 
-    return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {abilityScores.map(({ key, label }) => (
-                <Controller
-                    key={key}
-                    name={`stats.abilityScores.${key}`}
-                    control={form.control}
-                    render={({ field, fieldState }) => {
-                        const score = field.value || 10;
-                        const modifier = Math.floor((score - 10) / 2);
-                        const modifierText = modifier >= 0 ? `+${modifier}` : `${modifier}`;
+  return (
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-2", className)}>
+      {abilityScores.map(({ key, label }) => (
+        <Controller
+          key={key}
+          name={`stats.abilityScores.${key}`}
+          control={form.control}
+          render={({ field, fieldState }) => {
+            const score = field.value || 10;
+            const modifier = Math.floor((score - 10) / 2);
+            const modifierText = modifier >= 0 ? `+${modifier}` : `${modifier}`;
 
             return (
               <Field
