@@ -1184,6 +1184,12 @@
       "noAffinities": "No resistance, vulnerability or immunity",
       "noActions": "No actions",
       "noAbilities": "No abilities or traits",
+      "statLabels": {
+        "armorClass": "AC",
+        "initiative": "Init.",
+        "size": "Size",
+        "speeds": "Speed"
+      },
       "attackSuggestions": "Suggestions",
       "formSections": {
         "general": "General",

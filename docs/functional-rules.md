@@ -5588,3 +5588,38 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`, `ActionUpdateSection.tsx`
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-action-section-visibility, FR-character-ability-counter-display, FR-character-action-dual-range, FR-form-field-validation, FR-frontend-design
 - `docs/design.md` — §5.3 cards (rows inside a card are plain rows, never nested cards)
+
+---
+
+## FR-character-statistics-card: Compact Statistics Card (PC and NPC)
+
+**Rule**: The Statistics card (General and Combat tabs, PC and NPC, read mode) MUST present armor class, initiative, size and speeds in a compact layout that fills its width at every breakpoint: a fixed row of three key stats and one inline speed line, instead of wrapping white pills.
+
+**Requirements**:
+
+- **Key stats row**: armor class, initiative and size in a 3-column row of equal cells (always one row, so no orphan cell). Each cell: short visible label (muted, small: `CA`, `Init.`, `Taille`) and the value (bold), with the existing icon. Size shows its full localized name (e.g. "Moyenne"), the abbreviation is no longer needed.
+- **Speeds line**: one label/value line `Vitesses : 🏃 9 m · ⛰ 4,5 m · 🌊 9 m` listing only non-zero speeds, each with its icon and an accessible name (e.g. "Vitesse d'escalade 4,5 m"); it wraps like text, never as boxes. Units follow FR-distance-unit-conversion (secondary unit kept when the user enabled both units). When every speed is 0 the line is omitted.
+- **Visual weight**: cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not white pills; values `text-base`/`sm:text-lg`; no "?" tooltip buttons — the visible label replaces them (tooltip texts stay available as accessible names).
+- **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC).
+- **Fill** (FR-character-general-bento-layout, FR-character-battle-bento-layout): when the card is stretched, its blocks spread from top to bottom (`justify-between`); the key stats row never leaves a hole on mobile.
+
+**Accessibility (FR-frontend-design)**:
+
+- Each key stat cell is a `group` with an accessible name `label + value` (e.g. "Classe d'armure 15"); speed icons are `aria-hidden` and each speed item has an accessible name.
+- Contrast of muted labels on the tinted cell stays WCAG AA.
+
+**Prohibitions**:
+
+- Wrapping pill/badge rows for these stats (they leave ragged holes on narrow widths).
+- Icon-only "?" buttons as the only way to know what a value means.
+
+**Tests**:
+
+- Nominal: PC and NPC cards render exactly three key stat cells (CA, initiative, size) with visible labels, and one speeds line listing non-zero speeds.
+- Edge: all speeds 0 → no speeds line; dual units → secondary unit shown in the speed line.
+- Failure: no "?" tooltip buttons and no white pill (`bg-white`) in the card.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
+- `docs/functional-rules.md` — FR-distance-unit-conversion, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-frontend-design

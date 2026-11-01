@@ -1184,6 +1184,12 @@
       "noAffinities": "Sin resistencias, vulnerabilidades ni inmunidades",
       "noActions": "Ninguna acción",
       "noAbilities": "Ninguna capacidad ni rasgo",
+      "statLabels": {
+        "armorClass": "CA",
+        "initiative": "Inic.",
+        "size": "Tamaño",
+        "speeds": "Velocidad"
+      },
       "attackSuggestions": "Sugerencias",
       "formSections": {
         "general": "General",

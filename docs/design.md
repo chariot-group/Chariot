@@ -252,6 +252,14 @@ Every character list uses `tabContents/shared/listCard/ListCard` + `ListRow` (FR
 - Expanded row: the open row is tinted (`bg-gray-middle-light/30`); read → description + inline definition list; edit → `ListFormSection` groups (uppercase muted `h3` + divider): actions General / Attack / Damage / Description, abilities General / Uses; damage entries one line each with labels on the first entry only
 - Rows are bounded in read and edit modes (`BENTO_BOUNDED_LIST_CLASS`; edit adds `max-h-[min(40rem,70dvh)]`), header outside the scroll area; form dropdowns are portalled; invalid rows get `ring-2 ring-destructive`
 
+## 5.3.4 Statistics Card
+
+`tabContents/shared/StatsSummary` (FR-character-statistics-card), used by the PC and NPC statistics cards:
+
+- Armor class, initiative and size: one `grid-cols-3` row of equal cells (`bg-gray-middle-light/50`, `rounded-[10px]`), small uppercase muted label + bold value with a Lucide icon (`currentColor`, readable on dark surfaces)
+- Speeds: a single wrapping text line `Vitesses : icon value · icon value`, only non-zero speeds, secondary unit in muted small text
+- No white pills, no "?" tooltip buttons: the visible label carries the meaning, accessible names keep the full wording
+
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 
 Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.
