@@ -1906,6 +1906,8 @@
     }
   },
   "header": {
+    "sidebarOpenAriaLabel": "Open menu",
+    "sidebarCloseAriaLabel": "Close menu",
     "logoAriaLabelHome": "Return to home",
     "logoAriaLabelInSession": "Open session lobby",
     "logoAriaLabelInSessionWarning": "Open session lobby, less than 30 minutes remaining",

@@ -1911,6 +1911,8 @@
     }
   },
   "header": {
+    "sidebarOpenAriaLabel": "Ouvrir le menu",
+    "sidebarCloseAriaLabel": "Fermer le menu",
     "logoAriaLabelHome": "Retour à l'accueil",
     "logoAriaLabelInSession": "Ouvrir le lobby de session",
     "logoAriaLabelInSessionWarning": "Ouvrir le lobby de session, moins de 30 minutes restantes",
