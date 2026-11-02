@@ -53,6 +53,12 @@ export class KeycloakAuthGuard implements CanActivate, OnModuleInit {
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
+        // WebSocket clients are authenticated once, at connection time, by SessionGateway.
+        // Since NestJS 12 this global guard is also applied to gateway handlers.
+        if (context.getType() !== 'http') {
+            return true;
+        }
+
         const request = context.switchToHttp().getRequest();
 
         if (request.method === 'OPTIONS') {
