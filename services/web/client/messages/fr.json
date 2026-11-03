@@ -520,7 +520,6 @@
   },
   "auth": {
     "loading": "Chargement...",
-    "pleaseWait": "Veuillez patienter pendant la vérification de votre session",
     "logoutEscape": "Se déconnecter"
   },
   "notFound": {

@@ -519,7 +519,6 @@
   },
   "auth": {
     "loading": "Loading...",
-    "pleaseWait": "Please wait while we verify your session",
     "logoutEscape": "Sign out"
   },
   "notFound": {

@@ -301,6 +301,7 @@ The sheet loading state (FR-character-sheet-skeleton) is `character/skeleton/Cha
 - Cards placed with the tab's own bento slots: a new card in a bento layout file needs its placeholder there too
 - Placeholders: `Skeleton` in `bg-gray` on `bg-card`, cells `bg-gray-middle-light/50`, headings tinted with the tab domain color (`/25`), active tab filled with its domain color
 - `role="status"` + `aria-busy` + translated `sr-only` label; shapes `aria-hidden`, nothing focusable; `motion-reduce:animate-none` on every pulse
+- Authentication loading (FR-auth-loading-skeleton): `layout/AppShellSkeleton` draws the shell (sidebar `w-64` from `md`, header box, content) and embeds `CharacterSheetSkeletonFrame` on sheet routes, so the auth and sheet skeletons are the same; the log out escape hatch sits in the profile slot
 
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 

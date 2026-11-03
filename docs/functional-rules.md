@@ -5811,3 +5811,44 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/ui/skeleton.tsx`
 - `docs/functional-rules.md` — FR-character-detail-view, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-inventory-bento-layout, FR-character-history-bento-layout, FR-character-magic-list-card, FR-frontend-design
 - `docs/design.md` — §5.2.1 tabs, §5.3 cards, §5.3.1–5.3.7 bento grids, §9 accessibility
+
+---
+
+## FR-auth-loading-skeleton: App Shell Skeleton While Authentication Initializes
+
+**Rule**: While Keycloak initializes (and during a user transition), the web client MUST show a skeleton of the application shell instead of the full-screen spinner, so the page already looks like Chariot before the app is authenticated. On a character sheet route, the content area shows the sheet skeleton of FR-character-sheet-skeleton, so the user sees one continuous skeleton from first paint to data.
+
+**Requirements**:
+
+- **Scope**: the loading screen of `KeycloakProvider` (`loading || userTransitioning`). Authentication behavior (`login-required`, redirects, token refresh, user change purge) is unchanged.
+- **Shell**: sidebar placeholder (same width and surface as `AppSidebar`, hidden below `md` like the off-canvas sidebar), header placeholder (same height as `Header`), then the content area. No Redux, no API call, no Keycloak data is used to render it (the providers are not ready yet).
+- **Content area**, chosen from the URL only:
+  - Character sheet routes (`/{locale}/characters/{id}`, `/{locale}/campaigns/{id}/groups/{id}/characters/{id}`): the sheet skeleton, with the variant rules of FR-character-sheet-skeleton (`?tab=`, route → PC / NPC).
+  - Any other route: a neutral content placeholder (heading bar + a few cards).
+- **Escape hatch**: the "log out" button of the current loading screen stays reachable (visible, focusable, same action), so a user stuck in initialization can still leave.
+- **Motion**: pulse disabled under `prefers-reduced-motion`.
+
+**Accessibility (FR-frontend-design)**:
+
+- One `role="status"` region with `aria-busy="true"` and the translated loading label (`auth.loading`) in `sr-only`; placeholder shapes are `aria-hidden`.
+- The escape-hatch button is the only focusable element and keeps its accessible name and visible focus.
+
+**Prohibitions**:
+
+- Full-screen spinner as the authentication loading state.
+- Reading Redux, persisted state or calling an API to shape the skeleton.
+- Rendering app children (sidebar, header, pages) before authentication is ready.
+- Two different skeletons in a row on a sheet route (the auth skeleton and the sheet skeleton MUST match).
+
+**Tests**:
+
+- Nominal: the content resolver returns the sheet variant on both sheet routes (with `tab`) and the generic content elsewhere.
+- Edge: locale-only path, trailing slash, sheet sub-path without id → generic content; `tab=companions` on the campaign route → PC sheet variant.
+- Failure / guard: the auth skeleton exposes `role="status"` + `aria-busy`, contains exactly one focusable element (the log out button) and no spinner (`animate-spin`).
+
+**References**:
+
+- `services/web/client/src/providers/KeycloakProvider.tsx`
+- `services/web/client/src/app/[locale]/layout.tsx`, `services/web/client/src/components/layout/Header.tsx`, `services/web/client/src/components/layout/Sidebar/`
+- `services/web/client/src/components/character/skeleton/`
+- `docs/functional-rules.md` — FR-character-sheet-skeleton, FR-frontend-design
