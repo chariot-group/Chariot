@@ -1530,7 +1530,8 @@
         "range": "Range",
         "components": "Components",
         "duration": "Duration",
-        "description": "Description"
+        "description": "Description",
+        "usesTracker": "Uses"
       },
       "spellSchools": {
         "abjuration": "Abjuration",

@@ -1,10 +1,18 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from "@nestjs/common";
+import { BaseWsExceptionFilter } from "@nestjs/websockets";
 import { Request, Response } from "express";
 import { ProblemDetailsDto } from "@/common/dtos/errors.dto";
 
 @Catch()
 export class ErrorDetailsFilter implements ExceptionFilter {
+    private readonly wsExceptionFilter = new BaseWsExceptionFilter();
+
     catch(exception: any, host: ArgumentsHost) {
+        // Since NestJS 12 global filters also apply to gateway handlers: keep the default WebSocket behaviour.
+        if (host.getType() !== "http") {
+            return this.wsExceptionFilter.catch(exception, host);
+        }
+
         const ctx = host.switchToHttp();
         const res = ctx.getResponse<Response>();
         const req = ctx.getRequest<Request>();
