@@ -840,6 +840,7 @@
     "uniqueSpellDamageType": "Cada tipo de daño debe ser único dentro de un mismo conjuro."
   },
   "characterDetail": {
+    "loadingSheet": "Cargando la ficha…",
     "editCharacter": "Modificar personaje",
     "exportPdf": "Exportar en PDF",
     "pdfExport": {

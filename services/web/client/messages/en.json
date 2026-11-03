@@ -840,6 +840,7 @@
     "uniqueSpellDamageType": "Each damage type must be unique within a spell."
   },
   "characterDetail": {
+    "loadingSheet": "Loading character sheet…",
     "editCharacter": "Edit character",
     "exportPdf": "Export as PDF",
     "pdfExport": {

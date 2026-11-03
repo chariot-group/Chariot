@@ -519,7 +519,7 @@ When adding a rule:
   - Character in campaign: `/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]`
 - Both routes use the same `CharacterDetailView` component
 - Character data fetched via `useCharacter` hook with character ID
-- Loading state displays centered spinner (Lucide `Loader2` component)
+- Loading state displays a skeleton of the sheet, not a spinner (see FR-character-sheet-skeleton)
 - Error state displays centered error message in red
 
 **Component Architecture**:
@@ -5762,3 +5762,52 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/shared/listCard/ListCard.tsx`, `ListRow.tsx`, `ListFormSection.tsx`
 - `docs/functional-rules.md` — FR-character-list-card, FR-character-general-bento-layout, FR-character-statistics-card, FR-magic-spell-level-categories, FR-character-spell-multi-damage, FR-tracker-concentration, FR-form-field-validation, FR-frontend-button-system, FR-frontend-design
 - `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §5.3.3 list card, §9 accessibility
+
+---
+
+## FR-character-sheet-skeleton: Character Sheet Skeleton Loading State
+
+**Rule**: While a character sheet is loading (both routes of FR-character-detail-view), the page MUST show a skeleton of the sheet instead of a centered spinner. The skeleton reproduces the sheet frame and the layout of the tab that will open, guessed from information available before the backend responds.
+
+**Requirements**:
+
+- **Tab**: the skeleton shows the tab read from the `tab` URL parameter, with the same fallback as the sheet (unknown or missing value → General). The tab bar skeleton marks that tab as active (domain color, `docs/design.md` §5.2.1).
+- **Character kind** (guessed from the route, never from the backend):
+  - Campaign route (`/campaigns/{id}/groups/{id}/characters/{id}`) → NPC layout.
+  - Player space route (`/characters/{id}`) → PC layout (most likely case; an NPC opened there briefly shows the PC skeleton, accepted).
+  - `tab=companions` → PC layout (only PCs have that tab).
+- **Tab bar**: 5 tabs for NPC; 6 tabs (with Companions) for PC in the player space.
+- **Frame**: tab bar, tab content, footer actions bar (the sheet has no identity header), using the same containers, paddings and scroll area as the sheet, so the page does not jump when the data arrives.
+- **Tab content**: placeholder cards placed with the tab's own bento slots (`generalBentoLayout`, `battleBentoLayout`, `inventoryBentoLayout`, `historyBentoLayout`, `spellList`) for the guessed kind, in read mode. Card shapes match the sheet cards (`bg-card`, same radius and padding as `GeneralSectionCard`), headings tinted with the tab domain color; inner placeholders use the existing `Skeleton` primitive. Companions tab: a simple list of card placeholders.
+- **States**: the skeleton covers every non-ready state the spinner covered (auth loading, user transition, fetch in progress, error pending redirect, missing character pending redirect). The error / redirect behavior is unchanged.
+- **Motion**: the pulse animation is disabled under `prefers-reduced-motion` (static placeholders).
+- **Single source**: one skeleton component shared by both routes; no duplicated markup per route.
+
+**Accessibility (FR-frontend-design)**:
+
+- The skeleton container is a `role="status"` region with `aria-busy="true"` and a translated `sr-only` label (en, es, fr) announcing that the sheet is loading.
+- All placeholder shapes are `aria-hidden`; the skeleton contains no focusable element (fake tabs and buttons are not buttons).
+- Placeholder contrast stays visible on every surface level of the dark theme.
+
+**Prohibitions**:
+
+- Centered spinner as the sheet loading state.
+- Fetching anything (character kind, etc.) only to choose the skeleton.
+- Interactive elements inside the skeleton, or text content other than the `sr-only` label.
+- Changing the redirect / access-denied behavior of the sheet pages.
+
+**Tests**:
+
+- Nominal: the variant resolver returns NPC + requested tab on the campaign route and PC + requested tab on the player space route.
+- Edge: missing or unknown `tab` → General; `tab=companions` → PC with 6 tabs; `tab=companions` on the campaign route → PC (companions kept).
+- Failure / guard: each tab skeleton uses only slots defined in the matching bento layout file; the skeleton exposes `role="status"`, `aria-busy` and no focusable element. Visual fidelity and reduced motion are checked manually (the web client has no DOM test runner).
+
+**References**:
+
+- `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`, `CharacterTabs.tsx`
+- `services/web/client/src/components/character/skeleton/CharacterSheetSkeleton.tsx`, `characterSheetSkeletonLayout.ts`
+- `services/web/client/src/components/ui/skeleton.tsx`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-inventory-bento-layout, FR-character-history-bento-layout, FR-character-magic-list-card, FR-frontend-design
+- `docs/design.md` — §5.2.1 tabs, §5.3 cards, §5.3.1–5.3.7 bento grids, §9 accessibility

@@ -841,6 +841,7 @@
     "uniqueSpellDamageType": "Chaque type de dégâts doit être unique dans un même sort."
   },
   "characterDetail": {
+    "loadingSheet": "Chargement de la fiche…",
     "editCharacter": "Modifier le personnage",
     "exportPdf": "Exporter en PDF",
     "pdfExport": {

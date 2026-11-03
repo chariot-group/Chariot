@@ -293,6 +293,15 @@ The Magic tab (FR-character-magic-list-card) uses the bento grid with full-width
 - Edit keeps the list order inside a group (no re-sorting while typing); group headers and rows are siblings of one `Accordion`, so a level change moves the row without remounting it
 - Add a spell (`primary`, `sm`) and Codex (`secondary`, `sm`) are both visible in the card header
 
+## 5.3.8 Character Sheet Skeleton
+
+The sheet loading state (FR-character-sheet-skeleton) is `character/skeleton/CharacterSheetSkeleton`, never a centered spinner:
+
+- Same frame as `CharacterDetailView` (tab bar, scroll area, footer); tab and PC/NPC guessed from `?tab=` and the route (`characterSheetSkeletonLayout.ts`)
+- Cards placed with the tab's own bento slots: a new card in a bento layout file needs its placeholder there too
+- Placeholders: `Skeleton` in `bg-gray` on `bg-card`, cells `bg-gray-middle-light/50`, headings tinted with the tab domain color (`/25`), active tab filled with its domain color
+- `role="status"` + `aria-busy` + translated `sr-only` label; shapes `aria-hidden`, nothing focusable; `motion-reduce:animate-none` on every pulse
+
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 
 Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.
