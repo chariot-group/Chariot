@@ -19,6 +19,7 @@ import { formatSignedBonus } from "@/utils/attack.utils";
 import {
   coerceSpellDamageDetailsList,
   EMPTY_SPELL_DAMAGE_DETAILS,
+  formatDamageFormula,
   ensureSpellDamageEditRows,
   hydrateSpellDamageDetails,
   isDamageDetailsFilled,
@@ -30,7 +31,6 @@ import ListFormSection from "@/components/character/tabContents/shared/listCard/
 const charPath = (path: string) => path as Path<Character>;
 
 const LABEL_CLASS = "text-sm font-medium";
-const SMALL_LABEL_CLASS = "text-xs font-medium text-muted-foreground";
 
 interface SpellEditFormProps {
   form: UseFormReturn<Character>;
@@ -112,56 +112,108 @@ function SpellInput({
   );
 }
 
-function DiceTypeSelect({
-  id,
-  label,
-  value,
-  placeholder,
-  onChange,
-  labelClassName,
-}: {
-  id: string;
-  label: string;
-  value: string | undefined;
-  placeholder: string;
-  onChange: (value: string) => void;
-  labelClassName?: string;
-}) {
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <span
-        id={`${id}-label`}
-        className={labelClassName ?? SMALL_LABEL_CLASS}>
-        {label}
-      </span>
-      <Select
-        value={value || undefined}
-        onValueChange={onChange}>
-        <SelectTrigger
-          id={id}
-          className="w-full"
-          aria-labelledby={`${id}-label`}>
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent position="popper">
-          <SelectGroup>
-            {DICE_TYPES.map((dice) => (
-              <SelectItem
-                key={dice}
-                value={dice}>
-                {dice}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-    </div>
-  );
-}
-
 const Row = ({ className, children }: { className?: string; children: ReactNode }) => (
   <div className={cn("grid min-w-0 gap-3", className)}>{children}</div>
 );
+
+type DiceValues = Pick<DamageDetails, "diceCount" | "diceType" | "bonus">;
+
+const toNumberOrNull = (raw: string) => (raw === "" ? null : Number(raw));
+
+/**
+ * One damage or healing line laid out like its formula: `[count] d [die] + [bonus]`, an optional
+ * extra field (damage type) and trailing control, then a muted preview of the resulting formula.
+ * Each field keeps an accessible name; « d » and « + » are decorative.
+ * @see FR-character-magic-list-card, FR-character-spell-multi-damage
+ */
+function DiceFormulaRow({
+  id,
+  value,
+  onChange,
+  extra,
+  extraText,
+  trailing,
+}: {
+  id: string;
+  value: DiceValues | null | undefined;
+  onChange: (key: keyof DiceValues, value: string | number | null) => void;
+  /** Field after the bonus (damage type). */
+  extra?: ReactNode;
+  /** Text appended to the preview (damage type). */
+  extraText?: string | null;
+  trailing?: ReactNode;
+}) {
+  const tEdit = useTranslations("characterDetail.edit");
+  const formula = formatDamageFormula(value?.diceCount, value?.diceType, value?.bonus, extraText);
+
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
+          <label
+            htmlFor={`${id}-count`}
+            className="sr-only">
+            {tEdit("diceCount")}
+          </label>
+          <Input
+            id={`${id}-count`}
+            type="number"
+            min={0}
+            className="w-16 text-center"
+            value={value?.diceCount ?? ""}
+            onChange={(event) => onChange("diceCount", toNumberOrNull(event.target.value))}
+          />
+          <span
+            className="text-sm font-semibold text-muted-foreground"
+            aria-hidden="true">
+            d
+          </span>
+          <Select
+            value={value?.diceType || undefined}
+            onValueChange={(next) => onChange("diceType", next)}>
+            <SelectTrigger
+              id={`${id}-dice`}
+              className="w-20"
+              aria-label={tEdit("diceType")}>
+              <SelectValue placeholder="–" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectGroup>
+                {DICE_TYPES.map((dice) => (
+                  <SelectItem
+                    key={dice}
+                    value={dice}>
+                    {dice.replace(/^d/, "")}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <span
+            className="text-sm font-semibold text-muted-foreground"
+            aria-hidden="true">
+            +
+          </span>
+          <label
+            htmlFor={`${id}-bonus`}
+            className="sr-only">
+            {tEdit("bonus")}
+          </label>
+          <Input
+            id={`${id}-bonus`}
+            type="number"
+            className="w-16 text-center"
+            value={value?.bonus ?? ""}
+            onChange={(event) => onChange("bonus", toNumberOrNull(event.target.value))}
+          />
+        </div>
+        {extra && <div className="min-w-36 flex-1">{extra}</div>}
+        {trailing}
+      </div>
+      {formula && <p className="text-xs text-muted-foreground">= {formula}</p>}
+    </div>
+  );
+}
 
 /**
  * Expanded spell row, edit mode: General / Casting / Effects / Description sections.
@@ -444,99 +496,56 @@ export default function SpellEditForm({
                   const typePath = charPath(`${base}.damageDetails.${damageIndex}.damageType`);
                   const typeState = form.getFieldState(typePath, form.formState);
                   const rowId = id(`damage-${damageIndex}`);
-                  const labelClass = cn(SMALL_LABEL_CLASS, damageIndex > 0 && "sr-only");
                   return (
-                    <div
+                    <DiceFormulaRow
                       key={damageIndex}
-                      className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-2 @2xl:grid-cols-[6rem_6rem_6rem_minmax(0,1fr)_auto]">
-                      <div className="flex min-w-0 flex-col gap-1">
-                        <label
-                          htmlFor={`${rowId}-count`}
-                          className={labelClass}>
-                          {tEdit("diceCount")}
-                        </label>
-                        <Input
-                          id={`${rowId}-count`}
-                          type="number"
-                          min={0}
-                          value={damage?.diceCount ?? ""}
-                          placeholder={tEdit("damageDiceCountPlaceholder")}
-                          onChange={(event) =>
-                            updateDamage(
-                              damageIndex,
-                              "diceCount",
-                              event.target.value === "" ? null : Number(event.target.value),
-                            )
-                          }
-                        />
-                      </div>
-                      <DiceTypeSelect
-                        id={`${rowId}-dice`}
-                        label={tEdit("diceType")}
-                        labelClassName={labelClass}
-                        value={damage?.diceType ?? undefined}
-                        placeholder={tEdit("damageDiceTypePlaceholder")}
-                        onChange={(value) => updateDamage(damageIndex, "diceType", value)}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-500 @2xl:order-last"
-                        onClick={() =>
-                          damageField.onChange(ensureSpellDamageEditRows(damages.filter((_, i) => i !== damageIndex)))
-                        }
-                        aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}>
-                        <Trash2
-                          className="size-4"
-                          aria-hidden="true"
-                        />
-                      </Button>
-                      <div className="flex min-w-0 flex-col gap-1">
-                        <label
-                          htmlFor={`${rowId}-bonus`}
-                          className={labelClass}>
-                          {tEdit("bonus")}
-                        </label>
-                        <Input
-                          id={`${rowId}-bonus`}
-                          type="number"
-                          value={damage?.bonus ?? ""}
-                          placeholder={tEdit("zeroPlaceholder")}
-                          onChange={(event) =>
-                            updateDamage(
-                              damageIndex,
-                              "bonus",
-                              event.target.value === "" ? null : Number(event.target.value),
-                            )
-                          }
-                        />
-                      </div>
-                      <Field
-                        data-invalid={typeState.invalid}
-                        orientation="vertical"
-                        className="col-span-2 min-w-0 gap-1 @2xl:col-span-1">
-                        <label
-                          htmlFor={`${rowId}-type`}
-                          className={labelClass}>
-                          {tEdit("damageType")}
-                        </label>
-                        <DamageTypeInput
-                          id={`${rowId}-type`}
-                          value={damage?.damageType ?? ""}
-                          onChange={(value) => updateDamage(damageIndex, "damageType", value)}
-                          placeholder={tEdit("damageTypePlaceholder")}
-                          aria-invalid={typeState.invalid}
-                          aria-describedby={typeState.error ? `${rowId}-type-error` : undefined}
-                        />
-                        {typeState.error && (
-                          <FieldError
-                            id={`${rowId}-type-error`}
-                            errors={[typeState.error]}
+                      id={rowId}
+                      value={damage}
+                      onChange={(key, value) => updateDamage(damageIndex, key, value)}
+                      extraText={damage?.damageType}
+                      extra={
+                        <Field
+                          data-invalid={typeState.invalid}
+                          orientation="vertical"
+                          className="min-w-0 gap-1">
+                          <label
+                            htmlFor={`${rowId}-type`}
+                            className="sr-only">
+                            {tEdit("damageType")}
+                          </label>
+                          <DamageTypeInput
+                            id={`${rowId}-type`}
+                            value={damage?.damageType ?? ""}
+                            onChange={(value) => updateDamage(damageIndex, "damageType", value)}
+                            placeholder={tEdit("damageType")}
+                            aria-invalid={typeState.invalid}
+                            aria-describedby={typeState.error ? `${rowId}-type-error` : undefined}
                           />
-                        )}
-                      </Field>
-                    </div>
+                          {typeState.error && (
+                            <FieldError
+                              id={`${rowId}-type-error`}
+                              errors={[typeState.error]}
+                            />
+                          )}
+                        </Field>
+                      }
+                      trailing={
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500"
+                          onClick={() =>
+                            damageField.onChange(ensureSpellDamageEditRows(damages.filter((_, i) => i !== damageIndex)))
+                          }
+                          aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}>
+                          <Trash2
+                            className="size-4"
+                            aria-hidden="true"
+                          />
+                        </Button>
+                      }
+                    />
                   );
                 })}
                 <Button
@@ -555,41 +564,22 @@ export default function SpellEditForm({
         />
         <div className="flex min-w-0 flex-col gap-2">
           <span className={LABEL_CLASS}>{tEdit("spellHealing")}</span>
-          <Row className="grid-cols-2 @md:grid-cols-3">
-            <SpellInput
-              form={form}
-              path={`${base}.healingDetails.diceCount`}
-              id={id("healing-count")}
-              label={tEdit("diceCount")}
-              type="number"
-              min={0}
-              placeholder={tEdit("healingDiceCountPlaceholder")}
-              onValue={(raw) => (raw === "" ? null : Number(raw))}
-            />
-            <Controller
-              name={charPath(`${base}.healingDetails.diceType`)}
-              control={form.control}
-              render={({ field }) => (
-                <DiceTypeSelect
-                  id={id("healing-dice")}
-                  label={tEdit("diceType")}
-                  labelClassName={LABEL_CLASS}
-                  value={field.value as string | undefined}
-                  placeholder={tEdit("healingDiceTypePlaceholder")}
-                  onChange={field.onChange}
+          <Controller
+            name={charPath(`${base}.healingDetails`)}
+            control={form.control}
+            render={({ field }) => {
+              const healing = (field.value as HealingDetails | null | undefined) ?? null;
+              return (
+                <DiceFormulaRow
+                  id={id("healing")}
+                  value={healing}
+                  onChange={(key, value) =>
+                    field.onChange({ diceCount: null, diceType: null, bonus: null, ...healing, [key]: value })
+                  }
                 />
-              )}
-            />
-            <SpellInput
-              form={form}
-              path={`${base}.healingDetails.bonus`}
-              id={id("healing-bonus")}
-              label={tEdit("bonus")}
-              type="number"
-              placeholder={tEdit("zeroPlaceholder")}
-              onValue={(raw) => (raw === "" ? null : Number(raw))}
-            />
-          </Row>
+              );
+            }}
+          />
         </div>
       </ListFormSection>
 

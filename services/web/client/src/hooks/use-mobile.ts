@@ -6,6 +6,9 @@ export const MOBILE_BREAKPOINT = 768;
 /** Aligné sur le breakpoint Tailwind `lg` — téléphone + tablette. */
 export const TABLET_BREAKPOINT = 1024;
 
+/** Aligné sur le breakpoint Tailwind `xl`. */
+export const XL_BREAKPOINT = 1280;
+
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);
 
@@ -37,4 +40,19 @@ export function useIsTabletOrMobile() {
   }, []);
 
   return isTabletOrMobile;
+}
+
+/** True à partir de `xl` (1280px). False au premier rendu (SSR), puis suit la largeur de l'écran. */
+export function useIsXlUp() {
+  const [isXlUp, setIsXlUp] = React.useState(false);
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(min-width: ${XL_BREAKPOINT}px)`);
+    const onChange = () => setIsXlUp(mql.matches);
+    mql.addEventListener("change", onChange);
+    onChange();
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return isXlUp;
 }

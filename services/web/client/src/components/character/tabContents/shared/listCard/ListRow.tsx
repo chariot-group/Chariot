@@ -9,8 +9,9 @@ interface ListRowProps {
   /** DOM id of the trigger (focus target after Delete). */
   triggerId?: string;
   name: ReactNode;
-  /** Muted one-line summary, already filtered: parts are joined with " · ". */
+  /** Muted summary, already filtered: parts joined with " · " (line) or shown as pills. */
   meta?: ReactNode[];
+  metaStyle?: RowMetaStyle;
   /** Accessible name of the trigger. */
   triggerLabel: string;
   isOpen: boolean;
@@ -23,8 +24,31 @@ interface ListRowProps {
   children: ReactNode;
 }
 
+/** Muted summary as small wrapping pills (used where the list is narrow, e.g. spells). */
+export function RowPills({ parts }: { parts: ReactNode[] }) {
+  return (
+    <span className="flex min-w-0 flex-wrap gap-1">
+      {parts.map((part, index) => (
+        <span
+          key={index}
+          className="max-w-full truncate rounded-full bg-gray-middle-light px-2 py-0.5 text-xs font-normal text-card-foreground/80">
+          {part}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Summary line or pills under the row name. */
+export function RowSummary({ parts, style = "line" }: { parts?: ReactNode[]; style?: RowMetaStyle }) {
+  if (!parts || parts.length === 0) return null;
+  return style === "pills" ? <RowPills parts={parts} /> : <RowMeta parts={parts} />;
+}
+
+export type RowMetaStyle = "line" | "pills";
+
 /** Separator-joined muted summary line. */
-function RowMeta({ parts }: { parts: ReactNode[] }) {
+export function RowMeta({ parts }: { parts: ReactNode[] }) {
   return (
     <span className="flex min-w-0 items-center gap-x-1.5 overflow-hidden whitespace-nowrap text-xs font-normal text-muted-foreground sm:text-sm">
       {parts.map((part, index) => (
@@ -47,6 +71,7 @@ export default function ListRow({
   triggerId,
   name,
   meta,
+  metaStyle = "line",
   triggerLabel,
   isOpen,
   hasError = false,
@@ -77,7 +102,10 @@ export default function ListRow({
                 )}>
                 {name}
               </span>
-              {meta && meta.length > 0 && <RowMeta parts={meta} />}
+              <RowSummary
+                parts={meta}
+                style={metaStyle}
+              />
             </span>
           </AccordionTrigger>
         </div>

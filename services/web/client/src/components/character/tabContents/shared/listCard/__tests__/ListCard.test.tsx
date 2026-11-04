@@ -56,6 +56,13 @@ describe("ListCard / ListRow", () => {
     expect(html).toContain('aria-label="Delete Scimitar"');
   });
 
+  it("failure: other lists keep the muted line by default, never the spell pills", () => {
+    const html = renderList([{ name: "Scimitar", meta: ["Action", "+4"] }]);
+
+    expect(html).not.toMatch(/rounded-full[^"]*">Action</);
+    expect(html).toMatch(/whitespace-nowrap/);
+  });
+
   it("edge: an empty list keeps its header and controls and shows the empty-state line", () => {
     const html = renderList([]);
 

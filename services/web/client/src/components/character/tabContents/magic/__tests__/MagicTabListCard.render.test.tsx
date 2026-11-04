@@ -165,11 +165,18 @@ describe("Magic tab — bento grid and spell list card", () => {
     });
   }
 
-  it("nominal: collapsed read row shows school · casting time · range · damage", () => {
-    const html = CASES.view();
+  for (const [name, renderCase] of Object.entries(CASES)) {
+    it(`nominal: ${name} collapsed row shows casting time · range · dice as wrapping pills`, () => {
+      const html = renderCase();
+      const pill = (text: string) => new RegExp(`<span class="[^"]*rounded-full[^"]*">${text}</span>`);
 
-    expect(html).toMatch(/Evocation<\/span>[\s\S]*1 action<\/span>[\s\S]*150 feet<\/span>[\s\S]*8d6 fire<\/span>/);
-  });
+      expect(html).toMatch(/<span class="flex min-w-0 flex-wrap gap-1">/);
+      expect(html).toMatch(pill("1 action"));
+      expect(html).toMatch(pill("150 feet"));
+      expect(html).toMatch(pill("8d6"));
+      expect(html).not.toMatch(pill("Evocation"));
+    });
+  }
 
   it("edge: compact spellcasting band holds the stat cells, slots live on the level headers", () => {
     const html = CASES.view();
@@ -248,5 +255,19 @@ describe("Magic tab — bento grid and spell list card", () => {
 
     expect(html).toContain('aria-label="spellcastingAbility wisdom"');
     expect(html).not.toContain("WIS");
+  });
+
+  it("edge: below xl the spell selected in the other mode starts expanded", () => {
+    const html = render(
+      <CharacterMagicView
+        character={player}
+        accentColor="pink"
+        selectionState={[{ block: 0, spell: 0 }, vi.fn()]}
+      />,
+    );
+    const rowTag = (index: number) => html.match(new RegExp(`<div[^>]*id="[^"]*-spell-${index}"[^>]*>`))?.[0] ?? "";
+
+    expect(rowTag(0)).toContain('data-state="open"');
+    expect(rowTag(2)).toContain('data-state="closed"');
   });
 });

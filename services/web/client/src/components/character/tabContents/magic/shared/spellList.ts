@@ -1,6 +1,6 @@
 import type { Spell } from "@/types/character";
 import { getSpellLevelsFromSpells, npcUsesKey } from "@/utils/magic.utils";
-import { formatDamageFormula, formatSpellDamageList } from "@/utils/spell-damage.utils";
+import { formatDamageFormula, hydrateSpellDamageDetails } from "@/utils/spell-damage.utils";
 import { isConcentrationSpell } from "@/components/initiativeTracker/concentration.utils";
 import {
   BENTO_FULL_SLOT as FULL,
@@ -41,6 +41,31 @@ export const MAGIC_SLOTS = {
   spellcasting: `${FULL} xl:col-span-12`,
   spells: `${FULL} xl:col-span-12`,
 } as const;
+
+/**
+ * Wide read mode (`xl`, read only): Spellcasting and the Spells list stack in a 5-column left
+ * column; the spell detail panel spans both rows on the right (placed explicitly, so DOM order —
+ * list before panel — stays the tab order). The selector, when shown, stays full width above.
+ * @see FR-character-magic-list-card
+ */
+export function magicWideSlots(hasSelector: boolean) {
+  return {
+    spellcasting: `${FULL} xl:col-span-5 xl:col-start-1`,
+    spells: `${FULL} xl:col-span-5 xl:col-start-1`,
+    detail: `${FULL} xl:col-span-7 xl:col-start-6 xl:row-span-2 xl:min-h-0 ${hasSelector ? "xl:row-start-2" : "xl:row-start-1"}`,
+  };
+}
+
+/**
+ * Spell shown in the wide read panel: the selected index when it is still a displayed spell,
+ * else the first spell in display order (null when the block has no spell).
+ * @see FR-character-magic-list-card
+ */
+export function resolveSelectedSpellIndex(groups: SpellGroup[], selected: number | null): number | null {
+  const displayed = groups.flatMap((group) => group.indices);
+  if (selected !== null && displayed.includes(selected)) return selected;
+  return displayed[0] ?? null;
+}
 
 /** Accordion value of a spell row (stable across level changes: rows are keyed by spell index). */
 export const spellRowValue = (index: number) => `spell-${index}`;
@@ -108,9 +133,12 @@ export function buildSpellGroups(spells: Spell[], { isInnate, sort, preparedFirs
   return groups;
 }
 
-/** Damage entries joined with " + ", else the healing formula, else null. */
-function spellEffectFormula(spell: Spell): string | null {
-  const damage = formatSpellDamageList(spell.damageDetails, spell.damage);
+/** Damage dice joined with " + " (types left to the details), else the healing dice, else null. */
+function spellEffectDice(spell: Spell): string | null {
+  const damage = hydrateSpellDamageDetails(spell.damageDetails, spell.damage)
+    .map((entry) => formatDamageFormula(entry.diceCount, entry.diceType, entry.bonus))
+    .filter(Boolean)
+    .join(" + ");
   if (damage) return damage;
   if (spell.healingDetails) {
     return (
@@ -118,20 +146,16 @@ function spellEffectFormula(spell: Spell): string | null {
       null
     );
   }
-  return spell.healing || null;
+  return spell.healing?.trim() || null;
 }
 
 /**
- * Collapsed-row summary: school · casting time · range · effect (empty parts dropped).
+ * Collapsed-row summary pills: casting time · range · effect dice (empty parts dropped). School and
+ * damage types stay in the details.
  * @see FR-character-magic-list-card
  */
 export function spellSummaryParts(spell: Spell, convertRange: (range: string) => string): string[] {
-  return [
-    spell.school,
-    spell.castingTime,
-    spell.range ? convertRange(spell.range) : "",
-    spellEffectFormula(spell) ?? "",
-  ]
+  return [spell.castingTime, spell.range ? convertRange(spell.range) : "", spellEffectDice(spell) ?? ""]
     .map((part) => (part ?? "").trim())
     .filter(Boolean);
 }

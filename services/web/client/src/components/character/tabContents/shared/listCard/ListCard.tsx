@@ -19,10 +19,11 @@ interface ListCardProps {
   actions?: ReactNode;
   /** Line under the title (usage-type filter, rest legend). */
   toolbar?: ReactNode;
-  expanded: boolean;
-  onToggleAll: () => void;
-  expandLabel: string;
-  collapseLabel: string;
+  expanded?: boolean;
+  /** Expand / collapse all; the button is hidden when omitted (rows that do not expand). */
+  onToggleAll?: () => void;
+  expandLabel?: string;
+  collapseLabel?: string;
   emptyLabel: string;
   /** Cap the rows height and scroll inside the card (header stays outside). */
   bounded?: boolean;
@@ -55,7 +56,7 @@ export default function ListCard({
   className,
   actions,
   toolbar,
-  expanded,
+  expanded = false,
   onToggleAll,
   expandLabel,
   collapseLabel,
@@ -86,27 +87,29 @@ export default function ListCard({
           </h2>
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {actions}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onToggleAll}
-              disabled={isEmpty}
-              className={accentColor}
-              aria-label={expanded ? collapseLabel : expandLabel}
-              aria-expanded={expanded}>
-              {expanded ? (
-                <ListChevronsDownUp
-                  className="size-5"
-                  aria-hidden="true"
-                />
-              ) : (
-                <ListChevronsUpDown
-                  className="size-5"
-                  aria-hidden="true"
-                />
-              )}
-            </Button>
+            {onToggleAll && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onToggleAll}
+                disabled={isEmpty}
+                className={accentColor}
+                aria-label={expanded ? collapseLabel : expandLabel}
+                aria-expanded={expanded}>
+                {expanded ? (
+                  <ListChevronsDownUp
+                    className="size-5"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <ListChevronsUpDown
+                    className="size-5"
+                    aria-hidden="true"
+                  />
+                )}
+              </Button>
+            )}
           </div>
         </div>
         {toolbar}

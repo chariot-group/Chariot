@@ -20,9 +20,11 @@ import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
+import { useIsXlUp } from "@/hooks/use-mobile";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import ListCard from "@/components/character/tabContents/shared/listCard/ListCard";
 import ListRow from "@/components/character/tabContents/shared/listCard/ListRow";
+import ListSelectRow from "@/components/character/tabContents/shared/listCard/ListSelectRow";
 import SpellCastControls from "@/components/character/tabContents/magic/SpellCastControls";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
 import SpellDetails from "@/components/character/tabContents/magic/shared/SpellDetails";
@@ -36,24 +38,38 @@ import {
   buildSpellGroups,
   magicBentoGridClass,
   MAGIC_SLOTS,
+  magicWideSlots,
+  resolveSelectedSpellIndex,
   spellRequiresConcentration,
   spellRowValue,
   spellSummaryParts,
   type SpellGroup,
 } from "@/components/character/tabContents/magic/shared/spellList";
+import {
+  useMagicSelection,
+  type MagicSelectionState,
+} from "@/components/character/tabContents/magic/shared/useMagicSelection";
 
 interface CharacterMagicViewProps {
   character: Character;
   accentColor: string;
   /** Read mode: allows casting (session) and changing prepared spells (PATCH). */
   onCharacterUpdate?: (updated: Player | NPC) => void;
+  /** Selected block / spell, shared with edit mode by the tab container. */
+  selectionState?: MagicSelectionState;
 }
 
 /**
- * Magic tab, read mode: Spellcasting card + Spells list card (rows expand in place).
+ * Magic tab, read mode: Spellcasting card + Spells list card. Rows expand in place; from `xl` the
+ * selected spell is shown in a detail panel next to the list instead (wide read mode).
  * @see FR-character-magic-list-card
  */
-export default function CharacterMagicView({ character, accentColor, onCharacterUpdate }: CharacterMagicViewProps) {
+export default function CharacterMagicView({
+  character,
+  accentColor,
+  onCharacterUpdate,
+  selectionState,
+}: CharacterMagicViewProps) {
   const tClass = useTranslations("classes");
   const tMagic = useTranslations("characterDetail.magic");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
@@ -61,10 +77,18 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
   const sessionCode = useActiveSessionCode();
   const { convertRange } = useDistanceUnit();
   const listHeadingId = useId();
+  const detailHeadingId = useId();
+  const detailPanelId = useId();
+  const isWide = useIsXlUp();
 
   const spellcastingList = useMemo(() => character.spellcasting ?? [], [character.spellcasting]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [openRows, setOpenRows] = useState<string[]>([]);
+  const { selection, setBlock, setSpell: setSelectedSpell } = useMagicSelection(selectionState);
+  const selectedIndex = selection.block;
+  const selectedSpell = selection.spell;
+  // Below `xl`, the selected spell (e.g. coming back from edit mode) starts expanded.
+  const [openRows, setOpenRows] = useState<string[]>(() =>
+    selection.spell === null ? [] : [spellRowValue(selection.spell)],
+  );
   const [preparationEditMode, setPreparationEditMode] = useState(false);
   const [prepSaving, setPrepSaving] = useState(false);
 
@@ -89,7 +113,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
   }, [showPreparedControls, preparationEditMode]);
 
   const selectSpellcasting = (index: number) => {
-    setSelectedIndex(index);
+    setBlock(index);
     setOpenRows([]);
     setPreparationEditMode(false);
   };
@@ -195,6 +219,28 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
     );
   };
 
+  const renderDetails = (spell: Spell) => (
+    <SpellDetails
+      spell={spell}
+      attackBonus={activeSpellcasting.attackBonus ?? null}
+      isNpc={!isPlayer(character)}
+      castControls={
+        onCharacterUpdate ? (
+          <SpellCastControls
+            characterKind={isPlayer(character) ? "players" : "npcs"}
+            character={character as Player | NPC}
+            spellcasting={activeSpellcasting}
+            selectedSpell={spell}
+            accentColor={accentColor}
+            onCharacterUpdate={onCharacterUpdate}
+          />
+        ) : undefined
+      }
+    />
+  );
+
+  const shownSpellIndex = isWide ? resolveSelectedSpellIndex(groups, selectedSpell) : null;
+
   const renderRow = (spellIndex: number, group: SpellGroup) => {
     const spell: Spell = spells[spellIndex];
     const value = spellRowValue(spellIndex);
@@ -206,6 +252,48 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
     ).length;
     const meta: string[] = [...spellSummaryParts(spell, convertRange)];
     if (group.kind === "uses" && spell.usesPerDay != null) meta.push(`${spell.used ?? 0} / ${spell.usesPerDay}`);
+    const label = tMagic("spellRowLabel", { name, group: groupLabel(group) });
+
+    const trailing =
+      spellRequiresConcentration(spell) || showPill ? (
+        <span className="flex items-center gap-2">
+          {spellRequiresConcentration(spell) && (
+            <span className="hidden rounded-full bg-gray-middle-light px-2 py-0.5 text-xs text-muted-foreground @md:inline">
+              {tMagic("concentration")}
+            </span>
+          )}
+          {showPill && (
+            <SpellPreparedPill
+              isPrepared={spell.prepared === true}
+              interactive={preparationEditMode && showPreparedControls && !prepSaving}
+              prepareBlocked={spell.prepared !== true && maxPrepared > 0 && othersPrepared >= maxPrepared}
+              onToggle={() => void togglePreparedRemote(spellIndex)}
+              preparedTooltip={tMagic("preparedBookmarkPreparedTooltip")}
+              unpreparedTooltip={tMagic("preparedBookmarkUnpreparedTooltip")}
+              prepareBlockedTooltip={tMagic("spellPrepareLimitTooltip")}
+              ariaPrepared={`${tMagic("preparedPillAriaPrepared")} : ${name}`}
+              ariaUnprepared={`${tMagic("preparedPillAriaUnprepared")} : ${name}`}
+            />
+          )}
+        </span>
+      ) : undefined;
+
+    if (isWide) {
+      return (
+        <ListSelectRow
+          key={value}
+          id={`${listHeadingId}-trigger-${spellIndex}`}
+          name={name}
+          meta={meta}
+          metaStyle="pills"
+          label={label}
+          isSelected={shownSpellIndex === spellIndex}
+          onSelect={() => setSelectedSpell(spellIndex)}
+          controlsId={detailPanelId}
+          trailing={trailing}
+        />
+      );
+    }
 
     return (
       <ListRow
@@ -215,55 +303,30 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         triggerId={`${listHeadingId}-trigger-${spellIndex}`}
         name={name}
         meta={meta}
-        triggerLabel={tMagic("spellRowLabel", { name, group: groupLabel(group) })}
+        metaStyle="pills"
+        triggerLabel={label}
         isOpen={isOpen}
         contentLabel={name}
-        trailing={
-          spellRequiresConcentration(spell) || showPill ? (
-            <span className="flex items-center gap-2">
-              {spellRequiresConcentration(spell) && (
-                <span className="hidden rounded-full bg-gray-middle-light px-2 py-0.5 text-xs text-muted-foreground @md:inline">
-                  {tMagic("concentration")}
-                </span>
-              )}
-              {showPill && (
-                <SpellPreparedPill
-                  isPrepared={spell.prepared === true}
-                  interactive={preparationEditMode && showPreparedControls && !prepSaving}
-                  prepareBlocked={spell.prepared !== true && maxPrepared > 0 && othersPrepared >= maxPrepared}
-                  onToggle={() => void togglePreparedRemote(spellIndex)}
-                  preparedTooltip={tMagic("preparedBookmarkPreparedTooltip")}
-                  unpreparedTooltip={tMagic("preparedBookmarkUnpreparedTooltip")}
-                  prepareBlockedTooltip={tMagic("spellPrepareLimitTooltip")}
-                  ariaPrepared={`${tMagic("preparedPillAriaPrepared")} : ${name}`}
-                  ariaUnprepared={`${tMagic("preparedPillAriaUnprepared")} : ${name}`}
-                />
-              )}
-            </span>
-          ) : undefined
-        }>
-        <SpellDetails
-          spell={spell}
-          attackBonus={activeSpellcasting.attackBonus ?? null}
-          isNpc={!isPlayer(character)}
-          castControls={
-            onCharacterUpdate ? (
-              <SpellCastControls
-                characterKind={isPlayer(character) ? "players" : "npcs"}
-                character={character as Player | NPC}
-                spellcasting={activeSpellcasting}
-                selectedSpell={spell}
-                accentColor={accentColor}
-                onCharacterUpdate={onCharacterUpdate}
-              />
-            ) : undefined
-          }
-        />
+        trailing={trailing}>
+        {renderDetails(spell)}
       </ListRow>
     );
   };
 
   const allRows = spells.map((_, index) => spellRowValue(index));
+  const wideSlots = magicWideSlots(spellcastingList.length > 1);
+  const shownSpell = shownSpellIndex !== null ? spells[shownSpellIndex] : null;
+
+  const groupedRows = groups.map((group) => (
+    <Fragment key={group.key}>
+      <SpellGroupHeader
+        label={groupLabel(group)}
+        accentColor={accentColor}
+        trailing={groupSlots(group)}
+      />
+      {group.indices.map((index) => renderRow(index, group))}
+    </Fragment>
+  ));
 
   return (
     <div className={magicBentoGridClass(spellcastingList.length > 1)}>
@@ -280,7 +343,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         headingId="magic-spellcasting-heading"
         title={tMagic("spellcastingTitle")}
         accentColor={accentColor}
-        className={MAGIC_SLOTS.spellcasting}>
+        className={isWide ? wideSlots.spellcasting : MAGIC_SLOTS.spellcasting}>
         <SpellcastingStats
           className="min-w-0 @3xl:max-w-2xl"
           abilityName={abilityKey ? tAbilities(abilityKey) : (activeSpellcasting.ability ?? "")}
@@ -295,11 +358,11 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         title={tMagic("spells")}
         count={spells.length}
         accentColor={accentColor}
-        className={MAGIC_SLOTS.spells}
+        className={isWide ? wideSlots.spells : MAGIC_SLOTS.spells}
         bounded
         fill
         expanded={openRows.length > 0}
-        onToggleAll={() => setOpenRows(openRows.length > 0 ? [] : allRows)}
+        onToggleAll={isWide ? undefined : () => setOpenRows(openRows.length > 0 ? [] : allRows)}
         expandLabel={tMagic("expandAll")}
         collapseLabel={tMagic("collapseAll")}
         emptyLabel={tMagic("noSpells")}
@@ -326,23 +389,40 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
             </div>
           ) : undefined
         }>
-        <Accordion
-          type="multiple"
-          value={openRows}
-          onValueChange={setOpenRows}
-          className="w-full">
-          {groups.map((group) => (
-            <Fragment key={group.key}>
-              <SpellGroupHeader
-                label={groupLabel(group)}
-                accentColor={accentColor}
-                trailing={groupSlots(group)}
-              />
-              {group.indices.map((index) => renderRow(index, group))}
-            </Fragment>
-          ))}
-        </Accordion>
+        {isWide ? (
+          <div className="w-full">{groupedRows}</div>
+        ) : (
+          <Accordion
+            type="multiple"
+            value={openRows}
+            onValueChange={(next) => {
+              const opened = next.find((value) => !openRows.includes(value));
+              if (opened) setSelectedSpell(Number(opened.replace("spell-", "")));
+              setOpenRows(next);
+            }}
+            className="w-full">
+            {groupedRows}
+          </Accordion>
+        )}
       </ListCard>
+
+      {isWide && shownSpell && (
+        <GeneralSectionCard
+          headingId={detailHeadingId}
+          title={shownSpell.name || tMagic("newSpell")}
+          accentColor={accentColor}
+          headingClassName="wrap-break-word"
+          className={wideSlots.detail}>
+          <div
+            id={detailPanelId}
+            className="-mt-2 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto rounded-[10px] pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-scrollbar-track"
+            role="group"
+            aria-labelledby={detailHeadingId}
+            tabIndex={0}>
+            {renderDetails(shownSpell)}
+          </div>
+        </GeneralSectionCard>
+      )}
     </div>
   );
 }

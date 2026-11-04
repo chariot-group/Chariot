@@ -36,6 +36,9 @@ import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import { getSpellIndicesWithErrors } from "@/components/character/characterFormErrors";
 import ListCard, { EDIT_LIST_MAX_HEIGHT_CLASS } from "@/components/character/tabContents/shared/listCard/ListCard";
 import ListRow from "@/components/character/tabContents/shared/listCard/ListRow";
+import ListSelectRow from "@/components/character/tabContents/shared/listCard/ListSelectRow";
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
+import { useIsXlUp } from "@/hooks/use-mobile";
 import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
 import SpellEditForm from "@/components/character/tabContents/magic/form/SpellEditForm";
@@ -49,15 +52,23 @@ import {
   buildSpellGroups,
   magicBentoGridClass,
   MAGIC_SLOTS,
+  magicWideSlots,
+  resolveSelectedSpellIndex,
   spellRowValue,
   spellSummaryParts,
   type SpellGroup,
 } from "@/components/character/tabContents/magic/shared/spellList";
+import {
+  useMagicSelection,
+  type MagicSelectionState,
+} from "@/components/character/tabContents/magic/shared/useMagicSelection";
 
 interface CharacterMagicTabEditProps {
   character: Character;
   accentColor: string;
   form: UseFormReturn<Character>;
+  /** Selected block / spell, shared with read mode by the tab container. */
+  selectionState?: MagicSelectionState;
 }
 
 type CharacterClassInfo = { name?: string; level?: number };
@@ -76,6 +87,10 @@ const setCharValue = (
   value: unknown,
   options?: Parameters<UseFormReturn<Character>["setValue"]>[2],
 ) => form.setValue(charPath(path), value as PathValue<Character, Path<Character>>, options);
+
+/** Row element of a spell: accordion item, or the selectable row in wide mode. */
+const rowElement = (listId: string, index: number) =>
+  document.getElementById(`${listId}-${spellRowValue(index)}`) ?? document.getElementById(`${listId}-trigger-${index}`);
 
 type SpellSlotFieldValue = number | string | null | undefined;
 
@@ -140,23 +155,36 @@ function SpellSlotTotalInput({
 }
 
 /**
- * Magic tab, edit mode: Spellcasting card + Spells list card; a spell's form opens in its row.
- * Focus only moves on Add, Codex import and Delete (FR-character-magic-list-card).
+ * Magic tab, edit mode: Spellcasting card + Spells list card; a spell's form opens in its row, or
+ * from `xl` in a panel next to the list (wide mode). Focus only moves on Add, Codex import and Delete (FR-character-magic-list-card).
  * @see FR-character-magic-list-card, FR-magic-spell-level-categories
  */
-export default function CharacterMagicTabEdit({ character, accentColor, form }: CharacterMagicTabEditProps) {
+export default function CharacterMagicTabEdit({
+  character,
+  accentColor,
+  form,
+  selectionState,
+}: CharacterMagicTabEditProps) {
   const tMagic = useTranslations("characterDetail.magic");
   const tClass = useTranslations("classes");
   const tEdit = useTranslations("characterDetail.edit");
   const { convertRange } = useDistanceUnit();
   const { isAvailable: isCodexAvailable } = useCodexHealth();
   const listHeadingId = useId();
+  const panelHeadingId = useId();
+  const panelId = useId();
+  const isWide = useIsXlUp();
   const addButtonRef = useRef<HTMLButtonElement>(null);
   /** Last spell index added from the Codex, focused when the dialog closes. */
   const codexImportedIndex = useRef<number | null>(null);
 
-  const [sc, setSc] = useState(0);
-  const [openRows, setOpenRows] = useState<string[]>([]);
+  /** Block and spell shown (wide panel: null spell = first in display order), shared with read mode. */
+  const { selection, setBlock, setSpell: setSelectedSpell } = useMagicSelection(selectionState);
+  const selectedSpell = selection.spell;
+  // Below `xl`, the spell selected in read mode starts expanded.
+  const [openRows, setOpenRows] = useState<string[]>(() =>
+    selection.spell === null ? [] : [spellRowValue(selection.spell)],
+  );
   const [preparationEditMode, setPreparationEditMode] = useState(false);
   const [isCodexDialogOpen, setIsCodexDialogOpen] = useState(false);
   const { errors, submitCount } = useFormState({ control: form.control });
@@ -166,6 +194,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     append: appendSpellcasting,
     remove: removeSpellcasting,
   } = useFieldArray({ control: form.control, name: "spellcasting" });
+  const sc = Math.min(selection.block, Math.max(0, spellcastingFields.length - 1));
 
   const spells: Spell[] =
     (useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.spells`) }) as Spell[] | undefined) ??
@@ -243,11 +272,18 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     if (submitCount === 0) return;
     const invalid = getSpellIndicesWithErrors(errors, sc).map(spellRowValue);
     if (invalid.length === 0) return;
+    if (isWide) {
+      const first = getSpellIndicesWithErrors(errors, sc)[0];
+      setSelectedSpell(first);
+      setTimeout(() => rowElement(listHeadingId, first)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 0);
+      return;
+    }
     setOpenRows((prev) => Array.from(new Set([...prev, ...invalid])));
     setTimeout(() => {
-      document
-        .getElementById(`${listHeadingId}-${invalid[0]}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      rowElement(listHeadingId, Number(invalid[0].replace("spell-", "")))?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
     }, ROW_OPEN_DELAY_MS);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitCount]);
@@ -263,20 +299,32 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     if (!showPreparedToggle && preparationEditMode) setPreparationEditMode(false);
   }, [showPreparedToggle, preparationEditMode]);
 
-  const selectBlock = useCallback((index: number) => {
-    setSc(index);
-    setOpenRows([]);
-    setPreparationEditMode(false);
-  }, []);
+  const selectBlock = useCallback(
+    (index: number) => {
+      setBlock(index);
+      setOpenRows([]);
+      setPreparationEditMode(false);
+    },
+    [setBlock],
+  );
 
-  /** Opens a row, scrolls it into view in the bounded list and focuses `focusId`. */
+  /**
+   * Opens a row (wide mode: selects it in the panel), scrolls it into view in the bounded list and
+   * focuses `focusId`.
+   */
   const revealRow = (index: number, focusId: string) => {
-    const value = spellRowValue(index);
-    setOpenRows((prev) => (prev.includes(value) ? prev : [...prev, value]));
-    setTimeout(() => {
-      document.getElementById(`${listHeadingId}-${value}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      document.getElementById(focusId)?.focus({ preventScroll: true });
-    }, ROW_OPEN_DELAY_MS);
+    if (isWide) setSelectedSpell(index);
+    else {
+      const value = spellRowValue(index);
+      setOpenRows((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    }
+    setTimeout(
+      () => {
+        rowElement(listHeadingId, index)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        document.getElementById(focusId)?.focus({ preventScroll: true });
+      },
+      isWide ? 0 : ROW_OPEN_DELAY_MS,
+    );
   };
 
   /** Appends a spell (defaults, prepared flag, slot entries) and returns its index. */
@@ -352,8 +400,14 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     const order = buildSpellGroups(list, { isInnate, sort: false }).flatMap((group) => group.indices);
     const position = order.indexOf(index);
     const target = order[position + 1] ?? order[position - 1];
+    const shifted = target === undefined ? null : target > index ? target - 1 : target;
+    // Wide mode: the deleted spell's panel moves to the spell receiving focus; others keep theirs.
+    setSelectedSpell((prev) => {
+      const current = resolveSelectedSpellIndex(buildSpellGroups(list, { isInnate, sort: false }), prev);
+      if (current === null || current === index) return shifted;
+      return current > index ? current - 1 : current;
+    });
     setTimeout(() => {
-      const shifted = target === undefined ? null : target > index ? target - 1 : target;
       const next = shifted === null ? null : document.getElementById(`${listHeadingId}-trigger-${shifted}`);
       (next ?? addButtonRef.current)?.focus();
     }, 0);
@@ -422,6 +476,9 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
   const invalidSpells = new Set(getSpellIndicesWithErrors(errors, sc));
 
   const groups = buildSpellGroups(spells, { isInnate, sort: false });
+  const shownSpell = isWide ? resolveSelectedSpellIndex(groups, selectedSpell) : null;
+  const showSelectorEarly = blockLabels.length > 1 || canAddBlock;
+  const wideSlots = magicWideSlots(showSelectorEarly);
   const groupLabel = (group: SpellGroup) =>
     group.kind === "uses"
       ? group.value === null
@@ -467,6 +524,55 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         const hasError = invalidSpells.has(index);
         const showPill = usesPreparedMechanic && Number(spell?.level) > 0;
         const others = spells.filter((s, i) => i !== index && Number(s.level) > 0 && s.prepared === true).length;
+        const label = hasError
+          ? tMagic("spellContainsErrorsAria", { name })
+          : tMagic("spellRowLabel", { name, group: groupLabel(group) });
+        const trailing = (
+          <span className="flex items-center gap-1">
+            {showPill && (
+              <SpellPreparedPill
+                isPrepared={spell?.prepared === true}
+                interactive={preparationEditMode}
+                prepareBlocked={spell?.prepared !== true && maxPrepared > 0 && others >= maxPrepared}
+                onToggle={() => togglePrepared(index)}
+                preparedTooltip={tMagic("preparedBookmarkPreparedTooltip")}
+                unpreparedTooltip={tMagic("preparedBookmarkUnpreparedTooltip")}
+                prepareBlockedTooltip={tMagic("spellPrepareLimitTooltip")}
+                ariaPrepared={`${tMagic("preparedPillAriaPrepared")} : ${name}`}
+                ariaUnprepared={`${tMagic("preparedPillAriaUnprepared")} : ${name}`}
+              />
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="text-red-500"
+              onClick={() => removeSpell(index)}
+              aria-label={tMagic("removeSpellWithName", { name })}>
+              <Trash2
+                className="size-4"
+                aria-hidden="true"
+              />
+            </Button>
+          </span>
+        );
+        if (isWide) {
+          return (
+            <ListSelectRow
+              key={value}
+              id={`${listHeadingId}-trigger-${index}`}
+              name={name}
+              meta={spell ? spellSummaryParts(spell, convertRange) : []}
+              metaStyle="pills"
+              label={label}
+              isSelected={shownSpell === index}
+              hasError={hasError}
+              onSelect={() => setSelectedSpell(index)}
+              controlsId={panelId}
+              trailing={trailing}
+            />
+          );
+        }
         return (
           <ListRow
             key={value}
@@ -475,43 +581,12 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
             triggerId={`${listHeadingId}-trigger-${index}`}
             name={name}
             meta={spell ? spellSummaryParts(spell, convertRange) : []}
-            triggerLabel={
-              hasError
-                ? tMagic("spellContainsErrorsAria", { name })
-                : tMagic("spellRowLabel", { name, group: groupLabel(group) })
-            }
+            metaStyle="pills"
+            triggerLabel={label}
             isOpen={openRows.includes(value)}
             hasError={hasError}
             contentLabel={name}
-            trailing={
-              <span className="flex items-center gap-1">
-                {showPill && (
-                  <SpellPreparedPill
-                    isPrepared={spell?.prepared === true}
-                    interactive={preparationEditMode}
-                    prepareBlocked={spell?.prepared !== true && maxPrepared > 0 && others >= maxPrepared}
-                    onToggle={() => togglePrepared(index)}
-                    preparedTooltip={tMagic("preparedBookmarkPreparedTooltip")}
-                    unpreparedTooltip={tMagic("preparedBookmarkUnpreparedTooltip")}
-                    prepareBlockedTooltip={tMagic("spellPrepareLimitTooltip")}
-                    ariaPrepared={`${tMagic("preparedPillAriaPrepared")} : ${name}`}
-                    ariaUnprepared={`${tMagic("preparedPillAriaUnprepared")} : ${name}`}
-                  />
-                )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="text-red-500"
-                  onClick={() => removeSpell(index)}
-                  aria-label={tMagic("removeSpellWithName", { name })}>
-                  <Trash2
-                    className="size-4"
-                    aria-hidden="true"
-                  />
-                </Button>
-              </span>
-            }>
+            trailing={trailing}>
             <SpellEditForm
               form={form}
               spellcastingIndex={sc}
@@ -526,7 +601,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     ];
   });
 
-  const showSelector = blockLabels.length > 1 || canAddBlock;
+  const showSelector = showSelectorEarly;
 
   return (
     <div className={magicBentoGridClass(showSelector)}>
@@ -557,7 +632,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       <SpellcastingEditCard
         form={form}
         accentColor={accentColor}
-        className={MAGIC_SLOTS.spellcasting}
+        className={isWide ? wideSlots.spellcasting : MAGIC_SLOTS.spellcasting}
         isPlayerCharacter={isPlayer(character)}
         spellcastingIndex={sc}
         blockLabel={blockLabels[sc] ?? ""}
@@ -581,7 +656,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         title={tMagic("spells")}
         count={spells.length}
         accentColor={accentColor}
-        className={MAGIC_SLOTS.spells}
+        className={isWide ? wideSlots.spells : MAGIC_SLOTS.spells}
         bounded
         fill
         boundedClassName={EDIT_LIST_MAX_HEIGHT_CLASS}
@@ -634,18 +709,56 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
           ) : undefined
         }
         expanded={openRows.length > 0}
-        onToggleAll={() => setOpenRows(openRows.length > 0 ? [] : spells.map((_, index) => spellRowValue(index)))}
+        onToggleAll={
+          isWide
+            ? undefined
+            : () => setOpenRows(openRows.length > 0 ? [] : spells.map((_, index) => spellRowValue(index)))
+        }
         expandLabel={tMagic("expandAll")}
         collapseLabel={tMagic("collapseAll")}
         emptyLabel={tMagic("noSpells")}>
-        <Accordion
-          type="multiple"
-          value={openRows}
-          onValueChange={setOpenRows}
-          className="w-full">
-          {listItems}
-        </Accordion>
+        {isWide ? (
+          <div className="w-full">{listItems}</div>
+        ) : (
+          <Accordion
+            type="multiple"
+            value={openRows}
+            onValueChange={(next) => {
+              const opened = next.find((value) => !openRows.includes(value));
+              if (opened) setSelectedSpell(Number(opened.replace("spell-", "")));
+              setOpenRows(next);
+            }}
+            className="w-full">
+            {listItems}
+          </Accordion>
+        )}
       </ListCard>
+
+      {isWide && shownSpell !== null && (
+        <GeneralSectionCard
+          headingId={panelHeadingId}
+          title={spells[shownSpell]?.name || tMagic("newSpell")}
+          accentColor={accentColor}
+          headingClassName="wrap-break-word"
+          className={wideSlots.detail}>
+          <div
+            id={panelId}
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-[10px] pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-scrollbar-track"
+            role="group"
+            aria-labelledby={panelHeadingId}
+            tabIndex={0}>
+            <SpellEditForm
+              key={`${sc}-${shownSpell}`}
+              form={form}
+              spellcastingIndex={sc}
+              spellIndex={shownSpell}
+              idPrefix={`${listHeadingId}-spell-${shownSpell}`}
+              isInnate={isInnate}
+              attackBonus={calculatedAttackBonus}
+            />
+          </div>
+        </GeneralSectionCard>
+      )}
 
       <CodexSpellSearchDialog
         open={isCodexDialogOpen}

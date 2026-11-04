@@ -2,6 +2,11 @@ import { Character, NPC, Player } from "@/types/character";
 import CharacterMagicView from "@/components/character/tabContents/magic/view/CharacterMagicView";
 import CharacterMagicTabEdit from "@/components/character/tabContents/magic/form/CharacterMagicTabEdit";
 import { UseFormReturn, FieldValues } from "react-hook-form";
+import { useState } from "react";
+import {
+  INITIAL_MAGIC_SELECTION,
+  type MagicSelection,
+} from "@/components/character/tabContents/magic/shared/useMagicSelection";
 
 interface CharacterMagicTabContentProps {
   character: Character;
@@ -18,12 +23,16 @@ export default function CharacterMagicTabContent({
   isEditing,
   onCharacterUpdate,
 }: CharacterMagicTabContentProps) {
+  // Kept here so the selected block / spell survives switching between read and edit modes.
+  const selectionState = useState<MagicSelection>(INITIAL_MAGIC_SELECTION);
+
   if (isEditing) {
     return (
       <CharacterMagicTabEdit
         character={character}
         accentColor={accentColor}
         form={form as unknown as UseFormReturn<Character>}
+        selectionState={selectionState}
       />
     );
   }
@@ -33,6 +42,7 @@ export default function CharacterMagicTabContent({
       character={character}
       accentColor={accentColor}
       onCharacterUpdate={onCharacterUpdate}
+      selectionState={selectionState}
     />
   );
 }

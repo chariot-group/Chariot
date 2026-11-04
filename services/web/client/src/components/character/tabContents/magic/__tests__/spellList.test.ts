@@ -7,6 +7,8 @@ import {
   MAGIC_SLOTS,
   MAGIC_TAB_BODY_CLASS,
   MAGIC_TAB_PANEL_CLASS,
+  magicWideSlots,
+  resolveSelectedSpellIndex,
   spellSummaryParts,
 } from "@/components/character/tabContents/magic/shared/spellList";
 
@@ -64,7 +66,7 @@ describe("Magic tab — spell groups", () => {
 
 /** @see FR-character-magic-list-card, FR-character-spell-multi-damage */
 describe("Magic tab — collapsed row summary", () => {
-  it("nominal: school · casting time · range · damage entries joined with +", () => {
+  it("nominal: casting time · range · damage dice joined with +, without school nor types", () => {
     const parts = spellSummaryParts(
       spell({
         name: "Chromatic Orb",
@@ -80,7 +82,7 @@ describe("Magic tab — collapsed row summary", () => {
       (range) => range.replace("90 feet", "27 m"),
     );
 
-    expect(parts).toEqual(["Evocation", "1 action", "27 m", "3d8 fire + 1d6 cold"]);
+    expect(parts).toEqual(["1 action", "27 m", "3d8 + 1d6"]);
   });
 
   it("edge: healing is shown when there is no damage, empty parts are dropped", () => {
@@ -98,6 +100,15 @@ describe("Magic tab — collapsed row summary", () => {
 
     expect(parts).toEqual(["1 action", "1d8+3"]);
   });
+});
+
+it("edge: a legacy damage string is summarized as its dice only", () => {
+  const parts = spellSummaryParts(
+    spell({ name: "Old", level: 1, castingTime: "1 action", damage: "3d8+2 lightning" }),
+    identity,
+  );
+
+  expect(parts).toEqual(["1 action", "3d8+2"]);
 });
 
 describe("Magic tab — bento slots", () => {
@@ -137,5 +148,41 @@ describe("Magic tab — height fill grid", () => {
       .filter((cls) => !cls.includes(":"));
 
     expect(unprefixed.some((cls) => cls.startsWith("h-") || cls.startsWith("grid-rows-"))).toBe(false);
+  });
+});
+
+/** @see FR-character-magic-list-card (wide read mode) */
+describe("Magic tab — wide read selection", () => {
+  const groups = buildSpellGroups(SPELLS, { isInnate: false, sort: true, preparedFirst: true });
+
+  it("nominal: defaults to the first spell in display order", () => {
+    expect(SPELLS[resolveSelectedSpellIndex(groups, null) ?? -1].name).toBe("Fire Bolt");
+  });
+
+  it("nominal: keeps a selected spell that is displayed", () => {
+    expect(resolveSelectedSpellIndex(groups, 2)).toBe(2);
+  });
+
+  it("edge: an out-of-range selection falls back to the first spell", () => {
+    expect(SPELLS[resolveSelectedSpellIndex(groups, 42) ?? -1].name).toBe("Fire Bolt");
+  });
+
+  it("failure: an empty block has no spell to show", () => {
+    expect(resolveSelectedSpellIndex([], 0)).toBeNull();
+  });
+
+  it("edge: Spellcasting and Spells share the left 5 columns, the panel spans both rows on the right", () => {
+    const slots = magicWideSlots(false);
+
+    expect(slots.spellcasting).toContain("xl:col-span-5");
+    expect(slots.spells).toContain("xl:col-span-5");
+    expect(slots.detail).toEqual(expect.stringContaining("xl:col-start-6"));
+    expect(slots.detail).toContain("xl:row-span-2");
+    expect(slots.detail).toContain("xl:row-start-1");
+    expect(slots.detail).toContain("xl:min-h-0");
+  });
+
+  it("edge: with the class selector the panel starts under it", () => {
+    expect(magicWideSlots(true).detail).toContain("xl:row-start-2");
   });
 });
