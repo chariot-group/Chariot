@@ -9,7 +9,9 @@ import type { Action } from "@/types/character";
 const createTestStore = () =>
   configureStore({
     reducer: {
-      user: (state = { user: { preferredMeasurementUnit: "imperial" }, loading: false, error: null, lastFetch: null }) => state,
+      user: (
+        state = { user: { preferredMeasurementUnit: "imperial" }, loading: false, error: null, lastFetch: null },
+      ) => state,
     },
   });
 
@@ -45,20 +47,21 @@ const messages = {
 };
 
 /** Partial actions: the section only reads the fields set in each fixture. */
-const renderActionSection = (actions: Partial<Action>[], title = "Actions") => renderToStaticMarkup(
-  <Provider store={createTestStore()}>
-    <NextIntlClientProvider
-      locale="en"
-      timeZone="UTC"
-      messages={messages}>
-      <ActionSection
-        title={title}
-        actions={actions as Action[]}
-        accentColor="text-red"
-      />
-    </NextIntlClientProvider>
-  </Provider>,
-);
+const renderActionSection = (actions: Partial<Action>[], title = "Actions") =>
+  renderToStaticMarkup(
+    <Provider store={createTestStore()}>
+      <NextIntlClientProvider
+        locale="en"
+        timeZone="UTC"
+        messages={messages}>
+        <ActionSection
+          title={title}
+          actions={actions as Action[]}
+          accentColor="text-red"
+        />
+      </NextIntlClientProvider>
+    </Provider>,
+  );
 
 /** Heading of the list card, whatever extra markup (item count) it holds. */
 const headingText = (html: string) => html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)?.[1].replace(/<[^>]+>/g, " ") ?? "";
@@ -105,7 +108,7 @@ describe("FR-character-action-section-visibility — ActionSection", () => {
     const html = renderActionSection([]);
 
     expect(headingText(html)).toContain("Actions");
-    expect(html).toContain('aria-labelledby=');
+    expect(html).toContain("aria-labelledby=");
     expect(html).toContain("disabled");
     expect(html).toContain('aria-label="Expand actions in Actions"');
     expect(html).not.toContain("Details for action:");

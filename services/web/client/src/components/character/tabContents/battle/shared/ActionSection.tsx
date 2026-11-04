@@ -39,10 +39,13 @@ const ActionSection = ({ title, actions, accentColor, className, boundedList = f
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const [prioritizeUsageType, setPrioritizeUsageType] = useState<ActionUsageType>("action");
-  const usageTypeCounts = ACTION_USAGE_OPTIONS.reduce<Record<ActionUsageType, number>>((counts, usageType) => {
-    counts[usageType] = 0;
-    return counts;
-  }, { action: 0, bonus_action: 0, reaction: 0 });
+  const usageTypeCounts = ACTION_USAGE_OPTIONS.reduce<Record<ActionUsageType, number>>(
+    (counts, usageType) => {
+      counts[usageType] = 0;
+      return counts;
+    },
+    { action: 0, bonus_action: 0, reaction: 0 },
+  );
 
   actions.forEach((action) => {
     usageTypeCounts[normalizeUsageType(action.usageType)] += 1;
@@ -164,9 +167,7 @@ const ActionSection = ({ title, actions, accentColor, className, boundedList = f
               triggerLabel={`${t("actionDetails")} ${action.name}`}
               isOpen={openAccordionValues.includes(itemId)}
               contentClassName="flex flex-col gap-2">
-              {action.description && (
-                <p className="whitespace-pre-wrap wrap-break-word">{action.description}</p>
-              )}
+              {action.description && <p className="whitespace-pre-wrap wrap-break-word">{action.description}</p>}
               {details.length > 0 && (
                 <dl className="flex flex-wrap gap-x-4 gap-y-1">
                   {details.map((detail) => (

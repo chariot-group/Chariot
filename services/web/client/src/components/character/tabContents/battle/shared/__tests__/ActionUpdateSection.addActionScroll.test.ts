@@ -3,10 +3,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const actionUpdateSectionPath = resolve(
-  fileURLToPath(new URL("..", import.meta.url)),
-  "ActionUpdateSection.tsx",
-);
+const actionUpdateSectionPath = resolve(fileURLToPath(new URL("..", import.meta.url)), "ActionUpdateSection.tsx");
 
 /** @see FR-frontend-design: nested scroll container must not shift sheet layout on add */
 describe("FR-frontend-design — add action scroll behavior", () => {
@@ -15,7 +12,7 @@ describe("FR-frontend-design — add action scroll behavior", () => {
   it("nominal: opens the newly appended action and scrolls to its index", () => {
     expect(source).toContain("const newIndex = fields.length");
     expect(source).toContain("setOpenAccordionValues((prev) => [...prev, `action-${newIndex}`])");
-    expect(source).toContain('document.getElementById(`action-${newIndex}`)');
+    expect(source).toContain("document.getElementById(`action-${newIndex}`)");
   });
 
   it("edge: uses nearest block to avoid scrolling outer ancestors", () => {

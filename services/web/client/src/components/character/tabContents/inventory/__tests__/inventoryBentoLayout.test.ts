@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { BREAKPOINTS, emptyCells, place, spanAt } from "@/components/character/tabContents/__tests__/bentoPlacement";
-import { INVENTORY_BENTO_GRID_CLASS, INVENTORY_SLOTS } from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
+import {
+  INVENTORY_BENTO_GRID_CLASS,
+  INVENTORY_SLOTS,
+} from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
 import { nextCoinValue, normalizeCoinAmount } from "@/components/character/tabContents/inventory/shared/coins";
 
 /** DOM order of the cards (read and edit share it). */
@@ -24,7 +27,8 @@ describe("Inventory tab bento layout", () => {
       // Treasure alone (explicit start): right half of both rows.
       const treasure = owner(INVENTORY_SLOTS.treasure);
       expect(treasure).toHaveLength(2);
-      for (const row of treasure) expect(row.slice(half).every(Boolean) && !row.slice(0, half).some(Boolean)).toBe(true);
+      for (const row of treasure)
+        expect(row.slice(half).every(Boolean) && !row.slice(0, half).some(Boolean)).toBe(true);
     }
   });
 

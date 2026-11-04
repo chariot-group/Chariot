@@ -56,8 +56,7 @@ export default function CharacterCompanionsTabContent({
   const reduxSessionCode = useAppSelector(selectSessionCode);
   const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
   const playerId = normalizeCharacterId(player._id) ?? player._id;
-  const sessionCodeForLookup =
-    sessionCodeFromUrl ?? (isInSession ? reduxSessionCode?.trim() || null : null);
+  const sessionCodeForLookup = sessionCodeFromUrl ?? (isInSession ? reduxSessionCode?.trim() || null : null);
   const canManageLiaisons = liaisonActionsEnabled;
   const showLiaisonActions = canManageLiaisons;
   const derivedSessionCompanions = useMemo(
@@ -152,15 +151,14 @@ export default function CharacterCompanionsTabContent({
       if (isLinking) return;
       setIsLinking(true);
       try {
-        const updated = await persistSidebarNpcLinkedPlayer(npc, linkedPlayerId, (id, payload) =>
-          CharacterService.updateCharacter("npcs", id, payload) as Promise<NPC>,
+        const updated = await persistSidebarNpcLinkedPlayer(
+          npc,
+          linkedPlayerId,
+          (id, payload) => CharacterService.updateCharacter("npcs", id, payload) as Promise<NPC>,
         );
         dispatch(upsertPlayerSpaceNpc(updated));
         setCompanions((current) => applyCompanionLinkChange(current, updated, playerId));
-        showToast(
-          linkedPlayerId ? tSidebar("linkNpcSuccess") : tSidebar("unlinkNpcSuccess"),
-          "success",
-        );
+        showToast(linkedPlayerId ? tSidebar("linkNpcSuccess") : tSidebar("unlinkNpcSuccess"), "success");
         if (linkedPlayerId) {
           setUnlinkedNpcs((current) => current.filter((item) => item._id !== npc._id));
           setLinkOpen(false);
@@ -261,9 +259,7 @@ export default function CharacterCompanionsTabContent({
               <li>{t("emptyExampleSecondaryNpc")}</li>
             </ul>
           </div>
-          {showLiaisonActions ? (
-            <p className="text-sm text-white/70">{t("emptyActionHint")}</p>
-          ) : null}
+          {showLiaisonActions ? <p className="text-sm text-white/70">{t("emptyActionHint")}</p> : null}
         </div>
       ) : (
         <ul className="grid w-full min-w-0 grid-cols-1 gap-2 md:grid-cols-2 md:gap-4 xl:grid-cols-3">

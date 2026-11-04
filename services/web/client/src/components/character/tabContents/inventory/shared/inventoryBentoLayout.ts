@@ -18,7 +18,6 @@ import {
  */
 export const INVENTORY_BENTO_GRID_CLASS = `${BENTO_GRID_CLASS} sm:grid-rows-[auto_1fr]`;
 
-
 export const INVENTORY_SLOTS = {
   coins: `${HALF} xl:col-span-6`,
   equipment: `${HALF} xl:col-span-6`,

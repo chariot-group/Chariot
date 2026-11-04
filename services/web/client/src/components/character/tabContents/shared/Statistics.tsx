@@ -29,7 +29,6 @@ export default function Statistics({ player, accentColor, onCharacterUpdate, cla
   const [healthDialogOpen, setHealthDialogOpen] = useState(false);
   const canEditHealthInSession = isInSession && Boolean(onCharacterUpdate);
 
-
   return (
     <Card
       className={`gap-3 p-4 md:px-6 min-w-0 w-full ${className ?? "col-span-2 lg:col-span-1 h-fit"}`}
@@ -72,9 +71,7 @@ export default function Statistics({ player, accentColor, onCharacterUpdate, cla
       {onCharacterUpdate && (
         <div className="mt-1 border-t border-border px-2 pt-3 flex flex-col items-end gap-1.5 w-full min-w-0">
           {!isInSession && (
-            <p className="text-xs text-muted-foreground italic text-right w-full">
-              {t("restSessionOnlyNote")}
-            </p>
+            <p className="text-xs text-muted-foreground italic text-right w-full">{t("restSessionOnlyNote")}</p>
           )}
           {isInSession && (
             <div className="flex flex-row flex-wrap justify-end gap-2 w-full min-w-0">
