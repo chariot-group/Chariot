@@ -232,6 +232,7 @@ The General tab (PC and NPC, read and edit) is one bento grid (FR-character-gene
 - `GeneralSectionCard` is a size container (`@container`): long inner lists (skills) use container variants (`@sm:grid-cols-2 @xl:grid-cols-3`) so they follow the card width, not the viewport
 - Skills keep the same column steps in read and edit modes (`@sm:grid-cols-2 @xl:grid-cols-3`)
 - The sheet avatar block (`MediaAvatarUpload size="sheet"`) is as wide as the avatar (`w-min`): its requirements hint wraps under the avatar instead of widening the « Personnage » card
+- « Personnage » read card (`shared/CharacterIdentityCard`, FR-character-identity-card): bold name (`text-lg sm:text-xl`), muted italic nickname (only the name block sits next to the avatar), then full-width key fact cells in the statistics cell style (PC race + subrace, level + XP on 2 columns; NPC type + subtype), then PC classes as plain rows (`bg-gray-middle-light/50`, `rounded-[10px]`, level badge, muted subclass) pushed to the bottom; field labels are `sr-only`
 - « Personnage » edit card: the name fields (`CharacterNameFields`, shared PC/NPC) sit next to the avatar under the heading, like the read-mode identity list; they stack in a narrow column and go side by side from `@sm`
 - A new card MUST get a slot in every layout of `generalBentoLayout.ts` and keep the placement test (no empty cell at 2 / 4 / 12 columns) green
 

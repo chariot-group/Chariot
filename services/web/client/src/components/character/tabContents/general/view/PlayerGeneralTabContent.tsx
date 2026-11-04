@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import CharacterIdentityCard from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import GeneralTile from "@/components/character/tabContents/general/shared/GeneralTile";
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
@@ -39,7 +39,6 @@ export default function PlayerGeneralTabContent({
   const tPlayer = useTranslations("characterDetail.player");
   const tAlignment = useTranslations("alignments");
   const tClass = useTranslations("classes");
-  const tEdit = useTranslations("characterDetail.edit");
   const isInSession = useAppSelector(selectIsInSession);
   const [isInspirationLoading, setIsInspirationLoading] = useState(false);
 
@@ -56,67 +55,29 @@ export default function PlayerGeneralTabContent({
       role="main"
       aria-label={t("characterInfoLabel")}>
       {/* Personnage */}
-      <Card
-        className={`gap-3 p-4 md:px-6 ${SLOTS.character}`}
-        role="region"
-        aria-labelledby="character-heading">
-        <div className="flex flex-1 items-stretch gap-3">
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <h2
-              id="character-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("character")}
-            </h2>
-            <dl className="flex flex-1 flex-col justify-between gap-2">
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
-                <dd className="text-sm sm:text-base">{player?.firstname}</dd>
-              </div>
-              {player.lastname && (
-                <div className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
-                  <dd className="text-sm sm:text-base">{player?.lastname}</dd>
-                </div>
-              )}
-              {player.surname && (
-                <div className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
-                  <dd className="text-sm sm:text-base">{player?.surname}</dd>
-                </div>
-              )}
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{t("raceLabel")} :</dt>
-                <dd className="text-sm sm:text-base">
-                  {player?.profile?.race} {player?.profile?.subrace?.length > 0 && `(${player?.profile?.subrace})`}
-                </dd>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{t("globalLevel")} :</dt>
-                <dd className="text-sm sm:text-base">
-                  {player?.progression?.level ?? 0} ({player?.progression?.experience ?? 0} XP)
-                </dd>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <dt className="text-sm sm:text-base font-semibold">{t("classes")} :</dt>
-                <dd className="text-sm sm:text-base">
-                  {player?.class.map((c) => `${tClass(c.name)} ${t("levelLabel")} ${c.level}`).join(" / ")}
-                </dd>
-              </div>
-              {player?.class.map((c) => (
-                <div
-                  key={c.name}
-                  className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">
-                    {t("subclassOf")} {tClass(c.name)} :
-                  </dt>
-                  <dd className="text-sm sm:text-base">{c.subclass}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-          {avatar ? <div className="shrink-0 self-start">{avatar}</div> : null}
-        </div>
-      </Card>
+      <CharacterIdentityCard
+        accentColor={accentColor}
+        className={SLOTS.character}
+        avatar={avatar}
+        firstname={player?.firstname}
+        lastname={player?.lastname}
+        surname={player?.surname}
+        facts={[
+          {
+            key: "race",
+            label: t("raceLabel"),
+            value: player?.profile?.race,
+            secondary: player?.profile?.subrace,
+          },
+          {
+            key: "level",
+            label: t("levelLabel"),
+            value: player?.progression?.level ?? 0,
+            secondary: `${player?.progression?.experience ?? 0} XP`,
+          },
+        ]}
+        classes={(player?.class ?? []).map((c) => ({ name: tClass(c.name), level: c.level, subclass: c.subclass }))}
+      />
 
       <Statistics
         player={player}

@@ -9,16 +9,17 @@ const detailViewPath = resolve(characterDir, "CharacterDetailView.tsx");
 const formViewPath = resolve(characterDir, "CharacterFormView.tsx");
 const tabPanelsPath = resolve(characterDir, "CharacterTabPanels.tsx");
 const generalTabPath = resolve(generalDir, "CharacterGeneralTabContent.tsx");
-const generalVariantPaths = [
+const generalViewPaths = [
   resolve(generalDir, "view/PlayerGeneralTabContent.tsx"),
   resolve(generalDir, "view/NpcGeneralTabContent.tsx"),
+];
+const identityCardPath = resolve(generalDir, "shared/CharacterIdentityCard.tsx");
+const generalVariantPaths = [
+  ...generalViewPaths,
   resolve(generalDir, "form/PlayerGeneralTabEdit.tsx"),
   resolve(generalDir, "form/NpcGeneralTabEdit.tsx"),
 ];
-const avatarUploadPath = resolve(
-  fileURLToPath(new URL("../../media", import.meta.url)),
-  "MediaAvatarUpload.tsx",
-);
+const avatarUploadPath = resolve(fileURLToPath(new URL("../../media", import.meta.url)), "MediaAvatarUpload.tsx");
 
 function readSource(path: string) {
   return readFileSync(path, "utf8");
@@ -66,7 +67,10 @@ describe("Character avatar in General tab", () => {
       const source = readSource(path);
 
       expect(source).toContain("avatar?: ReactNode;");
-      expect(source).toMatch(/\{avatar \? <div className="shrink-0[^"]*">\{avatar\}<\/div> : null\}/);
+      // Read views delegate the « Personnage » card to CharacterIdentityCard (FR-character-identity-card)
+      const cardSource = generalViewPaths.includes(path) ? readSource(identityCardPath) : source;
+      if (generalViewPaths.includes(path)) expect(source).toMatch(/<CharacterIdentityCard[\s\S]*?avatar=\{avatar\}/);
+      expect(cardSource).toMatch(/\{avatar \? <div className="shrink-0[^"]*">\{avatar\}<\/div> : null\}/);
     }
   });
 

@@ -5852,3 +5852,46 @@ Each initiative tracker row carries:
 - `services/web/client/src/app/[locale]/layout.tsx`, `services/web/client/src/components/layout/Header.tsx`, `services/web/client/src/components/layout/Sidebar/`
 - `services/web/client/src/components/character/skeleton/`
 - `docs/functional-rules.md` — FR-character-sheet-skeleton, FR-frontend-design
+
+## FR-character-identity-card: « Personnage » Card Visual Hierarchy (Read Mode, PC and NPC)
+
+**Rule**: In read mode, the « Personnage » card of the General tab MUST present the character identity with a visual hierarchy (who → what → classes), not as a flat list of `Label : value` lines of equal weight.
+
+**Requirements**:
+
+- **Scope**: read mode of `PlayerGeneralTabContent` and `NpcGeneralTabContent`. Card slot, heading (« Personnage », accent color), avatar placement and edit mode are unchanged (FR-character-general-bento-layout, FR-character-detail-view).
+- **Level 1 — Name**: first name + last name on one line, the most prominent text of the card (`text-lg sm:text-xl font-bold`, wraps with `wrap-break-word`). The nickname (`surname`), when present, sits right below in muted italic between « ». No visible « Prénom / Nom / Surnom » labels.
+- **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell uses the statistics card cell style (design.md §5.3.4: `bg-gray-middle-light/50`, `rounded-[10px]`, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary line:
+  - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line. Two equal columns.
+  - NPC: « Type » → type, subtype as secondary line (full width).
+  Empty secondary lines are omitted; a cell whose value is empty is not rendered.
+- **Level 3 — Classes (PC only)**: small uppercase muted label « Classes », then one plain row per class (`bg-gray-middle-light/50`, `rounded-[10px]`, same cell style as the statistics card, design.md §5.3.4): class name in bold + a level badge, subclass in muted text under the class name when set. This replaces both the « Classes : » line and the « Sous-classe de X : » lines (each class is shown once). The block is hidden when the PC has no class.
+- **Layout**: only the name block (level 1) sits next to the avatar; key facts and classes take the **full card width** below it (no empty column under the avatar).
+- **Bento fill**: the PC card spans two rows; name and key facts stay at the top and the classes block is pushed to the bottom (`justify-between`), so the card has no blank bottom (FR-character-general-bento-layout).
+- **Style**: only documented tokens (design.md §2, §4); no new colors, no nested cards.
+
+**Accessibility (FR-frontend-design)**:
+
+- The card keeps `role="region"` + `aria-labelledby="character-heading"`.
+- Identity data stays a definition list: fields whose label is no longer visible keep an `sr-only` `<dt>` (first name, last name, nickname, race, level, type), so screen readers still announce « Prénom : … ».
+- Classes are a list (`role="list"` / `<ul>`); each row's accessible text includes class, level and subclass.
+- Muted texts keep WCAG AA contrast on `bg-card`.
+
+**Prohibitions**:
+
+- Flat `Label : value` rows of identical weight for the identity.
+- Showing a class twice (classes line + subclass line).
+- Fixed heights or inner scroll on the card.
+
+**Tests**:
+
+- Nominal: PC with name, nickname, race/subrace, level/XP and two classes renders the full name, the nickname, two fact cells (race, level) and two class rows with their subclass.
+- Edge: no last name / no nickname / no subrace / class without subclass → the part is omitted (no empty secondary line, no empty parentheses); NPC renders name + one type cell and no classes block.
+- Failure / guard: PC with an empty class list renders no classes block; the `sr-only` labels are present for the identity fields.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/general/view/PlayerGeneralTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/general/view/NpcGeneralTabContent.tsx`
+- `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-detail-view, FR-frontend-design
