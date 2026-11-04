@@ -37,6 +37,8 @@ interface AbilitiesUpdateSectionProps {
   abilityCounterMode: AbilityCounterMode;
   /** Layout classes of the wrapping section (e.g. bento slot + gap). */
   className?: string;
+  /** Height cap of the rows area (defaults to the shared edit cap; lower on the General tab). */
+  boundedClassName?: string;
 }
 
 const AbilitiesUpdateSection = ({
@@ -49,6 +51,7 @@ const AbilitiesUpdateSection = ({
   accentColor,
   abilityCounterMode,
   className,
+  boundedClassName = EDIT_LIST_MAX_HEIGHT_CLASS,
 }: AbilitiesUpdateSectionProps) => {
   const tMagic = useTranslations("characterDetail.magic");
   const tEdit = useTranslations("characterDetail.edit");
@@ -110,7 +113,7 @@ const AbilitiesUpdateSection = ({
       accentColor={accentColor}
       className={className}
       bounded
-      boundedClassName={EDIT_LIST_MAX_HEIGHT_CLASS}
+      boundedClassName={boundedClassName}
       actions={
         <Button
           ref={addButtonRef}

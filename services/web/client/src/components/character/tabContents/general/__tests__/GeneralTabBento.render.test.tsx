@@ -18,8 +18,21 @@ const { stubSection } = await vi.hoisted(async () => {
   return {
     stubSection:
       (name: string) =>
-      ({ className, boundedList }: { className?: string; boundedList?: boolean }) =>
-        createElement("section", { "data-stub": name, "data-bounded": boundedList ? "true" : undefined, className }),
+      ({
+        className,
+        boundedList,
+        boundedClassName,
+      }: {
+        className?: string;
+        boundedList?: boolean;
+        boundedClassName?: string;
+      }) =>
+        createElement("section", {
+          "data-stub": name,
+          "data-bounded": boundedList ? "true" : undefined,
+          "data-bounded-class": boundedClassName,
+          className,
+        }),
   };
 });
 
@@ -202,6 +215,51 @@ describe("General tab — single bento grid", () => {
     }
   });
 
+  it("edge: abilities and traits come right after the statistics (and PC tiles), before the skills", () => {
+    const skillsIds = {
+      "player view": "skills-heading",
+      "player edit": "skills-heading-edit",
+      "npc view": "skills-heading",
+      "npc edit": "skills-heading-edit",
+    } as const;
+    for (const [name, skillsId] of Object.entries(skillsIds)) {
+      const html = CASES[name as keyof typeof CASES]();
+      const abilities = html.indexOf('data-stub="abilities"');
+      const after = name.startsWith("player")
+        ? html.lastIndexOf('data-stub="statistics"', abilities)
+        : html.indexOf('data-stub="statistics"');
+
+      expect(html.match(/data-stub="abilities"/g), name).toHaveLength(1);
+      expect(after, name).toBeGreaterThan(-1);
+      expect(abilities, name).toBeGreaterThan(after);
+      expect(abilities, name).toBeLessThan(html.indexOf(`id="${skillsId}"`));
+    }
+  });
+
+  it("nominal: in read mode the abilities list is capped lower than the shared bounded height", () => {
+    for (const name of ["player view", "npc view"] as const) {
+      expect(CASES[name](), name).toMatch(
+        /data-stub="abilities"[^>]*data-bounded="true"[^>]*data-bounded-class="max-h-\[20rem\]"/,
+      );
+    }
+  });
+
+  it("edge: edit mode keeps the same abilities cap as read mode (the sheet does not grow on edit)", () => {
+    for (const name of ["player edit", "npc edit"] as const) {
+      const html = CASES[name]();
+
+      expect(html, name).toMatch(/data-stub="abilities"[^>]*data-bounded-class="max-h-\[20rem\]"/);
+      expect(html, name).not.toContain("max-h-[min(40rem,70dvh)]");
+    }
+  });
+
+  it("failure: player view keeps every compact tile before the abilities", () => {
+    const html = CASES["player view"]();
+
+    expect(html.indexOf('id="exhaustion-heading"')).toBeGreaterThan(0);
+    expect(html.indexOf('id="exhaustion-heading"')).toBeLessThan(html.indexOf('data-stub="abilities"'));
+  });
+
   it("nominal: alignment and background are identity cells, NPC passive perception a statistics cell (no side tiles)", () => {
     const player = CASES["player view"]();
     const npcHtml = CASES["npc view"]();
@@ -269,11 +327,11 @@ describe("General tab — single bento grid", () => {
     }
   });
 
-  it("edge: only the read-mode abilities list is bounded (scrolls inside its card)", () => {
+  it("edge: read mode opts into the bounded list; the edit section is always bounded by itself", () => {
     expect(CASES["player view"]()).toContain('data-stub="abilities" data-bounded="true"');
     expect(CASES["npc view"]()).toContain('data-stub="abilities" data-bounded="true"');
-    expect(CASES["player edit"]()).not.toContain("data-bounded");
-    expect(CASES["npc edit"]()).not.toContain("data-bounded");
+    expect(CASES["player edit"]()).not.toContain('data-bounded="');
+    expect(CASES["npc edit"]()).not.toContain('data-bounded="');
   });
 
   it("nominal: PC and NPC « Personnage » edit cards share the same name layout (first/last name side by side, nickname below)", () => {

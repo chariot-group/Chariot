@@ -37,6 +37,14 @@ export const GENERAL_BENTO_STACK_GAP_CLASS = "gap-3 md:gap-4";
 export const BENTO_BOUNDED_LIST_CLASS =
   "max-h-[28rem] overflow-y-auto pr-2 rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover";
 
+/**
+ * Lower cap for the Abilities list of the General tab (read and edit modes): the card sits right under
+ * the statistics, so a long list must not push the skills band down, and the sheet does not grow on edit.
+ * Merged over the shared read / edit caps.
+ * @see FR-character-general-bento-layout
+ */
+export const GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS = "max-h-[20rem]";
+
 /** Viewport grid (`BENTO_GRID_CLASS`): full width below `xl` (2 cols on mobile, 4 on tablet). */
 export const BENTO_FULL_SLOT = "min-w-0 col-span-2 sm:col-span-4";
 /** Full width on mobile, half width on tablet (viewport and General grids). */

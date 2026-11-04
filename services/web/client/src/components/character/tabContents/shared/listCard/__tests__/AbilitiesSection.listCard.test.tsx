@@ -2,13 +2,14 @@ import { NextIntlClientProvider } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
+import { GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import type { Ability } from "@/types/character";
 
 vi.mock("@/store/hooks", () => ({ useAppSelector: () => false, useAppDispatch: () => vi.fn() }));
 vi.mock("@/hooks/useActiveSessionCode", () => ({ useActiveSessionCode: () => undefined }));
 vi.mock("@/hooks/useToast", () => ({ useToast: () => ({ error: vi.fn() }) }));
 
-const render = (abilities: Ability[]) =>
+const render = (abilities: Ability[], props: { boundedList?: boolean; boundedClassName?: string } = {}) =>
   renderToStaticMarkup(
     <NextIntlClientProvider
       locale="en"
@@ -23,6 +24,7 @@ const render = (abilities: Ability[]) =>
         headingId="abilities-heading"
         characterId="c1"
         characterKind="players"
+        {...props}
       />
     </NextIntlClientProvider>,
   );
@@ -44,6 +46,15 @@ describe("AbilitiesSection — list card rows", () => {
 
     expect(html).toContain('id="abilities-heading"');
     expect(html).toContain("noAbilities");
+  });
+
+  it("edge: the bounded list height can be lowered (General tab cap overrides the shared one)", () => {
+    const abilities = [{ name: "Darkvision", description: "See." } as Ability];
+    const capped = render(abilities, { boundedList: true, boundedClassName: GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS });
+
+    expect(capped).toContain("max-h-[20rem]");
+    expect(capped).not.toContain("max-h-[28rem]");
+    expect(render(abilities, { boundedList: true })).toContain("max-h-[28rem]");
   });
 
   it("failure: abilities without counter show no counter summary", () => {

@@ -27,6 +27,7 @@ import SavingThrowsEdit from "@/components/character/tabContents/general/form/Sa
 import SkillsEditCard from "@/components/character/tabContents/general/form/SkillsEditCard";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import {
+  GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS,
   GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
   GENERAL_BENTO_STACK_GAP_CLASS,
@@ -824,6 +825,20 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
           />
         </GeneralSectionCard>
 
+        {/* Capacités et traits */}
+        <AbilitiesUpdateSection
+          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
+          title={t("abilitiesAndTraits")}
+          form={form}
+          fieldArrayName="abilities"
+          fields={abilitiesFields}
+          append={appendAbility}
+          remove={removeAbility}
+          accentColor={accentColor}
+          abilityCounterMode="player"
+          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
+        />
+
         <SkillsEditCard
           form={form}
           accentColor={accentColor}
@@ -999,19 +1014,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
             />
           </div>
         </GeneralSectionCard>
-
-        {/* Capacités et traits */}
-        <AbilitiesUpdateSection
-          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
-          title={t("abilitiesAndTraits")}
-          form={form}
-          fieldArrayName="abilities"
-          fields={abilitiesFields}
-          append={appendAbility}
-          remove={removeAbility}
-          accentColor={accentColor}
-          abilityCounterMode="player"
-        />
       </div>
     </div>
   );

@@ -25,11 +25,11 @@ const LAYOUTS = {
     s.tile,
     s.tile,
     s.tile,
+    s.abilities,
     s.skills,
     s.abilityScores,
     s.savingThrows,
     s.proficiencies,
-    s.abilities,
   ],
   "player edit": (s = PLAYER_EDIT_SLOTS) => [
     s.character,
@@ -38,29 +38,29 @@ const LAYOUTS = {
     s.tile,
     s.tile,
     s.tile,
+    s.abilities,
     s.skills,
     s.abilityScores,
     s.savingThrows,
     s.proficiencies,
-    s.abilities,
   ],
   "npc view": (s = NPC_VIEW_SLOTS) => [
     s.character,
     s.statistics,
+    s.abilities,
     s.skills,
     s.abilityScores,
     s.savingThrows,
     s.proficiencies,
-    s.abilities,
   ],
   "npc edit": (s = NPC_EDIT_SLOTS) => [
     s.character,
     s.statistics,
+    s.abilities,
     s.skills,
     s.abilityScores,
     s.savingThrows,
     s.proficiencies,
-    s.abilities,
   ],
 } as const;
 
@@ -89,8 +89,8 @@ describe("General tab bento layout", () => {
     for (const name of Object.keys(LAYOUTS) as (keyof typeof LAYOUTS)[]) {
       for (const bp of [BREAKPOINTS.desktop, BREAKPOINTS.wide]) {
         const all: string[] = [...LAYOUTS[name]()];
-        // Skills follow the character, the statistics and (PC) the four tiles
-        const skillsIndex = name.startsWith("player") ? 6 : 2;
+        // Skills follow the character, the statistics, (PC) the four tiles and the abilities
+        const skillsIndex = name.startsWith("player") ? 7 : 3;
         // A card explicitly placed in the first band (PC proficiencies from `3xl`) belongs to it
         const fixed = all.filter((c) => startAt(c, "row", bp) !== undefined);
         const slots = [
@@ -131,7 +131,7 @@ describe("General tab bento layout", () => {
   it("edge: on tablet skills take the left half over three rows, ability scores, saving throws then proficiencies on the right", () => {
     for (const name of Object.keys(LAYOUTS) as (keyof typeof LAYOUTS)[]) {
       const slots: string[] = [...LAYOUTS[name]()];
-      const skillsIndex = name.startsWith("player") ? 6 : 2;
+      const skillsIndex = name.startsWith("player") ? 7 : 3;
       const before = place(slots.slice(0, skillsIndex), BREAKPOINTS.tablet).length;
       const withSkills = place(slots.slice(0, skillsIndex + 1), BREAKPOINTS.tablet);
       // DOM order: skills · ability scores · saving throws · proficiencies (index + 4)
@@ -157,7 +157,7 @@ describe("General tab bento layout", () => {
   it("nominal: on very large screens the four PC tiles sit side by side next to the statistics, proficiencies right under them", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
     const tiles = place(slots.slice(0, 6), BREAKPOINTS.wide);
-    const proficiencies = slots[9];
+    const proficiencies = slots[10];
     const withProficiencies = place([...slots.slice(0, 6), proficiencies], BREAKPOINTS.wide);
 
     // The four tiles complete the first row; the 4 right cells of the second row are left for proficiencies
@@ -172,13 +172,14 @@ describe("General tab bento layout", () => {
     ]);
   });
 
-  it("edge: on very large screens the skills band starts right after the first band, abilities last", () => {
+  it("edge: on very large screens the abilities come right after the first band, then the skills band", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
     const grid = place(slots, BREAKPOINTS.wide);
-    const withoutAbilities = place(slots.slice(0, -1), BREAKPOINTS.wide);
+    const upToAbilities = place([...slots.slice(0, 7), slots[10]], BREAKPOINTS.wide);
 
-    // Band 1 (2 rows) · skills band (2 rows) · abilities (1 row)
-    expect(withoutAbilities).toHaveLength(4);
+    // Band 1 (2 rows, proficiencies under the tiles) · abilities (1 row) · skills band (2 rows)
+    expect(upToAbilities).toHaveLength(3);
+    expect(upToAbilities[2].every(Boolean)).toBe(true);
     expect(grid).toHaveLength(5);
     expect(grid.every((row) => row.every(Boolean))).toBe(true);
   });
@@ -189,8 +190,8 @@ describe("General tab bento layout", () => {
 
     expect(grid).toHaveLength(2);
     expect(grid.every((row) => row.every(Boolean))).toBe(true);
-    expect(startAt(slots[9], "row", BREAKPOINTS.wide)).toBeUndefined();
-    expect(spanAt(slots[9], "col", BREAKPOINTS.wide)).toBe(12);
+    expect(startAt(slots[10], "row", BREAKPOINTS.wide)).toBeUndefined();
+    expect(spanAt(slots[10], "col", BREAKPOINTS.wide)).toBe(12);
   });
 
   it("edge: the wide placement does not change desktop spans (xl layout untouched), NPC has no wide override", () => {
@@ -239,21 +240,21 @@ describe("General tab bento layout", () => {
 
   it("failure: NPC skills without their row span would leave a hole under the skills", () => {
     const slots: string[] = [...LAYOUTS["npc view"]()];
-    slots[2] = slots[2].replace("@sheet-md:row-span-3", "").replace("@sheet-lg:row-span-2", "");
+    slots[3] = slots[3].replace("@sheet-md:row-span-3", "").replace("@sheet-lg:row-span-2", "");
 
     expect(emptyCells(slots, BREAKPOINTS.desktop)).not.toEqual([]);
   });
 
   it("failure: on tablet, skills over two rows only would push proficiencies down and leave a hole", () => {
     const slots: string[] = [...LAYOUTS["npc view"]()];
-    slots[2] = slots[2].replace("@sheet-md:row-span-3", "@sheet-md:row-span-2");
+    slots[3] = slots[3].replace("@sheet-md:row-span-3", "@sheet-md:row-span-2");
 
     expect(emptyCells(slots, BREAKPOINTS.tablet)).not.toEqual([]);
   });
 
   it("failure: proficiencies without its explicit wide placement would leave a hole under the tiles", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
-    slots[9] = slots[9].replace("@sheet-xl:row-start-2", "");
+    slots[10] = slots[10].replace("@sheet-xl:row-start-2", "");
 
     expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
   });
@@ -265,7 +266,7 @@ describe("General tab bento layout", () => {
     expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
   });
 
-  it("failure: an extra half-width card after the abilities would leave a hole on tablet", () => {
+  it("failure: an extra half-width card after the proficiencies would leave a hole on tablet", () => {
     const slots = [...LAYOUTS["npc view"](), PLAYER_VIEW_SLOTS.abilityScores];
 
     expect(emptyCells(slots, BREAKPOINTS.tablet)).not.toEqual([]);

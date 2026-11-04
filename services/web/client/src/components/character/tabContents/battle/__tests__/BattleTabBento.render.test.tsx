@@ -15,9 +15,20 @@ const { stubSection } = await vi.hoisted(async () => {
   return {
     stubSection:
       (name: string) =>
-      ({ className, title, boundedList }: { className?: string; title?: string; boundedList?: boolean }) =>
+      ({
+        className,
+        title,
+        boundedList,
+        boundedClassName,
+      }: {
+        className?: string;
+        title?: string;
+        boundedList?: boolean;
+        boundedClassName?: string;
+      }) =>
         createElement("section", {
           "data-stub": name,
+          "data-bounded-class": boundedClassName,
           "data-title": title,
           "data-bounded": boundedList ? "true" : undefined,
           className,
@@ -169,6 +180,8 @@ describe("Combat tab — single bento grid", () => {
 
       expect(lists.length).toBeGreaterThan(1);
       for (const list of lists) expect(list).toContain('data-bounded="true"');
+      // The lower General-tab cap does not apply to the Combat tab (FR-character-general-bento-layout)
+      expect(CASES[name]()).not.toContain("data-bounded-class");
     }
     for (const name of ["player edit", "npc edit"] as const) expect(CASES[name]()).not.toContain("data-bounded");
   });

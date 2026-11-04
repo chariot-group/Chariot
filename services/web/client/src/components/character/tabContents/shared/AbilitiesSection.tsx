@@ -27,6 +27,8 @@ interface AbilitiesSectionProps {
   onAfterAbilityUse?: (updated: Player | NPC) => void;
   /** Caps the list height and scrolls inside the card (General tab). @see FR-character-general-bento-layout */
   boundedList?: boolean;
+  /** Overrides the bounded list height (e.g. lower cap on the General tab). */
+  boundedClassName?: string;
 }
 
 const AbilitiesSection = ({
@@ -39,6 +41,7 @@ const AbilitiesSection = ({
   characterKind,
   onAfterAbilityUse,
   boundedList = false,
+  boundedClassName,
 }: AbilitiesSectionProps) => {
   const tMagic = useTranslations("characterDetail.magic");
   const t = useTranslations("characterDetail.battle");
@@ -136,7 +139,8 @@ const AbilitiesSection = ({
       expandLabel={tMagic("expandAll")}
       collapseLabel={tMagic("collapseAll")}
       emptyLabel={t("noAbilities")}
-      bounded={boundedList}>
+      bounded={boundedList}
+      boundedClassName={boundedClassName}>
       <Accordion
         type="multiple"
         value={openAccordionValues}

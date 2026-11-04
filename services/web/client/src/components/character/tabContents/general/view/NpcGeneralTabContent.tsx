@@ -8,6 +8,7 @@ import GeneralSectionCard from "@/components/character/tabContents/general/share
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 import SkillsNpc from "@/components/character/tabContents/general/shared/SkillsNpc";
 import {
+  GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS,
   GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
   NPC_VIEW_SLOTS as SLOTS,
@@ -73,6 +74,19 @@ export default function NpcGeneralTabContent({
           showPassivePerception
         />
 
+        <AbilitiesSection
+          abilities={npc.abilities}
+          accentColor={accentColor}
+          title={t("characterAbilities")}
+          headingId="abilities-heading"
+          boundedList
+          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
+          className={`gap-3 ${SLOTS.abilities}`}
+          characterId={npc._id}
+          characterKind="npcs"
+          onAfterAbilityUse={onCharacterUpdate}
+        />
+
         <GeneralSectionCard
           headingId="skills-heading"
           title={t("skills")}
@@ -133,18 +147,6 @@ export default function NpcGeneralTabContent({
             </div>
           </dl>
         </GeneralSectionCard>
-
-        <AbilitiesSection
-          abilities={npc.abilities}
-          accentColor={accentColor}
-          title={t("characterAbilities")}
-          headingId="abilities-heading"
-          boundedList
-          className={`gap-3 ${SLOTS.abilities}`}
-          characterId={npc._id}
-          characterKind="npcs"
-          onAfterAbilityUse={onCharacterUpdate}
-        />
       </div>
     </div>
   );

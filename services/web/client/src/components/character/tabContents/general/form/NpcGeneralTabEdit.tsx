@@ -14,6 +14,7 @@ import SavingThrowsEdit from "@/components/character/tabContents/general/form/Sa
 import NpcSkillsEdit from "@/components/character/tabContents/general/form/NpcSkillsEdit";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import {
+  GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS,
   GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
   GENERAL_BENTO_STACK_GAP_CLASS,
@@ -349,6 +350,20 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
           </div>
         </NpcStatisticsUpdate>
 
+        {/* Capacités et traits */}
+        <AbilitiesUpdateSection
+          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
+          title={t("abilitiesAndTraits")}
+          form={form}
+          fieldArrayName="abilities"
+          fields={abilitiesFields}
+          append={appendAbility}
+          remove={removeAbility}
+          accentColor={accentColor}
+          abilityCounterMode="npc"
+          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
+        />
+
         <GeneralSectionCard
           headingId="skills-heading-edit"
           title={t("skills")}
@@ -429,19 +444,6 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
             </div>
           </div>
         </GeneralSectionCard>
-
-        {/* Capacités et traits */}
-        <AbilitiesUpdateSection
-          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
-          title={t("abilitiesAndTraits")}
-          form={form}
-          fieldArrayName="abilities"
-          fields={abilitiesFields}
-          append={appendAbility}
-          remove={removeAbility}
-          accentColor={accentColor}
-          abilityCounterMode="npc"
-        />
       </div>
     </div>
   );
