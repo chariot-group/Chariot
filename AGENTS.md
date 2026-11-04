@@ -43,12 +43,25 @@ If the request is **Covered**:
 
 If the request is **Missing rule**:
 
-1. The agent MUST draft and write a new functional rule in `docs/functional-rules.md`.
-2. The rule MUST use a stable slug identifier: `FR-{domain}-{feature}` (kebab-case, English). Numeric IDs (`FR-001` … `FR-038`) are deprecated.
-3. The agent MUST append the new rule at the **end** of `docs/functional-rules.md` to reduce merge conflicts across parallel branches.
+1. The agent MUST first decide **amend vs create** (section 4.1). Amending an existing rule is the default.
+2. **Amend**: add the requirement (and its test lines) inside the existing rule, in place, as a bullet or a `###` sub-section. The rule keeps its slug and position.
+3. **Create** (only when 4.1 allows it): the rule MUST use a stable slug identifier `FR-{domain}-{feature}` (kebab-case, English) and MUST be appended at the **end** of `docs/functional-rules.md` to reduce merge conflicts. Numeric IDs (`FR-001` … `FR-038`) are deprecated.
 4. The rule SHOULD be concise, testable, and implementation-agnostic (except essential technical constraints).
-5. After writing the rule, the agent MUST stop and request explicit functional confirmation.
+5. After writing, the agent MUST stop and request explicit functional confirmation, stating whether it amended (which rule) or created (and why 4.1 required it).
 6. The agent MUST NOT start implementation before confirmation.
+
+### 4.1) Amend vs Create — avoid rule inflation
+
+`docs/functional-rules.md` MUST stay a small set of meaningful rules, not a changelog of tickets.
+
+- The agent MUST **amend** an existing rule when the request refines a surface, flow or data already owned by that rule (ordering, labels, empty/loading states, a new edge case, a minor display variant, an extra validation).
+- The agent MAY **create** a new rule only when all of these hold:
+  - no existing rule owns the surface, flow or data;
+  - the behavior is a feature in its own right (its own lifecycle, permissions, API contract or user journey);
+  - it needs several requirements and tests of its own, not one or two lines.
+- When the request spans several rules, amend the rule that owns the primary surface and cross-reference the others.
+- The agent MUST NOT create a rule for a single display detail (e.g. sorting a select, a tooltip text, a spacing tweak).
+- Before creating, the agent MUST name the closest existing rules it considered and why none fits.
 
 ## 5) Branch C - Functional Conflict
 
@@ -72,7 +85,7 @@ Before any implementation, the agent MUST output a short decision summary using 
 2. **Applicable rules**: list of rule IDs (or "None")
 3. **Proposed action**:
    - Covered: implementation plan under listed rules
-   - Missing rule: new rule draft written
+   - Missing rule: amendment of an existing rule (named), or new rule draft with the §4.1 justification
    - Conflict: options and recommendation
 4. **Confirmation gate**: explicit request for functional confirmation
 

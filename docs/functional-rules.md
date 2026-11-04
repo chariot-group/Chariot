@@ -10,6 +10,8 @@ Examples: `FR-sidebar-quick-links`, `FR-character-duplicate`, `FR-session-join-q
 
 **Deprecated numeric IDs** (`FR-001` … `FR-038`, and any later numeric suffix such as `FR-042` / `FR-049` / `FR-050`) were migrated to slug IDs. Do not use numeric IDs in new code, comments, or rules.
 
+**Amend before creating**: most requests refine a rule that already exists (ordering, labels, edge cases, display variants). Add a bullet or a `###` sub-section to that rule instead of a new top-level rule. A new rule is only justified for a feature in its own right — see `AGENTS.md` §4.1.
+
 When adding a rule:
 
 1. Choose a slug from the feature domain — do **not** use numeric IDs.
