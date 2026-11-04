@@ -98,7 +98,7 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
         return (
           <div
             key={key}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-[10px] hover:bg-gray-middle-light/50 transition-colors">
+            className="flex items-center gap-2 px-2 py-1.5 rounded-[10px]">
             {/* Icône compétence */}
             <span className="shrink-0 text-muted-foreground">{icon}</span>
 
