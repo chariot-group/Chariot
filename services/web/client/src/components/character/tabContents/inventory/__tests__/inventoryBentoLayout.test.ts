@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { BREAKPOINTS, emptyCells, place } from "@/components/character/tabContents/__tests__/bentoPlacement";
-import { INVENTORY_SLOTS } from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
+import { BREAKPOINTS, emptyCells, place, spanAt } from "@/components/character/tabContents/__tests__/bentoPlacement";
+import { INVENTORY_BENTO_GRID_CLASS, INVENTORY_SLOTS } from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
 import { nextCoinValue, normalizeCoinAmount } from "@/components/character/tabContents/inventory/shared/coins";
 
 /** DOM order of the cards (read and edit share it). */
@@ -14,8 +14,28 @@ describe("Inventory tab bento layout", () => {
     });
   }
 
-  it("nominal: coins take a full row, equipment and treasure share the next one from tablet", () => {
-    for (const bp of [BREAKPOINTS.tablet, BREAKPOINTS.desktop]) expect(place(LAYOUT, bp)).toHaveLength(2);
+  it("nominal: coins then equipment on the left half, treasure on the right half over both rows from tablet", () => {
+    for (const bp of [BREAKPOINTS.tablet, BREAKPOINTS.desktop]) {
+      const half = bp.columns / 2;
+      const owner = (slot: string) => place([slot], bp);
+      expect(place(LAYOUT, bp)).toHaveLength(2);
+      // Coins alone: first row, left half only.
+      expect(owner(INVENTORY_SLOTS.coins)[0].filter(Boolean)).toHaveLength(half);
+      // Treasure alone (explicit start): right half of both rows.
+      const treasure = owner(INVENTORY_SLOTS.treasure);
+      expect(treasure).toHaveLength(2);
+      for (const row of treasure) expect(row.slice(half).every(Boolean) && !row.slice(0, half).some(Boolean)).toBe(true);
+    }
+  });
+
+  it("edge: a growing treasure stretches the equipment row, never the coins row", () => {
+    expect(INVENTORY_BENTO_GRID_CLASS.split(" ")).toContain("sm:grid-rows-[auto_1fr]");
+  });
+
+  it("edge: the coins card is never wider than half the grid from tablet", () => {
+    for (const bp of [BREAKPOINTS.tablet, BREAKPOINTS.desktop]) {
+      expect(spanAt(INVENTORY_SLOTS.coins, "col", bp)).toBe(bp.columns / 2);
+    }
   });
 
   it("edge: every card takes the full width on mobile", () => {
