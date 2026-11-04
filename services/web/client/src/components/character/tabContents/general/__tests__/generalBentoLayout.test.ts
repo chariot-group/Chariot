@@ -1,12 +1,15 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  BREAKPOINTS,
+  SHEET_BREAKPOINTS as BREAKPOINTS,
   emptyCells,
   place,
   spanAt,
   startAt,
 } from "@/components/character/tabContents/__tests__/bentoPlacement";
 import {
+  BENTO_GRID_CLASS,
+  GENERAL_BENTO_GRID_CLASS,
   NPC_EDIT_SLOTS,
   NPC_VIEW_SLOTS,
   PLAYER_EDIT_SLOTS,
@@ -125,13 +128,24 @@ describe("General tab bento layout", () => {
     }
   });
 
-  it("edge: on tablet NPC skills take the left half over two rows, ability scores then saving throws on the right", () => {
-    const withSkills = place([...LAYOUTS["npc view"]()].slice(0, 3), BREAKPOINTS.tablet);
-    const grid = place([...LAYOUTS["npc view"]()].slice(0, 5), BREAKPOINTS.tablet);
+  it("edge: on tablet skills take the left half over three rows, ability scores, saving throws then proficiencies on the right", () => {
+    for (const name of Object.keys(LAYOUTS) as (keyof typeof LAYOUTS)[]) {
+      const slots: string[] = [...LAYOUTS[name]()];
+      const skillsIndex = name.startsWith("player") ? 6 : 2;
+      const before = place(slots.slice(0, skillsIndex), BREAKPOINTS.tablet).length;
+      const withSkills = place(slots.slice(0, skillsIndex + 1), BREAKPOINTS.tablet);
+      // DOM order: skills · ability scores · saving throws · proficiencies (index + 4)
+      const band = place(slots.slice(0, skillsIndex + 4), BREAKPOINTS.tablet);
 
-    expect(grid).toHaveLength(4);
-    expect(grid.every((row) => row.every(Boolean))).toBe(true);
-    for (const row of [2, 3]) expect(withSkills[row]).toEqual([true, true, false, false]);
+      for (const row of [before, before + 1, before + 2]) {
+        expect(withSkills[row], `${name} row ${row}`).toEqual([true, true, false, false]);
+      }
+      expect(band, name).toHaveLength(before + 3);
+      expect(
+        band.every((row) => row.every(Boolean)),
+        name,
+      ).toBe(true);
+    }
   });
 
   it("edge: every slot keeps min-w-0 so long values cannot widen the grid", () => {
@@ -181,36 +195,72 @@ describe("General tab bento layout", () => {
 
   it("edge: the wide placement does not change desktop spans (xl layout untouched), NPC has no wide override", () => {
     for (const slots of [NPC_VIEW_SLOTS, NPC_EDIT_SLOTS]) {
-      for (const classes of Object.values(slots)) expect(classes).not.toContain("3xl:");
+      for (const classes of Object.values(slots)) expect(classes).not.toContain("@sheet-xl:");
     }
     for (const slots of [PLAYER_VIEW_SLOTS, PLAYER_EDIT_SLOTS]) {
       for (const classes of Object.values(slots)) {
         const withoutWide = classes
           .split(" ")
-          .filter((c) => !c.startsWith("3xl:"))
+          .filter((c) => !c.startsWith("@sheet-xl:"))
           .join(" ");
         expect(spanAt(withoutWide, "col", BREAKPOINTS.desktop)).toBe(spanAt(classes, "col", BREAKPOINTS.desktop));
       }
     }
   });
 
+  it("nominal: the General grid and its slots follow the sheet width (container queries), never the viewport", () => {
+    expect(GENERAL_BENTO_GRID_CLASS).toMatch(/@sheet-md:grid-cols-4/);
+    expect(GENERAL_BENTO_GRID_CLASS).toMatch(/@sheet-lg:grid-cols-12/);
+    for (const slots of [PLAYER_VIEW_SLOTS, PLAYER_EDIT_SLOTS, NPC_VIEW_SLOTS, NPC_EDIT_SLOTS]) {
+      for (const classes of Object.values(slots)) {
+        expect(classes.split(" ").filter((c) => /^(sm|md|lg|xl|2xl|3xl):/.test(c))).toEqual([]);
+      }
+    }
+  });
+
+  it("edge: with the sidebar open on a tablet (≈ 30rem left) the General tab falls back to the stacked layout", () => {
+    // 820px viewport − 16rem sidebar − page padding ≈ 30rem: below `@sheet-md` (36rem)
+    const grid = place([...LAYOUTS["npc view"]()], BREAKPOINTS.mobile);
+
+    expect(grid.every((row) => row.every(Boolean))).toBe(true);
+    expect(grid).toHaveLength(LAYOUTS["npc view"]().length);
+  });
+
+  it("edge: the other sheet tabs keep the viewport grid", () => {
+    expect(BENTO_GRID_CLASS).toMatch(/(^| )sm:grid-cols-4( |$)/);
+    expect(BENTO_GRID_CLASS).not.toContain("@sheet-");
+  });
+
+  it("failure: the container sizes used by the General slots are declared in the theme", () => {
+    const css = readFileSync(`${process.cwd()}/src/app/[locale]/globals.css`, "utf8");
+
+    for (const size of ["md", "lg", "xl"]) expect(css).toMatch(new RegExp(`--container-sheet-${size}:\\s*\\d+rem;`));
+  });
+
   it("failure: NPC skills without their row span would leave a hole under the skills", () => {
     const slots: string[] = [...LAYOUTS["npc view"]()];
-    slots[2] = slots[2].replace("sm:row-span-2", "");
+    slots[2] = slots[2].replace("@sheet-md:row-span-3", "").replace("@sheet-lg:row-span-2", "");
 
     expect(emptyCells(slots, BREAKPOINTS.desktop)).not.toEqual([]);
   });
 
+  it("failure: on tablet, skills over two rows only would push proficiencies down and leave a hole", () => {
+    const slots: string[] = [...LAYOUTS["npc view"]()];
+    slots[2] = slots[2].replace("@sheet-md:row-span-3", "@sheet-md:row-span-2");
+
+    expect(emptyCells(slots, BREAKPOINTS.tablet)).not.toEqual([]);
+  });
+
   it("failure: proficiencies without its explicit wide placement would leave a hole under the tiles", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
-    slots[9] = slots[9].replace("3xl:row-start-2", "");
+    slots[9] = slots[9].replace("@sheet-xl:row-start-2", "");
 
     expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
   });
 
   it("failure: statistics without its wide row span would leave holes next to the tiles", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
-    slots[1] = slots[1].replace("3xl:row-span-2", "");
+    slots[1] = slots[1].replace("@sheet-xl:row-span-2", "");
 
     expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
   });

@@ -12,6 +12,18 @@ export const BREAKPOINTS: Record<string, Breakpoint> = {
   wide: { prefixes: ["", "sm:", "xl:", "3xl:"], columns: 12 },
 };
 
+/**
+ * General tab: widths available to the sheet (container queries, sidebar included),
+ * same ranges as `BREAKPOINTS`. @see FR-character-general-bento-layout
+ */
+export const SHEET_BREAKPOINTS: Record<keyof typeof BREAKPOINTS, Breakpoint> = {
+  mobile: { prefixes: [""], columns: 2 },
+  tablet: { prefixes: ["", "@sheet-md:"], columns: 4 },
+  desktop: { prefixes: ["", "@sheet-md:", "@sheet-lg:"], columns: 12 },
+  /** Very large width (`@sheet-xl`): same 12 columns, wide placement. */
+  wide: { prefixes: ["", "@sheet-md:", "@sheet-lg:", "@sheet-xl:"], columns: 12 },
+};
+
 /** Effective `col-span` / `row-span` at a breakpoint (mobile-first: the last matching prefix wins). */
 export const spanAt = (classes: string, kind: "col" | "row", bp: Breakpoint) => {
   let span = 1;

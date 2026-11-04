@@ -11,7 +11,7 @@ import {
   BENTO_HALF_SLOT as HALF,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
-export { GENERAL_BENTO_GRID_CLASS as HISTORY_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
+export { BENTO_GRID_CLASS as HISTORY_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
 export const HISTORY_SLOTS = {
   /** Full width: holds the description, so a long text never stretches a sibling card. */

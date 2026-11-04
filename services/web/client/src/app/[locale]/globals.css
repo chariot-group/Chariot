@@ -88,6 +88,14 @@
 
   /* Very large screens: wide bento placement of the character sheet (FR-character-general-bento-layout) */
   --breakpoint-3xl: 120rem;
+
+  /*
+   * Width available to the character sheet General tab (container queries, sidebar included):
+   * mobile < sheet-md ≤ tablet < sheet-lg ≤ desktop < sheet-xl ≤ wide (FR-character-general-bento-layout)
+   */
+  --container-sheet-md: 36rem;
+  --container-sheet-lg: 56rem;
+  --container-sheet-xl: 96rem;
 }
 
 @keyframes session-live-pulse {

@@ -12,7 +12,7 @@ import {
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
 export {
-  GENERAL_BENTO_GRID_CLASS as BATTLE_BENTO_GRID_CLASS,
+  BENTO_GRID_CLASS as BATTLE_BENTO_GRID_CLASS,
   GENERAL_BENTO_STACK_GAP_CLASS as BATTLE_BENTO_STACK_GAP_CLASS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 

@@ -1,5 +1,12 @@
 import { Player } from "@/types/character";
-import { Controller, UseFormReturn, useFieldArray, FieldValues, useFormState, type FieldError as RhfFieldError } from "react-hook-form";
+import {
+  Controller,
+  UseFormReturn,
+  useFieldArray,
+  FieldValues,
+  useFormState,
+  type FieldError as RhfFieldError,
+} from "react-hook-form";
 import { useEffect, type ReactNode } from "react";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -20,6 +27,7 @@ import SavingThrowsEdit from "@/components/character/tabContents/general/form/Sa
 import SkillsEditCard from "@/components/character/tabContents/general/form/SkillsEditCard";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import {
+  GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
   GENERAL_BENTO_STACK_GAP_CLASS,
   PLAYER_EDIT_SLOTS as SLOTS,
@@ -108,900 +116,903 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
 
   /** @see FR-character-general-bento-layout */
   return (
-    <div
-      className={`${GENERAL_BENTO_GRID_CLASS} px-2 sm:px-0`}
-      role="main"
-      aria-label={t("characterInfoLabel")}>
-      {/* Personnage */}
-      <Card
-        className={`min-w-0 gap-3 p-4 md:px-6 ${SLOTS.character}`}
-        role="region"
-        aria-labelledby="character-profile-edit">
-        {/* Names next to the avatar, like the read-mode identity list (no empty column beside the avatar) */}
-        <div className="flex items-start gap-3">
-          <div className="@container flex min-w-0 flex-1 flex-col gap-3">
-            <h2
-              id="character-profile-edit"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("character")}
-            </h2>
-            <CharacterNameFields form={form} />
+    <div className={`${GENERAL_BENTO_CONTAINER_CLASS} px-2 sm:px-0`}>
+      <div
+        className={GENERAL_BENTO_GRID_CLASS}
+        role="main"
+        aria-label={t("characterInfoLabel")}>
+        {/* Personnage */}
+        <Card
+          className={`min-w-0 gap-3 p-4 md:px-6 ${SLOTS.character}`}
+          role="region"
+          aria-labelledby="character-profile-edit">
+          {/* Names next to the avatar, like the read-mode identity list (no empty column beside the avatar) */}
+          <div className="flex items-start gap-3">
+            <div className="@container flex min-w-0 flex-1 flex-col gap-3">
+              <h2
+                id="character-profile-edit"
+                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                {t("character")}
+              </h2>
+              <CharacterNameFields form={form} />
+            </div>
+            {avatar ? <div className="shrink-0">{avatar}</div> : null}
           </div>
-          {avatar ? <div className="shrink-0">{avatar}</div> : null}
-        </div>
-        <div className="flex flex-col gap-4">
-          {/* Niveau global (XP) et race */}
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-row gap-2">
-              {/* Race */}
-              <Controller
-                name="profile.race"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    orientation="vertical"
-                    className="flex-1">
-                    <label
-                      htmlFor="character-race"
-                      className="text-sm font-medium">
-                      {t("race")}
-                    </label>
-                    <Input
-                      {...field}
-                      value={field.value || ""}
-                      id="character-race"
-                      aria-invalid={fieldState.invalid}
-                      aria-describedby={fieldState.error ? "character-race-error" : undefined}
-                      placeholder={t("race")}
-                      type="text"
-                    />
-                    {fieldState.error && (
-                      <FieldError
-                        id="character-race-error"
-                        errors={[fieldState.error]}
-                      />
-                    )}
-                  </Field>
-                )}
-              />
-              {/* Subrace */}
-              <Controller
-                name="profile.subrace"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    orientation="vertical"
-                    className="flex-1">
-                    <label
-                      htmlFor="character-subrace"
-                      className="text-sm font-medium">
-                      {t("subrace")}
-                    </label>
-                    <Input
-                      {...field}
-                      value={field.value || ""}
-                      id="character-subrace"
-                      aria-invalid={fieldState.invalid}
-                      aria-describedby={fieldState.error ? "character-subrace-error" : undefined}
-                      placeholder={t("subrace")}
-                      type="text"
-                    />
-                    {fieldState.error && (
-                      <FieldError
-                        id="character-subrace-error"
-                        errors={[fieldState.error]}
-                      />
-                    )}
-                  </Field>
-                )}
-              />
-            </div>
-
-            {/* Niveau et XP avec synchronisation */}
-            <div className="flex flex-col border-b border-border">
-              <div className="flex flex-row gap-2">
-                {/* Level Input */}
-                <Controller
-                  name="progression.level"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical"
-                      className="flex-1">
-                      <label
-                        htmlFor="character-level"
-                        className="text-sm font-medium">
-                        {t("level")}
-                      </label>
-                      <Input
-                        {...field}
-                        value={field.value || ""}
-                        id="character-level"
-                        aria-invalid={fieldState.invalid}
-                        aria-describedby={fieldState.error ? "character-level-error" : undefined}
-                        placeholder={tEdit("levelPlaceholder")}
-                        type="number"
-                        min="1"
-                        max="20"
-                      />
-                      {fieldState.error && (
-                        <FieldError
-                          id="character-level-error"
-                          errors={[fieldState.error]}
-                        />
-                      )}
-                    </Field>
-                  )}
-                />
-
-                {/* XP Input */}
-                <Controller
-                  name="progression.experience"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical"
-                      className="flex-1">
-                      <label
-                        htmlFor="character-xp"
-                        className="text-sm font-medium">
-                        {t("experience")}
-                      </label>
-                      <Input
-                        {...field}
-                        value={field.value || ""}
-                        id="character-xp"
-                        aria-invalid={fieldState.invalid}
-                        aria-describedby={fieldState.error ? "character-xp-error" : undefined}
-                        placeholder={tEdit("zeroPlaceholder")}
-                        type="number"
-                        min="0"
-                      />
-                      {fieldState.error && (
-                        <FieldError
-                          id="character-xp-error"
-                          errors={[fieldState.error]}
-                        />
-                      )}
-                    </Field>
-                  )}
-                />
-              </div>
-
-              {/* Suggestions de synchronisation */}
-              {(() => {
-                const currentLevel = form.watch("progression.level") || 1;
-                const currentXp = form.watch("progression.experience") || 0;
-                const calculatedLevel = getLevelFromExperience(currentXp);
-                const isSynced = isLevelXpSynced(parseInt(currentXp), parseInt(currentLevel));
-
-                if (isSynced) {
-                  return (
-                    <div className="flex items-center gap-2 my-2 p-2 bg-green/20 rounded-[23px] text-sm text-green-600 dark:text-green-400">
-                      <span>✓ {t("xpLevelSynced")}</span>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div className="flex flex-col gap-4">
-                    <div className="text-xs text-muted-foreground mx-1 mt-2">
-                      {calculatedLevel !== currentLevel && (
-                        <span>
-                          ⚠️{" "}
-                          {t("xpLevelMismatch", {
-                            xp: currentXp,
-                            level: calculatedLevel,
-                          })}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2 mb-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          form.setValue("progression.level", calculatedLevel, { shouldDirty: true });
-                        }}
-                        className="flex-1 text-xs">
-                        <ArrowRightLeft className="size-3 mr-1" />
-                        {t("syncLevelButton", { level: calculatedLevel })}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          const xpForLevel = getExperienceForLevel(currentLevel);
-                          form.setValue("progression.experience", xpForLevel, { shouldDirty: true });
-                        }}
-                        className="flex-1 text-xs">
-                        <ArrowRightLeft className="size-3 mr-1" />
-                        {t("syncXpButton", { xp: getExperienceForLevel(currentLevel) })}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Alignement et historique (FR-character-identity-card) */}
-            <div className="@container">
-              <div className="grid grid-cols-1 gap-3 @sm:grid-cols-2">
-                <Controller
-                  name="profile.alignment"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor="alignment"
-                        className="text-sm font-medium">
-                        {t("alignment")}
-                      </label>
-                      <Select
-                        value={field.value || ""}
-                        onValueChange={field.onChange}>
-                        <SelectTrigger id="alignment">
-                          <SelectValue placeholder={t("alignment")} />
-                        </SelectTrigger>
-                        <SelectContent position="item-aligned">
-                          <SelectGroup>
-                            {playerAlignments.map((alignment) => (
-                              <SelectItem
-                                key={alignment}
-                                value={alignment}>
-                                {tAlignment(alignment as Parameters<typeof tAlignment>[0])}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name="profile.history"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor="background"
-                        className="text-sm font-medium">
-                        {t("background")}
-                      </label>
-                      <ComboboxInput
-                        id="background"
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        suggestions={t.raw("proficiencyOptions.backgrounds")}
-                        placeholder={t("background")}
-                        aria-invalid={fieldState.invalid}
-                        aria-describedby={fieldState.error ? "background-error" : undefined}
-                      />
-                      {fieldState.error && (
-                        <FieldError
-                          id="background-error"
-                          errors={[fieldState.error]}
-                        />
-                      )}
-                    </Field>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Classes dynamiques */}
+          <div className="flex flex-col gap-4">
+            {/* Niveau global (XP) et race */}
             <div className="flex flex-col gap-3">
-              {classFields.map((field, index) => {
-                const globalLevel = form.watch("progression.level") || 1;
-                const classLevels = (form.watch("class") || []) as PlayerClassEntry[];
-                const totalClassLevels = classLevels.reduce(
-                  (sum: number, c) => sum + (parseInt(String(c?.level ?? 0), 10) || 0),
-                  0,
-                );
-                const currentClassLevel = parseInt(form.watch(`class.${index}.level`)) || 1;
-                const otherClassLevelsSum = totalClassLevels - currentClassLevel;
-                const maxLevelForThisClass = globalLevel - otherClassLevelsSum;
+              <div className="flex flex-row gap-2">
+                {/* Race */}
+                <Controller
+                  name="profile.race"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical"
+                      className="flex-1">
+                      <label
+                        htmlFor="character-race"
+                        className="text-sm font-medium">
+                        {t("race")}
+                      </label>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        id="character-race"
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={fieldState.error ? "character-race-error" : undefined}
+                        placeholder={t("race")}
+                        type="text"
+                      />
+                      {fieldState.error && (
+                        <FieldError
+                          id="character-race-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
+                    </Field>
+                  )}
+                />
+                {/* Subrace */}
+                <Controller
+                  name="profile.subrace"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical"
+                      className="flex-1">
+                      <label
+                        htmlFor="character-subrace"
+                        className="text-sm font-medium">
+                        {t("subrace")}
+                      </label>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        id="character-subrace"
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={fieldState.error ? "character-subrace-error" : undefined}
+                        placeholder={t("subrace")}
+                        type="text"
+                      />
+                      {fieldState.error && (
+                        <FieldError
+                          id="character-subrace-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
+                    </Field>
+                  )}
+                />
+              </div>
 
-                // Récupérer les classes déjà sélectionnées dans les autres champs
-                const selectedClasses = classLevels
-                  .map((c, i: number) => (i !== index ? c?.name : null))
-                  .filter(Boolean);
-                const hitDiceRemainingError = classErrors?.[index]?.hitDiceRemaining;
-
-                return (
-                  <div
-                    key={field.id}
-                    className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-border"}`}>
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold">
-                        {t("class")} {index + 1}
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        {totalClassLevels > globalLevel && (
-                          <span className="text-xs text-red px-2 py-1 bg-red/10 rounded">
-                            ⚠️ {t("classLevelExceeds")}
-                          </span>
+              {/* Niveau et XP avec synchronisation */}
+              <div className="flex flex-col border-b border-border">
+                <div className="flex flex-row gap-2">
+                  {/* Level Input */}
+                  <Controller
+                    name="progression.level"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="flex-1">
+                        <label
+                          htmlFor="character-level"
+                          className="text-sm font-medium">
+                          {t("level")}
+                        </label>
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          id="character-level"
+                          aria-invalid={fieldState.invalid}
+                          aria-describedby={fieldState.error ? "character-level-error" : undefined}
+                          placeholder={tEdit("levelPlaceholder")}
+                          type="number"
+                          min="1"
+                          max="20"
+                        />
+                        {fieldState.error && (
+                          <FieldError
+                            id="character-level-error"
+                            errors={[fieldState.error]}
+                          />
                         )}
-                        {classFields.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeClass(index)}
-                            className="text-red hover:bg-red/10">
-                            <Trash2 className="size-4" />
-                          </Button>
+                      </Field>
+                    )}
+                  />
+
+                  {/* XP Input */}
+                  <Controller
+                    name="progression.experience"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical"
+                        className="flex-1">
+                        <label
+                          htmlFor="character-xp"
+                          className="text-sm font-medium">
+                          {t("experience")}
+                        </label>
+                        <Input
+                          {...field}
+                          value={field.value || ""}
+                          id="character-xp"
+                          aria-invalid={fieldState.invalid}
+                          aria-describedby={fieldState.error ? "character-xp-error" : undefined}
+                          placeholder={tEdit("zeroPlaceholder")}
+                          type="number"
+                          min="0"
+                        />
+                        {fieldState.error && (
+                          <FieldError
+                            id="character-xp-error"
+                            errors={[fieldState.error]}
+                          />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
+
+                {/* Suggestions de synchronisation */}
+                {(() => {
+                  const currentLevel = form.watch("progression.level") || 1;
+                  const currentXp = form.watch("progression.experience") || 0;
+                  const calculatedLevel = getLevelFromExperience(currentXp);
+                  const isSynced = isLevelXpSynced(parseInt(currentXp), parseInt(currentLevel));
+
+                  if (isSynced) {
+                    return (
+                      <div className="flex items-center gap-2 my-2 p-2 bg-green/20 rounded-[23px] text-sm text-green-600 dark:text-green-400">
+                        <span>✓ {t("xpLevelSynced")}</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="flex flex-col gap-4">
+                      <div className="text-xs text-muted-foreground mx-1 mt-2">
+                        {calculatedLevel !== currentLevel && (
+                          <span>
+                            ⚠️{" "}
+                            {t("xpLevelMismatch", {
+                              xp: currentXp,
+                              level: calculatedLevel,
+                            })}
+                          </span>
                         )}
                       </div>
+                      <div className="flex gap-2 mb-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            form.setValue("progression.level", calculatedLevel, { shouldDirty: true });
+                          }}
+                          className="flex-1 text-xs">
+                          <ArrowRightLeft className="size-3 mr-1" />
+                          {t("syncLevelButton", { level: calculatedLevel })}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            const xpForLevel = getExperienceForLevel(currentLevel);
+                            form.setValue("progression.experience", xpForLevel, { shouldDirty: true });
+                          }}
+                          className="flex-1 text-xs">
+                          <ArrowRightLeft className="size-3 mr-1" />
+                          {t("syncXpButton", { xp: getExperienceForLevel(currentLevel) })}
+                        </Button>
+                      </div>
                     </div>
+                  );
+                })()}
+              </div>
 
-                    <div className="grid grid-cols-2 gap-2">
-                      {/* Class Name Select */}
-                      <Controller
-                        name={`class.${index}.name`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field
-                            data-invalid={fieldState.invalid}
-                            orientation="vertical"
-                            className="col-span-2">
-                            <label
-                              htmlFor={`class-name-${index}`}
-                              className="text-sm font-medium">
-                              {t("className")}
-                            </label>
-                            <Select
-                              value={field.value || ""}
-                              onValueChange={field.onChange}>
-                              <SelectTrigger id={`class-name-${index}`}>
-                                <SelectValue placeholder={t("selectClass")} />
-                              </SelectTrigger>
-                              <SelectContent position="item-aligned">
-                                <SelectGroup>
-                                  {Object.values(ClassNameEnum.enum)
-                                    .filter((className) => !selectedClasses.includes(className))
-                                    .map((className) => (
-                                      <SelectItem
-                                        key={className}
-                                        value={className}>
-                                        {tClass(className)}
-                                      </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                            {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                          </Field>
-                        )}
-                      />
-
-                      {/* Class Level */}
-                      <Controller
-                        name={`class.${index}.level`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field
-                            data-invalid={fieldState.invalid}
-                            orientation="vertical">
-                            <label
-                              htmlFor={`class-level-${index}`}
-                              className="text-sm font-medium truncate">
-                              {t("classLevel")}
-                            </label>
-                            <Input
-                              {...field}
-                              value={field.value === undefined || field.value === null ? "" : field.value}
-                              id={`class-level-${index}`}
-                              aria-invalid={fieldState.invalid}
-                              aria-describedby={
-                                fieldState.error
-                                  ? `class-level-${index}-error`
-                                  : classErrors?.[index]?.hitDiceRemaining
-                                    ? `class-level-${index}-hd-error`
-                                    : undefined
-                              }
-                              placeholder={tEdit("levelPlaceholder")}
-                              type="number"
-                              min="1"
-                              max={maxLevelForThisClass}
-                              onChange={(e) => {
-                                const raw = e.target.value.trim();
-                                if (raw === "") {
-                                  field.onChange("");
-                                  return;
-                                }
-                                const parsed = Number(raw);
-                                if (!Number.isFinite(parsed)) return;
-
-                                const floor = 1;
-                                const ceil = Math.min(20, Math.max(floor, maxLevelForThisClass));
-                                const clampedLevel = Math.max(floor, Math.min(ceil, Math.floor(parsed)));
-
-                                field.onChange(clampedLevel);
-
-                                const g = Number(form.getValues("progression.level")) || 1;
-                                const cls = (form.getValues("class") || []) as Array<{ level?: unknown }>;
-                                let totalNext = 0;
-                                for (let j = 0; j < cls.length; j++) {
-                                  const v = j === index ? clampedLevel : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
-                                  totalNext += v;
-                                }
-                                const sumOthersNext = totalNext - clampedLevel;
-                                const shareNext = Math.max(0, g - sumOthersNext);
-                                const cap = Math.min(clampedLevel, shareNext);
-                                const remPath = `class.${index}.hitDiceRemaining`;
-                                const remRaw = form.getValues(remPath);
-                                if (typeof remRaw === "number" && !Number.isNaN(remRaw) && remRaw > cap) {
-                                  form.setValue(remPath, cap, {
-                                    shouldDirty: true,
-                                    shouldValidate: true,
-                                  });
-                                }
-                              }}
-                            />
-                            {fieldState.error && (
-                              <FieldError
-                                id={`class-level-${index}-error`}
-                                errors={[fieldState.error]}
-                              />
-                            )}
-                          </Field>
-                        )}
-                      />
-
-                      {/* Subclass Input */}
-                      <Controller
-                        name={`class.${index}.subclass`}
-                        control={form.control}
-                        render={({ field, fieldState }) => (
-                          <Field
-                            data-invalid={fieldState.invalid}
-                            orientation="vertical">
-                            <label
-                              htmlFor={`class-subclass-${index}`}
-                              className="text-sm font-medium">
-                              {t("subclass")}
-                            </label>
-                            <Input
-                              {...field}
-                              value={field.value || ""}
-                              id={`class-subclass-${index}`}
-                              aria-invalid={fieldState.invalid}
-                              aria-describedby={fieldState.error ? `class-subclass-${index}-error` : undefined}
-                              placeholder={t("subclass")}
-                              type="text"
-                            />
-                            {fieldState.error && (
-                              <FieldError
-                                id={`class-subclass-${index}-error`}
-                                errors={[fieldState.error]}
-                              />
-                            )}
-                          </Field>
-                        )}
-                      />
-                    </div>
-
-                    {/* Class level indicator */}
-                    <div className="text-xs text-muted-foreground">
-                      {t("classLevelInfo", {
-                        classLevel: currentClassLevel,
-                        totalLevel: totalClassLevels,
-                        globalLevel,
-                      })}
-                    </div>
-                    {hitDiceRemainingError && (
-                      <FieldError
-                        id={`class-level-${index}-hd-error`}
-                        errors={[hitDiceRemainingError]}
-                      />
+              {/* Alignement et historique (FR-character-identity-card) */}
+              <div className="@container">
+                <div className="grid grid-cols-1 gap-3 @sm:grid-cols-2">
+                  <Controller
+                    name="profile.alignment"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical">
+                        <label
+                          htmlFor="alignment"
+                          className="text-sm font-medium">
+                          {t("alignment")}
+                        </label>
+                        <Select
+                          value={field.value || ""}
+                          onValueChange={field.onChange}>
+                          <SelectTrigger id="alignment">
+                            <SelectValue placeholder={t("alignment")} />
+                          </SelectTrigger>
+                          <SelectContent position="item-aligned">
+                            <SelectGroup>
+                              {playerAlignments.map((alignment) => (
+                                <SelectItem
+                                  key={alignment}
+                                  value={alignment}>
+                                  {tAlignment(alignment as Parameters<typeof tAlignment>[0])}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                      </Field>
                     )}
-                  </div>
-                );
-              })}
-
-              {/* Bouton pour ajouter une 2e classe (max 2 classes) */}
-              {classFields.length < 2 && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() =>
-                    appendClass({
-                      name: undefined,
-                      subclass: "",
-                      level: 1,
-                      hitDice: 0,
-                    })
-                  }
-                  className="flex items-center gap-2 border-dashed">
-                  <Plus className="size-4" />
-                  <span className="truncate">{t("addSecondClass")}</span>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <StatisticsUpdate
-        accentColor={accentColor}
-        form={form}
-        className={`${SLOTS.statistics} justify-between`}
-      />
-
-      <ProficiencyBonusEditCard
-        form={form}
-        accentColor={accentColor}
-        className={SLOTS.tile}
-      />
-
-      {/* Perception passive */}
-      <GeneralSectionCard
-        headingId="passive-perception-heading-edit"
-        title={t("passivePerception")}
-        accentColor={accentColor}
-        headingClassName="truncate"
-        className={SLOTS.tile}>
-        <div className="flex flex-col gap-2">
-          <Controller
-            name="stats.passivePerception"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="passive-perception"
-                  className="text-sm font-medium">
-                  {t("passivePerceptionOverride")}
-                </label>
-                <Input
-                  {...field}
-                  value={field.value || ""}
-                  id="passive-perception"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "passive-perception-error" : undefined}
-                  placeholder={calculatePassivePerception().toString()}
-                  type="number"
-                  min="1"
-                  max="40"
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="passive-perception-error"
-                    errors={[fieldState.error]}
                   />
-                )}
-              </Field>
-            )}
-          />
-
-          {/* Warning si différent du calcul automatique */}
-          {(() => {
-            const currentValue = form.watch("stats.passivePerception") || 0;
-            const calculatedValue = calculatePassivePerception();
-
-            if (parseInt(currentValue) !== calculatedValue && parseInt(currentValue) !== 0) {
-              return (
-                <div className="text-xs text-orange-600 dark:text-orange-400 p-2 bg-orange-600/10 rounded">
-                  {t("passivePerceptionMismatch", { calculated: calculatedValue })}
+                  <Controller
+                    name="profile.history"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field
+                        data-invalid={fieldState.invalid}
+                        orientation="vertical">
+                        <label
+                          htmlFor="background"
+                          className="text-sm font-medium">
+                          {t("background")}
+                        </label>
+                        <ComboboxInput
+                          id="background"
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          suggestions={t.raw("proficiencyOptions.backgrounds")}
+                          placeholder={t("background")}
+                          aria-invalid={fieldState.invalid}
+                          aria-describedby={fieldState.error ? "background-error" : undefined}
+                        />
+                        {fieldState.error && (
+                          <FieldError
+                            id="background-error"
+                            errors={[fieldState.error]}
+                          />
+                        )}
+                      </Field>
+                    )}
+                  />
                 </div>
-              );
-            }
+              </div>
 
-            return null;
-          })()}
-        </div>
-      </GeneralSectionCard>
+              {/* Classes dynamiques */}
+              <div className="flex flex-col gap-3">
+                {classFields.map((field, index) => {
+                  const globalLevel = form.watch("progression.level") || 1;
+                  const classLevels = (form.watch("class") || []) as PlayerClassEntry[];
+                  const totalClassLevels = classLevels.reduce(
+                    (sum: number, c) => sum + (parseInt(String(c?.level ?? 0), 10) || 0),
+                    0,
+                  );
+                  const currentClassLevel = parseInt(form.watch(`class.${index}.level`)) || 1;
+                  const otherClassLevelsSum = totalClassLevels - currentClassLevel;
+                  const maxLevelForThisClass = globalLevel - otherClassLevelsSum;
 
-      {/* Inspiration */}
-      <Card
-        className={`min-w-0 gap-3 p-4 md:px-6 ${SLOTS.tile}`}
-        role="region"
-        aria-labelledby="inspiration-heading-edit">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2
-            id="inspiration-heading-edit"
-            className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
-            {t("inspiration")}
-          </h2>
-          <Controller
-            name="inspiration"
-            control={form.control}
-            render={({ field }) => (
-              <div className="flex items-center gap-2">
-                {isInSession ? (
-                  field.value ? (
-                    <span className="text-sm font-medium">{t("inspirationActive")}</span>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => field.onChange(true)}>
-                      {t("inspirationAddButton")}
-                    </Button>
-                  )
-                ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {field.value ? t("inspirationActive") : t("inspirationInactive")}
-                  </span>
+                  // Récupérer les classes déjà sélectionnées dans les autres champs
+                  const selectedClasses = classLevels
+                    .map((c, i: number) => (i !== index ? c?.name : null))
+                    .filter(Boolean);
+                  const hitDiceRemainingError = classErrors?.[index]?.hitDiceRemaining;
+
+                  return (
+                    <div
+                      key={field.id}
+                      className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-border"}`}>
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold">
+                          {t("class")} {index + 1}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          {totalClassLevels > globalLevel && (
+                            <span className="text-xs text-red px-2 py-1 bg-red/10 rounded">
+                              ⚠️ {t("classLevelExceeds")}
+                            </span>
+                          )}
+                          {classFields.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeClass(index)}
+                              className="text-red hover:bg-red/10">
+                              <Trash2 className="size-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {/* Class Name Select */}
+                        <Controller
+                          name={`class.${index}.name`}
+                          control={form.control}
+                          render={({ field, fieldState }) => (
+                            <Field
+                              data-invalid={fieldState.invalid}
+                              orientation="vertical"
+                              className="col-span-2">
+                              <label
+                                htmlFor={`class-name-${index}`}
+                                className="text-sm font-medium">
+                                {t("className")}
+                              </label>
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={field.onChange}>
+                                <SelectTrigger id={`class-name-${index}`}>
+                                  <SelectValue placeholder={t("selectClass")} />
+                                </SelectTrigger>
+                                <SelectContent position="item-aligned">
+                                  <SelectGroup>
+                                    {Object.values(ClassNameEnum.enum)
+                                      .filter((className) => !selectedClasses.includes(className))
+                                      .map((className) => (
+                                        <SelectItem
+                                          key={className}
+                                          value={className}>
+                                          {tClass(className)}
+                                        </SelectItem>
+                                      ))}
+                                  </SelectGroup>
+                                </SelectContent>
+                              </Select>
+                              {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                            </Field>
+                          )}
+                        />
+
+                        {/* Class Level */}
+                        <Controller
+                          name={`class.${index}.level`}
+                          control={form.control}
+                          render={({ field, fieldState }) => (
+                            <Field
+                              data-invalid={fieldState.invalid}
+                              orientation="vertical">
+                              <label
+                                htmlFor={`class-level-${index}`}
+                                className="text-sm font-medium truncate">
+                                {t("classLevel")}
+                              </label>
+                              <Input
+                                {...field}
+                                value={field.value === undefined || field.value === null ? "" : field.value}
+                                id={`class-level-${index}`}
+                                aria-invalid={fieldState.invalid}
+                                aria-describedby={
+                                  fieldState.error
+                                    ? `class-level-${index}-error`
+                                    : classErrors?.[index]?.hitDiceRemaining
+                                      ? `class-level-${index}-hd-error`
+                                      : undefined
+                                }
+                                placeholder={tEdit("levelPlaceholder")}
+                                type="number"
+                                min="1"
+                                max={maxLevelForThisClass}
+                                onChange={(e) => {
+                                  const raw = e.target.value.trim();
+                                  if (raw === "") {
+                                    field.onChange("");
+                                    return;
+                                  }
+                                  const parsed = Number(raw);
+                                  if (!Number.isFinite(parsed)) return;
+
+                                  const floor = 1;
+                                  const ceil = Math.min(20, Math.max(floor, maxLevelForThisClass));
+                                  const clampedLevel = Math.max(floor, Math.min(ceil, Math.floor(parsed)));
+
+                                  field.onChange(clampedLevel);
+
+                                  const g = Number(form.getValues("progression.level")) || 1;
+                                  const cls = (form.getValues("class") || []) as Array<{ level?: unknown }>;
+                                  let totalNext = 0;
+                                  for (let j = 0; j < cls.length; j++) {
+                                    const v =
+                                      j === index ? clampedLevel : parseInt(String(cls[j]?.level ?? 0), 10) || 0;
+                                    totalNext += v;
+                                  }
+                                  const sumOthersNext = totalNext - clampedLevel;
+                                  const shareNext = Math.max(0, g - sumOthersNext);
+                                  const cap = Math.min(clampedLevel, shareNext);
+                                  const remPath = `class.${index}.hitDiceRemaining`;
+                                  const remRaw = form.getValues(remPath);
+                                  if (typeof remRaw === "number" && !Number.isNaN(remRaw) && remRaw > cap) {
+                                    form.setValue(remPath, cap, {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    });
+                                  }
+                                }}
+                              />
+                              {fieldState.error && (
+                                <FieldError
+                                  id={`class-level-${index}-error`}
+                                  errors={[fieldState.error]}
+                                />
+                              )}
+                            </Field>
+                          )}
+                        />
+
+                        {/* Subclass Input */}
+                        <Controller
+                          name={`class.${index}.subclass`}
+                          control={form.control}
+                          render={({ field, fieldState }) => (
+                            <Field
+                              data-invalid={fieldState.invalid}
+                              orientation="vertical">
+                              <label
+                                htmlFor={`class-subclass-${index}`}
+                                className="text-sm font-medium">
+                                {t("subclass")}
+                              </label>
+                              <Input
+                                {...field}
+                                value={field.value || ""}
+                                id={`class-subclass-${index}`}
+                                aria-invalid={fieldState.invalid}
+                                aria-describedby={fieldState.error ? `class-subclass-${index}-error` : undefined}
+                                placeholder={t("subclass")}
+                                type="text"
+                              />
+                              {fieldState.error && (
+                                <FieldError
+                                  id={`class-subclass-${index}-error`}
+                                  errors={[fieldState.error]}
+                                />
+                              )}
+                            </Field>
+                          )}
+                        />
+                      </div>
+
+                      {/* Class level indicator */}
+                      <div className="text-xs text-muted-foreground">
+                        {t("classLevelInfo", {
+                          classLevel: currentClassLevel,
+                          totalLevel: totalClassLevels,
+                          globalLevel,
+                        })}
+                      </div>
+                      {hitDiceRemainingError && (
+                        <FieldError
+                          id={`class-level-${index}-hd-error`}
+                          errors={[hitDiceRemainingError]}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Bouton pour ajouter une 2e classe (max 2 classes) */}
+                {classFields.length < 2 && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() =>
+                      appendClass({
+                        name: undefined,
+                        subclass: "",
+                        level: 1,
+                        hitDice: 0,
+                      })
+                    }
+                    className="flex items-center gap-2 border-dashed">
+                    <Plus className="size-4" />
+                    <span className="truncate">{t("addSecondClass")}</span>
+                  </Button>
                 )}
               </div>
-            )}
-          />
-        </div>
-        {!isInSession && (
-          <p
-            className="mt-auto text-xs text-muted-foreground"
-            role="note">
-            {t("inspirationSessionOnlyNote")}
-          </p>
-        )}
-      </Card>
+            </div>
+          </div>
+        </Card>
 
-      {/* Épuisement */}
-      <GeneralSectionCard
-        headingId="exhaustion-heading-edit"
-        title={t("exhaustion")}
-        accentColor={accentColor}
-        headingClassName="truncate"
-        className={SLOTS.tile}>
-        <Controller
-          name="exhaustionLevel"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              data-invalid={fieldState.invalid}
-              orientation="vertical"
-              className="flex-1">
-              <label
-                htmlFor="exhaustion-level"
-                className="text-sm font-medium">
-                {t("exhaustionLevel")}
-              </label>
-              <Select
-                value={field.value?.toString() || "0"}
-                onValueChange={(value) => field.onChange(parseInt(value))}
-                disabled={!isInSession}>
-                <SelectTrigger
-                  id="exhaustion-level"
-                  aria-disabled={!isInSession}>
-                  <SelectValue placeholder={t("exhaustionLevel")}>
-                    {field.value !== undefined && field.value !== null
-                      ? `${t("level")} ${field.value}`
-                      : t("exhaustionLevel")}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent position="item-aligned">
-                  <SelectGroup>
-                    {[0, 1, 2, 3, 4, 5, 6].map((level) => (
-                      <SelectItem
-                        key={level}
-                        value={level.toString()}>
-                        <div className="flex flex-col gap-1">
-                          <span>
-                            {t("level")} {level}
-                          </span>
-                          <span className="text-xs text-muted-foreground">{t(`exhaustionLevels.${level}`)}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {!isInSession && (
-                <p
-                  className="mt-auto text-xs text-muted-foreground"
-                  role="note">
-                  {t("exhaustionSessionOnlyNote")}
-                </p>
-              )}
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-      </GeneralSectionCard>
-
-      <SkillsEditCard
-        form={form}
-        accentColor={accentColor}
-        className={SLOTS.skills}
-      />
-
-      {/* Caractéristiques */}
-      <GeneralSectionCard
-        headingId="character-characteristics-edit"
-        title={t("characteristics")}
-        accentColor={accentColor}
-        className={SLOTS.abilityScores}>
-        <AbilityScoresEdit
+        <StatisticsUpdate
+          accentColor={accentColor}
           form={form}
-          className="flex-1 content-evenly"
+          className={`${SLOTS.statistics} justify-between`}
         />
-      </GeneralSectionCard>
 
-      <GeneralSectionCard
-        headingId="character-savingthrows-edit"
-        title={t("savingThrows")}
-        accentColor={accentColor}
-        className={SLOTS.savingThrows}>
-        <SavingThrowsEdit
+        <ProficiencyBonusEditCard
           form={form}
           accentColor={accentColor}
-          className="flex-1 content-evenly"
+          className={SLOTS.tile}
         />
-      </GeneralSectionCard>
 
-      {/* Maîtrises */}
-      <GeneralSectionCard
-        headingId="character-proficiencies-edit"
-        title={t("proficiencies")}
-        accentColor={accentColor}
-        className={SLOTS.proficiencies}>
-        <div className="grid flex-1 content-start gap-4 @lg:grid-cols-2 @4xl:grid-cols-3">
-          {/* Languages */}
-          <Controller
-            name="stats.languages"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="proficiency-languages"
-                  className="text-sm font-medium">
-                  {t("languages")}
-                </label>
-                <TagInput
-                  id="proficiency-languages"
-                  value={field.value || []}
-                  onChange={field.onChange}
-                  suggestions={t.raw("proficiencyOptions.languages")}
-                  placeholder={t("languages")}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "proficiency-languages-error" : undefined}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="proficiency-languages-error"
-                    errors={[fieldState.error]}
-                  />
-                )}
-              </Field>
-            )}
-          />
-
+        {/* Perception passive */}
+        <GeneralSectionCard
+          headingId="passive-perception-heading-edit"
+          title={t("passivePerception")}
+          accentColor={accentColor}
+          headingClassName="truncate"
+          className={SLOTS.tile}>
           <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-medium">{t("senses")}</h3>
-            <SensesUpdateSection
-              form={form}
-              accentColor={accentColor}
-              embedded
+            <Controller
+              name="stats.passivePerception"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="passive-perception"
+                    className="text-sm font-medium">
+                    {t("passivePerceptionOverride")}
+                  </label>
+                  <Input
+                    {...field}
+                    value={field.value || ""}
+                    id="passive-perception"
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "passive-perception-error" : undefined}
+                    placeholder={calculatePassivePerception().toString()}
+                    type="number"
+                    min="1"
+                    max="40"
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="passive-perception-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            {/* Warning si différent du calcul automatique */}
+            {(() => {
+              const currentValue = form.watch("stats.passivePerception") || 0;
+              const calculatedValue = calculatePassivePerception();
+
+              if (parseInt(currentValue) !== calculatedValue && parseInt(currentValue) !== 0) {
+                return (
+                  <div className="text-xs text-orange-600 dark:text-orange-400 p-2 bg-orange-600/10 rounded">
+                    {t("passivePerceptionMismatch", { calculated: calculatedValue })}
+                  </div>
+                );
+              }
+
+              return null;
+            })()}
+          </div>
+        </GeneralSectionCard>
+
+        {/* Inspiration */}
+        <Card
+          className={`min-w-0 gap-3 p-4 md:px-6 ${SLOTS.tile}`}
+          role="region"
+          aria-labelledby="inspiration-heading-edit">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2
+              id="inspiration-heading-edit"
+              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
+              {t("inspiration")}
+            </h2>
+            <Controller
+              name="inspiration"
+              control={form.control}
+              render={({ field }) => (
+                <div className="flex items-center gap-2">
+                  {isInSession ? (
+                    field.value ? (
+                      <span className="text-sm font-medium">{t("inspirationActive")}</span>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => field.onChange(true)}>
+                        {t("inspirationAddButton")}
+                      </Button>
+                    )
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      {field.value ? t("inspirationActive") : t("inspirationInactive")}
+                    </span>
+                  )}
+                </div>
+              )}
             />
           </div>
+          {!isInSession && (
+            <p
+              className="mt-auto text-xs text-muted-foreground"
+              role="note">
+              {t("inspirationSessionOnlyNote")}
+            </p>
+          )}
+        </Card>
 
-          {/* Tools */}
+        {/* Épuisement */}
+        <GeneralSectionCard
+          headingId="exhaustion-heading-edit"
+          title={t("exhaustion")}
+          accentColor={accentColor}
+          headingClassName="truncate"
+          className={SLOTS.tile}>
           <Controller
-            name="stats.tools"
+            name="exhaustionLevel"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field
                 data-invalid={fieldState.invalid}
-                orientation="vertical">
+                orientation="vertical"
+                className="flex-1">
                 <label
-                  htmlFor="proficiency-tools"
+                  htmlFor="exhaustion-level"
                   className="text-sm font-medium">
-                  {t("tools")}
+                  {t("exhaustionLevel")}
                 </label>
-                <TagInput
-                  id="proficiency-tools"
-                  value={field.value || []}
-                  onChange={field.onChange}
-                  suggestions={t.raw("proficiencyOptions.tools")}
-                  placeholder={t("tools")}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "proficiency-tools-error" : undefined}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="proficiency-tools-error"
-                    errors={[fieldState.error]}
-                  />
+                <Select
+                  value={field.value?.toString() || "0"}
+                  onValueChange={(value) => field.onChange(parseInt(value))}
+                  disabled={!isInSession}>
+                  <SelectTrigger
+                    id="exhaustion-level"
+                    aria-disabled={!isInSession}>
+                    <SelectValue placeholder={t("exhaustionLevel")}>
+                      {field.value !== undefined && field.value !== null
+                        ? `${t("level")} ${field.value}`
+                        : t("exhaustionLevel")}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent position="item-aligned">
+                    <SelectGroup>
+                      {[0, 1, 2, 3, 4, 5, 6].map((level) => (
+                        <SelectItem
+                          key={level}
+                          value={level.toString()}>
+                          <div className="flex flex-col gap-1">
+                            <span>
+                              {t("level")} {level}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{t(`exhaustionLevels.${level}`)}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {!isInSession && (
+                  <p
+                    className="mt-auto text-xs text-muted-foreground"
+                    role="note">
+                    {t("exhaustionSessionOnlyNote")}
+                  </p>
                 )}
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
+        </GeneralSectionCard>
 
-          {/* Weapons */}
-          <Controller
-            name="stats.weapons"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="proficiency-weapons"
-                  className="text-sm font-medium">
-                  {t("weapons")}
-                </label>
-                <TagInput
-                  id="proficiency-weapons"
-                  value={field.value || []}
-                  onChange={field.onChange}
-                  suggestions={t.raw("proficiencyOptions.weapons")}
-                  placeholder={t("weapons")}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "proficiency-weapons-error" : undefined}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="proficiency-weapons-error"
-                    errors={[fieldState.error]}
-                  />
-                )}
-              </Field>
-            )}
+        <SkillsEditCard
+          form={form}
+          accentColor={accentColor}
+          className={SLOTS.skills}
+        />
+
+        {/* Caractéristiques */}
+        <GeneralSectionCard
+          headingId="character-characteristics-edit"
+          title={t("characteristics")}
+          accentColor={accentColor}
+          className={SLOTS.abilityScores}>
+          <AbilityScoresEdit
+            form={form}
+            className="flex-1 content-evenly"
           />
+        </GeneralSectionCard>
 
-          {/* Armors */}
-          <Controller
-            name="stats.armors"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="proficiency-armors"
-                  className="text-sm font-medium">
-                  {t("armors")}
-                </label>
-                <TagInput
-                  id="proficiency-armors"
-                  value={field.value || []}
-                  onChange={field.onChange}
-                  suggestions={t.raw("proficiencyOptions.armors")}
-                  placeholder={t("armors")}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "proficiency-armors-error" : undefined}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="proficiency-armors-error"
-                    errors={[fieldState.error]}
-                  />
-                )}
-              </Field>
-            )}
+        <GeneralSectionCard
+          headingId="character-savingthrows-edit"
+          title={t("savingThrows")}
+          accentColor={accentColor}
+          className={SLOTS.savingThrows}>
+          <SavingThrowsEdit
+            form={form}
+            accentColor={accentColor}
+            className="flex-1 content-evenly"
           />
-        </div>
-      </GeneralSectionCard>
+        </GeneralSectionCard>
 
-      {/* Capacités et traits */}
-      <AbilitiesUpdateSection
-        className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
-        title={t("abilitiesAndTraits")}
-        form={form}
-        fieldArrayName="abilities"
-        fields={abilitiesFields}
-        append={appendAbility}
-        remove={removeAbility}
-        accentColor={accentColor}
-        abilityCounterMode="player"
-      />
+        {/* Maîtrises */}
+        <GeneralSectionCard
+          headingId="character-proficiencies-edit"
+          title={t("proficiencies")}
+          accentColor={accentColor}
+          className={SLOTS.proficiencies}>
+          <div className="grid flex-1 content-start gap-4 @lg:grid-cols-2 @4xl:grid-cols-3">
+            {/* Languages */}
+            <Controller
+              name="stats.languages"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="proficiency-languages"
+                    className="text-sm font-medium">
+                    {t("languages")}
+                  </label>
+                  <TagInput
+                    id="proficiency-languages"
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    suggestions={t.raw("proficiencyOptions.languages")}
+                    placeholder={t("languages")}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "proficiency-languages-error" : undefined}
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="proficiency-languages-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            <div className="flex flex-col gap-2">
+              <h3 className="text-sm font-medium">{t("senses")}</h3>
+              <SensesUpdateSection
+                form={form}
+                accentColor={accentColor}
+                embedded
+              />
+            </div>
+
+            {/* Tools */}
+            <Controller
+              name="stats.tools"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="proficiency-tools"
+                    className="text-sm font-medium">
+                    {t("tools")}
+                  </label>
+                  <TagInput
+                    id="proficiency-tools"
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    suggestions={t.raw("proficiencyOptions.tools")}
+                    placeholder={t("tools")}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "proficiency-tools-error" : undefined}
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="proficiency-tools-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            {/* Weapons */}
+            <Controller
+              name="stats.weapons"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="proficiency-weapons"
+                    className="text-sm font-medium">
+                    {t("weapons")}
+                  </label>
+                  <TagInput
+                    id="proficiency-weapons"
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    suggestions={t.raw("proficiencyOptions.weapons")}
+                    placeholder={t("weapons")}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "proficiency-weapons-error" : undefined}
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="proficiency-weapons-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+
+            {/* Armors */}
+            <Controller
+              name="stats.armors"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field
+                  data-invalid={fieldState.invalid}
+                  orientation="vertical">
+                  <label
+                    htmlFor="proficiency-armors"
+                    className="text-sm font-medium">
+                    {t("armors")}
+                  </label>
+                  <TagInput
+                    id="proficiency-armors"
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    suggestions={t.raw("proficiencyOptions.armors")}
+                    placeholder={t("armors")}
+                    aria-invalid={fieldState.invalid}
+                    aria-describedby={fieldState.error ? "proficiency-armors-error" : undefined}
+                  />
+                  {fieldState.error && (
+                    <FieldError
+                      id="proficiency-armors-error"
+                      errors={[fieldState.error]}
+                    />
+                  )}
+                </Field>
+              )}
+            />
+          </div>
+        </GeneralSectionCard>
+
+        {/* Capacités et traits */}
+        <AbilitiesUpdateSection
+          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
+          title={t("abilitiesAndTraits")}
+          form={form}
+          fieldArrayName="abilities"
+          fields={abilitiesFields}
+          append={appendAbility}
+          remove={removeAbility}
+          accentColor={accentColor}
+          abilityCounterMode="player"
+        />
+      </div>
     </div>
   );
 }

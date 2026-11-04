@@ -11,7 +11,7 @@ import {
   BENTO_HALF_SLOT as HALF,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
-export { GENERAL_BENTO_GRID_CLASS as INVENTORY_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
+export { BENTO_GRID_CLASS as INVENTORY_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
 export const INVENTORY_SLOTS = {
   coins: `${FULL} xl:col-span-12`,

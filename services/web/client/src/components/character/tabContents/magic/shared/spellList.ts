@@ -4,7 +4,7 @@ import { formatDamageFormula, formatSpellDamageList } from "@/utils/spell-damage
 import { isConcentrationSpell } from "@/components/initiativeTracker/concentration.utils";
 import { BENTO_FULL_SLOT as FULL } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
-export { GENERAL_BENTO_GRID_CLASS as MAGIC_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
+export { BENTO_GRID_CLASS as MAGIC_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
 /**
  * Bento slots of the Magic tab (read and edit): the class selector, a compact Spellcasting band,

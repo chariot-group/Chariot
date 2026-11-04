@@ -4,7 +4,10 @@ import PlayerGeneralTabContent from "@/components/character/tabContents/general/
 import NpcGeneralTabContent from "@/components/character/tabContents/general/view/NpcGeneralTabContent";
 import PlayerGeneralTabEdit from "@/components/character/tabContents/general/form/PlayerGeneralTabEdit";
 import NpcGeneralTabEdit from "@/components/character/tabContents/general/form/NpcGeneralTabEdit";
-import { GENERAL_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
+import {
+  GENERAL_BENTO_CONTAINER_CLASS,
+  GENERAL_BENTO_GRID_CLASS,
+} from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import type { NPC, Player } from "@/types/character";
 import { directChildren, ids, labelledBy } from "@/components/character/tabContents/__tests__/bentoMarkup";
 import { render, WithForm } from "@/components/character/tabContents/__tests__/bentoRender";
@@ -127,6 +130,14 @@ describe("General tab — single bento grid", () => {
       expect(html.split(GENERAL_BENTO_GRID_CLASS)).toHaveLength(2);
       expect(children).toHaveLength(EXPECTED_CARDS[name as keyof typeof EXPECTED_CARDS]);
       for (const child of children) expect(child).toMatch(/col-span-\d/);
+    });
+
+    it(`nominal: ${name} wraps the grid in a query container, so the sidebar width is taken into account`, () => {
+      const html = renderCase();
+      const outerClass = html.match(/<div class="([^"]*)"/)?.[1] ?? "";
+
+      expect(outerClass.startsWith(GENERAL_BENTO_CONTAINER_CLASS)).toBe(true);
+      expect(html.indexOf(`class="${GENERAL_BENTO_GRID_CLASS}"`)).toBeGreaterThan(html.indexOf(outerClass));
     });
 
     it(`failure: ${name} has unique ids and every aria-labelledby resolves`, () => {

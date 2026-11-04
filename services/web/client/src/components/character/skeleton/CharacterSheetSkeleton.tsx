@@ -2,7 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
-import { GENERAL_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
+import {
+  BENTO_GRID_CLASS,
+  GENERAL_BENTO_CONTAINER_CLASS,
+  GENERAL_BENTO_GRID_CLASS,
+} from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import type { CharacterTab } from "@/components/character/CharacterTabs";
 import {
   skeletonCardsForTab,
@@ -107,7 +111,9 @@ function SkeletonCardBody({ card }: { card: SkeletonCard }) {
     case "lines":
       return (
         <div className="flex min-w-0 flex-1 gap-4">
-          {card.avatar ? <Skeleton className={cn(SKELETON_BAR_CLASS, "size-24 shrink-0 rounded-[15px] sm:size-28")} /> : null}
+          {card.avatar ? (
+            <Skeleton className={cn(SKELETON_BAR_CLASS, "size-24 shrink-0 rounded-[15px] sm:size-28")} />
+          ) : null}
           <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
             {Array.from({ length: body.count }, (_, index) => (
               <SkeletonBar
@@ -189,14 +195,17 @@ export function CharacterSheetSkeletonFrame({ kind, activeTab, tabs }: Character
         {activeTab === "companions" ? (
           <SkeletonCompanions />
         ) : (
-          <div className={GENERAL_BENTO_GRID_CLASS}>
-            {skeletonCardsForTab(activeTab, kind).map((card) => (
-              <SkeletonCardShell
-                key={card.key}
-                card={card}
-                tab={activeTab}
-              />
-            ))}
+          <div className={GENERAL_BENTO_CONTAINER_CLASS}>
+            {/* General follows the width left by the sidebar; other tabs keep the viewport grid */}
+            <div className={activeTab === "general" ? GENERAL_BENTO_GRID_CLASS : BENTO_GRID_CLASS}>
+              {skeletonCardsForTab(activeTab, kind).map((card) => (
+                <SkeletonCardShell
+                  key={card.key}
+                  card={card}
+                  tab={activeTab}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>

@@ -5400,11 +5400,12 @@ Each initiative tracker row carries:
 **Requirements**:
 
 - **Single grid**: every General-tab card (Character, Statistics, compact tiles, Ability scores, Saving throws, Skills, Proficiencies, Abilities) is a direct child of one grid container. Independent flex columns (`Column 1 / 2 / 3`) MUST NOT be used to place cards.
-- **Grid units** (mobile-first, `docs/design.md` §6):
-  - `< sm`: 2 columns.
-  - `sm` → `xl`: 4 columns.
-  - `≥ xl`: 12 columns.
-  - `≥ 3xl` (`120rem`, very large screens): still 12 columns, with a **wide placement** (below) so cards do not stretch over the extra width. Decision 2026-11-04: adapt the layout like on phones instead of capping the page width.
+- **Grid units** (decision 2026-11-04): the grid follows the **width available to the sheet** (container queries on a wrapper of the grid), not the viewport width, so an open sidebar (16rem from `md`) is taken into account and the layout switches back when the sidebar is collapsed. Thresholds on the available width:
+  - `< 36rem`: 2 columns (mobile placement, below "`< sm`").
+  - `36rem` → `56rem`: 4 columns (tablet placement, below "`sm` → `xl`").
+  - `≥ 56rem`: 12 columns (desktop placement, below "`≥ xl`").
+  - `≥ 96rem` (very large screens): still 12 columns, with a **wide placement** (below "`≥ 3xl`") so cards do not stretch over the extra width. Decision 2026-11-04: adapt the layout like on phones instead of capping the page width.
+  - In the placement rules below, `< sm`, `sm` → `xl`, `≥ xl` and `≥ 3xl` name these width ranges. Spacing (gap, page padding) stays viewport-based. Other sheet tabs keep viewport breakpoints.
 - **Uniform spacing**: a single gap token for both axes (`gap-3`, `md:gap-4`). Cards MUST NOT add outer margins or wrapper elements that introduce extra spacing between cards.
 - **Compact tiles** (read mode): short label/value cards (PC: proficiency bonus, passive perception, inspiration, exhaustion) render as compact tiles (label on top, prominent value below) that share a row instead of each taking a full-width row.
 - **Placement intent** (≥ xl, PC read mode):
@@ -5414,14 +5415,14 @@ Each initiative tracker row carries:
   - Band 4: Abilities (12, full width).
 - **Wide placement intent** (≥ 3xl, PC read mode, decision 2026-11-04): Band 1 (2 rows): Character (3, spans 2 rows) · Statistics (5, spans 2 rows) · on the right (4 cols): the 4 tiles side by side on one row (1 col each), then Proficiencies right under them (4 cols, explicitly placed in that zone, DOM order unchanged). Band 2: Skills · Ability scores · Saving throws (unchanged). Band 3: Abilities (12).
 - **Wide placement intent** (≥ 3xl, PC edit mode): edit tiles hold form controls and the Proficiencies form is long, so edit mode keeps the 4 tiles as a 2 × 2 block (2 cols each) next to the statistics and Proficiencies full width in band 3.
-- **PC DOM order**: Character · Statistics · 4 tiles · Skills · Ability scores · Saving throws · Proficiencies · Abilities. On tablet the PC follows the NPC band 2 (half-width Skills on the left over two rows, Ability scores then Saving throws on the right). Alignment and background are in the Character card (FR-character-identity-card).
+- **PC DOM order**: Character · Statistics · 4 tiles · Skills · Ability scores · Saving throws · Proficiencies · Abilities. On tablet the PC follows the NPC tablet placement (half-width Skills on the left over three rows, Ability scores, Saving throws then Proficiencies on the right). Alignment and background are in the Character card (FR-character-identity-card).
 - **Placement intent** (NPC read and edit modes, decision 2026-11-04 — GM constraint): the Skills card is **tall** (spans 2 rows), placed **as far left as possible** and wide enough for a 3-column skills list; right to its right sit Ability scores then Saving throws just below. DOM order: Character · Statistics · Skills · Ability scores · Saving throws · Proficiencies · Abilities. Alignment is in the Character card, passive perception in the Statistics card (no NPC tiles).
   - `≥ xl` (and `3xl`, same placement): Band 1: Character (4) · Statistics (8). Band 2 (2 rows): Skills (8, spans both rows, 3-column list) on the left; right column (4): Ability scores, then Saving throws right under it. Band 3: Proficiencies (12, full width, sections in columns). Band 4: Abilities (12). The Character card does not span rows, so a sparse NPC identity is not stretched.
-  - `sm` → `xl`: Character and Statistics full width; Skills (half, spans 2 rows) on the left · Ability scores (half) with Saving throws (half) under it; Proficiencies and Abilities full width.
+  - `sm` → `xl` (decision 2026-11-04: a single-column skills list is tall, so the right column must not be stretched): Character and Statistics full width; Skills (half, spans 3 rows) on the left · on the right (half): Ability scores, then Saving throws, then Proficiencies; Abilities full width.
   - `< sm`: every card full width (Skills, then Ability scores, then Saving throws).
 - **Wide lists**: long lists (skills) lay out by card width, not viewport width (container queries on the card), so a wide card shows 2–3 columns and stays balanced with its neighbours.
 - **Edit mode**: same cards, same order and same zones as read mode so the sheet does not reshuffle when toggling edit. Edit tiles hold form controls, so they are wider: 4 cols at `xl` (two per row, Character spans 3 rows for PC), half width at `sm`, full width below `sm`.
-- **Tablet / mobile**: same reading order; Character, Statistics, Skills (PC; NPC skills are half width on tablet, see NPC placement), Proficiencies and Abilities take the full width; Ability scores and Saving throws take half width at `sm` and full width below; read tiles take 1 column on mobile so a tiles row never leaves an orphan cell.
+- **Tablet / mobile**: same reading order; Character, Statistics and Abilities take the full width; on tablet Skills, Ability scores, Saving throws and Proficiencies take half width (see NPC placement), full width below `sm`; read tiles take 1 column on mobile so a tiles row never leaves an orphan cell.
 - **No holes, no empty cards**: grid items stretch to their track height (no `h-fit` on grid children), and **every** card distributes its own content over that height, so no card shows a blank area below its content:
   - Grids of values (ability scores, saving throws) spread their rows evenly over the card height.
   - Lists and label/value stacks (Character, Statistics, Skills, Proficiencies) spread their items from the top to the bottom of the card (first item under the heading, last item at the bottom).
