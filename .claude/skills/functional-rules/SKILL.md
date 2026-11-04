@@ -22,7 +22,7 @@ Sources of truth: `AGENTS.md` (workflow gate, §4.1 amend vs create), `docs/func
 
 Start with `refs` on the files the change touches: the rule listing them under **References** is usually the owner. Then `search` the feature vocabulary. Read in full (`show`) only the 1–3 candidates.
 
-Session / WebSocket work: also read the rules listed in `AGENTS.md` §10.1 and follow its checklist.
+Session / WebSocket work: also load the `sessions-websocket` skill (`.claude/skills/sessions-websocket/SKILL.md`) and follow its pre-work and checklist.
 
 ## 2. Classify
 
