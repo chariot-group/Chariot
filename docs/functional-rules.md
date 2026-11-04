@@ -1414,6 +1414,7 @@ When adding a rule:
 - The document must describe current conventions as observable facts before proposing standardization guidance
 - Agent workflow rules (`AGENTS.md`) must explicitly require consulting the design rules document before any frontend feature implementation
 - The design document should be updated when major UI conventions change
+- Password visibility toggles (web client and Keycloak theme) must stay reachable by keyboard (no `tabindex="-1"`), show a visible focus indicator (`:focus-visible`), and expose their state via `aria-pressed` with a stable accessible name (RGAA 7.1, 7.3, 10.7)
 
 **Prohibitions**:
 
