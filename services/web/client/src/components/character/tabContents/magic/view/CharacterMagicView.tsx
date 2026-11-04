@@ -34,7 +34,7 @@ import {
 } from "@/components/character/tabContents/magic/shared/SpellcastingParts";
 import {
   buildSpellGroups,
-  MAGIC_BENTO_GRID_CLASS,
+  magicBentoGridClass,
   MAGIC_SLOTS,
   spellRequiresConcentration,
   spellRowValue,
@@ -266,7 +266,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
   const allRows = spells.map((_, index) => spellRowValue(index));
 
   return (
-    <div className={MAGIC_BENTO_GRID_CLASS}>
+    <div className={magicBentoGridClass(spellcastingList.length > 1)}>
       {spellcastingList.length > 1 && (
         <SpellcastingSelector
           className={MAGIC_SLOTS.selector}
@@ -297,6 +297,7 @@ export default function CharacterMagicView({ character, accentColor, onCharacter
         accentColor={accentColor}
         className={MAGIC_SLOTS.spells}
         bounded
+        fill
         expanded={openRows.length > 0}
         onToggleAll={() => setOpenRows(openRows.length > 0 ? [] : allRows)}
         expandLabel={tMagic("expandAll")}

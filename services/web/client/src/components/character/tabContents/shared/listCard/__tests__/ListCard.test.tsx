@@ -6,7 +6,7 @@ import ListRow from "@/components/character/tabContents/shared/listCard/ListRow"
 
 const renderList = (
   rows: Array<{ name: string; meta?: string[]; hasError?: boolean; open?: boolean }>,
-  options: { bounded?: boolean; boundedClassName?: string } = {},
+  options: { bounded?: boolean; boundedClassName?: string; fill?: boolean } = {},
 ) =>
   renderToStaticMarkup(
     <ListCard
@@ -75,6 +75,21 @@ describe("ListCard / ListRow", () => {
     const edit = renderList([{ name: "Scimitar" }], { bounded: true, boundedClassName: "max-h-[min(40rem,70dvh)]" });
     expect(edit).toContain("max-h-[min(40rem,70dvh)]");
     expect(edit).not.toContain("max-h-[28rem]");
+  });
+
+  it("nominal: fill lets the bounded rows take the card height from xl, the cap stays below", () => {
+    const html = renderList([{ name: "Scimitar" }], { bounded: true, fill: true });
+
+    expect(html).toMatch(/data-slot="card" class="[^"]*xl:min-h-0/);
+    expect(html).toMatch(/class="[^"]*max-h-\[28rem\][^"]*xl:max-h-none[^"]*xl:min-h-0[^"]*xl:flex-1/);
+  });
+
+  it("failure: without fill, a bounded list keeps its cap at every breakpoint", () => {
+    const html = renderList([{ name: "Scimitar" }], { bounded: true });
+
+    expect(html).toContain("max-h-[28rem]");
+    expect(html).not.toContain("xl:max-h-none");
+    expect(html).not.toContain("xl:flex-1");
   });
 
   it("failure: an invalid row is outlined with the destructive ring", () => {

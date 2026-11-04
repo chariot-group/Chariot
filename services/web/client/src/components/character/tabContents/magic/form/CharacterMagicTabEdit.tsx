@@ -47,7 +47,7 @@ import {
 } from "@/components/character/tabContents/magic/shared/SpellcastingParts";
 import {
   buildSpellGroups,
-  MAGIC_BENTO_GRID_CLASS,
+  magicBentoGridClass,
   MAGIC_SLOTS,
   spellRowValue,
   spellSummaryParts,
@@ -526,9 +526,11 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
     ];
   });
 
+  const showSelector = blockLabels.length > 1 || canAddBlock;
+
   return (
-    <div className={MAGIC_BENTO_GRID_CLASS}>
-      {(blockLabels.length > 1 || canAddBlock) && (
+    <div className={magicBentoGridClass(showSelector)}>
+      {showSelector && (
         <SpellcastingSelector
           className={MAGIC_SLOTS.selector}
           labels={blockLabels}
@@ -581,6 +583,7 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
         accentColor={accentColor}
         className={MAGIC_SLOTS.spells}
         bounded
+        fill
         boundedClassName={EDIT_LIST_MAX_HEIGHT_CLASS}
         actions={
           <>

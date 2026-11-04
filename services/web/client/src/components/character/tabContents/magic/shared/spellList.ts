@@ -2,9 +2,34 @@ import type { Spell } from "@/types/character";
 import { getSpellLevelsFromSpells, npcUsesKey } from "@/utils/magic.utils";
 import { formatDamageFormula, formatSpellDamageList } from "@/utils/spell-damage.utils";
 import { isConcentrationSpell } from "@/components/initiativeTracker/concentration.utils";
-import { BENTO_FULL_SLOT as FULL } from "@/components/character/tabContents/general/shared/generalBentoLayout";
+import {
+  BENTO_FULL_SLOT as FULL,
+  BENTO_GRID_CLASS,
+} from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
-export { BENTO_GRID_CLASS as MAGIC_BENTO_GRID_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
+export const MAGIC_BENTO_GRID_CLASS = BENTO_GRID_CLASS;
+
+/**
+ * Magic tab panel (`CharacterTabPanels`, direct child of the sheet scroll area, itself sized by the
+ * layout flex chain: header / navbar, sheet header and footer already taken out). From `xl` it fills
+ * the remaining height of that scroll area, never below a minimum: on a short screen the sheet
+ * scrolls instead of crushing the Spells list. No viewport `calc()`.
+ * @see FR-character-magic-list-card
+ */
+export const MAGIC_TAB_PANEL_CLASS = "xl:flex xl:flex-1 xl:flex-col xl:min-h-[28rem]";
+/** Body of the Magic panel: passes the panel height down to the grid. */
+export const MAGIC_TAB_BODY_CLASS = "flex min-h-0 flex-col xl:flex-1";
+
+/**
+ * Magic grid: from `xl` it takes the panel height; the selector (when shown) and Spellcasting rows
+ * keep their content height, the Spells row takes the rest. Below `xl` the grid keeps its content
+ * height (the Spells list keeps its shared cap).
+ * @see FR-character-magic-list-card
+ */
+export function magicBentoGridClass(hasSelector: boolean) {
+  const rows = hasSelector ? "xl:grid-rows-[auto_auto_minmax(0,1fr)]" : "xl:grid-rows-[auto_minmax(0,1fr)]";
+  return `${BENTO_GRID_CLASS} xl:flex-1 xl:min-h-0 ${rows}`;
+}
 
 /**
  * Bento slots of the Magic tab (read and edit): the class selector, a compact Spellcasting band,

@@ -153,6 +153,18 @@ describe("Magic tab — bento grid and spell list card", () => {
     });
   }
 
+  for (const [name, renderCase] of Object.entries(CASES)) {
+    it(`nominal: ${name} Spells rows fill the card from xl and keep their cap below`, () => {
+      const html = renderCase();
+      const list = html.slice(html.lastIndexOf('data-slot="card"'));
+      const rows = list.match(/<div class="([^"]*overflow-y-auto[^"]*)"/)?.[1].split(" ") ?? [];
+
+      expect(list).toMatch(/data-slot="card" class="[^"]*xl:min-h-0/);
+      expect(rows).toEqual(expect.arrayContaining(["xl:max-h-none", "xl:min-h-0", "xl:flex-1"]));
+      expect(rows).toContain(name === "edit" ? "max-h-[min(40rem,70dvh)]" : "max-h-[28rem]");
+    });
+  }
+
   it("nominal: collapsed read row shows school · casting time · range · damage", () => {
     const html = CASES.view();
 

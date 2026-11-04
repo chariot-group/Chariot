@@ -3,7 +3,10 @@ import type { Spell } from "@/types/character";
 import { BREAKPOINTS, emptyCells } from "@/components/character/tabContents/__tests__/bentoPlacement";
 import {
   buildSpellGroups,
+  magicBentoGridClass,
   MAGIC_SLOTS,
+  MAGIC_TAB_BODY_CLASS,
+  MAGIC_TAB_PANEL_CLASS,
   spellSummaryParts,
 } from "@/components/character/tabContents/magic/shared/spellList";
 
@@ -103,4 +106,36 @@ describe("Magic tab — bento slots", () => {
       expect(emptyCells([MAGIC_SLOTS.spellcasting, MAGIC_SLOTS.spells], bp)).toEqual([]);
     });
   }
+});
+
+/** @see FR-character-magic-list-card (height fill from `xl`) */
+describe("Magic tab — height fill grid", () => {
+  it("nominal: from xl the grid takes the panel height and the last row takes the rest", () => {
+    const classes = magicBentoGridClass(false).split(" ");
+
+    expect(classes).toEqual(expect.arrayContaining(["xl:flex-1", "xl:min-h-0", "xl:grid-rows-[auto_minmax(0,1fr)]"]));
+  });
+
+  it("nominal: the panel fills the sheet scroll area from the layout flex chain, not a viewport calc", () => {
+    for (const cls of [MAGIC_TAB_PANEL_CLASS, MAGIC_TAB_BODY_CLASS]) {
+      expect(cls.split(" ")).toContain("xl:flex-1");
+      expect(cls).not.toMatch(/dvh|vh|calc\(/);
+    }
+  });
+
+  it("edge: on a short screen the panel keeps a minimum height (the sheet scrolls instead)", () => {
+    expect(MAGIC_TAB_PANEL_CLASS.split(" ")).toContain("xl:min-h-[28rem]");
+  });
+
+  it("edge: with the block selector, an extra auto row keeps the Spells card on the last row", () => {
+    expect(magicBentoGridClass(true).split(" ")).toContain("xl:grid-rows-[auto_auto_minmax(0,1fr)]");
+  });
+
+  it("edge: below xl the grid has no fixed height nor explicit rows", () => {
+    const unprefixed = magicBentoGridClass(true)
+      .split(" ")
+      .filter((cls) => !cls.includes(":"));
+
+    expect(unprefixed.some((cls) => cls.startsWith("h-") || cls.startsWith("grid-rows-"))).toBe(false);
+  });
 });

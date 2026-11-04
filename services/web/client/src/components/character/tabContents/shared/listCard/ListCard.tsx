@@ -28,9 +28,20 @@ interface ListCardProps {
   bounded?: boolean;
   /** Overrides the bounded max height (edit mode uses a taller cap). */
   boundedClassName?: string;
+  /**
+   * From `xl`, the bounded rows area drops its cap and fills the card height (the card must be given
+   * a definite height by its slot, e.g. a `minmax(0, 1fr)` grid row). Below `xl` the cap stays.
+   * @see FR-character-magic-list-card
+   */
+  fill?: boolean;
   /** The rows (an `Accordion` of `ListRow`). */
   children: ReactNode;
 }
+
+/** `fill`: the card may shrink to its grid track from `xl`. */
+export const LIST_CARD_FILL_CLASS = "xl:min-h-0";
+/** `fill`: from `xl` the rows area takes the remaining card height instead of its cap. */
+export const LIST_ROWS_FILL_CLASS = "xl:max-h-none xl:min-h-0 xl:flex-1";
 
 /**
  * One card holding a list header and its rows (actions, abilities), read and edit modes.
@@ -51,13 +62,14 @@ export default function ListCard({
   emptyLabel,
   bounded = false,
   boundedClassName,
+  fill = false,
   children,
 }: ListCardProps) {
   const isEmpty = count === 0;
 
   return (
     <Card
-      className={cn("@container min-w-0 gap-3 p-4 md:px-6", className)}
+      className={cn("@container min-w-0 gap-3 p-4 md:px-6", fill && LIST_CARD_FILL_CLASS, className)}
       role="region"
       aria-labelledby={headingId}>
       <div className="flex min-w-0 flex-col gap-2">
@@ -103,7 +115,7 @@ export default function ListCard({
         <p className="text-sm text-muted-foreground sm:text-base">{emptyLabel}</p>
       ) : bounded ? (
         <div
-          className={cn(BENTO_BOUNDED_LIST_CLASS, boundedClassName)}
+          className={cn(BENTO_BOUNDED_LIST_CLASS, boundedClassName, fill && LIST_ROWS_FILL_CLASS)}
           role="group"
           aria-labelledby={headingId}
           tabIndex={0}>

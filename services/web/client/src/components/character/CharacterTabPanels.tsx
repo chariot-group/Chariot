@@ -11,6 +11,11 @@ import { tabsForCharacterSheet, TAB_COLORS, type CharacterTab } from "@/componen
 import { UseCharacterFormReturn } from "@/hooks/useCharacterForm";
 import { NPC, Player } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
+import { cn } from "@/lib/utils";
+import {
+    MAGIC_TAB_BODY_CLASS,
+    MAGIC_TAB_PANEL_CLASS,
+} from "@/components/character/tabContents/magic/shared/spellList";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import type { ReactNode } from "react";
@@ -48,7 +53,7 @@ export default function CharacterTabPanels({
                 <TabsContent
                     key={tab}
                     value={tab}
-                    className="mt-0 flex-none focus:outline-none"
+                    className={cn("mt-0 flex-none focus:outline-none", tab === "magic" && MAGIC_TAB_PANEL_CLASS)}
                     role="tabpanel"
                     id={`${tab}-content`}
                     aria-labelledby={tab}
@@ -78,7 +83,7 @@ export default function CharacterTabPanels({
                                 );
                             case "magic":
                                 return (
-                                    <div className="flex flex-col min-h-0 max-xl:max-h-none xl:h-[calc(100dvh-9.5rem)] 2xl:h-[calc(100dvh-8.75rem)] min-[1920px]:h-[calc(100dvh-8rem)] min-[2560px]:h-[calc(100dvh-7.5rem)]">
+                                    <div className={MAGIC_TAB_BODY_CLASS}>
                                         <CharacterMagicTabContent
                                             character={character}
                                             accentColor={TAB_COLORS[tab]}
