@@ -33,8 +33,8 @@ const HALF = BENTO_HALF_SLOT;
 export const PLAYER_VIEW_SLOTS = {
   character: `${FULL} xl:col-span-4 xl:row-span-2 3xl:col-span-3`,
   statistics: `${FULL} xl:col-span-8 3xl:col-span-5 3xl:row-span-2`,
-  /** Proficiency bonus, passive perception, inspiration, exhaustion (2 × 2 next to the statistics from `3xl`). */
-  tile: "min-w-0 col-span-1 xl:col-span-2",
+  /** Proficiency bonus, passive perception, inspiration, exhaustion (one row next to the statistics from `3xl`). */
+  tile: "min-w-0 col-span-1 xl:col-span-2 3xl:col-span-1",
   /**
    * Tall and leftmost (same as NPC): spans the Ability scores + Saving throws rows from `sm`;
    * wide enough from `xl` for a 3-column list (container queries).
@@ -43,15 +43,20 @@ export const PLAYER_VIEW_SLOTS = {
   abilityScores: `${HALF} xl:col-span-4`,
   /** Right under the ability scores. */
   savingThrows: `${HALF} xl:col-span-4`,
-  /** Full width: its sections flow in columns (container queries). */
-  proficiencies: `${FULL} xl:col-span-12`,
+  /**
+   * Full width: its sections flow in columns (container queries). From `3xl` it moves up under the
+   * tiles, next to the statistics (explicit placement, DOM order unchanged).
+   */
+  proficiencies: `${FULL} xl:col-span-12 3xl:col-span-4 3xl:col-start-9 3xl:row-start-2`,
   abilities: `${FULL} xl:col-span-12`,
 } as const;
 
+/** Edit tiles hold form controls and the Proficiencies form is long: 2 × 2 tiles from `3xl`, Proficiencies full width. */
 export const PLAYER_EDIT_SLOTS = {
   ...PLAYER_VIEW_SLOTS,
   character: `${FULL} xl:col-span-4 xl:row-span-3 3xl:col-span-3 3xl:row-span-2`,
   tile: `${HALF} xl:col-span-4 3xl:col-span-2`,
+  proficiencies: `${FULL} xl:col-span-12`,
 } as const;
 
 /**

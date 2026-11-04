@@ -22,16 +22,39 @@ export const spanAt = (classes: string, kind: "col" | "row", bp: Breakpoint) => 
   return span;
 };
 
-/** Sparse row auto-placement (CSS Grid default); returns the occupancy matrix. */
+/** Explicit `col-start` / `row-start` line at a breakpoint (1-based), or `undefined` (auto). */
+export const startAt = (classes: string, kind: "col" | "row", bp: Breakpoint) => {
+  let start: number | undefined;
+  for (const prefix of bp.prefixes) {
+    const match = classes.split(/\s+/).find((c) => new RegExp(`^${prefix}${kind}-start-(\\d+)$`).test(c));
+    if (match) start = Number(match.split("-").pop());
+  }
+  return start;
+};
+
+/**
+ * Sparse row auto-placement (CSS Grid default); returns the occupancy matrix.
+ * Slots with both an explicit column and row start are placed first, like CSS Grid.
+ */
 export const place = (slots: string[], bp: Breakpoint) => {
   const grid: boolean[][] = [];
   const free = (r: number, c: number, w: number, h: number) => {
     for (let y = r; y < r + h; y++) for (let x = c; x < c + w; x++) if (grid[y]?.[x]) return false;
     return true;
   };
+  const fill = (r: number, c: number, w: number, h: number) => {
+    for (let y = 0; y < r + h; y++) grid[y] ??= Array(bp.columns).fill(false);
+    for (let y = r; y < r + h; y++) for (let x = c; x < c + w; x++) grid[y][x] = true;
+  };
+  const isFixed = (classes: string) =>
+    startAt(classes, "col", bp) !== undefined && startAt(classes, "row", bp) !== undefined;
+  for (const classes of slots.filter(isFixed)) {
+    const w = Math.min(spanAt(classes, "col", bp), bp.columns);
+    fill(startAt(classes, "row", bp)! - 1, startAt(classes, "col", bp)! - 1, w, spanAt(classes, "row", bp));
+  }
   let cursorRow = 0;
   let cursorCol = 0;
-  for (const classes of slots) {
+  for (const classes of slots.filter((c) => !isFixed(c))) {
     const w = Math.min(spanAt(classes, "col", bp), bp.columns);
     const h = spanAt(classes, "row", bp);
     let r = cursorRow;
@@ -43,10 +66,7 @@ export const place = (slots: string[], bp: Breakpoint) => {
         r++;
       }
     }
-    for (let y = r; y < r + h; y++) {
-      grid[y] ??= Array(bp.columns).fill(false);
-      for (let x = c; x < c + w; x++) grid[y][x] = true;
-    }
+    fill(r, c, w, h);
     cursorRow = r;
     cursorCol = c + w;
   }
