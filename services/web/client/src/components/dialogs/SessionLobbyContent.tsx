@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
 import { SessionWheelDepositBar } from "@/components/dialogs/SessionWheelDepositBar";
 import { selectSessionStatus, selectSessionTokensByUser, selectSessionCompanionNpcs } from "@/store/slices/sessionSlice";
-import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
+import { SessionExitActions } from "@/components/dialogs/SessionExitActions";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import {
@@ -318,7 +318,6 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               isLaunching={isLaunching}
               isLeaving={isLeaving}
               quotaFull={quotaFull}
-              leaveLabel={t("players.leaveButton")}
               onAddOne={handleAddToken}
               onRemoveOne={handleRemoveToken}
               onRemoveAll={() => handleRemoveTokenAmount(myDeposited)}
@@ -329,23 +328,12 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
           </div>
         ) : (
           <div className="flex shrink-0 flex-wrap justify-end gap-2 px-4 pb-4 sm:px-6 sm:pb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLeave}
-              disabled={isLeaving}>
-              {t("players.leaveButton")}
-            </Button>
-            {isMJ && (
-              <ConfirmCancelSessionDialog onConfirm={handleCloseSession}>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm">
-                  Clôturer la session
-                </Button>
-              </ConfirmCancelSessionDialog>
-            )}
+            <SessionExitActions
+              isMJ={Boolean(isMJ)}
+              isLeaving={isLeaving}
+              onLeave={handleLeave}
+              onCloseSession={handleCloseSession}
+            />
           </div>
         )}
       </div>

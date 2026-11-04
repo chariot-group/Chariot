@@ -3561,9 +3561,19 @@ Each initiative tracker row carries:
 - Navigate internally with `window.location.href` to open the lobby
 - Open the lobby from a service class without component-level Redux dispatch
 
+### Leaving the session
+
+- « Quitter la session » (player and GM, before and after launch) MUST open a confirmation dialog (`ConfirmLeaveSessionDialog`) instead of leaving immediately
+- The dialog MUST explain the consequences: the user is disconnected and must rejoin to keep playing; for a player, their character is removed from the campaign groups. For the GM, leaving does NOT end the session (« Clôturer la session » stays a separate action)
+- The dialog MUST offer **Annuler** (outline) and a **destructive** confirm button; Cancel, Escape and overlay click MUST close without leaving; the confirm button MUST be disabled while leaving
+- Trigger layout: **player** → one solid destructive « Quitter la session » button; **GM** (where closing is available) → split button whose main part is « Clôturer la session » (solid destructive) and whose arrow opens a menu with « Quitter la session »; each action opens its own confirmation dialog. Where the GM cannot close (pre-launch wheel bar), the GM gets the same solid destructive leave button as a player
+- Accessibility: titled/described dialog, focus trapped and restored to the trigger, fully keyboard operable, red text contrast OK in light and dark themes
+
 **Tests**:
 
 - Nominal: `openSessionLobby` sets `sessionLobbyOpen` to `true`; `closeSessionLobby` resets it to `false`
+- Nominal: player gets a single leave button; GM gets the close split button with leave in its menu; leave description mentions group removal only for a player
+- Failure: leave confirm is blocked while a leave is in progress
 - Edge: calling `openSessionLobby` twice remains idempotent (`true`)
 - Edge: `selectSessionLobbyOpen` defaults to `false` when field is absent (rehydration safety)
 - Failure: dialog does not render when `code` or `campaignId` is missing in Redux

@@ -1880,6 +1880,16 @@
       },
       "confirm": "Retourner à l'accueil"
     },
+    "sessionExit": {
+      "groupAria": "Actions de fin de session",
+      "moreAria": "Autres actions de fin de session"
+    },
+    "sessionLeave": {
+      "title": "Quitter la session ?",
+      "descriptionPlayer": "Vous serez déconnecté de la session et devrez la rejoindre à nouveau pour continuer à jouer. Votre personnage sera retiré des groupes de la campagne.",
+      "descriptionGm": "Vous serez déconnecté de la session et devrez la rejoindre à nouveau pour continuer à jouer. La session ne sera pas clôturée pour les autres participants.",
+      "confirm": "Quitter la session"
+    },
     "sessionCancel": {
       "title": "Clôturer la session",
       "description": "Vous vous apprêterez à clôturer la session. Tous les participants seront déconnectés et devront rejoindre une nouvelle session pour continuer à jouer ensemble.",

@@ -1876,6 +1876,16 @@
       },
       "confirm": "Back to home"
     },
+    "sessionExit": {
+      "groupAria": "End of session actions",
+      "moreAria": "More end of session actions"
+    },
+    "sessionLeave": {
+      "title": "Leave the session?",
+      "descriptionPlayer": "You will be disconnected from the session and will need to join again to keep playing. Your character will be removed from the campaign groups.",
+      "descriptionGm": "You will be disconnected from the session and will need to join again to keep playing. The session will not be ended for the other participants.",
+      "confirm": "Leave session"
+    },
     "sessionCancel": {
       "title": "End session",
       "description": "You are about to end the session. All participants will be logged out and will need to join a new session to continue playing together.",
