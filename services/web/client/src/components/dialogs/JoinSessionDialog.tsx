@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,8 +19,9 @@ import { Loader2 } from "lucide-react";
 import sessionService from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
-import { loadCompanionCountsForPlayers } from "@/lib/sessionJoinCompanionVisibility";
-import { useAppDispatch } from "@/store/hooks";
+import { loadCompanionCountsForPlayers, orderSessionCharactersLikeSidebar } from "@/lib/sessionJoinCompanionVisibility";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectCharactersWithoutGroup } from "@/store/slices/characterSlice";
 import { setCurrentSession, openSessionLobby } from "@/store/slices/sessionSlice";
 
 interface JoinSessionDialogProps {
@@ -52,6 +53,11 @@ export function JoinSessionDialog({
   const [code, setCode] = useState(initialCode);
   const [characterId, setCharacterId] = useState("");
   const [characters, setCharacters] = useState<Character[]>([]);
+  const sidebarPlayers = useAppSelector(selectCharactersWithoutGroup);
+  const orderedCharacters = useMemo(
+    () => orderSessionCharactersLikeSidebar(characters, sidebarPlayers),
+    [characters, sidebarPlayers],
+  );
   const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>(
     {},
   );
@@ -178,7 +184,7 @@ export function JoinSessionDialog({
             </InputOTPGroup>
           </InputOTP>
           <CharacterSelect
-            characters={characters}
+            characters={orderedCharacters}
             value={characterId}
             onValueChange={setCharacterId}
             placeholder={t("joinSessionSelectCharacterPlaceholder")}

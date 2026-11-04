@@ -4725,6 +4725,11 @@ Each initiative tracker row carries:
 - Companion list is derived from NPCs whose `linkedPlayerId` matches the Player id (existing `GET /characters/npcs/by-linked-players`).
 - The picker remains Player-only (`GET /characters/players/without-group`). NPCs MUST NOT appear as selectable rows.
 
+**Order**:
+
+- Players MUST be listed in the same order as the Player rows of the user's player-space sidebar (`charactersWithoutGroup` client state: newly created at the top, edited ones kept in place), not in the raw re-fetch order.
+- Players returned by the picker fetch but not yet known to the sidebar (pagination, never fetched) MUST come after the sidebar-known ones, keeping API order. Sidebar Players absent from the fetch MUST NOT be added.
+
 **Failure and loading**:
 
 - Companion lookup failure MUST NOT block join or character change. The picker still lists Players by name only (no false companion claim).
@@ -4753,7 +4758,10 @@ Each initiative tracker row carries:
 - Nominal: lobby character change before launch shows the same discreet count line for the current player's options.
 - Edge: Player name truncates without overflowing the dialog; accessible name still includes the count label.
 - Edge: companion API failure → Players remain selectable; no companion line is shown.
+- Nominal: sidebar order `[C, A, B]`, picker fetch `[A, B, C]` → picker shows `[C, A, B]` (join dialog and lobby).
+- Edge: a Player unknown to the sidebar is listed after the sidebar-known ones; empty sidebar → API order unchanged.
 - Failure: a linked NPC MUST NOT appear as a selectable session character.
+- Failure: a sidebar Player missing from the picker fetch is not added.
 
 **References**:
 
@@ -4763,7 +4771,8 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useSessionData.ts`
 - `services/web/client/src/lib/sessionJoinCompanionVisibility.ts`
 - `services/web/client/src/services/CharacterService.ts`
-- `docs/functional-rules.md` — FR-npc-player-link, FR-session-lobby-modal, FR-session-player-companion-combatants, FR-frontend-design
+- `services/web/client/src/store/slices/characterSlice.ts`
+- `docs/functional-rules.md` — FR-npc-player-link, FR-sidebar-navigation, FR-session-lobby-modal, FR-session-player-companion-combatants, FR-frontend-design
 - `docs/design.md`
 
 ---

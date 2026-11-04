@@ -1,7 +1,7 @@
 /** @see FR-session-join-companion-visibility */
 
 import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
-import type { NPC } from "@/types/character";
+import type { Character, NPC } from "@/types/character";
 
 export function companionCountByPlayerId(npcs: NPC[]): Record<string, number> {
   const counts: Record<string, number> = {};
@@ -36,4 +36,21 @@ export async function loadCompanionCountsForPlayers(
   } catch {
     return {};
   }
+}
+
+/**
+ * Orders session picker Players like the player-space sidebar (`charactersWithoutGroup`).
+ * Players unknown to the sidebar follow, in fetch order; sidebar-only Players are not added.
+ */
+export function orderSessionCharactersLikeSidebar(characters: Character[], sidebarPlayers: Character[]): Character[] {
+  if (sidebarPlayers.length === 0 || characters.length === 0) return characters;
+  const sidebarIndexById = new Map<string, number>();
+  sidebarPlayers.forEach((player, index) => {
+    if (player?._id && !sidebarIndexById.has(player._id)) sidebarIndexById.set(player._id, index);
+  });
+  const rank = (character: Character) => sidebarIndexById.get(character._id) ?? Number.POSITIVE_INFINITY;
+  return characters
+    .map((character, fetchIndex) => ({ character, fetchIndex }))
+    .sort((left, right) => rank(left.character) - rank(right.character) || left.fetchIndex - right.fetchIndex)
+    .map(({ character }) => character);
 }
