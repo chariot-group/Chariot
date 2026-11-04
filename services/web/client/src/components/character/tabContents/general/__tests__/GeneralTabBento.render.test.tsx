@@ -115,7 +115,7 @@ const CASES = {
     ),
 };
 
-const EXPECTED_CARDS = { "player view": 13, "player edit": 13, "npc view": 9, "npc edit": 9 };
+const EXPECTED_CARDS = { "player view": 11, "player edit": 11, "npc view": 7, "npc edit": 7 };
 
 /** @see FR-character-general-bento-layout */
 describe("General tab — single bento grid", () => {
@@ -159,6 +159,81 @@ describe("General tab — single bento grid", () => {
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
+  it("nominal: PC and NPC view and edit render skills, then ability scores, then saving throws (GM constraint)", () => {
+    const orders = {
+      "player view": ["skills-heading", "characteristics-heading", "saving-throws-heading", "proficiencies-heading"],
+      "player edit": [
+        "skills-heading-edit",
+        "character-characteristics-edit",
+        "character-savingthrows-edit",
+        "character-proficiencies-edit",
+      ],
+      "npc view": ["skills-heading", "characteristics-heading", "saving-throws-heading", "proficiencies-heading"],
+      "npc edit": [
+        "skills-heading-edit",
+        "character-characteristics-edit",
+        "character-savingthrows-edit",
+        "character-proficiencies-edit",
+      ],
+    } as const;
+    for (const [name, headingIds] of Object.entries(orders)) {
+      const html = CASES[name as keyof typeof CASES]();
+      const positions = headingIds.map((id) => html.indexOf(`id="${id}"`));
+
+      expect(
+        positions.every((pos) => pos > 0),
+        name,
+      ).toBe(true);
+      expect(
+        [...positions].sort((a, b) => a - b),
+        name,
+      ).toEqual(positions);
+    }
+  });
+
+  it("nominal: alignment and background are identity cells, NPC passive perception a statistics cell (no side tiles)", () => {
+    const player = CASES["player view"]();
+    const npcHtml = CASES["npc view"]();
+    const identity = (html: string) =>
+      html.slice(html.indexOf('id="character-heading"'), html.indexOf('data-stub="statistics"'));
+
+    for (const id of [
+      "alignment-heading",
+      "background-heading",
+      'passive-perception-heading"[^>]*>passivePerception<',
+    ]) {
+      expect(npcHtml).not.toMatch(new RegExp(`id="${id}`));
+    }
+    expect(player).not.toContain('id="alignment-heading"');
+    expect(player).not.toContain('id="background-heading"');
+    expect(identity(player)).toContain(">alignment</dt>");
+    expect(identity(player)).toContain(">background</dt>");
+    expect(identity(player)).toContain("Acolyte");
+    expect(identity(npcHtml)).toContain(">alignment</dt>");
+  });
+
+  it("edge: edit mode moves alignment / background into the character card and NPC passive perception into the statistics card", () => {
+    const playerEdit = CASES["player edit"]();
+    const npcEdit = CASES["npc edit"]();
+    const characterCard = (html: string) =>
+      html.slice(html.indexOf('aria-labelledby="character-profile-edit"'), html.indexOf('data-stub="statistics"'));
+
+    expect(characterCard(playerEdit)).toContain('id="alignment"');
+    expect(characterCard(playerEdit)).toContain('for="background"');
+    expect(characterCard(npcEdit)).toContain('id="alignment"');
+    expect(playerEdit).not.toContain('id="alignment-heading-edit"');
+    expect(npcEdit).not.toContain('id="passive-perception-heading-edit"');
+    expect(npcEdit.match(/id="alignment"/g)).toHaveLength(1);
+  });
+
+  it("nominal: PC edit shows alignment and background before the classes", () => {
+    const html = CASES["player edit"]();
+    const positions = ['id="alignment"', 'for="background"', 'id="class-name-0"'].map((needle) => html.indexOf(needle));
+
+    expect(positions.every((pos) => pos > 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+  });
+
   it("nominal: fixed-content cards spread their grid over the card height (no blank bottom)", () => {
     for (const name of ["player view", "npc view"] as const) {
       const html = CASES[name]();
@@ -175,7 +250,9 @@ describe("General tab — single bento grid", () => {
       const after = (headingId: string) => html.slice(html.indexOf(`id="${headingId}"`));
 
       expect(html).toMatch(/aria-labelledby="character-heading"[^>]*><div class="flex flex-1 flex-col justify-between/);
-      expect(after("proficiencies-heading")).toMatch(/^[^]*?<dl class="flex flex-1 flex-col justify-between/);
+      expect(after("proficiencies-heading")).toMatch(
+        /^[^]*?<dl class="grid flex-1 content-start gap-x-6 gap-y-3 @lg:grid-cols-2/,
+      );
       expect(after("skills-heading")).toMatch(/^[^]*?class="grid flex-1 content-between/);
       expect(html).toMatch(/data-stub="statistics" class="[^"]*justify-between/);
     }

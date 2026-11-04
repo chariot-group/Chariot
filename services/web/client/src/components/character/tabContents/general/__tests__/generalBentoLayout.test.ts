@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BREAKPOINTS, emptyCells, place } from "@/components/character/tabContents/__tests__/bentoPlacement";
+import { BREAKPOINTS, emptyCells, place, spanAt } from "@/components/character/tabContents/__tests__/bentoPlacement";
 import {
   NPC_EDIT_SLOTS,
   NPC_VIEW_SLOTS,
@@ -16,11 +16,9 @@ const LAYOUTS = {
     s.tile,
     s.tile,
     s.tile,
+    s.skills,
     s.abilityScores,
     s.savingThrows,
-    s.sideTile,
-    s.sideTile,
-    s.skills,
     s.proficiencies,
     s.abilities,
   ],
@@ -31,34 +29,28 @@ const LAYOUTS = {
     s.tile,
     s.tile,
     s.tile,
+    s.skills,
     s.abilityScores,
     s.savingThrows,
-    s.sideTile,
-    s.sideTile,
-    s.skills,
     s.proficiencies,
     s.abilities,
   ],
   "npc view": (s = NPC_VIEW_SLOTS) => [
     s.character,
     s.statistics,
+    s.skills,
     s.abilityScores,
     s.savingThrows,
     s.proficiencies,
-    s.skills,
-    s.tile,
-    s.tile,
     s.abilities,
   ],
   "npc edit": (s = NPC_EDIT_SLOTS) => [
     s.character,
     s.statistics,
+    s.skills,
     s.abilityScores,
     s.savingThrows,
     s.proficiencies,
-    s.skills,
-    s.tile,
-    s.tile,
     s.abilities,
   ],
 } as const;
@@ -84,11 +76,48 @@ describe("General tab bento layout", () => {
     for (const slots of [NPC_VIEW_SLOTS, NPC_EDIT_SLOTS]) expect(slots.character).not.toMatch(/row-span/);
   });
 
-  it("nominal: NPC tiles stack next to the skills on desktop", () => {
-    const grid = place([...LAYOUTS["npc view"]()].slice(0, 8), BREAKPOINTS.desktop);
+  it("nominal: PC and NPC skills are tall and leftmost, ability scores then saving throws stacked on their right", () => {
+    for (const name of Object.keys(LAYOUTS) as (keyof typeof LAYOUTS)[]) {
+      for (const bp of [BREAKPOINTS.desktop, BREAKPOINTS.wide]) {
+        const slots: string[] = [...LAYOUTS[name]()];
+        // Skills follow the character, the statistics and (PC) the four tiles
+        const skillsIndex = name.startsWith("player") ? 6 : 2;
+        const before = place(slots.slice(0, skillsIndex), bp).length;
+        const cols = (from: number, to: number) => Array.from({ length: to - from }, (_, i) => from + i);
+        const withSkills = place(slots.slice(0, skillsIndex + 1), bp);
+        const withAbility = place(slots.slice(0, skillsIndex + 2), bp);
+
+        // Skills alone fill the 8 left columns of both rows; ability scores then saving throws take the 4 right ones
+        for (const row of [before, before + 1]) {
+          const label = `${name} row ${row}`;
+          expect(
+            cols(0, 8).every((c) => withSkills[row][c]) && cols(8, 12).every((c) => !withSkills[row][c]),
+            label,
+          ).toBe(true);
+        }
+        expect(
+          cols(8, 12).every((c) => withAbility[before][c]),
+          name,
+        ).toBe(true);
+        expect(
+          cols(8, 12).every((c) => !withAbility[before + 1][c]),
+          name,
+        ).toBe(true);
+        expect(
+          place(slots.slice(0, skillsIndex + 3), bp).every((row) => row.every(Boolean)),
+          name,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("edge: on tablet NPC skills take the left half over two rows, ability scores then saving throws on the right", () => {
+    const withSkills = place([...LAYOUTS["npc view"]()].slice(0, 3), BREAKPOINTS.tablet);
+    const grid = place([...LAYOUTS["npc view"]()].slice(0, 5), BREAKPOINTS.tablet);
 
     expect(grid).toHaveLength(4);
-    expect(grid.slice(2).every((row) => row.every(Boolean))).toBe(true);
+    expect(grid.every((row) => row.every(Boolean))).toBe(true);
+    for (const row of [2, 3]) expect(withSkills[row]).toEqual([true, true, false, false]);
   });
 
   it("edge: every slot keeps min-w-0 so long values cannot widen the grid", () => {
@@ -97,8 +126,51 @@ describe("General tab bento layout", () => {
     }
   });
 
+  it("nominal: on very large screens the four PC tiles sit as a 2 × 2 block next to the statistics", () => {
+    for (const name of ["player view", "player edit"] as const) {
+      const slots = [...LAYOUTS[name]()];
+      const grid = place(slots.slice(0, 6), BREAKPOINTS.wide);
+
+      expect(grid, name).toHaveLength(2);
+      expect(
+        grid.every((row) => row.every(Boolean)),
+        name,
+      ).toBe(true);
+      expect(spanAt(slots[1], "col", BREAKPOINTS.wide), name).toBe(5);
+    }
+  });
+
+  it("edge: the wide placement does not change desktop spans (xl layout untouched), NPC has no wide override", () => {
+    for (const slots of [NPC_VIEW_SLOTS, NPC_EDIT_SLOTS]) {
+      for (const classes of Object.values(slots)) expect(classes).not.toContain("3xl:");
+    }
+    for (const slots of [PLAYER_VIEW_SLOTS, PLAYER_EDIT_SLOTS]) {
+      for (const classes of Object.values(slots)) {
+        const withoutWide = classes
+          .split(" ")
+          .filter((c) => !c.startsWith("3xl:"))
+          .join(" ");
+        expect(spanAt(withoutWide, "col", BREAKPOINTS.desktop)).toBe(spanAt(classes, "col", BREAKPOINTS.desktop));
+      }
+    }
+  });
+
+  it("failure: NPC skills without their row span would leave a hole under the skills", () => {
+    const slots: string[] = [...LAYOUTS["npc view"]()];
+    slots[2] = slots[2].replace("sm:row-span-2", "");
+
+    expect(emptyCells(slots, BREAKPOINTS.desktop)).not.toEqual([]);
+  });
+
+  it("failure: statistics without its wide row span would leave holes next to the tiles", () => {
+    const slots: string[] = [...LAYOUTS["player view"]()];
+    slots[1] = slots[1].replace("3xl:row-span-2", "");
+
+    expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
+  });
+
   it("failure: an extra half-width card after the abilities would leave a hole on tablet", () => {
-    const slots = [...LAYOUTS["npc view"](), PLAYER_VIEW_SLOTS.sideTile];
+    const slots = [...LAYOUTS["npc view"](), PLAYER_VIEW_SLOTS.abilityScores];
 
     expect(emptyCells(slots, BREAKPOINTS.tablet)).not.toEqual([]);
   });

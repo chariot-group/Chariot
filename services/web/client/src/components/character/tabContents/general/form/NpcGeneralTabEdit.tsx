@@ -254,103 +254,49 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
               />
             </div>
           </div>
-        </div>
-      </Card>
-
-      <NpcStatisticsUpdate
-        accentColor={accentColor}
-        form={form}
-        className={`${SLOTS.statistics} justify-between`}
-      />
-
-      {/* Caractéristiques */}
-      <GeneralSectionCard
-        headingId="character-characteristics-edit"
-        title={t("characteristics")}
-        accentColor={accentColor}
-        className={SLOTS.abilityScores}>
-        <AbilityScoresEdit
-          form={form}
-          className="flex-1 content-evenly"
-        />
-      </GeneralSectionCard>
-
-      <GeneralSectionCard
-        headingId="character-savingthrows-edit"
-        title={t("savingThrows")}
-        accentColor={accentColor}
-        className={SLOTS.savingThrows}>
-        <SavingThrowsEdit
-          form={form}
-          accentColor={accentColor}
-          className="flex-1 content-evenly"
-        />
-      </GeneralSectionCard>
-
-      {/* Maîtrises */}
-      <GeneralSectionCard
-        headingId="character-proficiencies-edit"
-        title={t("proficiencies")}
-        accentColor={accentColor}
-        className={SLOTS.proficiencies}>
-        <div className="flex flex-1 flex-col justify-between gap-4">
+          {/* Alignement (FR-character-identity-card) */}
           <Controller
-            name="stats.languages"
+            name="profile.alignment"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field
                 data-invalid={fieldState.invalid}
                 orientation="vertical">
                 <label
-                  htmlFor="npc-languages"
+                  htmlFor="alignment"
                   className="text-sm font-medium">
-                  {t("languages")}
+                  {t("alignment")}
                 </label>
-                <TagInput
-                  id="npc-languages"
-                  value={field.value || []}
-                  onChange={field.onChange}
-                  suggestions={t.raw("proficiencyOptions.languages")}
-                  placeholder={t("languages")}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "npc-languages-error" : undefined}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="npc-languages-error"
-                    errors={[fieldState.error]}
-                  />
-                )}
+                <Select
+                  value={field.value || ""}
+                  onValueChange={field.onChange}>
+                  <SelectTrigger id="alignment">
+                    <SelectValue placeholder={t("alignment")} />
+                  </SelectTrigger>
+                  <SelectContent position="item-aligned">
+                    <SelectGroup>
+                      {AlignmentEnum.options.map((alignment) => (
+                        <SelectItem
+                          key={alignment}
+                          value={alignment}>
+                          {tAlignment(alignment as Parameters<typeof tAlignment>[0])}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
-
-          <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-medium">{t("senses")}</h3>
-            <SensesUpdateSection
-              form={form}
-              accentColor={accentColor}
-              embedded
-            />
-          </div>
         </div>
-      </GeneralSectionCard>
+      </Card>
 
-      <GeneralSectionCard
-        headingId="skills-heading-edit"
-        title={t("skills")}
+      <NpcStatisticsUpdate
         accentColor={accentColor}
-        className={SLOTS.skills}>
-        <NpcSkillsEdit form={form} />
-      </GeneralSectionCard>
-
-      {/* Perception passive */}
-      <GeneralSectionCard
-        headingId="passive-perception-heading-edit"
-        title={t("passivePerception")}
-        accentColor={accentColor}
-        headingClassName="truncate"
-        className={SLOTS.tile}>
+        form={form}
+        className={`${SLOTS.statistics} justify-between`}>
+        {/* Perception passive (FR-character-statistics-card) */}
         <div className="flex flex-col gap-2">
           <Controller
             name="stats.passivePerception"
@@ -399,49 +345,87 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
             return null;
           })()}
         </div>
+      </NpcStatisticsUpdate>
+
+      <GeneralSectionCard
+        headingId="skills-heading-edit"
+        title={t("skills")}
+        accentColor={accentColor}
+        className={SLOTS.skills}>
+        <NpcSkillsEdit form={form} />
       </GeneralSectionCard>
 
-      {/* Alignement */}
+      {/* Caractéristiques */}
       <GeneralSectionCard
-        headingId="alignment-heading-edit"
-        title={t("alignment")}
+        headingId="character-characteristics-edit"
+        title={t("characteristics")}
         accentColor={accentColor}
-        headingClassName="truncate"
-        className={SLOTS.tile}>
-        <Controller
-          name="profile.alignment"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              data-invalid={fieldState.invalid}
-              orientation="vertical">
-              <label
-                htmlFor="alignment"
-                className="text-sm font-medium">
-                {t("alignment")}
-              </label>
-              <Select
-                value={field.value || ""}
-                onValueChange={field.onChange}>
-                <SelectTrigger id="alignment">
-                  <SelectValue placeholder={t("alignment")} />
-                </SelectTrigger>
-                <SelectContent position="item-aligned">
-                  <SelectGroup>
-                    {AlignmentEnum.options.map((alignment) => (
-                      <SelectItem
-                        key={alignment}
-                        value={alignment}>
-                        {tAlignment(alignment as Parameters<typeof tAlignment>[0])}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
+        className={SLOTS.abilityScores}>
+        <AbilityScoresEdit
+          form={form}
+          className="flex-1 content-evenly"
         />
+      </GeneralSectionCard>
+
+      <GeneralSectionCard
+        headingId="character-savingthrows-edit"
+        title={t("savingThrows")}
+        accentColor={accentColor}
+        className={SLOTS.savingThrows}>
+        <SavingThrowsEdit
+          form={form}
+          accentColor={accentColor}
+          className="flex-1 content-evenly"
+        />
+      </GeneralSectionCard>
+
+      {/* Maîtrises */}
+      <GeneralSectionCard
+        headingId="character-proficiencies-edit"
+        title={t("proficiencies")}
+        accentColor={accentColor}
+        className={SLOTS.proficiencies}>
+        <div className="grid flex-1 content-start gap-4 @lg:grid-cols-2">
+          <Controller
+            name="stats.languages"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <label
+                  htmlFor="npc-languages"
+                  className="text-sm font-medium">
+                  {t("languages")}
+                </label>
+                <TagInput
+                  id="npc-languages"
+                  value={field.value || []}
+                  onChange={field.onChange}
+                  suggestions={t.raw("proficiencyOptions.languages")}
+                  placeholder={t("languages")}
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? "npc-languages-error" : undefined}
+                />
+                {fieldState.error && (
+                  <FieldError
+                    id="npc-languages-error"
+                    errors={[fieldState.error]}
+                  />
+                )}
+              </Field>
+            )}
+          />
+
+          <div className="flex flex-col gap-2">
+            <h3 className="text-sm font-medium">{t("senses")}</h3>
+            <SensesUpdateSection
+              form={form}
+              accentColor={accentColor}
+              embedded
+            />
+          </div>
+        </div>
       </GeneralSectionCard>
 
       {/* Capacités et traits */}

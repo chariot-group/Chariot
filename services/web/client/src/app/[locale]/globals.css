@@ -85,6 +85,9 @@
   --color-gray-800: #27272a;
   --color-gray-900: #18181b;
   --color-gray-950: #09090c;
+
+  /* Very large screens: wide bento placement of the character sheet (FR-character-general-bento-layout) */
+  --breakpoint-3xl: 120rem;
 }
 
 @keyframes session-live-pulse {

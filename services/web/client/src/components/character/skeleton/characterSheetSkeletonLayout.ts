@@ -72,10 +72,9 @@ const PLAYER_GENERAL: SkeletonCard[] = [
   { key: "character", slot: PLAYER_VIEW_SLOTS.character, body: { type: "lines", count: 5 }, avatar: true },
   { key: "statistics", slot: PLAYER_VIEW_SLOTS.statistics, body: { type: "cells", count: 3, columns: 3 } },
   ...tiles(PLAYER_VIEW_SLOTS.tile, "tile", 4),
+  { key: "skills", slot: PLAYER_VIEW_SLOTS.skills, body: { type: "lines", count: 9 } },
   { key: "abilityScores", slot: PLAYER_VIEW_SLOTS.abilityScores, body: { type: "cells", count: 6, columns: 3 } },
   { key: "savingThrows", slot: PLAYER_VIEW_SLOTS.savingThrows, body: { type: "cells", count: 6, columns: 2 } },
-  ...tiles(PLAYER_VIEW_SLOTS.sideTile, "sideTile", 2),
-  { key: "skills", slot: PLAYER_VIEW_SLOTS.skills, body: { type: "lines", count: 9 } },
   { key: "proficiencies", slot: PLAYER_VIEW_SLOTS.proficiencies, body: { type: "lines", count: 4 } },
   { key: "abilities", slot: PLAYER_VIEW_SLOTS.abilities, body: { type: "rows", count: 3 } },
 ];
@@ -83,11 +82,10 @@ const PLAYER_GENERAL: SkeletonCard[] = [
 const NPC_GENERAL: SkeletonCard[] = [
   { key: "character", slot: NPC_VIEW_SLOTS.character, body: { type: "lines", count: 3 }, avatar: true },
   { key: "statistics", slot: NPC_VIEW_SLOTS.statistics, body: { type: "cells", count: 3, columns: 3 } },
+  { key: "skills", slot: NPC_VIEW_SLOTS.skills, body: { type: "lines", count: 6 } },
   { key: "abilityScores", slot: NPC_VIEW_SLOTS.abilityScores, body: { type: "cells", count: 6, columns: 3 } },
   { key: "savingThrows", slot: NPC_VIEW_SLOTS.savingThrows, body: { type: "cells", count: 6, columns: 2 } },
   { key: "proficiencies", slot: NPC_VIEW_SLOTS.proficiencies, body: { type: "lines", count: 4 } },
-  { key: "skills", slot: NPC_VIEW_SLOTS.skills, body: { type: "lines", count: 6 } },
-  ...tiles(NPC_VIEW_SLOTS.tile, "tile", 2),
   { key: "abilities", slot: NPC_VIEW_SLOTS.abilities, body: { type: "rows", count: 3 } },
 ];
 
@@ -121,7 +119,6 @@ const INVENTORY: SkeletonCard[] = [
 
 const HISTORY: SkeletonCard[] = [
   { key: "appearance", slot: HISTORY_SLOTS.appearance, body: { type: "cells", count: 6, columns: 3 } },
-  { key: "description", slot: HISTORY_SLOTS.description, body: { type: "lines", count: 4 } },
   ...["personalityTraits", "ideals", "bonds", "flaws"].map(
     (key): SkeletonCard => ({ key, slot: HISTORY_SLOTS.personality, body: { type: "lines", count: 3 } }),
   ),

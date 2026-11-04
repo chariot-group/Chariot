@@ -9,9 +9,11 @@ interface NpcStatisticsProps {
   accentColor: string;
   /** Layout classes; replaces the default `h-fit`. */
   className?: string;
+  /** General tab: passive perception as a 4th key stat (FR-character-statistics-card). */
+  showPassivePerception?: boolean;
 }
 
-export default function NpcStatistics({ npc, accentColor, className }: NpcStatisticsProps) {
+export default function NpcStatistics({ npc, accentColor, className, showPassivePerception }: NpcStatisticsProps) {
   const t = useTranslations("characterDetail.battle");
 
   return (
@@ -29,6 +31,7 @@ export default function NpcStatistics({ npc, accentColor, className }: NpcStatis
         initiative={npc.stats.initiative}
         size={npc.stats.size}
         speed={npc.stats.speed}
+        passivePerception={showPassivePerception ? npc.stats.passivePerception : undefined}
       />
       <CharacterHealthBar
         currentHP={npc.stats.currentHitPoints}

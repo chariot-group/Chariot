@@ -1188,7 +1188,8 @@
         "armorClass": "CA",
         "initiative": "Inic.",
         "size": "Tamaño",
-        "speeds": "Velocidad"
+        "speeds": "Velocidad",
+        "passivePerception": "Perc. pasiva"
       },
       "attackSuggestions": "Sugerencias",
       "formSections": {
@@ -1198,7 +1199,8 @@
         "description": "Descripción",
         "counter": "Usos"
       },
-      "immunitiesPlaceholder": "Fuego, Frío..."
+      "immunitiesPlaceholder": "Fuego, Frío...",
+      "passivePerception": "Percepción pasiva"
     },
     "history": {
       "appearance": "Apariencia",

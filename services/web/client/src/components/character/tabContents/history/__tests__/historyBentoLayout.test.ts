@@ -16,13 +16,20 @@ describe("History tab bento layout", () => {
     });
   }
 
-  it("nominal: three bands on desktop (appearance + description, four personality cards, allies + backstory)", () => {
+  it("nominal: three bands on desktop (appearance with its description, four personality cards, allies + backstory)", () => {
     expect(place(LAYOUT, BREAKPOINTS.desktop)).toHaveLength(3);
   });
 
-  it("edge: tablet pairs the first cards two by two, then allies and backstory take full rows", () => {
+  it("edge: tablet gives appearance a full row, pairs the personality cards, then allies and backstory full rows", () => {
     expect(place(LAYOUT, BREAKPOINTS.tablet)).toHaveLength(5);
-    expect(place(LAYOUT, BREAKPOINTS.mobile)).toHaveLength(8);
+    expect(place(LAYOUT, BREAKPOINTS.mobile)).toHaveLength(7);
+  });
+
+  it("guard: appearance is full width at every breakpoint (a long description never stretches a sibling)", () => {
+    expect(HISTORY_SLOTS.appearance.split(" ")).toEqual(
+      expect.arrayContaining(["col-span-2", "sm:col-span-4", "xl:col-span-12"]),
+    );
+    expect(HISTORY_TEXT_FIELDS.map(({ key }) => key)).not.toContain("description");
   });
 
   it("failure: no slot uses h-fit, self-start or order-* (stretch and reading order)", () => {

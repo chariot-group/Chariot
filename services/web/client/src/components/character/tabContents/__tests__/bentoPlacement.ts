@@ -8,6 +8,8 @@ export const BREAKPOINTS: Record<string, Breakpoint> = {
   mobile: { prefixes: [""], columns: 2 },
   tablet: { prefixes: ["", "sm:"], columns: 4 },
   desktop: { prefixes: ["", "sm:", "xl:"], columns: 12 },
+  /** Very large screens (`3xl`): same 12 columns, wide placement. */
+  wide: { prefixes: ["", "sm:", "xl:", "3xl:"], columns: 12 },
 };
 
 /** Effective `col-span` / `row-span` at a breakpoint (mobile-first: the last matching prefix wins). */

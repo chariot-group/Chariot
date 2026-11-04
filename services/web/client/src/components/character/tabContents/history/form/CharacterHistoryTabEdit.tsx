@@ -8,7 +8,9 @@ import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import { Textarea } from "@/components/ui/textarea";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import {
+  APPEARANCE_DESCRIPTION_FIELD,
   HISTORY_BENTO_GRID_CLASS,
+  HISTORY_SUBHEADING_CLASS,
   HISTORY_SLOTS,
   HISTORY_TEXT_FIELDS,
   historyHeadingId,
@@ -47,7 +49,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
         title={t("appearance")}
         accentColor={accentColor}
         className={HISTORY_SLOTS.appearance}>
-        <div className="grid min-w-0 flex-1 grid-cols-2 content-evenly gap-3 @sm:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-2 gap-3 @sm:grid-cols-3 @3xl:grid-cols-6">
           {APPEARANCE_FIELDS.map(({ key, icon: Icon, kind }) => {
             const id = `appearance-${key}`;
             const errorId = `${id}-error`;
@@ -115,6 +117,40 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
             );
           })}
         </div>
+        <Controller
+          name={APPEARANCE_DESCRIPTION_FIELD.name}
+          control={form.control}
+          render={({ field, fieldState }) => {
+            const { inputId } = APPEARANCE_DESCRIPTION_FIELD;
+            return (
+              <Field
+                className="min-w-0 gap-1.5"
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <FieldLabel
+                  htmlFor={inputId}
+                  className={HISTORY_SUBHEADING_CLASS}>
+                  {t(APPEARANCE_DESCRIPTION_FIELD.key)}
+                </FieldLabel>
+                <Textarea
+                  {...field}
+                  value={field.value ?? ""}
+                  id={inputId}
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? `${inputId}-error` : undefined}
+                  placeholder={t(APPEARANCE_DESCRIPTION_FIELD.key)}
+                  className="min-h-36"
+                />
+                {fieldState.error && (
+                  <FieldError
+                    id={`${inputId}-error`}
+                    errors={[fieldState.error]}
+                  />
+                )}
+              </Field>
+            );
+          }}
+        />
       </GeneralSectionCard>
       {HISTORY_TEXT_FIELDS.map(({ key, name, inputId, slot }) => (
         <GeneralSectionCard

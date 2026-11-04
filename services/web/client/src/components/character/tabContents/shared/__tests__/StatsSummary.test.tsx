@@ -48,6 +48,39 @@ describe("StatsSummary", () => {
     expect(renderSummary({ walk: 30 }, true)).toContain('aria-label="walkSpeedTooltip 9 m (30 ft)"');
   });
 
+  it("nominal: NPC General tab adds a 4th passive perception cell (2 × 2, one row from sm)", () => {
+    const html = render(
+      <StatsSummary
+        armorClass={15}
+        initiative={2}
+        size="Medium"
+        speed={{ walk: 30 }}
+        passivePerception={14}
+      />,
+    );
+    const cells = html.match(/role="group" aria-label="[^"]+"/g) ?? [];
+
+    expect(cells).toHaveLength(4);
+    expect(cells[3]).toBe('role="group" aria-label="passivePerception 14"');
+    expect(html).toContain("statLabels.passivePerception");
+    expect(html).toContain("grid-cols-2 sm:grid-cols-4");
+  });
+
+  it("edge: passive perception 0 is still shown; without the prop the row keeps three cells", () => {
+    const withZero = render(
+      <StatsSummary
+        armorClass={10}
+        initiative={0}
+        size="Small"
+        passivePerception={0}
+      />,
+    );
+
+    expect(withZero).toContain('aria-label="passivePerception 0"');
+    expect(renderSummary({ walk: 30 })).toContain("grid min-w-0 gap-2 grid-cols-3");
+    expect(renderSummary({ walk: 30 })).not.toContain("statLabels.passivePerception");
+  });
+
   it("failure: no white pill and no '?' tooltip button", () => {
     const html = renderSummary({ walk: 30 });
 

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
@@ -22,9 +23,11 @@ interface NpcStatisticsUpdateProps {
   form: UseFormReturn<FieldValues>;
   /** Layout classes; replaces the default battle-tab spans. */
   className?: string;
+  /** Extra fields at the bottom of the card (General tab: passive perception). */
+  children?: ReactNode;
 }
 
-export default function NpcStatisticsUpdate({ accentColor, form, className }: NpcStatisticsUpdateProps) {
+export default function NpcStatisticsUpdate({ accentColor, form, className, children }: NpcStatisticsUpdateProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const { displayFt, toFeet, unitLabel } = useDistanceUnit();
@@ -613,6 +616,7 @@ export default function NpcStatisticsUpdate({ accentColor, form, className }: Np
           />
         </div>
       </div>
+      {children}
     </Card>
   );
 }

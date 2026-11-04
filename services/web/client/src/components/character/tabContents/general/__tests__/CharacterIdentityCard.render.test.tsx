@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import CharacterIdentityCard from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
+import CharacterIdentityCard, {
+  FACTS_TWO_COLUMNS_CLASS,
+} from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
 import { render } from "@/components/character/tabContents/__tests__/bentoRender";
 
+/** React escapes `&` and `>` inside attribute values. */
+const escapeAttr = (value: string) => value.replace(/&/g, "&amp;").replace(/>/g, "&gt;");
 const textOf = (html: string) =>
   html
     .replace(/<[^>]+>/g, " ")
@@ -37,12 +41,31 @@ describe("CharacterIdentityCard", () => {
     expect(text).toContain("firstname Aria lastname Vent-Clair");
     expect(text).toContain("« La Brise »");
     expect(factCells(html)).toHaveLength(2);
-    expect(html).toContain('<dl class="grid gap-2 grid-cols-2">');
+    expect(html).toContain(`<dl class="grid gap-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`);
     expect(text).toContain("raceLabel Elfe Berserker");
     expect(text).toContain("levelLabel 3 900 XP");
     expect(html.match(/<li /g)).toHaveLength(2);
     expect(text).toContain("Évocation");
     expect(html).toContain('aria-labelledby="character-classes-heading"');
+  });
+
+  it("edge: three facts (one empty) render three cells, the odd last one spanning the row (no empty 4th slot)", () => {
+    const html = render(
+      <CharacterIdentityCard
+        accentColor="text-blue"
+        firstname="Aria"
+        facts={[
+          ...pcFacts,
+          { key: "alignment", label: "alignment", value: "Loyal Bon" },
+          { key: "background", label: "background", value: "" },
+        ]}
+      />,
+    );
+
+    expect(factCells(html)).toHaveLength(3);
+    expect(FACTS_TWO_COLUMNS_CLASS).toContain("[&>div:last-child:nth-child(odd)]:col-span-2");
+    expect(html).toContain(`<dl class="grid gap-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`);
+    expect(html).not.toContain(">background<");
   });
 
   it("nominal: facts and classes sit outside the avatar row (full card width)", () => {
@@ -60,6 +83,39 @@ describe("CharacterIdentityCard", () => {
     expect(avatarEnd).toBeGreaterThan(0);
     expect(html.indexOf('<dl class="grid gap-2')).toBeGreaterThan(avatarEnd);
     expect(html.indexOf("<ul")).toBeGreaterThan(avatarEnd);
+  });
+
+  it("edge: long name and nickname carry their full text in title and truncate only on hover devices", () => {
+    const longLast = "de la Tour-Sombre-des-Brumes-Éternelles";
+    const html = render(
+      <CharacterIdentityCard
+        accentColor="text-blue"
+        firstname="Aria"
+        lastname={longLast}
+        surname="La Brise du Nord Lointain"
+        facts={[]}
+      />,
+    );
+
+    expect(html).toContain(`<dl title="Aria ${longLast}" class="`);
+    expect(html).toContain('title="« La Brise du Nord Lointain »"');
+    expect(html.match(/\[@media\(hover:hover\)\]:truncate/g)).toHaveLength(2);
+    // No unconditional truncation: touch devices wrap the full text
+    expect(html).not.toMatch(/class="[^"]*(?<!:)\btruncate\b[^"]*"[^>]*>(?:<div|« )/);
+    expect(html.match(/wrap-break-word \[@media\(hover:hover\)\]:truncate/g)).toHaveLength(2);
+  });
+
+  it("failure: without last name the title is the first name only (no trailing space)", () => {
+    const html = render(
+      <CharacterIdentityCard
+        accentColor="text-blue"
+        firstname="Gobelin"
+        facts={[]}
+      />,
+    );
+
+    expect(html).toContain('<dl title="Gobelin" class="');
+    expect(html).not.toContain('title="« ');
   });
 
   it("nominal: name labels stay available to screen readers", () => {

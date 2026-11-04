@@ -330,6 +330,76 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
               })()}
             </div>
 
+            {/* Alignement et historique (FR-character-identity-card) */}
+            <div className="@container">
+              <div className="grid grid-cols-1 gap-3 @sm:grid-cols-2">
+                <Controller
+                  name="profile.alignment"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <label
+                        htmlFor="alignment"
+                        className="text-sm font-medium">
+                        {t("alignment")}
+                      </label>
+                      <Select
+                        value={field.value || ""}
+                        onValueChange={field.onChange}>
+                        <SelectTrigger id="alignment">
+                          <SelectValue placeholder={t("alignment")} />
+                        </SelectTrigger>
+                        <SelectContent position="item-aligned">
+                          <SelectGroup>
+                            {playerAlignments.map((alignment) => (
+                              <SelectItem
+                                key={alignment}
+                                value={alignment}>
+                                {tAlignment(alignment as Parameters<typeof tAlignment>[0])}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+                <Controller
+                  name="profile.history"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <label
+                        htmlFor="background"
+                        className="text-sm font-medium">
+                        {t("background")}
+                      </label>
+                      <ComboboxInput
+                        id="background"
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        suggestions={t.raw("proficiencyOptions.backgrounds")}
+                        placeholder={t("background")}
+                        aria-invalid={fieldState.invalid}
+                        aria-describedby={fieldState.error ? "background-error" : undefined}
+                      />
+                      {fieldState.error && (
+                        <FieldError
+                          id="background-error"
+                          errors={[fieldState.error]}
+                        />
+                      )}
+                    </Field>
+                  )}
+                />
+              </div>
+            </div>
+
             {/* Classes dynamiques */}
             <div className="flex flex-col gap-3">
               {classFields.map((field, index) => {
@@ -744,6 +814,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
         />
       </GeneralSectionCard>
 
+      <SkillsEditCard
+        form={form}
+        accentColor={accentColor}
+        className={SLOTS.skills}
+      />
+
       {/* Caractéristiques */}
       <GeneralSectionCard
         headingId="character-characteristics-edit"
@@ -768,101 +844,13 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
         />
       </GeneralSectionCard>
 
-      {/* Alignement */}
-      <GeneralSectionCard
-        headingId="alignment-heading-edit"
-        title={t("alignment")}
-        accentColor={accentColor}
-        headingClassName="truncate"
-        className={SLOTS.sideTile}>
-        <Controller
-          name="profile.alignment"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              data-invalid={fieldState.invalid}
-              orientation="vertical">
-              <label
-                htmlFor="alignment"
-                className="text-sm font-medium">
-                {t("alignment")}
-              </label>
-              <Select
-                value={field.value || ""}
-                onValueChange={field.onChange}>
-                <SelectTrigger id="alignment">
-                  <SelectValue placeholder={t("alignment")} />
-                </SelectTrigger>
-                <SelectContent position="item-aligned">
-                  <SelectGroup>
-                    {playerAlignments.map((alignment) => (
-                      <SelectItem
-                        key={alignment}
-                        value={alignment}>
-                        {tAlignment(alignment as Parameters<typeof tAlignment>[0])}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
-      </GeneralSectionCard>
-
-      {/* Historique */}
-      <GeneralSectionCard
-        headingId="background-heading-edit"
-        title={t("background")}
-        accentColor={accentColor}
-        headingClassName="truncate"
-        className={SLOTS.sideTile}>
-        <Controller
-          name="profile.history"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              data-invalid={fieldState.invalid}
-              orientation="vertical">
-              <label
-                htmlFor="background"
-                className="text-sm font-medium">
-                {t("background")}
-              </label>
-              <ComboboxInput
-                id="background"
-                value={field.value || ""}
-                onChange={field.onChange}
-                suggestions={t.raw("proficiencyOptions.backgrounds")}
-                placeholder={t("background")}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.error ? "background-error" : undefined}
-              />
-              {fieldState.error && (
-                <FieldError
-                  id="background-error"
-                  errors={[fieldState.error]}
-                />
-              )}
-            </Field>
-          )}
-        />
-      </GeneralSectionCard>
-
-      <SkillsEditCard
-        form={form}
-        accentColor={accentColor}
-        className={SLOTS.skills}
-      />
-
       {/* Maîtrises */}
       <GeneralSectionCard
         headingId="character-proficiencies-edit"
         title={t("proficiencies")}
         accentColor={accentColor}
         className={SLOTS.proficiencies}>
-        <div className="flex flex-1 flex-col justify-between gap-4">
+        <div className="grid flex-1 content-start gap-4 @lg:grid-cols-2 @4xl:grid-cols-3">
           {/* Languages */}
           <Controller
             name="stats.languages"

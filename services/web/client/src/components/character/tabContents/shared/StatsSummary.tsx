@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Bird, Dices, Footprints, Mountain, RulerIcon, Shield, Shovel, Waves } from "lucide-react";
+import { Bird, Dices, Eye, Footprints, Mountain, RulerIcon, Shield, Shovel, Waves } from "lucide-react";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
 type SpeedKey = "walk" | "climb" | "swim" | "fly" | "burrow";
@@ -10,6 +10,8 @@ interface StatsSummaryProps {
   initiative: number;
   size: string;
   speed?: Partial<Record<SpeedKey, number>>;
+  /** NPC General tab only: 4th key stat cell (FR-character-statistics-card). */
+  passivePerception?: number;
 }
 
 const SPEEDS: Array<{ key: SpeedKey; tooltipKey: string; Icon: typeof Footprints }> = [
@@ -58,7 +60,7 @@ export function KeyStat({
  * Armor class, initiative and size as one row of three equal cells, then speeds as one text line.
  * @see FR-character-statistics-card
  */
-export default function StatsSummary({ armorClass, initiative, size, speed }: StatsSummaryProps) {
+export default function StatsSummary({ armorClass, initiative, size, speed, passivePerception }: StatsSummaryProps) {
   const t = useTranslations("characterDetail.battle");
   const { displayFt, unitLabel, secondaryFt, secondaryUnitLabel } = useDistanceUnit();
   const sizeName = t(`sizes.${size}` as Parameters<typeof t>[0]);
@@ -72,7 +74,8 @@ export default function StatsSummary({ armorClass, initiative, size, speed }: St
 
   return (
     <div className="flex min-w-0 flex-col gap-2">
-      <div className="grid min-w-0 grid-cols-3 gap-2">
+      <div
+        className={`grid min-w-0 gap-2 ${passivePerception === undefined ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
         <KeyStat
           label={t("statLabels.armorClass")}
           accessibleLabel={`${t("armorClass")} ${armorClass}`}
@@ -91,6 +94,14 @@ export default function StatsSummary({ armorClass, initiative, size, speed }: St
           icon={<RulerIcon className={ICON_CLASS} />}
           value={sizeName}
         />
+        {passivePerception !== undefined && (
+          <KeyStat
+            label={t("statLabels.passivePerception")}
+            accessibleLabel={`${t("passivePerception")} ${passivePerception}`}
+            icon={<Eye className={ICON_CLASS} />}
+            value={passivePerception}
+          />
+        )}
       </div>
       {speeds.length > 0 && (
         <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm sm:text-base">

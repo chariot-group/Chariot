@@ -31,6 +31,16 @@ interface CharacterIdentityCardProps {
   classes?: IdentityClassItem[];
 }
 
+/**
+ * One line + ellipsis where hover can reveal the `title`; wraps on touch devices so the full
+ * text stays readable without a tooltip (FR-tooltip-accessibility).
+ * @see FR-character-identity-card
+ */
+export const TRUNCATE_ON_HOVER_DEVICES_CLASS = "min-w-0 wrap-break-word [@media(hover:hover)]:truncate";
+
+/** Two columns; an odd last cell spans the row so no empty slot suggests a missing fact. */
+export const FACTS_TWO_COLUMNS_CLASS = "grid-cols-2 [&>div:last-child:nth-child(odd)]:col-span-2";
+
 const isFilled = (value: ReactNode) => value !== null && value !== undefined && value !== false && value !== "";
 
 /**
@@ -50,6 +60,7 @@ export default function CharacterIdentityCard({
   const t = useTranslations("characterDetail.player.general");
   const tEdit = useTranslations("characterDetail.edit");
   const visibleFacts = facts.filter((fact) => isFilled(fact.value));
+  const fullName = [firstname, lastname].filter(Boolean).join(" ");
 
   return (
     <Card
@@ -66,23 +77,27 @@ export default function CharacterIdentityCard({
                 {t("character")}
               </h2>
               <div className="flex min-w-0 flex-col gap-1">
-                <dl className="flex flex-wrap gap-x-1.5 text-lg font-bold wrap-break-word sm:text-xl">
-                  <div>
+                <dl
+                  title={fullName}
+                  className={`text-lg font-bold sm:text-xl ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
+                  <div className="inline">
                     <dt className="sr-only">{tEdit("firstname")}</dt>
-                    <dd>{firstname}</dd>
+                    <dd className="inline">{firstname}</dd>
                   </div>
                   {lastname && (
-                    <div>
+                    <div className="ml-[0.3em] inline">
                       <dt className="sr-only">{tEdit("lastname")}</dt>
-                      <dd>{lastname}</dd>
+                      <dd className="inline">{lastname}</dd>
                     </div>
                   )}
                 </dl>
                 {surname && (
-                  <dl>
+                  <dl className="min-w-0">
                     <div>
                       <dt className="sr-only">{tEdit("surname")}</dt>
-                      <dd className="text-sm italic text-muted-foreground wrap-break-word sm:text-base">
+                      <dd
+                        title={`« ${surname} »`}
+                        className={`text-sm italic text-muted-foreground sm:text-base ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
                         « {surname} »
                       </dd>
                     </div>
@@ -94,7 +109,7 @@ export default function CharacterIdentityCard({
           </div>
 
           {visibleFacts.length > 0 && (
-            <dl className={`grid gap-2 ${visibleFacts.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+            <dl className={`grid gap-2 ${visibleFacts.length > 1 ? FACTS_TWO_COLUMNS_CLASS : "grid-cols-1"}`}>
               {visibleFacts.map((fact) => (
                 <div
                   key={fact.key}

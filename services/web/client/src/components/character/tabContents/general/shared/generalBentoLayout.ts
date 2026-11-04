@@ -1,7 +1,8 @@
 /**
  * Bento grid of the character General tab (read and edit modes).
  *
- * Grid units: 2 columns below `sm`, 4 from `sm`, 12 from `xl`.
+ * Grid units: 2 columns below `sm`, 4 from `sm`, 12 from `xl`. From `3xl` (very large screens) the
+ * grid keeps 12 columns with a wide placement: the first band is denser so cards do not stretch.
  * Every card is a direct child of the grid and gets one slot class below. Spans are
  * chosen so that each row is filled at every breakpoint (no empty cell), with the DOM
  * order as reading order (no `order-*`, no dense packing).
@@ -30,41 +31,45 @@ const FULL = BENTO_FULL_SLOT;
 const HALF = BENTO_HALF_SLOT;
 
 export const PLAYER_VIEW_SLOTS = {
-  character: `${FULL} xl:col-span-4 xl:row-span-2`,
-  statistics: `${FULL} xl:col-span-8`,
-  /** Proficiency bonus, passive perception, inspiration, exhaustion. */
+  character: `${FULL} xl:col-span-4 xl:row-span-2 3xl:col-span-3`,
+  statistics: `${FULL} xl:col-span-8 3xl:col-span-5 3xl:row-span-2`,
+  /** Proficiency bonus, passive perception, inspiration, exhaustion (2 × 2 next to the statistics from `3xl`). */
   tile: "min-w-0 col-span-1 xl:col-span-2",
-  abilityScores: `${HALF} xl:col-span-4 xl:row-span-2`,
-  savingThrows: `${HALF} xl:col-span-4 xl:row-span-2`,
-  /** Alignment, background (side by side below `xl`, stacked next to the saving throws from `xl`). */
-  sideTile: "min-w-0 col-span-1 sm:col-span-2 xl:col-span-4",
-  /** Wide card: its list flows on several columns (container queries). */
-  skills: `${FULL} xl:col-span-8`,
-  proficiencies: `${FULL} xl:col-span-4`,
+  /**
+   * Tall and leftmost (same as NPC): spans the Ability scores + Saving throws rows from `sm`;
+   * wide enough from `xl` for a 3-column list (container queries).
+   */
+  skills: `${HALF} sm:row-span-2 xl:col-span-8`,
+  abilityScores: `${HALF} xl:col-span-4`,
+  /** Right under the ability scores. */
+  savingThrows: `${HALF} xl:col-span-4`,
+  /** Full width: its sections flow in columns (container queries). */
+  proficiencies: `${FULL} xl:col-span-12`,
   abilities: `${FULL} xl:col-span-12`,
 } as const;
 
 export const PLAYER_EDIT_SLOTS = {
   ...PLAYER_VIEW_SLOTS,
-  character: `${FULL} xl:col-span-4 xl:row-span-3`,
-  tile: `${HALF} xl:col-span-4`,
-  sideTile: `${HALF} xl:col-span-4`,
+  character: `${FULL} xl:col-span-4 xl:row-span-3 3xl:col-span-3 3xl:row-span-2`,
+  tile: `${HALF} xl:col-span-4 3xl:col-span-2`,
 } as const;
 
+/**
+ * NPC (GM constraint): tall Skills card as far left as possible (wide enough for a 3-column list),
+ * Ability scores then Saving throws stacked just to its right. Same placement from `xl` to `3xl`.
+ */
 export const NPC_VIEW_SLOTS = {
   /** No row span: a sparse NPC identity must not be stretched next to the statistics. */
   character: `${FULL} xl:col-span-4`,
   statistics: `${FULL} xl:col-span-8`,
+  /** Tall: spans the Ability scores + Saving throws rows from `sm`. */
+  skills: `${HALF} sm:row-span-2 xl:col-span-8`,
   abilityScores: `${HALF} xl:col-span-4`,
+  /** Right under the ability scores. */
   savingThrows: `${HALF} xl:col-span-4`,
-  proficiencies: `${FULL} xl:col-span-4`,
-  skills: `${FULL} xl:col-span-8 xl:row-span-2`,
-  /** Passive perception, alignment (stacked next to the skills from `xl`). */
-  tile: "min-w-0 col-span-1 sm:col-span-2 xl:col-span-4",
+  /** Full width: its sections flow in columns (container queries). */
+  proficiencies: `${FULL} xl:col-span-12`,
   abilities: `${FULL} xl:col-span-12`,
 } as const;
 
-export const NPC_EDIT_SLOTS = {
-  ...NPC_VIEW_SLOTS,
-  tile: `${HALF} xl:col-span-4`,
-} as const;
+export const NPC_EDIT_SLOTS = NPC_VIEW_SLOTS;

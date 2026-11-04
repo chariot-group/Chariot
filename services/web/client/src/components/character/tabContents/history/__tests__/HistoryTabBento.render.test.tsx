@@ -50,15 +50,21 @@ const CASES = {
     ),
 };
 
+/** Markup of the first card (Appearance), up to the opening tag of the second one. */
+const appearanceCardOf = (html: string) => {
+  const [, second] = directChildren(html, HISTORY_BENTO_GRID_CLASS);
+  return html.slice(html.indexOf('aria-labelledby="history-appearance-heading"'), html.indexOf(second));
+};
+
 /** @see FR-character-history-bento-layout */
 describe("History tab — single bento grid", () => {
   for (const [name, renderCase] of Object.entries(CASES)) {
-    it(`nominal: ${name} renders the eight cards as direct children of one grid`, () => {
+    it(`nominal: ${name} renders the seven cards as direct children of one grid`, () => {
       const html = renderCase();
       const children = directChildren(html, HISTORY_BENTO_GRID_CLASS);
 
       expect(html.split(HISTORY_BENTO_GRID_CLASS)).toHaveLength(2);
-      expect(children).toHaveLength(8);
+      expect(children).toHaveLength(7);
       for (const child of children) {
         expect(child).toMatch(/col-span-\d/);
         expect(child).toContain('role="region"');
@@ -83,7 +89,8 @@ describe("History tab — single bento grid", () => {
     expect(html).toContain('aria-label="hair : Black"');
     expect(html).toContain("sizes.Medium");
     expect(html).not.toContain("sizesAbbr");
-    expect(html).toMatch(/grid min-w-0 flex-1 grid-cols-2 content-evenly/);
+    expect(html).toMatch(/grid min-w-0 grid-cols-2 gap-2 @sm:grid-cols-3 @3xl:grid-cols-6/);
+    expect(html).not.toContain("content-evenly");
   });
 
   it("edge: a long appearance value wraps without truncation; empty values show a dash", () => {
@@ -99,6 +106,7 @@ describe("History tab — single bento grid", () => {
     const html = CASES.view();
 
     expect(html.match(/>notSpecified<\/p>/g)).toHaveLength(3);
+    expect(html).toMatch(/<h3 id="history-description-heading"[^>]*>description<\/h3><p[^>]*>notSpecified<\/p>/);
     expect(html).toMatch(/max-h-\[28rem\][^"]*" role="group" aria-labelledby="history-personalityTraits-heading"/);
     expect(html).toMatch(/<p[^>]*whitespace-pre-wrap wrap-break-word[^>]*>Curious\nLoyal/);
   });
@@ -108,10 +116,38 @@ describe("History tab — single bento grid", () => {
     const textareas = [...html.matchAll(/<textarea[^>]*\sid="([^"]+)"/g)].map((m) => m[1]);
 
     expect(textareas).toHaveLength(7);
+    expect(textareas).toContain("appearance-description");
     for (const id of textareas) expect(html).toContain(`for="${id}"`);
     for (const key of ["eyes", "age", "skin", "height", "weight", "hair"]) {
       expect(html).toMatch(new RegExp(`<input[^>]*id="appearance-${key}"`));
       expect(html).toContain(`for="appearance-${key}"`);
     }
+  });
+
+  it("nominal: the description lives inside the Appearance card, after the cells, bounded when long", () => {
+    const withDescription = {
+      ...character,
+      appearance: { ...character.appearance, description: "Tall and lean.\nAlways wears a grey cloak." },
+    } as unknown as Character;
+    const html = render(
+      <CharacterHistoryView
+        character={withDescription}
+        accentColor="text-green"
+      />,
+    );
+    const appearanceCard = appearanceCardOf(html);
+
+    expect(appearanceCard.indexOf('id="history-description-heading"')).toBeGreaterThan(
+      appearanceCard.indexOf("hair : Black"),
+    );
+    expect(appearanceCard).toMatch(/max-h-\[28rem\][^"]*" role="group" aria-labelledby="history-description-heading"/);
+    expect(html.match(/id="history-description-heading"/g)).toHaveLength(1);
+  });
+
+  it("edge: edit mode shows a visible description label inside the Appearance card", () => {
+    const appearanceCard = appearanceCardOf(CASES.edit());
+
+    expect(appearanceCard).toMatch(/<label[^>]*for="appearance-description"[^>]*>description<\/label>/);
+    expect(appearanceCard).not.toMatch(/<label[^>]*sr-only[^>]*for="appearance-description"/);
   });
 });

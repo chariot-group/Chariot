@@ -1188,7 +1188,8 @@
         "armorClass": "AC",
         "initiative": "Init.",
         "size": "Size",
-        "speeds": "Speed"
+        "speeds": "Speed",
+        "passivePerception": "Pass. Perc."
       },
       "attackSuggestions": "Suggestions",
       "formSections": {
@@ -1198,7 +1199,8 @@
         "description": "Description",
         "counter": "Uses"
       },
-      "immunitiesPlaceholder": "Fire, Cold..."
+      "immunitiesPlaceholder": "Fire, Cold...",
+      "passivePerception": "Passive perception"
     },
     "history": {
       "appearance": "Appearance",

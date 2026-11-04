@@ -224,6 +224,8 @@ The character sheet tab bar (General, Battle, Magic, Inventory, History) is one 
 The General tab (PC and NPC, read and edit) is one bento grid (FR-character-general-bento-layout), defined in `tabContents/general/shared/generalBentoLayout.ts`:
 
 - Grid: `grid-cols-2` → `sm:grid-cols-4` → `xl:grid-cols-12`, one gap `gap-3 md:gap-4` on both axes
+- Very large screens (`3xl` = `120rem`, declared in `globals.css`): same 12 columns, wide placement instead of a page width cap. PC: Character 3 (2 rows) · Statistics 5 (2 rows) · the 4 tiles 2 × 2 (NPC has no wide override)
+- PC and NPC (GM constraint, same band): tall Skills card (2 rows) with Ability scores and Saving throws right next to it — Skills as far left as possible: `xl`: Skills (8, both rows, 3-column list) then Ability scores and Saving throws stacked on its right (4), then Proficiencies full width (sections in columns); alignment / background are fact cells of the « Personnage » card and NPC passive perception a 4th statistics cell (no side tiles); tablet: half-width Skills on the left, Ability scores / Saving throws stacked on its right
 - Every card is a direct grid child with a slot class (`col-span-*` / `row-span-*`); no flex columns, no duplicated mobile/desktop markup, no `order-*` or dense packing
 - Grid children never use `h-fit`: they stretch to their track so a row has no visual hole
 - A stretched card must not show a blank bottom: every card spreads its content over its height. Value grids (ability scores, saving throws) use `flex-1 content-evenly`; lists and label/value stacks (character, statistics, skills, proficiencies) use `flex-1 justify-between` / `flex-1 content-between`; tiles push their value / session note to the bottom (`justify-between`, `mt-auto`). Placement keeps bands balanced so the added spacing stays small
@@ -277,8 +279,8 @@ The Inventory tab reuses the General tab grid and `GeneralSectionCard` (FR-chara
 
 The History tab reuses the General tab grid and `GeneralSectionCard` (FR-character-history-bento-layout), with its slots in `tabContents/history/shared/historyBentoLayout.ts`:
 
-- Bands at `xl`: Appearance (5) · Description (7); Personality traits, Ideals, Bonds, Flaws (3 each); Allies and organizations (4) · Backstory (8). From `sm` the first two bands go two by two, the last one full width
-- Appearance: tinted label/value cells (`bg-gray-middle-light/50`, `rounded-[10px]`), 2 columns, 3 from `@sm`; the card stretches like any bento card and spreads its cells (`flex-1 content-evenly`); empty values show a muted `—`; the size category shows its full name next to the height (no raw tooltip)
+- Bands at `xl`: Appearance (12, cells + description); Personality traits, Ideals, Bonds, Flaws (3 each); Allies and organizations (4) · Backstory (8). From `sm` the personality cards go two by two, the others full width
+- Appearance: tinted label/value cells (`bg-gray-middle-light/50`, `rounded-[10px]`), 2 columns, 3 from `@sm`, 6 from `@3xl`; empty values show a muted `—`; the size category shows its full name next to the height (no raw tooltip). The description follows under an uppercase muted `h3` sub-heading, full card width (bounded text in read mode, textarea with visible label in edit mode)
 - Text cards: `BENTO_BOUNDED_LIST_CLASS` in read mode, muted `notSpecified` line when empty; edit textareas fill the card with an `sr-only` label
 - No positive `tabIndex`: tab order follows the DOM
 

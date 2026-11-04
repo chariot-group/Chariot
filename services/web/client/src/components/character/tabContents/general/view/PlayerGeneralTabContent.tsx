@@ -75,6 +75,12 @@ export default function PlayerGeneralTabContent({
             value: player?.progression?.level ?? 0,
             secondary: `${player?.progression?.experience ?? 0} XP`,
           },
+          {
+            key: "alignment",
+            label: tPlayer("alignment"),
+            value: player?.profile?.alignment ? tAlignment(player.profile.alignment) : undefined,
+          },
+          { key: "background", label: t("background"), value: player?.profile?.history },
         ]}
         classes={(player?.class ?? []).map((c) => ({ name: tClass(c.name), level: c.level, subclass: c.subclass }))}
       />
@@ -168,6 +174,17 @@ export default function PlayerGeneralTabContent({
         </InfoTooltip>
       </GeneralTile>
 
+      <GeneralSectionCard
+        headingId="skills-heading"
+        title={t("skills")}
+        accentColor={accentColor}
+        className={SLOTS.skills}>
+        <Skills
+          accentColor={accentColor}
+          stats={player?.stats}
+        />
+      </GeneralSectionCard>
+
       <AbilityScores
         character={player}
         accentColor={accentColor}
@@ -194,47 +211,12 @@ export default function PlayerGeneralTabContent({
         </div>
       </GeneralSectionCard>
 
-      <GeneralTile
-        headingId="alignment-heading"
-        title={tPlayer("alignment")}
-        accentColor={accentColor}
-        className={SLOTS.sideTile}>
-        <p
-          className="text-base sm:text-lg font-semibold"
-          aria-label={`${tPlayer("alignment")} : ${tAlignment(player?.profile?.alignment)}`}>
-          {tAlignment(player?.profile?.alignment)}
-        </p>
-      </GeneralTile>
-
-      <GeneralTile
-        headingId="background-heading"
-        title={t("background")}
-        accentColor={accentColor}
-        className={SLOTS.sideTile}>
-        <p
-          className="text-base sm:text-lg font-semibold whitespace-pre-wrap wrap-break-word"
-          aria-label={`${t("background")} : ${player?.profile?.history}`}>
-          {player?.profile?.history}
-        </p>
-      </GeneralTile>
-
-      <GeneralSectionCard
-        headingId="skills-heading"
-        title={t("skills")}
-        accentColor={accentColor}
-        className={SLOTS.skills}>
-        <Skills
-          accentColor={accentColor}
-          stats={player?.stats}
-        />
-      </GeneralSectionCard>
-
       <GeneralSectionCard
         headingId="proficiencies-heading"
         title={t("proficiencies")}
         accentColor={accentColor}
         className={SLOTS.proficiencies}>
-        <dl className="flex flex-1 flex-col justify-between gap-2">
+        <dl className="grid flex-1 content-start gap-x-6 gap-y-3 @lg:grid-cols-2 @4xl:grid-cols-3">
           <div className="flex flex-col">
             <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
             <dd className="text-sm sm:text-base wrap-break-word">{player?.stats?.languages.join(", ")}</dd>

@@ -6,7 +6,9 @@ import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import { BENTO_BOUNDED_LIST_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import {
+  APPEARANCE_DESCRIPTION_FIELD,
   HISTORY_BENTO_GRID_CLASS,
+  HISTORY_SUBHEADING_CLASS,
   HISTORY_SLOTS,
   HISTORY_TEXT_FIELDS,
   historyHeadingId,
@@ -84,6 +86,28 @@ function measure(
 
 const text = (value: string | number | null | undefined) => (value == null ? "" : String(value));
 
+/** Free text of a card: bounded (scrolls past a max height) or a muted empty-state line. */
+function HistoryText({
+  value,
+  labelledBy,
+  emptyLabel,
+}: {
+  value?: string | null;
+  labelledBy: string;
+  emptyLabel: string;
+}) {
+  if (!value) return <p className="text-sm md:text-base text-muted-foreground">{emptyLabel}</p>;
+  return (
+    <div
+      className={BENTO_BOUNDED_LIST_CLASS}
+      role="group"
+      aria-labelledby={labelledBy}
+      tabIndex={0}>
+      <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{value}</p>
+    </div>
+  );
+}
+
 /**
  * History tab, read mode: appearance cells and free-text cards in one bento grid.
  * @see FR-character-history-bento-layout
@@ -135,7 +159,6 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
   ] as const;
 
   const textValues: Record<(typeof HISTORY_TEXT_FIELDS)[number]["key"], string | null | undefined> = {
-    description: appearance.description,
     personalityTraits: background.personalityTraits,
     ideals: background.ideals,
     bonds: background.bonds,
@@ -151,7 +174,7 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
         title={t("appearance")}
         accentColor={accentColor}
         className={HISTORY_SLOTS.appearance}>
-        <div className="grid min-w-0 flex-1 grid-cols-2 content-evenly gap-2 @sm:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-2 gap-2 @sm:grid-cols-3 @3xl:grid-cols-6">
           {cells.map((cell) => (
             <AppearanceCell
               key={cell.key}
@@ -162,6 +185,18 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
               emptyLabel={t("notSpecified")}
             />
           ))}
+        </div>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <h3
+            id={historyHeadingId(APPEARANCE_DESCRIPTION_FIELD.key)}
+            className={HISTORY_SUBHEADING_CLASS}>
+            {t(APPEARANCE_DESCRIPTION_FIELD.key)}
+          </h3>
+          <HistoryText
+            value={appearance.description}
+            labelledBy={historyHeadingId(APPEARANCE_DESCRIPTION_FIELD.key)}
+            emptyLabel={t("notSpecified")}
+          />
         </div>
       </GeneralSectionCard>
       {HISTORY_TEXT_FIELDS.map(({ key, slot }) => {
@@ -174,17 +209,11 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
             title={t(key)}
             accentColor={accentColor}
             className={slot}>
-            {value ? (
-              <div
-                className={BENTO_BOUNDED_LIST_CLASS}
-                role="group"
-                aria-labelledby={headingId}
-                tabIndex={0}>
-                <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{value}</p>
-              </div>
-            ) : (
-              <p className="text-sm md:text-base text-muted-foreground">{t("notSpecified")}</p>
-            )}
+            <HistoryText
+              value={value}
+              labelledBy={headingId}
+              emptyLabel={t("notSpecified")}
+            />
           </GeneralSectionCard>
         );
       })}

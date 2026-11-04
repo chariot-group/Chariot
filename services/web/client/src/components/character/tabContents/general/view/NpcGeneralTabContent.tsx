@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
-import GeneralTile from "@/components/character/tabContents/general/shared/GeneralTile";
 import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
 import SkillsNpc from "@/components/character/tabContents/general/shared/SkillsNpc";
 import {
@@ -57,6 +56,11 @@ export default function NpcGeneralTabContent({
             value: npc?.profile?.type,
             secondary: npc?.profile?.subtype,
           },
+          {
+            key: "alignment",
+            label: tPlayer("alignment"),
+            value: npc?.profile?.alignment ? tAlignment(npc.profile.alignment) : undefined,
+          },
         ]}
       />
 
@@ -64,7 +68,16 @@ export default function NpcGeneralTabContent({
         npc={npc}
         accentColor={accentColor}
         className={`${SLOTS.statistics} justify-between`}
+        showPassivePerception
       />
+
+      <GeneralSectionCard
+        headingId="skills-heading"
+        title={t("skills")}
+        accentColor={accentColor}
+        className={SLOTS.skills}>
+        <SkillsNpc stats={npc?.stats} />
+      </GeneralSectionCard>
 
       <AbilityScores
         character={npc}
@@ -97,7 +110,7 @@ export default function NpcGeneralTabContent({
         title={t("proficiencies")}
         accentColor={accentColor}
         className={SLOTS.proficiencies}>
-        <dl className="flex flex-1 flex-col justify-between gap-2">
+        <dl className="grid flex-1 content-start gap-x-6 gap-y-3 @lg:grid-cols-2">
           <div className="flex flex-col">
             <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
             <dd
@@ -118,38 +131,6 @@ export default function NpcGeneralTabContent({
           </div>
         </dl>
       </GeneralSectionCard>
-
-      <GeneralSectionCard
-        headingId="skills-heading"
-        title={t("skills")}
-        accentColor={accentColor}
-        className={SLOTS.skills}>
-        <SkillsNpc stats={npc?.stats} />
-      </GeneralSectionCard>
-
-      <GeneralTile
-        headingId="passive-perception-heading"
-        title={t("passivePerception")}
-        accentColor={accentColor}
-        className={SLOTS.tile}>
-        <p
-          className="text-xl sm:text-2xl font-bold tabular-nums"
-          aria-label={`${t("passivePerception")} : ${npc?.stats?.passivePerception}`}>
-          {npc?.stats?.passivePerception}
-        </p>
-      </GeneralTile>
-
-      <GeneralTile
-        headingId="alignment-heading"
-        title={tPlayer("alignment")}
-        accentColor={accentColor}
-        className={SLOTS.tile}>
-        <p
-          className="text-base sm:text-lg font-semibold"
-          aria-label={`${tPlayer("alignment")} : ${tAlignment(npc?.profile?.alignment)}`}>
-          {tAlignment(npc?.profile?.alignment)}
-        </p>
-      </GeneralTile>
 
       <AbilitiesSection
         abilities={npc.abilities}

@@ -5404,17 +5404,23 @@ Each initiative tracker row carries:
   - `< sm`: 2 columns.
   - `sm` → `xl`: 4 columns.
   - `≥ xl`: 12 columns.
+  - `≥ 3xl` (`120rem`, very large screens): still 12 columns, with a **wide placement** (below) so cards do not stretch over the extra width. Decision 2026-11-04: adapt the layout like on phones instead of capping the page width.
 - **Uniform spacing**: a single gap token for both axes (`gap-3`, `md:gap-4`). Cards MUST NOT add outer margins or wrapper elements that introduce extra spacing between cards.
-- **Compact tiles** (read mode): short label/value cards (PC: proficiency bonus, passive perception, inspiration, exhaustion, alignment, background; NPC: passive perception, alignment) render as compact tiles (label on top, prominent value below) that share a row instead of each taking a full-width row.
+- **Compact tiles** (read mode): short label/value cards (PC: proficiency bonus, passive perception, inspiration, exhaustion) render as compact tiles (label on top, prominent value below) that share a row instead of each taking a full-width row.
 - **Placement intent** (≥ xl, PC read mode):
   - Band 1: Character (4 cols, spans 2 rows) · Statistics (8 cols) · 4 tiles of 2 cols below Statistics (proficiency bonus, passive perception, inspiration, exhaustion).
-  - Band 2: Ability scores (4, 2 rows) · Saving throws (4, 2 rows) · Alignment then Background tiles stacked (4).
-  - Band 3: Skills (8, list on several columns) · Proficiencies (4).
+  - Band 2 (2 rows, same constraint as NPC, decision 2026-11-04): Skills (8, spans both rows, 3-column list) on the left; right column (4): Ability scores, then Saving throws right under it.
+  - Band 3: Proficiencies (12, full width, its sections laid out in columns by card width).
   - Band 4: Abilities (12, full width).
-- **Placement intent** (≥ xl, NPC read mode): Character (4) · Statistics (8) · Ability scores (4) · Saving throws (4) · Proficiencies (4) · Skills (8, spans 2 rows) with passive perception then alignment tiles stacked next to it (4) · Abilities (12). The Character card does not span rows, so a sparse NPC identity is not stretched.
+- **Wide placement intent** (≥ 3xl, PC read and edit modes): Band 1: Character (3, spans 2 rows) · Statistics (5, spans 2 rows) · the 4 tiles as a 2 × 2 block (2 cols each) next to the statistics. Bands 2–4 unchanged.
+- **PC DOM order**: Character · Statistics · 4 tiles · Skills · Ability scores · Saving throws · Proficiencies · Abilities. On tablet the PC follows the NPC band 2 (half-width Skills on the left over two rows, Ability scores then Saving throws on the right). Alignment and background are in the Character card (FR-character-identity-card).
+- **Placement intent** (NPC read and edit modes, decision 2026-11-04 — GM constraint): the Skills card is **tall** (spans 2 rows), placed **as far left as possible** and wide enough for a 3-column skills list; right to its right sit Ability scores then Saving throws just below. DOM order: Character · Statistics · Skills · Ability scores · Saving throws · Proficiencies · Abilities. Alignment is in the Character card, passive perception in the Statistics card (no NPC tiles).
+  - `≥ xl` (and `3xl`, same placement): Band 1: Character (4) · Statistics (8). Band 2 (2 rows): Skills (8, spans both rows, 3-column list) on the left; right column (4): Ability scores, then Saving throws right under it. Band 3: Proficiencies (12, full width, sections in columns). Band 4: Abilities (12). The Character card does not span rows, so a sparse NPC identity is not stretched.
+  - `sm` → `xl`: Character and Statistics full width; Skills (half, spans 2 rows) on the left · Ability scores (half) with Saving throws (half) under it; Proficiencies and Abilities full width.
+  - `< sm`: every card full width (Skills, then Ability scores, then Saving throws).
 - **Wide lists**: long lists (skills) lay out by card width, not viewport width (container queries on the card), so a wide card shows 2–3 columns and stays balanced with its neighbours.
 - **Edit mode**: same cards, same order and same zones as read mode so the sheet does not reshuffle when toggling edit. Edit tiles hold form controls, so they are wider: 4 cols at `xl` (two per row, Character spans 3 rows for PC), half width at `sm`, full width below `sm`.
-- **Tablet / mobile**: same reading order; Character, Statistics, Skills, Proficiencies (PC) and Abilities take the full width; Ability scores and Saving throws take half width at `sm` and full width below; read tiles take 1 column on mobile so a tiles row never leaves an orphan cell.
+- **Tablet / mobile**: same reading order; Character, Statistics, Skills (PC; NPC skills are half width on tablet, see NPC placement), Proficiencies and Abilities take the full width; Ability scores and Saving throws take half width at `sm` and full width below; read tiles take 1 column on mobile so a tiles row never leaves an orphan cell.
 - **No holes, no empty cards**: grid items stretch to their track height (no `h-fit` on grid children), and **every** card distributes its own content over that height, so no card shows a blank area below its content:
   - Grids of values (ability scores, saving throws) spread their rows evenly over the card height.
   - Lists and label/value stacks (Character, Statistics, Skills, Proficiencies) spread their items from the top to the bottom of the card (first item under the heading, last item at the bottom).
@@ -5571,6 +5577,7 @@ Each initiative tracker row carries:
 - **Key stats row**: armor class, initiative and size in a 3-column row of equal cells (always one row, so no orphan cell). Each cell: short visible label (muted, small: `CA`, `Init.`, `Taille`) and the value (bold), with the existing icon. Size shows its full localized name (e.g. "Moyenne"), the abbreviation is no longer needed.
 - **Speeds line**: one label/value line `Vitesses : 🏃 9 m · ⛰ 4,5 m · 🌊 9 m` listing only non-zero speeds, each with its icon and an accessible name (e.g. "Vitesse d'escalade 4,5 m"); it wraps like text, never as boxes. Units follow FR-distance-unit-conversion (secondary unit kept when the user enabled both units). When every speed is 0 the line is omitted.
 - **Visual weight**: cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not white pills; values `text-base`/`sm:text-lg`; no "?" tooltip buttons — the visible label replaces them (tooltip texts stay available as accessible names).
+- **NPC passive perception** (General tab only, decision 2026-11-04): a 4th key stat cell « Perc. passive » (Eye icon) next to CA / Init. / Taille; the row shows 2 × 2 cells below `sm` and one row of 4 from `sm`. In edit mode the passive perception override field and its mismatch warning sit at the bottom of the NPC statistics edit card. The Combat tab keeps 3 cells.
 - **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC).
 - **Fill** (FR-character-general-bento-layout, FR-character-battle-bento-layout): when the card is stretched, its blocks spread from top to bottom (`justify-between`); the key stats row never leaves a hole on mobile.
 
@@ -5586,7 +5593,7 @@ Each initiative tracker row carries:
 
 **Tests**:
 
-- Nominal: PC and NPC cards render exactly three key stat cells (CA, initiative, size) with visible labels, and one speeds line listing non-zero speeds.
+- Nominal: PC and NPC cards render exactly three key stat cells (CA, initiative, size) with visible labels, and one speeds line listing non-zero speeds; the NPC General-tab card renders a 4th passive perception cell.
 - Edge: all speeds 0 → no speeds line; dual units → secondary unit shown in the speed line.
 - Failure: no "?" tooltip buttons and no white pill (`bg-white`) in the card.
 
@@ -5656,24 +5663,26 @@ Each initiative tracker row carries:
 **Requirements**:
 
 - **Same grid and tokens**: 2 columns below `sm`, 4 from `sm`, 12 from `xl`; gap `gap-3 md:gap-4`; card padding `p-4 md:px-6`; cards are `GeneralSectionCard` (region labelled by its own heading, accent color `green`). The former nested grids (`lg` 2 columns / `xl` 4 columns, `xl:row-span-2` Appearance, inner 2-column grids) MUST NOT remain.
-- **Cards** (DOM order = reading order): Appearance · Description · Personality traits · Ideals · Bonds · Flaws · Allies and organizations · Backstory.
+- **Cards** (DOM order = reading order): Appearance (fields + description) · Personality traits · Ideals · Bonds · Flaws · Allies and organizations · Backstory. The description is part of the Appearance card (functional decision 2026-11-04): a long description must not stretch a sibling card.
 - **Placement intent**:
-  - `≥ xl`: Band 1: Appearance (5) · Description (7). Band 2: Personality traits, Ideals, Bonds, Flaws (3 each). Band 3: Allies and organizations (4) · Backstory (8).
-  - `sm` → `xl`: Appearance and Description half width each; the four personality cards half width (two rows of two); Allies and organizations and Backstory full width.
+  - `≥ xl`: Band 1: Appearance (12, full width). Band 2: Personality traits, Ideals, Bonds, Flaws (3 each). Band 3: Allies and organizations (4) · Backstory (8).
+  - `sm` → `xl`: Appearance full width; the four personality cards half width (two rows of two); Allies and organizations and Backstory full width.
   - `< sm`: every card full width.
-- **Appearance card** (read mode): the six fields (eyes, age, skin, height, weight, hair) are label/value cells using the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), small muted uppercase label with its icon, value below. Cells follow the card width (container queries): 2 columns in a narrow card, 3 from `@sm`. The card **stretches** to its track like every bento card (no `h-fit`) and spreads its cell rows over its height (`flex-1 content-evenly`). Long values wrap (`wrap-break-word`), are never truncated and never overflow. Height and weight follow FR-preferred-measurement-unit / FR-distance-unit-conversion (secondary unit kept). The size category next to the height shows its full localized name (e.g. "Moyenne") instead of an abbreviation in a raw tooltip. An empty value shows a muted dash (`—`) with an accessible "not specified" name.
+- **Appearance card** (read mode): the six fields (eyes, age, skin, height, weight, hair) are label/value cells using the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), small muted uppercase label with its icon, value below. Cells follow the card width (container queries): 2 columns in a narrow card, 3 from `@sm`, all 6 on one row from `@3xl`. The card is alone on its band, so its height is its content (no stretch, no blank area). Long values wrap (`wrap-break-word`), are never truncated and never overflow. Height and weight follow FR-preferred-measurement-unit / FR-distance-unit-conversion (secondary unit kept). The size category next to the height shows its full localized name (e.g. "Moyenne") instead of an abbreviation in a raw tooltip. An empty value shows a muted dash (`—`) with an accessible "not specified" name.
+- **Appearance description** (read mode): below the cells, a sub-section with a small uppercase muted heading `h3` (« Description », `history-description-heading`), then the free text over the full card width, with the same bounded / empty-state behavior as the text cards.
 - **Text cards** (read mode): free text with `whitespace-pre-wrap wrap-break-word`; long text is **bounded** (`BENTO_BOUNDED_LIST_CLASS`: max height + inner scroll, focusable, labelled by the card heading); an empty value shows a muted empty-state line (i18n `characterDetail.history.notSpecified`, en/fr/es) instead of a blank card.
 - **Edit mode**: same cards, same order, same zones as read mode so the tab does not reshuffle when toggling edit.
   - Appearance: six single-line inputs (eyes, skin, hair text; age, height, weight number, height/weight in the preferred unit) with their visible label and icon, laid out in 2 columns in a narrow card and 3 from `@sm`; validation errors stay under their input (FR-form-field-validation).
+  - Appearance description: a textarea under the appearance inputs, full card width, with a **visible** label styled like the read-mode sub-heading (minimum height kept).
   - Text cards: one textarea each that fills the card height (minimum height kept); label visually hidden because the card heading names the field (accessible label kept — no placeholder-only labelling).
   - Positive `tabIndex` values and the wrapper `role="main"` are removed: tab order follows the DOM order.
-- **Fill**: grid children never use `h-fit`; Appearance spreads its cells, text and textareas start under the heading and fill the remaining height.
+- **Fill**: grid children never use `h-fit`; text and textareas start under the heading and fill the remaining height.
 - **Single render per card**, `min-w-0` on every grid child, no duplicated mobile/desktop markup, no `order-*`.
 - **Cleanup**: the unused duplicate component `tabContents/CharacterHistoryTabContent.tsx` (root, superseded by `tabContents/history/…`) is removed.
 
 **Accessibility (FR-frontend-design)**:
 
-- Every card is a `region` with `aria-labelledby` pointing to its own unique heading (`history-{field}-heading`), in read **and** edit modes; heading and control `id`s appear once in the DOM.
+- Every card is a `region` with `aria-labelledby` pointing to its own unique heading (`history-{field}-heading`), in read **and** edit modes; heading and control `id`s appear once in the DOM. The appearance description area is labelled by its `h3` sub-heading (heading level under the card `h2`).
 - Appearance cells are `group`s with an accessible name `label + value` (e.g. "Yeux : bleus"); icons are `aria-hidden`.
 - Every textarea and input has an associated `<label>`; error text stays linked with `aria-describedby`.
 - Contrast of muted labels and empty-state lines stays WCAG AA on the card and cell surfaces.
@@ -5687,7 +5696,7 @@ Each initiative tracker row carries:
 
 **Tests**:
 
-- Nominal: History tab (read and edit) renders one grid container whose eight direct children are the cards with their slot classes; slot spans fill every row at 2 / 4 / 12 columns.
+- Nominal: History tab (read and edit) renders one grid container whose seven direct children are the cards; the Appearance card contains the six cells and the description with their slot classes; slot spans fill every row at 2 / 4 / 12 columns.
 - Edge: a long appearance value wraps without truncation; empty text fields show the empty-state line; long text is in the bounded area; the size shows its full name.
 - Failure / guard: heading ids are unique and every `aria-labelledby` resolves; no positive `tabindex`, no `h-fit`, no `role="main"`; every textarea has a label.
 
@@ -5860,10 +5869,12 @@ Each initiative tracker row carries:
 **Requirements**:
 
 - **Scope**: read mode of `PlayerGeneralTabContent` and `NpcGeneralTabContent`. Card slot, heading (« Personnage », accent color), avatar placement and edit mode are unchanged (FR-character-general-bento-layout, FR-character-detail-view).
-- **Level 1 — Name**: first name + last name on one line, the most prominent text of the card (`text-lg sm:text-xl font-bold`, wraps with `wrap-break-word`). The nickname (`surname`), when present, sits right below in muted italic between « ». No visible « Prénom / Nom / Surnom » labels.
+- **Level 1 — Name**: first name + last name on one line, the most prominent text of the card (`text-lg sm:text-xl font-bold`). The nickname (`surname`), when present, sits right below in muted italic between « ». No visible « Prénom / Nom / Surnom » labels.
+- **Long names** (functional decision 2026-11-04, touch compromise): on devices with hover (`@media (hover: hover)`), the name line and the nickname are each truncated on one line with an ellipsis, and their full text is exposed in a native `title` shown on hover. On devices without hover (touch), they are **not** truncated and wrap (`wrap-break-word`), so the full name stays readable without a tooltip (FR-tooltip-accessibility). Truncation is visual only: the full text stays in the DOM for screen readers.
 - **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell uses the statistics card cell style (design.md §5.3.4: `bg-gray-middle-light/50`, `rounded-[10px]`, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary line:
-  - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line. Two equal columns.
-  - NPC: « Type » → type, subtype as secondary line (full width).
+  - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. 2 × 2 cells; when an odd number of cells is shown (an empty value is not rendered), the last one spans the whole row so no empty slot suggests a missing fact.
+  - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment. Two equal columns.
+  - Alignment and background live in this card (decision 2026-11-04): they are identity data and no longer get their own General-tab tiles, which stretched to their row height for a single value. In edit mode their fields (alignment select, background combobox) sit in the « Personnage » edit card, after race and level and **before the classes**.
   Empty secondary lines are omitted; a cell whose value is empty is not rendered.
 - **Level 3 — Classes (PC only)**: small uppercase muted label « Classes », then one plain row per class (`bg-gray-middle-light/50`, `rounded-[10px]`, same cell style as the statistics card, design.md §5.3.4): class name in bold + a level badge, subclass in muted text under the class name when set. This replaces both the « Classes : » line and the « Sous-classe de X : » lines (each class is shown once). The block is hidden when the PC has no class.
 - **Layout**: only the name block (level 1) sits next to the avatar; key facts and classes take the **full card width** below it (no empty column under the avatar).
@@ -5881,12 +5892,14 @@ Each initiative tracker row carries:
 
 - Flat `Label : value` rows of identical weight for the identity.
 - Showing a class twice (classes line + subclass line).
+- Truncating the name on touch devices, or truncating it without a `title` carrying the full text.
 - Fixed heights or inner scroll on the card.
 
 **Tests**:
 
 - Nominal: PC with name, nickname, race/subrace, level/XP and two classes renders the full name, the nickname, two fact cells (race, level) and two class rows with their subclass.
 - Edge: no last name / no nickname / no subrace / class without subclass → the part is omitted (no empty secondary line, no empty parentheses); NPC renders name + one type cell and no classes block.
+- Edge: a long name and nickname carry their full text in `title` and are truncated only under the hover media variant (wrap otherwise).
 - Failure / guard: PC with an empty class list renders no classes block; the `sr-only` labels are present for the identity fields.
 
 **References**:
