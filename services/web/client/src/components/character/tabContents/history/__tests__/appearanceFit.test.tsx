@@ -104,8 +104,8 @@ function HistoryEditHarness({ appearance }: { appearance: Record<string, unknown
 const renderEdit = (appearance: Record<string, unknown>) =>
   renderToStaticMarkup(<HistoryEditHarness appearance={appearance} />);
 
-/** @see FR-character-history-appearance-fit: History Appearance Card Sizes to Content */
-describe("FR-character-history-appearance-fit — CharacterHistoryView", () => {
+/** @see FR-character-detail-view: History Appearance Card Sizes to Content */
+describe("FR-character-detail-view — CharacterHistoryView", () => {
   it("nominal: compact appearance card sizes to short field values", () => {
     const html = renderView(createCharacter(shortAppearance));
     const cardTag = appearanceCardOpenTag(html);
@@ -146,8 +146,8 @@ describe("FR-character-history-appearance-fit — CharacterHistoryView", () => {
   });
 });
 
-/** @see FR-character-history-appearance-fit: History Appearance Card Sizes to Content */
-describe("FR-character-history-appearance-fit — CharacterHistoryTabEdit", () => {
+/** @see FR-character-detail-view: History Appearance Card Sizes to Content */
+describe("FR-character-detail-view — CharacterHistoryTabEdit", () => {
   it("nominal: edit appearance card stays compact with single-line inputs", () => {
     const html = renderEdit(shortAppearance);
     const cardTag = appearanceCardOpenTag(html);

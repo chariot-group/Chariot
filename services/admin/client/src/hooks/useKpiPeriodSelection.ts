@@ -14,7 +14,7 @@ const subscribeIsClient = () => () => undefined;
 const getIsClientSnapshot = () => true;
 const getIsClientServerSnapshot = () => false;
 
-/** @see FR-admin-kpi-period-persistence */
+/** @see FR-admin-business-kpis */
 export function useKpiPeriodSelection() {
   const selection = useSyncExternalStore(
     subscribeKpiPeriodSelection,

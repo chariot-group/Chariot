@@ -79,7 +79,7 @@ export function trackerStatusFieldsFromCharacter(
  * FR-session-combat-sync — miroir complet des champs de fiche affichés dans le tracker.
  * Utilisé lors d'un refresh temps réel de fiche pour resynchroniser toutes les lignes concernées.
  */
-/** FR-tracker-initiative-modifier-display — bonus d'initiative fiche (`stats.initiative`). */
+/** FR-combat-initiative-tracker — bonus d'initiative fiche (`stats.initiative`). */
 export function resolveInitiativeModifierFromStats(
   stats?: { initiative?: number | null } | null,
 ): number {

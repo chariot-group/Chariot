@@ -1,4 +1,4 @@
-/** @see FR-player-delete-companion-choice */
+/** @see FR-player-companion-choice */
 
 import type { AppDispatch } from "@/store";
 import {

@@ -28,7 +28,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
         {t("backstory")}
       </h2>
 
-      {/* Col 1: Apparence (sizes to content — FR-character-history-appearance-fit) */}
+      {/* Col 1: Apparence (sizes to content — FR-character-detail-view) */}
       <div className="xl:row-span-2 self-start min-w-0 w-full">
         <Card
           className="gap-4 h-fit min-w-0 w-full"

@@ -295,7 +295,7 @@ describe("FR-session-combat-navigation — applyRemoteBattleState", () => {
   });
 });
 
-describe("FR-tracker-bulk-display — bulk display configuration", () => {
+describe("FR-tracker-bulk-actions — bulk display configuration", () => {
   it("nominal: applies visibility settings and shared alias to selected rows only", () => {
     let state = sessionReducer(
       undefined,

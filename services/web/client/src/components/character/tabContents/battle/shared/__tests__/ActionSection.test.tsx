@@ -56,8 +56,8 @@ const renderActionSection = (actions: Action[], title = "Actions") => renderToSt
   </Provider>,
 );
 
-/** @see FR-character-action-section-visibility: Combat Action Section Visible When Empty */
-describe("FR-character-action-section-visibility — ActionSection", () => {
+/** @see FR-character-detail-view: Combat Action Section Visible When Empty */
+describe("FR-character-detail-view — ActionSection", () => {
   it("nominal: exposes section, priority group, pressed state, and action details region", () => {
     const html = renderActionSection([
       {

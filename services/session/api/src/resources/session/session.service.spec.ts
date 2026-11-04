@@ -394,7 +394,7 @@ describe('SessionService', () => {
             expect(mockRedis.setSessionExpiration).toHaveBeenCalledWith('sess-uuid-1', 28800);
         });
 
-        it('guard FR-session-lobby-wheel-quota-invariant: rejects launch when deposited !== quota', async () => {
+        it('guard FR-session-lobby-wheel-deposit: rejects launch when deposited !== quota', async () => {
             const participants = [
                 makeParticipant({ id: 'part-1', userId: 'user-uuid-1' }),
                 makeParticipant({ id: 'part-2', userId: 'user-uuid-2' }),
@@ -564,7 +564,7 @@ describe('SessionService', () => {
             });
         });
 
-        it('nominal FR-session-lobby-wheel-leave-refund: releases reserved wheels when session is activated', async () => {
+        it('nominal FR-session-lobby-wheel-deposit: releases reserved wheels when session is activated', async () => {
             const participant = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
             const session = makeSession({
                 status: SessionStatus.activated,
@@ -592,7 +592,7 @@ describe('SessionService', () => {
             expect(result.tokensByUser).toEqual({});
         });
 
-        it('nominal FR-session-lobby-wheel-quota-invariant: clamps excess after leave', async () => {
+        it('nominal FR-session-lobby-wheel-deposit: clamps excess after leave', async () => {
             const participant1 = makeParticipant({ id: 'part-1', userId: 'user-a' });
             const participant2 = makeParticipant({ id: 'part-2', userId: 'user-b' });
             const participant3 = makeParticipant({ id: 'part-3', userId: 'user-c' });

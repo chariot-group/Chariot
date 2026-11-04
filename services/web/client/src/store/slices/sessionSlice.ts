@@ -120,7 +120,7 @@ export function normalizeInitiativeTrackerConditionEntry(entry: unknown): Initia
 
 export type InitiativeTrackerRowKind = "player" | "npc";
 
-/** FR-session-combat-navigation / FR-tracker-hp-life-status-decoupling — champs visibles pour les joueurs sur une ligne du tracker. */
+/** FR-session-combat-navigation / FR-tracker-vital-status — champs visibles pour les joueurs sur une ligne du tracker. */
 export interface InitiativeTrackerPlayerFieldVisibility {
   initiative: boolean;
   name: boolean;
@@ -219,7 +219,7 @@ export interface InitiativeTrackerRow {
   surname: string;
   avatar: string;
   initiative: number;
-  /** FR-tracker-initiative-modifier-display — miroir de `stats.initiative` (bonus fiche). */
+  /** FR-combat-initiative-tracker — miroir de `stats.initiative` (bonus fiche). */
   initiativeModifier: number;
   hitPoints: number;
   maxHitPoints: number;

@@ -297,7 +297,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 characterId: leavingCharacterId,
             });
 
-            /* FR-session-lobby-wheel-leave-refund: synchroniser le pool de wheels après libération. */
+            /* FR-session-lobby-wheel-deposit: synchroniser le pool de wheels après libération. */
             if (leaveResult.tokensByUser) {
                 this.server.to(roomId).emit('session:token-updated', {
                     tokensByUser: leaveResult.tokensByUser,

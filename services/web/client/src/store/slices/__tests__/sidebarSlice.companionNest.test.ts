@@ -5,8 +5,8 @@ import sidebarReducer, {
 } from "@/store/slices/sidebarSlice";
 import type { RootState } from "@/store";
 
-/** @see FR-sidebar-linked-npc-nesting-collapse */
-describe("FR-sidebar-linked-npc-nesting-collapse — sidebarSlice", () => {
+/** @see FR-sidebar-npc-link */
+describe("FR-sidebar-npc-link — sidebarSlice", () => {
   it("nominal: collapsing then expanding a player nest updates persisted ids", () => {
     let state = sidebarReducer(undefined, setCompanionNestCollapsed({ playerId: "p1", collapsed: true }));
     expect(state.collapsedCompanionNestPlayerIds).toEqual(["p1"]);

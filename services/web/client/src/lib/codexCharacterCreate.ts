@@ -1,6 +1,6 @@
 import type { NPC, Player } from "@/types/character";
 
-/** @see FR-codex-npc-search-entity-type, FR-player-space-codex-character-creation */
+/** @see FR-codex-search-filters, FR-player-space-codex-character-creation */
 export type CodexCreateSelection =
   | { kind: "npc"; draft: Partial<NPC> }
   | { kind: "player"; draft: Partial<Player> };

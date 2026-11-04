@@ -4,7 +4,7 @@ import CreateCharacterFromCodexView from "@/components/character/CreateCharacter
 
 /**
  * Route: /campaigns/[idCampaign]/groups/[idGroup]/characters/new/npcs-codex
- * @see FR-codex-npc-search-entity-type
+ * @see FR-codex-search-filters
  */
 export default function CreateCharacterFromCodexCampaignPage() {
   return <CreateCharacterFromCodexView />;

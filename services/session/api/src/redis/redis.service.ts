@@ -210,7 +210,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
     /**
      * Libère toutes les wheels réservées d’un utilisateur pour une session (leave pré-lancement).
-     * @see FR-session-lobby-wheel-leave-refund
+     * @see FR-session-lobby-wheel-deposit
      */
     async clearUserTokens(
         sessionId: string,
@@ -242,7 +242,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
-     * Clamp le total réservé à `maxSlots` (FR-session-lobby-wheel-quota-invariant).
+     * Clamp le total réservé à `maxSlots` (FR-session-lobby-wheel-deposit).
      */
     async clampTokensToMax(
         sessionId: string,

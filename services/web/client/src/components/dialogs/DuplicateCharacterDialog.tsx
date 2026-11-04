@@ -1,6 +1,6 @@
 "use client";
 
-/** @see FR-character-duplicate, FR-player-duplicate-companion-choice */
+/** @see FR-character-duplicate, FR-player-companion-choice */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";

@@ -23,7 +23,7 @@ describe("isSessionLobbyPage", () => {
     });
 });
 
-/** @see FR-session-join-qr-code */
+/** @see FR-session-lobby-modal */
 describe("shouldShowSessionLobbyInvitePanel", () => {
     it("nominal: shows invite panel while session is activated", () => {
         expect(shouldShowSessionLobbyInvitePanel("activated")).toBe(true);

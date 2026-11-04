@@ -219,7 +219,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
             "flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 pt-2.5 sm:gap-4 sm:px-6 sm:pt-3",
             sessionIsActive && "lg:grid lg:grid-cols-4 lg:items-stretch",
           )}>
-          {/* Session code + QR — only while join is open (activated lobby). @see FR-session-join-qr-code */}
+          {/* Session code + QR — only while join is open (activated lobby). @see FR-session-lobby-modal */}
           {sessionIsActive ? (
             <aside
               aria-labelledby="session-lobby-code-heading"

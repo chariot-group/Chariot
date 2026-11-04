@@ -43,8 +43,8 @@ describe("media.utils (client)", () => {
     expect(MEDIA_AVATAR_SIZE_CLASS.thumb).toContain("aspect-square");
   });
 
-  /** @see FR-media-avatar-format */
-  describe("FR-media-avatar-format — upload accept gate", () => {
+  /** @see FR-media-avatars */
+  describe("FR-media-avatars — upload accept gate", () => {
     it("nominal: accepts jpeg/png/webp by mime type", () => {
       expect(isAcceptedMediaAvatarFile({ name: "a.bin", type: "image/jpeg" })).toBe(true);
       expect(isAcceptedMediaAvatarFile({ name: "a.bin", type: "image/png" })).toBe(true);
