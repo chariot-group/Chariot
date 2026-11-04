@@ -76,6 +76,8 @@ const mockRedis = {
         maxSlots,
     })),
     getTokens: jest.fn().mockResolvedValue({}),
+    addFormerParticipant: jest.fn(),
+    isFormerParticipant: jest.fn().mockResolvedValue(false),
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -492,6 +494,23 @@ describe('SessionService', () => {
             );
         });
 
+        it('edge FR-session-lobby-modal: former participant can rejoin a launched session', async () => {
+            const session = makeSession({ status: SessionStatus.launched, participants: [] });
+            const updated = makeSession({
+                status: SessionStatus.launched,
+                participants: [makeParticipant({ userId: 'user-uuid-2' })],
+            });
+            mockPrismaSession.findFirst.mockResolvedValueOnce(session).mockResolvedValueOnce(updated);
+            mockPrismaParticipant.create.mockResolvedValue({});
+            mockRedis.isFormerParticipant.mockResolvedValueOnce(true);
+
+            const result = await service.join('CODE123', { characterId: 'char-1' }, 'user-uuid-2');
+
+            expect(mockRedis.isFormerParticipant).toHaveBeenCalledWith('CODE123', 'user-uuid-2');
+            expect(mockPrismaParticipant.create).toHaveBeenCalled();
+            expect(result.data).toBe(updated);
+        });
+
         it('should allow reconnection when session is launched and user is already a participant', async () => {
             const existingParticipant = makeParticipant({ userId: 'user-uuid-2' });
             const session = makeSession({ status: SessionStatus.launched, participants: [existingParticipant] });
@@ -636,6 +655,35 @@ describe('SessionService', () => {
 
             expect(mockRedis.clearUserTokens).toHaveBeenCalledWith('CODE123', 'user-uuid-1');
             expect(result.tokensByUser).toEqual({});
+        });
+
+        it('nominal FR-session-lobby-modal: leaving a launched session remembers the former participant', async () => {
+            const participant = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
+            const expiresAt = new Date(Date.now() + 3600 * 1000);
+            const session = makeSession({ status: SessionStatus.launched, expiresAt, participants: [participant] });
+            mockPrismaSession.findFirst
+                .mockResolvedValueOnce(session)
+                .mockResolvedValueOnce(makeSession({ status: SessionStatus.launched, expiresAt, participants: [] }));
+            mockPrismaParticipant.delete.mockResolvedValue({});
+
+            await service.leave('CODE123', 'user-uuid-1');
+
+            expect(mockRedis.addFormerParticipant).toHaveBeenCalledWith('CODE123', 'user-uuid-1', expect.any(Number));
+            const ttl = mockRedis.addFormerParticipant.mock.calls[0][2];
+            expect(ttl).toBeGreaterThan(3500);
+            expect(ttl).toBeLessThanOrEqual(3600);
+        });
+
+        it('guard: leaving an activated session does not register a former participant', async () => {
+            const participant = makeParticipant({ id: 'part-1', userId: 'user-uuid-1' });
+            mockPrismaSession.findFirst
+                .mockResolvedValueOnce(makeSession({ participants: [participant] }))
+                .mockResolvedValueOnce(makeSession({ participants: [] }));
+            mockPrismaParticipant.delete.mockResolvedValue({});
+
+            await service.leave('CODE123', 'user-uuid-1');
+
+            expect(mockRedis.addFormerParticipant).not.toHaveBeenCalled();
         });
 
         it('guard: does not release wheels when session is already launched', async () => {

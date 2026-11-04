@@ -19,6 +19,7 @@ import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipant
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
     clearCurrentSession,
+    setLastLeftSessionCode,
     closeSessionLobby,
     mergeSessionParticipantDisplayNames,
     selectIsInSession,
@@ -508,6 +509,7 @@ export function useSessionSocket({
                 }
             }
             dispatch(clearCurrentSession());
+            dispatch(setLastLeftSessionCode(code));
             dispatch(closeSessionLobby());
             toast.info(t("toast.leaveSuccess"));
         };

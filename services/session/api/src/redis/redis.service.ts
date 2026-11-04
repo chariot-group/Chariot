@@ -125,6 +125,28 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
 
     // -------------------------------------------------------------------------
+    // Former participants (FR-session-lobby-modal — rejoin after leave)
+    // -------------------------------------------------------------------------
+
+    private formerParticipantsKey(sessionCode: string): string {
+        return `session:former:${sessionCode}`;
+    }
+
+    /**
+     * Mémorise qu'un utilisateur a quitté une session lancée, jusqu'à son expiration.
+     */
+    async addFormerParticipant(sessionCode: string, userId: string, ttlSeconds: number): Promise<void> {
+        if (ttlSeconds <= 0) return;
+        const key = this.formerParticipantsKey(sessionCode);
+        await this.client.sadd(key, userId);
+        await this.client.expire(key, ttlSeconds);
+    }
+
+    async isFormerParticipant(sessionCode: string, userId: string): Promise<boolean> {
+        return (await this.client.sismember(this.formerParticipantsKey(sessionCode), userId)) === 1;
+    }
+
+    // -------------------------------------------------------------------------
     // Token management
     // -------------------------------------------------------------------------
 

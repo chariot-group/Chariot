@@ -344,6 +344,8 @@ export interface CurrentSessionState {
   sessionLobbyOpen: boolean;
   /** FR-tracker-custom-effects — catalogue d'effets custom réutilisable pendant la session. */
   customEffectCatalog: TrackerCustomEffectDefinition[];
+  /** FR-session-lobby-modal — code de la dernière session quittée (pré-remplit le dialog de retour). */
+  lastLeftSessionCode: string | null;
 }
 
 const initialState: CurrentSessionState = {
@@ -368,6 +370,7 @@ const initialState: CurrentSessionState = {
   sessionCompanionNpcs: [],
   sessionLobbyOpen: false,
   customEffectCatalog: [],
+  lastLeftSessionCode: null,
 };
 
 const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow => {
@@ -580,6 +583,9 @@ const sessionSlice = createSlice({
       state.gmGuestCharacterIds = [];
       state.sessionCompanionNpcs = [];
       state.customEffectCatalog = [];
+    },
+    setLastLeftSessionCode: (state, action: PayloadAction<string | null>) => {
+      state.lastLeftSessionCode = action.payload;
     },
     setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
       state.status = action.payload;
@@ -865,6 +871,7 @@ const sessionSlice = createSlice({
 export const {
   setCurrentSession,
   clearCurrentSession,
+  setLastLeftSessionCode,
   setSessionStatus,
   setSessionExpiresAt,
   setSessionParticipants,
@@ -931,6 +938,7 @@ export const selectCharacterSheetRemoteVersions = (state: RootState) =>
 export const selectGmGuestCharacterIds = (state: RootState) => state.session.gmGuestCharacterIds ?? [];
 export const selectSessionCompanionNpcs = (state: RootState) => state.session.sessionCompanionNpcs ?? [];
 
+export const selectLastLeftSessionCode = (state: RootState) => state.session.lastLeftSessionCode ?? null;
 export const selectLastConsultedSheetPath = (state: RootState) => state.session.lastConsultedSheetPath ?? null;
 
 export const selectSessionLobbyOpen = (state: RootState) => state.session.sessionLobbyOpen ?? false;

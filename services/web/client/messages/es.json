@@ -104,6 +104,7 @@
     "joinSessionDialogTitle": "Unirse a una sesión",
     "joinSessionErrorNotFound": "No se encontró ninguna sesión para este código.",
     "joinSessionErrorClosed": "Esta sesión está cerrada.",
+    "joinSessionErrorLaunched": "Esta sesión ya ha comenzado: solo sus participantes pueden volver a unirse.",
     "joinSessionSelectCharacterPlaceholder": "Seleccionar un personaje",
     "joinSessionCompanionCount": "{count, plural, one {# compañero} other {# compañeros}}",
     "joinSessionCompanionCountShort": "+{count}",

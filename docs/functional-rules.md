@@ -3567,6 +3567,10 @@ Each initiative tracker row carries:
 - The dialog MUST explain the consequences: the user is disconnected and must rejoin to keep playing; for a player, their character is removed from the campaign groups. For the GM, leaving does NOT end the session (« Clôturer la session » stays a separate action)
 - The dialog MUST offer **Annuler** (outline) and a **destructive** confirm button; Cancel, Escape and overlay click MUST close without leaving; the confirm button MUST be disabled while leaving
 - Trigger layout: **player** → one solid destructive « Quitter la session » button; **GM** (where closing is available) → split button whose main part is « Clôturer la session » (solid destructive) and whose arrow opens a menu with « Quitter la session »; each action opens its own confirmation dialog. Where the GM cannot close (pre-launch wheel bar), the GM gets the same solid destructive leave button as a player
+- **Rejoining after leaving**: while the session is still valid (not closed, not expired — 8 h after launch), a user who left MUST be able to come back:
+  - **GM**: when the GM is no longer in a session client-side but an active session exists for the selected campaign (GM is its creator), the sidebar action MUST read « Retourner à la session » (not « Lancer une session ») and bring the GM back into that session. « Lancer une session » is shown only when no active session exists for the campaign.
+  - **Player, before launch**: rejoining with the session code follows the normal join flow (wheel deposit rules apply, FR-session-lobby-wheel-deposit).
+  - **Player, after launch**: a former participant who explicitly left a launched session MUST be allowed to rejoin it with its code, without spending wheels again (the launch debit is not replayed). Users who never participated in that session MUST still be refused once it is launched (no new player mid-session). The join dialog MUST show a specific error for this refusal and SHOULD prefill the code of the last session the user left. While that last-left session is still active, the player's sidebar action MUST read « Retourner à la session » (opening the prefilled join dialog) instead of « Rejoindre la session ».
 - Accessibility: titled/described dialog, focus trapped and restored to the trigger, fully keyboard operable, red text contrast OK in light and dark themes
 
 **Tests**:
@@ -3574,6 +3578,9 @@ Each initiative tracker row carries:
 - Nominal: `openSessionLobby` sets `sessionLobbyOpen` to `true`; `closeSessionLobby` resets it to `false`
 - Nominal: player gets a single leave button; GM gets the close split button with leave in its menu; leave description mentions group removal only for a player
 - Failure: leave confirm is blocked while a leave is in progress
+- Nominal: GM out of session with an active session on the selected campaign sees « Retourner à la session »; without one, « Lancer une session »
+- Edge (reconnect): player leaves a launched session and rejoins it with its code → accepted, no wheel debit
+- Failure: user who never participated cannot join a launched session (specific error shown)
 - Edge: calling `openSessionLobby` twice remains idempotent (`true`)
 - Edge: `selectSessionLobbyOpen` defaults to `false` when field is absent (rehydration safety)
 - Failure: dialog does not render when `code` or `campaignId` is missing in Redux
