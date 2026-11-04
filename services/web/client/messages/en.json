@@ -1877,9 +1877,9 @@
       "confirm": "Back to home"
     },
     "sessionCancel": {
-      "title": "Cancel session",
+      "title": "End session",
       "description": "You are about to end the session. All participants will be logged out and will need to join a new session to continue playing together.",
-      "confirm": "Yes, cancel the session"
+      "confirm": "End session"
     }
   },
   "header": {
