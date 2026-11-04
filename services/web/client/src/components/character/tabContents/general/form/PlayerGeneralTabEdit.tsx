@@ -17,7 +17,7 @@ import AbilitiesUpdateSection from "@/components/character/tabContents/shared/Ab
 import Column2Edit from "@/components/character/tabContents/general/form/Column2Edit";
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import SensesUpdateSection from "@/components/character/tabContents/general/shared/SensesUpdateSection";
 
 interface PlayerGeneralTabEditProps {
@@ -33,7 +33,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   void player; // Silence unused player prop warning
   const { errors } = useFormState({ control: form.control });
 
@@ -847,10 +847,10 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                   <Select
                     value={field.value?.toString() || "0"}
                     onValueChange={(value) => field.onChange(parseInt(value))}
-                    disabled={!isInSession}>
+                    disabled={!isSessionLaunched}>
                     <SelectTrigger
                       id="exhaustion-level"
-                      aria-disabled={!isInSession}>
+                      aria-disabled={!isSessionLaunched}>
                       <SelectValue placeholder={t("exhaustionLevel")}>
                         {field.value !== undefined && field.value !== null
                           ? `${t("level")} ${field.value}`
@@ -874,7 +874,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                  {!isInSession && (
+                  {!isSessionLaunched && (
                     <p
                       className="text-xs text-muted-foreground"
                       role="note">
@@ -1011,7 +1011,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 control={form.control}
                 render={({ field }) => (
                   <div className="flex items-center gap-2">
-                    {isInSession ? (
+                    {isSessionLaunched ? (
                       field.value ? (
                         <span className="text-sm font-medium">{t("inspirationActive")}</span>
                       ) : (
@@ -1032,7 +1032,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, form }: Play
                 )}
               />
             </div>
-            {!isInSession && (
+            {!isSessionLaunched && (
               <p
                 className="text-xs text-muted-foreground"
                 role="note">

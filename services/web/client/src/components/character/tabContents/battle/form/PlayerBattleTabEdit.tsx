@@ -15,7 +15,7 @@ import { Controller } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeTagInput } from "@/components/ui/damage-type-tag-input";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { useId } from "react";
 
 interface PlayerBattleTabEditProps {
@@ -27,7 +27,7 @@ interface PlayerBattleTabEditProps {
 export default function PlayerBattleTabEdit({ player, accentColor, form }: PlayerBattleTabEditProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const sectionId = useId();
   const savingThrowsHeadingId = `${sectionId}-saving-throws-heading-edit`;
   const deathSavesHeadingId = `${sectionId}-death-saves-heading-edit`;
@@ -84,7 +84,7 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
           className="gap-3 p-4 md:px-6 h-fit col-span-3 md:col-span-2 lg:col-span-1 items-end"
           role="region"
           aria-labelledby={deathSavesHeadingId}
-          aria-describedby={!isInSession ? deathSavesNoteId : undefined}>
+          aria-describedby={!isSessionLaunched ? deathSavesNoteId : undefined}>
           <h2
             id={deathSavesHeadingId}
             className={`text-xl sm:text-2xl font-semibold self-start ${accentColor}`}>
@@ -104,10 +104,10 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                     key={"death-save-success-" + index}
                     type="button"
                     onClick={() => form.setValue("deathSaves.successes", index + 1, { shouldDirty: true })}
-                    disabled={!isInSession}
+                    disabled={!isSessionLaunched}
                     className="cursor-pointer rounded-full p-1 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                     aria-pressed={isSelected}
-                    aria-describedby={!isInSession ? deathSavesNoteId : undefined}
+                    aria-describedby={!isSessionLaunched ? deathSavesNoteId : undefined}
                     aria-label={t("deathSaveSuccessButton", {
                       index: index + 1,
                       state: isSelected ? t("performedThrow") : t("unperformedThrow"),
@@ -137,10 +137,10 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
                     key={"death-save-failure-" + index}
                     type="button"
                     onClick={() => form.setValue("deathSaves.failures", index + 1, { shouldDirty: true })}
-                    disabled={!isInSession}
+                    disabled={!isSessionLaunched}
                     className="cursor-pointer rounded-full p-1 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-40"
                     aria-pressed={isSelected}
-                    aria-describedby={!isInSession ? deathSavesNoteId : undefined}
+                    aria-describedby={!isSessionLaunched ? deathSavesNoteId : undefined}
                     aria-label={t("deathSaveFailureButton", {
                       index: index + 1,
                       state: isSelected ? t("performedThrow") : t("unperformedThrow"),
@@ -162,18 +162,18 @@ export default function PlayerBattleTabEdit({ player, accentColor, form }: Playe
             type="button"
             variant="ghost"
             size="sm"
-            disabled={!isInSession}
+            disabled={!isSessionLaunched}
             onClick={() => {
               form.setValue("deathSaves.successes", 0, { shouldDirty: true });
               form.setValue("deathSaves.failures", 0, { shouldDirty: true });
             }}
-            aria-describedby={!isInSession ? deathSavesNoteId : undefined}
+            aria-describedby={!isSessionLaunched ? deathSavesNoteId : undefined}
             aria-label={t("resetDeathSaves")}
             className="flex gap-2 self-start">
             <RefreshCcw aria-hidden="true" />
             {tEdit("reset")}
           </Button>
-          {!isInSession && (
+          {!isSessionLaunched && (
             <p
               id={deathSavesNoteId}
               className="text-xs text-muted-foreground"

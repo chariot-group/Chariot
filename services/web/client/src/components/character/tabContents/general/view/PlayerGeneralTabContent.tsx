@@ -9,7 +9,7 @@ import Column2 from "@/components/character/tabContents/general/view/Column2";
 import Statistics from "@/components/character/tabContents/shared/Statistics";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { toast } from "react-toastify";
 import SensesSection from "@/components/character/tabContents/general/shared/SensesSection";
@@ -30,7 +30,7 @@ export default function PlayerGeneralTabContent({
   const tAlignment = useTranslations("alignments");
   const tClass = useTranslations("classes");
   const tEdit = useTranslations("characterDetail.edit");
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const [isInspirationLoading, setIsInspirationLoading] = useState(false);
 
   function infoExhaustionLevel(level: number): string {
@@ -244,7 +244,7 @@ export default function PlayerGeneralTabContent({
               className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
               {t("inspiration")}
             </h2>
-            {isInSession ? (
+            {isSessionLaunched ? (
               player.inspiration ? (
                 <Button
                   type="button"

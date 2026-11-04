@@ -52,7 +52,7 @@ import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateN
 import {
   selectIsInSession,
   selectSessionCode,
-  selectSessionStatus,
+  selectIsSessionLaunched,
   selectGmGuestCharacterIds,
   addGmGuestCharacterToSession,
   removeGmGuestCharacterFromSession,
@@ -106,10 +106,10 @@ export default function GroupList({
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
-  const sessionStatus = useAppSelector(selectSessionStatus);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
   const battleInitialized = useAppSelector(selectBattleInitialized);
-  const actionsDisabled = isInSession && sessionStatus === "launched";
+  const actionsDisabled = isSessionLaunched;
 
   const avatarBatchItems = React.useMemo(
     () =>

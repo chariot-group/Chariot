@@ -9,7 +9,7 @@ import type { Ability, NPC, Player } from "@/types/character";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 
 type CharacterTypeFilter = "players" | "npcs";
@@ -39,11 +39,11 @@ const AbilitiesSection = ({
   const tMagic = useTranslations("characterDetail.magic");
   const t = useTranslations("characterDetail.battle");
   const toast = useToast();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const sessionCode = useActiveSessionCode();
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
 
-  const showUseControls = isInSession && Boolean(onAfterAbilityUse);
+  const showUseControls = isSessionLaunched && Boolean(onAfterAbilityUse);
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const hasAbilities = abilities.length > 0;
   const hasShortRestReset = abilities.some((ability) => ability.counterResetsOnShortRest === true);

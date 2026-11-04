@@ -23,7 +23,7 @@ import {
 } from "@/lib/npcPlayerLink";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
-import { selectIsInSession, selectSessionCode, selectSessionCompanionNpcs } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched, selectSessionCode, selectSessionCompanionNpcs } from "@/store/slices/sessionSlice";
 import { normalizeCharacterId } from "@/lib/normalizeCharacterId";
 import { companionsOfPlayer } from "@/lib/sessionPlayerCompanions";
 import { CompanionNpcCard } from "@/components/character/tabContents/companions/CompanionNpcCard";
@@ -52,12 +52,12 @@ export default function CharacterCompanionsTabContent({
   const sessionCodeFromUrl = useActiveSessionCode();
   tRef.current = t;
   const dispatch = useAppDispatch();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const reduxSessionCode = useAppSelector(selectSessionCode);
   const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
   const playerId = normalizeCharacterId(player._id) ?? player._id;
   const sessionCodeForLookup =
-    sessionCodeFromUrl ?? (isInSession ? reduxSessionCode?.trim() || null : null);
+    sessionCodeFromUrl ?? (isSessionLaunched ? reduxSessionCode?.trim() || null : null);
   const canManageLiaisons = liaisonActionsEnabled;
   const showLiaisonActions = canManageLiaisons;
   const derivedSessionCompanions = useMemo(

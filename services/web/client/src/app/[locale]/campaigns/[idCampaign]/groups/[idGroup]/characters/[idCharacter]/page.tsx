@@ -12,7 +12,7 @@ import { useAppSelector } from "@/store/hooks";
 import { selectActiveGroups, selectArchivedGroups } from "@/store/slices/groupSlice";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import {
-  selectIsInSession,
+  selectIsSessionLaunched,
   selectSessionCode,
   selectSessionParticipants,
 } from "@/store/slices/sessionSlice";
@@ -30,7 +30,7 @@ export default function Character() {
   const activeGroups = useAppSelector(selectActiveGroups);
   const archivedGroups = useAppSelector(selectArchivedGroups);
   const contextMode = useAppSelector(selectContextMode);
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const reduxSessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const currentUser = useAppSelector(selectUser);
@@ -42,7 +42,7 @@ export default function Character() {
   );
 
   const sessionGmBypassGroup = useMemo(() => {
-    if (contextMode !== "gm" || !isInSession || !sessionCode || sessionCode !== reduxSessionCode) {
+    if (contextMode !== "gm" || !isSessionLaunched || !sessionCode || sessionCode !== reduxSessionCode) {
       return false;
     }
     const isGm = participants.some(
@@ -54,7 +54,7 @@ export default function Character() {
     characterId,
     contextMode,
     currentUser?.keycloakId,
-    isInSession,
+    isSessionLaunched,
     participants,
     reduxSessionCode,
     sessionCode,

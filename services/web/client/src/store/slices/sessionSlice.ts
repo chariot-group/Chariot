@@ -900,6 +900,9 @@ export const {
 
 export const selectCurrentSession = (state: RootState) => state.session;
 export const selectIsInSession = (state: RootState) => state.session.isInSession;
+/** FR-session-lobby-wheel-deposit — features de session débloquées uniquement après lancement (wheels + MJ). */
+export const selectIsSessionLaunched = (state: RootState) =>
+  state.session.isInSession && state.session.status === "launched";
 export const selectSessionCode = (state: RootState) => state.session.code;
 export const selectSessionCampaignId = (state: RootState) => state.session.campaignId;
 export const selectSessionStatus = (state: RootState) => state.session.status;

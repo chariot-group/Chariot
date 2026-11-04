@@ -11,7 +11,7 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { formatCompactNumber, formatNumberWithSpaces } from "@/utils/inventory.utils";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 import { useMemo, useState } from "react";
 import CharacterService from "@/services/CharacterService";
@@ -53,7 +53,7 @@ export default function CharacterInventoryView({
 }: CharacterInventoryViewProps) {
   const t = useTranslations("characterDetail.inventory");
   const toast = useToast();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const sessionCode = useActiveSessionCode();
   const [selectedCoin, setSelectedCoin] = useState<CoinKey | null>(null);
   const [coinAmount, setCoinAmount] = useState("");
@@ -61,7 +61,7 @@ export default function CharacterInventoryView({
   const [textDraft, setTextDraft] = useState("");
   const [busyState, setBusyState] = useState<"coin" | "text" | null>(null);
 
-  const canEditInSession = isInSession && Boolean(onCharacterUpdate);
+  const canEditInSession = isSessionLaunched && Boolean(onCharacterUpdate);
   const isEditingTextField = editingField !== null;
   const selectedCoinConfig = useMemo(
     () => COIN_CONFIG.find((coin) => coin.key === selectedCoin) ?? null,

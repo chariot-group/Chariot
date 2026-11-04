@@ -5,6 +5,7 @@ export const SESSION_TIMER_LOW_THRESHOLD_SECONDS = 5 * 60;
 
 export type HeaderLogoClickIntent = "openSessionLobby" | "goHome";
 export type SessionLiveTone = "live" | "warning" | "critical";
+export type HeaderSessionIndicatorTone = SessionLiveTone | "preparing";
 
 export function resolveHeaderLogoClickIntent(isInSession: boolean): HeaderLogoClickIntent {
   return isInSession ? "openSessionLobby" : "goHome";
@@ -26,6 +27,14 @@ export function resolveSessionLiveTone(remainingSeconds: number | null): Session
   if (remainingSeconds <= SESSION_TIMER_LOW_THRESHOLD_SECONDS) return "critical";
   if (remainingSeconds <= SESSION_TIMER_WARNING_THRESHOLD_SECONDS) return "warning";
   return "live";
+}
+
+/** Lobby (non lancée) → indicateur « en préparation » ; sinon tonalité live selon le temps restant. */
+export function resolveHeaderSessionIndicatorTone(
+  isSessionLaunched: boolean,
+  remainingSeconds: number | null,
+): HeaderSessionIndicatorTone {
+  return isSessionLaunched ? resolveSessionLiveTone(remainingSeconds) : "preparing";
 }
 
 export function isSessionTimerLow(remainingSeconds: number): boolean {

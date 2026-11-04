@@ -1885,6 +1885,7 @@
   "header": {
     "logoAriaLabelHome": "Return to home",
     "logoAriaLabelInSession": "Open session lobby",
+    "logoAriaLabelInSessionPreparing": "Open session lobby (session being prepared)",
     "logoAriaLabelInSessionWarning": "Open session lobby, less than 30 minutes remaining",
     "logoAriaLabelInSessionCritical": "Open session lobby, less than 5 minutes remaining",
     "communityLibraryTooltip": "Open the community library",
@@ -1899,6 +1900,7 @@
   },
   "sessionTime": {
     "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left.",
+    "tooltipPreparing": "Session being prepared, waiting for the GM to launch it.",
     "tooltipWarning": "Less than 30 minutes remaining.",
     "tooltipCritical": "Less than 5 minutes remaining.",
     "remainingAriaLabel": "Session time remaining: {time}",

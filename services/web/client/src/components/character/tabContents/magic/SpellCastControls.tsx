@@ -8,7 +8,7 @@ import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectBattleStarted, selectCurrentRound, selectInitiativeTrackerRows, selectIsInSession, updateInitiativeTrackerRow } from "@/store/slices/sessionSlice";
+import { selectBattleStarted, selectCurrentRound, selectInitiativeTrackerRows, selectIsSessionLaunched, updateInitiativeTrackerRow } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import type { NPC, Player, Spell, Spellcasting } from "@/types/character";
@@ -60,7 +60,7 @@ export default function SpellCastControls({
   const tMagic = useTranslations("characterDetail.magic");
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const battleStarted = useAppSelector(selectBattleStarted);
   const currentRound = useAppSelector(selectCurrentRound);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
@@ -70,7 +70,7 @@ export default function SpellCastControls({
   const [concentrationPromptOpen, setConcentrationPromptOpen] = useState(false);
   const lightCastFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showCast = isInSession && Boolean(onCharacterUpdate);
+  const showCast = isSessionLaunched && Boolean(onCharacterUpdate);
 
   const baseLevel = selectedSpell?.level ?? -1;
   const upcastLevels = selectedSpell ? getUpcastSlotLevels(spellcasting, baseLevel) : [];

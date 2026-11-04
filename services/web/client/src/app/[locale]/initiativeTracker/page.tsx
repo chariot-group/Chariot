@@ -68,7 +68,7 @@ import {
   selectSessionInitBattleDraft,
   selectTurnsWithActions,
   selectInitiativeTrackerRows,
-  selectIsInSession,
+  selectIsSessionLaunched,
   selectSessionCode,
   selectSessionParticipants,
   selectCustomEffectCatalog,
@@ -89,7 +89,7 @@ export default function InitiativeTrackerPage() {
   const store = useAppStore();
   const router = useRouter();
   const sessionCode = useAppSelector(selectSessionCode);
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const participants = useAppSelector(selectSessionParticipants);
   const user = useUser();
   const [healthDialogRow, setHealthDialogRow] = React.useState<InitiativeTrackerRow | null>(null);
@@ -175,7 +175,7 @@ export default function InitiativeTrackerPage() {
   const canGoPrevious = previousTurnState === "available";
 
   const broadcastCurrentBattleState = React.useCallback((options?: { includeEnded?: boolean }) => {
-    if (!isGameMaster || !isInSession) return;
+    if (!isGameMaster || !isSessionLaunched) return;
     const snapshot = selectBattleStateSnapshot(
       store.getState() as Parameters<typeof selectBattleStateSnapshot>[0],
     );
@@ -187,7 +187,7 @@ export default function InitiativeTrackerPage() {
       return;
     }
     emitBattleStateUpdate(snapshot);
-  }, [isGameMaster, isInSession, store]);
+  }, [isGameMaster, isSessionLaunched, store]);
 
   const dispatchTrackerAction = React.useCallback((
     action: ReturnType<
@@ -693,7 +693,7 @@ export default function InitiativeTrackerPage() {
                 }
               : undefined
           }
-          onHitPointsClick={isGameMaster && isInSession ? (row) => setHealthDialogRow(row) : undefined}
+          onHitPointsClick={isGameMaster && isSessionLaunched ? (row) => setHealthDialogRow(row) : undefined}
           battleStarted={battleStarted}
           currentRound={currentRound}
           onSetConcentration={
@@ -806,7 +806,7 @@ export default function InitiativeTrackerPage() {
           newlyCombatantRevealedLabel={!isGameMaster ? t("newlyCombatantRevealed") : undefined}
         />
 
-        {isGameMaster && isInSession ? (
+        {isGameMaster && isSessionLaunched ? (
           <InitiativeTrackerHealthDialog
             row={healthDialogRow}
             open={healthDialogRow != null}

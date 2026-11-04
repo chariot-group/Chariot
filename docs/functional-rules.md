@@ -2222,7 +2222,8 @@ Each initiative tracker row carries:
 
 **Header Logo — In Session**:
 
-- The logo MUST show a discreet live/record indicator (small filled disc, slow opacity pulse) so the user can tell a session is active without a header countdown.
+- Once the session is launched (`sessionStatus === "launched"`), the logo MUST show a discreet live/record indicator (small filled disc, slow opacity pulse) so the user can tell a session is active without a header countdown.
+- Before launch (lobby, `sessionStatus !== "launched"`), the logo MUST instead show a **preparing** indicator: small neutral (grey) filled disc, static (no pulse), so the session is not mistaken for an ongoing game (FR-session-lobby-wheel-deposit — features locked until launch). Its tooltip and the logo accessible name MUST state that the session is being prepared and waits for the GM launch. Neutral tone and absence of pulse distinguish it from the live indicator, not color alone.
 - When remaining time is ≤ 30 minutes, the indicator MUST switch to a warning tone (`yellow`, faster pulse). When remaining time is ≤ 5 minutes, it MUST switch to a critical tone (`red`, faster pulse than warning). Color MUST NOT be the only cue: pulse speed also changes, and the accessible name / tooltip MUST mention the remaining-time urgency.
 - `prefers-reduced-motion: reduce` MUST disable the pulse; the disc remains visible and static, still using the warning/critical color when applicable.
 - Hover and keyboard focus MUST show the session-validity tooltip (8 hours, or auto-close after 5 minutes if all participants have left).
@@ -2264,7 +2265,8 @@ Each initiative tracker row carries:
 - Nominal: remaining time crosses 30 minutes → one warning toast per connected client.
 - Edge: mount or refresh already below 30 minutes → no toast.
 - Nominal: launched session, player on session lobby without combat sees **Return to Character Sheet**.
-- Edge: in session but not launched → live indicator and logo open the lobby; no timer.
+- Edge: in session but not launched → preparing indicator (grey, static, no red live disc), "preparing" tooltip/accessible name, logo opens the lobby; no timer.
+- Edge: status switches to launched → preparing indicator is replaced by the live indicator without reload.
 - Edge: player without assigned character cannot use **Return to Character Sheet**.
 - Edge: combat started, player on session lobby sees **Return to Battle**.
 - Regression: user not in session still redirects logo to welcome, with no live indicator and no timer.
@@ -3951,6 +3953,25 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/dialogs/SessionLobbyContent.tsx`
 - `services/web/client/src/lib/sessionWheelDeposit.ts`
 - `docs/functional-rules.md` — FR-session-lobby-wheel-deposit
+
+### Session features locked until launch
+
+**Rule**: As long as the session is not launched (`status !== "launched"`, i.e. wheel quota not met or GM has not clicked « Lancer la session »), every user (players **and** GM) MUST get exactly the **out-of-session** feature behavior. Session features become available only once `status === "launched"`.
+
+**Requirements**:
+
+- Being in the lobby (`isInSession === true`, `status === "activated"`) MUST NOT unlock any session gameplay feature: spell casting, session short/long rest, GM session edit mode on player sheets, session sheet sync, initiative tracker / battle, session companions, GM codex library in session, and any other surface gated by being in session.
+- Locked features MUST behave as they do outside a session (same visibility: hidden when hidden out of session; same editing behavior on character sheets).
+- The pre-launch lobby itself MUST keep working unchanged: WebSocket connection, roster, wheel deposit/withdraw, launch button, invite code/QR, header live indicator and lobby modal (FR-session-lobby-modal, FR-session-lobby-navigation, FR-session-websocket-lifecycle).
+- When the session switches to `launched` (WS `session:launched` or HTTP sync), features MUST unlock without page reload for every connected participant.
+- After a refresh or reconnect on a launched session, features MUST stay unlocked once the session status is restored.
+
+**Tests**:
+
+- Nominal: `launched` session → player can cast a spell / use session rests.
+- Edge: `activated` session (in lobby) → same feature set as out of session, for player and GM.
+- Edge: status transition `activated` → `launched` unlocks features live.
+- Edge: reload on a launched session → features available after status hydration.
 
 ---
 

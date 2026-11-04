@@ -18,7 +18,7 @@ import { useState } from "react";
 import { Plus, Trash2, ListChevronsDownUp, ListChevronsUpDown, Moon, Clock } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 
 type AbilityCounterMode = "player" | "npc";
 
@@ -47,8 +47,8 @@ const AbilitiesUpdateSection = ({
   const tMagic = useTranslations("characterDetail.magic");
   const tEdit = useTranslations("characterDetail.edit");
   const tBattle = useTranslations("characterDetail.battle");
-  const isInSession = useAppSelector(selectIsInSession);
-  const showCurrentCounter = abilityCounterMode === "npc" || (abilityCounterMode === "player" && isInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
+  const showCurrentCounter = abilityCounterMode === "npc" || (abilityCounterMode === "player" && isSessionLaunched);
 
   const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
   const hasAbilities = fields.length > 0;
@@ -451,7 +451,7 @@ const AbilitiesUpdateSection = ({
                           </fieldset>
                         </div>
                       )}
-                      {abilityCounterMode === "player" && hasCounter && !isInSession && (
+                      {abilityCounterMode === "player" && hasCounter && !isSessionLaunched && (
                         <p
                           className="text-xs text-muted-foreground"
                           role="note">

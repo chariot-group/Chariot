@@ -11,7 +11,7 @@ import { getHitDiceRemainingForClass } from "@/utils/rest.utils";
 import { ShortRestButton } from "@/components/character/ShortRestButton";
 import { LongRestButton } from "@/components/character/LongRestButton";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 import { SessionHealthDialog } from "@/components/character/session/SessionHealthDialog";
@@ -27,12 +27,12 @@ interface StatisticsProps {
 export default function Statistics({ player, accentColor, onCharacterUpdate }: StatisticsProps) {
   const t = useTranslations("characterDetail.battle");
   const tClass = useTranslations("classes");
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const sessionCode = useActiveSessionCode();
   const [healthDialogOpen, setHealthDialogOpen] = useState(false);
   const { displayFt, unitLabel, secondaryFt, secondaryUnitLabel } = useDistanceUnit();
   const speed = player.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
-  const canEditHealthInSession = isInSession && Boolean(onCharacterUpdate);
+  const canEditHealthInSession = isSessionLaunched && Boolean(onCharacterUpdate);
 
   const speedBadges = [
     {
@@ -242,22 +242,22 @@ export default function Statistics({ player, accentColor, onCharacterUpdate }: S
       </div>
       {onCharacterUpdate && (
         <div className="mt-1 border-t border-border/60 px-2 pt-3 flex flex-col items-end gap-1.5 w-full min-w-0">
-          {!isInSession && (
+          {!isSessionLaunched && (
             <p className="text-xs text-muted-foreground italic text-right w-full">
               {t("restSessionOnlyNote")}
             </p>
           )}
-          {isInSession && (
+          {isSessionLaunched && (
             <div className="flex flex-row flex-wrap justify-end gap-2 w-full min-w-0">
               <ShortRestButton
                 player={player}
-                isInSession={isInSession}
+                isInSession={isSessionLaunched}
                 onApplied={(updated) => onCharacterUpdate(updated)}
                 showLabel
               />
               <LongRestButton
                 player={player}
-                isInSession={isInSession}
+                isInSession={isSessionLaunched}
                 onApplied={(updated) => onCharacterUpdate(updated)}
                 showLabel
               />
