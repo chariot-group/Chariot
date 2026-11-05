@@ -82,8 +82,8 @@ export default function Character() {
       return `/campaigns/${campaignId}/groups/${remainingArchived[0]._id}/characters/new/players`;
     }
 
-    // Avoid locale root — it re-triggers post-login (FR-post-auth-navigation).
-    return `/welcome`;
+    // FR-welcome-onboarding-fallbacks: campaign fallback, never welcome (and never the locale root).
+    return `/campaigns/${campaignId}`;
   }, [activeGroups, archivedGroups, campaignId, groupId]);
 
   useEffect(() => {

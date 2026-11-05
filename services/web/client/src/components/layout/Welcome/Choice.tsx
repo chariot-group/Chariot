@@ -5,30 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "use-intl";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface ChoiceProps {
   image: StaticImageData;
   realm: string;
   link?: string;
   onClick?: () => void;
-  disabled?: boolean;
-  tooltip?: string;
 }
-export default function Choice({ image, realm, link, onClick, disabled = false, tooltip }: ChoiceProps) {
+export default function Choice({ image, realm, link, onClick }: ChoiceProps) {
   const t = useTranslations("welcome");
 
   const buttonAria = t(`${realm}.button-aria`, { default: t(`${realm}.button`) });
 
-  const buttonContent = disabled ? (
-    <Button
-      type="button"
-      disabled
-      aria-label={buttonAria}
-      className="w-[90%] text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11 cursor-not-allowed opacity-60">
-      {t(`${realm}.button`)}
-    </Button>
-  ) : onClick ? (
+  const buttonContent = onClick ? (
     <Button
       type="button"
       onClick={onClick}
@@ -52,7 +41,8 @@ export default function Choice({ image, realm, link, onClick, disabled = false, 
     <article
       className="w-full max-w-md mx-auto"
       role="listitem"
-      aria-labelledby={`choice-title-${realm}`}>
+      aria-labelledby={`choice-title-${realm}`}
+      aria-describedby={`choice-description-${realm}`}>
       <Image
         src={image}
         alt=""
@@ -66,16 +56,13 @@ export default function Choice({ image, realm, link, onClick, disabled = false, 
           className="mb-2 sm:mb-3 text-center text-xs sm:text-sm md:text-base lg:text-lg font-semibold px-2 leading-tight"
           dangerouslySetInnerHTML={{ __html: t.raw(`${realm}.title`) }}></h3>
 
-        {disabled && tooltip ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="w-[90%] inline-flex">{buttonContent}</span>
-            </TooltipTrigger>
-            <TooltipContent side="top">{tooltip}</TooltipContent>
-          </Tooltip>
-        ) : (
-          buttonContent
-        )}
+        <p
+          id={`choice-description-${realm}`}
+          className="mb-4 text-center text-xs sm:text-sm text-muted-foreground px-2">
+          {t(`${realm}.description`)}
+        </p>
+
+        {buttonContent}
       </Card>
     </article>
   );

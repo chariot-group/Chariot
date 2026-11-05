@@ -766,7 +766,8 @@
     "campaign": {
       "title": "Crea tu primera <br /> campaña",
       "button": "Crear una campaña",
-      "button-aria": "Navegar hacia la creación de campaña"
+      "button-aria": "Navegar hacia la creación de campaña",
+      "description": "Conviértete en Director de juego: crea un universo, invita a tus jugadores y prepara tus partidas."
     },
     "session": {
       "title": "Únete a <br /> una sesión",
@@ -778,7 +779,8 @@
     "character": {
       "title": "Crea tu primer <br /> personaje",
       "button": "Crear un personaje",
-      "button-aria": "Navegar hacia la creación de personaje"
+      "button-aria": "Navegar hacia la creación de personaje",
+      "description": "Crea un héroe en tu espacio de jugador, para jugar solo o unirte a la campaña de un DJ."
     },
     "imageCredits": {
       "title": "Créditos de imágenes",
@@ -1936,5 +1938,17 @@
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navegar a una versión anterior",
     "latest": "Actual"
+  },
+  "playerSpaceFallback": {
+    "title": "Tu espacio de jugador está vacío",
+    "description": "Todavía no tienes ningún personaje jugador. Crea uno para jugar y unirte a sesiones.",
+    "createCharacter": "Crear un personaje",
+    "campaigns": "O encuentra tus campañas en la barra lateral."
+  },
+  "campaignFallback": {
+    "title": "Ningún personaje en esta campaña",
+    "description": "Esta campaña aún no tiene personajes. Crea un grupo y añade tus personajes.",
+    "createGroup": "Crear un grupo",
+    "createCharacter": "Crear un personaje"
   }
 }

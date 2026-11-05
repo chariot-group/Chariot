@@ -1,28 +1,41 @@
 "use client";
 import Choice, { ChoiceProps } from "@/components/layout/Welcome/Choice";
 import { useTranslations } from "use-intl/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocale } from "use-intl";
+import { useStore } from "react-redux";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
-import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
+import type { RootState } from "@/store";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import { clearSelectedCampaign } from "@/store/slices/campaignContextSlice";
-import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
+import NavigationService from "@/services/NavigationService";
 
 import Campaign from "@public/welcome/campaign.webp";
-import Session from "@public/welcome/session.webp";
 import Character from "@public/welcome/character.webp";
 
 export default function WelcomePage() {
   const t = useTranslations("welcome");
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
-  const [isJoinSessionOpen, setIsJoinSessionOpen] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { characters: charactersWithoutGroup, loading: loadingCharactersWithoutGroup } = usePlayersWithoutGroup();
+  const store = useStore<RootState>();
+  const locale = useLocale();
+  const searchParams = useSearchParams();
+  const hasJoinCode = Boolean(searchParams.get("join"));
 
-  const isJoinSessionDisabled = loadingCharactersWithoutGroup || charactersWithoutGroup.length === 0;
+  // FR-welcome-onboarding-fallbacks: welcome is only for users with no campaign and no player-space character.
+  useEffect(() => {
+    if (hasJoinCode) return;
+    let cancelled = false;
+    void NavigationService.determinePostLoginDestination(locale, dispatch, store.getState).then((destination) => {
+      if (!cancelled && destination.reason !== "no-characters") router.replace(destination.path);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, hasJoinCode, locale, router, store]);
 
   const handleCampaignClick = () => {
     setIsCreateCampaignOpen(true);
@@ -45,16 +58,6 @@ export default function WelcomePage() {
       realm: "character",
       onClick: handleCharacterClick,
     },
-    {
-      image: Session,
-      realm: "session",
-      onClick: () => setIsJoinSessionOpen(true),
-      disabled: isJoinSessionDisabled,
-      tooltip:
-        !loadingCharactersWithoutGroup && charactersWithoutGroup.length === 0
-          ? t("session.noCharacterWithoutGroup")
-          : undefined,
-    },
   ];
 
   return (
@@ -63,7 +66,7 @@ export default function WelcomePage() {
       <h2 className="mb-4 sm:mb-6 md:mb-8 text-xl sm:text-2xl md:text-3xl font-bold text-center">{t("subTitle")}</h2>
 
       <div
-        className="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-3 xl:gap-6 py-4 md:py-8"
+        className="w-full max-w-7xl grid grid-cols-1 xl:grid-cols-2 xl:gap-6 py-4 md:py-8"
         role="list"
         aria-label={t("choices-list")}>
         {choices.map((choice) => (
@@ -73,8 +76,6 @@ export default function WelcomePage() {
             realm={choice.realm}
             link={choice.link}
             onClick={choice.onClick}
-            disabled={choice.disabled}
-            tooltip={choice.tooltip}
           />
         ))}
       </div>
@@ -82,10 +83,7 @@ export default function WelcomePage() {
       <CreateCampaignDialog
         open={isCreateCampaignOpen}
         onOpenChange={setIsCreateCampaignOpen}
-      />
-      <JoinSessionDialog
-        open={isJoinSessionOpen}
-        onOpenChange={setIsJoinSessionOpen}
+        onCreated={(campaignId) => router.push(`/campaigns/${campaignId}`)}
       />
     </main>
   );

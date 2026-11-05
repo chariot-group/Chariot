@@ -9,7 +9,12 @@ import { useTranslations } from "next-intl";
 import Logo from "@public/logo.svg";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import React from "react";
+import { useStore } from "react-redux";
+import NavigationService from "@/services/NavigationService";
+import type { RootState } from "@/store";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { openSessionLobby, selectIsInSession } from "@/store/slices/sessionSlice";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { resolveHeaderLogoClickIntent, resolveSessionLiveTone } from "@/lib/sessionPresenceUi";
@@ -20,6 +25,9 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const store = useStore<RootState>();
+  const contextMode = useAppSelector(selectContextMode);
+  const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const locale = pathname.split("/")[1] || "fr";
   const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
   const t = useTranslations("header");
@@ -44,7 +52,11 @@ export default function Header() {
       return;
     }
 
-    router.push(`/${locale}/welcome`);
+    // FR-welcome-onboarding-fallbacks: resolve the destination first, never flash /welcome.
+    void NavigationService.determineLogoDestination(locale, dispatch, store.getState, {
+      contextMode,
+      campaignId: selectedCampaignId,
+    }).then((destination) => router.push(destination.path));
   };
 
   const logoButton = (

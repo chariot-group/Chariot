@@ -5922,3 +5922,109 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/general/view/NpcGeneralTabContent.tsx`
 - `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-detail-view, FR-frontend-design
+
+---
+
+## FR-welcome-onboarding-fallbacks: Welcome Page and Empty-Space Fallback Pages
+
+**Status**: Proposed (pending functional confirmation). Amends the « Fallback - Welcome Page » clauses of FR-post-auth-navigation and FR-session-end-navigation.
+
+**Rule**: A user who has no character to land on is sent to the fallback page of the space they are in, not to a global page. `/{locale}/welcome` is the onboarding page of a user who has **neither a campaign nor a character in the Player space**.
+
+**Pages**:
+
+| Page | Route | Shown when |
+| --- | --- | --- |
+| Welcome | `/{locale}/welcome` | The user has no campaign **and** no Player-space character |
+| Player space fallback | `/{locale}/characters` | Player space context, no character without group |
+| Campaign fallback | `/{locale}/campaigns/{campaignId}` | In a campaign, no character in any of its groups (active or archived) |
+
+**Destination resolution** (extends `NavigationService`; reasons `no-characters-player-space` and `no-characters-campaign` are added to `no-characters`):
+
+1. Post-login / default: character without group → character in a campaign → otherwise, if the user has at least one campaign → the fallback of its first campaign; otherwise → `/welcome`.
+2. Leaving a Player-space sheet (deleting the last character, access denied): Player space fallback if the user still has a campaign or arrived from the Player space; `/welcome` only if the user has no campaign.
+3. Leaving a campaign sheet or deleting a group / character in a campaign: another character of the campaign if any, else the **Campaign fallback of that campaign** (never `/welcome`).
+4. End of session: same resolution as FR-session-end-navigation, with the fallbacks above replacing `/welcome`.
+5. Resolution failure, 404 catch-all, Keycloak `redirectUri`, logo click outside a session, checkout return, profile guard: unchanged, they keep targeting `/welcome`. `/welcome` itself MUST redirect an authenticated user who has a campaign or a Player-space character to their resolved destination (no dead-end for users who already have data).
+
+**Welcome page content**:
+
+- Options: **Create a campaign** and **Create a character**. The option **Join a session** is not offered on this page: the user has no Player-space character, so it cannot be used.
+- Each option shows a concise paragraph (1-2 sentences) under its title, explaining what it does:
+  - Campaign: become Game Master, create a universe, invite players, prepare sessions.
+  - Character: create a hero in the Player space, alone or to join a campaign.
+- Texts are i18n keys (fr/en) under `welcome.<option>.description`.
+- Query `?join={code}` (legacy session link) keeps opening the join flow; if the user has no Player-space character, the join dialog shows the existing « at least one character required » guidance with a link to character creation.
+
+**Player space fallback content**:
+
+- Title, short explanation (« Your Player space has no character yet »), primary action **Create a character**, secondary action **Join a session** only once the user has a character (not applicable here), so it is not shown; a link to the campaigns the user belongs to is shown when any exist.
+
+**Campaign fallback content**:
+
+- Title with the campaign name, short explanation (« No character in this campaign yet »), actions by role: GM → **Create a group** / **Create a character for a group**; player → **Create a character** (campaign group flow). Actions already forbidden to the role by existing rules stay hidden.
+
+**Accessibility (FR-frontend-design)**:
+
+- One `h1` per page; option lists use `role="list"` / `listitem`; each option's description is linked with `aria-describedby`.
+- Descriptions and fallback texts keep WCAG AA contrast; actions are keyboard reachable with visible focus; layout follows `docs/design.md` (Welcome: `grid-cols-1`, `xl:grid-cols-2`).
+- Interactive elements follow the UI consistency checks (cursor, hover, contrast, scrollbar).
+
+**Prohibitions**:
+
+- Redirecting to `/welcome` a user who has a campaign or a Player-space character.
+- Showing an option that is unusable for the current user (disabled or hidden-by-tooltip is replaced by omission).
+- Hardcoded `router.push('/welcome')` in place of the destination resolution.
+- Relative imports (AGENTS.md §11.1).
+
+**Tests**:
+
+- Nominal: no campaign + no character → `/welcome` with 2 options, each with a description; player-space-only user with no character → Player space fallback; campaign with empty groups → Campaign fallback.
+- Edge: empty first group but second group has a character → character (not fallback); archived-only characters → character; user with a campaign but no character at login → first campaign fallback, not `/welcome`; deleting the last character of a campaign → Campaign fallback of that campaign.
+- Edge: `/welcome` visited by a user who has data → redirected to their destination; `?join=` still opens the join flow.
+- Failure / guard: resolution throws → `/welcome`; GM vs player actions on the Campaign fallback; descriptions linked via `aria-describedby`.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/welcome/page.tsx`
+- `services/web/client/src/components/layout/Welcome/Choice.tsx`
+- `services/web/client/src/services/NavigationService.ts`
+- `services/web/client/src/lib/sessionEndNavigation.ts`
+- `services/web/client/src/components/PostLoginNavigator.tsx`
+- `docs/functional-rules.md` — FR-post-auth-navigation, FR-session-end-navigation, FR-session-lobby-navigation, FR-frontend-design
+
+### Amendment — FR-welcome-onboarding-fallbacks (2026-11-05)
+
+Supersedes the conflicting clauses above and the logo clause of FR-session-lobby-navigation (« logo click outside a session redirects to `/welcome` »).
+
+- **Logo click outside a session**: the app MUST resolve the destination (character without group → character in a campaign → campaign fallback → `/welcome`) and navigate there **directly**, with no intermediate display of `/welcome`. `/welcome` is reached only when the user has neither campaign nor Player-space character.
+- **Fallback imagery**: the Player space fallback and the Campaign fallback MUST show the same illustration as the matching Welcome option (`public/welcome/character.webp`, `public/welcome/campaign.webp`), decorative (`alt=""`).
+- **Fallback CTAs**: on the Campaign fallback, the two actions MUST differ visually: « Créer un groupe » is the primary call to action (violet accent), « Créer un personnage » is secondary (`variant="secondary"`).
+- **Welcome → campaign**: after a campaign is created from the Welcome page, the app MUST navigate to the Campaign fallback of that campaign.
+- **Welcome → character**: the Welcome « Create a character » CTA opens the creation form in Player space context; cancelling it while the user has no Player-space character MUST land on the Player space fallback (not back to Welcome).
+- **Player space fallback without campaign**: when the user is in Player space with no character, the destination is the Player space fallback **even without a campaign** (the « welcome when no campaign » clause of the destination resolution above no longer applies to Player space resolution). `/welcome` remains the first-arrival page (post-login with no data, logo click).
+- **Tests**: logo click resolves a destination without pushing `/welcome` first (nominal); user with no data → `/welcome` (edge); resolution failure → `/welcome` (failure); creation cancel with no character → Player space fallback.
+
+### Amendment 2 — Logo click and welcome visibility (FR-welcome-onboarding-fallbacks)
+
+Supersedes the logo clauses of the first amendment. **Welcome MUST NEVER be displayed to a user who has at least one campaign or at least one Player-space character**; `/welcome` itself MUST redirect such a user (character if any, else the campaign fallback). Outside a session, a logo click MUST resolve: (1) the **current space first** (campaign context → first character of that campaign; Player space → first Player-space character); (2) otherwise any character of the other space; (3) otherwise the fallback of the current campaign, else of the first campaign; (4) `/{locale}/welcome` **only when the user has no campaign and no Player-space character** (or on resolution error). Tests: current space with character wins (nominal); empty current space + character elsewhere → that character (edge); empty campaign + empty Player space → campaign fallback, never welcome (edge); no campaign/no character or error → welcome (failure).
+
+### Amendment 3 — Logo resolution matrix (FR-welcome-onboarding-fallbacks)
+
+Corrects Amendment 2 step (3): when neither space holds a character but the user has a campaign, the logo goes to the fallback of the **current space** (Player space → `/{locale}/characters`; campaign context → `/{locale}/campaigns/{id}`), never to the other space's fallback. Welcome only when the user has no campaign and no Player-space character. Full resolution order: current space character → other space character → current space fallback → welcome.
+
+| Current space | Player char | Campaigns | Destination |
+| --- | --- | --- | --- |
+| Player | yes | any | first Player-space character |
+| Player | no | one empty | Player space fallback |
+| Player | no | one with a character | that character |
+| Player | no | none | welcome |
+| Campaign A | any | A has a character | A's character |
+| Campaign A (empty) | yes | any | Player-space character |
+| Campaign A (empty) | no | B has a character | B's character |
+| Campaign A (empty) | no | all empty | A's fallback |
+| none | yes | any | Player-space character |
+| none | no | one empty | its fallback |
+| none | no | none | welcome |
+
+Guards: welcome is never returned when a campaign or a Player-space character exists; an unavailable current campaign (deleted / error) falls back to the post-login resolution. Covered by `NavigationService.logo.test.ts` (13 matrix cases + 2 guards).

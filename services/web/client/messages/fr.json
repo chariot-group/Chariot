@@ -767,7 +767,8 @@
     "campaign": {
       "title": "Créer votre première <br /> campagne",
       "button": "Créer une campagne",
-      "button-aria": "Naviguer vers la création de campagne"
+      "button-aria": "Naviguer vers la création de campagne",
+      "description": "Devenez Maître du jeu : créez un univers, invitez vos joueurs et préparez vos parties."
     },
     "session": {
       "title": "Rejoindre <br /> une session",
@@ -779,7 +780,8 @@
     "character": {
       "title": "Créer votre premier <br /> personnage",
       "button": "Créer un personnage",
-      "button-aria": "Naviguer vers la création de personnage"
+      "button-aria": "Naviguer vers la création de personnage",
+      "description": "Créez un héros dans votre espace joueur, pour jouer seul ou rejoindre la campagne d'un MJ."
     },
     "imageCredits": {
       "title": "Crédits des images",
@@ -1940,5 +1942,17 @@
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Naviguer vers une version précédente",
     "latest": "Actuelle"
+  },
+  "playerSpaceFallback": {
+    "title": "Votre espace joueur est vide",
+    "description": "Vous n'avez pas encore de personnage joueur. Créez-en un pour jouer et rejoindre des sessions.",
+    "createCharacter": "Créer un personnage",
+    "campaigns": "Ou retrouvez vos campagnes depuis la barre latérale."
+  },
+  "campaignFallback": {
+    "title": "Aucun personnage dans cette campagne",
+    "description": "Cette campagne ne contient encore aucun personnage. Créez un groupe, puis ajoutez-y vos personnages.",
+    "createGroup": "Créer un groupe",
+    "createCharacter": "Créer un personnage"
   }
 }

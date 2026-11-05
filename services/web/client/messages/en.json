@@ -766,7 +766,8 @@
     "campaign": {
       "title": "Create your first <br /> campaign",
       "button": "Create a campaign",
-      "button-aria": "Navigate to campaign creation"
+      "button-aria": "Navigate to campaign creation",
+      "description": "Become the Game Master: create a universe, invite your players and prepare your games."
     },
     "session": {
       "title": "Join <br /> a session",
@@ -778,7 +779,8 @@
     "character": {
       "title": "Create your first <br /> character",
       "button": "Create a character",
-      "button-aria": "Navigate to character creation"
+      "button-aria": "Navigate to character creation",
+      "description": "Create a hero in your player space, to play solo or join a GM's campaign."
     },
     "imageCredits": {
       "title": "Image credits",
@@ -1936,5 +1938,17 @@
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navigate to a previous version",
     "latest": "Current"
+  },
+  "playerSpaceFallback": {
+    "title": "Your player space is empty",
+    "description": "You have no player character yet. Create one to play and join sessions.",
+    "createCharacter": "Create a character",
+    "campaigns": "Or find your campaigns in the sidebar."
+  },
+  "campaignFallback": {
+    "title": "No character in this campaign",
+    "description": "This campaign has no character yet. Create a group, then add your characters to it.",
+    "createGroup": "Create a group",
+    "createCharacter": "Create a character"
   }
 }

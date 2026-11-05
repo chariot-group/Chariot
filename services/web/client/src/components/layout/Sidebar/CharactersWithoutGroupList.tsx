@@ -9,6 +9,10 @@ import {
   upsertPlayerSpaceNpc,
 } from "@/store/slices/characterSlice";
 import { useMemo, useState } from "react";
+import { useStore } from "react-redux";
+import { useLocale } from "use-intl";
+import NavigationService from "@/services/NavigationService";
+import type { RootState } from "@/store";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -84,6 +88,8 @@ export default function CharactersWithoutGroupList() {
   const router = useRouter();
 
   const dispatch = useAppDispatch();
+  const store = useStore<RootState>();
+  const locale = useLocale();
   const { user } = useUser();
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
@@ -124,7 +130,10 @@ export default function CharactersWithoutGroupList() {
     if (nextCharacter?._id) {
       router.replace(`/characters/${nextCharacter._id}`);
     } else {
-      router.replace("/welcome");
+      // FR-welcome-onboarding-fallbacks: player space fallback if a campaign exists, else welcome.
+      void NavigationService.determinePlayerSpaceDestination(locale, dispatch, store.getState).then((destination) =>
+        router.replace(destination.path),
+      );
     }
   };
 

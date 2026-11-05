@@ -472,3 +472,7 @@ Use this checklist as a completion gate for every frontend ticket.
 Recommended final note format in ticket completion:
 
 `Frontend DoD passed: design baseline, accessibility checks, and responsive validation completed.`
+
+## Welcome and Empty-Space Fallback Pages
+
+The Player space fallback (`/characters`) and the Campaign fallback (`/campaigns/{id}`) share `components/layout/Welcome/FallbackLayout.tsx`: the Welcome option illustration on top (decorative, `alt=""`), then a plain text block (no card) below it, with an optional eyebrow (`text-primary-light`), one `h1`, a `text-muted-foreground` description, CTAs and an optional hint. Width is capped at `max-w-xl`; CTAs stack on mobile and sit side by side from `sm`. Primary CTA = violet accent, second CTA = `secondary`.

@@ -15,7 +15,7 @@ import { useMemo, useRef } from "react";
 import { useFormState } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearNpcCodexDraft, clearPlayerCodexDraft, selectNpcCodexDraft, selectPlayerCodexDraft } from "@/store/slices/codexDraftSlice";
-import { upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
+import { selectCharactersWithoutGroup, upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
 import { isPlayer } from "@/utils/global.utils";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
 import { selectContextMode } from "@/store/slices/environmentSlice";
@@ -171,6 +171,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const contextMode = useAppSelector(selectContextMode);
 
   const campaignId = params.idCampaign as string;
+  const hasPlayerSpaceCharacter = useAppSelector(selectCharactersWithoutGroup).length > 0;
   const resolvedGroupId = groupId || (params.idGroup as string);
 
   // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
@@ -577,8 +578,13 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
 
   const handleCancel = useCallback(() => {
     onCancel();
+    // FR-welcome-onboarding-fallbacks: no player-space character → land on the player fallback, not back on welcome.
+    if (characterType === "players" && !campaignId && !hasPlayerSpaceCharacter) {
+      router.replace("/characters");
+      return;
+    }
     router.back();
-  }, [onCancel, router]);
+  }, [onCancel, router, characterType, campaignId, hasPlayerSpaceCharacter]);
 
   const handleInvalid = useCallback((errors: Record<string, unknown>) => {
     const firstErrorTab = getFirstCharacterTabWithError(errors);
