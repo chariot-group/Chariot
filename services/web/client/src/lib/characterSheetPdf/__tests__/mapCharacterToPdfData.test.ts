@@ -312,7 +312,7 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     const player = {
       ...basePlayer,
       profile: { ...basePlayer.profile, race: "Elf", subrace: "Wood Elf" },
-      class: [{ name: "Ranger", subclass: "Hunter", level: 3, hitDice: 10 }],
+      class: [{ name: "Ranger", subclass: "Hunter", level: 3, hitDice: 10 }] as Player["class"],
     };
     const data = mapCharacterToPdfData(player, mapOptions);
     expect(data.race).toBe("Elf");
@@ -359,7 +359,7 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
       class: [
         { name: "Fighter", subclass: "Champion", level: 5, hitDice: 10, hitDiceRemaining: 3 },
         { name: "Wizard", subclass: "Evocation", level: 3, hitDice: 6, hitDiceRemaining: 2 },
-      ],
+      ] as Player["class"],
     };
     const data = mapCharacterToPdfData(player, mapOptions);
 

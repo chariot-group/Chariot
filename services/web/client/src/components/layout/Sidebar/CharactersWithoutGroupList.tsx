@@ -1,7 +1,13 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
-import { removeCharacterWithoutGroup, removePlayerSpaceNpc, upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
+import {
+  removeCharacterWithoutGroup,
+  removePlayerSpaceNpc,
+  upsertCharacterWithoutGroup,
+  upsertPlayerSpaceNpc,
+} from "@/store/slices/characterSlice";
 import { useMemo, useState } from "react";
 import { Loader2, Swords, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -82,9 +88,7 @@ export default function CharactersWithoutGroupList() {
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
   const sessionStatus = useAppSelector(selectSessionStatus);
-  const currentParticipant = useAppSelector((state) =>
-    selectCurrentUserParticipant(state, user?.keycloakId ?? ""),
-  );
+  const currentParticipant = useAppSelector((state) => selectCurrentUserParticipant(state, user?.keycloakId ?? ""));
   const sessionCharacterId =
     isInSession && sessionStatus === "launched" ? (currentParticipant?.characterId ?? null) : null;
   const actionsDisabled = isInSession && sessionStatus === "launched";
@@ -109,15 +113,9 @@ export default function CharactersWithoutGroupList() {
   }, [characterPendingDelete, linkedNpcs]);
 
   const showPlayerCompanionDeleteDialog =
-    !!characterPendingDelete &&
-    isPlayer(characterPendingDelete) &&
-    pendingDeleteCompanions.length > 0;
+    !!characterPendingDelete && isPlayer(characterPendingDelete) && pendingDeleteCompanions.length > 0;
 
-  const navigateAfterDelete = (
-    deletingCharacterId: string,
-    deleteLinkedCompanions: boolean,
-    companions: NPC[],
-  ) => {
+  const navigateAfterDelete = (deletingCharacterId: string, deleteLinkedCompanions: boolean, companions: NPC[]) => {
     const viewingDeletedSheet =
       selectedCharacterId === deletingCharacterId ||
       (deleteLinkedCompanions && companions.some((npc) => npc._id === selectedCharacterId));
@@ -199,10 +197,7 @@ export default function CharactersWithoutGroupList() {
   }, [characterToDuplicate, linkedNpcs]);
 
   const existingNpcDisplayNames = useMemo(
-    () =>
-      [...(linkedNpcs ?? []), ...(unlinkedNpcs ?? [])]
-        .map((npc) => characterDisplayName(npc))
-        .filter(Boolean),
+    () => [...(linkedNpcs ?? []), ...(unlinkedNpcs ?? [])].map((npc) => characterDisplayName(npc)).filter(Boolean),
     [linkedNpcs, unlinkedNpcs],
   );
 
@@ -214,9 +209,7 @@ export default function CharactersWithoutGroupList() {
   ) => {
     try {
       const copyNames = buildSequentialCopyNames(name, count);
-      const companions = isPlayer(character)
-        ? linkedCompanionsForPlayer(linkedNpcs ?? [], character._id)
-        : [];
+      const companions = isPlayer(character) ? linkedCompanionsForPlayer(linkedNpcs ?? [], character._id) : [];
       const mode = effectiveDuplicateCompanionMode(companionMode, count);
 
       if (!isPlayer(character)) {
@@ -241,13 +234,12 @@ export default function CharactersWithoutGroupList() {
         dispatch(upsertCharacterWithoutGroup(created as Character));
         lastCreated = created as Character;
 
-        const { createdCompanions, movedCompanions, nextNpcNames } =
-          await applyCompanionModeAfterPlayerCreated({
-            mode,
-            newPlayerId: created._id,
-            companions,
-            existingNpcNames: npcNames,
-          });
+        const { createdCompanions, movedCompanions, nextNpcNames } = await applyCompanionModeAfterPlayerCreated({
+          mode,
+          newPlayerId: created._id,
+          companions,
+          existingNpcNames: npcNames,
+        });
         npcNames = nextNpcNames;
         for (const npc of createdCompanions) {
           syncReduxAfterCompanionNpcCreate(dispatch, npc);
@@ -267,8 +259,10 @@ export default function CharactersWithoutGroupList() {
     if (isLinkingNpc) return;
     setIsLinkingNpc(true);
     try {
-      const updated = await persistSidebarNpcLinkedPlayer(npc, linkedPlayerId, (id, payload) =>
-        CharacterService.updateCharacter("npcs", id, payload) as Promise<NPC>,
+      const updated = await persistSidebarNpcLinkedPlayer(
+        npc,
+        linkedPlayerId,
+        (id, payload) => CharacterService.updateCharacter("npcs", id, payload) as Promise<NPC>,
       );
       dispatch(upsertPlayerSpaceNpc(updated));
       showToast(linkedPlayerId ? t("linkNpcSuccess") : t("unlinkNpcSuccess"), "success");
@@ -291,9 +285,7 @@ export default function CharactersWithoutGroupList() {
     void persistNpcLink(npcPendingLink, player._id);
   };
 
-  const unlinkNpcMenuLabels = (
-    npc: Character,
-  ): { label: string; labelTitle?: string } => {
+  const unlinkNpcMenuLabels = (npc: Character): { label: string; labelTitle?: string } => {
     const linkedPlayerId = isPlayer(npc) ? null : linkedPlayerIdOf(npc as NPC);
     const linkedPlayer = linkedPlayerId ? characters.find((c) => c._id === linkedPlayerId) : undefined;
     const linkedPlayerName = linkedPlayer ? characterDisplayName(linkedPlayer) : "";
@@ -302,10 +294,7 @@ export default function CharactersWithoutGroupList() {
     }
     const fullLabel = t("unlinkNpcFrom", { name: linkedPlayerName });
     const shortName = truncateForSidebarMenuLabel(linkedPlayerName);
-    const label =
-      shortName === linkedPlayerName.trim()
-        ? fullLabel
-        : t("unlinkNpcFrom", { name: shortName });
+    const label = shortName === linkedPlayerName.trim() ? fullLabel : t("unlinkNpcFrom", { name: shortName });
     return {
       label,
       labelTitle: label === fullLabel ? undefined : fullLabel,
@@ -403,16 +392,16 @@ export default function CharactersWithoutGroupList() {
         <button
           type="button"
           aria-label={t("createCharacter")}
-          className="sidebar-btn-white shrink-0 text-sm cursor-pointer flex justify-between transition-all duration-100 text-black border bg-white rounded-[12px] py-1.5 px-3 w-full focus-visible:border hover:bg-white/80">
+          className={cn(buttonVariants({ variant: "primary", align: "start" }), "w-full shrink-0")}>
           {t("createCharacter")}
           <UserPlus
             aria-hidden="true"
-            className="w-5 h-5"
+            className="size-5"
           />
         </button>
       </CreateCharacterDialog>
 
-      <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+      <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 scrollbar-none">
         {sidebarRows.map((row, index) => {
           const character = row.character;
           const isNpcRow = row.type === "npc" || !isPlayer(character);
@@ -433,33 +422,19 @@ export default function CharactersWithoutGroupList() {
               onClick={() => dispatch(clearSelectedCampaign())}
               className={cn(
                 "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
-                inNestHeader ? "justify-between py-0 pr-1" : "justify-between rounded-[12px] py-1.5 px-3 transition-all duration-150",
-                !inNestHeader && !isSelected && "hover:bg-white/10",
-                !inNestHeader && isSelected && "bg-white pl-4 font-bold text-black",
-                inNestHeader && isSelected && "font-bold text-black",
+                inNestHeader
+                  ? "justify-between py-0 pr-1"
+                  : "justify-between rounded-[12px] py-1.5 px-3",
+                isSelected && "font-bold",
               )}>
-              {isSelected && !inNestHeader && (
-                <span
-                  className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                  aria-hidden="true"
-                />
-              )}
               {renderRowAvatar(character._id, character.avatar, displayName)}
-              <span
-                className={cn(
-                  "min-w-0 flex-1 truncate text-left",
-                  (isSelected || nestOpen) && "font-bold",
-                  isSelected && "text-black",
-                )}>
+              <span className={cn("min-w-0 flex-1 truncate text-left", (isSelected || nestOpen) && "font-bold")}>
                 {displayName}
               </span>
               {isSessionCharacter && (
                 <Swords
                   aria-label={t("sessionCharacter")}
-                  className={cn(
-                    "ml-1 h-3.5 w-3.5 shrink-0",
-                    isSelected ? "text-primary" : "text-yellow",
-                  )}
+                  className="ml-1 h-3.5 w-3.5 shrink-0 text-yellow"
                 />
               )}
             </Link>
@@ -473,11 +448,8 @@ export default function CharactersWithoutGroupList() {
                 contextMenuLabel={t("characterActions")}
                 className={cn(
                   "rounded-[12px] transition-all duration-150",
-                  isSelected ? "bg-white text-black" : "hover:bg-white/10",
-                )}
-                overflowTriggerClassName={
-                  isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-                }>
+                  isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+                )}>
                 <Link
                   href={`/characters/${character._id}`}
                   aria-current={isSelected ? "page" : undefined}
@@ -485,22 +457,10 @@ export default function CharactersWithoutGroupList() {
                   onClick={() => dispatch(clearSelectedCampaign())}
                   className={cn(
                     "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
-                    isSelected && "pl-4 font-bold text-black",
+                    isSelected && "font-bold",
                   )}>
-                  {isSelected && (
-                    <span
-                      className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                      aria-hidden="true"
-                    />
-                  )}
                   {renderRowAvatar(character._id, character.avatar, displayName)}
-                  <span
-                    className={cn(
-                      "min-w-0 flex-1 truncate",
-                      isSelected && "font-bold text-black",
-                    )}>
-                    {displayName}
-                  </span>
+                  <span className={cn("min-w-0 flex-1 truncate", isSelected && "font-bold")}>{displayName}</span>
                   <SidebarCharacterKindBadge
                     label={kindLabel}
                     selected={isSelected}
@@ -508,9 +468,7 @@ export default function CharactersWithoutGroupList() {
                 </Link>
               </SidebarItemWithActions>
             );
-            return (
-              <div key={character._id ?? `character-${index}`}>{npcRowHeader}</div>
-            );
+            return <div key={character._id ?? `character-${index}`}>{npcRowHeader}</div>;
           }
 
           const companionIds = companions.map((npc) => npc._id).filter(Boolean) as string[];
@@ -524,11 +482,8 @@ export default function CharactersWithoutGroupList() {
                 contextMenuLabel={t("characterActions")}
                 className={cn(
                   "rounded-[12px] transition-all duration-150",
-                  isSelected ? "bg-white text-black" : "hover:bg-white/10",
-                )}
-                overflowTriggerClassName={
-                  isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-                }>
+                  isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+                )}>
                 {renderPlayerLink(false, false)}
               </SidebarItemWithActions>
             );
@@ -545,9 +500,6 @@ export default function CharactersWithoutGroupList() {
               actions={characterActions}
               actionsDisabled={characterActions.length === 0}
               contextMenuLabel={t("characterActions")}
-              overflowTriggerClassName={
-                isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-              }
               rowBody={({ isOpen }) => renderPlayerLink(isOpen, true)}>
               {companions.map((npc) => {
                 const npcSelected = selectedCharacterId === npc._id;
@@ -561,11 +513,8 @@ export default function CharactersWithoutGroupList() {
                       contextMenuLabel={t("characterActions")}
                       className={cn(
                         "rounded-[12px] transition-all duration-100",
-                        npcSelected ? "bg-white text-black" : "hover:bg-white/10",
-                      )}
-                      overflowTriggerClassName={
-                        npcSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-                      }>
+                        npcSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+                      )}>
                       <Link
                         href={`/characters/${npc._id}`}
                         aria-current={npcSelected ? "page" : undefined}
@@ -573,20 +522,10 @@ export default function CharactersWithoutGroupList() {
                         onClick={() => dispatch(clearSelectedCampaign())}
                         className={cn(
                           "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
-                          npcSelected && "pl-4 font-bold text-black",
+                          npcSelected && "font-bold",
                         )}>
-                        {npcSelected && (
-                          <span
-                            className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                            aria-hidden="true"
-                          />
-                        )}
                         {renderRowAvatar(npc._id, npc.avatar, npcName)}
-                        <span
-                          className={cn(
-                            "text-sm min-w-0 flex-1 truncate",
-                            npcSelected && "font-bold text-black",
-                          )}>
+                        <span className={cn("text-sm min-w-0 flex-1 truncate", npcSelected && "font-bold")}>
                           {npcName}
                         </span>
                         <SidebarCharacterKindBadge

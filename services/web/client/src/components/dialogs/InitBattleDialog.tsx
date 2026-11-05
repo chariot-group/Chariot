@@ -441,7 +441,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
               armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
               kind,
               deathSavesFailures,
-              initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats.initiative) : 0,
+              initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats?.initiative) : 0,
             }),
               isGmGuest: guestIdSet.has(member._id),
               isPlayerCompanion: companionIdSet.has(member._id) && !guestIdSet.has(member._id),
@@ -533,7 +533,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                 ) : selectedGroups.length === 0 ? (
                   <p className="text-sm text-muted-foreground">{t("initBattleNoGroupSelected")}</p>
                 ) : (
-                  <div className="max-h-[min(48dvh,24rem)] space-y-2 overflow-y-auto pr-2 scroll-smooth sm:max-h-[min(58dvh,32rem)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50">
+                  <div className="max-h-[min(48dvh,24rem)] space-y-2 overflow-y-auto pr-2 scroll-smooth sm:max-h-[min(58dvh,32rem)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
                     {selectedGroups.map((group) => {
                       const members = group.characters ?? [];
                       const npcMembers = members.filter(isNpcCharacter);
@@ -673,7 +673,7 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">{tCommon("cancel")}</Button>
+            <Button variant="secondary">{tCommon("cancel")}</Button>
           </DialogClose>
           <Button
             disabled={!canValidate || isValidating}

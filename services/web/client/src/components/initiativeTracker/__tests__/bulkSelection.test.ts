@@ -18,6 +18,7 @@ const buildRow = (
   firstname: overrides.firstname ?? "Gobelin",
   lastname: "",
   surname: "",
+  initiativeModifier: 0,
   avatar: "",
   initiative: overrides.initiative ?? 10,
   hitPoints: overrides.hitPoints ?? 7,

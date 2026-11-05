@@ -67,7 +67,7 @@ describe("shouldPreventDialogDismissForPortaledFilter", () => {
       closest: (selector: string) => (selector.includes("select-content") ? target : null),
     };
 
-    expect(shouldPreventDialogDismissForPortaledFilter(tracker, target as EventTarget)).toBe(true);
+    expect(shouldPreventDialogDismissForPortaledFilter(tracker, target as unknown as EventTarget)).toBe(true);
   });
 
   it("failure: allows dismiss when no filter is open and target is unrelated", () => {
@@ -76,7 +76,7 @@ describe("shouldPreventDialogDismissForPortaledFilter", () => {
       closest: () => null,
     };
 
-    expect(shouldPreventDialogDismissForPortaledFilter(tracker, target as EventTarget)).toBe(false);
+    expect(shouldPreventDialogDismissForPortaledFilter(tracker, target as unknown as EventTarget)).toBe(false);
   });
 });
 

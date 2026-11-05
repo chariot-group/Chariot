@@ -210,7 +210,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
 
   if (!battleStarted || sortedRows.length === 0) {
     return footerActions ? (
-      <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+      <div className="shrink-0 border-t border-frame px-4 sm:px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
         <div className="flex w-full justify-end">{footerActions}</div>
       </div>
     ) : null;
@@ -226,7 +226,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
           (expandedRow.conditions.length > 0 || (expandedRow.customEffects?.length ?? 0) > 0))));
 
   return (
-    <div ref={containerRef} className="shrink-0 border-t border-white/10 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+    <div ref={containerRef} className="shrink-0 border-t border-frame pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
       <div aria-live="polite" aria-atomic="true" className="sr-only">{liveAnnouncement}</div>
 
       {/* Actions d'édition — mobile : au-dessus de la zone combat, desktop : inline dans la nav */}
@@ -254,7 +254,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
           <div
             className={cn(
               "flex max-w-[8rem] shrink-0 items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold transition-colors",
-              isMyTurn ? "text-purple" : "text-white/50",
+              isMyTurn ? "text-primary-light" : "text-white/50",
             )}>
             <Swords className={cn("size-2.5 shrink-0", isMyTurn && "animate-pulse")} />
             <span className={cn("truncate", isMyTurn && "animate-pulse")}>
@@ -275,7 +275,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   disabled={!canGoPrevious}
                   aria-label={t("previousTurn")}
                   onClick={handlePrevious}
-                  className="h-7 w-7 rounded-full text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
+                  className="h-7 w-7 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
                   <ChevronLeft className="size-4" />
                 </Button>
               </span>
@@ -289,7 +289,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
         {/* Carrousel des combattants */}
         <div
           ref={carouselRef}
-          className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20">
+          className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
           {sortedRows.map((row) => {
             const isActive = row.id === activeTurnRowId;
             const isExpanded = row.id === expandedRowId;
@@ -386,7 +386,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   disabled={!battleStarted}
                   aria-label={t("nextTurn")}
                   onClick={handleNext}
-                  className="h-7 w-7 rounded-full text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
+                  className="h-7 w-7 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
                   <ChevronRight className="size-4" />
                 </Button>
               </TooltipTrigger>
@@ -399,7 +399,7 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
 
         {/* Actions d'édition — inline sur sm+ avec séparateur visuel */}
         {footerActions && (
-          <div className="ml-1 hidden shrink-0 border-l border-white/10 pl-2 sm:block">
+          <div className="ml-1 hidden shrink-0 border-l border-border pl-2 sm:block">
             {footerActions}
           </div>
         )}

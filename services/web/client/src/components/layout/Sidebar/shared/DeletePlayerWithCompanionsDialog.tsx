@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { CompanionLinkedInlineList } from "@/components/character/CompanionLinkedInlineList";
 import { characterDisplayName } from "@/lib/duplicateName";
 import { companionNamesLine } from "@/lib/sessionPlayerCompanions";
-import { cn } from "@/lib/utils";
 import type { NPC } from "@/types/character";
 
 export interface DeletePlayerWithCompanionsDialogProps {
@@ -126,11 +125,8 @@ export function DeletePlayerWithCompanionsDialog({
             </Button>
             <Button
               type="button"
-              variant="outline"
-              className={cn(
-                "min-w-0 px-3",
-                "border-red/35 text-red hover:bg-red/10 hover:text-red dark:hover:bg-red/15",
-              )}
+              variant="destructive"
+              className="min-w-0 px-3"
               disabled={actionsDisabled}
               aria-label={deleteAllAriaLabel}
               onClick={() => void onDeleteWithCompanions()}>
@@ -145,7 +141,7 @@ export function DeletePlayerWithCompanionsDialog({
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             className="w-full min-w-0"
             disabled={isLoading}
             onClick={() => onOpenChange(false)}>

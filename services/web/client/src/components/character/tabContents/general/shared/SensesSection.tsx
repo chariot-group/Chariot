@@ -25,11 +25,12 @@ export default function SensesSection({ senses = [], accentColor, embedded = fal
     })
     .join(", ");
 
-  const content = visibleSenses.length > 0 ? (
-    <span className="text-sm sm:text-base wrap-break-words">{formattedSenses}</span>
-  ) : (
-    <span className="text-sm sm:text-base text-muted-foreground">{t("noSenses")}</span>
-  );
+  const content =
+    visibleSenses.length > 0 ? (
+      <span className="text-sm sm:text-base wrap-break-words">{formattedSenses}</span>
+    ) : (
+      <span className="text-sm sm:text-base text-muted-foreground">{t("noSenses")}</span>
+    );
 
   return embedded ? (
     content

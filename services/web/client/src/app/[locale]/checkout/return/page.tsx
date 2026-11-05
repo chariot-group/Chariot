@@ -72,7 +72,7 @@ function ReturnContent() {
   }, [isAuthenticated, isSuccess, loading, refreshUser]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-[#0c0c0c] bg-[url('/background.svg')] bg-cover bg-fixed bg-center bg-no-repeat px-4">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 bg-background px-4">
       {/* Logo */}
       <Image
         src={Logo}
@@ -86,7 +86,7 @@ function ReturnContent() {
       {loading && (
         <div className="flex flex-col items-center gap-3 text-muted-foreground">
           <Loader2
-            className="h-10 w-10 animate-spin text-primary"
+            className="h-10 w-10 animate-spin text-primary-light"
             aria-label={t("loading")}
           />
           <p className="text-sm">{t("verifying")}</p>
@@ -105,7 +105,7 @@ function ReturnContent() {
           <p className="text-sm text-muted-foreground">{t("successDescription")}</p>
           <Button
             size="lg"
-            className="mt-2 w-full rounded-2xl font-semibold"
+            className="mt-2 w-full"
             onClick={() => router.push(`/${locale}/welcome`)}>
             {t("backToApp")}
           </Button>
@@ -124,7 +124,7 @@ function ReturnContent() {
           <p className="text-sm text-muted-foreground">{t("failureDescription")}</p>
           <Button
             size="lg"
-            className="mt-2 w-full rounded-2xl font-semibold"
+            className="mt-2 w-full"
             onClick={() => router.push(`/${locale}/profile`)}>
             {t("retryButton")}
           </Button>
@@ -145,8 +145,8 @@ export default function CheckoutReturnPage() {
   return (
     <Suspense
       fallback={
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0c0c0c]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-light" />
         </div>
       }>
       <ReturnContent />

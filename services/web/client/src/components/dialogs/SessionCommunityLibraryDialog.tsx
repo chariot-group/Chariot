@@ -90,7 +90,7 @@ export function SessionCommunityLibraryDialog({ open, onOpenChange }: SessionCom
         onPointerDownOutside={preventOutsideDismiss}
         onInteractOutside={preventOutsideDismiss}
         onFocusOutside={preventOutsideDismiss}>
-        <DialogHeader className="shrink-0 border-b px-6 pb-3 pt-6">
+        <DialogHeader className="shrink-0 border-b border-frame px-6 pb-3 pt-6">
           <DialogTitle className="text-2xl">{t("title")}</DialogTitle>
         </DialogHeader>
 
@@ -98,7 +98,7 @@ export function SessionCommunityLibraryDialog({ open, onOpenChange }: SessionCom
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as LibraryTab)}
           className="flex min-h-0 flex-1 flex-col gap-0">
-          <div className="shrink-0 border-b px-6 pb-4 pt-2">
+          <div className="shrink-0 border-b border-frame px-6 pb-4 pt-2">
             <TabsList
               aria-label={t("tabsAriaLabel")}
               className="grid h-auto w-full grid-cols-3 gap-1 rounded-[15px] border border-white/10 bg-gray-middle-light/80 p-1">

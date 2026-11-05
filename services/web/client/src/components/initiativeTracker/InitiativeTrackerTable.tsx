@@ -8,7 +8,8 @@ import type {
   InitiativeTrackerConditionEntry,
   InitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
-import { Button } from "@/components/ui/button";
+import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { deriveBulkVisibilitySummary } from "@/components/initiativeTracker/bulkSelection";
@@ -120,8 +121,13 @@ export type InitiativeTrackerTableProps = {
     selectRowForVisibility: string;
     getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => string;
     getConditionDescription: (condition: ActiveInitiativeTrackerCondition) => string;
-    formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => string | null;
-    getConditionDurationUnits: () => { value: InitiativeTrackerConditionDurationUnit; label: string }[];
+    formatConditionEntryDuration: (
+      entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">,
+    ) => string | null;
+    getConditionDurationUnits: () => {
+      value: InitiativeTrackerConditionDurationUnit;
+      label: string;
+    }[];
     getStatusLabel: (status: InitiativeTrackerRowStatus) => string;
   };
   activeTurnRowId?: string | null;
@@ -169,6 +175,7 @@ export type InitiativeTrackerTableProps = {
       lifeStatus: string;
       armorClass: string;
       conditions: string;
+      concentration: string;
       groupLabel: string;
     };
   };
@@ -480,7 +487,7 @@ export function InitiativeTrackerTable({
         </div>
 
         {groupedInitiativeActive && groupedInitiativeLabels ? (
-          <div className="w-full border-t border-white/10 px-5 py-2.5">
+          <div className="w-full border-t border-border px-5 py-2.5">
             <InitiativeTrackerGroupedInitiativeBar
               active={groupedInitiativeActive}
               canApply={selectedRowIds.size > 0}
@@ -497,7 +504,7 @@ export function InitiativeTrackerTable({
         ) : null}
 
         {bulkVisibilityActive && bulkVisibilityLabels ? (
-          <div className="w-full border-t border-white/10 px-5 py-2.5">
+          <div className="w-full border-t border-border px-5 py-2.5">
             <div
               className="flex min-w-0 flex-col gap-2 text-sm text-white/80 sm:flex-row sm:items-center sm:justify-between"
               role="status">
@@ -507,7 +514,7 @@ export function InitiativeTrackerTable({
               <div className="flex shrink-0 flex-wrap gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   disabled={selectedRowIds.size === 0}
                   onClick={() => setSelectedRowIds(new Set())}>
@@ -537,7 +544,7 @@ export function InitiativeTrackerTable({
             {groupedInitiativeAvailable && groupedInitiativeLabels ? (
               <Button
                 type="button"
-                variant={groupedInitiativeActive ? "default" : "outline"}
+                variant="secondary"
                 size="sm"
                 aria-pressed={groupedInitiativeActive}
                 aria-label={
@@ -551,7 +558,7 @@ export function InitiativeTrackerTable({
                   setSelectionMode("initiative");
                   setSelectedRowIds(new Set());
                 }}
-                className="min-w-0 flex-1 rounded-[15px] px-3">
+                className={cn("min-w-0 flex-1 px-3", groupedInitiativeActive && toggleButtonPressedClassName)}>
                 <ListOrdered
                   className="size-4"
                   aria-hidden="true"
@@ -567,7 +574,7 @@ export function InitiativeTrackerTable({
             {bulkVisibilityAvailable && bulkVisibilityLabels ? (
               <Button
                 type="button"
-                variant={bulkVisibilityActive ? "default" : "outline"}
+                variant="secondary"
                 size="sm"
                 aria-pressed={bulkVisibilityActive}
                 aria-label={bulkVisibilityActive ? bulkVisibilityLabels.disableMode : bulkVisibilityLabels.enableMode}
@@ -579,7 +586,7 @@ export function InitiativeTrackerTable({
                   setSelectionMode("visibility");
                   setSelectedRowIds(new Set());
                 }}
-                className="min-w-0 flex-1 rounded-[15px] px-3">
+                className={cn("min-w-0 flex-1 px-3", bulkVisibilityActive && toggleButtonPressedClassName)}>
                 <Cog
                   className="size-4"
                   aria-hidden="true"
@@ -593,7 +600,7 @@ export function InitiativeTrackerTable({
 
           {selectionEnabled ? (
             <div
-              className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-white/10 pt-3"
+              className="mt-3 flex min-w-0 items-center justify-between gap-3 border-t border-border pt-3"
               role="status">
               <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-white/85">
                 <Checkbox
@@ -611,7 +618,7 @@ export function InitiativeTrackerTable({
           ) : null}
 
           {groupedInitiativeActive && groupedInitiativeLabels ? (
-            <div className="mt-3 border-t border-white/10 pt-3">
+            <div className="mt-3 border-t border-border pt-3">
               <InitiativeTrackerGroupedInitiativeBar
                 active={groupedInitiativeActive}
                 canApply={selectedRowIds.size > 0}
@@ -628,10 +635,10 @@ export function InitiativeTrackerTable({
           ) : null}
 
           {bulkVisibilityActive && bulkVisibilityLabels ? (
-            <div className="mt-3 flex min-w-0 flex-wrap gap-2 border-t border-white/10 pt-3">
+            <div className="mt-3 flex min-w-0 flex-wrap gap-2 border-t border-border pt-3">
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 disabled={selectedRowIds.size === 0}
                 onClick={() => setSelectedRowIds(new Set())}>

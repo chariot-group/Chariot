@@ -66,14 +66,14 @@ export function ConcentrationSaveDialog({
         <DialogFooter className="flex-col gap-2 sm:flex-col sm:items-stretch">
           <Button
             type="button"
-            className="h-10 w-full rounded-[15px]"
+            className="w-full"
             onClick={() => onResolve("kept")}>
             {t("kept")}
           </Button>
           <Button
             type="button"
-            variant="outline"
-            className="h-10 w-full rounded-[15px] border-red/40 text-red hover:bg-red/15 hover:text-red"
+            variant="secondary"
+            className="w-full border-red/40 text-red hover:bg-red/15 hover:text-red"
             onClick={() => onResolve("lost")}>
             {t("lost")}
           </Button>
@@ -81,7 +81,7 @@ export function ConcentrationSaveDialog({
             <Button
               type="button"
               variant="ghost"
-              className="h-10 w-full rounded-[15px] text-white/70 hover:bg-white/10 hover:text-white"
+              className="w-full text-white/70 hover:bg-white/10 hover:text-white"
               onClick={() => onResolve("later")}>
               {t("later")}
             </Button>

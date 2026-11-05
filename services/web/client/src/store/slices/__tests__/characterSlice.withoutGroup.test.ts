@@ -13,7 +13,7 @@ const buildCharacter = (id: string): Character =>
     lastname: id,
     kind: "player",
     groups: [],
-  }) as Character;
+  }) as unknown as Character;
 
 describe("FR-characters-without-group — characters without group pagination", () => {
   it("nominal: removeCharacterWithoutGroup drops item and keeps pagination depth", () => {

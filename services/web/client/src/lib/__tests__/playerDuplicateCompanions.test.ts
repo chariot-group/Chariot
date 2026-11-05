@@ -25,10 +25,11 @@ const npc = (id: string, linkedPlayerId: string, groups: string[] = []): NPC =>
     _id: id,
     firstname: id,
     lastname: "",
+    surname: "",
     kind: "npc",
     linkedPlayerId,
     groups,
-  }) as NPC;
+  }) as unknown as NPC;
 
 describe("FR-player-duplicate-companion-choice", () => {
   beforeEach(() => {
@@ -59,7 +60,7 @@ describe("FR-player-duplicate-companion-choice", () => {
           _id: "c-copy",
           firstname: "c-copy",
           lastname: "",
-          surname: undefined,
+          surname: "",
         },
       }),
     );

@@ -24,7 +24,8 @@ import {
   PDF_SPELL_COMPACT_DESCRIPTION_MAX_CHARS,
 } from "@/lib/characterSheetPdf/buildSpellPdfPages";
 import type { SpellOverviewDensity } from "@/lib/characterSheetPdf/buildSpellPdfPages";
-import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme, PdfAbilityFeature, PdfClassEntry, PdfHitDiceEntry, PdfSpellLevelGroup, PdfSpellRow, PdfSpellcastingBlock } from "@/lib/characterSheetPdf/types";
+import type { CharacterSheetPdfTheme } from "@/lib/characterSheetPdf/themes";
+import type { CharacterSheetPdfData, CharacterSheetPdfLabels, PdfAbilityFeature, PdfClassEntry, PdfHitDiceEntry, PdfSpellLevelGroup, PdfSpellRow, PdfSpellcastingBlock } from "@/lib/characterSheetPdf/types";
 
 Font.registerHyphenationCallback((word) => [word]);
 
@@ -1162,7 +1163,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
           <View style={[styles.headerRow, { height: headerRowHeight }]}>
             {data.avatarDataUrl ? (
               <View style={[styles.headerAvatarColumn, { height: headerRowHeight }]}>
-                <Image src={data.avatarDataUrl} style={[styles.headerAvatar, { height: headerRowHeight }]} alt="" />
+                <Image src={data.avatarDataUrl} style={[styles.headerAvatar, { height: headerRowHeight }]} />
               </View>
             ) : null}
             <View style={[styles.headerMainColumn, { height: headerRowHeight }]}>
@@ -1202,7 +1203,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
             </View>
             {data.qrCodeDataUrl ? (
               <View style={styles.headerQrColumn}>
-                <Image src={data.qrCodeDataUrl} style={styles.qrCode} alt="" />
+                <Image src={data.qrCodeDataUrl} style={styles.qrCode} />
               </View>
             ) : null}
           </View>
@@ -1253,7 +1254,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                           }),
                         )}
                         style={styles.masteryIcon}
-                        alt=""
+                       
                       />
                     </View>
                     <Text style={[styles.savingThrowBonus, st.proficient ? styles.proficient : {}]}>{st.bonus}</Text>
@@ -1275,7 +1276,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                     <View key={skill.key} style={styles.skillCell}>
                       <View style={styles.skillRow}>
                         {iconSrc ? (
-                          <Image src={iconSrc} style={styles.skillIconWrap} alt="" />
+                          <Image src={iconSrc} style={styles.skillIconWrap} />
                         ) : (
                           <View style={styles.skillIconWrap} />
                         )}
@@ -1296,7 +1297,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                               }),
                             )}
                             style={styles.masteryIcon}
-                            alt=""
+                           
                           />
                         </View>
                       </View>
@@ -1419,7 +1420,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               <View style={[styles.box, styles.equipmentBox]}>
                 {(["cp", "sp", "ep", "gp", "pp"] as const).map((key) => (
                   <View key={key} style={styles.coinRow}>
-                    <Image src={svgDataUrl(COIN_SVGS[key])} style={styles.coinIcon} alt="" />
+                    <Image src={svgDataUrl(COIN_SVGS[key])} style={styles.coinIcon} />
                     <Text style={styles.coinText}>
                       {key.toUpperCase()}: {data.currencies[key]}
                     </Text>
