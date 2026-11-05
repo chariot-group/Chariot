@@ -96,18 +96,6 @@ export default function PlayerGeneralTabContent({
         />
 
         <GeneralTile
-          headingId="proficiency-bonus-heading"
-          title={t("proficiencyBonus")}
-          accentColor={accentColor}
-          className={SLOTS.tile}>
-          <p
-            className="text-xl sm:text-2xl font-bold tabular-nums"
-            aria-label={`${t("proficiencyBonus")} ${proficiencyBonus}`}>
-            {proficiencyBonus >= 0 ? `+${proficiencyBonus}` : `${proficiencyBonus}`}
-          </p>
-        </GeneralTile>
-
-        <GeneralTile
           headingId="passive-perception-heading"
           title={t("passivePerception")}
           accentColor={accentColor}
@@ -177,6 +165,18 @@ export default function PlayerGeneralTabContent({
               {player.exhaustionLevel}
             </span>
           </InfoTooltip>
+        </GeneralTile>
+
+        <GeneralTile
+          headingId="proficiency-bonus-heading"
+          title={t("proficiencyBonus")}
+          accentColor={accentColor}
+          className={SLOTS.tile}>
+          <p
+            className="text-xl sm:text-2xl font-bold tabular-nums"
+            aria-label={`${t("proficiencyBonus")} ${proficiencyBonus}`}>
+            {proficiencyBonus >= 0 ? `+${proficiencyBonus}` : `${proficiencyBonus}`}
+          </p>
         </GeneralTile>
 
         <GeneralSectionCard

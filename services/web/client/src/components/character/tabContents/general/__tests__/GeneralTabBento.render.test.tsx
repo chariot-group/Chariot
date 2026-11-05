@@ -172,10 +172,10 @@ describe("General tab — single bento grid", () => {
   it("edge: player view shows the four compact tiles before the ability scores", () => {
     const html = CASES["player view"]();
     const order = [
-      "proficiency-bonus-heading",
       "passive-perception-heading",
       "inspiration-heading",
       "exhaustion-heading",
+      "proficiency-bonus-heading",
       "characteristics-heading",
     ].map((id) => html.indexOf(`id="${id}"`));
 

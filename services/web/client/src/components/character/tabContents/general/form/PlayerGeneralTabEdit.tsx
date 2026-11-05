@@ -651,12 +651,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
           className={`${SLOTS.statistics} justify-between`}
         />
 
-        <ProficiencyBonusEditCard
-          form={form}
-          accentColor={accentColor}
-          className={SLOTS.tile}
-        />
-
         {/* Perception passive */}
         <GeneralSectionCard
           headingId="passive-perception-heading-edit"
@@ -824,6 +818,12 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
             )}
           />
         </GeneralSectionCard>
+
+        <ProficiencyBonusEditCard
+          form={form}
+          accentColor={accentColor}
+          className={SLOTS.tile}
+        />
 
         <SkillsEditCard
           form={form}
