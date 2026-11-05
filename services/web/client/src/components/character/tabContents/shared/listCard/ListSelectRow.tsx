@@ -41,7 +41,8 @@ export default function ListSelectRow({
   return (
     <div
       className={cn(
-        "flex min-w-0 items-start gap-1 border-b border-border",
+        "flex min-w-0 items-start gap-1 rounded-[10px] border-b border-border transition-colors",
+        !isSelected && "hover:bg-gray-middle-light/50",
         isSelected && "rounded-[10px] border-transparent bg-gray-middle-light/60",
         hasError && "rounded-[10px] border-transparent ring-2 ring-destructive",
       )}>
@@ -49,8 +50,8 @@ export default function ListSelectRow({
         type="button"
         id={id}
         className={cn(
-          "flex min-w-0 flex-1 flex-col gap-1 rounded-[10px] px-2 py-2.5 text-left outline-none transition-colors hover:bg-gray-middle-light/50 focus-visible:ring-2 focus-visible:ring-ring",
-          isSelected && "hover:bg-transparent",
+          "flex min-w-0 flex-1 flex-col gap-1 rounded-[10px] px-2 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          !isSelected && "cursor-pointer",
         )}
         aria-label={label}
         aria-pressed={isSelected}
