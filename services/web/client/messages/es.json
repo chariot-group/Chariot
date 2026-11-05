@@ -520,7 +520,6 @@
   },
   "auth": {
     "loading": "Cargando...",
-    "pleaseWait": "Por favor, espere mientras verificamos su sesión",
     "logoutEscape": "Cerrar sesión"
   },
   "notFound": {
@@ -798,9 +797,6 @@
     "changesCancelled": "Cambios cancelados"
   },
   "characterCreate": {
-    "titlePlayer": "Crear un personaje jugador",
-    "titleNpc": "Crear un PNJ",
-    "description": "Rellena la ficha completa del personaje. Podrás modificar esta información más tarde desde la ficha.",
     "cancel": "Cancelar",
     "create": "Crear",
     "saving": "Creando..."
@@ -844,6 +840,7 @@
     "uniqueSpellDamageType": "Cada tipo de daño debe ser único dentro de un mismo conjuro."
   },
   "characterDetail": {
+    "loadingSheet": "Cargando la ficha…",
     "editCharacter": "Modificar personaje",
     "exportPdf": "Exportar en PDF",
     "pdfExport": {
@@ -903,7 +900,6 @@
       "success": "Ficha exportada en PDF.",
       "error": "No se pudo exportar la ficha en PDF."
     },
-    "playedBy": "Jugado por {name}",
     "classLevelShort": "{className} Niv. {level}",
     "saveChanges": "Guardar cambios",
     "saving": "Guardando...",
@@ -1003,10 +999,6 @@
       "zeroPlaceholder": "0",
       "proficiencyBonusPlaceholder": "+2",
       "challengeRatingPlaceholder": "0, 1/8, 1/4, 1/2",
-      "damageDiceCountPlaceholder": "8",
-      "damageDiceTypePlaceholder": "d6",
-      "healingDiceCountPlaceholder": "4",
-      "healingDiceTypePlaceholder": "d8",
       "spellDamageEntry": "Daño {index}",
       "addDamageToSpell": "Añadir una fila de daño a este conjuro",
       "removeSpellDamage": "Eliminar la fila de daño {index}",
@@ -1186,7 +1178,26 @@
       "vulnerabilities": "Vulnerabilidades",
       "vulnerabilitiesPlaceholder": "Fuego, Frío...",
       "immunities": "Inmunidades",
-      "immunitiesPlaceholder": "Fuego, Frío..."
+      "noAffinities": "Sin resistencias, vulnerabilidades ni inmunidades",
+      "noActions": "Ninguna acción",
+      "noAbilities": "Ninguna capacidad ni rasgo",
+      "statLabels": {
+        "armorClass": "CA",
+        "initiative": "Inic.",
+        "size": "Tamaño",
+        "speeds": "Velocidad",
+        "passivePerception": "Perc. pasiva"
+      },
+      "attackSuggestions": "Sugerencias",
+      "formSections": {
+        "general": "General",
+        "attack": "Ataque",
+        "damage": "Daño",
+        "description": "Descripción",
+        "counter": "Usos"
+      },
+      "immunitiesPlaceholder": "Fuego, Frío...",
+      "passivePerception": "Percepción pasiva"
     },
     "history": {
       "appearance": "Apariencia",
@@ -1202,7 +1213,8 @@
       "personalityTraits": "Rasgos de personalidad",
       "ideals": "Ideales",
       "flaws": "Defectos",
-      "backstory": "Historia"
+      "backstory": "Historia",
+      "notSpecified": "Sin especificar"
     },
     "player": {
       "level": "Nivel",
@@ -1491,10 +1503,7 @@
       "setCoins": "Fijar",
       "sessionInventoryUpdateError": "No se pudo actualizar el inventario durante la sesión.",
       "noEquipment": "Sin equipamiento por el momento.",
-      "noTreasure": "Sin tesoro por el momento.",
-      "coinsRegion": "Sección de monedas",
-      "equipmentRegion": "Sección de equipamiento",
-      "treasureRegion": "Sección de tesoro"
+      "noTreasure": "Sin tesoro por el momento."
     },
     "magic": {
       "noMagicAbilities": "Este personaje no tiene habilidades mágicas.",
@@ -1754,6 +1763,19 @@
           "previousLanguageButton": "Volver",
           "loadTranslationError": "No se pudo cargar este idioma. Inténtalo de nuevo u elige otro."
         }
+      },
+      "spellcastingTitle": "Lanzamiento de conjuros",
+      "abilityShort": "Car.",
+      "concentration": "Concentración",
+      "noSpells": "Ningún conjuro",
+      "addCodexSpellShort": "Codex",
+      "spellRowLabel": "{name} — {group}",
+      "slotsRemainingAria": "Espacios de nivel {level}: quedan {current} de {total}",
+      "formSections": {
+        "general": "General",
+        "casting": "Lanzamiento",
+        "effects": "Efectos",
+        "description": "Descripción"
       }
     }
   },
@@ -1884,6 +1906,8 @@
     }
   },
   "header": {
+    "sidebarOpenAriaLabel": "Abrir el menú",
+    "sidebarCloseAriaLabel": "Cerrar el menú",
     "logoAriaLabelHome": "Volver al inicio",
     "logoAriaLabelInSession": "Abrir el lobby de la sesión",
     "logoAriaLabelInSessionPreparing": "Abrir el lobby de la sesión (sesión en preparación)",

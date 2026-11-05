@@ -1,6 +1,5 @@
 import { NPC } from "@/types/character";
 import { UseFormReturn, useFieldArray, FieldValues } from "react-hook-form";
-import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import ActionUpdateSection from "@/components/character/tabContents/battle/shared/ActionUpdateSection";
 import AbilitiesUpdateSection from "@/components/character/tabContents/shared/AbilitiesUpdateSection";
@@ -11,6 +10,12 @@ import { Controller } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeTagInput } from "@/components/ui/damage-type-tag-input";
 import { useId } from "react";
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
+import {
+  BATTLE_BENTO_GRID_CLASS,
+  BATTLE_BENTO_STACK_GAP_CLASS,
+  NPC_BATTLE_SLOTS as SLOTS,
+} from "@/components/character/tabContents/battle/shared/battleBentoLayout";
 
 interface NPCBattleTabEditProps {
   npc: NPC;
@@ -62,195 +67,169 @@ export default function NPCBattleTabEdit({ npc, accentColor, form }: NPCBattleTa
     name: "actions.lair",
   });
 
+  /** @see FR-character-battle-bento-layout */
   return (
-    <div className="w-full flex flex-col gap-4 items-start">
-      <div className="grid grid-cols-5 max-[426px]:grid-cols-1 gap-3 md:gap-4 w-full">
-        {/* Statistiques */}
-        <NpcStatisticsUpdate
-          accentColor={accentColor}
+    <div className={BATTLE_BENTO_GRID_CLASS}>
+      <NpcStatisticsUpdate
+        accentColor={accentColor}
+        form={form}
+        className={`${SLOTS.statistics} justify-between`}
+      />
+
+      <GeneralSectionCard
+        headingId={savingThrowsHeadingId}
+        title={t("savingThrows")}
+        accentColor={accentColor}
+        className={SLOTS.savingThrows}>
+        <SavingThrowsEdit
           form={form}
+          accentColor={accentColor}
+          className="flex-1 content-evenly"
         />
+      </GeneralSectionCard>
 
-        {/* Jets de sauvegarde */}
-        <div className="flex flex-col gap-2 col-span-2 2xl:col-span-1">
-          <Card
-            className="gap-3 p-4 md:px-6 h-fit"
-            role="region"
-            aria-labelledby={savingThrowsHeadingId}>
-            <h2
-              id={savingThrowsHeadingId}
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("savingThrows")}
-            </h2>
-
-            <SavingThrowsEdit
-              form={form}
-              accentColor={accentColor}
-            />
-          </Card>
-        </div>
-
-        {/* Capacités et traits */}
-        <div className="col-span-3 2xl:col-span-2">
-          <AbilitiesUpdateSection
-            title={t("abilitiesAndTraits")}
-            form={form}
-            fieldArrayName="abilities"
-            fields={abilitiesFields}
-            append={appendAbility}
-            remove={removeAbility}
-            accentColor={accentColor}
-            abilityCounterMode="npc"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-        <Card
-          className="gap-3 p-4 md:px-6 h-fit"
-          role="region"
-          aria-labelledby={affinitiesHeadingId}>
-          <h2
-            id={affinitiesHeadingId}
-            className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-            {t("affinities")}
-          </h2>
-
-          <div className="flex flex-col gap-4">
-            <Controller
-              name="affinities.resistances"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="battle-npc-resistances"
-                    className="text-sm font-medium">
-                    {t("resistances")}
-                  </label>
-                  <DamageTypeTagInput
-                    id="battle-npc-resistances"
-                    value={field.value || []}
-                    onChange={field.onChange}
-                    placeholder={t("resistancesPlaceholder")}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "battle-npc-resistances-error" : undefined}
+      <GeneralSectionCard
+        headingId={affinitiesHeadingId}
+        title={t("affinities")}
+        accentColor={accentColor}
+        className={SLOTS.affinities}>
+        <div className="grid flex-1 content-between gap-4 @xl:grid-cols-3">
+          <Controller
+            name="affinities.resistances"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <label
+                  htmlFor="battle-npc-resistances"
+                  className="text-sm font-medium">
+                  {t("resistances")}
+                </label>
+                <DamageTypeTagInput
+                  id="battle-npc-resistances"
+                  value={field.value || []}
+                  onChange={field.onChange}
+                  placeholder={t("resistancesPlaceholder")}
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? "battle-npc-resistances-error" : undefined}
+                />
+                {fieldState.error && (
+                  <FieldError
+                    id="battle-npc-resistances-error"
+                    errors={[fieldState.error]}
                   />
-                  {fieldState.error && (
-                    <FieldError
-                      id="battle-npc-resistances-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
+                )}
+              </Field>
+            )}
+          />
 
-            <Controller
-              name="affinities.vulnerabilities"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="battle-npc-vulnerabilities"
-                    className="text-sm font-medium">
-                    {t("vulnerabilities")}
-                  </label>
-                  <DamageTypeTagInput
-                    id="battle-npc-vulnerabilities"
-                    value={field.value || []}
-                    onChange={field.onChange}
-                    placeholder={t("vulnerabilitiesPlaceholder")}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "battle-npc-vulnerabilities-error" : undefined}
+          <Controller
+            name="affinities.vulnerabilities"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <label
+                  htmlFor="battle-npc-vulnerabilities"
+                  className="text-sm font-medium">
+                  {t("vulnerabilities")}
+                </label>
+                <DamageTypeTagInput
+                  id="battle-npc-vulnerabilities"
+                  value={field.value || []}
+                  onChange={field.onChange}
+                  placeholder={t("vulnerabilitiesPlaceholder")}
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? "battle-npc-vulnerabilities-error" : undefined}
+                />
+                {fieldState.error && (
+                  <FieldError
+                    id="battle-npc-vulnerabilities-error"
+                    errors={[fieldState.error]}
                   />
-                  {fieldState.error && (
-                    <FieldError
-                      id="battle-npc-vulnerabilities-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
+                )}
+              </Field>
+            )}
+          />
 
-            <Controller
-              name="affinities.immunities"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="battle-npc-immunities"
-                    className="text-sm font-medium">
-                    {t("immunities")}
-                  </label>
-                  <DamageTypeTagInput
-                    id="battle-npc-immunities"
-                    value={field.value || []}
-                    onChange={field.onChange}
-                    placeholder={t("immunitiesPlaceholder")}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "battle-npc-immunities-error" : undefined}
+          <Controller
+            name="affinities.immunities"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <label
+                  htmlFor="battle-npc-immunities"
+                  className="text-sm font-medium">
+                  {t("immunities")}
+                </label>
+                <DamageTypeTagInput
+                  id="battle-npc-immunities"
+                  value={field.value || []}
+                  onChange={field.onChange}
+                  placeholder={t("immunitiesPlaceholder")}
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? "battle-npc-immunities-error" : undefined}
+                />
+                {fieldState.error && (
+                  <FieldError
+                    id="battle-npc-immunities-error"
+                    errors={[fieldState.error]}
                   />
-                  {fieldState.error && (
-                    <FieldError
-                      id="battle-npc-immunities-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-          </div>
-        </Card>
-      </div>
-
-      {/* Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-        {/* Actions Standards */}
-        <div className="min-w-0">
-          <ActionUpdateSection
-            title={t("actions")}
-            form={form}
-            fieldArrayName="actions.standard"
-            fields={standardActionsFields}
-            append={appendStandardAction}
-            remove={removeStandardAction}
-            accentColor={accentColor}
+                )}
+              </Field>
+            )}
           />
         </div>
+      </GeneralSectionCard>
 
-        {/* Actions Légendaires */}
-        <div className="min-w-0">
-          <ActionUpdateSection
-            title={t("legendaryActions")}
-            form={form}
-            fieldArrayName="actions.legendary"
-            fields={legendaryActionsFields}
-            append={appendLegendaryAction}
-            remove={removeLegendaryAction}
-            accentColor={accentColor}
-          />
-        </div>
+      <ActionUpdateSection
+        title={t("actions")}
+        form={form}
+        fieldArrayName="actions.standard"
+        fields={standardActionsFields}
+        append={appendStandardAction}
+        remove={removeStandardAction}
+        accentColor={accentColor}
+        className={SLOTS.actions}
+      />
 
-        {/* Actions de Repaire */}
-        <div className="min-w-0">
-          <ActionUpdateSection
-            title={t("lairActions")}
-            form={form}
-            fieldArrayName="actions.lair"
-            fields={lairActionsFields}
-            append={appendLairAction}
-            remove={removeLairAction}
-            accentColor={accentColor}
-          />
-        </div>
-      </div>
+      <ActionUpdateSection
+        title={t("legendaryActions")}
+        form={form}
+        fieldArrayName="actions.legendary"
+        fields={legendaryActionsFields}
+        append={appendLegendaryAction}
+        remove={removeLegendaryAction}
+        accentColor={accentColor}
+        className={SLOTS.actions}
+      />
+
+      <ActionUpdateSection
+        title={t("lairActions")}
+        form={form}
+        fieldArrayName="actions.lair"
+        fields={lairActionsFields}
+        append={appendLairAction}
+        remove={removeLairAction}
+        accentColor={accentColor}
+        className={SLOTS.actions}
+      />
+
+      <AbilitiesUpdateSection
+        title={t("abilitiesAndTraits")}
+        form={form}
+        fieldArrayName="abilities"
+        fields={abilitiesFields}
+        append={appendAbility}
+        remove={removeAbility}
+        accentColor={accentColor}
+        abilityCounterMode="npc"
+        className={`${BATTLE_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
+      />
     </div>
   );
 }

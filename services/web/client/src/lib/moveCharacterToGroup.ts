@@ -1,9 +1,6 @@
 import CharacterService from "@/services/CharacterService";
 import { isPlayer } from "@/utils/global.utils";
-
-function groupRefToId(group: { _id: string } | string): string {
-  return typeof group === "string" ? group : group._id;
-}
+import { groupRefToId } from "@/utils/group.utils";
 
 /**
  * Déplace un personnage d'un groupe vers un autre (groupes actifs uniquement côté UI).

@@ -521,7 +521,6 @@
   },
   "auth": {
     "loading": "Chargement...",
-    "pleaseWait": "Veuillez patienter pendant la vérification de votre session",
     "logoutEscape": "Se déconnecter"
   },
   "notFound": {
@@ -791,9 +790,6 @@
     }
   },
   "characterCreate": {
-    "titlePlayer": "Créer un personnage joueur",
-    "titleNpc": "Créer un PNJ",
-    "description": "Remplissez la fiche complète du personnage. Vous pourrez modifier ces informations plus tard depuis la fiche.",
     "cancel": "Annuler",
     "create": "Créer",
     "saving": "Création..."
@@ -845,6 +841,7 @@
     "uniqueSpellDamageType": "Chaque type de dégâts doit être unique dans un même sort."
   },
   "characterDetail": {
+    "loadingSheet": "Chargement de la fiche…",
     "editCharacter": "Modifier le personnage",
     "exportPdf": "Exporter en PDF",
     "pdfExport": {
@@ -904,7 +901,6 @@
       "success": "Fiche exportée en PDF.",
       "error": "Impossible d'exporter la fiche en PDF."
     },
-    "playedBy": "Joué par {name}",
     "classLevelShort": "{className} Niv. {level}",
     "saveChanges": "Sauvegarder",
     "saving": "Sauvegarde...",
@@ -1004,10 +1000,6 @@
       "zeroPlaceholder": "0",
       "proficiencyBonusPlaceholder": "+2",
       "challengeRatingPlaceholder": "0, 1/8, 1/4, 1/2",
-      "damageDiceCountPlaceholder": "8",
-      "damageDiceTypePlaceholder": "d6",
-      "healingDiceCountPlaceholder": "4",
-      "healingDiceTypePlaceholder": "d8",
       "spellDamageEntry": "Dégât {index}",
       "addDamageToSpell": "Ajouter une ligne de dégâts à ce sort",
       "removeSpellDamage": "Supprimer la ligne de dégâts {index}",
@@ -1187,7 +1179,26 @@
       "vulnerabilities": "Vulnérabilités",
       "vulnerabilitiesPlaceholder": "Feu, Froid...",
       "immunities": "Immunités",
-      "immunitiesPlaceholder": "Feu, Froid..."
+      "noAffinities": "Aucune résistance, vulnérabilité ni immunité",
+      "noActions": "Aucune action",
+      "noAbilities": "Aucune capacité ni trait",
+      "statLabels": {
+        "armorClass": "CA",
+        "initiative": "Init.",
+        "size": "Taille",
+        "speeds": "Vitesses",
+        "passivePerception": "Perc. passive"
+      },
+      "attackSuggestions": "Suggestions",
+      "formSections": {
+        "general": "Général",
+        "attack": "Attaque",
+        "damage": "Dégâts",
+        "description": "Description",
+        "counter": "Utilisations"
+      },
+      "immunitiesPlaceholder": "Feu, Froid...",
+      "passivePerception": "Perception passive"
     },
     "history": {
       "appearance": "Apparence",
@@ -1203,7 +1214,8 @@
       "personalityTraits": "Traits de personnalité",
       "ideals": "Idéaux",
       "flaws": "Défauts",
-      "backstory": "Histoire"
+      "backstory": "Histoire",
+      "notSpecified": "Non renseigné"
     },
     "player": {
       "level": "Niveau",
@@ -1495,10 +1507,7 @@
       "setCoins": "Fixer",
       "sessionInventoryUpdateError": "Impossible de mettre à jour l'inventaire en session.",
       "noEquipment": "Aucun équipement pour le moment.",
-      "noTreasure": "Aucun trésor pour le moment.",
-      "coinsRegion": "Section des pièces de monnaie",
-      "equipmentRegion": "Section de l'équipement",
-      "treasureRegion": "Section du trésor"
+      "noTreasure": "Aucun trésor pour le moment."
     },
     "magic": {
       "noMagicAbilities": "Ce personnage n'a pas de capacités magiques.",
@@ -1758,6 +1767,19 @@
           "previousLanguageButton": "Retour",
           "loadTranslationError": "Impossible de charger cette langue. Réessayez ou choisissez une autre langue."
         }
+      },
+      "spellcastingTitle": "Incantation",
+      "abilityShort": "Carac.",
+      "concentration": "Concentration",
+      "noSpells": "Aucun sort",
+      "addCodexSpellShort": "Codex",
+      "spellRowLabel": "{name} — {group}",
+      "slotsRemainingAria": "Emplacements de niveau {level} : {current} restants sur {total}",
+      "formSections": {
+        "general": "Général",
+        "casting": "Incantation",
+        "effects": "Effets",
+        "description": "Description"
       }
     }
   },
@@ -1898,6 +1920,8 @@
     }
   },
   "header": {
+    "sidebarOpenAriaLabel": "Ouvrir le menu",
+    "sidebarCloseAriaLabel": "Fermer le menu",
     "logoAriaLabelHome": "Retour à l'accueil",
     "logoAriaLabelInSession": "Ouvrir le lobby de session",
     "logoAriaLabelInSessionPreparing": "Ouvrir le lobby de session (session en préparation)",

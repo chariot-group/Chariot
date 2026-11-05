@@ -1,6 +1,7 @@
 /** @see FR-player-companion-choice */
 
 import type { AppDispatch } from "@/store";
+import { groupRefToId } from "@/utils/group.utils";
 import { upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
 import CharacterService from "@/services/CharacterService";
@@ -28,7 +29,7 @@ export async function duplicateLinkedCompanionCopy(
   const full = await CharacterService.getCharacterById(companionId);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { _id, createdBy, deletedAt, ...rest } = full;
-  const groups = (full.groups ?? []) as string[];
+  const groups = (full.groups ?? []).map(groupRefToId);
   const sourceDisplayName = characterDisplayName(full as NPC);
   const copyDisplayName = nextAvailableDuplicateName(sourceDisplayName, existingNames);
   const payload = {
@@ -38,7 +39,7 @@ export async function duplicateLinkedCompanionCopy(
     groups,
     linkedPlayerId: newPlayerId,
   };
-  const created = (await CharacterService.createCharacter("npcs", payload as typeof rest)) as NPC;
+  const created = (await CharacterService.createCharacter("npcs", payload)) as NPC;
   return { npc: created, nextNames: [...existingNames, copyDisplayName] };
 }
 
@@ -58,7 +59,7 @@ export async function moveLinkedCompanionsToPlayer(
 
 export function syncReduxAfterCompanionNpcCreate(dispatch: AppDispatch, npc: NPC): void {
   dispatch(upsertPlayerSpaceNpc(npc));
-  const groupIds = (npc.groups ?? []) as string[];
+  const groupIds = (npc.groups ?? []).map(groupRefToId);
   for (const groupId of groupIds) {
     if (!groupId) continue;
     dispatch(

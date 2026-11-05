@@ -209,7 +209,7 @@ export function JoinSessionDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button
-              variant="outline"
+              variant="secondary"
               disabled={isJoining}>
               {tCommon("cancel")}
             </Button>

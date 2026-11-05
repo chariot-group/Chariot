@@ -1,5 +1,4 @@
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import {
@@ -52,7 +51,7 @@ export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
   ] as const;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
+    <div className="grid flex-1 content-between grid-cols-1 @sm:grid-cols-2 @xl:grid-cols-3 gap-2">
       {skills.map(({ key, icon: Icon, ability }) => {
         const abilityScore = form.watch(`stats.abilityScores.${ability}`) || 10;
         const abilityModifier = Math.floor((abilityScore - 10) / 2);
@@ -63,7 +62,7 @@ export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
             name={`stats.skills.${key}`}
             control={form.control}
             render={({ field }) => (
-              <Card className="min-w-0 p-2">
+              <div className="min-w-0 rounded-[10px] p-2 transition-colors hover:bg-gray-middle-light/50">
                 <div className="grid grid-cols-[auto_minmax(0,1fr)_5rem] items-center gap-2">
                   <Icon
                     className="w-5 h-5 shrink-0"
@@ -71,8 +70,8 @@ export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{t(`skillNames.${key}`)}</p>
-                    <p className="text-xs text-gray-middle-light truncate">{t(`abilities.${ability}`)}</p>
-                    <p className="text-xs text-gray-middle-light">
+                    <p className="text-xs text-muted-foreground truncate">{t(`abilities.${ability}`)}</p>
+                    <p className="text-xs text-muted-foreground">
                       ({abilityModifier >= 0 ? `+${abilityModifier}` : abilityModifier})
                     </p>
                   </div>
@@ -89,7 +88,7 @@ export default function NpcSkillsEdit({ form }: NpcSkillsEditProps) {
                     />
                   </div>
                 </div>
-              </Card>
+              </div>
             )}
           />
         );

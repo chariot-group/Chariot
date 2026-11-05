@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, copySuccessButtonClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { cn } from "@/lib/utils";
@@ -87,12 +87,12 @@ export default function ProfileReferralSection({
           </h4>
           <div className="flex flex-row items-center gap-2 flex-wrap">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               aria-label={t("copyLinkAriaLabel")}
               className={cn(
                 "transition-colors whitespace-nowrap",
-                linkCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
+                linkCopyState === "success" && copySuccessButtonClassName,
               )}
               disabled={linkCopyState !== "idle"}
               onClick={onCopyLink}>

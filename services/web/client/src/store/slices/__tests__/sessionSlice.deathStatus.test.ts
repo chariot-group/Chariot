@@ -16,6 +16,7 @@ const buildRow = (overrides: Partial<InitiativeTrackerRow> & { id: string; initi
   firstname: overrides.firstname ?? overrides.id,
   lastname: "",
   surname: "",
+  initiativeModifier: 0,
   avatar: "",
   initiative: overrides.initiative,
   hitPoints: overrides.hitPoints ?? 10,

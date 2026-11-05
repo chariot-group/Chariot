@@ -4,6 +4,7 @@ import NpcGeneralTabContent from "@/components/character/tabContents/general/vie
 import PlayerGeneralTabEdit from "@/components/character/tabContents/general/form/PlayerGeneralTabEdit";
 import NpcGeneralTabEdit from "@/components/character/tabContents/general/form/NpcGeneralTabEdit";
 import { UseFormReturn, FieldValues } from "react-hook-form";
+import type { ReactNode } from "react";
 
 interface CharacterGeneralTabContentProps {
   character: Player | NPC;
@@ -11,6 +12,8 @@ interface CharacterGeneralTabContentProps {
   form: UseFormReturn<FieldValues>;
   isEditing: boolean;
   onCharacterUpdate?: (updated?: Player | NPC) => void;
+  /** Rendered in the « Personnage » card. @see FR-character-detail-view */
+  avatar?: ReactNode;
 }
 
 export default function CharacterGeneralTabContent({
@@ -19,6 +22,7 @@ export default function CharacterGeneralTabContent({
   form,
   isEditing,
   onCharacterUpdate,
+  avatar,
 }: CharacterGeneralTabContentProps) {
   // Mode édition
   if (isEditing) {
@@ -27,6 +31,7 @@ export default function CharacterGeneralTabContent({
         <PlayerGeneralTabEdit
           player={character as Player}
           accentColor={accentColor}
+          avatar={avatar}
           form={form}
         />
       );
@@ -35,6 +40,7 @@ export default function CharacterGeneralTabContent({
         <NpcGeneralTabEdit
           npc={character as NPC}
           accentColor={accentColor}
+          avatar={avatar}
           form={form}
         />
       );
@@ -47,6 +53,7 @@ export default function CharacterGeneralTabContent({
       <PlayerGeneralTabContent
         player={character as Player}
         accentColor={accentColor}
+        avatar={avatar}
         onCharacterUpdate={onCharacterUpdate}
       />
     );
@@ -55,6 +62,7 @@ export default function CharacterGeneralTabContent({
       <NpcGeneralTabContent
         npc={character as NPC}
         accentColor={accentColor}
+        avatar={avatar}
         onCharacterUpdate={onCharacterUpdate}
       />
     );

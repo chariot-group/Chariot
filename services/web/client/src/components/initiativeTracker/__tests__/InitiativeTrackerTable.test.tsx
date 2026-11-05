@@ -97,6 +97,7 @@ describe("InitiativeTrackerTable responsive header", () => {
             lifeStatus: "Vital status",
             armorClass: "Armor class",
             conditions: "Conditions",
+            concentration: "Concentration",
             groupLabel: "Group",
           },
         }}

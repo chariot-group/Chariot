@@ -92,7 +92,7 @@ export function EditCampaignDialog({ campaign, open, onOpenChange, onUpdated }: 
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={isSaving}
             onClick={() => onOpenChange(false)}>
             {tCommon("cancel")}

@@ -33,12 +33,12 @@ export default function Choice({ image, realm, link, onClick, disabled = false, 
       type="button"
       onClick={onClick}
       aria-label={buttonAria}
-      className="w-[90%] hover:bg-primary/90 text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11">
+      className="w-[90%] text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11">
       {t(`${realm}.button`)}
     </Button>
   ) : (
     <Button
-      className="w-[90%] hover:bg-primary/90 text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11"
+      className="w-[90%] text-xs sm:text-sm md:text-base lg:text-base px-3 sm:px-4 py-2 sm:py-2.5 whitespace-normal min-h-10 sm:min-h-11"
       asChild>
       <Link
         href={link || "#"}

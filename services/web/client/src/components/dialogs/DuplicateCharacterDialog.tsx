@@ -284,7 +284,7 @@ export function DuplicateCharacterDialog({
         <DialogFooter className="flex-col gap-2 sm:flex-row">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={isCreating}
             onClick={() => onOpenChange(false)}>
             {tCommon("cancel")}
@@ -293,7 +293,7 @@ export function DuplicateCharacterDialog({
           {onDuplicateAndMove && (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               disabled={!canSubmit}
               onClick={() => void handleCreateAndMove()}>
               {isCreating ? (

@@ -155,7 +155,7 @@ export class GroupService {
           path: 'characters',
           match: { deletedAt: null },
           select:
-            '_id firstname lastname surname createdBy challenge profile progression',
+            '_id firstname lastname surname avatar createdBy challenge profile progression',
         })
         .exec();
 

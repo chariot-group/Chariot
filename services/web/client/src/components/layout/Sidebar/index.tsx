@@ -36,7 +36,7 @@ export default function AppSidebar() {
   };
 
   return (
-    <Sidebar className="sm:bg-transparent text-white border-r border-sidebar-border">
+    <Sidebar className="sm:bg-transparent text-white border-r border-frame">
       <SidebarHeader className="sm:bg-transparent">
         <div
           onMouseEnter={isSessionLaunched ? () => setHeaderTooltipVisible(true) : undefined}

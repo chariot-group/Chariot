@@ -2,7 +2,7 @@
 
 import CharacterService from "@/services/CharacterService";
 import { upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
-import type { AppDispatch } from "@/store/hooks";
+import type { AppDispatch } from "@/store";
 import type { RootState } from "@/store";
 import { upsertSessionCompanionNpc } from "@/store/slices/sessionSlice";
 import type { NPC } from "@/types/character";

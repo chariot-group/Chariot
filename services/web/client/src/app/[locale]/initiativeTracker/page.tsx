@@ -558,7 +558,7 @@ export default function InitiativeTrackerPage() {
       getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => t(`conditions.${condition}`),
       getConditionDescription: (condition: ActiveInitiativeTrackerCondition) =>
         t(`conditionDescriptions.${condition}`),
-      formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => {
+      formatConditionEntryDuration: (entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">) => {
         if (entry.duration?.unit === "untilCombatEnd") {
           return t("conditionDurationUntilCombatEnd");
         }
@@ -625,9 +625,9 @@ export default function InitiativeTrackerPage() {
                 <RemoveCombatantGroupsDialog>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     aria-label={tInit("removeCombatantGroups")}
-                    className="gap-2 rounded-[15px] px-3 sm:px-4">
+                    className="gap-2 px-3 sm:px-4">
                     <LayersMinus
                       className="size-4"
                       aria-hidden="true"
@@ -638,9 +638,9 @@ export default function InitiativeTrackerPage() {
                 <AddCombatantsDialog>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     aria-label={tInit("addCombatants")}
-                    className="gap-2 rounded-[15px] px-3 sm:px-4">
+                    className="gap-2 px-3 sm:px-4">
                     <LayersPlus
                       className="size-4"
                       aria-hidden="true"

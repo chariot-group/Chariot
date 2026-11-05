@@ -2,12 +2,13 @@
 
 import { useCharacter } from "@/hooks/useCharacter";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useMemo } from "react";
-import { Loader2 } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import CharacterDetailView from "@/components/character/CharacterDetailView";
+import CharacterSheetSkeleton from "@/components/character/skeleton/CharacterSheetSkeleton";
+import { resolveCharacterSheetSkeletonVariant } from "@/components/character/skeleton/characterSheetSkeletonLayout";
 import { useAppSelector } from "@/store/hooks";
 import { selectActiveGroups, selectArchivedGroups } from "@/store/slices/groupSlice";
 import { selectContextMode } from "@/store/slices/environmentSlice";
@@ -22,6 +23,7 @@ import { shouldRedirectAwayFromCharacterSheet } from "@/lib/characterAccessError
 
 export default function Character() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const campaignId = params.idCampaign as string;
   const groupId = params.idGroup as string;
@@ -138,9 +140,7 @@ export default function Character() {
 
   if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <CharacterSheetSkeleton {...resolveCharacterSheetSkeletonVariant("campaign", searchParams.get("tab"))} />
     );
   }
 

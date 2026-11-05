@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
@@ -9,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { StoredUnitNumberInput } from "@/components/ui/stored-unit-number-input";
 import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
 import { useToast } from "@/hooks/useToast";
@@ -19,9 +21,13 @@ const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as cons
 interface NpcStatisticsUpdateProps {
   accentColor: string;
   form: UseFormReturn<FieldValues>;
+  /** Layout classes; replaces the default battle-tab spans. */
+  className?: string;
+  /** Extra fields at the bottom of the card (General tab: passive perception). */
+  children?: ReactNode;
 }
 
-export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatisticsUpdateProps) {
+export default function NpcStatisticsUpdate({ accentColor, form, className, children }: NpcStatisticsUpdateProps) {
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const { displayFt, toFeet, unitLabel } = useDistanceUnit();
@@ -66,7 +72,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
 
   return (
     <Card
-      className="gap-3 p-4 md:px-6 col-span-3 2xl:col-span-2 h-fit"
+      className={`gap-3 p-4 md:px-6 ${className ?? "col-span-3 2xl:col-span-2 h-fit"}`}
       role="region"
       aria-labelledby="stats-heading-edit">
       <h2
@@ -89,26 +95,25 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                 className="text-sm font-medium truncate">
                 {t("armorClass")}
               </label>
-              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                <Image
-                  src={ShieldIcon}
-                  alt=""
-                  aria-hidden="true"
-                  width={20}
-                  height={20}
-                  className="size-5 brightness-0 invert"
-                />
-                <Input
-                  {...field}
-                  value={field.value ?? ""}
-                  id="armor-class"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "armor-class-error" : undefined}
-                  placeholder={t("armorClass")}
-                  min={0}
-                  type="number"
-                />
-              </div>
+              <NumberInput
+                {...field}
+                value={field.value ?? ""}
+                id="armor-class"
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.error ? "armor-class-error" : undefined}
+                placeholder={t("armorClass")}
+                min={0}
+                startAdornment={
+                  <Image
+                    src={ShieldIcon}
+                    alt=""
+                    aria-hidden="true"
+                    width={20}
+                    height={20}
+                    className="size-5 brightness-0 invert"
+                  />
+                }
+              />
 
               {fieldState.error && (
                 <FieldError
@@ -133,22 +138,21 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                 className="text-sm font-medium">
                 {tEdit("initiative")}
               </label>
-              <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                <Dices
-                  size={20}
-                  className="size-5 text-white shrink-0"
-                  aria-hidden="true"
-                />
-                <Input
-                  {...field}
-                  value={field.value ?? ""}
-                  id="initiative"
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "initiative-error" : undefined}
-                  placeholder={tEdit("initiative")}
-                  type="number"
-                />
-              </div>
+              <NumberInput
+                {...field}
+                value={field.value ?? ""}
+                id="initiative"
+                aria-invalid={fieldState.invalid}
+                aria-describedby={fieldState.error ? "initiative-error" : undefined}
+                placeholder={tEdit("initiative")}
+                startAdornment={
+                  <Dices
+                    size={20}
+                    className="size-5 text-white shrink-0"
+                    aria-hidden="true"
+                  />
+                }
+              />
               {fieldState.error && (
                 <FieldError
                   id="initiative-error"
@@ -228,28 +232,27 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   className="text-sm">
                   {tEdit("walk")}
                 </label>
-                <div className="flex w-full items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                  <Image
-                    src={RunningIcon}
-                    alt=""
-                    aria-hidden="true"
-                    className="size-6 brightness-0 invert"
-                  />
-                  <StoredUnitNumberInput
-                    {...field}
-                    storedValue={field.value}
-                    onStoredChange={field.onChange}
-                    toDisplay={displayFt}
-                    toStored={toFeet}
-                    id="speed-walk"
-                    type="number"
-                    inputMode="decimal"
-                    step="any"
-                    min={0}
-                    className="text-sm"
-                  />
-                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
-                </div>
+                <StoredUnitNumberInput
+                  {...field}
+                  storedValue={field.value}
+                  onStoredChange={field.onChange}
+                  toDisplay={displayFt}
+                  toStored={toFeet}
+                  id="speed-walk"
+                  inputMode="decimal"
+                  step="any"
+                  min={0}
+                  className="text-sm"
+                  startAdornment={
+                    <Image
+                      src={RunningIcon}
+                      alt=""
+                      aria-hidden="true"
+                      className="size-6 brightness-0 invert"
+                    />
+                  }
+                  endAdornment={unitLabel}
+                />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
@@ -266,27 +269,26 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   className="text-sm">
                   {tEdit("climb")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                  <Mountain
-                    size={24}
-                    className="text-white"
-                    aria-hidden="true"
-                  />
-                  <StoredUnitNumberInput
-                    {...field}
-                    storedValue={field.value}
-                    onStoredChange={field.onChange}
-                    toDisplay={displayFt}
-                    toStored={toFeet}
-                    id="speed-climb"
-                    type="number"
-                    inputMode="decimal"
-                    step="any"
-                    className="text-sm"
-                    min={0}
-                  />
-                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
-                </div>
+                <StoredUnitNumberInput
+                  {...field}
+                  storedValue={field.value}
+                  onStoredChange={field.onChange}
+                  toDisplay={displayFt}
+                  toStored={toFeet}
+                  id="speed-climb"
+                  inputMode="decimal"
+                  step="any"
+                  className="text-sm"
+                  min={0}
+                  startAdornment={
+                    <Mountain
+                      size={24}
+                      className="text-white"
+                      aria-hidden="true"
+                    />
+                  }
+                  endAdornment={unitLabel}
+                />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
@@ -303,27 +305,26 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   className="text-sm">
                   {tEdit("swim")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                  <Waves
-                    size={24}
-                    className="text-white"
-                    aria-hidden="true"
-                  />
-                  <StoredUnitNumberInput
-                    {...field}
-                    storedValue={field.value}
-                    onStoredChange={field.onChange}
-                    toDisplay={displayFt}
-                    toStored={toFeet}
-                    id="speed-swim"
-                    type="number"
-                    inputMode="decimal"
-                    step="any"
-                    min={0}
-                    className="text-sm"
-                  />
-                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
-                </div>
+                <StoredUnitNumberInput
+                  {...field}
+                  storedValue={field.value}
+                  onStoredChange={field.onChange}
+                  toDisplay={displayFt}
+                  toStored={toFeet}
+                  id="speed-swim"
+                  inputMode="decimal"
+                  step="any"
+                  min={0}
+                  className="text-sm"
+                  startAdornment={
+                    <Waves
+                      size={24}
+                      className="text-white"
+                      aria-hidden="true"
+                    />
+                  }
+                  endAdornment={unitLabel}
+                />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
@@ -340,27 +341,26 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   className="text-sm">
                   {tEdit("fly")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                  <Bird
-                    size={24}
-                    className="text-white"
-                    aria-hidden="true"
-                  />
-                  <StoredUnitNumberInput
-                    {...field}
-                    storedValue={field.value}
-                    onStoredChange={field.onChange}
-                    toDisplay={displayFt}
-                    toStored={toFeet}
-                    id="speed-fly"
-                    type="number"
-                    inputMode="decimal"
-                    step="any"
-                    className="text-sm"
-                    min={0}
-                  />
-                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
-                </div>
+                <StoredUnitNumberInput
+                  {...field}
+                  storedValue={field.value}
+                  onStoredChange={field.onChange}
+                  toDisplay={displayFt}
+                  toStored={toFeet}
+                  id="speed-fly"
+                  inputMode="decimal"
+                  step="any"
+                  className="text-sm"
+                  min={0}
+                  startAdornment={
+                    <Bird
+                      size={24}
+                      className="text-white"
+                      aria-hidden="true"
+                    />
+                  }
+                  endAdornment={unitLabel}
+                />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
@@ -377,27 +377,26 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
                   className="text-sm">
                   {tEdit("burrow")}
                 </label>
-                <div className="flex items-center gap-1 bg-gray-middle-light rounded-[15px] pl-2">
-                  <Shovel
-                    size={24}
-                    className="text-white"
-                    aria-hidden="true"
-                  />
-                  <StoredUnitNumberInput
-                    {...field}
-                    storedValue={field.value}
-                    onStoredChange={field.onChange}
-                    toDisplay={displayFt}
-                    toStored={toFeet}
-                    id="speed-burrow"
-                    type="number"
-                    inputMode="decimal"
-                    step="any"
-                    className="text-sm"
-                    min={0}
-                  />
-                  <span className="text-xs text-muted-foreground pr-2 shrink-0">{unitLabel}</span>
-                </div>
+                <StoredUnitNumberInput
+                  {...field}
+                  storedValue={field.value}
+                  onStoredChange={field.onChange}
+                  toDisplay={displayFt}
+                  toStored={toFeet}
+                  id="speed-burrow"
+                  inputMode="decimal"
+                  step="any"
+                  className="text-sm"
+                  min={0}
+                  startAdornment={
+                    <Shovel
+                      size={24}
+                      className="text-white"
+                      aria-hidden="true"
+                    />
+                  }
+                  endAdornment={unitLabel}
+                />
                 {fieldState.error && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
@@ -617,6 +616,7 @@ export default function NpcStatisticsUpdate({ accentColor, form }: NpcStatistics
           />
         </div>
       </div>
+      {children}
     </Card>
   );
 }

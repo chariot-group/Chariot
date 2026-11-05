@@ -28,7 +28,7 @@ export function ConfirmCancelSessionDialog({ onConfirm, children }: ConfirmCance
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => setOpen(false)}>
             {tCommon("cancel")}
           </Button>

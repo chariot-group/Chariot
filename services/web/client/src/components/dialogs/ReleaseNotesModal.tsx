@@ -38,10 +38,10 @@ function VersionSidebar({
 }) {
   return (
     <aside
-      className="w-[148px] lg:w-[180px] shrink-0 border-r border-white/8 overflow-y-auto cursor-default
+      className="w-[148px] lg:w-[180px] shrink-0 border-r border-frame overflow-y-auto cursor-default
         [&::-webkit-scrollbar]:w-1.5
         [&::-webkit-scrollbar-track]:bg-transparent
-        [&::-webkit-scrollbar-thumb]:bg-white/20
+        [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb
         [&::-webkit-scrollbar-thumb]:rounded-full
         [&::-webkit-scrollbar-thumb]:cursor-pointer"
       aria-label="Versions"
@@ -85,7 +85,7 @@ function ReleaseNoteContent({
   const translation = note.translations[locale];
   return (
     <div className="flex flex-col">
-      <div className="px-5 pt-5 pb-4 lg:px-8 lg:pt-7 lg:pb-5 border-b border-white/8 shrink-0">
+      <div className="px-5 pt-5 pb-4 lg:px-8 lg:pt-7 lg:pb-5 border-b border-frame shrink-0">
         <h2 className="text-[15px] lg:text-xl font-medium text-white/90 leading-snug lg:leading-snug">
           {translation.title}
         </h2>
@@ -94,7 +94,7 @@ function ReleaseNoteContent({
             {formatDate(note.date, locale)}
           </p>
           {isLatest && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] lg:text-xs text-accent bg-accent/10 border border-accent/25 rounded-full px-2 py-0.5 lg:px-2.5 lg:py-1 leading-none">
+            <span className="inline-flex items-center gap-1.5 text-[11px] lg:text-xs text-primary-light bg-accent/10 border border-accent/25 rounded-full px-2 py-0.5 lg:px-2.5 lg:py-1 leading-none">
               <span className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-accent" aria-hidden="true" />
               {t("latest")}
             </span>
@@ -106,14 +106,14 @@ function ReleaseNoteContent({
         className="overflow-y-auto px-5 py-4 lg:px-8 lg:py-6 min-h-0 max-h-[min(55dvh,420px)] lg:max-h-[min(60dvh,520px)]
           [&::-webkit-scrollbar]:w-1.5
           [&::-webkit-scrollbar-track]:bg-transparent
-          [&::-webkit-scrollbar-thumb]:bg-white/15
+          [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb
           [&::-webkit-scrollbar-thumb]:rounded-full"
       >
         <ul className="flex flex-col gap-2.5 lg:gap-4" aria-label={translation.title}>
           {translation.highlights.map((highlight, index) => (
             <li key={index} className="flex items-start gap-2.5 lg:gap-3.5">
               <svg
-                className="mt-0.5 lg:mt-1 shrink-0 text-accent/70 size-3 lg:size-4"
+                className="mt-0.5 lg:mt-1 shrink-0 text-primary-light/70 size-3 lg:size-4"
                 viewBox="0 0 12 12"
                 fill="none"
                 aria-hidden="true"
@@ -177,8 +177,8 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
           </div>
         </div>
 
-        <div className="px-5 py-3 lg:px-8 lg:py-4 shrink-0 flex justify-end border-t border-white/8">
-          <Button onClick={onClose} className="rounded-[15px] text-sm lg:text-base h-8 lg:h-10 lg:px-6">
+        <div className="px-5 py-3 lg:px-8 lg:py-4 shrink-0 flex justify-end border-t border-frame">
+          <Button onClick={onClose} className="lg:px-6">
             {t("close")}
           </Button>
         </div>

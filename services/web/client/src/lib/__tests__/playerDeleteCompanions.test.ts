@@ -21,7 +21,7 @@ const npc = (id: string, linkedPlayerId: string, groups: string[] = []): NPC =>
     kind: "npc",
     linkedPlayerId,
     groups,
-  }) as NPC;
+  }) as unknown as NPC;
 
 describe("FR-player-companion-choice", () => {
   it("nominal: linkedCompanionsForPlayer returns NPCs for the player id", () => {

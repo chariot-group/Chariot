@@ -61,7 +61,7 @@ export function ConfirmLeaveSessionDialog({
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => setOpen(false)}>
             {tCommon("cancel")}
           </Button>

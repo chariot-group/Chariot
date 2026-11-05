@@ -14,9 +14,9 @@ import { ChevronUp, LogOut } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-/** Menu item mirrors the solid destructive button so both exit actions read the same. */
+/** Menu item mirrors the `destructive` button variant so both exit actions read the same. */
 const SESSION_EXIT_MENU_ITEM_CLASS =
-  "h-8 bg-destructive px-3 font-medium text-white! dark:bg-destructive/60 data-highlighted:bg-destructive/80! data-highlighted:text-white! focus:bg-destructive/80! focus:text-white! *:[svg]:text-white!";
+  "h-8 rounded-[13px] bg-destructive/60 px-3 font-medium text-white! data-highlighted:bg-destructive/80! data-highlighted:text-white! focus:bg-destructive/80! focus:text-white! *:[svg]:text-white!";
 
 export type SessionExitLayout = "leave" | "closeWithLeaveMenu";
 
@@ -90,7 +90,7 @@ export function SessionExitActions({ isMJ, isLeaving, onLeave, onCloseSession, b
         <DropdownMenuContent
           side="top"
           align="end"
-          className="z-[60] min-w-0 rounded-[15px] border-0 bg-transparent p-0 shadow-md">
+          className="z-[60] min-w-0 rounded-[13px] border-0 bg-transparent p-0 shadow-md">
           <DropdownMenuItem
             className={SESSION_EXIT_MENU_ITEM_CLASS}
             onSelect={() => setLeaveOpen(true)}>
