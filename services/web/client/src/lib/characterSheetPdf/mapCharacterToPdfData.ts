@@ -1,6 +1,6 @@
 /** @see FR-character-sheet-pdf-export */
 
-import type { Action, NPC, Player, Spell, Spellcasting } from "@/types/character";
+import type { Action, NPC, Player, PlayerStats, Spell, Spellcasting, Stats } from "@/types/character";
 import { formatDamageFormula, formatSpellDamageList } from "@/utils/spell-damage.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { calculateSkillBonus, isPlayer } from "@/utils/global.utils";
@@ -174,7 +174,8 @@ export function mapCharacterToPdfData(
   options: MapCharacterToPdfDataOptions,
 ): CharacterSheetPdfData {
   const { labels, playerName = "", translateClass, formatClassLevel, translateAlignment, avatarDataUrl = null, qrCodeDataUrl = null, characterPageUrl = "" } = options;
-  const stats = character.stats;
+  // Player-only fields (proficiency bonus, armors, weapons, tools) are optional for NPCs.
+  const stats: Stats & Partial<PlayerStats> = character.stats;
   const abilityScores = stats.abilityScores;
 
   const abilities = ABILITY_KEYS.map((key) => ({

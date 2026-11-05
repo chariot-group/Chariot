@@ -162,8 +162,8 @@ export function InitiativeTrackerVisibilityDialog({
           {onLeaveInitiative ? (
             <Button
               type="button"
-              variant="outline"
-              className="w-full rounded-[15px] border-red/40 text-red hover:bg-red/15 hover:text-red"
+              variant="secondary"
+              className="w-full border-red/40 text-red hover:bg-red/15 hover:text-red"
               onClick={() => {
                 onLeaveInitiative();
                 onOpenChange(false);
@@ -176,7 +176,7 @@ export function InitiativeTrackerVisibilityDialog({
         <DialogFooter className="gap-2 sm:gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => onOpenChange(false)}>
             {labels.cancel}
           </Button>
@@ -211,7 +211,7 @@ export function VisibilityTriggerButton({ row, ariaLabel, onClick }: VisibilityT
       aria-label={ariaLabel}
       aria-haspopup="dialog"
       onClick={onClick}
-      className="size-9 shrink-0 rounded-[12px] hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40">
+      className="size-9 shrink-0 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40">
       <MonitorCog
         aria-hidden="true"
         className={`size-5 ${iconClass}`}

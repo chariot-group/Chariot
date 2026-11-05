@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
+import { SIDEBAR_ACTION_ICONS } from "@/components/layout/Sidebar/shared/sidebarActionIcons";
 import { useIsTabletOrMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -26,11 +27,28 @@ export interface SidebarItemWithActionsProps {
   trailingBeforeOverflow?: React.ReactNode;
 }
 
-const defaultOverflowTriggerClassName =
-  "text-white/40 hover:bg-white/20 hover:text-white focus-visible:ring-white/50";
+const defaultOverflowTriggerClassName = "text-white/40 hover:bg-white/20 hover:text-white focus-visible:ring-white/50";
 
-const defaultMenuContentClassName =
-  "z-[100] w-56 rounded-[12px] bg-card px-1.5 py-1.5 shadow focus-visible:outline-none";
+/** Above the sidebar and the GM space dropdown (campaign rows open their own menu inside it). */
+const defaultMenuContentClassName = "z-[100] w-56 focus-visible:outline-none";
+
+export function SidebarActionLabel({ action }: { action: SidebarActionItem }) {
+  const DefaultIcon = SIDEBAR_ACTION_ICONS[action.id];
+  const icon = action.icon ?? (DefaultIcon ? <DefaultIcon /> : null);
+
+  return (
+    <>
+      {icon ? (
+        <span
+          className="flex shrink-0 items-center"
+          aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
+      <span className="min-w-0 flex-1 truncate">{action.label}</span>
+    </>
+  );
+}
 
 function SidebarActionMenuItems({
   actions,
@@ -45,11 +63,7 @@ function SidebarActionMenuItems({
         <ContextMenuItem
           disabled={action.disabled}
           variant={action.variant === "destructive" ? "destructive" : "default"}
-          className={cn(
-            "cursor-pointer rounded-[8px] px-2 py-1.5 text-sm focus-visible:border",
-            action.variant === "destructive" && "text-red-500 hover:text-red-600 focus:text-red-600",
-            action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto",
-          )}
+          className={cn(action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto")}
           onSelect={(event) => {
             if (action.disabled) {
               event.preventDefault();
@@ -58,7 +72,7 @@ function SidebarActionMenuItems({
             action.onSelect();
           }}
           title={action.labelTitle ?? action.label}>
-          <span className="block min-w-0 truncate">{action.label}</span>
+          <SidebarActionLabel action={action} />
         </ContextMenuItem>
       );
 
@@ -82,11 +96,7 @@ function SidebarActionMenuItems({
       <DropdownMenuItem
         disabled={action.disabled}
         variant={action.variant === "destructive" ? "destructive" : "default"}
-        className={cn(
-          "cursor-pointer rounded-[8px] px-2 py-1.5 text-sm focus-visible:border",
-          action.variant === "destructive" && "text-red-500 hover:text-red-600 focus:text-red-600",
-          action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto",
-        )}
+        className={cn(action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto")}
         onSelect={(event) => {
           if (action.disabled) {
             event.preventDefault();
@@ -95,7 +105,7 @@ function SidebarActionMenuItems({
           action.onSelect();
         }}
         title={action.labelTitle ?? action.label}>
-        <span className="block min-w-0 truncate">{action.label}</span>
+        <SidebarActionLabel action={action} />
       </DropdownMenuItem>
     );
 

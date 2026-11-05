@@ -94,7 +94,7 @@ export function LinkNpcToPlayerDialog({
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={isLoading}
             onClick={() => onOpenChange(false)}>
             {t("cancel")}

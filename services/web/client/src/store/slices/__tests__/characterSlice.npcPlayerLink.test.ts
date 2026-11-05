@@ -15,7 +15,7 @@ const npc = (id: string, linkedPlayerId?: string | null): NPC =>
     groups: [],
     linkedPlayerId: linkedPlayerId ?? null,
     challenge: { challengeRating: 1, experiencePoints: 50 },
-  }) as NPC;
+  }) as unknown as NPC;
 
 describe("FR-npc-player-link — player space NPC slice", () => {
   it("nominal: linking moves an NPC from root to nested list", () => {

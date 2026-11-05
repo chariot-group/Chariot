@@ -2,9 +2,15 @@ import apiClient from '@/services/ApiService';
 import { emitCharacterSheetUpdated } from '@/lib/sessionCharacterSyncBridge';
 import { getSessionSnapshotForBroadcast } from '@/lib/sessionSnapshot';
 import { Character, PaginatedCharactersResponse, Player, NPC } from '@/types/character';
+import type { GroupRef } from '@/utils/group.utils';
 import { linkedPlayerIdOf } from '@/lib/npcPlayerLink';
 
 type CharacterType = 'players' | 'npcs';
+
+/** Write payload: `groups` may be sent as ids, the API stores references. */
+export type CharacterWriteData = (Omit<Partial<Player>, 'groups'> | Omit<Partial<NPC>, 'groups'>) & {
+    groups?: GroupRef[];
+};
 
 interface CharacterResponse {
     message: string;
@@ -36,7 +42,7 @@ class CharacterService {
      * @param type - Type de personnage ('players' ou 'npcs')
      * @param data - Données du personnage à créer
      */
-    async createCharacter(type: CharacterType, data: Partial<Player> | Partial<NPC>): Promise<Player | NPC> {
+    async createCharacter(type: CharacterType, data: CharacterWriteData): Promise<Player | NPC> {
         try {
             const response = await apiClient().post<CharacterResponse>(
                 `${this.BASE_PATH}/${type}`,
@@ -58,7 +64,7 @@ class CharacterService {
     async updateCharacter(
         type: CharacterType,
         characterId: string,
-        data: Partial<Player> | Partial<NPC>,
+        data: CharacterWriteData,
         sessionCode?: string | null,
     ): Promise<Player | NPC> {
         try {

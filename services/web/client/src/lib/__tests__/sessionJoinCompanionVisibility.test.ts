@@ -13,7 +13,7 @@ const npc = (id: string, linkedPlayerId?: string | null): NPC =>
     lastname: id,
     groups: [],
     linkedPlayerId: linkedPlayerId ?? null,
-  }) as NPC;
+  }) as unknown as NPC;
 
 describe("FR-session-join-companion-visibility — companion counts", () => {
   it("nominal: counts linked NPCs per Player without exposing NPC names", () => {

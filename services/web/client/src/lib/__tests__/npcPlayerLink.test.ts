@@ -23,7 +23,7 @@ const player = (id: string): Character =>
     lastname: id,
     groups: [],
     progression: {},
-  }) as Character;
+  }) as unknown as Character;
 
 const npc = (id: string, linkedPlayerId?: string | null, groups: unknown[] = []): NPC =>
   ({

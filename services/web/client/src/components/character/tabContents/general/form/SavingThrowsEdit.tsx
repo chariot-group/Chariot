@@ -2,13 +2,15 @@ import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getIconForValue } from "@/utils/global.utils";
+import { cn } from "@/lib/utils";
 
 interface SavingThrowsEditProps {
   form: UseFormReturn<FieldValues>;
   accentColor: string;
+  className?: string;
 }
 
-export default function SavingThrowsEdit({ form, accentColor }: SavingThrowsEditProps) {
+export default function SavingThrowsEdit({ form, accentColor, className }: SavingThrowsEditProps) {
   const t = useTranslations("characterDetail.player.general");
   const tAbilities = useTranslations("characterDetail.player.general.abilities");
 
@@ -36,7 +38,7 @@ export default function SavingThrowsEdit({ form, accentColor }: SavingThrowsEdit
   };
 
   return (
-    <div className="grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2">
+    <div className={cn("grid max-[376px]:grid-cols-2 grid-cols-1 lg:grid-cols-2 gap-2", className)}>
       {abilityScoreKeys.map(({ key, label }) => {
         const abilityScore = form.watch(`stats.abilityScores.${key}`) || 10;
         const savingThrowValue = form.watch(`stats.savingThrows.${key}`) || 0;

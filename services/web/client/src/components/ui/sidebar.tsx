@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Slot } from "radix-ui";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -215,7 +216,7 @@ function Sidebar({
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l border-frame",
           className,
         )}
         {...props}>
@@ -230,23 +231,36 @@ function Sidebar({
   );
 }
 
+/** Ouverture effective : le Sheet sur mobile, la sidebar fixe sur desktop. */
+function isSidebarVisible({ isMobile, open, openMobile }: Pick<SidebarContextProps, "isMobile" | "open" | "openMobile">) {
+  return isMobile ? openMobile : open;
+}
+
 function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
+  const t = useTranslations("header");
+  const { toggleSidebar, isMobile, open, openMobile } = useSidebar();
+  const isOpen = isSidebarVisible({ isMobile, open, openMobile });
+  const Icon = isOpen ? X : Menu;
 
   return (
     <Button
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
+      data-state={isOpen ? "open" : "closed"}
       variant="ghost"
       size="icon"
+      aria-expanded={isOpen}
+      aria-label={isOpen ? t("sidebarCloseAriaLabel") : t("sidebarOpenAriaLabel")}
       className={cn("size-10", className)}
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();
       }}
       {...props}>
-      <Menu className="size-5" />
-      <span className="sr-only">Toggle Sidebar</span>
+      <Icon
+        className="size-5"
+        aria-hidden="true"
+      />
     </Button>
   );
 }
@@ -341,7 +355,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-sidebar="content"
       className={cn(
         "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-2 scroll-smooth group-data-[collapsible=icon]:overflow-hidden",
-        "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full",
+        "scrollbar-none",
         className,
       )}
       {...props}
@@ -675,5 +689,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  isSidebarVisible,
   useSidebar,
 };

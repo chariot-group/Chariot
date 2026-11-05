@@ -436,10 +436,10 @@ When adding a rule:
 **Page Structure**:
 
 - Full-screen layout with tabbed navigation interface
-- Fixed header section containing character identity and navigation tabs
+- Fixed top section containing **only the tab navigation bar** (no identity header: no name, surname, class/level, CR/XP or « Joué par » line above the tabs), to maximize the vertical space available to tab content. Applies to both the character sheet (`CharacterDetailView`) and the creation form (`CharacterFormView`).
 - Content area displaying tab-specific information
 - Responsive design adapting to mobile (overlay), tablet, and desktop viewports
-- Maximum content width of 480px centered on screen with appropriate padding
+- Content uses the full available width of the main area; the General tab follows FR-character-general-bento-layout
 
 **Tab Navigation System**:
 
@@ -454,7 +454,7 @@ When adding a rule:
 - Inactive tabs display gray background with hover state
 - Tab labels must be internationalized using `next-intl` with key `characterDetail.tabs.{tabName}`
 
-**Character Header Information**:
+**Character Identity Summary** (reference format for surfaces that summarize a character, e.g. companion cards — not displayed above the sheet tabs):
 
 **For Player Characters**:
 
@@ -480,7 +480,8 @@ When adding a rule:
 - Fixed width with consistent 4:5 aspect ratio: `w-20` (mobile), `w-24` (sm), `w-28` (md+)
 - Rounded corners (`rounded-[18px]`)
 - Gray background (`bg-gray`)
-- Positioned to the right of character information
+- Positioned in the **General** tab, inside the « Personnage » card, to the right of the character information (read mode) or of the card heading (edit mode)
+- In edit mode, the avatar upload control (deferred upload until save) lives at the same place; the creation form shows no avatar (the character does not exist yet)
 - Image crop: `object-cover object-center` (see FR-media-avatar-format)
 
 **Accessibility Requirements**:
@@ -518,7 +519,7 @@ When adding a rule:
   - Character in campaign: `/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]`
 - Both routes use the same `CharacterDetailView` component
 - Character data fetched via `useCharacter` hook with character ID
-- Loading state displays centered spinner (Lucide `Loader2` component)
+- Loading state displays a skeleton of the sheet, not a spinner (see FR-character-sheet-skeleton)
 - Error state displays centered error message in red
 
 **Component Architecture**:
@@ -4301,36 +4302,7 @@ Each initiative tracker row carries:
 
 ## FR-character-history-appearance-fit: History Appearance Card Sizes to Content
 
-**Rule**: On the character History tab, the Appearance card and its fields MUST size to their own content in view and edit modes; they MUST NOT stretch to match neighboring cards or sibling field height.
-
-**Requirements**:
-
-- Applies to the History tab Appearance region (eyes, age, skin, height, weight, hair) in both read and edit modes.
-- The Appearance card height MUST follow its fields; it MUST NOT fill leftover column height from a multi-row grid span or from taller neighboring cards (traits, allies, bonds, ideals, flaws).
-- Each appearance field MUST size to its own value. A long wrapping value in one field MUST NOT inflate empty vertical space inside other appearance fields of the same row.
-- Long values remain fully readable: they wrap inside the field (`min-w-0`, wrap) and MUST NOT overflow the card (FR-frontend-design overflow containment).
-- View mode MUST NOT truncate appearance values to keep a uniform row height.
-- Edit-mode appearance controls stay compact (single-line inputs for the six identity fields); they MUST NOT grow to fill the card.
-- Accessibility: existing labels, `aria-labelledby` on the Appearance region, and field-error linking remain unchanged; wrapping MUST NOT clip text or hide values from keyboard/screen-reader users.
-
-**Prohibitions**:
-
-- Stretching the Appearance card with full-height fill (`h-full` or equivalent) across spanned grid rows.
-- Uniform grid-row stretching that leaves large empty areas inside short appearance fields.
-- Truncating appearance values in view mode solely to keep sibling fields the same height.
-
-**Tests**:
-
-- Nominal: short values (age, height, weight plus brief eyes/skin/hair) keep the Appearance card compact; neighboring long background cards do not enlarge it.
-- Edge: a long wrapping value in one appearance field (e.g. eyes or hair) grows that field only; sibling fields stay compact and the card does not overflow horizontally.
-- Failure: empty or missing appearance values MUST NOT leave a stretched empty Appearance card matching the height of the two-row neighboring stack.
-
-**References**:
-
-- `services/web/client/src/components/character/tabContents/history/view/CharacterHistoryView.tsx`
-- `services/web/client/src/components/character/tabContents/history/form/CharacterHistoryTabEdit.tsx`
-- `docs/functional-rules.md` — FR-character-universal-fields, FR-character-detail-view, FR-frontend-design
-- `docs/design.md` — §3 spacing, §5.3 cards, §6.4 overflow and text containment
+**Status**: Superseded by **FR-character-history-bento-layout** (functional decision 2026-11-01, option "adopt the bento rule"). The Appearance card no longer sizes to its content with `h-fit`: like every bento card it stretches to its track and spreads its fields over its height. The remaining intents (long values wrap and are never truncated, edit inputs stay single-line, no horizontal overflow) are carried by the new rule.
 
 ---
 
@@ -4469,9 +4441,9 @@ Each initiative tracker row carries:
 
 - Complements FR-character-detail-view: in **Player space only**, Player sheets gain a sixth tab; NPC sheets and all GM-space sheets keep the existing five tabs.
 - Tab id: `companions`. Labels (i18n `characterDetail.tabs.companions`): FR « Compagnons », EN « Companions », ES « Compañeros ».
-- Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (same contrast treatment as the Combat/red tab). Do not invent a new color.
+- Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (the only tab with light text: black is unreadable on the violet `#4e00de`, `docs/design.md` violet usage rule). Do not invent a new color.
 - Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
-- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST show the same identity as the NPC sheet header (FR-character-detail-view): avatar (4:5, User placeholder when missing), name, surname when present, and CR with abbreviated « ID » tooltip plus XP in parentheses. When the NPC belongs to a group, the first group label MAY appear as secondary metadata. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
+- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST show the NPC identity summary (FR-character-detail-view): avatar (4:5, User placeholder when missing), name, surname when present, and CR with abbreviated « ID » tooltip plus XP in parentheses. When the NPC belongs to a group, the first group label MAY appear as secondary metadata. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
 - Read and edit mode (Player space, liaison actions enabled): the same list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. Managing liaisons MUST NOT require entering full-sheet edit mode for the other tabs. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
 - Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST NOT open a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
 - Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
@@ -4481,7 +4453,7 @@ Each initiative tracker row carries:
 - Complements FR-character-detail-view: the NPC header MUST stay limited to name and CR/XP (and group label when present). The linked Player MUST NOT appear in the NPC header (keeps the fixed header compact on mobile).
 - In **Player space only**, when `linkedPlayerId` is set, the character sheet **footer** (same sticky band as Edit / PDF — including when passed into `CombatBanner` during a session) MUST expose a discreet navigation control to the linked Player sheet.
 - Copy (i18n `characterDetail.npc.linkedTo`): FR « Lié à {name} », EN « Linked to {name} », ES « Vinculado a {name} ». Long names MUST truncate (`truncate` / `min-w-0`) with full text in `title` when truncated.
-- Visual treatment: **outline** button matching **Export PDF** in the same footer row (`variant="outline"`, same text/icon sizing). When both are visible, they MUST appear adjacent with a **pipe** separator (`|`) between linked-Player navigation and Export PDF (Lié à {name} | Export PDF). An icon MUST NOT be the only channel (visible text label required).
+- Visual treatment: **secondary** button matching **Export PDF** in the same footer row (`variant="secondary"`, FR-frontend-button-system; same text/icon sizing). When both are visible, they MUST appear adjacent with a **pipe** separator (`|`) between linked-Player navigation and Export PDF (Lié à {name} | Export PDF). An icon MUST NOT be the only channel (visible text label required).
 - The footer shortcut MUST render even when Edit / PDF controls are hidden (e.g. session GM read-only on a companion), as long as the linked-Player navigation is allowed for that context.
 - When unlinked, the control MUST NOT render. When `contextMode === "gm"` outside the session-GM companion exception, it MUST NOT render. In session, the session GM MAY use it on companion NPC sheets (navigation only — FR-session-player-companion-combatants).
 - Keyboard-operable with visible focus; MUST NOT expose liaison management (unlink remains sidebar / Companions tab on the Player sheet).
@@ -4490,7 +4462,7 @@ Each initiative tracker row carries:
 
 - Complements FR-characters-without-group without changing that endpoint: `GET /characters/players/without-group` remains Player-only and MUST NOT return NPCs. Unlinked without-group NPCs are loaded via a dedicated NPC query (same owner, empty `groups`, `linkedPlayerId` absent/`null`). Linked NPCs are loaded by a batch query on the visible Player ids.
 - **Root rows**: Player characters without group, plus **unlinked** NPCs without group. Unlinked NPC rows use the same actions as other character rows (FR-sidebar-context-actions) plus link (FR-sidebar-npc-link), and a non-color-only PNJ kind badge.
-- **Nested rows**: NPCs linked to a visible Player appear **under that Player**, not as root rows (no duplicate: a linked NPC MUST NOT also appear at the root even if `groups` is empty). Nested rows MUST use a stronger indent than root rows (`mt-1 ml-3` nest). A continuous vertical `purple` rail alongside the whole nested list MUST NOT be used. The **selected** nested NPC row MUST use the same sidebar selection rail as other character rows (`primary` / `purple` token). Color MUST NOT be the only channel: nesting, list structure, and the companions list accessible name remain required.
+- **Nested rows**: NPCs linked to a visible Player appear **under that Player**, not as root rows (no duplicate: a linked NPC MUST NOT also appear at the root even if `groups` is empty). Nested rows MUST use a stronger indent than root rows (`mt-1 ml-3` nest). A continuous vertical `purple` rail alongside the whole nested list MUST NOT be used. The **selected** nested NPC row MUST use the same selection style as other character rows (`docs/design.md` §5.5: `bg-white/15`, bold white text, no left bar). Color MUST NOT be the only channel: nesting, list structure, and the companions list accessible name remain required.
 - Nested and root NPC rows navigate to the NPC sheet, expose Edit / Delete / Duplicate / PDF coming-soon (FR-character-sheet-pdf-export), link/unlink (FR-sidebar-npc-link), and show a PNJ kind badge.
 - NPCs that belong to a campaign group remain in the GM group list; if they are also linked, they additionally nest under their Player in the Player sidebar.
 
@@ -5030,6 +5002,71 @@ Each initiative tracker row carries:
 - `services/web/client/src/services/__tests__/NavigationService.destinations.test.ts`
 - `docs/functional-rules.md` — FR-post-auth-navigation, FR-session-websocket-lifecycle, FR-session-lobby-navigation, FR-user-cache-isolation
 
+---
+
+## FR-frontend-button-system: Unified Button Types, Sizes and Shape
+
+**Rule**: Every button of the web client MUST belong to one of three main types, or to a documented utility type, and MUST use one of three sizes. Type, size, alignment and shape are owned by the shared `Button` primitive (`components/ui/button.tsx`, `buttonVariants`); consumers MUST NOT re-style the fill, text color, hover, height or radius of a button locally.
+
+**Main types**:
+
+- **Primary white** (`variant="primary"`): white fill (`--white`), dark text; hover makes it slightly **darker** (`gray-300`), a light but visible change. Default type for the main action of a screen or dialog.
+- **Primary colored** (`variant="accent"` + `tone`): colored fill, hover makes it **lighter**.
+  - Domain tones `blue`, `red`, `pink`, `yellow`, `green` (section 2.3 of `docs/design.md`): dark text on **every** tone (red included). Used when the action belongs to a color-coded context (character sheet tab, session actions in the sidebar, combat turn controls).
+  - Brand tone `violet` (`--primary`, default tone): light text (`--primary-foreground`), the only colored tone with light text because dark text is unreadable on `#4e00de`. Keeps its current role (dialog validations, welcome and shop calls to action).
+  - `accent` + `violet` is the default of the primitive, so a `<Button>` without variant keeps the violet look.
+- **Secondary** (`variant="secondary"`): dark fill (`--gray-middle-light`) with the minor border (`--input`), light text; hover makes it **lighter** (`--gray`). Used for alternative actions next to a primary (cancel, export, back).
+
+**Utility types** (minority, kept): `ghost` (transparent, `hover:bg-white/10`), `link` (text), `destructive` (critical action), icon-only triggers, and toggles (`aria-pressed`), which never use a violet fill:
+  - Segmented selector (exactly one option active among a few, e.g. Player / GM, attack ability suggestion): active option = **primary white**, inactive options = **secondary**.
+  - Filter toggle (independent on/off chip, e.g. Action / Bonus action / Reaction priority): `secondary`, pressed state = documented selection gray (`docs/design.md` section 5.1).
+
+**Sizes**:
+
+- `lg` — large call to action (e.g. sidebar « Lancer une session », « Rejoindre la session »): slightly larger label (`text-lg`) and icon (`size-6`)
+- `default` — normal (e.g. « Créer un personnage », dialog footers, character sheet footer)
+- `sm` — small (dense toolbars, rows, tracker controls)
+- Icon-only sizes (`icon`, `icon-sm`, `icon-lg`) follow the same heights as their text counterparts
+
+**Shape and content**:
+
+- Corner radius: `rounded-[13px]` for `default`, `sm` and their icon sizes (same as the Player / GM selector and the character sheet tabs); `rounded-[15px]` for `lg` / `icon-lg` (the app's card radius, slightly rounder for taller buttons) (`docs/design.md` section 2.4). No button may be pill-shaped or use another radius, except the documented joined group of the character sheet tabs.
+- Content is centered by default; `align="start"` left-aligns it when the layout requires it (sidebar lists, full-width rows).
+- An icon is optional and MUST be placed on the **left** of the label. The only trailing glyphs allowed are the disclosure chevron of a menu trigger and the forward arrow of a "next" action (e.g. tracker « Suivant »).
+
+**Explicit mappings**:
+
+- Sidebar session action (« Lancer une session », « Rejoindre la session », « Retour à la session », « Lancer le combat », « Retour à la fiche »): primary colored, `lg`, standard radius.
+- Player / GM space selector (« Joueur » / « MJ »): segmented toggle following the toggle rule above (active = primary white, inactive = secondary), `default` size, standard radius, built on `buttonVariants` even though it stays a distinct component.
+- Character sheet footer: « Modifier le personnage » and « Sauvegarder » = primary white, `default`, independent of the active tab; « Exporter en PDF » and « Annuler » = secondary, `default`.
+- Sidebar « Créer un personnage » / « Créer un groupe »: primary white, `default`, `align="start"`.
+
+**Accessibility**:
+
+- Every type keeps a visible keyboard focus (`focus-visible` ring) on dark and light fills.
+- Text/fill contrast MUST be >= 4.5:1 at rest and on hover for every type and tone.
+- Disabled state is conveyed by `disabled`/`aria-disabled`, reduced opacity and no hover change.
+
+**Prohibitions**:
+
+- Local overrides of button fill, hover color (hardcoded hex such as `hover:bg-[#e6b000]`), height or radius (`rounded-2xl`, `rounded-md`, `rounded-full`) in consumers
+- Trailing icons other than a menu disclosure chevron
+- Light text on a domain-colored (non-violet) button
+
+**Tests**:
+
+- Nominal: `buttonVariants` returns the documented classes for each type (`primary`, `accent` per tone, `secondary`) and each size; the default is `accent` + `violet`
+- Edge: `accent` with `tone="red"` renders dark text; `align="start"` left-aligns content; `lg` uses the 15px radius, the other sizes 13px
+- Failure/guard: disabled buttons expose no hover style change; an inactive segmented option renders the secondary style
+
+**References**:
+
+- `services/web/client/src/components/ui/button.tsx`
+- `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/layout/Sidebar/SidebarEnvironment.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`
+- `docs/design.md` — sections 2.3, 2.4, 5.1
+- `docs/functional-rules.md` — FR-frontend-design, FR-character-sheet-pdf-export
 ## FR-sidebar-linked-npc-nesting-collapse: Replier les PNJ liés sous un PJ dans la sidebar
 
 **Rule**: In Player space **Mes personnages** and in the in-session GM section **Joueurs (session)** (FR-npc-player-link, FR-session-player-companion-combatants), when a Player row has one or more nested linked NPCs, the user MUST be able to collapse and expand that nested list without losing navigation to the Player or NPC sheets.
@@ -5353,3 +5390,534 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
 - `services/web/client/src/components/character/CharacterDetailView.tsx`
 - `docs/functional-rules.md` — FR-user-balance-history, FR-media-avatar-read-access
+
+---
+
+## FR-character-general-bento-layout: General Tab Bento Layout (PC and NPC)
+
+**Rule**: The character sheet **General** tab (Player and NPC, read **and** edit modes) MUST lay out its cards as a single **bento grid**: one grid container whose direct children are the cards, each card placed on explicit column/row spans per breakpoint, with one uniform gap, no empty cells, and no visible column stripes.
+
+**Requirements**:
+
+- **Single grid**: every General-tab card (Character, Statistics, compact tiles, Ability scores, Saving throws, Skills, Proficiencies, Abilities) is a direct child of one grid container. Independent flex columns (`Column 1 / 2 / 3`) MUST NOT be used to place cards.
+- **Grid units** (decision 2026-11-04): the grid follows the **width available to the sheet** (container queries on a wrapper of the grid), not the viewport width, so an open sidebar (16rem from `md`) is taken into account and the layout switches back when the sidebar is collapsed. Thresholds on the available width:
+  - `< 36rem`: 2 columns (mobile placement, below "`< sm`").
+  - `36rem` → `56rem`: 4 columns (tablet placement, below "`sm` → `xl`").
+  - `≥ 56rem`: 12 columns (desktop placement, below "`≥ xl`").
+  - `≥ 96rem` (very large screens): still 12 columns, with a **wide placement** (below "`≥ 3xl`") so cards do not stretch over the extra width. Decision 2026-11-04: adapt the layout like on phones instead of capping the page width.
+  - In the placement rules below, `< sm`, `sm` → `xl`, `≥ xl` and `≥ 3xl` name these width ranges. Spacing (gap, page padding) stays viewport-based. Other sheet tabs keep viewport breakpoints.
+- **Uniform spacing**: a single gap token for both axes (`gap-3`, `md:gap-4`). Cards MUST NOT add outer margins or wrapper elements that introduce extra spacing between cards.
+- **Compact tiles** (read mode): short label/value cards (PC: proficiency bonus, passive perception, inspiration, exhaustion) render as compact tiles (label on top, prominent value below) that share a row instead of each taking a full-width row.
+- **Placement intent** (≥ xl, PC read mode):
+  - Band 1: Character (4 cols, spans 2 rows) · Statistics (8 cols) · 4 tiles of 2 cols below Statistics (proficiency bonus, passive perception, inspiration, exhaustion).
+  - Band 2 — skills band (decision 2026-11-05, replaces the full-width Abilities band of 2026-11-04): Skills (6, spans 2 rows, 2-column list) on the left; on the right (6): Ability scores (3) and Saving throws (3) side by side, then Abilities and traits under both (6, spans 2 rows); Proficiencies (6) under the Skills, next to the Abilities.
+- **Wide placement intent** (≥ 3xl, PC read mode, decision 2026-11-04): Band 1 (2 rows): Character (3, spans 2 rows) · Statistics (5, spans 2 rows) · on the right (4 cols): the 4 tiles side by side on one row (1 col each), then Proficiencies right under them (4 cols, explicitly placed in that zone, DOM order unchanged). Band 2: skills band — Skills (6, spans 2 rows) · Ability scores then Saving throws under it (3) · Abilities and traits (3, spans 2 rows, explicitly placed on the band rows, DOM order unchanged).
+- **Wide placement intent** (≥ 3xl, PC edit mode): edit tiles hold form controls and the Proficiencies form is long, so edit mode keeps the 4 tiles as a 2 × 2 block (2 cols each) next to the statistics and Proficiencies full width after the skills band (6 under the Skills at `xl`).
+- **PC DOM order**: Character · Statistics · 4 tiles · Skills · Ability scores · Saving throws · Abilities · Proficiencies. On tablet the PC follows the NPC tablet placement. Alignment and background are in the Character card (FR-character-identity-card).
+- **Placement intent** (NPC read and edit modes, decision 2026-11-04 — GM constraint): the Skills card is **tall** (spans 2 rows), placed **as far left as possible** and wide enough for a 2-column skills list; right to its right sit Ability scores and Saving throws, then Abilities. DOM order: Character · Statistics · Skills · Ability scores · Saving throws · Abilities · Proficiencies. Alignment is in the Character card, passive perception in the Statistics card (no NPC tiles).
+  - `≥ xl`: Band 1: Character (4) · Statistics (8). Band 2: skills band, same as PC (Proficiencies 6 under the Skills).
+  - `≥ 3xl`: Band 1 unchanged. Band 2: skills band, same as PC wide placement. Band 3: Proficiencies (12, full width, sections in columns). The Character card does not span rows, so a sparse NPC identity is not stretched.
+  - `sm` → `xl` (a single-column skills list is tall, so the right column must not be stretched): Character, Statistics full width; Skills (half, spans 3 rows) on the left · on the right (half): Ability scores, Saving throws, Abilities; then Proficiencies full width.
+  - `< sm`: every card full width, in DOM order.
+- **Wide lists**: long lists (skills) lay out by card width, not viewport width (container queries on the card), so a wide card shows 2–3 columns and stays balanced with its neighbours.
+- **Edit mode**: same cards, same order and same zones as read mode so the sheet does not reshuffle when toggling edit. Edit tiles hold form controls, so they are wider: 4 cols at `xl` (two per row, Character spans 3 rows for PC), half width at `sm`, full width below `sm`.
+- **Tablet / mobile**: same reading order as the DOM; Character, Statistics and Proficiencies take the full width; on tablet Skills, Ability scores, Saving throws and Abilities take half width (see NPC placement), full width below `sm`; read tiles take 1 column on mobile so a tiles row never leaves an orphan cell.
+- **No holes, no empty cards**: grid items stretch to their track height (no `h-fit` on grid children), and **every** card distributes its own content over that height, so no card shows a blank area below its content:
+  - Grids of values (ability scores, saving throws) spread their rows evenly over the card height.
+  - Lists and label/value stacks (Character, Statistics, Skills, Proficiencies) spread their items from the top to the bottom of the card (first item under the heading, last item at the bottom).
+  - Tiles keep the label at the top and push the value (or, in edit mode, the session-only note) to the bottom.
+  - Bands are still balanced by placement (multi-column skills list, paired cards of similar size) so the extra spacing stays small.
+- **No inner scroll** on cards, except the **Abilities** list, which is the only unbounded list: past a maximum height it scrolls inside its card, in read and edit modes (FR-character-list-card). The scroll area is keyboard-focusable and labelled.
+  - On the General tab the Abilities list is capped at `20rem` in read **and** edit modes (decisions 2026-11-04: a long list must not stretch the skills band, and the sheet does not grow when toggling edit). An expanded ability form scrolls inside that area. The Combat tab and action lists keep their caps (FR-character-list-card).
+- **Single render per card**: a card MUST be rendered once; responsive placement is done by grid classes, not by rendering the same card twice and hiding one (`hidden sm:flex` duplicates are forbidden). In edit mode this also guarantees one form control per field.
+- **Card style** unchanged (`docs/design.md` §5.3): `bg-card`, rounded card, internal padding `p-4 md:px-6`, heading in the accent color.
+- **Overflow** (`docs/design.md` §6.4): every grid child has `min-w-0`; long values wrap (`wrap-break-word`) and never overflow a card.
+
+**Accessibility (FR-frontend-design)**:
+
+- DOM order equals visual reading order at every breakpoint (no `order-*`, no `grid-flow-dense`).
+- Each card keeps its `role="region"` and an `aria-labelledby` that points to its own heading `id`; heading `id`s are unique in the page.
+- Tile values keep their accessible label (e.g. `aria-label="Passive perception : 14"`); focus rings remain visible inside tiles.
+- Contrast of tile values and headings stays WCAG AA on `bg-card`.
+
+**Prohibitions**:
+
+- Mixing flex columns and grid to place top-level cards.
+- Different gaps between cards on the same breakpoint.
+- Duplicated card markup for mobile vs desktop.
+- Fixed pixel heights on cards to force alignment (content must stay fully readable).
+
+**Tests**:
+
+- Nominal: PC and NPC General tabs (read and edit) render one grid container whose direct children are the cards, each carrying its slot classes.
+- Edge: slot spans fill every row at each breakpoint (2 / 4 / 12 columns) without an empty cell.
+- Edge: the General Abilities list is capped at `20rem` in read and edit modes; the Combat one keeps the shared caps.
+- Edge: Abilities come after Saving throws and before Proficiencies in the DOM, in read and edit modes; the skills band leaves no empty cell at `xl` (Skills 6 · Ability scores 3 + Saving throws 3 · Abilities 6 · Proficiencies 6) and at `3xl` (Skills 6 · Ability scores / Saving throws 3 · Abilities 3); the Combat tab order is unchanged (FR-character-battle-bento-layout).
+- Failure / guard: heading `id`s (`saving-throws-heading`, `skills-heading`, …) and form control `id`s (`proficiency-bonus`, …) appear once in the DOM; every `aria-labelledby` resolves to an existing heading.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/general/shared/generalBentoLayout.ts`
+- `services/web/client/src/components/character/tabContents/general/view/PlayerGeneralTabContent.tsx`, `NpcGeneralTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/general/form/PlayerGeneralTabEdit.tsx`, `NpcGeneralTabEdit.tsx`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-frontend-design
+- `docs/design.md` — §3 spacing, §5.3 cards, §6 responsive, §9 accessibility
+
+---
+
+## FR-character-battle-bento-layout: Combat Tab Bento Layout (PC and NPC)
+
+**Rule**: The character sheet **Combat** tab (Player and NPC, read and edit modes) MUST use the same bento grid as the General tab (FR-character-general-bento-layout): one grid container whose direct children are the cards, one uniform gap, explicit spans per breakpoint, no empty cell and no card showing a blank area below its content.
+
+**Requirements**:
+
+- **Same grid and tokens** as the General tab: 2 columns below `sm`, 4 from `sm`, 12 from `xl`; gap `gap-3 md:gap-4`; card padding `p-4 md:px-6`; shared `GeneralSectionCard` / slot helpers. Stacked grids with different gaps (`gap-2`, `gap-4`) MUST NOT remain.
+- **Placement intent** (≥ xl, PC):
+  - Band 1: Statistics (5 cols, spans 2 rows) · Saving throws (4) and Death saves (3) · Affinities (7) below them.
+  - Band 2: Actions (6) and Abilities and traits (6) side by side.
+- **Placement intent** (≥ xl, NPC):
+  - Band 1: Statistics (5 cols, spans 2 rows) · Saving throws (7) · Affinities (7) below.
+  - Band 2: Actions (6) and Legendary actions (6) side by side, then Lair actions (6) and Abilities and traits (6) side by side.
+- **Tablet / mobile**: same reading order. Statistics, Affinities (PC) and the list cards take the full width; Saving throws and Death saves (PC) or Saving throws and Affinities (NPC) share a row at `sm`; everything is full width below `sm`.
+- **Reading order = DOM order**: Actions come before Abilities at every breakpoint; `order-*` utilities are removed.
+- **List cards side by side**: list cards (each action section, abilities and traits) are paired with another list card from `xl` (6 + 6 cols), never with a fixed-size card. Below `xl` they take the full width.
+  - Action sections: header card (title, expand/collapse all, usage-type filter) then the collapsed action items, as many per row as the card width allows; the items of the last row widen to complete it. An expanded item grows on its own (items are top-aligned); collapsed items keep a uniform height.
+  - In read mode, each action section's item list is **bounded** (same max height as the abilities list) and scrolls inside the section, so long NPC action lists do not push the following sections down the page. The header (title, expand/collapse all, usage-type filter) stays outside the scroll area; the scroll area is keyboard-focusable and labelled by the section heading. Edit mode is bounded too (taller cap, FR-character-list-card).
+  - Abilities and traits: bounded list (max height + inner scroll) in read and edit modes (FR-character-list-card).
+  - When two paired lists differ in length, the shorter one ends earlier inside its band; this is the accepted trade-off of pairing lists. Past the max height both lists end at the same height.
+- **Compact cards**: label/value lists start on the label line (e.g. `Résistances : feu, froid`, wrapping under it only when the line is full), and bands are balanced so that cards need little extra stretching.
+- **Fill**: grid children never use `h-fit`. Statistics, Saving throws, Death saves and Affinities spread their content over the card height (same techniques as the General tab: `flex-1 content-evenly` for value grids, `justify-between` for stacks).
+- **Affinities empty state**: when resistances, vulnerabilities and immunities are all empty, the card shows an explicit "none" line instead of a bare heading (i18n `characterDetail.battle.noAffinities`, en/fr/es).
+- **Edit mode**: same cards, same order, same zones as read mode. Action and ability editors stay full width; edit tiles holding form controls never go below half width at `sm`.
+- **FR-character-action-section-visibility** still applies: empty action sections keep their heading in read mode (rendered as a compact full-width header card, no placeholder items).
+- **Single render per card**, `min-w-0` on every grid child, long values wrap (FR-frontend-design §6.4).
+
+**Accessibility (FR-frontend-design)**:
+
+- DOM order equals visual reading order at every breakpoint (no `order-*`, no `grid-flow-dense`).
+- Each card keeps `role="region"` with an `aria-labelledby` pointing to its own unique heading; death-save status keeps its `role="status"` label.
+- The bounded abilities list is keyboard-focusable and labelled by its heading.
+
+**Prohibitions**:
+
+- Several stacked grids or flex columns to place top-level Combat cards.
+- Placing a list card (actions, abilities) side by side with a fixed-size card.
+- `h-fit` on grid children, `order-*` reordering.
+
+**Tests**:
+
+- Nominal: PC and NPC Combat tabs (read and edit) render one grid container whose direct children are the cards, each with its slot classes.
+- Edge: slot spans fill every row at 2 / 4 / 12 columns; list cards pair side by side at `xl`; NPC with empty legendary and lair lists still renders both headings.
+- Edge: Affinities with no entry shows the "none" line.
+- Failure / guard: heading ids are unique and every `aria-labelledby` resolves; Actions appear before Abilities in the DOM.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/battle/view/PlayerBattleTabContent.tsx`, `NPCBattleTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/battle/form/PlayerBattleTabEdit.tsx`, `NPCBattleTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`, `ActionUpdateSection.tsx`
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-action-section-visibility, FR-character-detail-view, FR-frontend-design
+- `docs/design.md` — §5.3.1 bento grid, §6 responsive, §9 accessibility
+
+---
+
+## FR-character-list-card: Unified List Card for Actions and Abilities
+
+**Rule**: Every character list (Actions, Legendary actions, Lair actions, Abilities and traits), on the General and Combat tabs, in read and edit modes, MUST use one shared **list card** format: a single card holding its header and its rows, rows being plain separated lines (never nested cards), with the same row anatomy for actions and abilities.
+
+**Requirements**:
+
+- **One card per list** (`docs/design.md` §5.3): the card holds the header and the rows. No separate header card, no card per item, no card per field.
+- **Header** (same for every list): title in the accent color and item count on the left (count shown as a small badge vertically centered on the title); controls on the right: expand/collapse all (read and edit), **Add** (edit). Actions add the usage-type filter (Action / Bonus action / Reaction) under the title. The header always stays outside the rows scroll area.
+- **Rows**: plain rows separated by a divider (`border-b`), hover background, accordion behavior; collapsed rows have a uniform height.
+- **Collapsed row anatomy** (read and edit), so key information is visible without opening:
+  - Line 1: name (truncated when collapsed, wrapped when expanded).
+  - Line 2 (muted, one line): Action → usage type · attack bonus or DC · damage (dice + type, several entries joined by " + ") · range. Ability → short/long rest reset icons · remaining uses `remaining / max` (FR-character-ability-counter-display).
+  - Right side: chevron; in edit mode, delete button (accessible name includes the item name or index).
+- **Expanded row, read mode**: description (pre-wrap), then for actions a compact definition list (`Attaque/DD : +5 · Dégâts : 1d8 tranchant · Portée : 1,5 m`) — no nested cards. Abilities keep the **Use** button (FR-character-ability-counter-display) under the description.
+- **Expanded row, edit mode**: the open row is tinted to anchor its form, and the form is split into titled sections separated by a divider, so it reads top-down:
+  - Action: **General** (name — wide — and usage type), **Attack** (attack bonus / DC with its ability suggestions labelled "Suggestions", range — FR-character-action-dual-range — with a labelled text button under the field to add or remove the long range, never an icon-only control), **Damage** (one line per entry: dice, AUTO bonus, type, delete; column labels shown on the first entry only), **Description** (full width).
+  - Ability: **General** (name, description), **Uses** (counter toggle, max uses, current uses — session rules unchanged — and rest resets).
+  - Section titles are small uppercase muted headings (`h3`); field labels stay visible (or screen-reader only when the section title already names the single field).
+- **Add**: appends a new row at the end, expands it, scrolls it into view and moves focus to its name field.
+- **Validation**: a row with an invalid field shows a destructive ring on the row and keeps its errors next to the fields (FR-form-field-validation); the row auto-expands when the form is submitted with errors.
+- **Bounded list, read and edit modes** (FR-character-general-bento-layout, FR-character-battle-bento-layout): the rows area has a max height and scrolls inside the card, so long lists never push the following cards down. Read mode uses the shared bounded height (`28rem`); edit mode uses a taller cap (`min(40rem, 70dvh)`) so an expanded form stays usable. Exception: Abilities on the General tab use `20rem` in both modes (FR-character-general-bento-layout). Exception: from `xl` the Magic tab Spells list fills the remaining panel height instead (FR-character-magic-list-card). Dropdowns of the form (usage type, damage type) render in a portal and are never clipped by the scroll area. Add scrolls the new row into view inside the area; submitting with errors scrolls to the first invalid row.
+- **Empty list**: the header stays visible (FR-character-action-section-visibility) and the body shows a one-line empty state (e.g. "Aucune action").
+- **Single shared implementation** used by `AbilitiesSection`, `ActionSection`, `AbilitiesUpdateSection` and `ActionUpdateSection`, so both lists cannot drift apart again.
+
+**Accessibility (FR-frontend-design)**:
+
+- The card is a `region` labelled by its heading; rows are accordion triggers with an accessible name (item name + type or counter); the bounded scroll area is focusable and labelled.
+- Delete and Add buttons have explicit accessible names; focus moves to the new row's name field on Add and to the next row (or the Add button) after Delete.
+- No information conveyed by color only (usage type is text, errors have text).
+
+**Prohibitions**:
+
+- Nested cards inside a list card (per item or per field).
+- Different row anatomy between actions and abilities.
+- Separate header card and list card for the same list.
+
+**Tests**:
+
+- Nominal: actions and abilities lists (read and edit) render one card with header + rows and no nested `data-slot="card"` inside rows; collapsed action row shows usage type, attack/DC and damage; collapsed ability row shows remaining uses.
+- Edge: empty list keeps header and shows the empty-state line; Add expands the new row and focuses its name field; long names truncate collapsed and wrap expanded.
+- Failure: a row with an invalid field shows the error ring and its error text; delete button accessible name identifies the item.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/shared/AbilitiesSection.tsx`, `AbilitiesUpdateSection.tsx`
+- `services/web/client/src/components/character/tabContents/battle/shared/ActionSection.tsx`, `ActionUpdateSection.tsx`
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-action-section-visibility, FR-character-ability-counter-display, FR-character-action-dual-range, FR-form-field-validation, FR-frontend-design
+- `docs/design.md` — §5.3 cards (rows inside a card are plain rows, never nested cards)
+
+---
+
+## FR-character-statistics-card: Compact Statistics Card (PC and NPC)
+
+**Rule**: The Statistics card (General and Combat tabs, PC and NPC, read mode) MUST present armor class, initiative, size and speeds in a compact layout that fills its width at every breakpoint: a fixed row of three key stats and one inline speed line, instead of wrapping white pills.
+
+**Requirements**:
+
+- **Key stats row**: armor class, initiative and size in a 3-column row of equal cells (always one row, so no orphan cell). Each cell: short visible label (muted, small: `CA`, `Init.`, `Taille`) and the value (bold), with the existing icon. Size shows its full localized name (e.g. "Moyenne"), the abbreviation is no longer needed.
+- **Speeds line**: one label/value line `Vitesses : 🏃 9 m · ⛰ 4,5 m · 🌊 9 m` listing only non-zero speeds, each with its icon and an accessible name (e.g. "Vitesse d'escalade 4,5 m"); it wraps like text, never as boxes. Units follow FR-distance-unit-conversion (secondary unit kept when the user enabled both units). When every speed is 0 the line is omitted.
+- **Visual weight**: cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not white pills; values `text-base`/`sm:text-lg`; no "?" tooltip buttons — the visible label replaces them (tooltip texts stay available as accessible names).
+- **NPC passive perception** (General tab only, decision 2026-11-04): a 4th key stat cell « Perc. passive » (Eye icon) next to CA / Init. / Taille; the row shows 2 × 2 cells below `sm` and one row of 4 from `sm`. In edit mode the passive perception override field and its mismatch warning sit at the bottom of the NPC statistics edit card. The Combat tab keeps 3 cells.
+- **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC).
+- **Fill** (FR-character-general-bento-layout, FR-character-battle-bento-layout): when the card is stretched, its blocks spread from top to bottom (`justify-between`); the key stats row never leaves a hole on mobile.
+
+**Accessibility (FR-frontend-design)**:
+
+- Each key stat cell is a `group` with an accessible name `label + value` (e.g. "Classe d'armure 15"); speed icons are `aria-hidden` and each speed item has an accessible name.
+- Contrast of muted labels on the tinted cell stays WCAG AA.
+
+**Prohibitions**:
+
+- Wrapping pill/badge rows for these stats (they leave ragged holes on narrow widths).
+- Icon-only "?" buttons as the only way to know what a value means.
+
+**Tests**:
+
+- Nominal: PC and NPC cards render exactly three key stat cells (CA, initiative, size) with visible labels, and one speeds line listing non-zero speeds; the NPC General-tab card renders a 4th passive perception cell.
+- Edge: all speeds 0 → no speeds line; dual units → secondary unit shown in the speed line.
+- Failure: no "?" tooltip buttons and no white pill (`bg-white`) in the card.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
+- `docs/functional-rules.md` — FR-distance-unit-conversion, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-frontend-design
+
+---
+
+## FR-character-inventory-bento-layout: Inventory Tab Bento Layout (PC and NPC)
+
+**Rule**: The character sheet **Inventory** tab (Player and NPC, read and edit modes, including the Codex monster preview) MUST use the same bento grid and card primitives as the General and Combat tabs (FR-character-general-bento-layout, FR-character-battle-bento-layout): one grid container whose direct children are the cards, one uniform gap, explicit spans per breakpoint, no empty cell and no card showing a blank area below its content. Data and in-session editing behavior are unchanged.
+
+**Requirements**:
+
+- **Same grid and tokens**: 2 columns below `sm`, 4 from `sm`, 12 from `xl`; gap `gap-3 md:gap-4`; card padding `p-4 md:px-6`; cards are `GeneralSectionCard` (region labelled by its own heading, accent color `yellow`). The former `lg` flex columns (2/5 – 3/5) MUST NOT remain.
+- **Cards** (DOM order = reading order): Coins · Equipment · Treasure.
+- **Placement intent**:
+  - `≥ sm` (functional decision 2026-11-04: a full-width strip took too much room for five numbers): two equal columns (`sm` 2 + 2 of 4, `xl` 6 + 6 of 12). Left column: Coins, then Equipment right under it. Right column: Treasure, spanning both rows (explicit start `col 2 / row 1`, `row-span-2`; DOM order unchanged, no `order-*`). Rows are `auto 1fr`: the Coins row keeps its content height; when Treasure grows, only the Equipment row (and card) grows with it.
+  - `< sm`: every card full width.
+- **Coins card, read mode** (same visual language as FR-character-statistics-card): the five coins (pp, gp, ep, sp, cp, in this order) are five equal cells on **one row at every breakpoint**, sized for the half-width card (no orphan cell). Each cell: coin icon, value (bold), short visible label (`po`, `pa`…, muted small). Cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not bordered pills. Values ≥ 1 000 are abbreviated (`formatCompactNumber`); the full value stays available as the cell accessible name and, outside session, as a tooltip (`InfoTooltip`, FR-tooltip-accessibility) only when the displayed value is abbreviated (in session, the coin dialog shows the full current value).
+- **Coins card, read mode in session** (behavior unchanged): when the sheet allows in-session updates, each cell is a button that opens the existing coin dialog (subtract / add / set, value floored at 0, error toast on failure). Outside session, cells are not interactive and not focusable.
+- **Equipment and Treasure cards, read mode**: free text with `whitespace-pre-wrap wrap-break-word`; an empty value shows the existing muted empty-state line (`noEquipment`, `noTreasure`). Long text is **bounded** (`BENTO_BOUNDED_LIST_CLASS`: max height + inner scroll, focusable, labelled by the card heading) so a long inventory does not push the page; the two paired cards end at the same height past the max height. In session, the existing **Modifier** button stays in the card header and the inline editor (textarea + Cancel / Save) replaces the text in place; only one text field is edited at a time.
+- **Edit mode**: same cards, same order, same zones as read mode so the tab does not reshuffle when toggling edit.
+  - Coins: five labelled number inputs (icon adornment, `min=0`), one row of five from the card width `@2xl`, otherwise one input per line with its visible label (never a partial row leaving a hole). Validation errors stay under the inputs (FR-form-field-validation).
+  - Equipment / Treasure: one textarea each that fills the card height (minimum height kept), label visually hidden because the card heading names the field (accessible label kept).
+- **Fill**: grid children never use `h-fit`; cards spread their content over the track height (coins row centered vertically, text and textarea start under the heading).
+- **Single render per card**, `min-w-0` on every grid child, no duplicated mobile/desktop markup, no `order-*`.
+- **Cleanup**: the unused duplicate component `tabContents/CharacterInventoryTabContent.tsx` (root, superseded by `tabContents/inventory/…`) is removed.
+
+**Accessibility (FR-frontend-design)**:
+
+- Every card is a `region` with `aria-labelledby` pointing to its own unique heading (`coins-heading`, `equipment-heading`, `treasure-heading`), in read **and** edit modes.
+- Each coin cell has an accessible name with the full value and full coin name (e.g. "1 250 pièces d'or"); coin icons are `aria-hidden`. The invalid `role="text"` and the focusable non-interactive spans are removed.
+- In session, coin buttons announce the dialog (`aria-haspopup="dialog"`) and their action (`editCoinAmountAria`); the dialog's −, +, = buttons keep explicit accessible names.
+- The bounded text area is keyboard-focusable and labelled; contrast of values and muted labels stays WCAG AA.
+
+**Prohibitions**:
+
+- Flex columns or several stacked grids to place top-level Inventory cards.
+- Coin pills with borders, or a coin row that wraps leaving an orphan cell.
+- Changing the inventory data model (`treasure`: cp, sp, ep, gp, pp, equipment, treasure) or the session update path as part of this layout change.
+
+**Tests**:
+
+- Nominal: Inventory tab (read and edit) renders one grid container whose direct children are the three cards with their slot classes; read mode shows five coin cells in pp → cp order with accessible full values.
+- Edge: slot spans fill every row at 2 / 4 / 12 columns; a value ≥ 1 000 is abbreviated with the full value in its accessible name; empty equipment / treasure shows the empty-state line.
+- Edge (session): in session, a coin cell is a button opening the dialog; outside session it is not focusable.
+- Failure / guard: heading ids are unique and every `aria-labelledby` resolves; an invalid amount (non-numeric, negative) counts as 0 and subtracting never goes below 0 (a failed session update keeps the error toast, checked manually: no DOM test runner in the web client).
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/inventory/view/CharacterInventoryView.tsx`
+- `services/web/client/src/components/character/tabContents/inventory/form/CharacterInventoryTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/general/shared/generalBentoLayout.ts`, `GeneralSectionCard.tsx`
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-statistics-card, FR-form-field-validation, FR-tooltip-accessibility, FR-frontend-design
+- `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §6 responsive, §9 accessibility
+
+---
+
+## FR-character-history-bento-layout: History Tab Bento Layout (PC and NPC)
+
+**Rule**: The character sheet **History** tab (Player and NPC, read and edit modes, including the Codex monster preview) MUST use the same bento grid and card primitives as the General, Combat and Inventory tabs (FR-character-general-bento-layout): one grid container whose direct children are the cards, one uniform gap, explicit spans per breakpoint, no empty cell and no card showing a blank area below its content. It supersedes FR-character-history-appearance-fit. Data is unchanged.
+
+**Requirements**:
+
+- **Same grid and tokens**: 2 columns below `sm`, 4 from `sm`, 12 from `xl`; gap `gap-3 md:gap-4`; card padding `p-4 md:px-6`; cards are `GeneralSectionCard` (region labelled by its own heading, accent color `green`). The former nested grids (`lg` 2 columns / `xl` 4 columns, `xl:row-span-2` Appearance, inner 2-column grids) MUST NOT remain.
+- **Cards** (DOM order = reading order): Appearance (fields + description) · Personality traits · Ideals · Bonds · Flaws · Allies and organizations · Backstory. The description is part of the Appearance card (functional decision 2026-11-04): a long description must not stretch a sibling card.
+- **Placement intent**:
+  - `≥ xl`: Band 1: Appearance (12, full width). Band 2: Personality traits, Ideals, Bonds, Flaws (3 each). Band 3: Allies and organizations (4) · Backstory (8).
+  - `sm` → `xl`: Appearance full width; the four personality cards half width (two rows of two); Allies and organizations and Backstory full width.
+  - `< sm`: every card full width.
+- **Appearance card** (read mode): the six fields (eyes, age, skin, height, weight, hair) are label/value cells using the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), small muted uppercase label with its icon, value below. Cells follow the card width (container queries): 2 columns in a narrow card, 3 from `@sm`, all 6 on one row from `@3xl`. The card is alone on its band, so its height is its content (no stretch, no blank area). Long values wrap (`wrap-break-word`), are never truncated and never overflow. Height and weight follow FR-preferred-measurement-unit / FR-distance-unit-conversion (secondary unit kept). The size category next to the height shows its full localized name (e.g. "Moyenne") instead of an abbreviation in a raw tooltip. An empty value shows a muted dash (`—`) with an accessible "not specified" name.
+- **Appearance description** (read mode): below the cells, a sub-section with a small uppercase muted heading `h3` (« Description », `history-description-heading`), then the free text over the full card width, with the same bounded / empty-state behavior as the text cards.
+- **Text cards** (read mode): free text with `whitespace-pre-wrap wrap-break-word`; long text is **bounded** (`BENTO_BOUNDED_LIST_CLASS`: max height + inner scroll, focusable, labelled by the card heading); an empty value shows a muted empty-state line (i18n `characterDetail.history.notSpecified`, en/fr/es) instead of a blank card.
+- **Edit mode**: same cards, same order, same zones as read mode so the tab does not reshuffle when toggling edit.
+  - Appearance: six single-line inputs (eyes, skin, hair text; age, height, weight number, height/weight in the preferred unit) with their visible label and icon, laid out in 2 columns in a narrow card and 3 from `@sm`; validation errors stay under their input (FR-form-field-validation).
+  - Appearance description: a textarea under the appearance inputs, full card width, with a **visible** label styled like the read-mode sub-heading (minimum height kept).
+  - Text cards: one textarea each that fills the card height (minimum height kept); label visually hidden because the card heading names the field (accessible label kept — no placeholder-only labelling).
+  - Positive `tabIndex` values and the wrapper `role="main"` are removed: tab order follows the DOM order.
+- **Fill**: grid children never use `h-fit`; text and textareas start under the heading and fill the remaining height.
+- **Single render per card**, `min-w-0` on every grid child, no duplicated mobile/desktop markup, no `order-*`.
+- **Cleanup**: the unused duplicate component `tabContents/CharacterHistoryTabContent.tsx` (root, superseded by `tabContents/history/…`) is removed.
+
+**Accessibility (FR-frontend-design)**:
+
+- Every card is a `region` with `aria-labelledby` pointing to its own unique heading (`history-{field}-heading`), in read **and** edit modes; heading and control `id`s appear once in the DOM. The appearance description area is labelled by its `h3` sub-heading (heading level under the card `h2`).
+- Appearance cells are `group`s with an accessible name `label + value` (e.g. "Yeux : bleus"); icons are `aria-hidden`.
+- Every textarea and input has an associated `<label>`; error text stays linked with `aria-describedby`.
+- Contrast of muted labels and empty-state lines stays WCAG AA on the card and cell surfaces.
+
+**Prohibitions**:
+
+- Nested grids or flex columns to place top-level History cards.
+- `h-fit` / `self-start` on grid children, `order-*` reordering.
+- Truncating appearance values; raw `Tooltip` for the size abbreviation.
+- Positive `tabIndex`, placeholder-only labelled fields.
+
+**Tests**:
+
+- Nominal: History tab (read and edit) renders one grid container whose seven direct children are the cards; the Appearance card contains the six cells and the description with their slot classes; slot spans fill every row at 2 / 4 / 12 columns.
+- Edge: a long appearance value wraps without truncation; empty text fields show the empty-state line; long text is in the bounded area; the size shows its full name.
+- Failure / guard: heading ids are unique and every `aria-labelledby` resolves; no positive `tabindex`, no `h-fit`, no `role="main"`; every textarea has a label.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/history/view/CharacterHistoryView.tsx`
+- `services/web/client/src/components/character/tabContents/history/form/CharacterHistoryTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/general/shared/generalBentoLayout.ts`, `GeneralSectionCard.tsx`
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-inventory-bento-layout, FR-character-history-appearance-fit (superseded), FR-distance-unit-conversion, FR-form-field-validation, FR-tooltip-accessibility, FR-frontend-design
+- `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §6 responsive, §9 accessibility
+
+---
+
+## FR-character-magic-list-card: Magic Tab as Bento Grid and Spell List Card (PC and NPC)
+
+**Rule**: The character sheet **Magic** tab (Player and NPC, read and edit modes, including the Codex monster preview) MUST drop the list / detail split and use the bento grid (FR-character-general-bento-layout) with two cards: a **Spellcasting** card and one **Spells** list card following FR-character-list-card. A spell is a row of that list: it expands in place to show its details (read) or its form (edit). Data model, slot rules, preparation rules and in-session casting behavior are unchanged. Exception (functional decision 2026-11-04, see « Wide mode »): from `xl`, read and edit modes show the selected spell's details (read) or form (edit) in a side panel next to the list, so spells stay visible and do not look secondary.
+
+**Requirements**:
+
+- **Layout** (same grid and tokens as the other tabs: 2 / 4 / 12 columns, gap `gap-3 md:gap-4`, `GeneralSectionCard`, accent `pink`):
+  - Order, all full width at every breakpoint: the **block selector** (when shown), then Spellcasting as a **compact band** (heading and key stats on as few lines as the width allows), then Spells. The selector sits **above** the Spellcasting card, outside it, because it switches both cards (functional decision 2026-11-01). The Spellcasting card MUST NOT hold the slot list nor stretch to the height of the spell list (functional decision 2026-11-01: the side card took too much space).
+  - No inner screen switching: the « back to list » view and `showMobileDetails` are removed in read and edit modes; the list is never hidden to show a spell.
+  - **Wide mode** (functional decisions 2026-11-04: rows collapsed by default made spells look hidden and secondary; edit mode follows the same layout): from `xl`, in **read and edit modes**, the Spellcasting band and the Spells list stack in a left column of the same width (`xl:col-span-5`, decision 2026-11-04) and a **spell detail panel** (`xl:col-span-7`) spans both rows on the right; the block selector (when shown) stays full width above. The Spells list and the panel fill the remaining panel height and scroll inside. List rows become selectable rows (same name / summary / trailing tags, prepared marker and, in edit mode, delete button and error ring; no chevron, no expand / collapse all): selecting a row shows that spell in the panel. The first spell in display order is selected by default; switching spellcasting block selects its first spell again. The selected spellcasting block and spell are **kept when switching between read and edit modes** (functional decision 2026-11-04: entering edit mode used to jump back to the first spell). The panel heading is the spell name, then the same content as an expanded read row (traits, description, in-session cast controls; its level / uses cells give the group) or, in edit mode, the spell form (same sections as an expanded edit row). Selection never moves focus. In wide edit mode: « Add a spell » and Codex import select the new spell (instead of expanding it) with the same focus rules; deleting the selected spell selects the spell that receives focus; changing a spell's level moves its row to the new group while the panel keeps the form and the focus; submitting with errors selects the first invalid spell and scrolls its row into view. Below `xl`, rows expand in place as described below.
+  - **Height fill from `xl`** (functional decision 2026-11-04, exception to the bounded caps of FR-character-list-card): from `xl` the Magic tab panel fills the remaining height of the sheet scroll area (what is left under the app header / navbar, the sheet header and above the sheet footer — derived from the layout, never a hard-coded viewport offset), with a `28rem` minimum below which the sheet scrolls; the grid takes that height, the selector and Spellcasting rows keep their content height and the Spells card fills the remaining height (read and edit). Its rows area absorbs that height and scrolls inside the card (header outside the scroll, sticky level headers unchanged). Below `xl` the shared caps stay (`28rem` read, `min(40rem, 70dvh)` edit) and the page scrolls.
+- **Spellcasting card** (one per active spellcasting block):
+  - **Block selector** (above the card, see Layout) when the character has several spellcasting blocks, or in edit mode when a class can still be added: a segmented toggle (FR-frontend-button-system: active = primary white, inactive = secondary) labelled with the class name and level (PC) or the block name (NPC). Edit mode ends the selector with « Add a class »; « Remove this class » stays in the Spellcasting card header (existing rules on available classes unchanged).
+  - **Key stats row** (same cell style as FR-character-statistics-card): spellcasting ability, spell attack bonus, save DC and, for PC classes that prepare spells, prepared count `current / max`. Each cell has a visible short label and an accessible full name (fixes the read-mode cell that showed the attack label next to the ability).
+  - **Edit mode**: class name and ability selects; save DC and attack bonus inputs with the existing auto-calculated value and « sync » action (behavior unchanged).
+  - Spell slots are **not** shown in this card: they live on the level groups of the Spells list (below).
+- **Spells list card** (FR-character-list-card: one card, header, plain rows, bounded):
+  - **Header**: title « Spells », total count badge, expand / collapse all. Edit mode shows **two visible buttons**: « Add a spell » (primary action of the card) and « Add from Codex » (secondary, disabled with its explanation when the Codex is unavailable). No add action hidden in a menu.
+  - **Toolbar line** (PC classes that prepare spells): the existing « change prepared spells » toggle (`secondary` + pressed state) and its status banner.
+  - **Level groups inside the single list**: rows are grouped by level (cantrips, level 1…9) or, for innate blocks, by uses per day. Each group starts with a **group header** (`h3`, tinted bar, sticky at the top of the scroll area while its rows are visible) so spells are easy to scan by level. A group appears only when it has at least one spell (FR-magic-spell-level-categories). Groups are not collapsible; rows are.
+  - **Slots on the group header** (by-level blocks, level ≥ 1): read mode shows the castable count `remaining / total` next to the level name (cantrips show « ∞ »); edit mode shows the `total` number input there (`used` stays driven by casting and rests, as today). **Innate blocks**: each spell row shows its own `used / uses per day` counter.
+  - **Collapsed row**: line 1 the name (« New spell » when empty); line 2 the key traits as **small pills** that wrap instead of being truncated (functional decision 2026-11-04: the muted ` · ` line was cut and hard to read in the narrow list): casting time · range · effect dice (damage entries joined with ` + ` without their type, FR-character-spell-multi-damage, else healing); innate blocks add the `used / uses per day` pill. School and damage types stay in the details. Right side: « Concentration » text tag when the spell requires it, prepared marker for prepared classes (level ≥ 1), chevron; edit mode adds the delete button.
+  - **Expanded row, read mode** (same content in the wide read panel): first, when the spell has damage or healing, a **damage cell** (functional decision 2026-11-04): same cell style as the traits, placed first, on the **full line**, entries side by side (dice formula + damage type as a muted text pill, type shown as entered, first letter capitalized) and wrapping to the next line when there are many. Then the other key traits in the same definition list of small tinted cells, label above value, empty traits hidden. Cells are laid out in **wrapping lines without holes**, whatever is filled in (functional decision 2026-11-04: a fixed-column grid left gaps): short traits (level, school, casting time, range, attack bonus, uses per day for NPC) share lines and grow to fill them (minimum width about `8.5rem`); then **duration, components and healing** start a line of their own together (decision 2026-11-04), growing the same way; classes take a full line at the end, then the **description** (pre-wrap) in its own section, separated by a rule and introduced by a visible « Description » label, so it reads clearly apart from the traits (functional decision 2026-11-04). In session, the existing **cast controls** (slot choice with upcast, cantrip cast, concentration prompt — FR-tracker-concentration) sit under the description; their behavior and session messages are unchanged.
+  - **Expanded row, edit mode** (tinted row, `ListFormSection` groups): **General** (name — wide —, level, school, effect type; NPC innate: uses per day), **Casting** (casting time, range, duration, components), **Effects** (damage entries — one line each, add / remove, FR-character-spell-multi-damage —, healing dice). Each damage or healing line **reads like its formula** (functional decision 2026-11-04: separate labelled fields were hard to understand): `[dice count] d [die ▾] + [bonus]`, then for damage the damage type field and the remove button at the end of the line; « d » and « + » are shown between the fields (decorative), each field keeps an accessible name (count, die, bonus, damage type), placeholders never look like values (no « 8 » / « d6 » / « 0 »), and a muted preview « = 8d6+2 Feu » under the line shows the resulting formula once dice are set, **Description** (full width).
+  - **Preparation mode** (PC prepared classes): each level ≥ 1 row shows a labelled prepare toggle; the max prepared limit is enforced as today (blocked toggle with its explanation).
+- **Focus and stable rows (fixes the broken autofocus)**:
+  - Expanding a row never moves focus by itself; focus stays on the row trigger.
+  - « Add a spell » appends the spell in its level group, expands it, scrolls it into view inside the bounded list and moves focus to its **name** field — every time, on every breakpoint.
+  - « Add from Codex »: when the dialog closes after an import, the imported row is expanded, scrolled into view and focused (row trigger).
+  - Changing a spell's level in edit mode moves the row to its new group **without remounting it**: the row stays expanded and focus stays in the level field (rows are siblings of one list with a stable key).
+  - Deleting a spell moves focus to the next row, else the previous row, else « Add a spell » (FR-character-list-card). Switching spellcasting block moves focus to the selected toggle option.
+- **Validation** (FR-form-field-validation): a spell with an invalid field gets the row error ring, auto-expands on submit and the first invalid row is scrolled into view; group sub-headings and the block selector show the existing error indicator (text + icon) when they contain errors.
+- **Single render per card**, `min-w-0`, long names and values wrap (expanded) or truncate (collapsed), no duplicated mobile / desktop markup.
+
+**Accessibility (FR-frontend-design)**:
+
+- Spellcasting and Spells cards are `region`s labelled by their headings; group sub-headings are real headings; rows are accordion triggers with an accessible name (spell name + level or uses group, + « contains errors » when invalid).
+- The block selector is a toggle group with `aria-pressed`; key stat cells are `group`s with full accessible names.
+- Every add / delete / prepare / cast control has an explicit accessible name including the spell name; no information by color only (concentration and prepared state are text or labelled icons).
+- Tab order follows the DOM; no positive `tabIndex`; keyboard users can add, fill, reorder by level and remove spells without the mouse.
+
+**Prohibitions**:
+
+- List / detail split below `xl` or in edit mode, « back to list » screens or hiding the list to show a spell.
+- Programmatic focus on selection or expansion (focus moves only on add, Codex import and delete).
+- An add action reachable only through a dropdown.
+- Nested cards inside the Spells list (per spell, per field or per level).
+- Changing slot, preparation, Codex import or session cast behavior as part of this layout change.
+
+**Tests**:
+
+- Nominal: from `xl` the Magic grid takes the panel height with a last `minmax(0, 1fr)` row for the Spells card, whose rows area fills the card (read and edit).
+- Nominal: read and edit render one grid with the Spellcasting and Spells cards; when shown, the block selector is the grid child before the Spellcasting card; spells are rows grouped by level with only non-empty groups; collapsed row shows school · casting time · range · damage; expanded read row shows the definition list and, in session, the cast controls.
+- Edge: the grid rows match the presence of the block selector; below `xl` the Spells rows keep the shared read / edit caps.
+- Nominal (wide read mode): from `xl` read mode renders Spellcasting and the Spells list in a 5-column left column and the detail panel as a sibling grid card on 7 columns spanning both rows; the first spell in display order is shown by default; rows are selectable (`aria-pressed`), without accordion or expand / collapse all.
+- Edge (wide read mode): an empty block shows no detail panel; a selected index out of range falls back to the first spell.
+- Nominal (wide edit mode): from `xl` edit mode renders Spellcasting and the Spells list on the left 5 columns and the form of the first spell in the right panel; rows are selectable with their delete buttons; only one spell form is rendered.
+- Nominal (effect cell): damage entries are rendered side by side (formula + type pill) in a full-line cell placed first; short traits grow to fill their lines; duration, components and healing share a line of their own; classes take the last full line.
+- Edge (effect cell): a legacy damage string is parsed into formula + type; a spell without damage or healing shows no effect cell.
+- Edge: « Add a spell » expands the new row and focuses its name field without any prior selection; changing a spell level keeps the same row element expanded under its new group; innate block groups by uses per day; several spellcasting blocks switch through the toggle.
+- Failure / guard: list cards without the fill option (Actions, Abilities) stay bounded at every breakpoint.
+- Failure / guard: an invalid spell gets the error ring; heading ids are unique, every `aria-labelledby` resolves, no positive `tabindex`, no nested `data-slot="card"` inside rows. Focus moves (Add, Codex import, Delete, level change) are checked manually: the web client has no DOM test runner.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/view/CharacterMagicView.tsx`
+- `services/web/client/src/components/character/tabContents/magic/form/CharacterMagicTabEdit.tsx`
+- `services/web/client/src/components/character/tabContents/magic/SpellCastControls.tsx`, `SpellPreparedPill.tsx`, `CodexSpellSearchDialog.tsx`
+- `services/web/client/src/components/character/tabContents/shared/listCard/ListCard.tsx`, `ListRow.tsx`, `ListFormSection.tsx`
+- `docs/functional-rules.md` — FR-character-list-card, FR-character-general-bento-layout, FR-character-statistics-card, FR-magic-spell-level-categories, FR-character-spell-multi-damage, FR-tracker-concentration, FR-form-field-validation, FR-frontend-button-system, FR-frontend-design
+- `docs/design.md` — §5.3 cards, §5.3.1 bento grid, §5.3.3 list card, §9 accessibility
+
+---
+
+## FR-character-sheet-skeleton: Character Sheet Skeleton Loading State
+
+**Rule**: While a character sheet is loading (both routes of FR-character-detail-view), the page MUST show a skeleton of the sheet instead of a centered spinner. The skeleton reproduces the sheet frame and the layout of the tab that will open, guessed from information available before the backend responds.
+
+**Requirements**:
+
+- **Tab**: the skeleton shows the tab read from the `tab` URL parameter, with the same fallback as the sheet (unknown or missing value → General). The tab bar skeleton marks that tab as active (domain color, `docs/design.md` §5.2.1).
+- **Character kind** (guessed from the route, never from the backend):
+  - Campaign route (`/campaigns/{id}/groups/{id}/characters/{id}`) → NPC layout.
+  - Player space route (`/characters/{id}`) → PC layout (most likely case; an NPC opened there briefly shows the PC skeleton, accepted).
+  - `tab=companions` → PC layout (only PCs have that tab).
+- **Tab bar**: 5 tabs for NPC; 6 tabs (with Companions) for PC in the player space.
+- **Frame**: tab bar, tab content, footer actions bar (the sheet has no identity header), using the same containers, paddings and scroll area as the sheet, so the page does not jump when the data arrives.
+- **Tab content**: placeholder cards placed with the tab's own bento slots (`generalBentoLayout`, `battleBentoLayout`, `inventoryBentoLayout`, `historyBentoLayout`, `spellList`) for the guessed kind, in read mode. Card shapes match the sheet cards (`bg-card`, same radius and padding as `GeneralSectionCard`), headings tinted with the tab domain color; inner placeholders use the existing `Skeleton` primitive. Companions tab: a simple list of card placeholders.
+- **States**: the skeleton covers every non-ready state the spinner covered (auth loading, user transition, fetch in progress, error pending redirect, missing character pending redirect). The error / redirect behavior is unchanged.
+- **Motion**: the pulse animation is disabled under `prefers-reduced-motion` (static placeholders).
+- **Single source**: one skeleton component shared by both routes; no duplicated markup per route.
+
+**Accessibility (FR-frontend-design)**:
+
+- The skeleton container is a `role="status"` region with `aria-busy="true"` and a translated `sr-only` label (en, es, fr) announcing that the sheet is loading.
+- All placeholder shapes are `aria-hidden`; the skeleton contains no focusable element (fake tabs and buttons are not buttons).
+- Placeholder contrast stays visible on every surface level of the dark theme.
+
+**Prohibitions**:
+
+- Centered spinner as the sheet loading state.
+- Fetching anything (character kind, etc.) only to choose the skeleton.
+- Interactive elements inside the skeleton, or text content other than the `sr-only` label.
+- Changing the redirect / access-denied behavior of the sheet pages.
+
+**Tests**:
+
+- Nominal: the variant resolver returns NPC + requested tab on the campaign route and PC + requested tab on the player space route.
+- Edge: missing or unknown `tab` → General; `tab=companions` → PC with 6 tabs; `tab=companions` on the campaign route → PC (companions kept).
+- Failure / guard: each tab skeleton uses only slots defined in the matching bento layout file; the skeleton exposes `role="status"`, `aria-busy` and no focusable element. Visual fidelity and reduced motion are checked manually (the web client has no DOM test runner).
+
+**References**:
+
+- `services/web/client/src/app/[locale]/characters/[idCharacters]/page.tsx`
+- `services/web/client/src/app/[locale]/campaigns/[idCampaign]/groups/[idGroup]/characters/[idCharacter]/page.tsx`
+- `services/web/client/src/components/character/CharacterDetailView.tsx`, `CharacterTabs.tsx`
+- `services/web/client/src/components/character/skeleton/CharacterSheetSkeleton.tsx`, `characterSheetSkeletonLayout.ts`
+- `services/web/client/src/components/ui/skeleton.tsx`
+- `docs/functional-rules.md` — FR-character-detail-view, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-character-inventory-bento-layout, FR-character-history-bento-layout, FR-character-magic-list-card, FR-frontend-design
+- `docs/design.md` — §5.2.1 tabs, §5.3 cards, §5.3.1–5.3.7 bento grids, §9 accessibility
+
+---
+
+## FR-auth-loading-skeleton: App Shell Skeleton While Authentication Initializes
+
+**Rule**: While Keycloak initializes (and during a user transition), the web client MUST show a skeleton of the application shell instead of the full-screen spinner, so the page already looks like Chariot before the app is authenticated. On a character sheet route, the content area shows the sheet skeleton of FR-character-sheet-skeleton, so the user sees one continuous skeleton from first paint to data.
+
+**Requirements**:
+
+- **Scope**: the loading screen of `KeycloakProvider` (`loading || userTransitioning`). Authentication behavior (`login-required`, redirects, token refresh, user change purge) is unchanged.
+- **Shell**: sidebar placeholder (same width and surface as `AppSidebar`, hidden below `md` like the off-canvas sidebar), header placeholder (same height as `Header`), then the content area. No Redux, no API call, no Keycloak data is used to render it (the providers are not ready yet).
+- **Content area**, chosen from the URL only:
+  - Character sheet routes (`/{locale}/characters/{id}`, `/{locale}/campaigns/{id}/groups/{id}/characters/{id}`): the sheet skeleton, with the variant rules of FR-character-sheet-skeleton (`?tab=`, route → PC / NPC).
+  - Any other route: a neutral content placeholder (heading bar + a few cards).
+- **Escape hatch**: the "log out" button of the current loading screen stays reachable (visible, focusable, same action), so a user stuck in initialization can still leave.
+- **Motion**: pulse disabled under `prefers-reduced-motion`.
+
+**Accessibility (FR-frontend-design)**:
+
+- One `role="status"` region with `aria-busy="true"` and the translated loading label (`auth.loading`) in `sr-only`; placeholder shapes are `aria-hidden`.
+- The escape-hatch button is the only focusable element and keeps its accessible name and visible focus.
+
+**Prohibitions**:
+
+- Full-screen spinner as the authentication loading state.
+- Reading Redux, persisted state or calling an API to shape the skeleton.
+- Rendering app children (sidebar, header, pages) before authentication is ready.
+- Two different skeletons in a row on a sheet route (the auth skeleton and the sheet skeleton MUST match).
+
+**Tests**:
+
+- Nominal: the content resolver returns the sheet variant on both sheet routes (with `tab`) and the generic content elsewhere.
+- Edge: locale-only path, trailing slash, sheet sub-path without id → generic content; `tab=companions` on the campaign route → PC sheet variant.
+- Failure / guard: the auth skeleton exposes `role="status"` + `aria-busy`, contains exactly one focusable element (the log out button) and no spinner (`animate-spin`).
+
+**References**:
+
+- `services/web/client/src/providers/KeycloakProvider.tsx`
+- `services/web/client/src/app/[locale]/layout.tsx`, `services/web/client/src/components/layout/Header.tsx`, `services/web/client/src/components/layout/Sidebar/`
+- `services/web/client/src/components/character/skeleton/`
+- `docs/functional-rules.md` — FR-character-sheet-skeleton, FR-frontend-design
+
+## FR-character-identity-card: « Personnage » Card Visual Hierarchy (Read Mode, PC and NPC)
+
+**Rule**: In read mode, the « Personnage » card of the General tab MUST present the character identity with a visual hierarchy (who → what → classes), not as a flat list of `Label : value` lines of equal weight.
+
+**Requirements**:
+
+- **Scope**: read mode of `PlayerGeneralTabContent` and `NpcGeneralTabContent`. Card slot, heading (« Personnage », accent color), avatar placement and edit mode are unchanged (FR-character-general-bento-layout, FR-character-detail-view).
+- **Level 1 — Name**: first name + last name on one line, the most prominent text of the card (`text-lg sm:text-xl font-bold`). The nickname (`surname`), when present, sits right below in muted italic between « ». No visible « Prénom / Nom / Surnom » labels.
+- **Long names** (functional decision 2026-11-04, touch compromise): on devices with hover (`@media (hover: hover)`), the name line and the nickname are each truncated on one line with an ellipsis, and their full text is exposed in a native `title` shown on hover. On devices without hover (touch), they are **not** truncated and wrap (`wrap-break-word`), so the full name stays readable without a tooltip (FR-tooltip-accessibility). Truncation is visual only: the full text stays in the DOM for screen readers.
+- **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell uses the statistics card cell style (design.md §5.3.4: `bg-gray-middle-light/50`, `rounded-[10px]`, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary line:
+  - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. 2 × 2 cells; when an odd number of cells is shown (an empty value is not rendered), the last one spans the whole row so no empty slot suggests a missing fact.
+  - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment. Two equal columns.
+  - Alignment and background live in this card (decision 2026-11-04): they are identity data and no longer get their own General-tab tiles, which stretched to their row height for a single value. In edit mode their fields (alignment select, background combobox) sit in the « Personnage » edit card, after race and level and **before the classes**.
+  Empty secondary lines are omitted; a cell whose value is empty is not rendered.
+- **Level 3 — Classes (PC only)**: small uppercase muted label « Classes », then one plain row per class (`bg-gray-middle-light/50`, `rounded-[10px]`, same cell style as the statistics card, design.md §5.3.4): class name in bold + a level badge, subclass in muted text under the class name when set. This replaces both the « Classes : » line and the « Sous-classe de X : » lines (each class is shown once). The block is hidden when the PC has no class.
+- **Layout**: only the name block (level 1) sits next to the avatar; key facts and classes take the **full card width** below it (no empty column under the avatar).
+- **Bento fill**: the PC card spans two rows; name and key facts stay at the top and the classes block is pushed to the bottom (`justify-between`), so the card has no blank bottom (FR-character-general-bento-layout).
+- **Style**: only documented tokens (design.md §2, §4); no new colors, no nested cards.
+
+**Accessibility (FR-frontend-design)**:
+
+- The card keeps `role="region"` + `aria-labelledby="character-heading"`.
+- Identity data stays a definition list: fields whose label is no longer visible keep an `sr-only` `<dt>` (first name, last name, nickname, race, level, type), so screen readers still announce « Prénom : … ».
+- Classes are a list (`role="list"` / `<ul>`); each row's accessible text includes class, level and subclass.
+- Muted texts keep WCAG AA contrast on `bg-card`.
+
+**Prohibitions**:
+
+- Flat `Label : value` rows of identical weight for the identity.
+- Showing a class twice (classes line + subclass line).
+- Truncating the name on touch devices, or truncating it without a `title` carrying the full text.
+- Fixed heights or inner scroll on the card.
+
+**Tests**:
+
+- Nominal: PC with name, nickname, race/subrace, level/XP and two classes renders the full name, the nickname, two fact cells (race, level) and two class rows with their subclass.
+- Edge: no last name / no nickname / no subrace / class without subclass → the part is omitted (no empty secondary line, no empty parentheses); NPC renders name + one type cell and no classes block.
+- Edge: a long name and nickname carry their full text in `title` and are truncated only under the hover media variant (wrap otherwise).
+- Failure / guard: PC with an empty class list renders no classes block; the `sr-only` labels are present for the identity fields.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/general/view/PlayerGeneralTabContent.tsx`
+- `services/web/client/src/components/character/tabContents/general/view/NpcGeneralTabContent.tsx`
+- `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4
+- `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-detail-view, FR-frontend-design

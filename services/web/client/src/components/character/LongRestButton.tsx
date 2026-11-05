@@ -166,13 +166,13 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
     };
 
     const buttonClass = showLabel
-        ? "h-8 shrink-0 border-border/70 bg-background/60 px-3 text-xs font-medium text-foreground hover:bg-accent disabled:pointer-events-none disabled:opacity-50 disabled:text-muted-foreground"
+        ? "h-8 shrink-0 border-border/70 bg-background/60 px-3 text-xs font-medium text-foreground hover:bg-white/10 disabled:pointer-events-none disabled:opacity-50 disabled:text-muted-foreground"
         : "shrink-0 size-9 sm:size-10 border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white disabled:pointer-events-none disabled:opacity-50";
 
     const triggerButton = (
         <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size={showLabel ? "sm" : "icon"}
             disabled={!isInSession || pending || dialogOpen}
             className={buttonClass}
@@ -233,7 +233,7 @@ export function LongRestButton({ player, isInSession, onApplied, showLabel = fal
                     <DialogFooter className="flex-row justify-end gap-2">
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             disabled={pending}
                             onClick={() => setDialogOpen(false)}>
                             {t("cancel")}

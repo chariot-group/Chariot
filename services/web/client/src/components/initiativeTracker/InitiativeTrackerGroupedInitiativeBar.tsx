@@ -60,7 +60,7 @@ export function InitiativeTrackerGroupedInitiativeBar({
                 handleApply();
               }
             }}
-            className="h-9 w-full rounded-[15px] bg-gray-middle-light px-3 pr-7 text-center text-sm font-normal text-white"
+            className="h-9 w-full rounded-[15px] bg-gray-middle-light px-3 text-center text-sm font-normal text-white"
           />
         </div>
         <Tooltip>

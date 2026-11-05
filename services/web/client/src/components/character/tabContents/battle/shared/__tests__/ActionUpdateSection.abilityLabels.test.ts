@@ -7,10 +7,7 @@ import es from "@/../messages/es.json";
 import fr from "@/../messages/fr.json";
 import * as attackUtils from "@/utils/attack.utils";
 
-const actionUpdateSectionPath = resolve(
-  fileURLToPath(new URL("..", import.meta.url)),
-  "ActionUpdateSection.tsx",
-);
+const actionUpdateSectionPath = resolve(fileURLToPath(new URL("..", import.meta.url)), "ActionUpdateSection.tsx");
 const attackUtilsPath = resolve(fileURLToPath(new URL("../../../../../../utils/attack.utils.ts", import.meta.url)));
 
 /** @see FR-character-detail-view: Character Detail View Display */

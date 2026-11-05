@@ -106,7 +106,7 @@ export function SessionWheelDepositBar({
                             <Button
                                 type="button"
                                 size="icon-sm"
-                                variant="outline"
+                                variant="secondary"
                                 disabled={myDeposited <= 0}
                                 aria-label={t("removeOneAria")}
                                 onClick={onRemoveOne}>
@@ -120,7 +120,7 @@ export function SessionWheelDepositBar({
                             <Button
                                 type="button"
                                 size="icon-sm"
-                                variant="outline"
+                                variant="secondary"
                                 disabled={maxAddable <= 0}
                                 aria-label={t("addOneAria")}
                                 onClick={onAddOne}>
@@ -131,7 +131,6 @@ export function SessionWheelDepositBar({
                         {maxAddable > 1 ? (
                             <Button
                                 type="button"
-                                variant="default"
                                 size="sm"
                                 className="h-8 shrink-0 px-2.5 text-xs sm:px-3"
                                 onClick={onDepositRemaining}>
@@ -161,7 +160,7 @@ export function SessionWheelDepositBar({
                         {extraActions}
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             className="h-8 shrink-0 px-2.5 text-xs sm:px-3"
                             disabled={isLeaving}

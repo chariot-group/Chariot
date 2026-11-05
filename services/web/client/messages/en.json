@@ -519,7 +519,6 @@
   },
   "auth": {
     "loading": "Loading...",
-    "pleaseWait": "Please wait while we verify your session",
     "logoutEscape": "Sign out"
   },
   "notFound": {
@@ -789,9 +788,6 @@
     }
   },
   "characterCreate": {
-    "titlePlayer": "Create a player character",
-    "titleNpc": "Create an NPC",
-    "description": "Fill in the complete character sheet. You can modify this information later from the sheet.",
     "cancel": "Cancel",
     "create": "Create",
     "saving": "Creating..."
@@ -843,6 +839,7 @@
     "uniqueSpellDamageType": "Each damage type must be unique within a spell."
   },
   "characterDetail": {
+    "loadingSheet": "Loading character sheet…",
     "editCharacter": "Edit character",
     "exportPdf": "Export as PDF",
     "pdfExport": {
@@ -902,7 +899,6 @@
       "success": "Sheet exported as PDF.",
       "error": "Could not export sheet as PDF."
     },
-    "playedBy": "Played by {name}",
     "classLevelShort": "{className} Lvl {level}",
     "saveChanges": "Save changes",
     "saving": "Saving...",
@@ -1002,10 +998,6 @@
       "zeroPlaceholder": "0",
       "proficiencyBonusPlaceholder": "+2",
       "challengeRatingPlaceholder": "0, 1/8, 1/4, 1/2",
-      "damageDiceCountPlaceholder": "8",
-      "damageDiceTypePlaceholder": "d6",
-      "healingDiceCountPlaceholder": "4",
-      "healingDiceTypePlaceholder": "d8",
       "spellDamageEntry": "Damage {index}",
       "addDamageToSpell": "Add a damage row to this spell",
       "removeSpellDamage": "Remove damage row {index}",
@@ -1185,7 +1177,26 @@
       "vulnerabilities": "Vulnerabilities",
       "vulnerabilitiesPlaceholder": "Fire, Cold...",
       "immunities": "Immunities",
-      "immunitiesPlaceholder": "Fire, Cold..."
+      "noAffinities": "No resistance, vulnerability or immunity",
+      "noActions": "No actions",
+      "noAbilities": "No abilities or traits",
+      "statLabels": {
+        "armorClass": "AC",
+        "initiative": "Init.",
+        "size": "Size",
+        "speeds": "Speed",
+        "passivePerception": "Pass. Perc."
+      },
+      "attackSuggestions": "Suggestions",
+      "formSections": {
+        "general": "General",
+        "attack": "Attack",
+        "damage": "Damage",
+        "description": "Description",
+        "counter": "Uses"
+      },
+      "immunitiesPlaceholder": "Fire, Cold...",
+      "passivePerception": "Passive perception"
     },
     "history": {
       "appearance": "Appearance",
@@ -1201,7 +1212,8 @@
       "personalityTraits": "Personality Traits",
       "ideals": "Ideals",
       "flaws": "Flaws",
-      "backstory": "Backstory"
+      "backstory": "Backstory",
+      "notSpecified": "Not specified"
     },
     "player": {
       "level": "Level",
@@ -1490,10 +1502,7 @@
       "setCoins": "Set",
       "sessionInventoryUpdateError": "Unable to update inventory during the session.",
       "noEquipment": "No equipment at the moment.",
-      "noTreasure": "No treasure at the moment.",
-      "coinsRegion": "Coins section",
-      "equipmentRegion": "Equipment section",
-      "treasureRegion": "Treasure section"
+      "noTreasure": "No treasure at the moment."
     },
     "magic": {
       "noMagicAbilities": "This character has no magical abilities.",
@@ -1753,6 +1762,19 @@
           "previousLanguageButton": "Back",
           "loadTranslationError": "Could not load this language. Try again or pick another."
         }
+      },
+      "spellcastingTitle": "Spellcasting",
+      "abilityShort": "Abil.",
+      "concentration": "Concentration",
+      "noSpells": "No spells",
+      "addCodexSpellShort": "Codex",
+      "spellRowLabel": "{name} — {group}",
+      "slotsRemainingAria": "Level {level} slots: {current} of {total} left",
+      "formSections": {
+        "general": "General",
+        "casting": "Casting",
+        "effects": "Effects",
+        "description": "Description"
       }
     }
   },
@@ -1883,6 +1905,8 @@
     }
   },
   "header": {
+    "sidebarOpenAriaLabel": "Open menu",
+    "sidebarCloseAriaLabel": "Close menu",
     "logoAriaLabelHome": "Return to home",
     "logoAriaLabelInSession": "Open session lobby",
     "logoAriaLabelInSessionWarning": "Open session lobby, less than 30 minutes remaining",

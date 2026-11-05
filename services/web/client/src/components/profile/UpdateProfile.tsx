@@ -323,7 +323,7 @@ export default function UpdateProfile({
               <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={handleCancel}
                   disabled={isBusy}
                   aria-label={tEdit("cancelUpdate")}>

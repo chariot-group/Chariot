@@ -1,27 +1,32 @@
 import { describe, expect, it } from "vitest";
-import type { Spellcasting } from "@/types/character";
+import type { Spell, Spellcasting } from "@/types/character";
 import {
   getSpellLevelsFromSpells,
   hasLevel1OrHigherSpells,
   pruneOrphanSpellSlotsByLevel,
   rebindSelectedSpellToList,
+  toSpellcastingAbilityKey,
 } from "@/utils/magic.utils";
 
-const baseSpellcasting = (spells: Spellcasting["spells"]): Spellcasting => ({
-  className: "wizard",
-  ability: "intelligence",
-  saveDC: 13,
-  attackBonus: 5,
-  spells,
-});
+/** Minimal spell fixture: the helpers under test only read name, level and prepared. */
+const spell = (fields: Pick<Spell, "name" | "level"> & Partial<Spell>) => fields as Spell;
+
+const baseSpellcasting = (spells: Spellcasting["spells"]): Spellcasting =>
+  ({
+    className: "wizard",
+    ability: "intelligence",
+    saveDC: 13,
+    attackBonus: 5,
+    spells,
+  }) as Spellcasting;
 
 describe("hasLevel1OrHigherSpells", () => {
   it("nominal: retourne true lorsqu’un sort de niveau 1+ est présent", () => {
     expect(
       hasLevel1OrHigherSpells(
         baseSpellcasting([
-          { name: "Fire Bolt", level: 0 },
-          { name: "Magic Missile", level: 1 },
+          spell({ name: "Fire Bolt", level: 0 }),
+          spell({ name: "Magic Missile", level: 1 }),
         ]),
       ),
     ).toBe(true);
@@ -31,8 +36,8 @@ describe("hasLevel1OrHigherSpells", () => {
     expect(
       hasLevel1OrHigherSpells(
         baseSpellcasting([
-          { name: "Fire Bolt", level: 0 },
-          { name: "Prestidigitation", level: 0 },
+          spell({ name: "Fire Bolt", level: 0 }),
+          spell({ name: "Prestidigitation", level: 0 }),
         ]),
       ),
     ).toBe(false);
@@ -48,9 +53,9 @@ describe("getSpellLevelsFromSpells", () => {
   it("nominal: retourne les niveaux uniques triés présents dans la liste", () => {
     expect(
       getSpellLevelsFromSpells([
-        { name: "Fireball", level: 3 },
-        { name: "Fire Bolt", level: 0 },
-        { name: "Counterspell", level: 3 },
+        spell({ name: "Fireball", level: 3 }),
+        spell({ name: "Fire Bolt", level: 0 }),
+        spell({ name: "Counterspell", level: 3 }),
       ]),
     ).toEqual([0, 3]);
   });
@@ -58,7 +63,7 @@ describe("getSpellLevelsFromSpells", () => {
   it("edge: ignore les niveaux non numériques et retourne [] si vide", () => {
     expect(getSpellLevelsFromSpells([])).toEqual([]);
     expect(getSpellLevelsFromSpells(undefined)).toEqual([]);
-    expect(getSpellLevelsFromSpells([{ name: "Bad", level: Number.NaN }])).toEqual([]);
+    expect(getSpellLevelsFromSpells([spell({ name: "Bad", level: Number.NaN })])).toEqual([]);
   });
 });
 
@@ -71,7 +76,7 @@ describe("pruneOrphanSpellSlotsByLevel", () => {
           "1": { total: 4, used: 1 },
           "6": { total: 1, used: 0 },
         },
-        [{ name: "Disintegrate", level: 6 }],
+        [spell({ name: "Disintegrate", level: 6 })],
       ),
     ).toEqual({ "6": { total: 1, used: 0 } });
   });
@@ -86,8 +91,8 @@ describe("pruneOrphanSpellSlotsByLevel", () => {
           "6": { total: 1, used: 0 },
         },
         [
-          { name: "Magic Missile", level: 1 },
-          { name: "Disintegrate", level: 6 },
+          spell({ name: "Magic Missile", level: 1 }),
+          spell({ name: "Disintegrate", level: 6 }),
         ],
       ),
     ).toEqual({
@@ -100,7 +105,7 @@ describe("pruneOrphanSpellSlotsByLevel", () => {
     expect(
       pruneOrphanSpellSlotsByLevel(
         { "6": { total: 1, used: 0 } },
-        [{ name: "Fire Bolt", level: 0 }],
+        [spell({ name: "Fire Bolt", level: 0 })],
       ),
     ).toEqual({});
   });
@@ -108,10 +113,10 @@ describe("pruneOrphanSpellSlotsByLevel", () => {
 
 describe("rebindSelectedSpellToList — conservation du sort sélectionné", () => {
   it("nominal: réattache le sort par nom et niveau après mise à jour des données", () => {
-    const selected = { name: "Magic Missile", level: 1, prepared: true };
+    const selected = spell({ name: "Magic Missile", level: 1, prepared: true });
     const freshList = [
-      { name: "Fire Bolt", level: 0 },
-      { name: "Magic Missile", level: 1, prepared: true },
+      spell({ name: "Fire Bolt", level: 0 }),
+      spell({ name: "Magic Missile", level: 1, prepared: true }),
     ];
     const rebound = rebindSelectedSpellToList(freshList, selected);
     expect(rebound).toBe(freshList[1]);
@@ -119,12 +124,30 @@ describe("rebindSelectedSpellToList — conservation du sort sélectionné", () 
   });
 
   it("edge: conserve la sélection si le sort n’est plus dans la liste", () => {
-    const selected = { name: "Removed Spell", level: 2 };
-    const rebound = rebindSelectedSpellToList([{ name: "Other", level: 1 }], selected);
+    const selected = spell({ name: "Removed Spell", level: 2 });
+    const rebound = rebindSelectedSpellToList([spell({ name: "Other", level: 1 })], selected);
     expect(rebound).toBe(selected);
   });
 
   it("edge: retourne null si aucun sort n’est sélectionné", () => {
-    expect(rebindSelectedSpellToList([{ name: "X", level: 0 }], null)).toBeNull();
+    expect(rebindSelectedSpellToList([spell({ name: "X", level: 0 })], null)).toBeNull();
+  });
+});
+
+describe("toSpellcastingAbilityKey", () => {
+  it("nominal: keeps sheet keys", () => {
+    expect(toSpellcastingAbilityKey("wisdom")).toBe("wisdom");
+  });
+
+  it("edge: maps Codex abbreviations, any case and padding", () => {
+    expect(toSpellcastingAbilityKey("WIS")).toBe("wisdom");
+    expect(toSpellcastingAbilityKey(" Cha ")).toBe("charisma");
+    expect(toSpellcastingAbilityKey("Intelligence")).toBe("intelligence");
+  });
+
+  it("failure: unknown or missing values return null", () => {
+    expect(toSpellcastingAbilityKey("luck")).toBeNull();
+    expect(toSpellcastingAbilityKey("")).toBeNull();
+    expect(toSpellcastingAbilityKey(undefined)).toBeNull();
   });
 });

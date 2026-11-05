@@ -283,6 +283,7 @@ describe("FR-session-combat-navigation — resolvePlayerTrackerDisplayName", () 
       lifeStatus: false,
       armorClass: false,
       conditions: false,
+      concentration: false,
       groupLabel: false,
     },
   };

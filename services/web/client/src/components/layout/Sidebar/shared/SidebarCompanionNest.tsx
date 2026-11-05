@@ -6,10 +6,7 @@ import { useTranslations } from "next-intl";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  selectCollapsedCompanionNestPlayerIds,
-  setCompanionNestCollapsed,
-} from "@/store/slices/sidebarSlice";
+import { selectCollapsedCompanionNestPlayerIds, setCompanionNestCollapsed } from "@/store/slices/sidebarSlice";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 
@@ -56,8 +53,7 @@ export function SidebarCompanionNest({
     return <>{rowBody({ isOpen: true })}</>;
   }
 
-  const selectedCompanionActive =
-    Boolean(selectedCharacterId) && companionCharacterIds.includes(selectedCharacterId!);
+  const selectedCompanionActive = Boolean(selectedCharacterId) && companionCharacterIds.includes(selectedCharacterId!);
   const userCollapsed = collapsedIds.includes(nestId);
   const isOpen = selectedCompanionActive || !userCollapsed;
 
@@ -74,9 +70,7 @@ export function SidebarCompanionNest({
         aria-expanded={isOpen}
         aria-controls={nestContentId}
         aria-label={
-          isOpen
-            ? t("collapseCompanionsAria", { name: playerName })
-            : t("expandCompanionsAria", { name: playerName })
+          isOpen ? t("collapseCompanionsAria", { name: playerName }) : t("expandCompanionsAria", { name: playerName })
         }
         className="flex shrink-0 cursor-pointer items-center focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
         <ChevronRight
@@ -97,7 +91,7 @@ export function SidebarCompanionNest({
       <div
         className={cn(
           "flex w-full items-center rounded-[12px] py-2 px-1.5 pl-3",
-          headerSelected ? "bg-white text-black" : "bg-card",
+          headerSelected ? "bg-white/15 text-white" : "bg-card",
         )}>
         {hasActions ? (
           <SidebarItemWithActions

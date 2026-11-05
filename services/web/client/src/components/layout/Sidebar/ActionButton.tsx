@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonTone } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { LucideSwords, PlayCircle, Users, UserCircle } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -38,8 +38,7 @@ interface ActionButtonConfig {
   action: () => void;
   disabled: boolean;
   icon: React.ReactNode;
-  backgroundColor: string;
-  textColor: string;
+  tone: ButtonTone;
   state: ActionButtonState;
   tooltip?: string;
 }
@@ -121,9 +120,8 @@ export function ActionButton() {
             dispatch(openSessionLobby());
           },
           disabled: !selectedCampaignId,
-          icon: <PlayCircle className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
+          icon: <PlayCircle aria-hidden="true" />,
+          tone: "yellow",
           tooltip: isInSession ? t("alreadyInSession") : t("comingSoon"),
         };
       }
@@ -136,10 +134,9 @@ export function ActionButton() {
             dispatch(openSessionLobby());
           }
         },
-        icon: <Users className="size-6" />,
+        icon: <Users aria-hidden="true" />,
         disabled: isJoinSessionDisabled,
-        backgroundColor: "bg-green",
-        textColor: "text-black",
+        tone: "green",
         tooltip: isJoinSessionDisabled ? tWelcome("session.noCharacterWithoutGroup") : undefined,
       };
     }
@@ -150,9 +147,8 @@ export function ActionButton() {
         state: "returnToSession",
         action: () => navigateToSession(contextMode === "player" ? "player" : undefined),
         disabled: false,
-        icon: <PlayCircle className="size-6" />,
-        backgroundColor: "bg-yellow",
-        textColor: "text-black",
+        icon: <PlayCircle aria-hidden="true" />,
+        tone: "yellow",
       };
     }
 
@@ -163,9 +159,8 @@ export function ActionButton() {
           state: "returnToSession",
           action: () => navigateToSession(),
           disabled: false,
-          icon: <PlayCircle className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
+          icon: <PlayCircle aria-hidden="true" />,
+          tone: "yellow",
         };
       }
 
@@ -175,9 +170,8 @@ export function ActionButton() {
           state: "initBattle",
           action: () => {},
           disabled: false,
-          icon: <LucideSwords className="size-6" />,
-          backgroundColor: "bg-red",
-          textColor: "text-white",
+          icon: <LucideSwords aria-hidden="true" />,
+          tone: "red",
         };
       }
 
@@ -194,9 +188,8 @@ export function ActionButton() {
           state: "returnToSheet",
           action: navigateToLastConsultedSheet,
           disabled: !lastConsultedSheetPath,
-          icon: <UserCircle className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
+          icon: <UserCircle aria-hidden="true" />,
+          tone: "yellow",
           tooltip: !lastConsultedSheetPath ? t("noLastSheet") : undefined,
         };
       }
@@ -213,9 +206,8 @@ export function ActionButton() {
           state: "returnToBattle",
           action: navigateToInitiativeTracker,
           disabled: false,
-          icon: <LucideSwords className="size-6" />,
-          backgroundColor: "bg-red",
-          textColor: "text-white",
+          icon: <LucideSwords aria-hidden="true" />,
+          tone: "red",
         };
       }
     } else {
@@ -225,9 +217,8 @@ export function ActionButton() {
           state: "returnToSession",
           action: () => navigateToSession("player"),
           disabled: false,
-          icon: <PlayCircle className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
+          icon: <PlayCircle aria-hidden="true" />,
+          tone: "yellow",
         };
       }
 
@@ -238,9 +229,8 @@ export function ActionButton() {
           state: "returnToSheet",
           action: navigateToPlayerCharacter,
           disabled: !currentParticipant?.characterId,
-          icon: <UserCircle className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
+          icon: <UserCircle aria-hidden="true" />,
+          tone: "yellow",
           tooltip: !currentParticipant?.characterId ? t("noPlayerCharacter") : undefined,
         };
       }
@@ -259,9 +249,8 @@ export function ActionButton() {
           state: "returnToBattle",
           action: navigateToInitiativeTracker,
           disabled: false,
-          icon: <LucideSwords className="size-6" />,
-          backgroundColor: "bg-red",
-          textColor: "text-white",
+          icon: <LucideSwords aria-hidden="true" />,
+          tone: "red",
         };
       }
 
@@ -278,9 +267,8 @@ export function ActionButton() {
           state: "returnToSheet",
           action: navigateToPlayerCharacter,
           disabled: !currentParticipant?.characterId,
-          icon: <UserCircle className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
+          icon: <UserCircle aria-hidden="true" />,
+          tone: "yellow",
           tooltip: !currentParticipant?.characterId ? t("noPlayerCharacter") : undefined,
         };
       }
@@ -291,9 +279,8 @@ export function ActionButton() {
           state: "returnToSheet",
           action: navigateToPlayerCharacter,
           disabled: !currentParticipant?.characterId,
-          icon: <UserCircle className="size-6" />,
-          backgroundColor: "bg-yellow",
-          textColor: "text-black",
+          icon: <UserCircle aria-hidden="true" />,
+          tone: "yellow",
         };
       }
     }
@@ -304,9 +291,8 @@ export function ActionButton() {
         state: "returnToSession",
         action: () => navigateToSession(currentParticipant?.status !== "gameMaster" ? "player" : undefined),
         disabled: false,
-        icon: <PlayCircle className="size-6" />,
-        backgroundColor: "bg-yellow",
-        textColor: "text-black",
+        icon: <PlayCircle aria-hidden="true" />,
+        tone: "yellow",
       };
     }
 
@@ -320,30 +306,23 @@ export function ActionButton() {
         dispatch(openSessionLobby());
       },
       disabled: !selectedCampaignId,
-      icon: <PlayCircle className="size-6" />,
-      backgroundColor: "bg-yellow",
-      textColor: "text-black",
+      icon: <PlayCircle aria-hidden="true" />,
+      tone: "yellow",
       tooltip: t("comingSoon"),
     };
   };
 
-  const hoverMap: Record<string, string> = {
-    "bg-yellow": "hover:bg-[#e6b000]",
-    "bg-green": "hover:bg-[#7dc400]",
-    "bg-red": "hover:bg-[#e02020]",
-    "bg-pink": "hover:bg-[#e090e0]",
-    "bg-gray-600": "hover:bg-gray-700",
-  };
-
   const button = getButtonState();
-  const hoverClass = hoverMap[button.backgroundColor] ?? "hover:brightness-90";
   const buttonContent = (
     <Button
+      variant="accent"
+      tone={button.tone}
+      size="lg"
       onClick={button.action}
       disabled={button.disabled}
-      className={`w-full py-5 transition-colors duration-150 ${button.backgroundColor} ${hoverClass} ${button.textColor} rounded-2xl flex items-center justify-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+      className="w-full">
       {button.icon}
-      <span className="text-lg truncate">{button.label}</span>
+      <span className="truncate">{button.label}</span>
     </Button>
   );
 

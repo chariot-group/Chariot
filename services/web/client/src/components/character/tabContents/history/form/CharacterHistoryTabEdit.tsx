@@ -1,517 +1,198 @@
 import { Controller, UseFormReturn, FieldValues } from "react-hook-form";
-import { Field, FieldError } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { StoredUnitNumberInput } from "@/components/ui/stored-unit-number-input";
-import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { Cake, Eye, PersonStanding, Ruler, Scale, Scissors } from "lucide-react";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import { Textarea } from "@/components/ui/textarea";
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
+import {
+  APPEARANCE_DESCRIPTION_FIELD,
+  HISTORY_BENTO_GRID_CLASS,
+  HISTORY_SUBHEADING_CLASS,
+  HISTORY_SLOTS,
+  HISTORY_TEXT_FIELDS,
+  historyHeadingId,
+} from "@/components/character/tabContents/history/shared/historyBentoLayout";
 
 interface CharacterHistoryTabEditProps {
   accentColor: string;
   form: UseFormReturn<FieldValues>;
 }
 
+const APPEARANCE_FIELDS = [
+  { key: "eyes", icon: Eye, kind: "text" },
+  { key: "age", icon: Cake, kind: "number" },
+  { key: "skin", icon: PersonStanding, kind: "text" },
+  { key: "height", icon: Ruler, kind: "height" },
+  { key: "weight", icon: Scale, kind: "weight" },
+  { key: "hair", icon: Scissors, kind: "text" },
+] as const;
+
+/**
+ * History tab, edit mode: same cards and zones as read mode.
+ * @see FR-character-history-bento-layout
+ */
 export default function CharacterHistoryTabEdit({ accentColor, form }: CharacterHistoryTabEditProps) {
   const t = useTranslations("characterDetail.history");
   const { displayHeight, heightLabel, toHeightFeet, displayWeight, weightLabel, toWeightLbs } = useDistanceUnit();
+  const units = {
+    height: { label: heightLabel, toDisplay: displayHeight, toStored: toHeightFeet },
+    weight: { label: weightLabel, toDisplay: displayWeight, toStored: toWeightLbs },
+  };
 
   return (
-    <div
-      className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4"
-      role="main"
-      aria-labelledby="history-tab-edit">
-      <h2
-        id="history-tab-edit"
-        className="sr-only">
-        {t("backstory")}
-      </h2>
-
-      {/* Col 1: Apparence (sizes to content — FR-character-history-appearance-fit) */}
-      <div className="xl:row-span-2 self-start min-w-0 w-full">
-        <Card
-          className="gap-4 h-fit min-w-0 w-full"
-          role="region"
-          aria-labelledby="appearance-title">
-          <h2
-            id="appearance-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("appearance")}
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4 min-w-0 *:data-[slot=field]:min-w-0 *:data-[slot=field]:h-fit">
-            <Controller
-              name="appearance.eyes"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="appearance-eyes"
-                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
-                    <Eye
-                      className="shrink-0 w-4 h-4"
-                      aria-hidden="true"
-                    />
-                    {t("eyes")}
-                  </label>
-                  <Input
-                    {...field}
-                    id="appearance-eyes"
-                    tabIndex={1}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "appearance-eyes-error" : undefined}
-                    placeholder={t("eyes")}
-                    type="text"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="appearance-eyes-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="appearance.age"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="appearance-age"
-                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
-                    <Cake
-                      className="shrink-0 w-4 h-4"
-                      aria-hidden="true"
-                    />
-                    {t("age")}
-                  </label>
-                  <Input
-                    {...field}
-                    min={0}
-                    value={field.value ?? ""}
-                    id="appearance-age"
-                    tabIndex={2}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "appearance-age-error" : undefined}
-                    placeholder={t("age")}
-                    type="number"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="appearance-age-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="appearance.skin"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="appearance-skin"
-                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
-                    <PersonStanding
-                      className="shrink-0 w-4 h-4"
-                      aria-hidden="true"
-                    />
-                    {t("skin")}
-                  </label>
-                  <Input
-                    {...field}
-                    id="appearance-skin"
-                    tabIndex={3}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "appearance-skin-error" : undefined}
-                    placeholder={t("skin")}
-                    type="text"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="appearance-skin-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="appearance.height"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="appearance-height"
-                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
-                    <Ruler
-                      className="shrink-0 w-4 h-4"
-                      aria-hidden="true"
-                    />
-                    {t("height")} <span className="text-muted-foreground font-normal">({heightLabel})</span>
-                  </label>
-                  <StoredUnitNumberInput
-                    {...field}
-                    storedValue={field.value}
-                    onStoredChange={field.onChange}
-                    toDisplay={displayHeight}
-                    toStored={toHeightFeet}
-                    id="appearance-height"
-                    tabIndex={4}
-                    min={0}
-                    step={0.1}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "appearance-height-error" : undefined}
-                    placeholder={`${t("height")} (${heightLabel})`}
-                    type="number"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="appearance-height-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="appearance.weight"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="appearance-weight"
-                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
-                    <Scale
-                      className="shrink-0 w-4 h-4"
-                      aria-hidden="true"
-                    />
-                    {t("weight")} <span className="text-muted-foreground font-normal">({weightLabel})</span>
-                  </label>
-                  <StoredUnitNumberInput
-                    {...field}
-                    storedValue={field.value}
-                    onStoredChange={field.onChange}
-                    toDisplay={displayWeight}
-                    toStored={toWeightLbs}
-                    id="appearance-weight"
-                    tabIndex={5}
-                    min={0}
-                    step={0.1}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "appearance-weight-error" : undefined}
-                    placeholder={`${t("weight")} (${weightLabel})`}
-                    type="number"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="appearance-weight-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="appearance.hair"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  orientation="vertical">
-                  <label
-                    htmlFor="appearance-hair"
-                    className="text-sm text-muted-foreground font-medium flex flex-row items-center gap-1">
-                    <Scissors
-                      className="shrink-0 w-4 h-4"
-                      aria-hidden="true"
-                    />
-                    {t("hair")}
-                  </label>
-                  <Input
-                    {...field}
-                    id="appearance-hair"
-                    tabIndex={6}
-                    aria-invalid={fieldState.invalid}
-                    aria-describedby={fieldState.error ? "appearance-hair-error" : undefined}
-                    placeholder={t("hair")}
-                    type="text"
-                  />
-                  {fieldState.error && (
-                    <FieldError
-                      id="appearance-hair-error"
-                      errors={[fieldState.error]}
-                    />
-                  )}
-                </Field>
-              )}
-            />
-          </div>
-        </Card>
-      </div>
-
-      {/* Cols 2–4 row 1: Traits | Alliés | Liens */}
-      <Card className="gap-3 py-4 px-4 md:px-6">
-        <h2
-          id="background-personalityTraits-title"
-          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-          {t("personalityTraits")}
-        </h2>
-
-        <Controller
-          name="background.personalityTraits"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              data-invalid={fieldState.invalid}
-              orientation="vertical">
-              <Textarea
-                {...field}
-                id="background-personalityTraits"
-                tabIndex={7}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.error ? "background-personalityTraits-error" : undefined}
-                placeholder={t("personalityTraits")}
-                rows={6}
+    <div className={HISTORY_BENTO_GRID_CLASS}>
+      <GeneralSectionCard
+        headingId={historyHeadingId("appearance")}
+        title={t("appearance")}
+        accentColor={accentColor}
+        className={HISTORY_SLOTS.appearance}>
+        <div className="grid min-w-0 grid-cols-2 gap-3 @sm:grid-cols-3 @3xl:grid-cols-6">
+          {APPEARANCE_FIELDS.map(({ key, icon: Icon, kind }) => {
+            const id = `appearance-${key}`;
+            const errorId = `${id}-error`;
+            const unit = kind === "height" || kind === "weight" ? units[kind] : null;
+            return (
+              <Controller
+                key={key}
+                name={`appearance.${key}`}
+                control={form.control}
+                render={({ field, fieldState }) => {
+                  const shared = {
+                    id,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? errorId : undefined,
+                  };
+                  return (
+                    <Field
+                      className="min-w-0"
+                      data-invalid={fieldState.invalid}
+                      orientation="vertical">
+                      <FieldLabel
+                        htmlFor={id}
+                        className="min-w-0 items-center gap-1 text-sm font-medium text-muted-foreground">
+                        <Icon
+                          className="size-4 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="wrap-break-word">
+                          {t(key)}
+                          {unit && <span className="font-normal"> ({unit.label})</span>}
+                        </span>
+                      </FieldLabel>
+                      {unit ? (
+                        <StoredUnitNumberInput
+                          {...field}
+                          {...shared}
+                          storedValue={field.value}
+                          onStoredChange={field.onChange}
+                          toDisplay={unit.toDisplay}
+                          toStored={unit.toStored}
+                          min={0}
+                          step={0.1}
+                          placeholder={`${t(key)} (${unit.label})`}
+                        />
+                      ) : (
+                        <Input
+                          {...field}
+                          {...shared}
+                          value={field.value ?? ""}
+                          type={kind}
+                          min={kind === "number" ? 0 : undefined}
+                          placeholder={t(key)}
+                        />
+                      )}
+                      {fieldState.error && (
+                        <FieldError
+                          id={errorId}
+                          errors={[fieldState.error]}
+                        />
+                      )}
+                    </Field>
+                  );
+                }}
               />
-              {fieldState.error && (
-                <FieldError
-                  id="background-personalityTraits-error"
-                  errors={[fieldState.error]}
-                />
-              )}
-            </Field>
-          )}
-        />
-      </Card>
-
-      <Card className="gap-3 py-4 px-4 md:px-6">
-        <h2
-          id="background-alliesAndOrgs-title"
-          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-          {t("alliesAndOrgs")}
-        </h2>
-
+            );
+          })}
+        </div>
         <Controller
-          name="background.alliesAndOrgs"
+          name={APPEARANCE_DESCRIPTION_FIELD.name}
           control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              data-invalid={fieldState.invalid}
-              orientation="vertical">
-              <Textarea
-                {...field}
-                id="background-alliesAndOrgs"
-                tabIndex={8}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.error ? "background-alliesAndOrgs-error" : undefined}
-                placeholder={t("alliesAndOrgs")}
-                rows={6}
-              />
-              {fieldState.error && (
-                <FieldError
-                  id="background-alliesAndOrgs-error"
-                  errors={[fieldState.error]}
+          render={({ field, fieldState }) => {
+            const { inputId } = APPEARANCE_DESCRIPTION_FIELD;
+            return (
+              <Field
+                className="min-w-0 gap-1.5"
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <FieldLabel
+                  htmlFor={inputId}
+                  className={HISTORY_SUBHEADING_CLASS}>
+                  {t(APPEARANCE_DESCRIPTION_FIELD.key)}
+                </FieldLabel>
+                <Textarea
+                  {...field}
+                  value={field.value ?? ""}
+                  id={inputId}
+                  aria-invalid={fieldState.invalid}
+                  aria-describedby={fieldState.error ? `${inputId}-error` : undefined}
+                  placeholder={t(APPEARANCE_DESCRIPTION_FIELD.key)}
+                  className="min-h-36"
                 />
-              )}
-            </Field>
-          )}
+                {fieldState.error && (
+                  <FieldError
+                    id={`${inputId}-error`}
+                    errors={[fieldState.error]}
+                  />
+                )}
+              </Field>
+            );
+          }}
         />
-      </Card>
-
-      <Card className="gap-3 py-4 px-4 md:px-6">
-        <h2
-          id="background-bonds-title"
-          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-          {t("bonds")}
-        </h2>
-
-        <Controller
-          name="background.bonds"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field
-              data-invalid={fieldState.invalid}
-              orientation="vertical">
-              <Textarea
-                {...field}
-                id="background-bonds"
-                tabIndex={9}
-                aria-invalid={fieldState.invalid}
-                aria-describedby={fieldState.error ? "background-bonds-error" : undefined}
-                placeholder={t("bonds")}
-                rows={6}
-              />
-              {fieldState.error && (
-                <FieldError
-                  id="background-bonds-error"
-                  errors={[fieldState.error]}
-                />
-              )}
-            </Field>
-          )}
-        />
-      </Card>
-
-      {/* Cols 2–4 row 2: Idéaux | Défauts (equal width) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 xl:col-start-2 xl:col-span-3">
-        <Card className="gap-3 py-4 px-4 md:px-6">
-          <h2
-            id="background-ideals-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("ideals")}
-          </h2>
-
+      </GeneralSectionCard>
+      {HISTORY_TEXT_FIELDS.map(({ key, name, inputId, slot }) => (
+        <GeneralSectionCard
+          key={key}
+          headingId={historyHeadingId(key)}
+          title={t(key)}
+          accentColor={accentColor}
+          className={slot}>
           <Controller
-            name="background.ideals"
+            name={name}
             control={form.control}
             render={({ field, fieldState }) => (
               <Field
+                className="flex-1"
                 data-invalid={fieldState.invalid}
                 orientation="vertical">
+                {/* The card heading already names the field. */}
+                <FieldLabel
+                  htmlFor={inputId}
+                  className="sr-only">
+                  {t(key)}
+                </FieldLabel>
                 <Textarea
                   {...field}
-                  id="background-ideals"
-                  tabIndex={10}
+                  value={field.value ?? ""}
+                  id={inputId}
                   aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "background-ideals-error" : undefined}
-                  placeholder={t("ideals")}
-                  rows={6}
+                  aria-describedby={fieldState.error ? `${inputId}-error` : undefined}
+                  placeholder={t(key)}
+                  className="min-h-36 flex-1"
                 />
                 {fieldState.error && (
                   <FieldError
-                    id="background-ideals-error"
+                    id={`${inputId}-error`}
                     errors={[fieldState.error]}
                   />
                 )}
               </Field>
             )}
           />
-        </Card>
-
-        <Card className="gap-3 py-4 px-4 md:px-6">
-          <h2
-            id="background-flaws-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("flaws")}
-          </h2>
-
-          <Controller
-            name="background.flaws"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <Textarea
-                  {...field}
-                  id="background-flaws"
-                  tabIndex={11}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "background-flaws-error" : undefined}
-                  placeholder={t("flaws")}
-                  rows={6}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="background-flaws-error"
-                    errors={[fieldState.error]}
-                  />
-                )}
-              </Field>
-            )}
-          />
-        </Card>
-      </div>
-
-      {/* Ligne 2: Histoire | Description */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 col-span-1 lg:col-span-2 xl:col-span-4">
-        <Card className="gap-3 py-4 px-4 md:px-6">
-          <h2
-            id="background-backstory-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("backstory")}
-          </h2>
-
-          <Controller
-            name="background.backstory"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <Textarea
-                  {...field}
-                  id="background-backstory"
-                  tabIndex={12}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "background-backstory-error" : undefined}
-                  placeholder={t("backstory")}
-                  rows={6}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="background-backstory-error"
-                    errors={[fieldState.error]}
-                  />
-                )}
-              </Field>
-            )}
-          />
-        </Card>
-
-        <Card className="gap-3 py-4 px-4 md:px-6">
-          <h2
-            id="background-description-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("description")}
-          </h2>
-
-          <Controller
-            name="appearance.description"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <Textarea
-                  {...field}
-                  id="appearance-description"
-                  tabIndex={13}
-                  aria-invalid={fieldState.invalid}
-                  aria-describedby={fieldState.error ? "appearance-description-error" : undefined}
-                  placeholder={t("description")}
-                  rows={6}
-                />
-                {fieldState.error && (
-                  <FieldError
-                    id="appearance-description-error"
-                    errors={[fieldState.error]}
-                  />
-                )}
-              </Field>
-            )}
-          />
-        </Card>
-      </div>
+        </GeneralSectionCard>
+      ))}
     </div>
   );
 }
