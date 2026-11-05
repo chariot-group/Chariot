@@ -210,7 +210,12 @@
       "editError": "Failed to update the link.",
       "collapseAriaLabel": "Collapse quick links",
       "expandAriaLabel": "Expand quick links"
-    }
+    },
+    "sessionCharacterSection": "Session character",
+    "outOfSessionToggle": "Out of session ({count})",
+    "outOfSessionExpandAria": "Show the {count} characters out of session",
+    "outOfSessionCollapseAria": "Hide the {count} characters out of session",
+    "outOfSessionActiveTooltip": "Displayed sheet: {name}"
   },
   "initTracker": {
     "noCharacters": "No characters",

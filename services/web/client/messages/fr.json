@@ -210,7 +210,12 @@
       "editError": "Échec de la modification du lien.",
       "collapseAriaLabel": "Replier les liens rapides",
       "expandAriaLabel": "Déplier les liens rapides"
-    }
+    },
+    "sessionCharacterSection": "Personnage de session",
+    "outOfSessionToggle": "Hors session ({count})",
+    "outOfSessionExpandAria": "Afficher les {count} personnages hors session",
+    "outOfSessionCollapseAria": "Masquer les {count} personnages hors session",
+    "outOfSessionActiveTooltip": "Fiche affichée : {name}"
   },
   "initTracker": {
     "noCharacters": "Aucun personnage",

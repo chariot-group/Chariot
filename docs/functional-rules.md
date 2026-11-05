@@ -5082,6 +5082,7 @@ Each initiative tracker row carries:
 - Persist per-Player nest collapse in Redux `sidebar` slice (same persistence contract as `openSessionPlayers` / `openArchivedGroups` via existing localStorage middleware).
 - When the user navigates to a nested NPC sheet, that nest MUST auto-expand **once** (on selection change) so the active NPC is visible. After that, the user MUST remain free to collapse the nest, even while the NPC stays selected (the nest MUST NOT be forced open).
 - While the nest is **collapsed** and a nested NPC is the selected sheet, the Player header MUST NOT use the selected style (`bg-white/15`, bold, `aria-current`) because the displayed sheet is not the Player's. Instead it MUST use the discreet "contains active" style (`bg-white/10`, regular weight) and expose a concise tooltip on the header (i18n: "Displayed sheet: {name}") plus an accessible text announcing the displayed NPC. No avatar/icon is added to the Player row. The indication MUST disappear when the nest is expanded.
+- **In launched session (Player space)**: the session character row (with its nest) is rendered first, followed by a separator and a toggle header « Hors session (N) » grouping the other rows. This section is **collapsed by default**, its state is kept for the current session only (reset on a new session), and the header uses the "contains active" style + tooltip when collapsed while one of its characters is displayed. If the session character is not in the list, the list is unchanged. Toggle: `<button>` with `aria-expanded`/`aria-controls`.
 - Accessibility: chevron `aria-expanded`, dynamic `aria-label` (i18n: collapse/expand companions of `{name}`), visible focus, list `aria-label` unchanged (`companionsListLabel`). Align with FR-frontend-design and FR-sidebar-navigation.
 
 **Prohibitions**:
@@ -6061,3 +6062,4 @@ Guards: welcome is never returned when a campaign or a Player-space character ex
 
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
 - `docs/design.md` §5.5
+

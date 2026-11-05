@@ -210,7 +210,12 @@
       "editError": "Error al modificar el enlace.",
       "collapseAriaLabel": "Contraer los enlaces rápidos",
       "expandAriaLabel": "Expandir los enlaces rápidos"
-    }
+    },
+    "sessionCharacterSection": "Personaje de la sesión",
+    "outOfSessionToggle": "Fuera de sesión ({count})",
+    "outOfSessionExpandAria": "Mostrar los {count} personajes fuera de sesión",
+    "outOfSessionCollapseAria": "Ocultar los {count} personajes fuera de sesión",
+    "outOfSessionActiveTooltip": "Ficha mostrada: {name}"
   },
   "initTracker": {
     "noCharacters": "Sin personajes",
