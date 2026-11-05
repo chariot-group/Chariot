@@ -362,8 +362,9 @@ export function ActionButton() {
   const button = getButtonState();
   const buttonContent = (
     <Button
-      variant="accent"
-      tone={button.tone}
+      // Red combat action: destructive variant keeps light text readable (black on red was hard to read).
+      variant={button.tone === "red" ? "destructive" : "accent"}
+      tone={button.tone === "red" ? undefined : button.tone}
       size="lg"
       onClick={button.action}
       disabled={button.disabled}

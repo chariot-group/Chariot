@@ -1491,7 +1491,24 @@ When adding a rule:
   - removes all tracker rows sharing that `groupId` in one action;
   - applies the same per-row cleanup rules as “leave initiative” (active turn advance, turn-action purge, clear battle if no rows remain);
   - the virtual session-participants group (`__session_participants__`) MUST remain non-removable as a whole when it still has members (individual participant rows may still leave initiative via the row action);
-  - removing a group MUST NOT reopen or reset `initBattleDraft` selection state beyond what is implied by the surviving tracker rows.
+  - removing a group MUST NOT reopen or reset `initBattleDraft` selection state beyond what is implied by the surviving tracker rows;
+  - the group to remove MUST be chosen from a select listing only removable groups (never free-text entry of a group name);
+  - the "remove a group" action MUST be offered only when the roster contains at least 2 non-participant groups (so removing one always leaves at least one opposing group).
+- The "add combatants" action MUST be offered only when at least one campaign group or group member is not yet in the roster; otherwise it is hidden.
+
+**Pre-Combat Initiative Guidance (GM)**:
+
+- Before combat start, the tracker MUST make explicit that initiatives are to be entered before starting combat:
+  - rows without an entered initiative are visually highlighted and perceivable to assistive technologies;
+  - a counter shows how many initiatives remain to be entered (e.g. "3 initiatives à saisir");
+  - the start-combat control states what remains to be done.
+- Starting combat with missing initiatives is allowed but MUST require an explicit confirmation that names the number of missing initiatives.
+
+**Row Context Menu (GM)**:
+
+- Right-clicking a tracker row MUST open a context menu exposing the selection actions (grouped initiative before start, display configuration, leave initiative), subject to the same state rules (e.g. initiative locked after start). Per-row controls (conditions, HP, concentration) stay on the row itself.
+- If the right-clicked row is part of the current multi-selection, menu actions apply to the whole selection; otherwise they apply to that row only.
+- The menu MUST be openable from the keyboard (Menu key / Shift+F10) and an equivalent row action entry MUST remain available on touch devices.
 
 **Reset and End States**:
 
@@ -1549,6 +1566,10 @@ When adding a rule:
 - Persist/rehydration normalization of session tracker state
 - Cancel preparation before start clears battle state without requiring `startBattle`
 - Remove entire group from roster (before and after start) while keeping unrelated rows; session-participants group cannot be removed as a whole when it has members
+- Remove-group uses a select of removable groups; hidden with fewer than 2 non-participant groups
+- Add-combatants hidden when no campaign group/member remains to add
+- Pre-combat: missing-initiative rows highlighted, counter accurate, start with missing initiatives requires confirmation
+- Context menu: single-row vs selection scope, keyboard opening, locked initiative after start
 
 **References**:
 
@@ -2098,13 +2119,14 @@ Each initiative tracker row carries:
 
 ### Initiative Tracker - Bulk Selection UX Consistency and State Reflection (formerly FR-tracker-bulk-selection)
 
-**Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
+**Rule**: Bulk selection in the Game Master initiative tracker follows a "select first, act next" pattern: rows are always selectable, and the actions available for the current selection are offered afterwards.
 
 **Requirements**:
 
-- The tracker must expose bulk-selection entry points for both grouped initiative editing and grouped display configuration using explicit configuration wording that identifies the target action.
-- Bulk-selection mode must present a clear active state, the current number of selected rows, and an obvious way to clear or exit the selection.
-- The selection interaction pattern must stay consistent between grouped initiative editing and grouped display configuration across desktop and mobile layouts.
+- Every tracker row MUST display a permanently visible selection checkbox; a "select all" control MUST be available. There is no separate per-action selection mode.
+- As soon as at least one row is selected, a selection action bar MUST appear showing the selected count, a clear-selection control, and the actions applicable to the selection: grouped initiative edit (before combat start only), grouped display configuration, leave initiative.
+- Actions unavailable in the current state (e.g. initiative after start) are hidden or disabled with an explanation.
+- The pattern MUST be identical on desktop and mobile layouts.
 - When the GM reopens grouped display configuration for a current multi-selection:
   - any field whose selected rows all share the same current value must be shown with that active value;
   - any field whose selected rows do not share the same current value must be shown with an explicit mixed state;
@@ -2120,13 +2142,13 @@ Each initiative tracker row carries:
 
 - Resetting grouped display controls to unrelated defaults when the current selection already has active shared values.
 - Hiding the distinction between a shared value and a mixed value in grouped display configuration.
-- Using ambiguous wording that does not let the GM distinguish between grouped initiative editing and grouped display configuration.
+- Requiring the GM to pick an action before selecting rows.
 
 **Tests**:
 
 - Reopening grouped display configuration for rows sharing the same display settings preloads those settings.
 - Reopening grouped display configuration for rows with different settings shows a mixed state and preserves untouched values on save.
-- Grouped initiative and grouped display selection modes expose distinct labels, active state, selection count, and exit/clear actions on desktop and mobile.
+- Checkboxes always visible; selecting rows shows the action bar with count, clear, and state-aware actions on desktop and mobile.
 - Keyboard and screen-reader coverage includes active mode, selected count, and mixed-state announcements.
 
 **References**:

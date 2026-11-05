@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  canRemoveTrackerGroup,
+  countMissingInitiatives,
+  getRemovableTrackerGroups,
+  hasAddableCombatants,
+  isInitiativeMissing,
   DEATH_SAVES_FAILURE_THRESHOLD,
   defaultPlayerDisplayNameForRow,
   filterRowsForPlayerView,
@@ -431,5 +436,50 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
 
     expect(sanitized.initiativeTrackerRows.map((row) => row.id)).toEqual(["fast", "slow"]);
     expect(sanitized.initiativeTrackerRows.map((row) => row.initiative)).toEqual([0, 0]);
+  });
+});
+
+describe("FR-combat-initiative-tracker — roster action availability and pre-combat guidance", () => {
+  const groupRow = (groupId: string, groupLabel = groupId) => ({ groupId, groupLabel });
+
+  it("nominal: remove-group lists only non-participant groups, sorted, with member counts", () => {
+    const groups = getRemovableTrackerGroups([
+      groupRow("g2", "Orcs"),
+      groupRow(SESSION_PARTICIPANTS_GROUP_ID, "Players"),
+      groupRow("g1", "Gobelins"),
+      groupRow("g2", "Orcs"),
+    ]);
+    expect(groups).toEqual([
+      { value: "g1", label: "Gobelins", memberCount: 1 },
+      { value: "g2", label: "Orcs", memberCount: 2 },
+    ]);
+  });
+
+  it("edge: remove-group is offered only with at least 2 opposing groups", () => {
+    expect(canRemoveTrackerGroup([groupRow(SESSION_PARTICIPANTS_GROUP_ID), groupRow("g1")])).toBe(false);
+    expect(canRemoveTrackerGroup([groupRow(SESSION_PARTICIPANTS_GROUP_ID), groupRow("g1"), groupRow("g2")])).toBe(true);
+  });
+
+  it("edge: add-combatants is hidden when every candidate is already in the roster", () => {
+    const roster = [{ characterId: "a" }, { characterId: "b" }];
+    expect(hasAddableCombatants(["a", "b"], roster)).toBe(false);
+    expect(hasAddableCombatants(["a", "c"], roster)).toBe(true);
+    expect(hasAddableCombatants([""], roster)).toBe(false);
+  });
+
+  it("nominal: an initiative equal to the modifier (roll 0) counts as not entered", () => {
+    expect(isInitiativeMissing({ initiative: 3, initiativeModifier: 3 })).toBe(true);
+    expect(isInitiativeMissing({ initiative: 15, initiativeModifier: 3 })).toBe(false);
+    expect(
+      countMissingInitiatives([
+        { initiative: 0, initiativeModifier: 0 },
+        { initiative: 12, initiativeModifier: 2 },
+        { initiative: -1, initiativeModifier: -1 },
+      ]),
+    ).toBe(2);
+  });
+
+  it("failure: a non-finite modifier falls back to 0", () => {
+    expect(isInitiativeMissing({ initiative: 0, initiativeModifier: Number.NaN })).toBe(true);
   });
 });

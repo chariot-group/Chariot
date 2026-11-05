@@ -285,3 +285,57 @@ export function resolvePlayerTrackerDisplayName(
 
   return displayName.length > 0 ? displayName : null;
 }
+
+/**
+ * FR-combat-initiative-tracker — pre-combat guidance. Rows are seeded with
+ * `initiative = modifier` (roll 0), which no die can produce, so it means "not entered".
+ */
+export function isInitiativeMissing(row: Pick<InitiativeTrackerRow, "initiative" | "initiativeModifier">): boolean {
+  return row.initiative === resolveInitiativeModifier(row.initiativeModifier);
+}
+
+export function countMissingInitiatives(
+  rows: Pick<InitiativeTrackerRow, "initiative" | "initiativeModifier">[],
+): number {
+  return rows.filter(isInitiativeMissing).length;
+}
+
+export type RemovableTrackerGroup = {
+  value: string;
+  label: string;
+  memberCount: number;
+};
+
+/** FR-combat-initiative-tracker — groups that can be removed as a whole (never session participants). */
+export function getRemovableTrackerGroups(
+  rows: Pick<InitiativeTrackerRow, "groupId" | "groupLabel">[],
+): RemovableTrackerGroup[] {
+  const byId = new Map<string, RemovableTrackerGroup>();
+  for (const row of rows) {
+    if (row.groupId === SESSION_PARTICIPANTS_GROUP_ID) continue;
+    const existing = byId.get(row.groupId);
+    if (existing) {
+      existing.memberCount += 1;
+      continue;
+    }
+    byId.set(row.groupId, { value: row.groupId, label: row.groupLabel || row.groupId, memberCount: 1 });
+  }
+  return Array.from(byId.values()).sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/** Removing a group is offered only when at least one opposing group would remain. */
+export function canRemoveTrackerGroup(rows: Pick<InitiativeTrackerRow, "groupId" | "groupLabel">[]): boolean {
+  return getRemovableTrackerGroups(rows).length >= 2;
+}
+
+/** FR-combat-initiative-tracker — "add combatants" is offered only if someone is left to add. */
+export function hasAddableCombatants(
+  candidateCharacterIds: Iterable<string>,
+  rows: Pick<InitiativeTrackerRow, "characterId">[],
+): boolean {
+  const inRoster = new Set(rows.map((row) => row.characterId));
+  for (const id of candidateCharacterIds) {
+    if (id && !inRoster.has(id)) return true;
+  }
+  return false;
+}

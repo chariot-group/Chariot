@@ -11,6 +11,8 @@ type InitiativeTrackerTurnControlsProps = {
   battleStarted: boolean;
   canGoPrevious: boolean;
   previousTurnState: PreviousTurnState;
+  /** FR-combat-initiative-tracker — rows still without initiative before combat start. */
+  missingInitiativeCount?: number;
   labels: {
     startCombat: string;
     cancelCombat: string;
@@ -28,6 +30,13 @@ type InitiativeTrackerTurnControlsProps = {
     previousHintAvailable: string;
     previousHintLocked: string;
     previousHintNoPrevious: string;
+    prepHint?: string;
+    getMissingInitiativesLabel?: (count: number) => string;
+    allInitiativesEntered?: string;
+    startMissingConfirmTitle?: string;
+    getStartMissingConfirmDescription?: (count: number) => string;
+    startMissingConfirmAction?: string;
+    startMissingCancelAction?: string;
   };
   onStartCombat: () => void;
   onCancelCombat: () => void;
@@ -54,6 +63,7 @@ export function InitiativeTrackerTurnControls({
   battleStarted,
   canGoPrevious,
   previousTurnState,
+  missingInitiativeCount = 0,
   labels,
   onStartCombat,
   onCancelCombat,
@@ -62,6 +72,10 @@ export function InitiativeTrackerTurnControls({
   onNext,
 }: InitiativeTrackerTurnControlsProps) {
   const previousHint = getPreviousHint(previousTurnState, labels);
+  const confirmMissingStart =
+    missingInitiativeCount > 0 && labels.startMissingConfirmTitle != null && labels.getStartMissingConfirmDescription != null;
+  const prepStatus =
+    missingInitiativeCount > 0 ? labels.getMissingInitiativesLabel?.(missingInitiativeCount) : labels.allInitiativesEntered;
 
   return (
     <div className="mt-4 flex flex-col items-center gap-2">
@@ -93,8 +107,7 @@ export function InitiativeTrackerTurnControls({
             onConfirm={onEndCombat}>
             <Button
               type="button"
-              variant="accent"
-              tone="red"
+              variant="destructive"
               aria-label={labels.endCombat}
               className="px-3 sm:px-4">
               <OctagonX
@@ -124,9 +137,17 @@ export function InitiativeTrackerTurnControls({
                 <span className="sr-only sm:not-sr-only">{labels.cancelCombat}</span>
               </Button>
             </ConfirmDialog>
+            {confirmMissingStart ? (
+              <ConfirmDialog
+                title={labels.startMissingConfirmTitle ?? ""}
+                description={labels.getStartMissingConfirmDescription?.(missingInitiativeCount) ?? ""}
+                confirmLabel={labels.startMissingConfirmAction ?? labels.startCombat}
+                cancelLabel={labels.startMissingCancelAction ?? labels.cancelCombatCancelAction}
+                confirmVariant="primary"
+                onConfirm={onStartCombat}>
             <Button
               type="button"
-              onClick={onStartCombat}
+              onClick={confirmMissingStart ? undefined : onStartCombat}
               variant="accent"
               tone="green"
               aria-label={labels.startCombat}
@@ -137,6 +158,22 @@ export function InitiativeTrackerTurnControls({
               />
               <span className="sr-only sm:not-sr-only">{labels.startCombat}</span>
             </Button>
+              </ConfirmDialog>
+            ) : (
+            <Button
+              type="button"
+              onClick={confirmMissingStart ? undefined : onStartCombat}
+              variant="accent"
+              tone="green"
+              aria-label={labels.startCombat}
+              className="px-3 sm:px-4">
+              <Play
+                className="size-4 sm:hidden"
+                aria-hidden="true"
+              />
+              <span className="sr-only sm:not-sr-only">{labels.startCombat}</span>
+            </Button>
+            )}
           </>
         )}
 
@@ -151,6 +188,19 @@ export function InitiativeTrackerTurnControls({
           <ChevronRight className="size-4" />
         </Button>
       </div>
+      {!battleStarted && (labels.prepHint || prepStatus) ? (
+        <p
+          className="text-center text-sm text-white/70"
+          role="status"
+          aria-live="polite">
+          {labels.prepHint ? <span>{labels.prepHint} </span> : null}
+          {prepStatus ? (
+            <span className={missingInitiativeCount > 0 ? "font-semibold text-yellow" : "font-semibold text-green"}>
+              {prepStatus}
+            </span>
+          ) : null}
+        </p>
+      ) : null}
     </div>
   );
 }
