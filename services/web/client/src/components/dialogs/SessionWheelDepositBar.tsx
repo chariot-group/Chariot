@@ -1,5 +1,6 @@
 "use client";
 
+import { SessionExitActions } from "@/components/dialogs/SessionExitActions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { computeWheelProgressPercent } from "@/lib/sessionWheelDeposit";
@@ -17,7 +18,6 @@ interface SessionWheelDepositBarProps {
     isLaunching: boolean;
     isLeaving: boolean;
     quotaFull: boolean;
-    leaveLabel: string;
     onAddOne: () => void;
     onRemoveOne: () => void;
     onRemoveAll: () => void;
@@ -37,7 +37,6 @@ export function SessionWheelDepositBar({
     isLaunching,
     isLeaving,
     quotaFull,
-    leaveLabel,
     onAddOne,
     onRemoveOne,
     onRemoveAll,
@@ -158,15 +157,12 @@ export function SessionWheelDepositBar({
 
                     <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                         {extraActions}
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            className="h-8 shrink-0 px-2.5 text-xs sm:px-3"
-                            disabled={isLeaving}
-                            onClick={onLeave}>
-                            {leaveLabel}
-                        </Button>
+                        <SessionExitActions
+                            isMJ={isMJ}
+                            isLeaving={isLeaving}
+                            onLeave={onLeave}
+                            buttonClassName="h-8 shrink-0 px-2.5 text-xs sm:px-3"
+                        />
                         {quotaFull && isMJ ? (
                             <Button
                                 type="button"

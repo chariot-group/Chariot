@@ -1,5 +1,5 @@
 /**
- * @see FR-media-avatar-read-access
+ * @see FR-media-avatars
  */
 import {
   ForbiddenException,

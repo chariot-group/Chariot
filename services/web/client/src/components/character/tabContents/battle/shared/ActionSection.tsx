@@ -29,7 +29,7 @@ interface ActionSectionProps {
 /**
  * Read-mode action list.
  * @see FR-character-list-card
- * @see FR-character-action-section-visibility: heading stays visible when the list is empty
+ * @see FR-character-detail-view: heading stays visible when the list is empty
  */
 const ActionSection = ({ title, actions, accentColor, className, boundedList = false }: ActionSectionProps) => {
   const t = useTranslations("characterDetail.battle");

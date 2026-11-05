@@ -93,7 +93,7 @@ export class MediaAccessService {
    * - PJ : owner OU participant de session avec le PJ dans le roster (roster-read).
    * - PNJ : owner OU participant de session dont le créateur est le MJ (npc-session-read).
    *
-   * @see FR-media-avatar-read-access
+   * @see FR-media-avatars
    */
   async assertCharacterReadAccess(
     characterId: string,
@@ -146,7 +146,7 @@ export class MediaAccessService {
    * - En session : le requester doit être participant et targetUserId doit être le MJ.
    * - Sinon : 403.
    *
-   * @see FR-media-avatar-read-access
+   * @see FR-media-avatars
    */
   async assertUserAvatarReadAccess(
     targetUserId: string,
@@ -299,7 +299,7 @@ export class MediaAccessService {
   /**
    * Vérifie que le requester est participant de la session ET que targetUserId est le MJ.
    * Utilisé pour la PP du MJ (scope user) et les avatars PNJ (kind=npc).
-   * @see FR-media-avatar-read-access
+   * @see FR-media-avatars
    */
   private async assertSessionGmOwnership(
     authHeader: string | undefined,

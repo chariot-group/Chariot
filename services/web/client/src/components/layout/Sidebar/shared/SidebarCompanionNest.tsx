@@ -35,7 +35,7 @@ export interface SidebarCompanionNestProps {
 
 /**
  * Collapsible wrapper for nested linked NPC rows — header aligned with GM `GroupList`.
- * @see FR-sidebar-linked-npc-nesting-collapse
+ * @see FR-sidebar-npc-link
  */
 export function SidebarCompanionNest({
   nestId,

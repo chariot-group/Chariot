@@ -6,7 +6,7 @@ import {
   selectBattleStarted,
   selectBattleStateSnapshot,
   selectInitiativeTrackerRows,
-  selectIsInSession,
+  selectIsSessionLaunched,
   selectSessionCode,
   selectSessionParticipants,
   applyRemoteBattleState,
@@ -55,7 +55,7 @@ function isGameMaster(
 export function useSessionBattleSync() {
   const dispatch = useAppDispatch();
   const store = useAppStore();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const code = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const user = useAppSelector(selectUser);
@@ -95,7 +95,7 @@ export function useSessionBattleSync() {
   }, []);
 
   useEffect(() => {
-    if (!isInSession) {
+    if (!isSessionLaunched) {
       registerBattleStateBroadcastScheduler(null);
       registerBattleStateRequestResponder(null);
       return;
@@ -121,10 +121,10 @@ export function useSessionBattleSync() {
       registerBattleStateBroadcastScheduler(null);
       registerBattleStateRequestResponder(null);
     };
-  }, [broadcastSnapshot, isInSession]);
+  }, [broadcastSnapshot, isSessionLaunched]);
 
   useEffect(() => {
-    if (!isInSession) {
+    if (!isSessionLaunched) {
       registerConcentrationUpdateApplier(null);
       return;
     }
@@ -155,12 +155,12 @@ export function useSessionBattleSync() {
     return () => {
       registerConcentrationUpdateApplier(null);
     };
-  }, [dispatch, isInSession, store]);
+  }, [dispatch, isSessionLaunched, store]);
 
   const isGm = isGameMaster(participants, currentUserId);
 
   useEffect(() => {
-    if (!isInSession || !isGm) return;
+    if (!isSessionLaunched || !isGm) return;
 
     const hadBroadcastVisibleBattle = hasBroadcastVisibleBattleRef.current;
     const shouldBroadcast = shouldBroadcastBattleStateSnapshot(snapshot, hadBroadcastVisibleBattle);
@@ -181,10 +181,10 @@ export function useSessionBattleSync() {
         debounceRef.current = null;
       }
     };
-  }, [battleInitialized, isGm, isInSession, snapshot]);
+  }, [battleInitialized, isGm, isSessionLaunched, snapshot]);
 
   useEffect(() => {
-    if (!isInSession || !code || isGm) return;
+    if (!isSessionLaunched || !code || isGm) return;
 
     const socket = getPooledSessionSocket();
     if (!socket) return;
@@ -209,10 +209,10 @@ export function useSessionBattleSync() {
       socket.off("session:battle-state-updated", onBattleStateUpdated);
       socket.off("connect", requestState);
     };
-  }, [battleInitialized, code, dispatch, isGm, isInSession, snapshot.battleStarted]);
+  }, [battleInitialized, code, dispatch, isGm, isSessionLaunched, snapshot.battleStarted]);
 
   useEffect(() => {
-    if (!isInSession || !code || !isGm) return;
+    if (!isSessionLaunched || !code || !isGm) return;
 
     const socket = getPooledSessionSocket();
     if (!socket) return;
@@ -280,5 +280,5 @@ export function useSessionBattleSync() {
       socket.off("session:participant-joined", onParticipantJoined);
       socket.off("session:player-concentration-updated", onPlayerConcentrationUpdated);
     };
-  }, [broadcastSnapshot, code, dispatch, isGm, isInSession, participants, store]);
+  }, [broadcastSnapshot, code, dispatch, isGm, isSessionLaunched, participants, store]);
 }

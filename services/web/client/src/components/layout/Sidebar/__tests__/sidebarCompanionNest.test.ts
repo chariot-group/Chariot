@@ -15,8 +15,8 @@ const nestPath = resolve(
   "src/components/layout/Sidebar/shared/SidebarCompanionNest.tsx",
 );
 
-/** @see FR-sidebar-linked-npc-nesting-collapse */
-describe("FR-sidebar-linked-npc-nesting-collapse — sidebar UI wiring", () => {
+/** @see FR-sidebar-npc-link */
+describe("FR-sidebar-npc-link — sidebar UI wiring", () => {
   it("nominal: Mes personnages uses collapsible companion nest", () => {
     const source = readFileSync(playerListPath, "utf8");
     expect(source).toContain("SidebarCompanionNest");

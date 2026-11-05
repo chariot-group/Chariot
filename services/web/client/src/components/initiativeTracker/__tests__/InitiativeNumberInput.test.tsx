@@ -14,8 +14,8 @@ vi.mock("@/components/ui/tooltip", () => ({
 
 import { InitiativeNumberInput } from "@/components/initiativeTracker/InitiativeNumberInput";
 
-/** @see FR-tracker-initiative-modifier-display */
-describe("FR-tracker-initiative-modifier-display — InitiativeNumberInput", () => {
+/** @see FR-combat-initiative-tracker */
+describe("FR-combat-initiative-tracker — InitiativeNumberInput", () => {
   it("nominal: shows roll derived from total - modifier", () => {
     const html = renderToStaticMarkup(
       <InitiativeNumberInput

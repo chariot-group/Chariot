@@ -24,7 +24,7 @@ const playerParticipant: SessionParticipant = {
   sessionId: "sess-1",
 };
 
-describe("FR-media-avatar-read-access — session lobby avatar batch", () => {
+describe("FR-media-avatars — session lobby avatar batch", () => {
   it("nominal: GM uses user scope for profile picture", () => {
     const items = buildSessionLobbyAvatarBatchItems({
       participants: [gmParticipant],

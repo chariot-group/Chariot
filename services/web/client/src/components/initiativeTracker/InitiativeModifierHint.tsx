@@ -11,7 +11,7 @@ type InitiativeModifierHintProps = {
 };
 
 /**
- * FR-tracker-initiative-modifier-display — bonus fiche (icône dés + valeur signée + tooltip).
+ * FR-combat-initiative-tracker — bonus fiche (icône dés + valeur signée + tooltip).
  */
 export function InitiativeModifierHint({
   modifierText,

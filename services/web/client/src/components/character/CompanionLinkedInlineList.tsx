@@ -1,4 +1,4 @@
-/** @see FR-player-delete-companion-choice, FR-player-duplicate-companion-choice */
+/** @see FR-player-companion-choice */
 
 export interface CompanionLinkedInlineListProps {
   label: string;

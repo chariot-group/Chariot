@@ -1,4 +1,4 @@
-/** @see FR-player-duplicate-companion-choice */
+/** @see FR-player-companion-choice */
 
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { NPC } from "@/types/character";
@@ -31,7 +31,7 @@ const npc = (id: string, linkedPlayerId: string, groups: string[] = []): NPC =>
     groups,
   }) as unknown as NPC;
 
-describe("FR-player-duplicate-companion-choice", () => {
+describe("FR-player-companion-choice", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

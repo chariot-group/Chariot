@@ -10,7 +10,7 @@ import { Player, NPC, Spell } from '@/types/character';
 import { createPlayerSchema, createNpcSchema } from '@/schemas/character';
 import { makeZodMessages } from '@/lib/zodErrorMap';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectIsInSession, selectSessionCompanionNpcs, upsertSessionCompanionNpc } from '@/store/slices/sessionSlice';
+import { selectIsSessionLaunched, selectSessionCompanionNpcs, upsertSessionCompanionNpc } from '@/store/slices/sessionSlice';
 import { upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from '@/store/slices/characterSlice';
 import { withNormalizedLinkedPlayerId } from '@/lib/sessionPlayerCompanions';
 import { upsertCharacterInGroups } from '@/store/slices/groupSlice';
@@ -149,7 +149,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
     const refetch = refetchCharacter ?? refetchInternal;
     const toast = useToast();
     const dispatch = useAppDispatch();
-    const isInSession = useAppSelector(selectIsInSession);
+    const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
     const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
     const t = useTranslations('characterForm');
     const tZod = useTranslations('zodErrors');
@@ -310,7 +310,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
             const sanitizedData = sanitizeCharacterFormData(data);
 
-            if (type === 'players' && !isInSession) {
+            if (type === 'players' && !isSessionLaunched) {
                 delete (sanitizedData as Record<string, unknown>).exhaustionLevel;
                 delete (sanitizedData as Record<string, unknown>).inspiration;
             }
@@ -364,7 +364,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
             const sanitizedData = sanitizeCharacterFormData(data);
 
-            if (type === 'players' && !isInSession) {
+            if (type === 'players' && !isSessionLaunched) {
                 delete (sanitizedData as Record<string, unknown>).exhaustionLevel;
                 delete (sanitizedData as Record<string, unknown>).inspiration;
             }

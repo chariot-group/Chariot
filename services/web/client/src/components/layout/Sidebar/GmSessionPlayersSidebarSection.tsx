@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectUser } from "@/store/slices/userSlice";
 import {
-  selectIsInSession,
+  selectIsSessionLaunched,
   selectSessionCode,
   selectSessionParticipants,
   selectCharacterSheetRemoteVersions,
@@ -59,7 +59,7 @@ export default function GmSessionPlayersSidebarSection() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const { isMobile, setOpenMobile } = useSidebar();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const sessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const currentUser = useAppSelector(selectUser);
@@ -170,7 +170,7 @@ export default function GmSessionPlayersSidebarSection() {
     const roster = participantsRef.current.filter(
       (p) => p.status !== "gameMaster" && p.characterId != null && p.characterId.length > 0,
     );
-    if (!isInSession || !isGm || !sessionCode || roster.length === 0) {
+    if (!isSessionLaunched || !isGm || !sessionCode || roster.length === 0) {
       prevRemoteVersionsRef.current = {};
       return;
     }
@@ -212,11 +212,11 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [fetchCharacterMeta, isGm, isInSession, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
+  }, [fetchCharacterMeta, isGm, isSessionLaunched, remoteVersions, rosterRemoteVersionsKey, rosterStableKey, sessionCode]);
 
   /** Chargement initial / changement de roster : requêtes espacées pour rester sous le rate limit gateway. */
   React.useEffect(() => {
-    if (!isInSession || !isGm || !sessionCode) {
+    if (!isSessionLaunched || !isGm || !sessionCode) {
       return;
     }
 
@@ -260,10 +260,10 @@ export default function GmSessionPlayersSidebarSection() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [dispatch, displayNames, fetchCharacterMeta, isGm, isInSession, rosterStableKey, sessionCode]);
+  }, [dispatch, displayNames, fetchCharacterMeta, isGm, isSessionLaunched, rosterStableKey, sessionCode]);
 
   React.useEffect(() => {
-    if (!isInSession || !isGm || gmGuestCharacterIds.length === 0 || !sessionCode) return;
+    if (!isSessionLaunched || !isGm || gmGuestCharacterIds.length === 0 || !sessionCode) return;
     let cancelled = false;
     void (async () => {
       const updates: Record<string, SessionCharacterMeta> = {};
@@ -281,7 +281,7 @@ export default function GmSessionPlayersSidebarSection() {
     return () => {
       cancelled = true;
     };
-  }, [fetchCharacterMeta, isGm, isInSession, gmGuestCharacterIds, sessionCode]);
+  }, [fetchCharacterMeta, isGm, isSessionLaunched, gmGuestCharacterIds, sessionCode]);
 
   React.useEffect(() => {
     setGuestMeta((prev) => {
@@ -314,10 +314,10 @@ export default function GmSessionPlayersSidebarSection() {
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
     avatarBatchItems,
     sessionCode,
-    Boolean(isInSession && isGm && sessionCode && avatarBatchItems.length > 0),
+    Boolean(isSessionLaunched && isGm && sessionCode && avatarBatchItems.length > 0),
   );
 
-  if (!isInSession || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
+  if (!isSessionLaunched || !isGm || !sessionCode || (presenceRoster.length === 0 && gmGuestCharacterIds.length === 0)) {
     return null;
   }
 

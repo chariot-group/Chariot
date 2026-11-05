@@ -22,7 +22,7 @@ import {
   removeInitiativeTrackerRows,
   selectBattleInitialized,
   selectInitiativeTrackerRows,
-  selectIsInSession,
+  selectIsSessionLaunched,
   selectSessionCode,
   selectSessionCompanionNpcs,
   selectSessionParticipants,
@@ -69,7 +69,7 @@ export default function SessionPlayerCompanionSyncClient() {
   const t = useTranslations("characterDetail.companions");
   const tRef = useRef(t);
   tRef.current = t;
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const sessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const currentUser = useAppSelector(selectUser);
@@ -84,7 +84,7 @@ export default function SessionPlayerCompanionSyncClient() {
   const previousCompanionIdsRef = useRef<string[]>([]);
 
   useEffect(() => {
-    if (!isInSession || !isGm || !sessionCode) {
+    if (!isSessionLaunched || !isGm || !sessionCode) {
       if (companions.length > 0) {
         dispatch(setSessionCompanionNpcs([]));
       }
@@ -122,14 +122,14 @@ export default function SessionPlayerCompanionSyncClient() {
     };
     // companions.length is only used to avoid clobbering a successful cache on fetch failure
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, isGm, isInSession, playerIdsKey, sessionCode]);
+  }, [dispatch, isGm, isSessionLaunched, playerIdsKey, sessionCode]);
 
   useEffect(() => {
     const nextIds = companionCharacterIds(companions);
     const { added, removed } = diffCharacterIds(previousCompanionIdsRef.current, nextIds);
     previousCompanionIdsRef.current = nextIds;
 
-    if (!isInSession || !isGm || !battleInitialized) {
+    if (!isSessionLaunched || !isGm || !battleInitialized) {
       return;
     }
 
@@ -148,7 +148,7 @@ export default function SessionPlayerCompanionSyncClient() {
     if (rows.length > 0) {
       dispatch(appendInitiativeTrackerRows(rows));
     }
-  }, [battleInitialized, companionIdsKey, companions, dispatch, isGm, isInSession, trackerRows]);
+  }, [battleInitialized, companionIdsKey, companions, dispatch, isGm, isSessionLaunched, trackerRows]);
 
   return null;
 }

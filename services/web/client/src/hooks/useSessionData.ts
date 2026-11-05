@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { registerRemoteCharacterSheetUpdatedListener } from "@/lib/sessionCharacterSyncBridge";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,7 +28,8 @@ import { isSessionUnavailableMessage } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
 import type { Character } from "@/types/character";
 import type { Campaign } from "@/types/campaign";
-import { loadCompanionCountsForPlayers } from "@/lib/sessionJoinCompanionVisibility";
+import { loadCompanionCountsForPlayers, orderSessionCharactersLikeSidebar } from "@/lib/sessionJoinCompanionVisibility";
+import { selectCharactersWithoutGroup } from "@/store/slices/characterSlice";
 
 const CHARACTER_FETCH_RETRY_DELAY_MS = 350;
 
@@ -79,12 +80,17 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 
     const participantNames = useAppSelector(selectSessionParticipantDisplayNames);
     const isAlreadyInSession = useAppSelector(selectIsInSession);
+    const sidebarPlayers = useAppSelector(selectCharactersWithoutGroup);
 
     const [campaignLabel, setCampaignLabel] = useState<string | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
     const [participantAvatars, setParticipantAvatars] = useState<Record<string, string | null | undefined>>({});
     const [characterDetails, setCharacterDetails] = useState<Record<string, Character>>({});
-    const [myCharacters, setMyCharacters] = useState<Character[]>([]);
+    const [fetchedMyCharacters, setFetchedMyCharacters] = useState<Character[]>([]);
+    const myCharacters = useMemo(
+        () => orderSessionCharactersLikeSidebar(fetchedMyCharacters, sidebarPlayers),
+        [fetchedMyCharacters, sidebarPlayers],
+    );
     const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>(
         {},
     );
@@ -218,7 +224,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 
             try {
                 const res = await characterService.getPlayersWithoutGroup(1, 100);
-                setMyCharacters(res.data);
+                setFetchedMyCharacters(res.data);
                 void loadCompanionCountsForPlayers(
                     res.data.map((character) => character._id),
                     (ids) => characterService.getNpcsByLinkedPlayers(ids),

@@ -66,8 +66,8 @@ const renderActionSection = (actions: Partial<Action>[], title = "Actions") =>
 /** Heading of the list card, whatever extra markup (item count) it holds. */
 const headingText = (html: string) => html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/)?.[1].replace(/<[^>]+>/g, " ") ?? "";
 
-/** @see FR-character-action-section-visibility: Combat Action Section Visible When Empty */
-describe("FR-character-action-section-visibility — ActionSection", () => {
+/** @see FR-character-detail-view: Combat Action Section Visible When Empty */
+describe("FR-character-detail-view — ActionSection", () => {
   it("nominal: exposes section, priority group, pressed state, and action details region", () => {
     const html = renderActionSection([
       {

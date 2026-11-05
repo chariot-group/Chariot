@@ -120,7 +120,7 @@ export function normalizeInitiativeTrackerConditionEntry(entry: unknown): Initia
 
 export type InitiativeTrackerRowKind = "player" | "npc";
 
-/** FR-session-combat-navigation / FR-tracker-hp-life-status-decoupling — champs visibles pour les joueurs sur une ligne du tracker. */
+/** FR-session-combat-navigation / FR-tracker-vital-status — champs visibles pour les joueurs sur une ligne du tracker. */
 export interface InitiativeTrackerPlayerFieldVisibility {
   initiative: boolean;
   name: boolean;
@@ -219,7 +219,7 @@ export interface InitiativeTrackerRow {
   surname: string;
   avatar: string;
   initiative: number;
-  /** FR-tracker-initiative-modifier-display — miroir de `stats.initiative` (bonus fiche). */
+  /** FR-combat-initiative-tracker — miroir de `stats.initiative` (bonus fiche). */
   initiativeModifier: number;
   hitPoints: number;
   maxHitPoints: number;
@@ -344,6 +344,8 @@ export interface CurrentSessionState {
   sessionLobbyOpen: boolean;
   /** FR-tracker-custom-effects — catalogue d'effets custom réutilisable pendant la session. */
   customEffectCatalog: TrackerCustomEffectDefinition[];
+  /** FR-session-lobby-modal — code de la dernière session quittée (pré-remplit le dialog de retour). */
+  lastLeftSessionCode: string | null;
 }
 
 const initialState: CurrentSessionState = {
@@ -368,6 +370,7 @@ const initialState: CurrentSessionState = {
   sessionCompanionNpcs: [],
   sessionLobbyOpen: false,
   customEffectCatalog: [],
+  lastLeftSessionCode: null,
 };
 
 const normalizeTrackerRow = (row: InitiativeTrackerRow): InitiativeTrackerRow => {
@@ -580,6 +583,9 @@ const sessionSlice = createSlice({
       state.gmGuestCharacterIds = [];
       state.sessionCompanionNpcs = [];
       state.customEffectCatalog = [];
+    },
+    setLastLeftSessionCode: (state, action: PayloadAction<string | null>) => {
+      state.lastLeftSessionCode = action.payload;
     },
     setSessionStatus: (state, action: PayloadAction<SessionStatus>) => {
       state.status = action.payload;
@@ -865,6 +871,7 @@ const sessionSlice = createSlice({
 export const {
   setCurrentSession,
   clearCurrentSession,
+  setLastLeftSessionCode,
   setSessionStatus,
   setSessionExpiresAt,
   setSessionParticipants,
@@ -900,6 +907,9 @@ export const {
 
 export const selectCurrentSession = (state: RootState) => state.session;
 export const selectIsInSession = (state: RootState) => state.session.isInSession;
+/** FR-session-lobby-wheel-deposit — features de session débloquées uniquement après lancement (wheels + MJ). */
+export const selectIsSessionLaunched = (state: RootState) =>
+  state.session.isInSession && state.session.status === "launched";
 export const selectSessionCode = (state: RootState) => state.session.code;
 export const selectSessionCampaignId = (state: RootState) => state.session.campaignId;
 export const selectSessionStatus = (state: RootState) => state.session.status;
@@ -928,6 +938,7 @@ export const selectCharacterSheetRemoteVersions = (state: RootState) =>
 export const selectGmGuestCharacterIds = (state: RootState) => state.session.gmGuestCharacterIds ?? [];
 export const selectSessionCompanionNpcs = (state: RootState) => state.session.sessionCompanionNpcs ?? [];
 
+export const selectLastLeftSessionCode = (state: RootState) => state.session.lastLeftSessionCode ?? null;
 export const selectLastConsultedSheetPath = (state: RootState) => state.session.lastConsultedSheetPath ?? null;
 
 export const selectSessionLobbyOpen = (state: RootState) => state.session.sessionLobbyOpen ?? false;

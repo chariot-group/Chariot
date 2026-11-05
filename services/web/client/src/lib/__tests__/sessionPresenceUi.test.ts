@@ -5,6 +5,7 @@ import {
   isSessionTimerLow,
   resolveHeaderLogoClickIntent,
   resolveSessionLiveTone,
+  resolveHeaderSessionIndicatorTone,
   shouldNotifySessionTimeWarning,
   shouldShowSessionTimer,
 } from "@/lib/sessionPresenceUi";
@@ -108,5 +109,20 @@ describe("FR-session-lobby-navigation — 30-minute warning toast", () => {
         currentRemainingSeconds: null,
       }),
     ).toBe(false);
+  });
+});
+
+describe("FR-session-lobby-navigation — header indicator before launch", () => {
+  it("nominal: launched session uses the live tone", () => {
+    expect(resolveHeaderSessionIndicatorTone(true, 2 * 60 * 60)).toBe("live");
+  });
+
+  it("edge: lobby (not launched) shows preparing, even without remaining time", () => {
+    expect(resolveHeaderSessionIndicatorTone(false, null)).toBe("preparing");
+  });
+
+  it("guard: stale low remaining time does not show critical before launch", () => {
+    expect(resolveHeaderSessionIndicatorTone(false, 60)).toBe("preparing");
+    expect(resolveHeaderSessionIndicatorTone(true, 60)).toBe("critical");
   });
 });

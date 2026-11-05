@@ -968,7 +968,7 @@ class CodexService {
 
     /**
      * Aperçu uniquement : mappe un PJ Codex vers la forme NPC de `MonsterPreview`.
-     * Interdit pour la création (FR-codex-npc-search-entity-type).
+     * Interdit pour la création (FR-codex-search-filters).
      */
     convertCodexPlayerToChariotNPC(codexPlayerItem: CodexPlayerItem, lang: string): Partial<NPC> {
         const translation = codexPlayerItem.translations[lang];
@@ -1044,7 +1044,7 @@ class CodexService {
 
     /**
      * Mappe un PJ Codex vers un brouillon Player Chariot (création, kind préservé).
-     * @see FR-codex-npc-search-entity-type
+     * @see FR-codex-search-filters
      */
     convertCodexPlayerToChariotPlayer(codexPlayerItem: CodexPlayerItem, lang: string): Partial<Player> {
         const translation = codexPlayerItem.translations[lang];

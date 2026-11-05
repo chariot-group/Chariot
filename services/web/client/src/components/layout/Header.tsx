@@ -15,9 +15,9 @@ import type { RootState } from "@/store";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
-import { openSessionLobby, selectIsInSession } from "@/store/slices/sessionSlice";
+import { openSessionLobby, selectIsInSession, selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { resolveHeaderLogoClickIntent, resolveSessionLiveTone } from "@/lib/sessionPresenceUi";
+import { resolveHeaderLogoClickIntent, resolveHeaderSessionIndicatorTone } from "@/lib/sessionPresenceUi";
 import { useSessionRemainingSeconds } from "@/hooks/useSessionRemainingSeconds";
 import { cn } from "@/lib/utils";
 
@@ -33,13 +33,16 @@ export default function Header() {
   const t = useTranslations("header");
   const tSessionTime = useTranslations("sessionTime");
   const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const remainingSeconds = useSessionRemainingSeconds();
   const logoIntent = resolveHeaderLogoClickIntent(isInSession);
-  const liveTone = resolveSessionLiveTone(remainingSeconds);
+  const liveTone = resolveHeaderSessionIndicatorTone(isSessionLaunched, remainingSeconds);
 
   const logoAriaLabel =
     logoIntent === "openSessionLobby"
-      ? liveTone === "critical"
+      ? liveTone === "preparing"
+        ? t("logoAriaLabelInSessionPreparing")
+        : liveTone === "critical"
         ? t("logoAriaLabelInSessionCritical")
         : liveTone === "warning"
           ? t("logoAriaLabelInSessionWarning")
@@ -79,6 +82,7 @@ export default function Header() {
           aria-hidden
           className={cn(
             "pointer-events-none absolute top-[14%] right-[18%] size-2 rounded-full ring-1 ring-background motion-reduce:animate-none",
+            liveTone === "preparing" && "bg-muted-foreground",
             liveTone === "warning" && "bg-yellow motion-safe:animate-session-warning",
             liveTone === "critical" && "bg-red motion-safe:animate-session-critical",
             liveTone === "live" && "bg-red motion-safe:animate-session-live",
@@ -101,7 +105,7 @@ export default function Header() {
           <Tooltip>
             <TooltipTrigger asChild>{logoButton}</TooltipTrigger>
             <TooltipContent className="max-w-xs sm:max-w-sm">
-              {tSessionTime("tooltip")}
+              {liveTone === "preparing" ? tSessionTime("tooltipPreparing") : tSessionTime("tooltip")}
               {liveTone === "warning" ? ` ${tSessionTime("tooltipWarning")}` : null}
               {liveTone === "critical" ? ` ${tSessionTime("tooltipCritical")}` : null}
             </TooltipContent>

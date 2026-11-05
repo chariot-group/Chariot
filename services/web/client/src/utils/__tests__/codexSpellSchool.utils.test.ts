@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveCodexSpellSchoolLabel } from "@/utils/codexSpellSchool.utils";
 
-describe("FR-codex-spell-school-filter — resolveCodexSpellSchoolLabel", () => {
+describe("FR-codex-search-filters — resolveCodexSpellSchoolLabel", () => {
   it("nominal: returns trimmed string label", () => {
     expect(resolveCodexSpellSchoolLabel("  Évocation  ")).toBe("Évocation");
   });

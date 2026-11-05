@@ -106,6 +106,7 @@
     "joinSessionDialogTitle": "Join a Session",
     "joinSessionErrorNotFound": "No session found for this code.",
     "joinSessionErrorClosed": "This session is closed.",
+    "joinSessionErrorLaunched": "This session has already started: only its participants can rejoin.",
     "joinSessionSelectCharacterPlaceholder": "Select a character",
     "joinSessionCompanionCount": "{count, plural, one {# companion} other {# companions}}",
     "joinSessionCompanionCountShort": "+{count}",
@@ -1907,10 +1908,20 @@
       },
       "confirm": "Back to home"
     },
+    "sessionExit": {
+      "groupAria": "End of session actions",
+      "moreAria": "More end of session actions"
+    },
+    "sessionLeave": {
+      "title": "Leave the session?",
+      "descriptionPlayer": "You will be disconnected from the session and will need to join again to keep playing. Your character will be removed from the campaign groups.",
+      "descriptionGm": "You will be disconnected from the session and will need to join again to keep playing. The session will not be ended for the other participants.",
+      "confirm": "Leave session"
+    },
     "sessionCancel": {
-      "title": "Cancel session",
+      "title": "End session",
       "description": "You are about to end the session. All participants will be logged out and will need to join a new session to continue playing together.",
-      "confirm": "Yes, cancel the session"
+      "confirm": "End session"
     }
   },
   "header": {
@@ -1918,6 +1929,7 @@
     "sidebarCloseAriaLabel": "Close menu",
     "logoAriaLabelHome": "Return to home",
     "logoAriaLabelInSession": "Open session lobby",
+    "logoAriaLabelInSessionPreparing": "Open session lobby (session being prepared)",
     "logoAriaLabelInSessionWarning": "Open session lobby, less than 30 minutes remaining",
     "logoAriaLabelInSessionCritical": "Open session lobby, less than 5 minutes remaining",
     "communityLibraryTooltip": "Open the community library",
@@ -1932,6 +1944,7 @@
   },
   "sessionTime": {
     "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left.",
+    "tooltipPreparing": "Session being prepared, waiting for the GM to launch it.",
     "tooltipWarning": "Less than 30 minutes remaining.",
     "tooltipCritical": "Less than 5 minutes remaining.",
     "remainingAriaLabel": "Session time remaining: {time}",

@@ -24,7 +24,7 @@ type InitiativeNumberInputProps = {
   onCommit: (total: number) => void;
   className?: string;
   containerClassName?: string;
-  /** FR-tracker-initiative-modifier-display — bonus fiche affiché au-dessus de la saisie. */
+  /** FR-combat-initiative-tracker — bonus fiche affiché au-dessus de la saisie. */
   modifier?: number | null;
   modifierAriaLabel?: string;
   showModifier?: boolean;

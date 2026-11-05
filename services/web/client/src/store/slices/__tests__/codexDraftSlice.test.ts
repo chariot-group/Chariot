@@ -6,7 +6,7 @@ import codexDraftReducer, {
 } from "@/store/slices/codexDraftSlice";
 import type { NPC, Player } from "@/types/character";
 
-describe("FR-codex-npc-search-entity-type — kind-preserving drafts", () => {
+describe("FR-codex-search-filters — kind-preserving drafts", () => {
   it("nominal: storing a Player draft clears any NPC draft", () => {
     let state = codexDraftReducer(undefined, setNpcCodexDraft({ firstname: "Goblin" } as Partial<NPC>));
     state = codexDraftReducer(state, setPlayerCodexDraft({ firstname: "Aragorn" } as Partial<Player>));

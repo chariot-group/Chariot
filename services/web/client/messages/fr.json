@@ -106,6 +106,7 @@
     "joinSessionDialogTitle": "Rejoindre une session",
     "joinSessionErrorNotFound": "Aucune session trouvée pour ce code.",
     "joinSessionErrorClosed": "Cette session est clôturée.",
+    "joinSessionErrorLaunched": "Cette session est déjà lancée : seuls ses participants peuvent la rejoindre.",
     "joinSessionSelectCharacterPlaceholder": "Sélectionner un personnage",
     "joinSessionCompanionCount": "{count, plural, one {# compagnon} other {# compagnons}}",
     "joinSessionCompanionCountShort": "+{count}",
@@ -1911,6 +1912,16 @@
       },
       "confirm": "Retourner à l'accueil"
     },
+    "sessionExit": {
+      "groupAria": "Actions de fin de session",
+      "moreAria": "Autres actions de fin de session"
+    },
+    "sessionLeave": {
+      "title": "Quitter la session ?",
+      "descriptionPlayer": "Vous serez déconnecté de la session et devrez la rejoindre à nouveau pour continuer à jouer. Votre personnage sera retiré des groupes de la campagne.",
+      "descriptionGm": "Vous serez déconnecté de la session et devrez la rejoindre à nouveau pour continuer à jouer. La session ne sera pas clôturée pour les autres participants.",
+      "confirm": "Quitter la session"
+    },
     "sessionCancel": {
       "title": "Clôturer la session",
       "description": "Vous vous apprêterez à clôturer la session. Tous les participants seront déconnectés et devront rejoindre une nouvelle session pour continuer à jouer ensemble.",
@@ -1922,6 +1933,7 @@
     "sidebarCloseAriaLabel": "Fermer le menu",
     "logoAriaLabelHome": "Retour à l'accueil",
     "logoAriaLabelInSession": "Ouvrir le lobby de session",
+    "logoAriaLabelInSessionPreparing": "Ouvrir le lobby de session (session en préparation)",
     "logoAriaLabelInSessionWarning": "Ouvrir le lobby de session, moins de 30 minutes restantes",
     "logoAriaLabelInSessionCritical": "Ouvrir le lobby de session, moins de 5 minutes restantes",
     "communityLibraryTooltip": "Accéder à la librairie communautaire",
@@ -1936,6 +1948,7 @@
   },
   "sessionTime": {
     "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée.",
+    "tooltipPreparing": "Session en préparation, en attente du lancement par le MJ.",
     "tooltipWarning": "Il reste moins de 30 minutes.",
     "tooltipCritical": "Il reste moins de 5 minutes.",
     "remainingAriaLabel": "Temps restant de la session : {time}",

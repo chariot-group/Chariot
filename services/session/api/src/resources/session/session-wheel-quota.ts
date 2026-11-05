@@ -1,5 +1,5 @@
 /**
- * Invariant de quota wheels en lobby (FR-session-lobby-wheel-quota-invariant).
+ * Invariant de quota wheels en lobby (FR-session-lobby-wheel-deposit).
  */
 
 export function sumTokenMap(tokensByUser: Record<string, number>): number {

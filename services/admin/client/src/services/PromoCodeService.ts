@@ -42,25 +42,25 @@ export const PROMO_FORM_DEFAULT_VALUES: Partial<PromoFormData> = {
     isFirstOrderOnly: false,
 };
 
-/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-admin-promo-lifecycle. */
+/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-admin-promo-affiliation-lifecycle. */
 export function getPromoCodeDeactivatePath(id: string): string {
     return `/promo-codes/${id}/deactivate`;
 }
 
-/** Path and body for PATCH reactivation. See FR-admin-promo-lifecycle. */
+/** Path and body for PATCH reactivation. See FR-admin-promo-affiliation-lifecycle. */
 export function getPromoCodeReactivatePath(id: string): string {
     return `/promo-codes/${id}`;
 }
 
 export const PROMO_CODE_REACTIVATE_PAYLOAD = { isActive: true } as const;
 
-/** @see FR-admin-promo-expiration-display — aligned with payment validation (`now > expiresAt`). */
+/** @see FR-admin-promo-affiliation-lifecycle — aligned with payment validation (`now > expiresAt`). */
 export function isPromoCodeExpired(expiresAt: string | null, now: Date = new Date()): boolean {
     if (!expiresAt) return false;
     return now > new Date(expiresAt);
 }
 
-/** @see FR-admin-promo-expiration-display */
+/** @see FR-admin-promo-affiliation-lifecycle */
 export function isPromoCodeEffectivelyActive(
     promo: Pick<PromoCode, "isActive" | "expiresAt">,
     now: Date = new Date(),

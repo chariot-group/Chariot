@@ -106,6 +106,7 @@
     "joinSessionDialogTitle": "Unirse a una sesión",
     "joinSessionErrorNotFound": "No se encontró ninguna sesión para este código.",
     "joinSessionErrorClosed": "Esta sesión está cerrada.",
+    "joinSessionErrorLaunched": "Esta sesión ya ha comenzado: solo sus participantes pueden volver a unirse.",
     "joinSessionSelectCharacterPlaceholder": "Seleccionar un personaje",
     "joinSessionCompanionCount": "{count, plural, one {# compañero} other {# compañeros}}",
     "joinSessionCompanionCountShort": "+{count}",
@@ -1918,6 +1919,7 @@
     "sidebarCloseAriaLabel": "Cerrar el menú",
     "logoAriaLabelHome": "Volver al inicio",
     "logoAriaLabelInSession": "Abrir el lobby de la sesión",
+    "logoAriaLabelInSessionPreparing": "Abrir el lobby de la sesión (sesión en preparación)",
     "logoAriaLabelInSessionWarning": "Abrir el lobby de la sesión, quedan menos de 30 minutos",
     "logoAriaLabelInSessionCritical": "Abrir el lobby de la sesión, quedan menos de 5 minutos",
     "communityLibraryTooltip": "Acceder a la biblioteca comunitaria",
@@ -1932,6 +1934,7 @@
   },
   "sessionTime": {
     "tooltip": "Una sesión está actualmente en curso. Tiene una validez de 8 horas. Se cierra automáticamente al expirar este período o después de 5 minutos si todos los participantes la han abandonado.",
+    "tooltipPreparing": "Sesión en preparación, a la espera de que el DJ la inicie.",
     "tooltipWarning": "Quedan menos de 30 minutos.",
     "tooltipCritical": "Quedan menos de 5 minutos.",
     "remainingAriaLabel": "Tiempo restante de la sesión: {time}",

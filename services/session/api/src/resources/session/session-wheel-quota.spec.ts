@@ -3,8 +3,8 @@ import {
     sumTokenMap,
 } from '@/resources/session/session-wheel-quota';
 
-/** @see FR-session-lobby-wheel-quota-invariant */
-describe("FR-session-lobby-wheel-quota-invariant — clampTokensToParticipantQuota", () => {
+/** @see FR-session-lobby-wheel-deposit */
+describe("FR-session-lobby-wheel-deposit — clampTokensToParticipantQuota", () => {
     it("nominal: total already under quota → no change", () => {
         expect(clampTokensToParticipantQuota({ a: 1, b: 1 }, 3)).toEqual({
             tokens: { a: 1, b: 1 },

@@ -1,4 +1,4 @@
-/** @see FR-player-duplicate-companion-choice */
+/** @see FR-player-companion-choice */
 
 import type { AppDispatch } from "@/store";
 import { groupRefToId } from "@/utils/group.utils";
