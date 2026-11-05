@@ -179,19 +179,6 @@ export default function PlayerGeneralTabContent({
           </InfoTooltip>
         </GeneralTile>
 
-        <AbilitiesSection
-          abilities={player.abilities}
-          accentColor={accentColor}
-          title={t("characterAbilities")}
-          headingId="abilities-heading"
-          boundedList
-          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
-          className={`gap-3 ${SLOTS.abilities}`}
-          characterId={player._id}
-          characterKind="players"
-          onAfterAbilityUse={onCharacterUpdate as () => void}
-        />
-
         <GeneralSectionCard
           headingId="skills-heading"
           title={t("skills")}
@@ -228,6 +215,19 @@ export default function PlayerGeneralTabContent({
               ))}
           </div>
         </GeneralSectionCard>
+
+        <AbilitiesSection
+          abilities={player.abilities}
+          accentColor={accentColor}
+          title={t("characterAbilities")}
+          headingId="abilities-heading"
+          boundedList
+          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
+          className={`gap-3 ${SLOTS.abilities}`}
+          characterId={player._id}
+          characterKind="players"
+          onAfterAbilityUse={onCharacterUpdate as () => void}
+        />
 
         <GeneralSectionCard
           headingId="proficiencies-heading"

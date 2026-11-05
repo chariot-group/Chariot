@@ -74,19 +74,6 @@ export default function NpcGeneralTabContent({
           showPassivePerception
         />
 
-        <AbilitiesSection
-          abilities={npc.abilities}
-          accentColor={accentColor}
-          title={t("characterAbilities")}
-          headingId="abilities-heading"
-          boundedList
-          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
-          className={`gap-3 ${SLOTS.abilities}`}
-          characterId={npc._id}
-          characterKind="npcs"
-          onAfterAbilityUse={onCharacterUpdate}
-        />
-
         <GeneralSectionCard
           headingId="skills-heading"
           title={t("skills")}
@@ -120,6 +107,19 @@ export default function NpcGeneralTabContent({
               ))}
           </div>
         </GeneralSectionCard>
+
+        <AbilitiesSection
+          abilities={npc.abilities}
+          accentColor={accentColor}
+          title={t("characterAbilities")}
+          headingId="abilities-heading"
+          boundedList
+          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
+          className={`gap-3 ${SLOTS.abilities}`}
+          characterId={npc._id}
+          characterKind="npcs"
+          onAfterAbilityUse={onCharacterUpdate}
+        />
 
         <GeneralSectionCard
           headingId="proficiencies-heading"

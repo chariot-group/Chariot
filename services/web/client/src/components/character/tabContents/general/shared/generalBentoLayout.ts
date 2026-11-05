@@ -54,27 +54,34 @@ export const BENTO_HALF_SLOT = "min-w-0 col-span-2";
 const FULL = "min-w-0 col-span-2 @sheet-md:col-span-4";
 const HALF = BENTO_HALF_SLOT;
 
+/**
+ * Skills band (PC and NPC, DOM order Skills · Ability scores · Saving throws · Abilities · Proficiencies).
+ * - `@sheet-lg`: Skills (6 cols, 2 rows) · Ability scores and Saving throws side by side (3 + 3), Abilities
+ *   under both (6 cols, 2 rows) · Proficiencies under the skills (6 cols).
+ * - `@sheet-xl`: Skills (6, 2 rows) · Ability scores over Saving throws (3) · Abilities (3, 2 rows), placed
+ *   explicitly on the band rows (`row-start` given per layout, as the first band height differs; literal
+ *   classes so Tailwind generates them).
+ */
+const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start-3") =>
+  ({
+    skills: `${HALF} @sheet-md:row-span-3 @sheet-lg:row-span-2 @sheet-lg:col-span-6`,
+    abilityScores: `${HALF} @sheet-lg:col-span-3`,
+    savingThrows: `${HALF} @sheet-lg:col-span-3`,
+    abilities: `${HALF} @sheet-lg:col-span-6 @sheet-lg:row-span-2 @sheet-xl:col-span-3 @sheet-xl:col-start-10 ${bandRowStart}`,
+  }) as const;
+
 export const PLAYER_VIEW_SLOTS = {
   character: `${FULL} @sheet-lg:col-span-4 @sheet-lg:row-span-2 @sheet-xl:col-span-3`,
   statistics: `${FULL} @sheet-lg:col-span-8 @sheet-xl:col-span-5 @sheet-xl:row-span-2`,
   /** Proficiency bonus, passive perception, inspiration, exhaustion (one row next to the statistics from `@sheet-xl`). */
   tile: "min-w-0 col-span-1 @sheet-lg:col-span-2 @sheet-xl:col-span-1",
+  /** The first band takes 2 rows from `@sheet-xl`, so the skills band starts on row 3. */
+  ...skillsBand("@sheet-xl:row-start-3"),
   /**
-   * Tall and leftmost (same as NPC): on tablet it spans the Ability scores + Saving throws + Proficiencies
-   * rows, from `@sheet-lg` the Ability scores + Saving throws rows; wide enough from `@sheet-lg` for a
-   * 3-column list (container queries).
+   * Under the skills from `@sheet-lg` (sections in columns, container queries). From `@sheet-xl`
+   * it moves up under the tiles, next to the statistics (explicit placement, DOM order unchanged).
    */
-  skills: `${HALF} @sheet-md:row-span-3 @sheet-lg:row-span-2 @sheet-lg:col-span-8`,
-  abilityScores: `${HALF} @sheet-lg:col-span-4`,
-  /** Right under the ability scores. */
-  savingThrows: `${HALF} @sheet-lg:col-span-4`,
-  /**
-   * Half width on tablet, under the saving throws. Full width from `@sheet-lg`: its sections flow in
-   * columns (container queries). From `@sheet-xl` it moves up under the tiles, next to the statistics
-   * (explicit placement, DOM order unchanged).
-   */
-  proficiencies: `${HALF} @sheet-lg:col-span-12 @sheet-xl:col-span-4 @sheet-xl:col-start-9 @sheet-xl:row-start-2`,
-  abilities: `${FULL} @sheet-lg:col-span-12`,
+  proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-4 @sheet-xl:col-start-9 @sheet-xl:row-start-2`,
 } as const;
 
 /**
@@ -85,26 +92,20 @@ export const PLAYER_EDIT_SLOTS = {
   ...PLAYER_VIEW_SLOTS,
   character: `${FULL} @sheet-lg:col-span-4 @sheet-lg:row-span-3 @sheet-xl:col-span-3 @sheet-xl:row-span-2`,
   tile: `${HALF} @sheet-lg:col-span-4 @sheet-xl:col-span-2`,
-  proficiencies: `${HALF} @sheet-lg:col-span-12`,
+  proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-12`,
 } as const;
 
 /**
- * NPC (GM constraint): tall Skills card as far left as possible (wide enough for a 3-column list),
- * Ability scores then Saving throws stacked just to its right (then Proficiencies on tablet).
- * Same placement from `@sheet-lg` to `@sheet-xl`.
+ * NPC (GM constraint): tall Skills card as far left as possible, same skills band as the PC.
  */
 export const NPC_VIEW_SLOTS = {
   /** No row span: a sparse NPC identity must not be stretched next to the statistics. */
   character: `${FULL} @sheet-lg:col-span-4`,
   statistics: `${FULL} @sheet-lg:col-span-8`,
-  /** Tall: on tablet spans the Ability scores + Saving throws + Proficiencies rows, from `@sheet-lg` the first two. */
-  skills: `${HALF} @sheet-md:row-span-3 @sheet-lg:row-span-2 @sheet-lg:col-span-8`,
-  abilityScores: `${HALF} @sheet-lg:col-span-4`,
-  /** Right under the ability scores. */
-  savingThrows: `${HALF} @sheet-lg:col-span-4`,
-  /** Half width on tablet, under the saving throws; full width from `@sheet-lg` (sections in columns). */
-  proficiencies: `${HALF} @sheet-lg:col-span-12`,
-  abilities: `${FULL} @sheet-lg:col-span-12`,
+  /** The first band is a single row, so the skills band starts on row 2. */
+  ...skillsBand("@sheet-xl:row-start-2"),
+  /** Under the skills from `@sheet-lg`, full width from `@sheet-xl` (sections in columns). */
+  proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-12`,
 } as const;
 
 export const NPC_EDIT_SLOTS = NPC_VIEW_SLOTS;

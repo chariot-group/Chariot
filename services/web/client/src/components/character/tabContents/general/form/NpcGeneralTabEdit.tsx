@@ -350,20 +350,6 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
           </div>
         </NpcStatisticsUpdate>
 
-        {/* Capacités et traits */}
-        <AbilitiesUpdateSection
-          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
-          title={t("abilitiesAndTraits")}
-          form={form}
-          fieldArrayName="abilities"
-          fields={abilitiesFields}
-          append={appendAbility}
-          remove={removeAbility}
-          accentColor={accentColor}
-          abilityCounterMode="npc"
-          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
-        />
-
         <GeneralSectionCard
           headingId="skills-heading-edit"
           title={t("skills")}
@@ -395,6 +381,20 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
             className="flex-1 content-evenly"
           />
         </GeneralSectionCard>
+
+        {/* Capacités et traits */}
+        <AbilitiesUpdateSection
+          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
+          title={t("abilitiesAndTraits")}
+          form={form}
+          fieldArrayName="abilities"
+          fields={abilitiesFields}
+          append={appendAbility}
+          remove={removeAbility}
+          accentColor={accentColor}
+          abilityCounterMode="npc"
+          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
+        />
 
         {/* Maîtrises */}
         <GeneralSectionCard

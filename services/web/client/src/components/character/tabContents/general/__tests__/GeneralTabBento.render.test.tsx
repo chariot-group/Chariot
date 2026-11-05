@@ -215,24 +215,21 @@ describe("General tab — single bento grid", () => {
     }
   });
 
-  it("edge: abilities and traits come right after the statistics (and PC tiles), before the skills", () => {
-    const skillsIds = {
-      "player view": "skills-heading",
-      "player edit": "skills-heading-edit",
-      "npc view": "skills-heading",
-      "npc edit": "skills-heading-edit",
+  it("edge: abilities and traits come after the saving throws and before the proficiencies (skills band)", () => {
+    const ids = {
+      "player view": ["saving-throws-heading", "proficiencies-heading"],
+      "player edit": ["character-savingthrows-edit", "character-proficiencies-edit"],
+      "npc view": ["saving-throws-heading", "proficiencies-heading"],
+      "npc edit": ["character-savingthrows-edit", "character-proficiencies-edit"],
     } as const;
-    for (const [name, skillsId] of Object.entries(skillsIds)) {
+    for (const [name, [scoresId, savesId]] of Object.entries(ids)) {
       const html = CASES[name as keyof typeof CASES]();
       const abilities = html.indexOf('data-stub="abilities"');
-      const after = name.startsWith("player")
-        ? html.lastIndexOf('data-stub="statistics"', abilities)
-        : html.indexOf('data-stub="statistics"');
 
       expect(html.match(/data-stub="abilities"/g), name).toHaveLength(1);
-      expect(after, name).toBeGreaterThan(-1);
-      expect(abilities, name).toBeGreaterThan(after);
-      expect(abilities, name).toBeLessThan(html.indexOf(`id="${skillsId}"`));
+      expect(abilities, name).toBeGreaterThan(html.indexOf(`id="${scoresId}"`));
+      expect(abilities, name).toBeLessThan(html.indexOf(`id="${savesId}"`));
+      expect(html.indexOf(`id="${scoresId}"`), name).toBeGreaterThan(-1);
     }
   });
 

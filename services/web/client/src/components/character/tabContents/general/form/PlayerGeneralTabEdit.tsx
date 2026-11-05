@@ -825,20 +825,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
           />
         </GeneralSectionCard>
 
-        {/* Capacités et traits */}
-        <AbilitiesUpdateSection
-          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
-          title={t("abilitiesAndTraits")}
-          form={form}
-          fieldArrayName="abilities"
-          fields={abilitiesFields}
-          append={appendAbility}
-          remove={removeAbility}
-          accentColor={accentColor}
-          abilityCounterMode="player"
-          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
-        />
-
         <SkillsEditCard
           form={form}
           accentColor={accentColor}
@@ -868,6 +854,20 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
             className="flex-1 content-evenly"
           />
         </GeneralSectionCard>
+
+        {/* Capacités et traits */}
+        <AbilitiesUpdateSection
+          className={`${GENERAL_BENTO_STACK_GAP_CLASS} ${SLOTS.abilities}`}
+          title={t("abilitiesAndTraits")}
+          form={form}
+          fieldArrayName="abilities"
+          fields={abilitiesFields}
+          append={appendAbility}
+          remove={removeAbility}
+          accentColor={accentColor}
+          abilityCounterMode="player"
+          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
+        />
 
         {/* Maîtrises */}
         <GeneralSectionCard
