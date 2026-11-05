@@ -46,6 +46,34 @@ describe("createLazyComponentLoader (FR-web-first-load-performance)", () => {
   });
 });
 
+describe("createLazyComponentLoader.preload", () => {
+  it("nominal: prefetches so the next load resolves from cache", async () => {
+    const loader = vi.fn().mockResolvedValue({ default: Dummy });
+    const lazy = createLazyComponentLoader(loader);
+
+    lazy.preload();
+    await lazy.load();
+
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(lazy.getLoaded()).toBe(Dummy);
+  });
+
+  it("failure: swallows a failed prefetch and lets the next load retry", async () => {
+    const loader = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce({ default: Dummy });
+    const lazy = createLazyComponentLoader(loader);
+
+    expect(() => lazy.preload()).not.toThrow();
+    // Let the rejected prefetch settle before retrying.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    await expect(lazy.load()).resolves.toBe(Dummy);
+    expect(loader).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe("shouldMountLazyDialog", () => {
   it("nominal: never mounts a dialog that was never opened", () => {
     expect(shouldMountLazyDialog(false, false)).toBe(false);

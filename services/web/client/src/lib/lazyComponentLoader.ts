@@ -7,6 +7,8 @@ export interface LazyComponentLoader<P> {
   getLoaded: () => ComponentType<P> | null;
   /** Fetches the module once; concurrent calls share the same request, a failure allows a retry. */
   load: () => Promise<ComponentType<P>>;
+  /** Fire-and-forget `load()` for hover/focus prefetch; failures are left to the render path. */
+  preload: () => void;
 }
 
 /**
@@ -17,23 +19,30 @@ export function createLazyComponentLoader<P>(loader: LazyModuleLoader<P>): LazyC
   let loaded: ComponentType<P> | null = null;
   let pending: Promise<ComponentType<P>> | null = null;
 
+  const load = () => {
+    if (loaded) return Promise.resolve(loaded);
+    if (!pending) {
+      pending = loader()
+        .then((module) => {
+          loaded = module.default;
+          return module.default;
+        })
+        .catch((error: unknown) => {
+          // Drop the rejected promise so the next open retries the fetch.
+          pending = null;
+          throw error;
+        });
+    }
+    return pending;
+  };
+
   return {
     getLoaded: () => loaded,
-    load: () => {
-      if (loaded) return Promise.resolve(loaded);
-      if (!pending) {
-        pending = loader()
-          .then((module) => {
-            loaded = module.default;
-            return module.default;
-          })
-          .catch((error: unknown) => {
-            // Drop the rejected promise so the next open retries the fetch.
-            pending = null;
-            throw error;
-          });
-      }
-      return pending;
+    load,
+    preload: () => {
+      load().catch(() => {
+        // Prefetch only: the render path reports the failure and retries.
+      });
     },
   };
 }

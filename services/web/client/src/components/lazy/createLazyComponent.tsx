@@ -164,13 +164,7 @@ export function createLazyDialog<P extends LazyDialogProps>(loader: LazyModuleLo
     return props.open && status === "loading" ? <LazyLoadingStatus overlay /> : null;
   }
 
-  const preload = () => {
-    lazy.load().catch(() => {
-      // Prefetch only: the open path reports and retries.
-    });
-  };
-
-  return Object.assign(LazyDialog, { preload });
+  return Object.assign(LazyDialog, { preload: lazy.preload });
 }
 
 /**
@@ -209,11 +203,5 @@ export function createLazyComponent<P extends object>(loader: LazyModuleLoader<P
     return <LazyLoadingStatus />;
   }
 
-  const preload = () => {
-    lazy.load().catch(() => {
-      // Prefetch only: the render path reports and retries.
-    });
-  };
-
-  return Object.assign(LazyInline, { preload });
+  return Object.assign(LazyInline, { preload: lazy.preload });
 }
