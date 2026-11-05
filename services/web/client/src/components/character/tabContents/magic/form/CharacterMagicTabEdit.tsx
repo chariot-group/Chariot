@@ -67,7 +67,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import { formatSignedBonus } from "@/utils/attack.utils";
 import type { AbilityScores, DamageDetails, HealingDetails, Spell, Spellcasting } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
-import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
+import { LazyCodexSpellSearchDialog as CodexSpellSearchDialog } from "@/components/lazy/lazyCharacterEditForms";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
 import React from "react";
 import {

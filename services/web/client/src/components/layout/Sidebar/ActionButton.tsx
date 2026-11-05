@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { LucideSwords, PlayCircle, Users, UserCircle } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -20,7 +21,7 @@ import {
   openSessionLobby,
   setCurrentSession,
 } from "@/store/slices/sessionSlice";
-import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { LazyJoinSessionDialog } from "@/components/lazy/lazyDialogs";
 import { InitBattleDialog } from "@/components/dialogs/InitBattleDialog";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
 import { useUser } from "@/hooks/useUser";
@@ -56,6 +57,7 @@ type ActionButtonState =
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const tWelcome = useTranslations("welcome");
+  const [isJoinSessionDialogOpen, setIsJoinSessionDialogOpen] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
   const contextMode = useAppSelector((state) => state.environment.contextMode);
@@ -337,18 +339,40 @@ export function ActionButton() {
 
   const button = getButtonState();
   const hoverClass = hoverMap[button.backgroundColor] ?? "hover:brightness-90";
+  const buttonClassName = `w-full py-5 transition-colors duration-150 ${button.backgroundColor} ${hoverClass} ${button.textColor} rounded-2xl flex items-center justify-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`;
   const buttonContent = (
     <Button
       onClick={button.action}
       disabled={button.disabled}
-      className={`w-full py-5 transition-colors duration-150 ${button.backgroundColor} ${hoverClass} ${button.textColor} rounded-2xl flex items-center justify-center gap-3 ${button.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
+      className={buttonClassName}>
       {button.icon}
       <span className="text-lg truncate">{button.label}</span>
     </Button>
   );
 
   if (button.state === "joinSession" && !button.disabled) {
-    return <JoinSessionDialog>{buttonContent}</JoinSessionDialog>;
+    // Controlled so the dialog code is fetched on first open (FR-web-first-load-performance).
+    return (
+      <>
+        <Button
+          onClick={() => {
+            button.action();
+            setIsJoinSessionDialogOpen(true);
+          }}
+          onPointerEnter={LazyJoinSessionDialog.preload}
+          onFocus={LazyJoinSessionDialog.preload}
+          aria-haspopup="dialog"
+          aria-expanded={isJoinSessionDialogOpen}
+          className={buttonClassName}>
+          {button.icon}
+          <span className="text-lg truncate">{button.label}</span>
+        </Button>
+        <LazyJoinSessionDialog
+          open={isJoinSessionDialogOpen}
+          onOpenChange={setIsJoinSessionDialogOpen}
+        />
+      </>
+    );
   }
 
   if (button.state === "initBattle" && !button.disabled) {

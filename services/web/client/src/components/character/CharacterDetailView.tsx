@@ -37,7 +37,7 @@ import MediaService from "@/services/MediaService";
 import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
 import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
 import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
-import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
+import { LazyExportCharacterSheetPdfDialog } from "@/components/lazy/lazyDialogs";
 import { cn } from "@/lib/utils";
 import CharacterService from "@/services/CharacterService";
 import { characterDisplayName as formatCharacterName } from "@/lib/duplicateName";
@@ -705,7 +705,7 @@ export default function CharacterDetailView({
         ) : null}
       </form>
       {isPlayer(character) ? (
-        <ExportCharacterSheetPdfDialog
+        <LazyExportCharacterSheetPdfDialog
           character={character}
           open={isExportPdfDialogOpen}
           onOpenChange={setIsExportPdfDialogOpen}

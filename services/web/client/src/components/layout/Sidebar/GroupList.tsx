@@ -23,7 +23,6 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { cn } from "@/lib/utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
-import { DeletePlayerWithCompanionsDialog } from "@/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog";
 import {
   deletePlayerCharacterWithCompanionChoice,
   syncReduxAfterPlayerDelete,
@@ -39,9 +38,12 @@ import {
 import type { NPC } from "@/types/character";
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
-import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import { DuplicateGroupDialog } from "@/components/dialogs/DuplicateGroupDialog";
-import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
+import {
+  LazyDeletePlayerWithCompanionsDialog,
+  LazyDuplicateCharacterDialog,
+  LazyExportCharacterSheetPdfDialog,
+} from "@/components/lazy/lazyDialogs";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
 import GroupService from "@/services/GroupService";
@@ -767,7 +769,7 @@ export default function GroupList({
         isLoading={isDeletingCharacter}
       />
 
-      <DeletePlayerWithCompanionsDialog
+      <LazyDeletePlayerWithCompanionsDialog
         open={showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeletingCharacter) setCharacterPendingDelete(null);
@@ -834,7 +836,7 @@ export default function GroupList({
         }}
       />
 
-      <DuplicateCharacterDialog
+      <LazyDuplicateCharacterDialog
         character={characterToDuplicate?.character ?? null}
         open={!!characterToDuplicate}
         onOpenChange={(open) => {
@@ -877,7 +879,7 @@ export default function GroupList({
         onDuplicate={(label, count) => handleDuplicateGroup(groupToDuplicate!, label, count)}
       />
 
-      <ExportCharacterSheetPdfDialog
+      <LazyExportCharacterSheetPdfDialog
         character={characterToExport}
         open={!!characterToExport}
         onOpenChange={closeExportDialog}

@@ -5353,3 +5353,52 @@ Each initiative tracker row carries:
 - `services/web/client/src/lib/buildSessionParticipantsGroup.ts`
 - `services/web/client/src/components/character/CharacterDetailView.tsx`
 - `docs/functional-rules.md` — FR-user-balance-history, FR-media-avatar-read-access
+
+---
+
+## FR-web-first-load-performance: First-Load Weight of the Web Client and SSO Login Page
+
+**Rule**: On a first visit over a slow network, the web client and the SSO login page MUST NOT ship code or assets that the displayed screen does not need. Secondary dialogs and edit-only forms are loaded on demand; the SSO login page loads only the Chariot theme stylesheet; static brand images are optimized. The authentication flow itself (Keycloak `onLoad: "login-required"`) is unchanged.
+
+**Scope**: production build of `services/web/client` (routes under `/[locale]`) and the `chariot` Keycloak login theme. Measured baseline (prod, 2026-11-03): `/fr` ≈ 595 KB transferred JS+CSS; Keycloak login page ≈ 235 KB transferred, of which ≈ 202 KB PatternFly.
+
+**Requirements**:
+
+1. **On-demand dialogs (layout)** — The following dialogs MUST NOT be part of the initial JS of any `/[locale]` route; their code MUST be fetched only when the user opens them (or on hover/focus of their trigger as a prefetch):
+   - Session community library dialog (Header button).
+   - Character sheet PDF export dialog (sidebar, both lists).
+   - Release notes modal (loaded only when there are unseen release notes to show).
+   - Duplicate character, delete player with companions, and join session dialogs (sidebar).
+2. **On-demand edit forms (character sheet)** — Character sheet tab edit forms (general, battle, magic, inventory, history, for players and NPCs) and the Codex spell search dialog MUST be fetched only when the user enters edit mode or opens the search. The read-only view of the sheet MUST NOT depend on them.
+3. **Loading feedback** — While an on-demand dialog or edit form is being fetched, the trigger or target area MUST expose a visible, accessible loading state (`aria-busy` or a status region). A fetch failure MUST show a toast and leave the screen usable (no blank page, the trigger can be retried).
+4. **Behavior parity** — Opening, closing, focus management (focus moves into the dialog, returns to the trigger on close, Escape closes), and the data shown by each dialog/form MUST be identical to the pre-change behavior.
+5. **SSO preconnect** — The app layout MUST declare a `preconnect` hint to the configured Keycloak origin (`NEXT_PUBLIC_KEYCLOAK_URL`) so the connection is opened while the app loads.
+6. **Login page stylesheet** — The `chariot` login theme MUST NOT load the Keycloak common PatternFly stylesheets (`stylesCommon`); all login theme pages (login, register, reset password, update password, error/info messages) MUST render correctly with the theme stylesheet only.
+7. **Brand images** — `favicon.svg`, `logo.svg`, and `background.svg` (web client `public/` and login theme) MUST be optimized without visible change (including the favicon light/dark variant).
+8. **Budget** — After the change, the initial JS+CSS of `/[locale]` (outside character sheet routes) MUST be at least 25 % smaller (gzip) than the measured baseline; the login page assets MUST transfer less than 50 KB.
+
+**Prohibitions**:
+
+- Switching Keycloak initialization to `check-sso` / silent iframe (measured slower on high-latency networks and worse for users without an SSO session).
+- Changing the post-login return URL behavior (FR-codex-share-link-preselection, FR-post-auth-navigation).
+- Moving session/WebSocket code (`sessionSocketPool`, `useSessionValidation`) as part of this rule (separate, high-attention domain).
+- Persisting refresh tokens client-side to skip the SSO redirect.
+
+**Tests**:
+
+- Nominal: each listed dialog opens from its trigger, shows the same content as before, and closes with focus returned to the trigger.
+- Nominal: entering edit mode on a character sheet tab shows the edit form; leaving edit mode returns to the view.
+- Edge: opening a dialog twice quickly renders it once (no duplicate fetch side effects).
+- Edge: the release notes modal still opens automatically after login when unseen notes exist, and is not fetched when none exist.
+- Failure: a failed chunk fetch shows an error toast, the page stays usable, and a second click retries.
+- Build check: a production build report shows none of the listed dialog/form modules in the initial chunks of `/[locale]`.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/layout.tsx`
+- `services/web/client/src/components/layout/Header.tsx`, `services/web/client/src/components/layout/SessionCommunityLibraryButton.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`, `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`, `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/ReleaseNotesProvider.tsx`
+- `services/web/client/src/components/character/tabContents/**`
+- `services/sso/keycloak/themes/chariot/login/theme.properties`
+- `docs/functional-rules.md` — FR-codex-share-link-preselection, FR-post-auth-navigation, FR-frontend-design

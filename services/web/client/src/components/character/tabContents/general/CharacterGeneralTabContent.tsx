@@ -1,8 +1,8 @@
 import { NPC, Player } from "@/types/character";
 import PlayerGeneralTabContent from "@/components/character/tabContents/general/view/PlayerGeneralTabContent";
 import NpcGeneralTabContent from "@/components/character/tabContents/general/view/NpcGeneralTabContent";
-import PlayerGeneralTabEdit from "@/components/character/tabContents/general/form/PlayerGeneralTabEdit";
-import NpcGeneralTabEdit from "@/components/character/tabContents/general/form/NpcGeneralTabEdit";
+import { LazyPlayerGeneralTabEdit as PlayerGeneralTabEdit } from "@/components/lazy/lazyCharacterEditForms";
+import { LazyNpcGeneralTabEdit as NpcGeneralTabEdit } from "@/components/lazy/lazyCharacterEditForms";
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterGeneralTabContentProps {

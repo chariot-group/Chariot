@@ -24,13 +24,11 @@ import { Character, NPC } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
-import { DeletePlayerWithCompanionsDialog } from "@/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog";
 import {
   deletePlayerCharacterWithCompanionChoice,
   linkedCompanionsForPlayer,
   syncReduxAfterPlayerDelete,
 } from "@/lib/playerDeleteCompanions";
-import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import {
   applyCompanionModeAfterPlayerCreated,
   createPlayerDuplicateFromFull,
@@ -39,7 +37,11 @@ import {
   syncReduxAfterCompanionNpcCreate,
   type PlayerDuplicateCompanionMode,
 } from "@/lib/playerDuplicateCompanions";
-import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
+import {
+  LazyDeletePlayerWithCompanionsDialog,
+  LazyDuplicateCharacterDialog,
+  LazyExportCharacterSheetPdfDialog,
+} from "@/components/lazy/lazyDialogs";
 import { LinkNpcToPlayerDialog } from "@/components/dialogs/LinkNpcToPlayerDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
@@ -636,7 +638,7 @@ export default function CharactersWithoutGroupList() {
         isLoading={isDeleting}
       />
 
-      <DeletePlayerWithCompanionsDialog
+      <LazyDeletePlayerWithCompanionsDialog
         open={showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeleting) setCharacterPendingDelete(null);
@@ -658,7 +660,7 @@ export default function CharactersWithoutGroupList() {
         onDeleteWithCompanions={() => executeCharacterDelete(true)}
       />
 
-      <DuplicateCharacterDialog
+      <LazyDuplicateCharacterDialog
         character={characterToDuplicate}
         open={!!characterToDuplicate}
         onOpenChange={(open) => {
@@ -671,7 +673,7 @@ export default function CharactersWithoutGroupList() {
         }
       />
 
-      <ExportCharacterSheetPdfDialog
+      <LazyExportCharacterSheetPdfDialog
         character={characterToExport}
         open={!!characterToExport}
         onOpenChange={closeExportDialog}

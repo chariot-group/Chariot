@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatCompactNumber, formatNumberWithSpaces } from "@/utils/inventory.utils";
 import { UseFormReturn, FieldValues } from "react-hook-form";
-import CharacterInventoryTabEdit from "@/components/character/tabContents/inventory/form/CharacterInventoryTabEdit";
+import { LazyCharacterInventoryTabEdit as CharacterInventoryTabEdit } from "@/components/lazy/lazyCharacterEditForms";
 
 interface Props {
   accentColor: string;

@@ -5,7 +5,7 @@ import { Book } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
-import { SessionCommunityLibraryDialog } from "@/components/dialogs/SessionCommunityLibraryDialog";
+import { LazySessionCommunityLibraryDialog } from "@/components/lazy/lazyDialogs";
 import { shouldShowSessionCommunityLibraryButton } from "@/lib/sessionCommunityLibrary";
 import { useAppSelector } from "@/store/hooks";
 import { selectCurrentUserParticipant, selectIsInSession } from "@/store/slices/sessionSlice";
@@ -42,6 +42,10 @@ export default function SessionCommunityLibraryButton() {
             type="button"
             disabled={isDisabled}
             onClick={() => setOpen(true)}
+            onPointerEnter={LazySessionCommunityLibraryDialog.preload}
+            onFocus={LazySessionCommunityLibraryDialog.preload}
+            aria-haspopup="dialog"
+            aria-expanded={open}
             aria-label={t("communityLibraryAriaLabel")}
             className="inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:size-12">
             <Book
@@ -53,7 +57,7 @@ export default function SessionCommunityLibraryButton() {
         <TooltipContent>{tooltipLabel}</TooltipContent>
       </Tooltip>
 
-      <SessionCommunityLibraryDialog
+      <LazySessionCommunityLibraryDialog
         open={open}
         onOpenChange={setOpen}
       />

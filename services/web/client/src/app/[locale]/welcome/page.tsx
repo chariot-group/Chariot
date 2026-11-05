@@ -3,7 +3,7 @@ import Choice, { ChoiceProps } from "@/components/layout/Welcome/Choice";
 import { useTranslations } from "use-intl/react";
 import { useState } from "react";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
-import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { LazyJoinSessionDialog } from "@/components/lazy/lazyDialogs";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setContextMode } from "@/store/slices/environmentSlice";
@@ -83,7 +83,7 @@ export default function WelcomePage() {
         open={isCreateCampaignOpen}
         onOpenChange={setIsCreateCampaignOpen}
       />
-      <JoinSessionDialog
+      <LazyJoinSessionDialog
         open={isJoinSessionOpen}
         onOpenChange={setIsJoinSessionOpen}
       />
