@@ -424,10 +424,8 @@ export default function CharactersWithoutGroupList() {
                 "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
                 inNestHeader
                   ? "justify-between py-0 pr-1"
-                  : "justify-between rounded-[12px] py-1.5 px-3 transition-all duration-150",
-                !inNestHeader && !isSelected && "hover:bg-white/10",
-                !inNestHeader && isSelected && "bg-white/15 font-bold text-white",
-                inNestHeader && isSelected && "font-bold",
+                  : "justify-between rounded-[12px] py-1.5 px-3",
+                isSelected && "font-bold",
               )}>
               {renderRowAvatar(character._id, character.avatar, displayName)}
               <span className={cn("min-w-0 flex-1 truncate text-left", (isSelected || nestOpen) && "font-bold")}>
