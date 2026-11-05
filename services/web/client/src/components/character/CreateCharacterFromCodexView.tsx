@@ -24,7 +24,7 @@ import {
 
 /**
  * Community library create flow (campaign groups and Player space).
- * @see FR-codex-npc-search-entity-type
+ * @see FR-codex-search-filters
  * @see FR-player-space-codex-character-creation
  * @see FR-npc-player-link
  * @see FR-codex-share-link-preselection

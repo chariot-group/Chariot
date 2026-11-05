@@ -125,6 +125,28 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
 
     // -------------------------------------------------------------------------
+    // Former participants (FR-session-lobby-modal — rejoin after leave)
+    // -------------------------------------------------------------------------
+
+    private formerParticipantsKey(sessionCode: string): string {
+        return `session:former:${sessionCode}`;
+    }
+
+    /**
+     * Mémorise qu'un utilisateur a quitté une session lancée, jusqu'à son expiration.
+     */
+    async addFormerParticipant(sessionCode: string, userId: string, ttlSeconds: number): Promise<void> {
+        if (ttlSeconds <= 0) return;
+        const key = this.formerParticipantsKey(sessionCode);
+        await this.client.sadd(key, userId);
+        await this.client.expire(key, ttlSeconds);
+    }
+
+    async isFormerParticipant(sessionCode: string, userId: string): Promise<boolean> {
+        return (await this.client.sismember(this.formerParticipantsKey(sessionCode), userId)) === 1;
+    }
+
+    // -------------------------------------------------------------------------
     // Token management
     // -------------------------------------------------------------------------
 
@@ -210,7 +232,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
     /**
      * Libère toutes les wheels réservées d’un utilisateur pour une session (leave pré-lancement).
-     * @see FR-session-lobby-wheel-leave-refund
+     * @see FR-session-lobby-wheel-deposit
      */
     async clearUserTokens(
         sessionId: string,
@@ -242,7 +264,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
-     * Clamp le total réservé à `maxSlots` (FR-session-lobby-wheel-quota-invariant).
+     * Clamp le total réservé à `maxSlots` (FR-session-lobby-wheel-deposit).
      */
     async clampTokensToMax(
         sessionId: string,

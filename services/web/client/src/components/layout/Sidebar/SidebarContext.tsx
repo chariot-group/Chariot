@@ -19,7 +19,7 @@ import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessio
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
-import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { cn } from "@/lib/utils";
 
 export default function SidebarContext() {
@@ -30,9 +30,7 @@ export default function SidebarContext() {
   const openArchived = useAppSelector(selectOpenArchivedGroups);
   const groupToOpen = useAppSelector(selectGroupToOpen);
   const archivedGroupsTotal = useAppSelector(selectArchivedGroupsTotal);
-  const isInSession = useAppSelector(selectIsInSession);
-  const sessionStatus = useAppSelector(selectSessionStatus);
-  const actionsDisabled = isInSession && sessionStatus === "launched";
+  const actionsDisabled = useAppSelector(selectIsSessionLaunched);
   const [isDeleteAllArchivedPending, setIsDeleteAllArchivedPending] = useState(false);
   const [isDeletingAllArchived, setIsDeletingAllArchived] = useState(false);
   const {

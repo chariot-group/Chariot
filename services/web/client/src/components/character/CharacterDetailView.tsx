@@ -10,7 +10,7 @@ import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
-import { selectIsInSession, selectSessionCode, selectSessionParticipants } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched, selectSessionCode, selectSessionParticipants } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import UserService from "@/services/UserService";
 import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipantUserLabel";
@@ -60,7 +60,7 @@ export default function CharacterDetailView({
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const contextMode = useAppSelector(selectContextMode);
   const currentUser = useAppSelector(selectUser);
   const sessionCodeRedux = useAppSelector(selectSessionCode);
@@ -77,7 +77,7 @@ export default function CharacterDetailView({
 
   const sessionCodeActive = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
   const sessionCodeForMedia = sessionCodeActive;
-  const isSessionGmEditContext = Boolean(isInSession && isSessionGmUser && sessionCodeActive);
+  const isSessionGmEditContext = Boolean(isSessionLaunched && isSessionGmUser && sessionCodeActive);
 
   const isAssignedSessionPlayer = isPlayer(character) && isPlayerOnSessionRoster(participants, character._id);
 
@@ -587,7 +587,7 @@ export default function CharacterDetailView({
           </div>
         </Tabs>
 
-        {isInSession ? (
+        {isSessionLaunched ? (
           <CombatBanner
             characterId={character._id}
             footerActions={characterFooterActions}

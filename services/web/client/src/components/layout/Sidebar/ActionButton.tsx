@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button, type ButtonTone } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { LucideSwords, PlayCircle, Users, UserCircle } from "lucide-react";
@@ -7,6 +8,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService from "@/services/SessionService";
+import { findActiveCampaignSession, isSessionStillActive } from "@/lib/findActiveCampaignSession";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import {
@@ -17,6 +19,7 @@ import {
   selectIsInSession,
   selectSessionStatus,
   selectLastConsultedSheetPath,
+  selectLastLeftSessionCode,
   openSessionLobby,
   setCurrentSession,
 } from "@/store/slices/sessionSlice";
@@ -72,6 +75,50 @@ export function ActionButton() {
 
   useSessionValidation();
 
+  // FR-session-lobby-modal — un MJ sorti d'une session encore active y retourne au lieu d'en « lancer » une.
+  const userId = user.user?.keycloakId;
+  const [hasActiveCampaignSession, setHasActiveCampaignSession] = useState(false);
+  useEffect(() => {
+    if (isInSession || contextMode !== "gm" || !selectedCampaignId || !userId) {
+      setHasActiveCampaignSession(false);
+      return;
+    }
+    let cancelled = false;
+    sessionService
+      .getMySessions()
+      .then((sessions) => {
+        if (!cancelled) setHasActiveCampaignSession(findActiveCampaignSession(sessions, selectedCampaignId, userId) !== null);
+      })
+      .catch(() => {
+        if (!cancelled) setHasActiveCampaignSession(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isInSession, contextMode, selectedCampaignId, userId]);
+
+  // FR-session-lobby-modal — un joueur sorti d'une session encore active y « retourne ».
+  const lastLeftSessionCode = useAppSelector(selectLastLeftSessionCode);
+  const [canReturnToLeftSession, setCanReturnToLeftSession] = useState(false);
+  useEffect(() => {
+    if (isInSession || contextMode === "gm" || !lastLeftSessionCode) {
+      setCanReturnToLeftSession(false);
+      return;
+    }
+    let cancelled = false;
+    sessionService
+      .getSession(lastLeftSessionCode)
+      .then((session) => {
+        if (!cancelled) setCanReturnToLeftSession(isSessionStillActive(session));
+      })
+      .catch(() => {
+        if (!cancelled) setCanReturnToLeftSession(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isInSession, contextMode, lastLeftSessionCode]);
+
   const sessionStarted = sessionStatus && sessionStatus === "launched";
   const { characters: charactersWithoutGroup, loading: loadingCharactersWithoutGroup } = usePlayersWithoutGroup();
 
@@ -111,8 +158,8 @@ export function ActionButton() {
     if (!isInSession) {
       if (contextMode === "gm") {
         return {
-          label: t("launchSession"),
-          state: "launchSession",
+          label: t(hasActiveCampaignSession ? "returnToSession" : "launchSession"),
+          state: hasActiveCampaignSession ? "returnToSession" : "launchSession",
           action: async () => {
             if (!selectedCampaignId) return;
             const { campaignId, code } = await sessionService.createSession(selectedCampaignId);
@@ -127,7 +174,7 @@ export function ActionButton() {
       }
 
       return {
-        label: t("joinSession"),
+        label: t(canReturnToLeftSession ? "returnToSession" : "joinSession"),
         state: "joinSession",
         action: () => {
           if (isInSession) {

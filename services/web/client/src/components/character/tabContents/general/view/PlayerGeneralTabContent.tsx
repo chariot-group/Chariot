@@ -18,7 +18,7 @@ import AbilitiesSection from "@/components/character/tabContents/shared/Abilitie
 import Statistics from "@/components/character/tabContents/shared/Statistics";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { toast } from "react-toastify";
 import SensesSection from "@/components/character/tabContents/general/shared/SensesSection";
@@ -41,7 +41,7 @@ export default function PlayerGeneralTabContent({
   const tPlayer = useTranslations("characterDetail.player");
   const tAlignment = useTranslations("alignments");
   const tClass = useTranslations("classes");
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const [isInspirationLoading, setIsInspirationLoading] = useState(false);
 
   function infoExhaustionLevel(level: number): string {
@@ -112,7 +112,7 @@ export default function PlayerGeneralTabContent({
           title={t("inspiration")}
           accentColor={accentColor}
           className={SLOTS.tile}>
-          {isInSession ? (
+          {isSessionLaunched ? (
             player.inspiration ? (
               <Button
                 type="button"

@@ -5,8 +5,8 @@ import {
 } from "@/lib/flushPendingInitiativeInputs";
 import { parseInitiativeRollText } from "@/components/initiativeTracker/useInitiativeTextInput";
 
-/** @see FR-tracker-initiative-modifier-display */
-describe("FR-tracker-initiative-modifier-display — flushPendingInitiativeInputs", () => {
+/** @see FR-combat-initiative-tracker */
+describe("FR-combat-initiative-tracker — flushPendingInitiativeInputs", () => {
   afterEach(() => {
     flushPendingInitiativeInputs();
   });
@@ -41,7 +41,7 @@ describe("FR-tracker-initiative-modifier-display — flushPendingInitiativeInput
   });
 });
 
-describe("FR-tracker-initiative-modifier-display — parseInitiativeRollText", () => {
+describe("FR-combat-initiative-tracker — parseInitiativeRollText", () => {
   it("nominal: parses integer rolls", () => {
     expect(parseInitiativeRollText("15")).toBe(15);
     expect(parseInitiativeRollText("-3")).toBe(-3);

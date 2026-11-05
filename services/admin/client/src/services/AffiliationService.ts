@@ -43,12 +43,12 @@ export const AFFILIATION_FORM_DEFAULT_VALUES: Partial<AffiliationFormData> = {
     userDiscountPercent: 5,
 };
 
-/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-admin-affiliation-lifecycle. */
+/** Path for PATCH deactivation — must not use DELETE (soft delete). See FR-admin-promo-affiliation-lifecycle. */
 export function getAffiliationDeactivatePath(id: string): string {
     return `/affiliations/${id}/deactivate`;
 }
 
-/** Path and body for PATCH reactivation. See FR-admin-affiliation-lifecycle. */
+/** Path and body for PATCH reactivation. See FR-admin-promo-affiliation-lifecycle. */
 export function getAffiliationReactivatePath(id: string): string {
     return `/affiliations/${id}`;
 }

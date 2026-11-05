@@ -17,7 +17,7 @@ import {
   selectBattleStarted,
   selectCurrentRound,
   selectInitiativeTrackerRows,
-  selectIsInSession,
+  selectIsSessionLaunched,
   updateInitiativeTrackerRow,
 } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
@@ -68,7 +68,7 @@ export default function SpellCastControls({
   const tMagic = useTranslations("characterDetail.magic");
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const battleStarted = useAppSelector(selectBattleStarted);
   const currentRound = useAppSelector(selectCurrentRound);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
@@ -78,7 +78,7 @@ export default function SpellCastControls({
   const [concentrationPromptOpen, setConcentrationPromptOpen] = useState(false);
   const lightCastFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showCast = isInSession && Boolean(onCharacterUpdate);
+  const showCast = isSessionLaunched && Boolean(onCharacterUpdate);
 
   const baseLevel = selectedSpell?.level ?? -1;
   const upcastLevels = selectedSpell ? getUpcastSlotLevels(spellcasting, baseLevel) : [];

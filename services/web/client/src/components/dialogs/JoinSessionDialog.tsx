@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,12 +16,14 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/comp
 import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
+import axios from "axios";
 import sessionService from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
-import { loadCompanionCountsForPlayers } from "@/lib/sessionJoinCompanionVisibility";
-import { useAppDispatch } from "@/store/hooks";
-import { setCurrentSession, openSessionLobby } from "@/store/slices/sessionSlice";
+import { loadCompanionCountsForPlayers, orderSessionCharactersLikeSidebar } from "@/lib/sessionJoinCompanionVisibility";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectCharactersWithoutGroup } from "@/store/slices/characterSlice";
+import { setCurrentSession, openSessionLobby, selectLastLeftSessionCode } from "@/store/slices/sessionSlice";
 
 interface JoinSessionDialogProps {
   /** The element that opens the dialog (e.g. a Button). Optional when using controlled mode. */
@@ -49,9 +51,22 @@ export function JoinSessionDialog({
   const open = isControlled ? openProp : internalOpen;
   const setOpen = isControlled ? (val: boolean) => onOpenChangeProp?.(val) : setInternalOpen;
 
+  const lastLeftSessionCode = useAppSelector(selectLastLeftSessionCode);
   const [code, setCode] = useState(initialCode);
+
+  // FR-session-lobby-modal — pré-remplit le code de la dernière session quittée.
+  useEffect(() => {
+    if (open && !initialCode && lastLeftSessionCode) {
+      setCode((current) => current || lastLeftSessionCode);
+    }
+  }, [open, initialCode, lastLeftSessionCode]);
   const [characterId, setCharacterId] = useState("");
   const [characters, setCharacters] = useState<Character[]>([]);
+  const sidebarPlayers = useAppSelector(selectCharactersWithoutGroup);
+  const orderedCharacters = useMemo(
+    () => orderSessionCharactersLikeSidebar(characters, sidebarPlayers),
+    [characters, sidebarPlayers],
+  );
   const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>(
     {},
   );
@@ -110,8 +125,9 @@ export function JoinSessionDialog({
 
       setOpen(false);
       setCode("");
-    } catch {
-      setError(t("joinSessionErrorNotFound"));
+    } catch (err) {
+      const launchedForNewcomer = axios.isAxiosError(err) && err.response?.status === 403;
+      setError(t(launchedForNewcomer ? "joinSessionErrorLaunched" : "joinSessionErrorNotFound"));
     } finally {
       setIsJoining(false);
     }
@@ -178,7 +194,7 @@ export function JoinSessionDialog({
             </InputOTPGroup>
           </InputOTP>
           <CharacterSelect
-            characters={characters}
+            characters={orderedCharacters}
             value={characterId}
             onValueChange={setCharacterId}
             placeholder={t("joinSessionSelectCharacterPlaceholder")}

@@ -2,9 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import {
   companionCountByPlayerId,
   loadCompanionCountsForPlayers,
+  orderSessionCharactersLikeSidebar,
   sessionCharacterOptionAccessibleName,
 } from "@/lib/sessionJoinCompanionVisibility";
-import type { NPC } from "@/types/character";
+import type { Character, NPC } from "@/types/character";
 
 const npc = (id: string, linkedPlayerId?: string | null): NPC =>
   ({
@@ -51,5 +52,49 @@ describe("FR-session-join-companion-visibility — companion counts", () => {
     const fetchNpcs = vi.fn();
     await expect(loadCompanionCountsForPlayers(["  ", ""], fetchNpcs)).resolves.toEqual({});
     expect(fetchNpcs).not.toHaveBeenCalled();
+  });
+});
+
+const player = (id: string): Character => ({ _id: id, firstname: id, groups: [] }) as unknown as Character;
+const ids = (characters: Character[]) => characters.map((character) => character._id);
+
+describe("FR-session-join-companion-visibility — order follows the player sidebar", () => {
+  it("nominal: reorders the fetched Players like the sidebar", () => {
+    const ordered = orderSessionCharactersLikeSidebar(
+      [player("A"), player("B"), player("C")],
+      [player("C"), player("A"), player("B")],
+    );
+
+    expect(ids(ordered)).toEqual(["C", "A", "B"]);
+  });
+
+  it("edge: Players unknown to the sidebar follow, keeping fetch order", () => {
+    const ordered = orderSessionCharactersLikeSidebar(
+      [player("D"), player("A"), player("E"), player("B")],
+      [player("B"), player("A")],
+    );
+
+    expect(ids(ordered)).toEqual(["B", "A", "D", "E"]);
+  });
+
+  it("edge: empty sidebar keeps the fetch order", () => {
+    const fetched = [player("B"), player("A")];
+
+    expect(orderSessionCharactersLikeSidebar(fetched, [])).toBe(fetched);
+  });
+
+  it("edge: duplicated sidebar ids keep their first position", () => {
+    const ordered = orderSessionCharactersLikeSidebar(
+      [player("A"), player("B")],
+      [player("B"), player("A"), player("B")],
+    );
+
+    expect(ids(ordered)).toEqual(["B", "A"]);
+  });
+
+  it("failure: a sidebar Player missing from the fetch is not added", () => {
+    const ordered = orderSessionCharactersLikeSidebar([player("A")], [player("Z"), player("A")]);
+
+    expect(ids(ordered)).toEqual(["A"]);
   });
 });

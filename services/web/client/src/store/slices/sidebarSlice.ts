@@ -4,7 +4,7 @@ import type { RootState } from '@/store';
 export interface SidebarState {
     openArchivedGroups: boolean;
     openSessionPlayers: boolean;
-    /** Player ids whose nested linked-NPC list is collapsed (default expanded). @see FR-sidebar-linked-npc-nesting-collapse */
+    /** Player ids whose nested linked-NPC list is collapsed (default expanded). @see FR-sidebar-npc-link */
     collapsedCompanionNestPlayerIds: string[];
 }
 

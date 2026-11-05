@@ -5,8 +5,8 @@ import {
   getDefaultCodexGameSystemFilter,
 } from "@/constants/gameSystems";
 
-/** @see FR-codex-game-system-filter */
-describe("FR-codex-game-system-filter — getDefaultCodexGameSystemFilter", () => {
+/** @see FR-codex-search-filters */
+describe("FR-codex-search-filters — getDefaultCodexGameSystemFilter", () => {
   it("nominal: preselects the sole game system when only one is supported", () => {
     expect(GAME_SYSTEMS).toHaveLength(1);
     expect(HAS_MULTIPLE_CODEX_GAME_SYSTEMS).toBe(false);

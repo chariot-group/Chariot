@@ -21,7 +21,7 @@ export function mediaAvatarCacheKey(
 
 export type MediaAvatarSize = "sheet" | "profile" | "thumb" | "xs";
 
-/** @see FR-media-avatar-format */
+/** @see FR-media-avatars */
 export const MEDIA_AVATAR_ACCEPTED_EXTENSIONS = [
   "jpg",
   "jpeg",
@@ -59,7 +59,7 @@ export const MEDIA_AVATAR_ACCEPT_MIME = [
   ".heif",
 ].join(",");
 
-/** Client-side gate matching FR-media-avatar-format accepted upload formats. */
+/** Client-side gate matching FR-media-avatars accepted upload formats. */
 export function isAcceptedMediaAvatarFile(file: Pick<File, "name" | "type">): boolean {
   if (file.type && MEDIA_AVATAR_ACCEPTED_MIME_TYPES.has(file.type)) {
     return true;

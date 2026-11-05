@@ -12,6 +12,7 @@ interface ConfirmCancelSessionDialogProps {
 
 export function ConfirmCancelSessionDialog({ onConfirm, children }: ConfirmCancelSessionDialogProps) {
   const t = useTranslations("sessionPage.sessionCancel");
+  const tCommon = useTranslations("common");
   const [open, setOpen] = useState<boolean>(false);
 
   return (
@@ -26,6 +27,14 @@ export function ConfirmCancelSessionDialog({ onConfirm, children }: ConfirmCance
         <p className="text-sm text-muted-foreground">{t("description")}</p>
         <DialogFooter>
           <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setOpen(false)}>
+            {tCommon("cancel")}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
             onClick={() => {
               onConfirm();
               setOpen(false);

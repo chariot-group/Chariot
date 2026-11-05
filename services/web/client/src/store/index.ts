@@ -197,6 +197,7 @@ const sessionTransform = createTransform(
         sessionCompanionNpcs: [],
         sessionLobbyOpen: false,
         customEffectCatalog: normalizeCustomEffectCatalog(outbound?.customEffectCatalog),
+        lastLeftSessionCode: outbound?.lastLeftSessionCode ?? null,
     }),
     { whitelist: ['session'] },
 );

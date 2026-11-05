@@ -22,7 +22,7 @@ import {
   selectCurrentUserParticipant,
   selectIsInSession,
   selectSessionCode,
-  selectSessionStatus,
+  selectIsSessionLaunched,
 } from "@/store/slices/sessionSlice";
 import { useUser } from "@/hooks/useUser";
 import CharacterService from "@/services/CharacterService";
@@ -87,11 +87,13 @@ export default function CharactersWithoutGroupList() {
   const { user } = useUser();
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
-  const sessionStatus = useAppSelector(selectSessionStatus);
-  const currentParticipant = useAppSelector((state) => selectCurrentUserParticipant(state, user?.keycloakId ?? ""));
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
+  const currentParticipant = useAppSelector((state) =>
+    selectCurrentUserParticipant(state, user?.keycloakId ?? ""),
+  );
   const sessionCharacterId =
-    isInSession && sessionStatus === "launched" ? (currentParticipant?.characterId ?? null) : null;
-  const actionsDisabled = isInSession && sessionStatus === "launched";
+    isSessionLaunched ? (currentParticipant?.characterId ?? null) : null;
+  const actionsDisabled = isSessionLaunched;
   const { setOpenMobile } = useSidebar();
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);

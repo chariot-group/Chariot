@@ -12,7 +12,7 @@ export function parseInitiativeRollText(raw: string): number | null {
 
 /**
  * Évite le bug du `0` figé dans les champs number contrôlés (saisie locale + commit).
- * FR-tracker-initiative-modifier-display — commit pendant la saisie + flush explicite avant start combat.
+ * FR-combat-initiative-tracker — commit pendant la saisie + flush explicite avant start combat.
  */
 export function useInitiativeTextInput(
   externalValue: number,

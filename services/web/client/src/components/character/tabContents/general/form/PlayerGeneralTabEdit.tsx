@@ -35,7 +35,7 @@ import {
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import SensesUpdateSection from "@/components/character/tabContents/general/shared/SensesUpdateSection";
 
 interface PlayerGeneralTabEditProps {
@@ -53,7 +53,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
   const tEdit = useTranslations("characterDetail.edit");
   const tClass = useTranslations("classes");
   const tAlignment = useTranslations("alignments");
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   void player; // Silence unused player prop warning
   const { errors } = useFormState({ control: form.control });
   const classErrors = errors.class as Array<{ hitDiceRemaining?: RhfFieldError } | undefined> | undefined;
@@ -726,7 +726,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
               control={form.control}
               render={({ field }) => (
                 <div className="flex items-center gap-2">
-                  {isInSession ? (
+                  {isSessionLaunched ? (
                     field.value ? (
                       <span className="text-sm font-medium">{t("inspirationActive")}</span>
                     ) : (
@@ -747,7 +747,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
               )}
             />
           </div>
-          {!isInSession && (
+          {!isSessionLaunched && (
             <p
               className="mt-auto text-xs text-muted-foreground"
               role="note">
@@ -779,10 +779,10 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                 <Select
                   value={field.value?.toString() || "0"}
                   onValueChange={(value) => field.onChange(parseInt(value))}
-                  disabled={!isInSession}>
+                  disabled={!isSessionLaunched}>
                   <SelectTrigger
                     id="exhaustion-level"
-                    aria-disabled={!isInSession}>
+                    aria-disabled={!isSessionLaunched}>
                     <SelectValue placeholder={t("exhaustionLevel")}>
                       {field.value !== undefined && field.value !== null
                         ? `${t("level")} ${field.value}`
@@ -806,7 +806,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                     </SelectGroup>
                   </SelectContent>
                 </Select>
-                {!isInSession && (
+                {!isSessionLaunched && (
                   <p
                     className="mt-auto text-xs text-muted-foreground"
                     role="note">

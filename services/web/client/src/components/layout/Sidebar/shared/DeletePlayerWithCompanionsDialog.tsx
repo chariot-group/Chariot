@@ -1,6 +1,6 @@
 "use client";
 
-/** @see FR-player-delete-companion-choice */
+/** @see FR-player-companion-choice */
 
 import * as React from "react";
 import { Loader2 } from "lucide-react";
