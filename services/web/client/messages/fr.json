@@ -29,6 +29,8 @@
     "companionsListLabel": "Compagnons de {name}",
     "collapseCompanionsAria": "Replier les compagnons de {name}",
     "expandCompanionsAria": "Déplier les compagnons de {name}",
+    "companionActiveTooltip": "Fiche affichée : {name}",
+    "groupActiveCharacterTooltip": "Personnage affiché : {name}",
     "linkNpc": "Lier à un personnage",
     "unlinkNpc": "Retirer du personnage",
     "unlinkNpcFrom": "Retirer de {name}",

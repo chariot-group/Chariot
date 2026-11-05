@@ -67,6 +67,7 @@ import {
   sidebarCharacterAvatarImageUrl,
 } from "@/lib/buildSidebarCharacterAvatarBatch";
 import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
+import { collapsedActiveGroupCharacterId } from "@/components/layout/Sidebar/shared/sidebarCollapsedActive";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 
 interface GroupListProps {
@@ -627,13 +628,24 @@ export default function GroupList({
       {groups.map((group) => {
         const isOpen = openGroupIds.includes(group._id);
         const groupActions = buildGroupActions(group);
+        const hiddenActiveId = collapsedActiveGroupCharacterId(isOpen, selectedCharacterId, group.characters);
+        const hiddenActiveCharacter = hiddenActiveId
+          ? group.characters?.find((character) => character._id === hiddenActiveId)
+          : undefined;
+        const hiddenActiveName = hiddenActiveCharacter ? characterDisplayName(hiddenActiveCharacter) : "";
+        const activeTooltip = hiddenActiveName ? t("groupActiveCharacterTooltip", { name: hiddenActiveName }) : null;
 
         return (
           <Collapsible
             key={group._id}
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
-            <div className="flex w-full items-center rounded-[12px] py-1.5 pr-1.5 pl-1 transition-colors duration-100 hover:bg-white/10">
+            <div
+              title={activeTooltip ?? undefined}
+              className={cn(
+                "flex w-full items-center rounded-[12px] py-1.5 pr-1.5 pl-1 transition-colors duration-100",
+                activeTooltip ? "bg-white/15 text-white" : "hover:bg-white/10",
+              )}>
               <SidebarItemWithActions
                 actions={groupActions}
                 disabled={actionsDisabled}
@@ -668,6 +680,7 @@ export default function GroupList({
                     className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
                   />
                   <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">{group.label}</span>
+                  {activeTooltip ? <span className="sr-only">{activeTooltip}</span> : null}
                 </CollapsibleTrigger>
               </SidebarItemWithActions>
             </div>

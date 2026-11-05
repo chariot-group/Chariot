@@ -10,15 +10,17 @@ const characterRowFiles = ["GroupList.tsx", "CharactersWithoutGroupList.tsx", "G
 /** @see FR-frontend-design — sidebar rows (design.md §5.5) */
 describe("Sidebar rows — groups and selection", () => {
   it("nominal: group header has no resting surface and its label is always bold", () => {
-    const header = groupList.match(/<Collapsible\b[\s\S]*?<div className="([^"]+)">/)?.[1] ?? "";
+    const header = groupList.match(/<Collapsible\b[\s\S]*?<div\s[^>]*?className=\{cn\(([\s\S]*?)\)\}>/)?.[1] ?? "";
 
     expect(header).not.toContain("bg-card");
     expect(header).toContain("hover:bg-white/10");
+    // collapsed group holding the displayed character uses the selected style (FR-sidebar-group-collapsed-active-indicator)
+    expect(header).toContain("bg-white/15");
     expect(groupList).toContain('<span className="min-w-0 flex-1 truncate text-left text-sm font-bold">');
   });
 
   it("edge: group label lines up with its characters (pl-1 + 16px chevron + gap-2 = ml-4 + px-3)", () => {
-    const header = groupList.match(/<Collapsible\b[\s\S]*?<div className="([^"]+)">/)?.[1] ?? "";
+    const header = groupList.match(/<Collapsible\b[\s\S]*?<div\s[^>]*?className=\{cn\(([\s\S]*?)\)\}>/)?.[1] ?? "";
     const trigger = groupList.match(/<CollapsibleTrigger[\s\S]*?className="([^"]+)"/)?.[1] ?? "";
     const content = groupList.match(/<CollapsibleContent[\s\S]*?className="([^"]+)"/)?.[1] ?? "";
 

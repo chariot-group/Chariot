@@ -95,3 +95,15 @@ export function shouldApplyCampaignIdFromPlan(
 ): boolean {
   return Boolean(plan?.campaignId) && pathnameChanged;
 }
+
+/**
+ * Group-only expand (same campaign) must only run when the pathname changed.
+ * Otherwise collapsing the group that holds the displayed character would be reverted
+ * on the next `openGroupId` change (FR-sidebar-group-collapsed-active-indicator).
+ */
+export function shouldApplyGroupRepairFromPlan(
+  plan: CampaignContextUrlSyncPlan | null,
+  pathnameChanged: boolean,
+): boolean {
+  return Boolean(plan) && !plan?.campaignId && plan?.groupIdToOpen !== undefined && pathnameChanged;
+}

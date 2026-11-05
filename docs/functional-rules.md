@@ -5080,7 +5080,8 @@ Each initiative tracker row carries:
 - The collapsible **header** MUST reuse the same visual pattern as GM campaign **groups** in `GroupList` (`bg-card`, chevron inside the row beside the label, bold label when expanded). Nested NPC rows use the same content indent as group characters (`mt-1 ml-3`); no continuous `purple` list rail (FR-npc-player-link).
 - Collapsed nests MUST hide nested NPC rows from view and from keyboard focus (`CollapsibleContent` / equivalent); the companions list MUST only render when expanded.
 - Persist per-Player nest collapse in Redux `sidebar` slice (same persistence contract as `openSessionPlayers` / `openArchivedGroups` via existing localStorage middleware).
-- When the currently selected character sheet is a nested NPC under a Player, that nest MUST auto-expand so the active NPC remains reachable in the sidebar tree.
+- When the user navigates to a nested NPC sheet, that nest MUST auto-expand **once** (on selection change) so the active NPC is visible. After that, the user MUST remain free to collapse the nest, even while the NPC stays selected (the nest MUST NOT be forced open).
+- While the nest is **collapsed** and a nested NPC is the selected sheet, the Player header MUST NOT use the selected style (`bg-white/15`, bold, `aria-current`) because the displayed sheet is not the Player's. Instead it MUST use the discreet "contains active" style (`bg-white/10`, regular weight) and expose a concise tooltip on the header (i18n: "Displayed sheet: {name}") plus an accessible text announcing the displayed NPC. No avatar/icon is added to the Player row. The indication MUST disappear when the nest is expanded.
 - Accessibility: chevron `aria-expanded`, dynamic `aria-label` (i18n: collapse/expand companions of `{name}`), visible focus, list `aria-label` unchanged (`companionsListLabel`). Align with FR-frontend-design and FR-sidebar-navigation.
 
 **Prohibitions**:
@@ -5094,7 +5095,8 @@ Each initiative tracker row carries:
 
 - Nominal: Player with linked NPCs shows chevron; toggle hides and shows nested rows; Player link still navigates.
 - Edge: collapsed state survives reload (localStorage).
-- Edge: selecting a nested NPC sheet expands its parent nest.
+- Edge: navigating to a nested NPC sheet expands its parent nest once; the user can then collapse it again.
+- Edge: collapsed nest with a selected nested NPC shows the "contains active" style and tooltip, not the selected style.
 - Failure: Player with zero linked NPCs MUST NOT show a nest chevron.
 
 **References**:
@@ -6028,3 +6030,34 @@ Corrects Amendment 2 step (3): when neither space holds a character but the user
 | none | no | none | welcome |
 
 Guards: welcome is never returned when a campaign or a Player-space character exists; an unavailable current campaign (deleted / error) falls back to the post-login resolution. Covered by `NavigationService.logo.test.ts` (13 matrix cases + 2 guards).
+
+
+---
+
+## FR-sidebar-group-collapsed-active-indicator: Collapsed group containing the displayed character
+
+**Rule**: In the GM campaign sidebar (`GroupList`), a group MUST always be collapsible by the user. When a group is collapsed and one of its characters is the currently displayed sheet, the group header MUST be rendered in the selected style so the user knows where the active sheet lives.
+
+**Requirements**:
+
+- Collapsed + contains the displayed character: header uses the selected row style (`bg-white/15`, white text; label already bold per `docs/design.md` §5.5).
+- Expanded, or collapsed without the displayed character: header keeps its default style (hover `bg-white/10`).
+- The collapsed highlighted header MUST expose a concise tooltip (i18n: "Displayed character: {name}") and an accessible text announcing the displayed character. `aria-current` stays on the character link only.
+- Collapsing MUST NOT be blocked or reverted by selection changes.
+- Color MUST NOT be the only channel: tooltip and accessible text are mandatory (FR-frontend-design).
+
+**Prohibitions**:
+
+- Forcing a group open because it contains the displayed character.
+- Applying this rule to companion nests (see FR-sidebar-linked-npc-nesting-collapse, which uses a distinct style).
+
+**Tests**:
+
+- Nominal: collapsed group containing the selected character gets the selected header style and tooltip.
+- Edge: expanding the group removes the highlight; selecting another group character keeps collapse state.
+- Failure: collapsed group without the displayed character keeps the default style.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `docs/design.md` §5.5

@@ -506,6 +506,10 @@ export default function CharactersWithoutGroupList() {
               companionCharacterIds={companionIds}
               selectedCharacterId={selectedCharacterId}
               headerSelected={isSelected}
+              activeCompanionName={(() => {
+                const active = companions.find((npc) => npc._id === selectedCharacterId);
+                return active ? characterDisplayName(active) || t("unnamedCharacter") : null;
+              })()}
               actions={characterActions}
               actionsDisabled={characterActions.length === 0}
               contextMenuLabel={t("characterActions")}
