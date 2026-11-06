@@ -2190,6 +2190,8 @@ Each initiative tracker row carries:
 - The same participant MUST use the same resolved label across lobby, sidebar, initiative tracker fallbacks, and toasts for the current session context.
 - A resolved label MUST NOT be replaced by a Keycloak UUID if a better source becomes available later (WebSocket username or successful profile fetch).
 - While resolution is pending, UI surfaces MUST show `...`, not the raw `userId`.
+- A participant who joins after the lobby was opened (WebSocket `session:participant-joined`) MUST have the same profile resolution (label and avatar) as participants present at load, without requiring a page reload.
+- A failed profile fetch MUST NOT be final: the client MUST retry (on the next roster change and after a short delay) until the profile resolves, while keeping `...` meanwhile.
 
 **Assigned Character Identity (lobby + GM sidebar)**:
 
@@ -2217,6 +2219,8 @@ Each initiative tracker row carries:
 - Error: profile fetch failure shows `...`, never UUID or email
 - Error: character sheet fetch failure keeps `...` for the character name (not character id)
 - Regression: `username` equal to Keycloak UUID falls back to `firstName` + `lastName` or `...`
+- Edge: participant joining after lobby load gets label and avatar resolved without reload
+- Error: profile fetch failing once then succeeding resolves the label/avatar on retry; a participant already resolved is not refetched
 
 **References**:
 
@@ -2348,6 +2352,7 @@ Each initiative tracker row carries:
 - Socket.IO namespace: `/session`, path: `/ws`.
 - Gateway broadcasts to other participants use `client.to()` — emitters do not receive their own events; local listeners are required (see `sessionCharacterSyncBridge`, FR-session-combat-sync).
 - After `session:leave`, the leaving socket is no longer in the room; server-side notifications to remaining participants MUST use `server.to(roomId)`, not `client.to()`.
+- The gateway MUST complete JWT authentication of a socket before processing any event it emits. Clients emit `session:join` as soon as `connect` fires, so events received while authentication is pending MUST be held (not run with an unauthenticated socket) and rejected if authentication fails; otherwise the participant never enters the session room and receives no real-time update until a reload.
 
 **Prohibitions**:
 
@@ -2355,6 +2360,7 @@ Each initiative tracker row carries:
 - Creating parallel connections from layout and session page for the same OTP code.
 - Including the JWT token in the socket pool connection key.
 - Immediately notifying `session:participant-disconnected` on every Socket.IO disconnect without a grace period.
+- Running a session event handler before the socket's JWT authentication has completed.
 - Broadcasting join events with `characterId: null` when the persisted roster already has a character.
 - Overwriting Redux roster state with HTTP data that drops WebSocket-updated character assignments.
 - Registering duplicate session-end handlers that each show an independent toast for the same event.
@@ -2369,6 +2375,8 @@ Each initiative tracker row carries:
 - Gateway edge: disconnect within grace period followed by rejoin cancels `session:participant-disconnected`.
 - Gateway edge: disconnect beyond grace period emits `session:participant-disconnected`.
 - Join after reconnect preserves roster `characterId` in the `session:participant-joined` broadcast.
+- Gateway race: a `session:join` emitted before authentication completes is held until it completes, then processed with the authenticated user (GM receives later `participant-joined` / token events).
+- Gateway failure: events held for a socket whose authentication fails are rejected, and the socket is disconnected.
 - Session end toast is shown once despite multiple subscribers.
 - Participant leave/disconnect toast is shown once despite layout + lobby subscribers both receiving the event.
 
