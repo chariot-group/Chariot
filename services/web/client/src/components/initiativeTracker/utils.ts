@@ -339,3 +339,21 @@ export function hasAddableCombatants(
   }
   return false;
 }
+
+/** Marks editable initiative inputs so the table can freeze row order while one is focused. */
+export const INITIATIVE_INPUT_ATTRIBUTE = "data-initiative-input";
+
+export function isInitiativeInputTarget(target: EventTarget | null): boolean {
+  return (target as Element | null)?.hasAttribute?.(INITIATIVE_INPUT_ATTRIBUTE) ?? false;
+}
+
+/** Keeps the captured display order; rows added meanwhile go last, removed rows are dropped. */
+export function orderRowsByFrozenIds<T extends { id: string }>(rows: T[], frozenIds: string[]): T[] {
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const frozen = frozenIds.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [row] : [];
+  });
+  const known = new Set(frozenIds);
+  return [...frozen, ...rows.filter((row) => !known.has(row.id))];
+}

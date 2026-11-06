@@ -71,7 +71,6 @@ describe("InitiativeTrackerTable responsive header", () => {
           clearSelection: "Clear",
           clearSelectionShort: "Clear",
           selectionToolbar: "Selection actions",
-          contextMenuSelection: (count) => `${count} selected`,
           title: "Display configuration",
           description: "Configure display fields",
           showToPlayers: "Show to players",

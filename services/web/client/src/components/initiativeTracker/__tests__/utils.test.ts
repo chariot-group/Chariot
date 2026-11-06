@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  isInitiativeInputTarget,
+  orderRowsByFrozenIds,
   canRemoveTrackerGroup,
   countMissingInitiatives,
   getRemovableTrackerGroups,
@@ -481,5 +483,35 @@ describe("FR-combat-initiative-tracker — roster action availability and pre-co
 
   it("failure: a non-finite modifier falls back to 0", () => {
     expect(isInitiativeMissing({ initiative: 0, initiativeModifier: Number.NaN })).toBe(true);
+  });
+});
+
+describe("orderRowsByFrozenIds", () => {
+  const rows = [{ id: "b" }, { id: "a" }, { id: "c" }];
+
+  it("nominal: keeps the frozen order even when the live order changed", () => {
+    expect(orderRowsByFrozenIds(rows, ["a", "b", "c"]).map((r) => r.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("edge: appends rows added meanwhile", () => {
+    expect(orderRowsByFrozenIds(rows, ["a", "b"]).map((r) => r.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("edge: drops rows removed meanwhile", () => {
+    expect(orderRowsByFrozenIds([{ id: "a" }], ["z", "a"]).map((r) => r.id)).toEqual(["a"]);
+  });
+});
+
+describe("isInitiativeInputTarget", () => {
+  const target = (marked: boolean) =>
+    ({ hasAttribute: (name: string) => marked && name === "data-initiative-input" }) as unknown as EventTarget;
+
+  it("nominal: recognises the marked initiative input", () => {
+    expect(isInitiativeInputTarget(target(true))).toBe(true);
+  });
+
+  it("failure: rejects null and non-marked targets", () => {
+    expect(isInitiativeInputTarget(null)).toBe(false);
+    expect(isInitiativeInputTarget(target(false))).toBe(false);
   });
 });

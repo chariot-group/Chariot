@@ -34,6 +34,8 @@ import {
   characterName,
   initiativeTotalFromRoll,
   isInitiativeMissing,
+  isInitiativeInputTarget,
+  orderRowsByFrozenIds,
   resolveInitiativeModifier,
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
@@ -161,7 +163,6 @@ export type InitiativeTrackerTableProps = {
     clearSelection: string;
     clearSelectionShort: string;
     selectionToolbar: string;
-    contextMenuSelection: (count: number) => string;
     title: string;
     description: string;
     showToPlayers: string;
@@ -239,6 +240,12 @@ export function InitiativeTrackerTable({
   const [bulkVisibilityOpen, setBulkVisibilityOpen] = React.useState(false);
   const [selectedRowIds, setSelectedRowIds] = React.useState<Set<string>>(() => new Set());
   const [expandedRowIds, setExpandedRowIds] = React.useState<Set<string>>(() => new Set());
+
+  const [frozenOrder, setFrozenOrder] = React.useState<string[] | null>(null);
+  const displayRows = React.useMemo(
+    () => (frozenOrder && !initiativeLocked ? orderRowsByFrozenIds(rows, frozenOrder) : rows),
+    [rows, frozenOrder, initiativeLocked],
+  );
 
   const newlyRevealedIds = useNewlyRevealedRows(isPlayerView ? rows.map((r) => r.id) : []);
   const statusChangedRows = useStatusChangedRows(rows, !isPlayerView);
@@ -359,12 +366,6 @@ export function InitiativeTrackerTable({
   };
 
   /** Right-click: act on the whole selection if the row is part of it, else on that row alone. */
-  const focusContextRow = (rowId: string) => {
-    if (selectedRowIds.has(rowId)) return;
-    setSelectedRowIds(new Set([rowId]));
-    setGroupedInitiativeOpen(false);
-  };
-
   const leaveSelection = () => {
     onRemoveMultipleFromInitiative?.([...selectedRowIds]);
     clearSelection();
@@ -561,8 +562,15 @@ export function InitiativeTrackerTable({
         </div>
       ) : null}
 
-      <div className="mt-3 flex w-full min-w-0 flex-col gap-2.5">
-        {rows.map((row) => {
+      <div
+        className="mt-3 flex w-full min-w-0 flex-col gap-2.5"
+        onFocusCapture={(event) => {
+          if (isInitiativeInputTarget(event.target)) setFrozenOrder(rows.map((row) => row.id));
+        }}
+        onBlurCapture={(event) => {
+          if (isInitiativeInputTarget(event.target)) setFrozenOrder(null);
+        }}>
+        {displayRows.map((row) => {
           const rowLabels = getRowLabels(row);
           const rowNode = (
             <InitiativeTrackerRowComponent
@@ -601,42 +609,21 @@ export function InitiativeTrackerTable({
               labels={rowLabels}
             />
           );
-          if (!selectionEnabled || !bulkVisibilityLabels) return rowNode;
-          const menuTargetCount = selectedRowIds.has(row.id) ? selectedCount : 1;
-          const menuTitle =
-            menuTargetCount > 1
-              ? bulkVisibilityLabels.contextMenuSelection(menuTargetCount)
-              : characterName(row.firstname, row.lastname, row.surname) || row.playerDisplayName;
+          if (isPlayerView || !onRemoveFromInitiative || !bulkVisibilityLabels) return rowNode;
           return (
-            <ContextMenu
-              key={row.id}
-              onOpenChange={(open) => {
-                if (open) focusContextRow(row.id);
-              }}>
+            <ContextMenu key={row.id}>
               <ContextMenuTrigger asChild>
                 <div className="min-w-0">{rowNode}</div>
               </ContextMenuTrigger>
               <ContextMenuContent>
-                <ContextMenuLabel className="max-w-64 truncate">{menuTitle}</ContextMenuLabel>
+                <ContextMenuLabel className="max-w-64 truncate">
+                  {characterName(row.firstname, row.lastname, row.surname) || row.playerDisplayName}
+                </ContextMenuLabel>
                 <ContextMenuSeparator />
-                {groupedInitiativeAvailable && groupedInitiativeLabels ? (
-                  <ContextMenuItem onSelect={() => setGroupedInitiativeOpen(true)}>
-                    <ListOrdered aria-hidden="true" />
-                    {groupedInitiativeLabels.action}
-                  </ContextMenuItem>
-                ) : null}
-                <ContextMenuItem onSelect={() => setBulkVisibilityOpen(true)}>
-                  <Cog aria-hidden="true" />
-                  {bulkVisibilityLabels.configure}
+                <ContextMenuItem onSelect={() => onRemoveFromInitiative(row.id)}>
+                  <LogOut aria-hidden="true" />
+                  {bulkVisibilityLabels.leaveInitiative}
                 </ContextMenuItem>
-                {onRemoveMultipleFromInitiative ? (
-                  <ContextMenuItem
-                    variant="destructive"
-                    onSelect={leaveSelection}>
-                    <LogOut aria-hidden="true" />
-                    {bulkVisibilityLabels.leaveInitiative}
-                  </ContextMenuItem>
-                ) : null}
               </ContextMenuContent>
             </ContextMenu>
           );

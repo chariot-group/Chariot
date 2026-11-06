@@ -749,7 +749,6 @@ export default function InitiativeTrackerPage() {
                   clearSelection: t("groupedInitiativeClearSelection"),
                   clearSelectionShort: t("groupedInitiativeClearSelectionShort"),
                   selectionToolbar: t("selectionToolbar"),
-                  contextMenuSelection: (count) => t("groupedInitiativeSelectedCount", { count }),
                   title: t("bulkVisibilityDialog.title"),
                   description: t("bulkVisibilityDialog.description"),
                   showToPlayers: t("visibilityDialog.showToPlayers"),

@@ -1429,6 +1429,7 @@ When adding a rule:
 - Tracker list is always displayed sorted by:
   1. initiative descending
   2. group label ascending (tie-breaker)
+- While an initiative field is being edited (focused) before combat start, the displayed order MUST stay frozen so the row under the pointer does not move between consecutive arrow/spinner clicks. The value is still stored on every change; the list re-sorts when the field loses focus (blur or Enter), and always once initiatives lock at combat start.
 - Before combat start:
   - initiatives are editable
   - grouped initiative edit mode is available (bulk apply to selected rows)
@@ -1506,9 +1507,8 @@ When adding a rule:
 
 **Row Context Menu (GM)**:
 
-- Right-clicking a tracker row MUST open a context menu exposing the selection actions (grouped initiative before start, display configuration, leave initiative), subject to the same state rules (e.g. initiative locked after start). Per-row controls (conditions, HP, concentration) stay on the row itself.
-- If the right-clicked row is part of the current multi-selection, menu actions apply to the whole selection; otherwise they apply to that row only.
-- The menu MUST be openable from the keyboard (Menu key / Shift+F10) and an equivalent row action entry MUST remain available on touch devices.
+- Right-clicking a tracker row MUST open a context menu titled with the character name (to confirm the clicked row) and a single neutral-styled action: **leave initiative** for that row only. It MUST NOT select the row, alter the current multi-selection, or expose multi-selection actions (grouped initiative, display configuration, bulk leave); those stay in the selection bar.
+- The menu MUST be openable from the keyboard (Menu key / Shift+F10) and the per-row leave-initiative action MUST remain available on touch devices.
 
 **Reset and End States**:
 
@@ -1569,7 +1569,8 @@ When adding a rule:
 - Remove-group uses a select of removable groups; hidden with fewer than 2 non-participant groups
 - Add-combatants hidden when no campaign group/member remains to add
 - Pre-combat: missing-initiative rows highlighted, counter accurate, start with missing initiatives requires confirmation
-- Context menu: single-row vs selection scope, keyboard opening, locked initiative after start
+- Context menu: only leave-initiative for the clicked row, no selection side effect, keyboard opening
+- Initiative edit: order frozen while the field is focused, re-sorted on blur, and on combat start
 
 **References**:
 
