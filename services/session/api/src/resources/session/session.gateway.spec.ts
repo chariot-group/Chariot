@@ -57,6 +57,7 @@ function makeSocket(overrides: Record<string, any> = {}) {
         leave: jest.fn(),
         to: jest.fn().mockReturnValue({ emit: jest.fn() }),
         disconnect: jest.fn(),
+        use: jest.fn(),
         ...overrides,
     } as any;
 }
@@ -212,6 +213,48 @@ describe('SessionGateway', () => {
             mockGetSigningKey.mockImplementation((_kid, cb) => {
                 cb(null, { getPublicKey: () => 'mock-public-key' });
             });
+        });
+
+        // @see FR-session-websocket-lifecycle — le MJ n'entrait pas dans la room si `session:join` précédait l'auth JWT
+        it('race: holds incoming packets until authentication completes, then lets them through', async () => {
+            let resolveKey: (() => void) | undefined;
+            mockGetSigningKey.mockImplementation((_kid, cb) => {
+                resolveKey = () => cb(null, { getPublicKey: () => 'mock-public-key' });
+            });
+            const client = makeSocket({ user: undefined });
+
+            const connection = gateway.handleConnection(client);
+            const middleware = (client.use as jest.Mock).mock.calls[0][0];
+            const next = jest.fn();
+            middleware(['session:join', {}], next);
+            await Promise.resolve();
+
+            expect(next).not.toHaveBeenCalled();
+            expect(client.user).toBeUndefined();
+
+            resolveKey!();
+            await connection;
+            await Promise.resolve();
+
+            expect(client.user).toBeDefined();
+            expect(next).toHaveBeenCalledWith(undefined);
+        });
+
+        it('failure: rejects held packets when authentication fails', async () => {
+            const client = makeSocket({
+                user: undefined,
+                handshake: { auth: {}, headers: {} },
+            });
+
+            await gateway.handleConnection(client);
+            const middleware = (client.use as jest.Mock).mock.calls[0][0];
+            const next = jest.fn();
+            middleware(['session:join', {}], next);
+            await Promise.resolve();
+            await Promise.resolve();
+
+            expect(next).toHaveBeenCalledWith(expect.any(Error));
+            expect(client.disconnect).toHaveBeenCalled();
         });
 
         it('should authenticate client using auth.token and set user on socket', async () => {

@@ -30,6 +30,8 @@ interface AuthenticatedSocket extends Socket {
     };
     /** Rooms session (id session) encore jointes ; à la coupure Socket.IO, `rooms` peut déjà être vide. */
     sessionRoomIds?: Set<string>;
+    /** Résolu à la fin de l'authentification JWT (`true` si le client est authentifié). */
+    authReady?: Promise<boolean>;
 }
 
 @WebSocketGateway({
@@ -103,6 +105,19 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     async handleConnection(client: AuthenticatedSocket) {
+        client.authReady = this.authenticateClient(client);
+        // Le client émet `session:join` dès `connect`, avant la fin de la vérification JWT (asynchrone) :
+        // sans cette barrière le handler tourne avec `client.user` indéfini et le MJ n'entre jamais dans la room.
+        // `use` est posé de façon synchrone, avant que Nest ne lie les handlers de messages.
+        client.use((_packet, next) => {
+            void client.authReady!.then((authenticated) => {
+                next(authenticated ? undefined : new Error('Unauthorized'));
+            });
+        });
+        await client.authReady;
+    }
+
+    private async authenticateClient(client: AuthenticatedSocket): Promise<boolean> {
         try {
             let start: number = Date.now();
             const token = client.handshake.auth?.token
@@ -126,12 +141,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             this.logger.debug(`Client connected: ${client.user.username} (${client.id}) in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
             this.liveMetrics.recordWs('connect');
+            return true;
         } catch (error: any) {
             let message: string = `Connection rejected: ${error.message}`;
             this.logger.warn(message, this.SERVICE_NAME);
             this.liveMetrics.recordWs('reject');
             client.emit('error', { message });
             client.disconnect();
+            return false;
         }
     }
 

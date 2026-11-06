@@ -16,10 +16,20 @@ export class SessionAccessService {
   private readonly inflight = new Map<string, Promise<void>>();
 
   constructor(private readonly configService: ConfigService) {
-    this.baseUrl = (
-      this.configService.get<string>('CHARIOT_SESSION_API_URL') ??
-      'http://localhost:9002'
-    ).replace(/\/$/, '');
+    const configuredUrl = this.configService.get<string>(
+      'CHARIOT_SESSION_API_URL',
+    );
+    const nodeEnv = this.configService.get<string>('NODE_ENV');
+    if (!configuredUrl && nodeEnv !== 'development' && nodeEnv !== 'test') {
+      // Sans cette variable, noms/avatars/fiches de session échouent en 503 (localhost injoignable en conteneur).
+      this.logger.error(
+        'CHARIOT_SESSION_API_URL is not set: falling back to http://localhost:9002, session access validation will fail',
+      );
+    }
+    this.baseUrl = (configuredUrl ?? 'http://localhost:9002').replace(
+      /\/$/,
+      '',
+    );
   }
 
   async assertRosterRead(

@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.11.1] - 06-11-2026
+
+### Fixed
+- Fixed the game master not receiving real-time session updates (joining players, requested tokens) until a page reload: the session gateway now waits for JWT authentication to complete before processing a socket's events, so an early `session:join` can no longer run unauthenticated
+- Fixed participant names, profile pictures and characters staying empty (`...`) in the session lobby and sidebar: participants joining after the lobby opened now get their profile resolved, and failed profile lookups are retried
+- Fixed the integration adventure service being unable to validate session access because `CHARIOT_SESSION_API_URL` was not injected (an error is now logged when it is missing outside dev/test)
+
+### Versions
+- Web client 2.11.1; session 1.7.1; adventure 2.10.1; gateway 2.6.2; media 1.2.1; payment 1.2.1; admin 1.3.1
+
 ## [2.11.0] - 06-11-2026
 
 ### Added
