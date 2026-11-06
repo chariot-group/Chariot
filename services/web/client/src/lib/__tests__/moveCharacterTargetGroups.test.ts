@@ -13,7 +13,7 @@ const group = (id: string, label: string, isArchived = false): MoveTargetGroup =
     label,
     characters: [],
     isArchived,
-  }) as MoveTargetGroup;
+  }) as unknown as MoveTargetGroup;
 
 describe("filterMoveTargetGroups", () => {
   it("excludes the current group from move targets", () => {

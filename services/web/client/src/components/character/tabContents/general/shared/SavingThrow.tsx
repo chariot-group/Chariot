@@ -28,7 +28,7 @@ export default function SavingThrow({ skillName, accentColor, stats }: SavingThr
 
   return (
     <div
-      className="flex flex-col items-center gap-0 py-1.5 px-1 rounded-[10px] hover:bg-gray-middle-light/50 transition-colors"
+      className="flex flex-col items-center gap-0 py-1.5 px-1 rounded-[10px]"
       role="listitem"
       aria-label={`${fullName} : ${bonusStr}`}>
       <span className="flex items-center gap-1 mb-1">

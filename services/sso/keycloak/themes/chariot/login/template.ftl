@@ -41,6 +41,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const toggleBtns = document.querySelectorAll('.toggle-password');
             toggleBtns.forEach(function(toggleBtn) {
+                toggleBtn.setAttribute('aria-pressed', 'false');
                 toggleBtn.addEventListener('click', function() {
                     const passwordWrapper = this.closest('.password-wrapper');
                     const passwordInput = passwordWrapper.querySelector('input');
@@ -51,12 +52,12 @@
                         passwordInput.type = 'text';
                         eyeOpen.style.display = 'none';
                         eyeClosed.style.display = 'block';
-                        this.setAttribute('aria-label', 'Masquer le mot de passe');
+                        this.setAttribute('aria-pressed', 'true');
                     } else {
                         passwordInput.type = 'password';
                         eyeOpen.style.display = 'block';
                         eyeClosed.style.display = 'none';
-                        this.setAttribute('aria-label', 'Afficher le mot de passe');
+                        this.setAttribute('aria-pressed', 'false');
                     }
                 });
             });

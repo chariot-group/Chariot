@@ -3,15 +3,17 @@
 import { useCharacter } from "@/hooks/useCharacter";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 import { useKeycloak } from "@/providers/KeycloakProvider";
-import { useParams, usePathname } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Player, NPC } from "@/types/character";
 import CharacterDetailView from "@/components/character/CharacterDetailView";
+import CharacterSheetSkeleton from "@/components/character/skeleton/CharacterSheetSkeleton";
+import { resolveCharacterSheetSkeletonVariant } from "@/components/character/skeleton/characterSheetSkeletonLayout";
 import { shouldRedirectAwayFromCharacterSheet } from "@/lib/characterAccessError";
 
 export default function Character() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const pathname = usePathname();
   const characterId = params.idCharacters as string;
   const locale = pathname.split("/")[1] || "fr";
@@ -39,9 +41,7 @@ export default function Character() {
 
   if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <CharacterSheetSkeleton {...resolveCharacterSheetSkeletonVariant("playerSpace", searchParams.get("tab"))} />
     );
   }
 

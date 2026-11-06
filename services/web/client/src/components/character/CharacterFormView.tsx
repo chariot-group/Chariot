@@ -5,7 +5,8 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useCallback } from "react";
-import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import { DEFAULT_GAME_SYSTEM } from "@/constants/gameSystems";
+import CharacterTabs, { CharacterTab, tabButtonTone } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { Button } from "@/components/ui/button";
 import { useCharacterForm, CharacterType } from "@/hooks/useCharacterForm";
@@ -13,9 +14,11 @@ import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useMemo, useRef } from "react";
 import { useFormState } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { clearNpcCodexDraft, selectNpcCodexDraft } from "@/store/slices/codexDraftSlice";
-import { upsertCharacterWithoutGroup } from "@/store/slices/characterSlice";
+import { clearNpcCodexDraft, clearPlayerCodexDraft, selectNpcCodexDraft, selectPlayerCodexDraft } from "@/store/slices/codexDraftSlice";
+import { selectCharactersWithoutGroup, upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
+import { isPlayer } from "@/utils/global.utils";
 import { addCharacterToGroup } from "@/store/slices/groupSlice";
+import { selectContextMode } from "@/store/slices/environmentSlice";
 import {
   isEnterWithModifiers,
   isEnterWithoutModifiers,
@@ -24,8 +27,6 @@ import {
 } from "@/utils/keyboard.utils";
 import { toast } from "react-toastify";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
-import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
-import { CharacterSheetHeader } from "@/components/character/CharacterSheetHeader";
 
 interface CharacterFormViewProps {
   /** Character type: 'players' or 'npcs' */
@@ -73,71 +74,53 @@ const DEFAULT_MASTERIES_ABILITY = {
   charisma: false,
 };
 
-/**
- * Reusable character form view for creation
- * Displays tabs with empty form fields for creating a new character
- */
-export default function CharacterFormView({ characterType, groupId }: CharacterFormViewProps) {
-  const tCreate = useTranslations("characterCreate");
-  const tForm = useTranslations("characterForm");
-  const router = useRouter();
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const dispatch = useAppDispatch();
-  const reduxCodexDraft = useAppSelector(selectNpcCodexDraft);
+const getAbilityModifier = (value?: number): number => Math.floor(((value ?? 10) - 10) / 2);
 
-  const campaignId = params.idCampaign as string;
-  const resolvedGroupId = groupId || (params.idGroup as string);
+function buildCodexImportedCombatStats(data: {
+  stats?: {
+    abilityScores?: Partial<{
+      strength: number;
+      dexterity: number;
+      constitution: number;
+      intelligence: number;
+      wisdom: number;
+      charisma: number;
+    }>;
+    savingThrows?: Partial<{
+      strength: number;
+      dexterity: number;
+      constitution: number;
+      intelligence: number;
+      wisdom: number;
+      charisma: number;
+    }>;
+    armorClass?: number;
+    speed?: Partial<{ walk: number; climb: number; swim: number; fly: number; burrow: number }>;
+  };
+}) {
+  const abilityScores = {
+    strength: data.stats?.abilityScores?.strength ?? 10,
+    dexterity: data.stats?.abilityScores?.dexterity ?? 10,
+    constitution: data.stats?.abilityScores?.constitution ?? 10,
+    intelligence: data.stats?.abilityScores?.intelligence ?? 10,
+    wisdom: data.stats?.abilityScores?.wisdom ?? 10,
+    charisma: data.stats?.abilityScores?.charisma ?? 10,
+  };
+  const codexSavingThrows = data.stats?.savingThrows || {};
+  const dexterityModifier = getAbilityModifier(abilityScores.dexterity);
+  const baseArmorClass = data.stats?.armorClass ?? 0;
 
-  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
-  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
-
-  // Lire les données pré-remplies depuis l'URL (pour NPC depuis codex)
-  const codexDataParam = searchParams.get("codexData");
-
-  const codexData = useMemo(() => {
-    if (reduxCodexDraft) return reduxCodexDraft;
-    if (!codexDataParam) return null;
-    try {
-      return JSON.parse(decodeURIComponent(codexDataParam));
-    } catch {
-      return null;
-    }
-  }, [reduxCodexDraft, codexDataParam]);
-
-  // Fonction pour changer d'onglet et mettre à jour l'URL
-  const handleTabChange = useCallback((newTab: string) => {
-    const tab = newTab as CharacterTab;
-    // Mettre à jour l'URL sans recharger la page
-    const currentParams = new URLSearchParams(searchParams.toString());
-    currentParams.set("tab", tab);
-    router.replace(`?${currentParams.toString()}`, { scroll: false });
-  }, [router, searchParams]);
-
-  const defaultSavingThrows = DEFAULT_SAVING_THROWS;
-  const defaultMasteries = DEFAULT_MASTERIES;
-  const defaultMasteriesAbility = DEFAULT_MASTERIES_ABILITY;
-  const defaultNpcSkills = DEFAULT_MASTERIES;
-
-  const getAbilityModifier = (value?: number): number => Math.floor(((value ?? 10) - 10) / 2);
-
-  const npcCodexDefaults = useMemo(() => {
-    if (!codexData) return null;
-
-    const abilityScores = {
-      strength: codexData.stats?.abilityScores?.strength ?? 10,
-      dexterity: codexData.stats?.abilityScores?.dexterity ?? 10,
-      constitution: codexData.stats?.abilityScores?.constitution ?? 10,
-      intelligence: codexData.stats?.abilityScores?.intelligence ?? 10,
-      wisdom: codexData.stats?.abilityScores?.wisdom ?? 10,
-      charisma: codexData.stats?.abilityScores?.charisma ?? 10,
-    };
-
-    const codexSavingThrows = codexData.stats?.savingThrows || {};
-    const dexterityModifier = getAbilityModifier(abilityScores.dexterity);
-    const baseArmorClass = codexData.stats?.armorClass ?? 0;
-    const computedArmorClass = Math.max(baseArmorClass, 10 + dexterityModifier);
-    const normalizedSavingThrows = {
+  return {
+    abilityScores,
+    armorClass: Math.max(baseArmorClass, 10 + dexterityModifier),
+    speed: {
+      walk: data.stats?.speed?.walk ?? 30,
+      climb: data.stats?.speed?.climb ?? 0,
+      swim: data.stats?.speed?.swim ?? 0,
+      fly: data.stats?.speed?.fly ?? 0,
+      burrow: data.stats?.speed?.burrow ?? 0,
+    },
+    savingThrows: {
       strength: Math.max(
         0,
         (codexSavingThrows.strength ?? getAbilityModifier(abilityScores.strength)) -
@@ -168,35 +151,118 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         (codexSavingThrows.charisma ?? getAbilityModifier(abilityScores.charisma)) -
           getAbilityModifier(abilityScores.charisma),
       ),
-    };
+    },
+  };
+}
+
+/**
+ * Reusable character form view for creation
+ * Displays tabs with empty form fields for creating a new character
+ */
+export default function CharacterFormView({ characterType, groupId }: CharacterFormViewProps) {
+  const tCreate = useTranslations("characterCreate");
+  const tForm = useTranslations("characterForm");
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
+  const reduxNpcCodexDraft = useAppSelector(selectNpcCodexDraft);
+  const reduxPlayerCodexDraft = useAppSelector(selectPlayerCodexDraft);
+  const contextMode = useAppSelector(selectContextMode);
+
+  const campaignId = params.idCampaign as string;
+  const hasPlayerSpaceCharacter = useAppSelector(selectCharactersWithoutGroup).length > 0;
+  const resolvedGroupId = groupId || (params.idGroup as string);
+
+  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
+  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
+
+  // Lire les données pré-remplies depuis l'URL (pour NPC depuis codex)
+  const codexDataParam = searchParams.get("codexData");
+  const linkedPlayerIdParam =
+    contextMode === "player" ? searchParams.get("linkedPlayerId")?.trim() || null : null;
+
+  const npcCodexData = useMemo(() => {
+    if (characterType !== "npcs") return null;
+    if (reduxNpcCodexDraft) return reduxNpcCodexDraft;
+    if (!codexDataParam) return null;
+    try {
+      return JSON.parse(decodeURIComponent(codexDataParam));
+    } catch {
+      return null;
+    }
+  }, [characterType, reduxNpcCodexDraft, codexDataParam]);
+
+  const playerCodexData = characterType === "players" ? reduxPlayerCodexDraft : null;
+
+  // Fonction pour changer d'onglet et mettre à jour l'URL
+  const handleTabChange = useCallback((newTab: string) => {
+    const tab = newTab as CharacterTab;
+    // Mettre à jour l'URL sans recharger la page
+    const currentParams = new URLSearchParams(searchParams.toString());
+    currentParams.set("tab", tab);
+    router.replace(`?${currentParams.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  const defaultSavingThrows = DEFAULT_SAVING_THROWS;
+  const defaultMasteries = DEFAULT_MASTERIES;
+  const defaultMasteriesAbility = DEFAULT_MASTERIES_ABILITY;
+  const defaultNpcSkills = DEFAULT_MASTERIES;
+
+  const npcCodexDefaults = useMemo(() => {
+    if (!npcCodexData) return null;
+    const combatStats = buildCodexImportedCombatStats(npcCodexData);
 
     return {
-      ...codexData,
-      groups: resolvedGroupId ? [resolvedGroupId] : codexData.groups || [],
+      ...npcCodexData,
+      groups: resolvedGroupId ? [resolvedGroupId] : npcCodexData.groups || [],
       stats: {
-        ...(codexData.stats || {}),
-        armorClass: computedArmorClass,
-        abilityScores,
-        speed: {
-          walk: codexData.stats?.speed?.walk ?? 30,
-          climb: codexData.stats?.speed?.climb ?? 0,
-          swim: codexData.stats?.speed?.swim ?? 0,
-          fly: codexData.stats?.speed?.fly ?? 0,
-          burrow: codexData.stats?.speed?.burrow ?? 0,
-        },
-        savingThrows: normalizedSavingThrows,
+        ...(npcCodexData.stats || {}),
+        ...combatStats,
         skills: {
           ...defaultNpcSkills,
-          ...(codexData.stats?.skills || {}),
+          ...(npcCodexData.stats?.skills || {}),
         },
       },
     };
-  }, [codexData, defaultNpcSkills, resolvedGroupId]);
+  }, [npcCodexData, defaultNpcSkills, resolvedGroupId]);
+
+  const playerCodexDefaults = useMemo(() => {
+    if (!playerCodexData) return null;
+    const combatStats = buildCodexImportedCombatStats(playerCodexData);
+
+    return {
+      ...playerCodexData,
+      groups: resolvedGroupId ? [resolvedGroupId] : playerCodexData.groups || [],
+      class: playerCodexData.class?.length
+        ? playerCodexData.class
+        : [{ name: "", subclass: "", level: 1, hitDice: 0 }],
+      profile: {
+        alignment: playerCodexData.profile?.alignment ?? "True Neutral",
+        race: playerCodexData.profile?.race ?? "",
+        subrace: playerCodexData.profile?.subrace ?? "",
+        history: playerCodexData.profile?.history ?? "",
+      },
+      stats: {
+        ...(playerCodexData.stats || {}),
+        ...combatStats,
+        masteries: {
+          ...defaultMasteries,
+          ...(playerCodexData.stats?.masteries || {}),
+        },
+        masteriesAbility: {
+          ...defaultMasteriesAbility,
+          ...(playerCodexData.stats?.masteriesAbility || {}),
+        },
+      },
+      actions: Array.isArray(playerCodexData.actions) ? playerCodexData.actions : [],
+    };
+  }, [playerCodexData, defaultMasteries, defaultMasteriesAbility, resolvedGroupId]);
 
   // Default values for a new character with the group pre-assigned
   const defaultValues =
     characterType === "players"
-      ? {
+      ? playerCodexDefaults ?? {
           groups: resolvedGroupId ? [resolvedGroupId] : [],
           class: [{ name: "", subclass: "", level: 1, hitDice: 0 }],
           profile: {
@@ -212,6 +278,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
       : npcCodexDefaults
         ? {
             ...npcCodexDefaults,
+            linkedPlayerId: linkedPlayerIdParam,
           }
         : {
             groups: resolvedGroupId ? [resolvedGroupId] : [],
@@ -243,6 +310,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
             challenge: { challengeRating: 0, experiencePoints: 0 },
             actions: { standard: [], legendary: [], lair: [] },
             hitPointsRoll: "",
+            linkedPlayerId: linkedPlayerIdParam,
           };
 
   // Initialiser le formulaire avec useCharacterForm (characterId = null pour création)
@@ -261,13 +329,19 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
               firstname: createdCharacter.firstname,
               lastname: createdCharacter.lastname,
               surname: createdCharacter.surname,
-              userId: "userId" in createdCharacter ? createdCharacter.userId : undefined,
+              userId:
+                "userId" in createdCharacter && typeof createdCharacter.userId === "string"
+                  ? createdCharacter.userId
+                  : undefined,
             },
           }),
         );
         router.push(`/campaigns/${campaignId}/groups/${resolvedGroupId}/characters/${createdCharacter._id}`);
       } else {
         dispatch(upsertCharacterWithoutGroup(createdCharacter));
+        if (!isPlayer(createdCharacter)) {
+          dispatch(upsertPlayerSpaceNpc(createdCharacter as NPC));
+        }
         router.push(`/characters/${createdCharacter._id}`);
       }
     },
@@ -276,25 +350,40 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
   const { errors } = useFormState({ control: form.control });
   const tabsWithErrors = useMemo(() => getCharacterTabsWithErrors(errors), [errors]);
 
-  const watchedFirstname = form.watch("firstname");
-  const watchedLastname = form.watch("lastname");
-  const watchedSurname = form.watch("surname");
-  const headerFullName = [watchedFirstname?.trim(), watchedLastname?.trim()].filter(Boolean).join(" ");
-  const createTitleFallback = characterType === "players" ? tCreate("titlePlayer") : tCreate("titleNpc");
-
   const hasAppliedCodexDefaultsRef = useRef(false);
 
   useEffect(() => {
-    if (characterType !== "npcs") return;
-    if (!npcCodexDefaults) return;
+    if (characterType === "npcs") {
+      if (!npcCodexDefaults) return;
+      if (hasAppliedCodexDefaultsRef.current) return;
+
+      hasAppliedCodexDefaultsRef.current = true;
+      form.reset({ ...npcCodexDefaults, linkedPlayerId: linkedPlayerIdParam });
+      if (reduxNpcCodexDraft) {
+        dispatch(clearNpcCodexDraft());
+      }
+      return;
+    }
+
+    if (characterType !== "players") return;
+    if (!playerCodexDefaults) return;
     if (hasAppliedCodexDefaultsRef.current) return;
 
     hasAppliedCodexDefaultsRef.current = true;
-    form.reset(npcCodexDefaults);
-    if (reduxCodexDraft) {
-      dispatch(clearNpcCodexDraft());
+    form.reset(playerCodexDefaults);
+    if (reduxPlayerCodexDraft) {
+      dispatch(clearPlayerCodexDraft());
     }
-  }, [characterType, npcCodexDefaults, form, reduxCodexDraft, dispatch]);
+  }, [
+    characterType,
+    npcCodexDefaults,
+    playerCodexDefaults,
+    form,
+    reduxNpcCodexDraft,
+    reduxPlayerCodexDraft,
+    dispatch,
+    linkedPlayerIdParam,
+  ]);
 
   // Create a placeholder character object for the tab content components
   // This is needed because the tab components expect a character prop
@@ -302,6 +391,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     characterType === "players"
       ? ({
           _id: "",
+          gameSystem: DEFAULT_GAME_SYSTEM,
           firstname: "",
           lastname: "",
           surname: "",
@@ -412,6 +502,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         } as Player)
       : ({
           _id: "",
+          gameSystem: DEFAULT_GAME_SYSTEM,
           firstname: "",
           lastname: "",
           surname: "",
@@ -487,8 +578,13 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
 
   const handleCancel = useCallback(() => {
     onCancel();
+    // FR-welcome-onboarding-fallbacks: no player-space character → land on the player fallback, not back on welcome.
+    if (characterType === "players" && !campaignId && !hasPlayerSpaceCharacter) {
+      router.replace("/characters");
+      return;
+    }
     router.back();
-  }, [onCancel, router]);
+  }, [onCancel, router, characterType, campaignId, hasPlayerSpaceCharacter]);
 
   const handleInvalid = useCallback((errors: Record<string, unknown>) => {
     const firstErrorTab = getFirstCharacterTabWithError(errors);
@@ -531,26 +627,18 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
         form="character-create-form"
         disabled={isSaving}
         tabIndex={0}
-        className={`
-          max-w-full min-w-0 lg:text-sm text-xs font-semibold
-          ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-          ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-          ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-          ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-          ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-        `}
+        variant="accent"
+        tone={tabButtonTone(activeTab)}
+        className="max-w-full min-w-0"
         aria-label={tCreate("create")}
         aria-busy={isSaving}>
-        <Save
-          className="lg:size-5 size-4 shrink-0"
-          aria-hidden="true"
-        />
+        <Save aria-hidden="true" />
         <span className="truncate">{isSaving ? tCreate("saving") : tCreate("create")}</span>
       </Button>
 
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         onClick={handleCancel}
         disabled={isSaving}
         tabIndex={0}
@@ -560,12 +648,9 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
             handleCancel();
           }
         }}
-        className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+        className="max-w-full min-w-0"
         aria-label={tCreate("cancel")}>
-        <X
-          className="lg:size-5 size-4 shrink-0"
-          aria-hidden="true"
-        />
+        <X aria-hidden="true" />
         <span className="truncate">{tCreate("cancel")}</span>
       </Button>
     </div>
@@ -589,28 +674,12 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           value={activeTab}
           onValueChange={handleTabChange}
           className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Header avec onglets et titre de création */}
+          {/* Navbar des onglets (pas d'en-tête d'identité, cf. FR-character-detail-view) */}
           <div className="shrink-0">
-            <div className="mx-auto sm:px-6 md:px-8 px-2">
-              <CharacterSheetHeader
-                identity={
-                  <CharacterSheetHeaderIdentity
-                    fullName={headerFullName}
-                    surname={watchedSurname}
-                    emptyNameFallback={createTitleFallback}
-                    subtitle={
-                      <div className="font-semibold text-white">
-                        <span>{tCreate("description")}</span>
-                      </div>
-                    }
-                  />
-                }
-                tabs={
-                  <CharacterTabs
-                    activeTab={activeTab}
-                    tabsWithErrors={tabsWithErrors}
-                  />
-                }
+            <div className="mx-auto sm:px-6 md:px-8 px-2 pb-2">
+              <CharacterTabs
+                activeTab={activeTab}
+                tabsWithErrors={tabsWithErrors}
               />
             </div>
           </div>
@@ -618,7 +687,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           {/* Contenu des onglets - scrollable (min-h-0 pour que les enfants h-full / flex-1 se calent sur la hauteur utile) */}
           <div
             id="characterScrollView"
-            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover">
             <CharacterTabPanels
               character={placeholderCharacter}
               form={form}
@@ -627,7 +696,7 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           </div>
         </Tabs>
 
-        <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+        <div className="shrink-0 border-t border-frame px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
           <div className="flex w-full justify-end">{characterFooterActions}</div>
         </div>
       </form>

@@ -5,12 +5,12 @@ import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { Tabs } from "@/components/ui/tabs";
 import React, { useEffect, useMemo, useState } from "react";
-import CharacterTabs, { CharacterTab } from "@/components/character/CharacterTabs";
+import CharacterTabs, { CharacterTab, tabsForCharacterSheet } from "@/components/character/CharacterTabs";
 import CharacterTabPanels from "@/components/character/CharacterTabPanels";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
-import { selectIsInSession, selectSessionCode } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched, selectSessionCode, selectSessionParticipants } from "@/store/slices/sessionSlice";
 import { selectUser } from "@/store/slices/userSlice";
 import UserService from "@/services/UserService";
 import { formatSessionParticipantUserLabel } from "@/lib/formatSessionParticipantUserLabel";
@@ -24,12 +24,9 @@ import {
   isModalOverlayOpen,
   isTypingInInputElement,
 } from "@/utils/keyboard.utils";
-import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { useToast } from "@/hooks/useToast";
 import { useFormState } from "react-hook-form";
 import { getCharacterTabsWithErrors, getFirstCharacterTabWithError } from "@/components/character/characterFormErrors";
-import { CharacterSheetHeaderIdentity } from "@/components/character/CharacterSheetHeaderIdentity";
-import { CharacterSheetHeader } from "@/components/character/CharacterSheetHeader";
 import { CombatBanner } from "@/components/character/CombatBanner";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
@@ -39,7 +36,12 @@ import { emitCharacterSheetUpdated } from "@/lib/sessionCharacterSyncBridge";
 import { getSessionSnapshotForBroadcast } from "@/lib/sessionSnapshot";
 import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
 import { cn } from "@/lib/utils";
-
+import CharacterService from "@/services/CharacterService";
+import { characterDisplayName as formatCharacterName } from "@/lib/duplicateName";
+import { NpcLinkedPlayerFooterLink } from "@/components/character/NpcLinkedPlayerFooterLink";
+import { linkedPlayerIdOf } from "@/lib/npcPlayerLink";
+import { isPlayerOnSessionRoster } from "@/lib/sessionPlayerCompanions";
+import { buildSessionCharacterHref } from "@/lib/sessionInAppNavigation";
 interface CharacterDetailViewProps {
   character: Player | NPC;
   /** GET personnage (même source que la page) pour resync après sauvegarde si besoin. */
@@ -55,24 +57,41 @@ export default function CharacterDetailView({
 }: CharacterDetailViewProps) {
   const t = useTranslations("characterDetail");
   const tForm = useTranslations("characterForm");
-  const tClass = useTranslations("classes");
-  const tCommon = useTranslations("common");
   const toast = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const contextMode = useAppSelector(selectContextMode);
   const currentUser = useAppSelector(selectUser);
   const sessionCodeRedux = useAppSelector(selectSessionCode);
+  const participants = useAppSelector(selectSessionParticipants);
   const sessionCodeFromUrl = searchParams.get("sessionCode");
   const currentUserKeycloakId = currentUser?.keycloakId ?? null;
 
+  const isSessionGmUser = Boolean(
+    currentUserKeycloakId &&
+    participants.some(
+      (participant) => participant.userId === currentUserKeycloakId && participant.status === "gameMaster",
+    ),
+  );
+
+  const sessionCodeActive = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
+  const sessionCodeForMedia = sessionCodeActive;
+  const isSessionGmEditContext = Boolean(isSessionLaunched && isSessionGmUser && sessionCodeActive);
+
+  const isAssignedSessionPlayer = isPlayer(character) && isPlayerOnSessionRoster(participants, character._id);
+
+  const isSessionCompanionNpc =
+    !isPlayer(character) &&
+    Boolean(linkedPlayerIdOf(character)) &&
+    isPlayerOnSessionRoster(participants, linkedPlayerIdOf(character) ?? "");
+
+  const isForeignOwnedSheet =
+    currentUserKeycloakId != null && character.createdBy != null && character.createdBy !== currentUserKeycloakId;
+
   const isGmViewingPlayerSheet =
-    contextMode === "gm" &&
-    isPlayer(character) &&
-    currentUserKeycloakId != null &&
-    character.createdBy != null &&
-    character.createdBy !== currentUserKeycloakId;
+    isSessionGmUser && isPlayer(character) && (isForeignOwnedSheet || isAssignedSessionPlayer);
+  const isGmViewingNpcSheet = isSessionGmUser && !isPlayer(character) && (isForeignOwnedSheet || isSessionCompanionNpc);
 
   const playedBySubjectId = isGmViewingPlayerSheet && character.createdBy != null ? String(character.createdBy) : null;
 
@@ -80,23 +99,24 @@ export default function CharacterDetailView({
     createdByKey: string;
     label: string;
   } | null>(null);
+  const [linkedPlayer, setLinkedPlayer] = useState<Player | null>(null);
 
   const playedByLabel =
     playedBySubjectId != null && resolvedPlayedBy != null && resolvedPlayedBy.createdByKey === playedBySubjectId
       ? resolvedPlayedBy.label
       : null;
 
-  const sessionCodeForMedia = sessionCodeFromUrl ?? sessionCodeRedux ?? null;
+  const canEditAsGm =
+    isSessionGmEditContext && (isForeignOwnedSheet || isAssignedSessionPlayer || isSessionCompanionNpc);
 
-  const canEditAsGm = useMemo(
-    () => isGmViewingPlayerSheet && isInSession && !!sessionCodeFromUrl && sessionCodeFromUrl === sessionCodeRedux,
-    [isGmViewingPlayerSheet, isInSession, sessionCodeFromUrl, sessionCodeRedux],
-  );
+  const showEditControls = !isForeignOwnedSheet || canEditAsGm;
 
-  const showEditControls = !isGmViewingPlayerSheet || canEditAsGm;
+  const showSessionGmCompanionsTab = Boolean(isPlayer(character) && isSessionGmEditContext && isAssignedSessionPlayer);
 
-  // Lire l'onglet actif depuis l'URL (ou "general" par défaut)
-  const activeTab = (searchParams.get("tab") as CharacterTab) || "general";
+  const isPlayerSpace = contextMode === "player";
+  const availableTabs = tabsForCharacterSheet(isPlayer(character), isPlayerSpace, showSessionGmCompanionsTab);
+  const requestedTab = (searchParams.get("tab") as CharacterTab) || "general";
+  const activeTab = availableTabs.includes(requestedTab) ? requestedTab : "general";
 
   // Fonction pour changer d'onglet et mettre à jour l'URL
   const handleTabChange = React.useCallback(
@@ -119,7 +139,7 @@ export default function CharacterDetailView({
     type: characterType,
     sourceCharacter: character,
     refetchCharacter,
-    sessionCode: sessionCodeFromUrl,
+    sessionCode: sessionCodeForMedia,
     onSuccess: () => {
       // Rafraîchir les données du parent après la mise à jour
       if (onCharacterUpdate) {
@@ -136,7 +156,6 @@ export default function CharacterDetailView({
   const [pendingAvatarRemove, setPendingAvatarRemove] = React.useState(false);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = React.useState<string | null>(null);
   const [isAvatarCommitting, setIsAvatarCommitting] = React.useState(false);
-
   const isAvatarDirty = pendingAvatarFile !== null || pendingAvatarRemove;
   const hasPendingChanges = isDirty || isAvatarDirty;
 
@@ -218,7 +237,9 @@ export default function CharacterDetailView({
         if (avatarChanged) {
           const snap = getSessionSnapshotForBroadcast();
           if (snap) {
-            emitCharacterSheetUpdated(snap.code, character._id);
+            emitCharacterSheetUpdated(snap.code, character._id, {
+              linkedPlayerId: linkedPlayerIdOf(character),
+            });
           }
         }
       } catch {
@@ -259,16 +280,7 @@ export default function CharacterDetailView({
 
   const displayedAvatarStoredValue = form.watch("avatar") || character.avatar;
 
-  const watchedFirstname = form.watch("firstname");
-  const watchedLastname = form.watch("lastname");
-  const watchedSurname = form.watch("surname");
-
-  const headerFirstname = isEditing ? (watchedFirstname ?? character.firstname) : character.firstname;
-  const headerLastname = isEditing ? (watchedLastname ?? character.lastname) : character.lastname;
-  const headerSurname = isEditing ? (watchedSurname ?? character.surname) : character.surname;
-
-  const headerFullName = [headerFirstname?.trim(), headerLastname?.trim()].filter(Boolean).join(" ");
-  const characterDisplayName = headerFullName || t("placeholder.noImage");
+  const avatarAlt = formatCharacterName(character) || t("placeholder.noImage");
 
   const handleInvalid = React.useCallback(
     (errors: Record<string, unknown>) => {
@@ -286,7 +298,7 @@ export default function CharacterDetailView({
       return;
     }
     let cancelled = false;
-    void UserService.getUserById(playedBySubjectId)
+    void UserService.getUserById(playedBySubjectId, sessionCodeForMedia)
       .then((u) => {
         if (!cancelled) {
           const label = formatSessionParticipantUserLabel(u);
@@ -303,7 +315,32 @@ export default function CharacterDetailView({
     return () => {
       cancelled = true;
     };
-  }, [playedBySubjectId]);
+  }, [playedBySubjectId, sessionCodeForMedia]);
+
+  const npcLinkedPlayerId = !isPlayer(character) ? linkedPlayerIdOf(character) : null;
+  const showLinkedPlayerFooter = Boolean(
+    npcLinkedPlayerId && (isPlayerSpace || (isGmViewingNpcSheet && isSessionGmEditContext)),
+  );
+
+  useEffect(() => {
+    if (!showLinkedPlayerFooter || !npcLinkedPlayerId) {
+      setLinkedPlayer(null);
+      return;
+    }
+    let cancelled = false;
+    CharacterService.getCharacterById(npcLinkedPlayerId, { sessionCode: sessionCodeForMedia })
+      .then((fetched) => {
+        if (!cancelled && isPlayer(fetched)) {
+          setLinkedPlayer(fetched);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLinkedPlayer(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [npcLinkedPlayerId, sessionCodeForMedia, showLinkedPlayerFooter]);
 
   useEffect(() => {
     if (!showEditControls && isEditing) {
@@ -358,7 +395,7 @@ export default function CharacterDetailView({
   const exportPdfButton = (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       onClick={() => {
         if (isNpcPdfExportDisabled) return;
         setIsExportPdfDialogOpen(true);
@@ -369,14 +406,9 @@ export default function CharacterDetailView({
         "max-w-full min-w-0 lg:text-sm text-xs font-semibold",
         isNpcPdfExportDisabled && "pointer-events-none",
       )}
-      aria-label={
-        isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")
-      }
+      aria-label={isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")}
       aria-disabled={isNpcPdfExportDisabled || undefined}>
-      <FileDown
-        className="lg:size-5 size-4 shrink-0"
-        aria-hidden="true"
-      />
+      <FileDown aria-hidden="true" />
       <span className="truncate">{t("exportPdf")}</span>
     </Button>
   );
@@ -394,6 +426,28 @@ export default function CharacterDetailView({
     exportPdfButton
   );
 
+  const linkedPlayerFooterLink =
+    showLinkedPlayerFooter && npcLinkedPlayerId && !isEditing ? (
+      <NpcLinkedPlayerFooterLink
+        href={buildSessionCharacterHref(npcLinkedPlayerId, sessionCodeForMedia)}
+        playerName={linkedPlayer ? formatCharacterName(linkedPlayer) || t("placeholder.noImage") : null}
+      />
+    ) : null;
+
+  const exportPdfWithLinkedPlayer = (
+    <div className="inline-flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
+      {linkedPlayerFooterLink}
+      {linkedPlayerFooterLink ? (
+        <span
+          className="hidden shrink-0 text-sm text-white/40 sm:inline"
+          aria-hidden="true">
+          |
+        </span>
+      ) : null}
+      {exportPdfAction}
+    </div>
+  );
+
   const characterFooterActions = showEditControls ? (
     <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
       {isEditing ? (
@@ -403,25 +457,16 @@ export default function CharacterDetailView({
             form="character-update-form"
             disabled={isSaving || isAvatarCommitting || !hasPendingChanges}
             tabIndex={0}
-            className={`
-              max-w-full min-w-0 lg:text-sm text-xs font-semibold
-              ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-              ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-              ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-              ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-              ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-            `}
+            variant="primary"
+            className="max-w-full min-w-0"
             aria-label={t("saveChanges")}
             aria-busy={isSaving || isAvatarCommitting}>
-            <Save
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <Save aria-hidden="true" />
             <span className="truncate">{isSaving || isAvatarCommitting ? t("saving") : t("saveChanges")}</span>
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={handleCancelEditor}
             disabled={isSaving || isAvatarCommitting}
             tabIndex={0}
@@ -431,12 +476,9 @@ export default function CharacterDetailView({
                 handleCancelEditor();
               }
             }}
-            className="max-w-full min-w-0 lg:text-sm text-xs font-semibold"
+            className="max-w-full min-w-0"
             aria-label={t("cancel")}>
-            <X
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <X aria-hidden="true" />
             <span className="truncate">{t("cancel")}</span>
           </Button>
         </React.Fragment>
@@ -452,26 +494,46 @@ export default function CharacterDetailView({
                 setIsEditing(true);
               }
             }}
-            className={`
-            max-w-full min-w-0 lg:text-sm text-xs font-semibold
-            ${activeTab === "general" ? "bg-blue hover:bg-blue/75 text-black" : ""}
-            ${activeTab === "battle" ? "bg-red hover:bg-red/75 text-white" : ""}
-            ${activeTab === "magic" ? "bg-pink hover:bg-pink/75 text-black" : ""}
-            ${activeTab === "inventory" ? "bg-yellow hover:bg-yellow/75 text-black" : ""}
-            ${activeTab === "history" ? "bg-green hover:bg-green/75 text-black" : ""}
-          `}
+            variant="primary"
+            className="max-w-full min-w-0"
             aria-label={t("editCharacter")}>
-            <SquarePen
-              className="lg:size-5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <SquarePen aria-hidden="true" />
             <span className="truncate">{t("editCharacter")}</span>
           </Button>
-          {exportPdfAction}
+          {exportPdfWithLinkedPlayer}
         </React.Fragment>
       )}
     </div>
+  ) : linkedPlayerFooterLink ? (
+    <div className="flex w-full min-w-0 justify-end">{exportPdfWithLinkedPlayer}</div>
   ) : null;
+
+  const generalTabAvatar =
+    isEditing && showEditControls ? (
+      <MediaAvatarUpload
+        scope="character"
+        entityId={character._id}
+        storedValue={editingAvatarStoredValue}
+        sessionCode={sessionCodeForMedia}
+        size="sheet"
+        alt={avatarAlt}
+        deferUpload
+        previewUrl={avatarPreviewUrl}
+        onPendingFile={handlePendingAvatarFile}
+        onPendingRemove={handlePendingAvatarRemove}
+        disabled={isSaving || isAvatarCommitting}
+      />
+    ) : (
+      <MediaAvatar
+        scope="character"
+        entityId={character._id}
+        storedValue={displayedAvatarStoredValue}
+        sessionCode={sessionCodeForMedia}
+        size="sheet"
+        alt={avatarAlt}
+        priority
+      />
+    );
 
   return (
     <main
@@ -498,100 +560,13 @@ export default function CharacterDetailView({
           value={activeTab}
           onValueChange={handleTabChange}
           className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Header avec onglets et infos du personnage */}
+          {/* Navbar des onglets (pas d'en-tête d'identité, cf. FR-character-detail-view) */}
           <div className="shrink-0">
-            <div className="mx-auto sm:px-6 md:px-8 px-2">
-              <CharacterSheetHeader
-                identity={
-                  <CharacterSheetHeaderIdentity
-                    fullName={headerFullName}
-                    surname={headerSurname}
-                    emptyNameFallback={t("placeholder.noImage")}
-                    tooltipContent={
-                      <div className="flex flex-col gap-1">
-                        <span>
-                          {headerFullName}
-                          {headerSurname?.trim() ? ` (${headerSurname.trim()})` : ""}
-                        </span>
-                        {isGmViewingPlayerSheet && playedByLabel ? (
-                          <span className="text-xs opacity-90">{t("playedBy", { name: playedByLabel })}</span>
-                        ) : null}
-                      </div>
-                    }
-                    subtitle={
-                      isPlayer(character) ? (
-                        <div className="flex flex-col gap-1 font-semibold text-white">
-                          <div>
-                            {character.class.map((cls: { name: string; level: number }, index: number) => (
-                              <span key={index}>
-                                {t("classLevelShort", { className: tClass(cls.name), level: cls.level })}
-                                {index < character.class.length - 1 && " / "}
-                              </span>
-                            ))}
-                          </div>
-                          {isGmViewingPlayerSheet && playedByLabel ? (
-                            <span className="text-xs font-normal text-gray-light">
-                              {t("playedBy", { name: playedByLabel })}
-                            </span>
-                          ) : null}
-                        </div>
-                      ) : (
-                        <div className="font-semibold text-white">
-                          {(() => {
-                            const challengeRating = character.challenge?.challengeRating ?? 0;
-                            const experiencePoints = character.challenge?.experiencePoints ?? 0;
-                            const displayChallengeRating = formatChallengeRating(challengeRating);
-
-                            return (
-                              <React.Fragment>
-                                <InfoTooltip
-                                  content={tCommon("challengeRatingTooltip")}
-                                  side="bottom"
-                                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                                  <abbr className="cursor-help no-underline">{t("npc.challengeRatingAbbr")}</abbr>
-                                </InfoTooltip>{" "}
-                                {displayChallengeRating} ({experiencePoints} XP)
-                              </React.Fragment>
-                            );
-                          })()}
-                        </div>
-                      )
-                    }
-                  />
-                }
-                tabs={
-                  <CharacterTabs
-                    activeTab={activeTab}
-                    tabsWithErrors={isEditing ? tabsWithErrors : undefined}
-                  />
-                }
-                avatar={
-                  isEditing && showEditControls ? (
-                    <MediaAvatarUpload
-                      scope="character"
-                      entityId={character._id}
-                      storedValue={editingAvatarStoredValue}
-                      sessionCode={sessionCodeForMedia}
-                      size="sheet"
-                      alt={characterDisplayName}
-                      deferUpload
-                      previewUrl={avatarPreviewUrl}
-                      onPendingFile={handlePendingAvatarFile}
-                      onPendingRemove={handlePendingAvatarRemove}
-                      disabled={isSaving || isAvatarCommitting}
-                    />
-                  ) : (
-                    <MediaAvatar
-                      scope="character"
-                      entityId={character._id}
-                      storedValue={displayedAvatarStoredValue}
-                      sessionCode={sessionCodeForMedia}
-                      size="sheet"
-                      alt={characterDisplayName}
-                      priority
-                    />
-                  )
-                }
+            <div className="mx-auto sm:px-6 md:px-8 px-2 pb-2">
+              <CharacterTabs
+                activeTab={activeTab}
+                tabs={availableTabs}
+                tabsWithErrors={isEditing ? tabsWithErrors : undefined}
               />
             </div>
           </div>
@@ -599,17 +574,20 @@ export default function CharacterDetailView({
           {/* Contenu des onglets - scrollable (min-h-0 pour que les enfants h-full / flex-1 se calent sur la hauteur utile) */}
           <div
             id="characterScrollView"
-            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-dark/30 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/80 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-gray-middle-light">
+            className="flex flex-1 min-h-0 flex-col overflow-y-auto overflow-x-hidden w-full mx-auto px-4 sm:px-6 md:px-8 py-4 pb-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover">
             <CharacterTabPanels
               character={character}
               form={form}
               isEditing={isEditing}
               onCharacterUpdate={onCharacterUpdate}
+              showSessionGmCompanionsTab={showSessionGmCompanionsTab}
+              liaisonActionsEnabled={!showSessionGmCompanionsTab}
+              generalAvatar={generalTabAvatar}
             />
           </div>
         </Tabs>
 
-        {isInSession ? (
+        {isSessionLaunched ? (
           <CombatBanner
             characterId={character._id}
             footerActions={characterFooterActions}

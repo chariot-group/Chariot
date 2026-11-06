@@ -19,6 +19,7 @@ import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipant
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
     clearCurrentSession,
+    setLastLeftSessionCode,
     closeSessionLobby,
     mergeSessionParticipantDisplayNames,
     selectIsInSession,
@@ -308,7 +309,7 @@ export function useSessionSocket({
                 dispatch(mergeSessionParticipantDisplayNames({ [userId]: wsLabel }));
             }
             try {
-                const user = await UserService.getUserById(userId);
+                const user = await UserService.getUserById(userId, code);
                 const apiLabel = formatSessionParticipantUserLabel(user);
                 if (apiLabel) {
                     dispatch(mergeSessionParticipantDisplayNames({ [userId]: apiLabel }));
@@ -394,7 +395,7 @@ export function useSessionSocket({
                 void (async () => {
                     const nameUpdates: Record<string, string> = {};
                     for (const participant of mappedParticipants) {
-                        const label = await fetchSessionParticipantDisplayName(participant.userId);
+                        const label = await fetchSessionParticipantDisplayName(participant.userId, code);
                         if (label !== SESSION_PARTICIPANT_NAME_LOADING) {
                             nameUpdates[participant.userId] = label;
                         }
@@ -508,6 +509,7 @@ export function useSessionSocket({
                 }
             }
             dispatch(clearCurrentSession());
+            dispatch(setLastLeftSessionCode(code));
             dispatch(closeSessionLobby());
             toast.info(t("toast.leaveSuccess"));
         };

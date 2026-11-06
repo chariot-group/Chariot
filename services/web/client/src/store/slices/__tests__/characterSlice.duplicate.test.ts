@@ -8,7 +8,6 @@ import type { Character } from "@/types/character";
 
 const buildCharacter = (overrides: Partial<Character> & { _id: string }): Character =>
   ({
-    _id: overrides._id,
     firstname: overrides.firstname ?? "Hero",
     lastname: overrides.lastname ?? "",
     surname: overrides.surname ?? "",
@@ -22,6 +21,7 @@ const buildCharacter = (overrides: Partial<Character> & { _id: string }): Charac
     treasure: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0, treasure: "", equipment: "" },
     conditions: {} as Character["conditions"],
     groups: [],
+    progression: { level: 1, experience: 0 },
     ...overrides,
   }) as Character;
 

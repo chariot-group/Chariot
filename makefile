@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-media lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-media lint-fix-web lint-fix-admin
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e e2e e2e-install e2e-ui e2e-report deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-media lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-media lint-fix-web lint-fix-admin
 
 # Configuration
 SERVICES_DIR := services
@@ -433,3 +433,17 @@ seed-clean: ## Lance le seeder avec nettoyage pour adventure
 	@echo "$(YELLOW)Nettoyage et exécution du seeder pour adventure...$(NC)"
 	@cd $(SERVICES_DIR)/adventure && docker compose -f compose.$(ENV).yml exec chariot-adventure npm run seed:clean
 	@echo "$(GREEN)✓ Base de données nettoyée et seeder exécuté$(NC)"
+# --- Scénarios E2E navigateur (Playwright, tools/e2e) ---
+E2E_DIR := tools/e2e
+
+e2e-install: ## Installe Playwright + Chromium pour les scénarios E2E
+	@cd $(E2E_DIR) && npm ci && npx playwright install chromium
+
+e2e: ## Lance les scénarios E2E (FILTER=texte pour filtrer, ex. FILTER=session)
+	@cd $(E2E_DIR) && npx playwright test $(if $(FILTER),--grep "$(FILTER)",)
+
+e2e-ui: ## Ouvre le mode interactif Playwright (liste, lancement, replay pas à pas)
+	@cd $(E2E_DIR) && npx playwright test --ui
+
+e2e-report: ## Ouvre le dernier rapport HTML (vidéos, captures, traces)
+	@cd $(E2E_DIR) && npx playwright show-report reports/html

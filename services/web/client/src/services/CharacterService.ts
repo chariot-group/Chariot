@@ -2,8 +2,15 @@ import apiClient from '@/services/ApiService';
 import { emitCharacterSheetUpdated } from '@/lib/sessionCharacterSyncBridge';
 import { getSessionSnapshotForBroadcast } from '@/lib/sessionSnapshot';
 import { Character, PaginatedCharactersResponse, Player, NPC } from '@/types/character';
+import type { GroupRef } from '@/utils/group.utils';
+import { linkedPlayerIdOf } from '@/lib/npcPlayerLink';
 
 type CharacterType = 'players' | 'npcs';
+
+/** Write payload: `groups` may be sent as ids, the API stores references. */
+export type CharacterWriteData = (Omit<Partial<Player>, 'groups'> | Omit<Partial<NPC>, 'groups'>) & {
+    groups?: GroupRef[];
+};
 
 interface CharacterResponse {
     message: string;
@@ -35,7 +42,7 @@ class CharacterService {
      * @param type - Type de personnage ('players' ou 'npcs')
      * @param data - Données du personnage à créer
      */
-    async createCharacter(type: CharacterType, data: Partial<Player> | Partial<NPC>): Promise<Player | NPC> {
+    async createCharacter(type: CharacterType, data: CharacterWriteData): Promise<Player | NPC> {
         try {
             const response = await apiClient().post<CharacterResponse>(
                 `${this.BASE_PATH}/${type}`,
@@ -57,7 +64,7 @@ class CharacterService {
     async updateCharacter(
         type: CharacterType,
         characterId: string,
-        data: Partial<Player> | Partial<NPC>,
+        data: CharacterWriteData,
         sessionCode?: string | null,
     ): Promise<Player | NPC> {
         try {
@@ -70,7 +77,9 @@ class CharacterService {
             const updated = response.data.data as Player | NPC;
             const snap = getSessionSnapshotForBroadcast();
             if (snap) {
-                emitCharacterSheetUpdated(snap.code, characterId);
+                emitCharacterSheetUpdated(snap.code, characterId, {
+                    linkedPlayerId: type === 'npcs' ? linkedPlayerIdOf(updated) : undefined,
+                });
             }
             return updated;
         } catch (error) {
@@ -82,9 +91,15 @@ class CharacterService {
     /**
      * Supprime un personnage
      */
-    async deleteCharacter(characterId: string): Promise<void> {
+    async deleteCharacter(
+        characterId: string,
+        options?: { deleteLinkedCompanions?: boolean },
+    ): Promise<void> {
         try {
-            await apiClient().delete(`${this.BASE_PATH}/${characterId}`);
+            const deleteLinkedCompanions = options?.deleteLinkedCompanions === true;
+            await apiClient().delete(`${this.BASE_PATH}/${characterId}`, {
+                params: deleteLinkedCompanions ? { deleteLinkedCompanions: true } : undefined,
+            });
         } catch (error) {
             console.error(`Error deleting character ${characterId}:`, error);
             throw error;
@@ -105,6 +120,59 @@ class CharacterService {
             return response.data;
         } catch (error) {
             console.error('Error fetching players without group:', error);
+            throw error;
+        }
+    }
+
+    /** @see FR-npc-player-link */
+    async getUnlinkedNpcsWithoutGroup(page: number = 1, offset: number = 10): Promise<PaginatedCharactersResponse> {
+        try {
+            const response = await apiClient().get<PaginatedCharactersResponse>(
+                `${this.BASE_PATH}/npcs/without-group`,
+                { params: { page, offset } },
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching unlinked NPCs without group:', error);
+            throw error;
+        }
+    }
+
+    /** @see FR-npc-player-link */
+    async getUnlinkedNpcs(page: number = 1, offset: number = 50): Promise<PaginatedCharactersResponse> {
+        try {
+            const response = await apiClient().get<PaginatedCharactersResponse>(
+                `${this.BASE_PATH}/npcs/unlinked`,
+                { params: { page, offset } },
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching unlinked NPCs:', error);
+            throw error;
+        }
+    }
+
+    /** @see FR-npc-player-link */
+    async getNpcsByLinkedPlayers(
+        playerIds: string[],
+        options?: { sessionCode?: string | null },
+    ): Promise<NPC[]> {
+        const ids = playerIds.map((id) => id.trim()).filter((id) => id.length > 0);
+        if (ids.length === 0) return [];
+        try {
+            const sessionCode = options?.sessionCode?.trim();
+            const response = await apiClient().get<{ message: string; data: NPC[] }>(
+                `${this.BASE_PATH}/npcs/by-linked-players`,
+                {
+                    params: {
+                        playerIds: ids.join(","),
+                        ...(sessionCode ? { sessionCode } : {}),
+                    },
+                },
+            );
+            return response.data.data ?? [];
+        } catch (error) {
+            console.error('Error fetching NPCs by linked players:', error);
             throw error;
         }
     }

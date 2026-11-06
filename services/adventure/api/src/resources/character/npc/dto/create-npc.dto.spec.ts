@@ -42,4 +42,39 @@ describe('CreateNpcDto - FR-dnd-conditions: NPC Conditions (No Exhaustion)', () 
       expect((dto as any).exhaustionLevel).toBeUndefined();
     });
   });
+
+  describe('FR-npc-player-link', () => {
+    it('nominal: accepts a valid linkedPlayerId', () => {
+      const dto = plainToInstance(CreateNpcDto, {
+        firstname: 'Familiar',
+        linkedPlayerId: '507f1f77bcf86cd799439011',
+      });
+
+      const errors = validateSync(dto, { whitelist: true });
+      expect(errors).toHaveLength(0);
+      expect(dto.linkedPlayerId).toBe('507f1f77bcf86cd799439011');
+    });
+
+    it('edge: accepts null linkedPlayerId to remain unlinked', () => {
+      const dto = plainToInstance(CreateNpcDto, {
+        firstname: 'Goblin',
+        linkedPlayerId: null,
+      });
+
+      const errors = validateSync(dto, { whitelist: true });
+      expect(errors).toHaveLength(0);
+      expect(dto.linkedPlayerId).toBeNull();
+    });
+
+    it('failure: rejects an invalid linkedPlayerId', () => {
+      const dto = plainToInstance(CreateNpcDto, {
+        firstname: 'Wolf',
+        linkedPlayerId: 'not-an-id',
+      });
+
+      const errors = validateSync(dto, { whitelist: true });
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors[0].property).toBe('linkedPlayerId');
+    });
+  });
 });

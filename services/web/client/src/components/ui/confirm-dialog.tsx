@@ -56,7 +56,7 @@ export function ConfirmDialog({
                 </DialogHeader>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button type="button" variant="outline">
+                        <Button type="button" variant="secondary">
                             {cancelLabel}
                         </Button>
                     </DialogClose>

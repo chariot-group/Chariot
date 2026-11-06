@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,11 +16,14 @@ import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/comp
 import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
+import axios from "axios";
 import sessionService from "@/services/SessionService";
 import characterService from "@/services/CharacterService";
 import { Character } from "@/types/character";
-import { useAppDispatch } from "@/store/hooks";
-import { setCurrentSession, openSessionLobby } from "@/store/slices/sessionSlice";
+import { loadCompanionCountsForPlayers, orderSessionCharactersLikeSidebar } from "@/lib/sessionJoinCompanionVisibility";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectCharactersWithoutGroup } from "@/store/slices/characterSlice";
+import { setCurrentSession, openSessionLobby, selectLastLeftSessionCode } from "@/store/slices/sessionSlice";
 
 interface JoinSessionDialogProps {
   /** The element that opens the dialog (e.g. a Button). Optional when using controlled mode. */
@@ -48,21 +51,57 @@ export function JoinSessionDialog({
   const open = isControlled ? openProp : internalOpen;
   const setOpen = isControlled ? (val: boolean) => onOpenChangeProp?.(val) : setInternalOpen;
 
+  const lastLeftSessionCode = useAppSelector(selectLastLeftSessionCode);
   const [code, setCode] = useState(initialCode);
+
+  // FR-session-lobby-modal — pré-remplit le code de la dernière session quittée.
+  useEffect(() => {
+    if (open && !initialCode && lastLeftSessionCode) {
+      setCode((current) => current || lastLeftSessionCode);
+    }
+  }, [open, initialCode, lastLeftSessionCode]);
   const [characterId, setCharacterId] = useState("");
   const [characters, setCharacters] = useState<Character[]>([]);
+  const sidebarPlayers = useAppSelector(selectCharactersWithoutGroup);
+  const orderedCharacters = useMemo(
+    () => orderSessionCharactersLikeSidebar(characters, sidebarPlayers),
+    [characters, sidebarPlayers],
+  );
+  const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>(
+    {},
+  );
   const [loadingCharacters, setLoadingCharacters] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    let cancelled = false;
     setLoadingCharacters(true);
+    setCompanionCountByCharacterId({});
     characterService
       .getPlayersWithoutGroup(1, 100)
-      .then((res) => setCharacters(res.data))
-      .catch(() => setCharacters([]))
-      .finally(() => setLoadingCharacters(false));
+      .then(async (res) => {
+        if (cancelled) return;
+        setCharacters(res.data);
+        setLoadingCharacters(false);
+        const counts = await loadCompanionCountsForPlayers(
+          res.data.map((character) => character._id),
+          (ids) => characterService.getNpcsByLinkedPlayers(ids),
+        );
+        if (!cancelled) setCompanionCountByCharacterId(counts);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCharacters([]);
+        setCompanionCountByCharacterId({});
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCharacters(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   const handleJoin = async () => {
@@ -86,8 +125,9 @@ export function JoinSessionDialog({
 
       setOpen(false);
       setCode("");
-    } catch {
-      setError(t("joinSessionErrorNotFound"));
+    } catch (err) {
+      const launchedForNewcomer = axios.isAxiosError(err) && err.response?.status === 403;
+      setError(t(launchedForNewcomer ? "joinSessionErrorLaunched" : "joinSessionErrorNotFound"));
     } finally {
       setIsJoining(false);
     }
@@ -98,6 +138,7 @@ export function JoinSessionDialog({
     if (!newOpen) {
       setCode("");
       setCharacterId("");
+      setCompanionCountByCharacterId({});
       setError(null);
     }
   };
@@ -111,7 +152,7 @@ export function JoinSessionDialog({
         <DialogHeader>
           <DialogTitle>{t("joinSessionDialogTitle")}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4 w-full">
+        <div className="flex w-full min-w-0 flex-col gap-4 py-4">
           <InputOTP
             maxLength={6}
             value={code}
@@ -121,7 +162,7 @@ export function JoinSessionDialog({
             }}
             disabled={isJoining}
             autoFocus
-            containerClassName="w-full max-w-full justify-center gap-1 sm:gap-2">
+            containerClassName="mx-auto w-full max-w-full justify-center gap-1 sm:gap-2">
             <InputOTPGroup>
               <InputOTPSlot
                 index={0}
@@ -153,19 +194,22 @@ export function JoinSessionDialog({
             </InputOTPGroup>
           </InputOTP>
           <CharacterSelect
-            characters={characters}
+            characters={orderedCharacters}
             value={characterId}
             onValueChange={setCharacterId}
             placeholder={t("joinSessionSelectCharacterPlaceholder")}
             disabled={isJoining || loadingCharacters}
             triggerClassName="w-full text-xs"
+            companionCountByCharacterId={companionCountByCharacterId}
+            formatCompanionCount={(count) => t("joinSessionCompanionCount", { count })}
+            formatCompanionCountShort={(count) => t("joinSessionCompanionCountShort", { count })}
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>
           <DialogClose asChild>
             <Button
-              variant="outline"
+              variant="secondary"
               disabled={isJoining}>
               {tCommon("cancel")}
             </Button>

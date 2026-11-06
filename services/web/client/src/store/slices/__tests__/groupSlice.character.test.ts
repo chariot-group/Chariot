@@ -4,6 +4,7 @@ import groupReducer, {
   loadMoreActiveGroupsSuccess,
   removeCharacterFromGroup,
   setOpenGroup,
+  upsertCharacterInGroups,
 } from "@/store/slices/groupSlice";
 import type { Group } from "@/types/campaign";
 
@@ -101,5 +102,65 @@ describe("FR-sidebar-navigation — GM sidebar group list", () => {
     expect(state.activePage).toBe(2);
     expect(state.activeGroups[1]?.characters.map((character) => character._id)).toEqual(["c3"]);
     expect(state.openGroupId).toEqual(["g2"]);
+  });
+});
+
+describe("FR-sidebar-character-avatars — upsertCharacterInGroups avatar sync", () => {
+  const buildState = () =>
+    groupReducer(
+      undefined,
+      fetchGroupsSuccess({
+        campaignId: "campaign-1",
+        active: [buildGroup("g1", ["c1", "c2"])],
+        archived: [buildGroup("g-archived", ["c1"])],
+        pageSize: 5,
+        activeTotal: 1,
+        archivedTotal: 1,
+      }),
+    );
+
+  const identity = { firstname: "Hero", lastname: "c1", surname: "" };
+
+  it("nominal: updates avatar on matching rows in active and archived groups", () => {
+    const state = groupReducer(
+      buildState(),
+      upsertCharacterInGroups({ _id: "c1", ...identity, avatar: "avatars/characters/c1/main.webp" }),
+    );
+
+    expect(state.activeGroups[0]?.characters[0]?.avatar).toBe("avatars/characters/c1/main.webp");
+    expect(state.archivedGroups[0]?.characters[0]?.avatar).toBe("avatars/characters/c1/main.webp");
+    expect(state.activeGroups[0]?.characters[1]?.avatar).toBeUndefined();
+  });
+
+  it("edge: payload without avatar keeps the existing avatar", () => {
+    let state = groupReducer(
+      buildState(),
+      upsertCharacterInGroups({ _id: "c1", ...identity, avatar: "avatars/characters/c1/main.webp" }),
+    );
+    state = groupReducer(state, upsertCharacterInGroups({ _id: "c1", ...identity, firstname: "Renamed" }));
+
+    expect(state.activeGroups[0]?.characters[0]?.firstname).toBe("Renamed");
+    expect(state.activeGroups[0]?.characters[0]?.avatar).toBe("avatars/characters/c1/main.webp");
+  });
+
+  it("edge: empty avatar (removal) clears the stored avatar", () => {
+    let state = groupReducer(
+      buildState(),
+      upsertCharacterInGroups({ _id: "c1", ...identity, avatar: "avatars/characters/c1/main.webp" }),
+    );
+    state = groupReducer(state, upsertCharacterInGroups({ _id: "c1", ...identity, avatar: "" }));
+
+    expect(state.activeGroups[0]?.characters[0]?.avatar).toBe("");
+  });
+
+  it("failure: unknown character id leaves groups unchanged", () => {
+    const before = buildState();
+    const after = groupReducer(
+      before,
+      upsertCharacterInGroups({ _id: "unknown", ...identity, avatar: "avatars/characters/unknown/main.webp" }),
+    );
+
+    expect(after.activeGroups).toEqual(before.activeGroups);
+    expect(after.archivedGroups).toEqual(before.archivedGroups);
   });
 });

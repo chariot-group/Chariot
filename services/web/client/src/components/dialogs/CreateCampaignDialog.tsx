@@ -28,9 +28,10 @@ interface CreateCampaignDialogProps {
     children?: React.ReactNode;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
+    onCreated?: (campaignId: string) => void;
 }
 
-export function CreateCampaignDialog({ children, open: controlledOpen, onOpenChange }: CreateCampaignDialogProps) {
+export function CreateCampaignDialog({ children, open: controlledOpen, onOpenChange, onCreated }: CreateCampaignDialogProps) {
     const t = useTranslations("sidebar");
     const tCommon = useTranslations("common");
     const dispatch = useAppDispatch();
@@ -64,6 +65,7 @@ export function CreateCampaignDialog({ children, open: controlledOpen, onOpenCha
             showToast(t("campaignCreatedSuccess", { name: newCampaign.label }), "success");
             handleOpenChange(false);
             setCampaignName("");
+            onCreated?.(newCampaign._id);
         } catch (error) {
             console.error("Error creating campaign:", error);
             showToast(tCommon("errors.campaignCreationFailed"), "error");
@@ -115,7 +117,7 @@ export function CreateCampaignDialog({ children, open: controlledOpen, onOpenCha
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline" disabled={isCreating}>
+                        <Button variant="secondary" disabled={isCreating}>
                             {tCommon("cancel")}
                         </Button>
                     </DialogClose>

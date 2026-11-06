@@ -10,8 +10,8 @@ vi.mock("@/components/ui/tooltip", () => ({
 
 import { InitiativeModifierHint } from "@/components/initiativeTracker/InitiativeModifierHint";
 
-/** @see FR-tracker-initiative-modifier-display */
-describe("FR-tracker-initiative-modifier-display — InitiativeModifierHint", () => {
+/** @see FR-combat-initiative-tracker */
+describe("FR-combat-initiative-tracker — InitiativeModifierHint", () => {
   it("nominal: shows dice icon, signed bonus, and tooltip label", () => {
     const html = renderToStaticMarkup(
       <InitiativeModifierHint

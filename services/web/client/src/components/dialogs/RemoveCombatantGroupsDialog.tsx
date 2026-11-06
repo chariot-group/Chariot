@@ -11,8 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { MultiSelect } from "@/components/ui/multi-select";
-import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getRemovableTrackerGroups } from "@/components/initiativeTracker/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   removeInitiativeTrackerGroups,
@@ -24,15 +24,9 @@ interface RemoveCombatantGroupsDialogProps {
   children: React.ReactNode;
 }
 
-type RemovableGroupOption = {
-  value: string;
-  label: string;
-  memberCount: number;
-};
-
 /**
  * FR-combat-initiative-tracker — remove whole groups from the initiative roster
- * (before or after combat start). Session participants group is never listed.
+ * (before or after combat start), one at a time via a select. Session participants group is never listed.
  */
 export function RemoveCombatantGroupsDialog({ children }: RemoveCombatantGroupsDialogProps) {
   const t = useTranslations("initTracker.tracker");
@@ -41,52 +35,21 @@ export function RemoveCombatantGroupsDialog({ children }: RemoveCombatantGroupsD
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
 
   const [open, setOpen] = React.useState(false);
-  const [selectedGroupIds, setSelectedGroupIds] = React.useState<string[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = React.useState<string>("");
 
-  const removableGroups = React.useMemo((): RemovableGroupOption[] => {
-    const byId = new Map<string, RemovableGroupOption>();
-    for (const row of trackerRows) {
-      if (row.groupId === SESSION_PARTICIPANTS_GROUP_ID) continue;
-      const existing = byId.get(row.groupId);
-      if (existing) {
-        existing.memberCount += 1;
-        continue;
-      }
-      byId.set(row.groupId, {
-        value: row.groupId,
-        label: row.groupLabel || row.groupId,
-        memberCount: 1,
-      });
-    }
-    return Array.from(byId.values()).sort((a, b) => a.label.localeCompare(b.label));
-  }, [trackerRows]);
-
-  const groupOptions = React.useMemo(
-    () =>
-      removableGroups.map((group) => ({
-        value: group.value,
-        label: t("removeCombatantGroupsOption", {
-          label: group.label,
-          count: group.memberCount,
-        }),
-      })),
-    [removableGroups, t],
-  );
+  const removableGroups = React.useMemo(() => getRemovableTrackerGroups(trackerRows), [trackerRows]);
 
   React.useEffect(() => {
-    if (!open) {
-      setSelectedGroupIds([]);
-      return;
+    if (!open || !removableGroups.some((group) => group.value === selectedGroupId)) {
+      setSelectedGroupId("");
     }
-    const valid = new Set(removableGroups.map((group) => group.value));
-    setSelectedGroupIds((current) => current.filter((id) => valid.has(id)));
-  }, [open, removableGroups]);
+  }, [open, removableGroups, selectedGroupId]);
 
-  const canValidate = selectedGroupIds.length > 0 && removableGroups.length > 0;
+  const canValidate = selectedGroupId !== "";
 
   const handleRemove = () => {
     if (!canValidate) return;
-    dispatch(removeInitiativeTrackerGroups(selectedGroupIds));
+    dispatch(removeInitiativeTrackerGroups([selectedGroupId]));
     setOpen(false);
   };
 
@@ -105,21 +68,30 @@ export function RemoveCombatantGroupsDialog({ children }: RemoveCombatantGroupsD
           {removableGroups.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("removeCombatantGroupsEmpty")}</p>
           ) : (
-            <MultiSelect
-              value={selectedGroupIds}
-              onChange={setSelectedGroupIds}
-              options={groupOptions}
-              placeholder={t("removeCombatantGroupsPlaceholder")}
-              searchPlaceholder={t("removeCombatantGroupsPlaceholder")}
-              emptyText={t("removeCombatantGroupsNoSearchResult")}
-              selectAllLabel={t("removeCombatantGroupsSelectAll")}
-            />
+            <Select
+              value={selectedGroupId}
+              onValueChange={setSelectedGroupId}>
+              <SelectTrigger
+                className="w-full"
+                aria-label={t("removeCombatantGroupsPlaceholder")}>
+                <SelectValue placeholder={t("removeCombatantGroupsPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                {removableGroups.map((group) => (
+                  <SelectItem
+                    key={group.value}
+                    value={group.value}>
+                    {t("removeCombatantGroupsOption", { label: group.label, count: group.memberCount })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         </div>
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">{tCommon("cancel")}</Button>
+            <Button variant="secondary">{tCommon("cancel")}</Button>
           </DialogClose>
           <Button
             variant="destructive"

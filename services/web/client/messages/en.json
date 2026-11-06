@@ -23,6 +23,30 @@
     "noGroups": "No groups",
     "noCharacters": "No characters",
     "unnamedCharacter": "Unnamed character",
+    "npcKind": "NPC",
+    "playerKind": "PC",
+    "linkedToPlayer": "Linked to {name}",
+    "companionsListLabel": "Companions of {name}",
+    "collapseCompanionsAria": "Collapse companions of {name}",
+    "expandCompanionsAria": "Expand companions of {name}",
+    "companionActiveTooltip": "Displayed sheet: {name}",
+    "groupActiveCharacterTooltip": "Displayed character: {name}",
+    "linkNpc": "Link to a character",
+    "unlinkNpc": "Remove from character",
+    "unlinkNpcFrom": "Remove from {name}",
+    "reassignNpc": "Link to another character",
+    "linkNpcDialogTitle": "Link the NPC",
+    "linkNpcDialogDescription": "Choose a player character from My characters for {name}.",
+    "linkNpcNoPlayers": "No player character available.",
+    "linkNpcToPlayerAria": "Link {npc} to {player}",
+    "linkNpcPersisting": "Saving the link",
+    "reassignNpcDialogTitle": "Change linked character",
+    "reassignNpcDialogDescription": "This NPC is already linked. Link it to {name} instead?",
+    "reassignNpcConfirm": "Link",
+    "linkNpcSuccess": "NPC linked successfully.",
+    "unlinkNpcSuccess": "NPC removed from companions.",
+    "linkNpcError": "Unable to link the NPC.",
+    "unlinkNpcError": "Unable to remove the NPC.",
     "archive": "Archive",
     "unarchive": "Restore",
     "delete": "Delete",
@@ -40,6 +64,13 @@
     "deleteGroupDialogDescription": "Are you sure you want to delete this group? This action cannot be undone.",
     "deleteCharacterDialogTitle": "Delete character",
     "deleteCharacterDialogDescription": "Are you sure you want to delete this character? This action cannot be undone.",
+    "deletePlayerWithCompanionsTitle": "Delete this character",
+    "deletePlayerWithCompanionsDescription": "This character has linked companions. They remain in your library unless you delete them with the character.",
+    "deletePlayerWithCompanionsListLabel": "Linked companions",
+    "deletePlayerKeepCompanions": "Delete character",
+    "deletePlayerAndCompanions": "Delete all ({count})",
+    "deletePlayerKeepCompanionsAria": "Delete the character and keep linked companions",
+    "deletePlayerAndCompanionsAria": "Delete the character and {count, plural, one {# linked companion} other {# linked companions}}",
     "deleteCampaignDialogTitle": "Delete campaign",
     "deleteCampaignDialogDescription": "Are you sure you want to delete this campaign? This action cannot be undone.",
     "editGroupDialogTitle": "Edit group",
@@ -75,7 +106,10 @@
     "joinSessionDialogTitle": "Join a Session",
     "joinSessionErrorNotFound": "No session found for this code.",
     "joinSessionErrorClosed": "This session is closed.",
+    "joinSessionErrorLaunched": "This session has already started: only its participants can rejoin.",
     "joinSessionSelectCharacterPlaceholder": "Select a character",
+    "joinSessionCompanionCount": "{count, plural, one {# companion} other {# companions}}",
+    "joinSessionCompanionCountShort": "+{count}",
     "comingSoon": "Coming soon",
     "alreadyInSession": "Action cannot be performed; you are already logged in.",
     "returnToSheet": "Character",
@@ -104,6 +138,19 @@
     "duplicateCharacterCreateAndMove": "Create in another group",
     "duplicateCharacterSuccess": "Character duplicated successfully.",
     "duplicateCharacterError": "Failed to duplicate the character.",
+    "duplicatePlayerWithCompanionsDescription": "Companions are linked to this character. Choose what happens to them after duplication.",
+    "duplicatePlayerWithCompanionsListLabel": "Linked companions",
+    "duplicatePlayerWithCompanionsChoiceLegend": "What about companions?",
+    "duplicatePlayerOnly": "Duplicate character only",
+    "duplicatePlayerOnlyHint": "Creates a copy of the character. Companions stay linked to the original.",
+    "duplicatePlayerAndCompanions": "Duplicate character and companions",
+    "duplicatePlayerAndCompanionsHint": "Creates a copy of the character and a copy of each companion, linked to the new character.",
+    "duplicatePlayerMoveCompanions": "Duplicate character and move companions",
+    "duplicatePlayerMoveCompanionsHint": "Creates a copy of the character and reassigns existing companions to the new character.",
+    "duplicatePlayerMoveCompanionsDisabledHint": "Unavailable when creating multiple character copies.",
+    "duplicatePlayerOnlyAria": "Duplicate character only without changing companions",
+    "duplicatePlayerAndCompanionsAria": "Duplicate character and copy companions to the new character",
+    "duplicatePlayerMoveCompanionsAria": "Duplicate character and move companions to the new character",
     "duplicateGroupDialogTitle": "Duplicate group",
     "duplicateGroupDialogDescription": "Choose a name and the number of copies to create.",
     "duplicateGroupLabelLabel": "Group name",
@@ -164,7 +211,12 @@
       "editError": "Failed to update the link.",
       "collapseAriaLabel": "Collapse quick links",
       "expandAriaLabel": "Expand quick links"
-    }
+    },
+    "sessionCharacterSection": "Session character",
+    "outOfSessionToggle": "Out of session ({count})",
+    "outOfSessionExpandAria": "Show the {count} characters out of session",
+    "outOfSessionCollapseAria": "Hide the {count} characters out of session",
+    "outOfSessionActiveTooltip": "Displayed sheet: {name}"
   },
   "initTracker": {
     "noCharacters": "No characters",
@@ -190,10 +242,12 @@
     "initBattleCollapseGroup": "Hide group members",
     "initBattleRemoveGroup": "Remove group from selection",
     "initBattleInInitiative": "In initiative",
+    "initBattleLinkedTo": "Linked to {name}",
+    "initBattleLinkedCompanion": "Linked NPC",
     "initBattleParticipantsCannotBeExcluded": "Participants cannot be excluded from the initiative",
     "initBattleValidateSelection": "Confirm configuration",
     "addCombatants": "Add to combat",
-    "removeCombatantGroups": "Remove groups",
+    "removeCombatantGroups": "Remove a group",
     "tracker": {
       "addCombatantsDialogTitle": "Add to combat",
       "addCombatantsConfirm": "Add selection",
@@ -206,13 +260,13 @@
       "addCombatantsInitiativeFor": "Initiative for {name}",
       "addCombatantsGroupInitiative": "Group initiative",
       "addCombatantsGroupsInCombatHint": "Groups already in the initiative order are pre-selected.",
-      "removeCombatantGroupsDialogTitle": "Remove groups",
-      "removeCombatantGroupsDescription": "Choose which groups to remove from the initiative order. The session participants group cannot be removed as a whole.",
+      "removeCombatantGroupsDialogTitle": "Remove a group",
+      "removeCombatantGroupsDescription": "Choose the group to remove from the initiative order. The session participants group cannot be removed as a whole.",
       "removeCombatantGroupsEmpty": "No removable groups in the initiative order.",
-      "removeCombatantGroupsPlaceholder": "Search for a group…",
+      "removeCombatantGroupsPlaceholder": "Choose a group",
       "removeCombatantGroupsNoSearchResult": "No group found.",
       "removeCombatantGroupsSelectAll": "Select all",
-      "removeCombatantGroupsConfirm": "Remove selection",
+      "removeCombatantGroupsConfirm": "Remove group",
       "removeCombatantGroupsOption": "{label} ({count})",
       "initiative": "Initiative",
       "character": "Character",
@@ -227,11 +281,11 @@
       "viewSheetFor": "View sheet for {name}",
       "initiativeFor": "Initiative for {name}",
       "initiativeModifierFor": "Initiative bonus {bonus}",
-      "selectRowFor": "Select {name} for grouped initiative",
+      "selectRowFor": "Select {name}",
       "selectRowForVisibility": "Select {name} for grouped display",
       "selectAllRows": "Select all characters",
       "selectAllRowsShort": "All",
-      "groupedInitiativeEnable": "Enter grouped initiative",
+      "groupedInitiativeEnable": "Grouped initiative",
       "groupedInitiativeDisable": "Exit grouped initiative mode",
       "groupedInitiativeEnableShort": "Initiative",
       "groupedInitiativeDisableShort": "Close",
@@ -390,6 +444,15 @@
         "hours": "{amount} h",
         "rounds": "{amount, plural, one {# round} other {# rounds}}"
       },
+      "customEffectCreate": "Create a custom effect",
+      "customEffectCreateFromSearch": "Create “{name}”",
+      "customEffectName": "Effect name",
+      "customEffectNamePlaceholder": "E.g. Blessed, Hex, Burning",
+      "customEffectDescription": "Description (optional)",
+      "customEffectDescriptionPlaceholder": "Reminder for the table",
+      "customEffectAddConfirm": "Add effect",
+      "customEffectNameRequired": "Name is required.",
+      "customEffectSection": "Custom effects",
       "statusLabels": {
         "alive": "{name} is alive",
         "unconscious": "{name} is unconscious",
@@ -427,7 +490,16 @@
         "invisible": "An invisible creature is impossible to see without the aid of magic or a special sense. For the purpose of hiding, the creature is heavily obscured. The creature's location can be detected by any noise it makes or any tracks it leaves.\nAttack rolls against the creature have disadvantage, and the creature's attack rolls have advantage.",
         "paralyzed": "A paralyzed creature is incapacitated and can't move or speak.\nThe creature automatically fails Strength and Dexterity saving throws.\nAttack rolls against the creature have advantage.\nAny attack that hits the creature is a critical hit if the attacker is within 1.5 meters of the creature.",
         "petrified": "A petrified creature is transformed, along with any nonmagical object it is wearing or carrying, into a solid inanimate substance (usually stone). Its weight increases by a factor of ten, and it ceases aging.\nThe creature is incapacitated, can't move or speak, and is unaware of its surroundings.\nAttack rolls against the creature have advantage.\nThe creature automatically fails Strength and Dexterity saving throws.\nThe creature has resistance to all damage.\nThe creature is immune to poison and disease, although a poison or disease already in its system is suspended, not neutralized."
-      }
+      },
+      "selectionToolbar": "Selection actions",
+      "missingInitiativeRow": "initiative to enter",
+      "prepInitiativeHint": "Enter each character's initiative, then start combat.",
+      "missingInitiativesCount": "{count, plural, one {# initiative to enter} other {# initiatives to enter}}",
+      "allInitiativesEntered": "All initiatives are entered.",
+      "startMissingConfirmTitle": "Missing initiatives",
+      "startMissingConfirmDescription": "{count, plural, one {# character has no initiative yet} other {# characters have no initiative yet}}. Start combat anyway?",
+      "startMissingConfirmAction": "Start anyway",
+      "startMissingCancelAction": "Back to entry"
     }
   },
   "multiSelect": {
@@ -464,7 +536,6 @@
   },
   "auth": {
     "loading": "Loading...",
-    "pleaseWait": "Please wait while we verify your session",
     "logoutEscape": "Sign out"
   },
   "notFound": {
@@ -712,7 +783,8 @@
     "campaign": {
       "title": "Create your first <br /> campaign",
       "button": "Create a campaign",
-      "button-aria": "Navigate to campaign creation"
+      "button-aria": "Navigate to campaign creation",
+      "description": "Become the Game Master: create a universe, invite your players and prepare your games."
     },
     "session": {
       "title": "Join <br /> a session",
@@ -724,7 +796,8 @@
     "character": {
       "title": "Create your first <br /> character",
       "button": "Create a character",
-      "button-aria": "Navigate to character creation"
+      "button-aria": "Navigate to character creation",
+      "description": "Create a hero in your player space, to play solo or join a GM's campaign."
     },
     "imageCredits": {
       "title": "Image credits",
@@ -734,9 +807,6 @@
     }
   },
   "characterCreate": {
-    "titlePlayer": "Create a player character",
-    "titleNpc": "Create an NPC",
-    "description": "Fill in the complete character sheet. You can modify this information later from the sheet.",
     "cancel": "Cancel",
     "create": "Create",
     "saving": "Creating..."
@@ -784,9 +854,11 @@
     "abilityCounterOrder": "Current uses cannot exceed the maximum.",
     "classLevelTotalsVsGlobalHitDice": "Total class levels ({total}) exceed the character’s global level ({global}). Fix class levels or the global level — the error appears on remaining hit dice.",
     "singleDamageType": "Only one damage type is allowed per damage entry.",
-    "uniqueActionDamageType": "Each damage type must be unique within an action."
+    "uniqueActionDamageType": "Each damage type must be unique within an action.",
+    "uniqueSpellDamageType": "Each damage type must be unique within a spell."
   },
   "characterDetail": {
+    "loadingSheet": "Loading character sheet…",
     "editCharacter": "Edit character",
     "exportPdf": "Export as PDF",
     "pdfExport": {
@@ -846,7 +918,6 @@
       "success": "Sheet exported as PDF.",
       "error": "Could not export sheet as PDF."
     },
-    "playedBy": "Played by {name}",
     "classLevelShort": "{className} Lvl {level}",
     "saveChanges": "Save changes",
     "saving": "Saving...",
@@ -946,10 +1017,9 @@
       "zeroPlaceholder": "0",
       "proficiencyBonusPlaceholder": "+2",
       "challengeRatingPlaceholder": "0, 1/8, 1/4, 1/2",
-      "damageDiceCountPlaceholder": "8",
-      "damageDiceTypePlaceholder": "d6",
-      "healingDiceCountPlaceholder": "4",
-      "healingDiceTypePlaceholder": "d8",
+      "spellDamageEntry": "Damage {index}",
+      "addDamageToSpell": "Add a damage row to this spell",
+      "removeSpellDamage": "Remove damage row {index}",
       "slotsUsed": "Used",
       "slotsTotal": "Total",
       "copperPieces": "Copper Pieces",
@@ -967,12 +1037,36 @@
       "add": "Add"
     },
     "tabs": {
+      "listLabel": "Character sheet tabs",
       "general": "General",
       "battle": "Battle",
       "magic": "Magic",
       "inventory": "Inventory",
       "history": "History",
+      "companions": "Companions",
       "containsErrors": "This tab contains fields with errors"
+    },
+    "companions": {
+      "title": "Companions",
+      "emptyTitle": "No companions yet",
+      "emptyDescription": "Companions are other characters linked to this one. Each has its own sheet (health, abilities, gear…) that you can fill in and update like this character. During online play, the game master can include them in fights alongside you without someone else needing to log in.",
+      "emptyExamplesTitle": "A few examples",
+      "emptyExampleFamiliar": "An animal that travels with you and that you control (wolf, hawk, cat…)",
+      "emptyExampleSecondaryNpc": "A character you play in addition to this one (servant, bodyguard, apprentice…)",
+      "emptyActionHint": "Link a character you already created, or create a new one using the buttons above.",
+      "loading": "Loading companions",
+      "loadError": "Could not load companions.",
+      "saveError": "Could not save the link.",
+      "linkExisting": "Link an NPC",
+      "createLinked": "Create a linked NPC",
+      "linkDialogTitle": "Link an NPC",
+      "linkDialogDescription": "Choose an unlinked NPC from your player space (not in a group).",
+      "noUnlinkedNpcs": "No player-space NPC available.",
+      "unlinkAria": "Remove {name} from companions",
+      "unlink": "Remove",
+      "unnamedNpc": "Unnamed NPC",
+      "openSheetAria": "Open the sheet for {name}",
+      "cancel": "Cancel"
     },
     "battle": {
       "stats": "Stats",
@@ -1102,7 +1196,26 @@
       "vulnerabilities": "Vulnerabilities",
       "vulnerabilitiesPlaceholder": "Fire, Cold...",
       "immunities": "Immunities",
-      "immunitiesPlaceholder": "Fire, Cold..."
+      "noAffinities": "No resistance, vulnerability or immunity",
+      "noActions": "No actions",
+      "noAbilities": "No abilities or traits",
+      "statLabels": {
+        "armorClass": "AC",
+        "initiative": "Init.",
+        "size": "Size",
+        "speeds": "Speed",
+        "passivePerception": "Pass. Perc."
+      },
+      "attackSuggestions": "Suggestions",
+      "formSections": {
+        "general": "General",
+        "attack": "Attack",
+        "damage": "Damage",
+        "description": "Description",
+        "counter": "Uses"
+      },
+      "immunitiesPlaceholder": "Fire, Cold...",
+      "passivePerception": "Passive perception"
     },
     "history": {
       "appearance": "Appearance",
@@ -1118,7 +1231,8 @@
       "personalityTraits": "Personality Traits",
       "ideals": "Ideals",
       "flaws": "Flaws",
-      "backstory": "Backstory"
+      "backstory": "Backstory",
+      "notSpecified": "Not specified"
     },
     "player": {
       "level": "Level",
@@ -1365,6 +1479,7 @@
       "subtypeLabel": "Subtype",
       "challengeRating": "Challenge Rating",
       "challengeRatingAbbr": "CR",
+      "linkedTo": "Linked to {name}",
       "alignment": "Alignment",
       "general": {
         "title": "General Tab",
@@ -1406,10 +1521,7 @@
       "setCoins": "Set",
       "sessionInventoryUpdateError": "Unable to update inventory during the session.",
       "noEquipment": "No equipment at the moment.",
-      "noTreasure": "No treasure at the moment.",
-      "coinsRegion": "Coins section",
-      "equipmentRegion": "Equipment section",
-      "treasureRegion": "Treasure section"
+      "noTreasure": "No treasure at the moment."
     },
     "magic": {
       "noMagicAbilities": "This character has no magical abilities.",
@@ -1435,7 +1547,8 @@
         "range": "Range",
         "components": "Components",
         "duration": "Duration",
-        "description": "Description"
+        "description": "Description",
+        "usesTracker": "Uses"
       },
       "spellSchools": {
         "abjuration": "Abjuration",
@@ -1629,6 +1742,7 @@
         "cancel": "Cancel",
         "loadMore": "Load more",
         "error": "Error while searching",
+        "preselectionError": "This character could not be loaded from the link. You can search the library below.",
         "validatedByChariot": "Validated by Chariot",
         "srdContent": "SRD Content (System Reference Document)",
         "entityTypeFilter": {
@@ -1667,6 +1781,19 @@
           "previousLanguageButton": "Back",
           "loadTranslationError": "Could not load this language. Try again or pick another."
         }
+      },
+      "spellcastingTitle": "Spellcasting",
+      "abilityShort": "Abil.",
+      "concentration": "Concentration",
+      "noSpells": "No spells",
+      "addCodexSpellShort": "Codex",
+      "spellRowLabel": "{name} — {group}",
+      "slotsRemainingAria": "Level {level} slots: {current} of {total} left",
+      "formSections": {
+        "general": "General",
+        "casting": "Casting",
+        "effects": "Effects",
+        "description": "Description"
       }
     }
   },
@@ -1737,6 +1864,8 @@
       },
       "noCharacter": "No character",
       "selectCharacterPlaceholder": "Change character",
+      "companionCount": "{count, plural, one {# companion} other {# companions}}",
+      "companionCountShort": "+{count}",
       "loadingCharacters": "Loading..."
     },
     "sessionCode": {
@@ -1788,15 +1917,28 @@
       },
       "confirm": "Back to home"
     },
+    "sessionExit": {
+      "groupAria": "End of session actions",
+      "moreAria": "More end of session actions"
+    },
+    "sessionLeave": {
+      "title": "Leave the session?",
+      "descriptionPlayer": "You will be disconnected from the session and will need to join again to keep playing. Your character will be removed from the campaign groups.",
+      "descriptionGm": "You will be disconnected from the session and will need to join again to keep playing. The session will not be ended for the other participants.",
+      "confirm": "Leave session"
+    },
     "sessionCancel": {
-      "title": "Cancel session",
+      "title": "End session",
       "description": "You are about to end the session. All participants will be logged out and will need to join a new session to continue playing together.",
-      "confirm": "Yes, cancel the session"
+      "confirm": "End session"
     }
   },
   "header": {
+    "sidebarOpenAriaLabel": "Open menu",
+    "sidebarCloseAriaLabel": "Close menu",
     "logoAriaLabelHome": "Return to home",
     "logoAriaLabelInSession": "Open session lobby",
+    "logoAriaLabelInSessionPreparing": "Open session lobby (session being prepared)",
     "logoAriaLabelInSessionWarning": "Open session lobby, less than 30 minutes remaining",
     "logoAriaLabelInSessionCritical": "Open session lobby, less than 5 minutes remaining",
     "communityLibraryTooltip": "Open the community library",
@@ -1811,6 +1953,7 @@
   },
   "sessionTime": {
     "tooltip": "A session is currently in progress. It is valid for 8 hours. It will automatically close when this period expires or after 5 minutes if all participants have left.",
+    "tooltipPreparing": "Session being prepared, waiting for the GM to launch it.",
     "tooltipWarning": "Less than 30 minutes remaining.",
     "tooltipCritical": "Less than 5 minutes remaining.",
     "remainingAriaLabel": "Session time remaining: {time}",
@@ -1824,5 +1967,17 @@
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navigate to a previous version",
     "latest": "Current"
+  },
+  "playerSpaceFallback": {
+    "title": "Your player space is empty",
+    "description": "You have no player character yet. Create one to play and join sessions.",
+    "createCharacter": "Create a character",
+    "campaigns": "Or find your campaigns in the sidebar."
+  },
+  "campaignFallback": {
+    "title": "No character in this campaign",
+    "description": "This campaign has no character yet. Create a group, then add your characters to it.",
+    "createGroup": "Create a group",
+    "createCharacter": "Create a character"
   }
 }

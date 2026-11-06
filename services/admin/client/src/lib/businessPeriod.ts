@@ -1,4 +1,4 @@
-/** @see FR-admin-kpi-period-persistence */
+/** @see FR-admin-business-kpis */
 
 import type { Period } from "@/lib/businessKpis.types";
 

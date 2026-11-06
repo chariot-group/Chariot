@@ -2,6 +2,54 @@ import type { ReleaseNote } from '@/data/release-notes/types';
 
 export const ALL_RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '2.11.0',
+    date: '2026-11-06',
+    translations: {
+      fr: {
+        title: 'PNJ dans l\'espace joueur, effets de combat & nouvelle interface',
+        highlights: [
+          { text: 'Vos PNJ rejoignent l\'espace joueur : liez un PNJ à un personnage pour le retrouver dans la barre latérale et dans un onglet compagnons sur la fiche.' },
+          { text: 'En combat, ajoutez des effets personnalisés et plusieurs dégâts d\'un coup depuis le tracker d\'initiative ; tout le monde les voit en temps réel.' },
+          { text: 'Partagez une page de la librairie communautaire avec un lien ou un QR code : la personne arrive directement sur le bon contenu.' },
+          { text: 'Un nouvel écran d\'accueil vous guide quand votre espace est vide (aucune campagne ni personnage).' },
+          { text: 'L\'interface gagne en lisibilité : palette de couleurs unifiée, textes plus contrastés, bordures et barres de défilement harmonisées.' },
+          { text: 'Dans la barre latérale, votre personnage en session est séparé de vos autres personnages, et vous pouvez replier groupes et compagnons à tout moment.' },
+          { text: 'Le choix du personnage pour rejoindre une session suit désormais le même ordre que votre barre latérale.' },
+          { text: 'Le bouton d\'affichage du mot de passe sur la page de connexion est maintenant accessible au clavier et aux lecteurs d\'écran.' },
+          { text: 'Divers correctifs et améliorations de fiabilité.' },
+        ],
+      },
+      en: {
+        title: 'NPCs in the player space, combat effects & refreshed interface',
+        highlights: [
+          { text: 'Your NPCs join the player space: link an NPC to a character to find it in the sidebar and in a companions tab on the sheet.' },
+          { text: 'In combat, add custom effects and several damage entries at once from the initiative tracker; everyone sees them in real time.' },
+          { text: 'Share a community library page with a link or QR code: the recipient lands directly on the right content.' },
+          { text: 'A new welcome screen guides you when your space is empty (no campaign or character yet).' },
+          { text: 'The interface is easier to read: unified color palette, higher text contrast, and consistent borders and scrollbars.' },
+          { text: 'In the sidebar, your session character is separated from your other characters, and you can collapse groups and companions at any time.' },
+          { text: 'The character picker when joining a session now follows the same order as your sidebar.' },
+          { text: 'The password visibility button on the login page is now accessible by keyboard and screen readers.' },
+          { text: 'Assorted fixes and reliability improvements.' },
+        ],
+      },
+      es: {
+        title: 'PNJ en el espacio de jugador, efectos de combate e interfaz renovada',
+        highlights: [
+          { text: 'Tus PNJ llegan al espacio de jugador: vincula un PNJ a un personaje para encontrarlo en la barra lateral y en una pestaña de compañeros en la ficha.' },
+          { text: 'En combate, añade efectos personalizados y varios daños a la vez desde el rastreador de iniciativa; todos los ven en tiempo real.' },
+          { text: 'Comparte una página de la biblioteca comunitaria con un enlace o un código QR: la persona llega directamente al contenido correcto.' },
+          { text: 'Una nueva pantalla de bienvenida te guía cuando tu espacio está vacío (sin campaña ni personaje).' },
+          { text: 'La interfaz es más legible: paleta de colores unificada, textos con más contraste y bordes y barras de desplazamiento armonizados.' },
+          { text: 'En la barra lateral, tu personaje en sesión se separa de tus demás personajes, y puedes plegar grupos y compañeros en cualquier momento.' },
+          { text: 'La elección de personaje al unirte a una sesión sigue ahora el mismo orden que tu barra lateral.' },
+          { text: 'El botón para mostrar la contraseña en la página de inicio de sesión ahora es accesible con teclado y lectores de pantalla.' },
+          { text: 'Diversas correcciones y mejoras de fiabilidad.' },
+        ],
+      },
+    },
+  },
+  {
     version: '2.9.0',
     date: '2026-09-06',
     translations: {

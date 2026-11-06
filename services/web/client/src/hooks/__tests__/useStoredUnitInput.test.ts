@@ -4,8 +4,8 @@ import { displayDistanceFt, feetToMeters, metersToFeet } from "@/utils/unit.util
 
 describe("storedValueToDisplayText", () => {
   it("returns empty string for null or empty stored values", () => {
-    expect(storedValueToDisplayText(null, displayDistanceFt)).toBe("");
-    expect(storedValueToDisplayText("", displayDistanceFt)).toBe("");
+    expect(storedValueToDisplayText(null, (ft) => displayDistanceFt(ft, "metric"))).toBe("");
+    expect(storedValueToDisplayText("", (ft) => displayDistanceFt(ft, "metric"))).toBe("");
   });
 
   it("converts stored feet to metric display text", () => {

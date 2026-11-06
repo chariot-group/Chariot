@@ -5,10 +5,12 @@ import { UserController } from '@/resources/user/user.controller';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { User, UserSchema } from '@/resources/user/schemas/user.schema';
 import { InternalGuard } from '@/common/guards/internal.guard';
+import { SessionAccessModule } from '@/common/session/session-access.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    SessionAccessModule,
   ],
   controllers: [UserController],
   providers: [UserService, KeycloakService, InternalGuard],

@@ -6,16 +6,24 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectBattleStarted, selectCurrentRound, selectInitiativeTrackerRows, selectIsInSession, updateInitiativeTrackerRow } from "@/store/slices/sessionSlice";
+import {
+  selectBattleStarted,
+  selectCurrentRound,
+  selectInitiativeTrackerRows,
+  selectIsSessionLaunched,
+  updateInitiativeTrackerRow,
+} from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { useToast } from "@/hooks/useToast";
 import type { NPC, Player, Spell, Spellcasting } from "@/types/character";
-import {
-  buildTrackerConcentration,
-  isConcentrationSpell,
-} from "@/components/initiativeTracker/concentration.utils";
+import { buildTrackerConcentration, isConcentrationSpell } from "@/components/initiativeTracker/concentration.utils";
 import { submitTrackerConcentrationUpdate } from "@/lib/sessionConcentrationBridge";
 import {
   Dialog,
@@ -60,7 +68,7 @@ export default function SpellCastControls({
   const tMagic = useTranslations("characterDetail.magic");
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const battleStarted = useAppSelector(selectBattleStarted);
   const currentRound = useAppSelector(selectCurrentRound);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
@@ -70,7 +78,7 @@ export default function SpellCastControls({
   const [concentrationPromptOpen, setConcentrationPromptOpen] = useState(false);
   const lightCastFeedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const showCast = isInSession && Boolean(onCharacterUpdate);
+  const showCast = isSessionLaunched && Boolean(onCharacterUpdate);
 
   const baseLevel = selectedSpell?.level ?? -1;
   const upcastLevels = selectedSpell ? getUpcastSlotLevels(spellcasting, baseLevel) : [];
@@ -104,10 +112,12 @@ export default function SpellCastControls({
 
     const trackerRow = trackerRows.find((row) => row.characterId === character._id);
     if (trackerRow) {
-      dispatch(updateInitiativeTrackerRow({
-        id: trackerRow.id,
-        changes: { concentration, pendingConcentrationCheck: null },
-      }));
+      dispatch(
+        updateInitiativeTrackerRow({
+          id: trackerRow.id,
+          changes: { concentration, pendingConcentrationCheck: null },
+        }),
+      );
     }
 
     submitTrackerConcentrationUpdate(sessionCode, {
@@ -118,33 +128,34 @@ export default function SpellCastControls({
     setConcentrationPromptOpen(false);
   }, [character._id, currentRound, dispatch, selectedSpell, sessionCode, spellcasting.className, trackerRows]);
 
-  const concentrationPromptDialog = concentrationPromptOpen && selectedSpell ? (
-    <Dialog
-      open={concentrationPromptOpen}
-      onOpenChange={setConcentrationPromptOpen}>
-      <DialogContent className="sm:max-w-md rounded-[15px] bg-card">
-        <DialogHeader>
-          <DialogTitle>{tMagic("concentrationPromptTitle")}</DialogTitle>
-          <DialogDescription>
-            {tMagic("concentrationPromptDescription", { name: selectedSpell.name })}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setConcentrationPromptOpen(false)}>
-            {tMagic("concentrationPromptDecline")}
-          </Button>
-          <Button
-            type="button"
-            onClick={confirmConcentrationActivation}>
-            {tMagic("concentrationPromptConfirm")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  ) : null;
+  const concentrationPromptDialog =
+    concentrationPromptOpen && selectedSpell ? (
+      <Dialog
+        open={concentrationPromptOpen}
+        onOpenChange={setConcentrationPromptOpen}>
+        <DialogContent className="sm:max-w-md rounded-[15px] bg-card">
+          <DialogHeader>
+            <DialogTitle>{tMagic("concentrationPromptTitle")}</DialogTitle>
+            <DialogDescription>
+              {tMagic("concentrationPromptDescription", { name: selectedSpell.name })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setConcentrationPromptOpen(false)}>
+              {tMagic("concentrationPromptDecline")}
+            </Button>
+            <Button
+              type="button"
+              onClick={confirmConcentrationActivation}>
+              {tMagic("concentrationPromptConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    ) : null;
 
   const triggerLightCastFeedback = useCallback(() => {
     if (lightCastFeedbackTimeoutRef.current) {
@@ -168,14 +179,15 @@ export default function SpellCastControls({
       setBusy(true);
       try {
         const list = character.spellcasting ?? [];
-        const nextSpellcasting = incrementSpellSlotUsedInSpellcastingList(
-          list,
-          spellcasting.className,
-          slotLevel,
-        );
-      const updated = (await CharacterService.updateCharacter(characterKind, character._id, {
-          spellcasting: nextSpellcasting,
-        }, sessionCode)) as Player | NPC;
+        const nextSpellcasting = incrementSpellSlotUsedInSpellcastingList(list, spellcasting.className, slotLevel);
+        const updated = (await CharacterService.updateCharacter(
+          characterKind,
+          character._id,
+          {
+            spellcasting: nextSpellcasting,
+          },
+          sessionCode,
+        )) as Player | NPC;
         onCharacterUpdate(updated);
         triggerLightCastFeedback();
         offerConcentrationActivation();
@@ -213,9 +225,14 @@ export default function SpellCastControls({
     try {
       const list = character.spellcasting ?? [];
       const nextSpellcasting = incrementNpcInnateSpellUses(list, spellcasting.className, selectedSpell);
-      const updated = (await CharacterService.updateCharacter(characterKind, character._id, {
-        spellcasting: nextSpellcasting,
-      }, sessionCode)) as Player | NPC;
+      const updated = (await CharacterService.updateCharacter(
+        characterKind,
+        character._id,
+        {
+          spellcasting: nextSpellcasting,
+        },
+        sessionCode,
+      )) as Player | NPC;
       onCharacterUpdate(updated);
       triggerLightCastFeedback();
       offerConcentrationActivation();
@@ -271,12 +288,17 @@ export default function SpellCastControls({
           {lightCastFeedback}
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="default"
             className={compactSingleButton}
             aria-label={tMagic("castSpellNpcInnateAria", { name: selectedSpell.name })}
             onClick={triggerLightCastFeedback}>
-            {showLightCastFeedback ? <Check className="size-4 shrink-0" aria-hidden /> : null}
+            {showLightCastFeedback ? (
+              <Check
+                className="size-4 shrink-0"
+                aria-hidden
+              />
+            ) : null}
             {cantripCastLabel}
           </Button>
         </div>
@@ -289,14 +311,19 @@ export default function SpellCastControls({
     const innateButton = (
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="default"
         disabled={noUsesLeft || busy}
         className={compactSingleButton}
         aria-busy={busy}
         aria-label={tMagic("castSpellNpcInnateAria", { name: selectedSpell.name })}
         onClick={() => void castInnateLimited()}>
-        {busy ? <Loader2 className="size-4 animate-spin shrink-0" aria-hidden /> : null}
+        {busy ? (
+          <Loader2
+            className="size-4 animate-spin shrink-0"
+            aria-hidden
+          />
+        ) : null}
         {tMagic("castSpell")}
       </Button>
     );
@@ -329,7 +356,7 @@ export default function SpellCastControls({
     const blockedBtn = (
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         disabled
         className={compactBlocked}
         aria-label={tMagic("spellCastNotPreparedAria")}>
@@ -354,20 +381,25 @@ export default function SpellCastControls({
 
   /* ─── Emplacements par niveau (PJ ou PNJ non inné) ─── */
   if (baseLevel <= 0) {
-      return (
-        <div
+    return (
+      <div
         className="flex items-center justify-end gap-2"
         role="group"
         aria-label={tMagic("spellCastRegion")}>
         {lightCastFeedback}
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="default"
           className={compactSingleButton}
           aria-label={tMagic("castSpellAtLevelAria", { level: 0, name: selectedSpell.name })}
           onClick={triggerLightCastFeedback}>
-            {showLightCastFeedback ? <Check className="size-4 shrink-0" aria-hidden /> : null}
+          {showLightCastFeedback ? (
+            <Check
+              className="size-4 shrink-0"
+              aria-hidden
+            />
+          ) : null}
           {cantripCastLabel}
         </Button>
       </div>
@@ -389,7 +421,7 @@ export default function SpellCastControls({
   const mainButton = (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       size="default"
       disabled={noSlotForBase || busy}
       className={cn(compactBtn, mainRounded)}
@@ -400,8 +432,14 @@ export default function SpellCastControls({
           : tMagic("castSpellAtLevelAria", { level: baseLevel, name: selectedSpell.name })
       }
       onClick={noSlotForBase ? undefined : () => void castSlotsAtLevel(baseLevel)}>
-      {busy ? <Loader2 className="size-4 animate-spin shrink-0" aria-hidden /> : null}
-      {tMagic("castSpell")} ({tMagic("spellSlots", { current: baseSlotCount?.current || 0, total: baseSlotCount?.total || 0 })})
+      {busy ? (
+        <Loader2
+          className="size-4 animate-spin shrink-0"
+          aria-hidden
+        />
+      ) : null}
+      {tMagic("castSpell")} (
+      {tMagic("spellSlots", { current: baseSlotCount?.current || 0, total: baseSlotCount?.total || 0 })})
     </Button>
   );
 
@@ -410,95 +448,97 @@ export default function SpellCastControls({
   const chevronButton = (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       size="default"
       className={cn(compactBtn, "border", chevronRounded, "px-2.5")}
       disabled={chevronDisabled}
       aria-label={tMagic("spellCastMoreOptionsAria")}>
-      <ChevronDown className="size-4" aria-hidden />
+      <ChevronDown
+        className="size-4"
+        aria-hidden
+      />
     </Button>
   );
 
   return (
     <>
-    <div
-      className="flex items-center justify-end gap-2"
-      role="group"
-      aria-label={tMagic("spellCastRegion")}>
-      {lightCastFeedback}
-      <ButtonGroup>
-        {noSlotForBase ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex">{mainButton}</span>
-            </TooltipTrigger>
-            <TooltipContent side="top">{slotTooltip}</TooltipContent>
-          </Tooltip>
-        ) : (
-          mainButton
-        )}
-        {showUpcastTrigger && (
-          <>
-            <ButtonGroupSeparator />
-            <DropdownMenu>
-              {allUpcastExhausted && !busy ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex">
-                      <DropdownMenuTrigger asChild>{chevronButton}</DropdownMenuTrigger>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">{slotTooltip}</TooltipContent>
-                </Tooltip>
-              ) : (
-                <DropdownMenuTrigger asChild>{chevronButton}</DropdownMenuTrigger>
-              )}
-              <DropdownMenuContent
-                align="end"
-                className="min-w-48 rounded-[15px] p-1">
-                {upcastLevels.map((level) => {
-                  const available = hasAvailableSpellSlot(spellcasting, level) && !busy;
-                  const slotCount = getRemainingSpellSlots(spellcasting, level);
-                  const label = `${tMagic("castAtLevelOption", { level })} (${tMagic("spellSlots", {
-                    current: slotCount?.current || 0,
-                    total: slotCount?.total || 0,
-                  })})`;
-                  if (!available) {
+      <div
+        className="flex items-center justify-end gap-2"
+        role="group"
+        aria-label={tMagic("spellCastRegion")}>
+        {lightCastFeedback}
+        <ButtonGroup>
+          {noSlotForBase ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex">{mainButton}</span>
+              </TooltipTrigger>
+              <TooltipContent side="top">{slotTooltip}</TooltipContent>
+            </Tooltip>
+          ) : (
+            mainButton
+          )}
+          {showUpcastTrigger && (
+            <>
+              <ButtonGroupSeparator />
+              <DropdownMenu>
+                {allUpcastExhausted && !busy ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex">
+                        <DropdownMenuTrigger asChild>{chevronButton}</DropdownMenuTrigger>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{slotTooltip}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <DropdownMenuTrigger asChild>{chevronButton}</DropdownMenuTrigger>
+                )}
+                <DropdownMenuContent
+                  align="end"
+                  className="min-w-48">
+                  {upcastLevels.map((level) => {
+                    const available = hasAvailableSpellSlot(spellcasting, level) && !busy;
+                    const slotCount = getRemainingSpellSlots(spellcasting, level);
+                    const label = `${tMagic("castAtLevelOption", { level })} (${tMagic("spellSlots", {
+                      current: slotCount?.current || 0,
+                      total: slotCount?.total || 0,
+                    })})`;
+                    if (!available) {
+                      return (
+                        <Tooltip key={level}>
+                          <TooltipTrigger asChild>
+                            <span className="block w-full">
+                              <DropdownMenuItem
+                                disabled
+                                className="pointer-events-none"
+                                onSelect={(e) => e.preventDefault()}
+                                aria-label={label}>
+                                {label}
+                              </DropdownMenuItem>
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="left">{slotTooltip}</TooltipContent>
+                        </Tooltip>
+                      );
+                    }
                     return (
-                      <Tooltip key={level}>
-                        <TooltipTrigger asChild>
-                          <span className="block w-full">
-                            <DropdownMenuItem
-                              disabled
-                              className="pointer-events-none rounded-[15px] w-full"
-                              onSelect={(e) => e.preventDefault()}
-                              aria-label={label}>
-                              {label}
-                            </DropdownMenuItem>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">{slotTooltip}</TooltipContent>
-                      </Tooltip>
+                      <DropdownMenuItem
+                        key={level}
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          void castSlotsAtLevel(level);
+                        }}>
+                        {label}
+                      </DropdownMenuItem>
                     );
-                  }
-                  return (
-                    <DropdownMenuItem
-                      key={level}
-                      className="rounded-[15px]"
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        void castSlotsAtLevel(level);
-                      }}>
-                      {label}
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        )}
-      </ButtonGroup>
-    </div>
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        </ButtonGroup>
+      </div>
       {concentrationPromptDialog}
     </>
   );

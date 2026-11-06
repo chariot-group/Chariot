@@ -511,3 +511,140 @@ describe("CodexService.convertCodexPlayerToChariotNPC", () => {
     ).toThrow("No translation available for this player");
   });
 });
+
+describe("CodexService.convertCodexPlayerToChariotPlayer", () => {
+  beforeEach(() => {
+    vi.stubEnv("NEXT_PUBLIC_CODEX_URL", "https://codex.test");
+  });
+
+  const codexPlayer = {
+    _id: "player-1",
+    tag: 1,
+    languages: ["en"],
+    translations: {
+      en: {
+        firstname: "Aragorn",
+        lastname: "Elessar",
+        surname: "",
+        avatar: "",
+        stats: {
+          size: "Medium",
+          maxHitPoints: 52,
+          currentHitPoints: 52,
+          tempHitPoints: 0,
+          initiative: 2,
+          armorClass: 16,
+          passivePerception: 14,
+          speed: { walk: 30 },
+          languages: ["Common", "Elvish"],
+          abilityScores: {
+            strength: 16,
+            dexterity: 14,
+            constitution: 14,
+            intelligence: 12,
+            wisdom: 13,
+            charisma: 10,
+          },
+          savingThrows: {
+            strength: 0,
+            dexterity: 0,
+            constitution: 0,
+            intelligence: 0,
+            wisdom: 0,
+            charisma: 0,
+          },
+          skills: {
+            athletics: 0,
+            acrobatics: 0,
+            sleightHand: 0,
+            stealth: 0,
+            arcana: 0,
+            history: 0,
+            investigation: 0,
+            nature: 0,
+            religion: 0,
+            animalHandling: 0,
+            insight: 0,
+            medicine: 0,
+            perception: 0,
+            survival: 0,
+            deception: 0,
+            intimidation: 0,
+            performance: 0,
+            persuasion: 0,
+          },
+          senses: [],
+          proficiencyBonus: 3,
+          masteries: {
+            athletics: 0,
+            acrobatics: 0,
+            sleightHand: 0,
+            stealth: 0,
+            arcana: 0,
+            history: 0,
+            investigation: 0,
+            nature: 0,
+            religion: 0,
+            animalHandling: 0,
+            insight: 0,
+            medicine: 0,
+            perception: 2,
+            survival: 0,
+            deception: 0,
+            intimidation: 0,
+            performance: 0,
+            persuasion: 0,
+          },
+        },
+        affinities: { resistances: [], immunities: [], vulnerabilities: [] },
+        abilities: [],
+        spellcasting: [],
+        actions: [{ name: "Longsword", type: "melee", attackBonus: 6, range: "5 ft." }],
+        class: [{ name: "Fighter", level: 5 }],
+        progression: { level: 5, experience: 6500 },
+        profile: { alignment: "Lawful Good", race: "Human", subrace: "", history: "" },
+        createdAt: "",
+        updatedAt: "",
+      },
+    },
+    deletedAt: null,
+    createdAt: "",
+    updatedAt: "",
+  };
+
+  it("nominal: maps player translation to Player draft without NPC kind fields", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    const player = CodexService.convertCodexPlayerToChariotPlayer(codexPlayer, "en");
+
+    expect(player.kind).toBe("player");
+    expect(player.firstname).toBe("Aragorn");
+    expect(player.profile?.race).toBe("Human");
+    expect(player.profile).not.toHaveProperty("type");
+    expect(player.class?.[0]?.name).toBe("Fighter");
+    expect(player.progression?.level).toBe(5);
+    expect(Array.isArray(player.actions)).toBe(true);
+    expect(player.actions).toHaveLength(1);
+    expect(player.stats?.masteries?.perception).toBe(2);
+    expect(player).not.toHaveProperty("challenge");
+  });
+
+  it("error: throws when translation is missing", async () => {
+    const { default: CodexService } = await import("../CodexService");
+
+    expect(() =>
+      CodexService.convertCodexPlayerToChariotPlayer(
+        {
+          _id: "player-2",
+          tag: 0,
+          languages: ["en"],
+          translations: {},
+          deletedAt: null,
+          createdAt: "",
+          updatedAt: "",
+        },
+        "en",
+      ),
+    ).toThrow("No translation available for this player");
+  });
+});

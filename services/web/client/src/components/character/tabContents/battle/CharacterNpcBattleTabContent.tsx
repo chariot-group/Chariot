@@ -10,10 +10,26 @@ interface CharacterNpcBattleTabContentProps {
   isEditing: boolean;
 }
 
-export default function CharacterNpcBattleTabContent({ character, accentColor, form, isEditing }: CharacterNpcBattleTabContentProps) {
+export default function CharacterNpcBattleTabContent({
+  character,
+  accentColor,
+  form,
+  isEditing,
+}: CharacterNpcBattleTabContentProps) {
   if (isEditing) {
-    return <NPCBattleTabEdit npc={character} accentColor={accentColor} form={form} />;
+    return (
+      <NPCBattleTabEdit
+        npc={character}
+        accentColor={accentColor}
+        form={form}
+      />
+    );
   }
 
-  return <NPCBattleTabContent npc={character} accentColor={accentColor} />;
+  return (
+    <NPCBattleTabContent
+      npc={character}
+      accentColor={accentColor}
+    />
+  );
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -8,6 +9,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -16,20 +18,24 @@ import { Public } from '@/common/decorators/public.decorator';
 import {
   ApiExtraModels,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
 import { UserService } from '@/resources/user/user.service';
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
+import { PublicUserInfoDto } from '@/resources/user/dto/sub/public-user-info.dto';
 import { UpdateUserProfileDto } from '@/resources/user/dto/update-user-profile.dto';
 import { IResponse } from '@/common/dtos/reponse.dto';
 import { ChangePasswordDto } from '@/resources/user/dto/change-password.dto';
 import { AddHistoryDto } from '@/resources/user/dto/add-history.dto';
+import { SessionAccessService } from '@/common/session/session-access.service';
 
 @ApiExtraModels(
   IResponse,
   UserInfoDto,
+  PublicUserInfoDto,
   ChangePasswordDto,
   UpdateUserProfileDto,
   AddHistoryDto,
@@ -37,7 +43,10 @@ import { AddHistoryDto } from '@/resources/user/dto/add-history.dto';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly sessionAccessService: SessionAccessService,
+  ) {}
 
   @Get('me')
   @ApiOperation({ summary: 'Get current authenticated user information' })
@@ -65,23 +74,63 @@ export class UserController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get user information by Keycloak ID' })
+  @ApiOperation({
+    summary:
+      "Get another user's public profile by Keycloak ID (display fields only — never email, balance or history). Requires that the caller and the target share an active session (sessionCode), unless looking up one's own id. See FR-user-public-profile-read-access.",
+  })
+  @ApiQuery({
+    name: 'sessionCode',
+    required: false,
+    description:
+      'OTP code of a session the caller and the target both participate in. Required unless id is the caller’s own keycloakId.',
+  })
   @ApiResponse({
-    description: 'User information retrieved successfully',
+    description: 'Public user profile retrieved successfully',
     schema: {
       allOf: [
         { $ref: getSchemaPath(IResponse) },
         {
           properties: {
-            data: { $ref: getSchemaPath(UserInfoDto) },
+            data: { $ref: getSchemaPath(PublicUserInfoDto) },
           },
         },
       ],
     },
   })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  async findById(@Param('id') id: string) {
-    return this.userService.findOne(id);
+  @ApiResponse({
+    status: 403,
+    description:
+      'Missing sessionCode, or caller/target are not both participants of that session',
+  })
+  @ApiResponse({ status: 404, description: 'User or session not found' })
+  async findById(
+    @Param('id') id: string,
+    @Req()
+    request: {
+      user: { keycloakId: string };
+      headers: { authorization?: string };
+    },
+    @Query('sessionCode') sessionCode?: string | string[],
+  ) {
+    const requesterId = request.user.keycloakId;
+
+    if (requesterId !== id) {
+      // Un paramètre dupliqué (?sessionCode=a&sessionCode=b) arrive sous forme de tableau.
+      const code =
+        typeof sessionCode === 'string' ? sessionCode.trim() : undefined;
+      if (!code) {
+        throw new ForbiddenException(
+          'A sessionCode shared with the target user is required to view another user’s profile',
+        );
+      }
+      await this.sessionAccessService.assertUserCoParticipant(
+        request.headers.authorization,
+        code,
+        id,
+      );
+    }
+
+    return this.userService.findPublicProfile(id);
   }
 
   @Put('me/password')

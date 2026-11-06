@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { NPC } from "@/types/character";
+import { NPC, Player } from "@/types/character";
 import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/request";
 import CodexService, {
@@ -21,6 +20,7 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
 import CodexIconLegend from "@/components/character/CodexIconLegend";
+import CodexResultRow from "@/components/character/CodexResultRow";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import {
   codexDeclaredPreviewLangs,
@@ -35,6 +35,14 @@ import {
   createPortaledFilterOpenTracker,
   shouldPreventDialogDismissForPortaledFilter,
 } from "@/lib/portaledFilterOpenTracker";
+import {
+  resolveCodexCreateSelection,
+  parseCodexSelectionKey,
+  resolvePreselectionLang,
+  type CodexCreateSelection,
+  type CodexPreselection,
+} from "@/lib/codexCharacterCreate";
+import { createStackedDialogGate } from "@/lib/stackedDialogGate";
 import React from "react";
 
 type CodexEntityTypeFilter = "both" | "monsters" | "players";
@@ -42,6 +50,9 @@ type CodexEntityTypeFilter = "both" | "monsters" | "players";
 interface MonsterCodexDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Kind-preserving create: monster → NPC, premade player → Player. */
+  onCharacterSelected?: (selection: CodexCreateSelection) => void;
+  /** @deprecated Prefer onCharacterSelected. Called only for monster → NPC drafts. */
   onMonsterSelected?: (monster: Partial<NPC>) => void;
   /** Read-only browse: preview only, no NPC draft creation. */
   browseOnly?: boolean;
@@ -49,6 +60,14 @@ interface MonsterCodexDialogProps {
   embedded?: boolean;
   /** Locks entity search to monsters or players and hides the entity-type filter. */
   lockedEntityTypeFilter?: "monsters" | "players";
+  /** Entry to load and preview on open (share link). @see FR-codex-share-link-preselection */
+  initialSelection?: CodexPreselection | null;
+  /** Fired when the previewed entry changes (null when none), e.g. to mirror it in the URL. */
+  onPreviewedEntryChange?: (entry: { kind: "player" | "monster"; id: string; lang: string | null } | null) => void;
+  /** The link carried a Codex ID but its params were invalid: show the fallback error. */
+  initialSelectionInvalid?: boolean;
+  /** The parent navigates on close: skip the default `router.back()`. */
+  skipBackOnClose?: boolean;
   /** Shared portaled filter tracker when embedded in a parent dialog. */
   sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
 }
@@ -71,6 +90,30 @@ function formatPlayerListDetail(
   return classes.length > 0 ? classes.join(", ") : "—";
 }
 
+function PinnedLangFlag({
+  lang,
+  tDialog,
+}: {
+  lang?: string | null;
+  tDialog: (key: string, values?: Record<string, unknown>) => string;
+}) {
+  if (!lang || !codexLocaleFlagEmoji(lang)) return null;
+
+  return (
+    <InfoTooltip
+      content={tDialog(`languageFilter.${lang}`)}
+      side="top"
+      moreInfoLabel={tDialog(`languageFilter.${lang}`)}
+      className="relative z-10 shrink-0">
+      <span
+        className="text-[1.35rem] leading-none select-none cursor-help"
+        aria-label={tDialog(`languageFilter.${lang}`)}>
+        {codexLocaleFlagEmoji(lang)}
+      </span>
+    </InfoTooltip>
+  );
+}
+
 function MonsterResultItem({
   monsterItem,
   selectedLang,
@@ -83,7 +126,7 @@ function MonsterResultItem({
   selectedLang: string | null;
   pinnedLang?: string | null;
   isSelected: boolean;
-  onMonsterClick: (monster: CodexMonsterItem, lang: string) => void | Promise<void>;
+  onMonsterClick: (monster: CodexMonsterItem, lang: string) => unknown;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
 }) {
   const tCommon = useTranslations("common");
@@ -95,62 +138,53 @@ function MonsterResultItem({
   const translation = monsterItem.translations[displayLang];
   if (!translation) return null;
 
+  const hasBadges = monsterItem.tag === 1 || translation.srd;
+
   return (
-    <Card
-      onClick={() => onMonsterClick(monsterItem, displayLang)}
-      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
-        isSelected ? "border-purple border-2 bg-purple/10" : ""
-      }`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-1 min-w-0 gap-2 items-start">
-            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
-              <InfoTooltip
-                content={tDialog(`languageFilter.${pinnedLang}`)}
-                side="top"
-                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
-                <span
-                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
-                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
-                  {codexLocaleFlagEmoji(pinnedLang)}
-                </span>
-              </InfoTooltip>
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-              <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1">
-                <InfoTooltip
-                  content={tCommon("challengeRatingTooltip")}
-                  side="top"
-                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                  <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
-                </InfoTooltip>
-                {tDialog("monsterInfo", {
-                  cr: formatChallengeRating(translation.challenge?.challengeRating),
-                  type: translation.profile?.type,
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <div className="flex gap-1.5">
-              {monsterItem.tag === 1 && (
-                <BadgeCheck
-                  className="size-5 text-green-600"
-                  aria-label={tDialog("validatedByChariot")}
-                />
-              )}
-              {translation.srd && (
-                <FileBadge
-                  className="size-5"
-                  aria-label={tDialog("srdContent")}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <CodexResultRow
+      name={translation.firstname}
+      isSelected={isSelected}
+      onSelect={() => onMonsterClick(monsterItem, displayLang)}
+      leading={
+        <PinnedLangFlag
+          lang={pinnedLang}
+          tDialog={tDialog}
+        />
+      }
+      meta={
+        <>
+          <InfoTooltip
+            content={tCommon("challengeRatingTooltip")}
+            side="top"
+            moreInfoLabel={tCommon("challengeRatingTooltip")}
+            className="relative z-10">
+            <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
+          </InfoTooltip>
+          {tDialog("monsterInfo", {
+            cr: formatChallengeRating(translation.challenge?.challengeRating),
+            type: translation.profile?.type,
+          })}
+        </>
+      }
+      badges={
+        hasBadges ? (
+          <>
+            {monsterItem.tag === 1 && (
+              <BadgeCheck
+                className="size-5 text-green-600"
+                aria-label={tDialog("validatedByChariot")}
+              />
+            )}
+            {translation.srd && (
+              <FileBadge
+                className="size-5"
+                aria-label={tDialog("srdContent")}
+              />
+            )}
+          </>
+        ) : null
+      }
+    />
   );
 }
 
@@ -167,7 +201,7 @@ function PlayerResultItem({
   selectedLang: string | null;
   pinnedLang?: string | null;
   isSelected: boolean;
-  onPlayerClick: (player: CodexPlayerItem, lang: string) => void | Promise<void>;
+  onPlayerClick: (player: CodexPlayerItem, lang: string) => unknown;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
   tClasses: (key: string) => string;
 }) {
@@ -179,57 +213,44 @@ function PlayerResultItem({
   if (!translation) return null;
 
   return (
-    <Card
-      onClick={() => onPlayerClick(playerItem, displayLang)}
-      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
-        isSelected ? "border-purple border-2 bg-purple/10" : ""
-      }`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-1 min-w-0 gap-2 items-start">
-            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
-              <InfoTooltip
-                content={tDialog(`languageFilter.${pinnedLang}`)}
-                side="top"
-                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
-                <span
-                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
-                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
-                  {codexLocaleFlagEmoji(pinnedLang)}
-                </span>
-              </InfoTooltip>
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {tDialog("playerInfo", {
-                  level: translation.progression?.level ?? 1,
-                  detail: formatPlayerListDetail(translation, tClasses),
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            {playerItem.tag === 1 ? (
-              <BadgeCheck
-                className="size-5 text-green-600"
-                aria-label={tDialog("validatedByChariot")}
-              />
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </Card>
+    <CodexResultRow
+      name={translation.firstname}
+      isSelected={isSelected}
+      onSelect={() => onPlayerClick(playerItem, displayLang)}
+      leading={
+        <PinnedLangFlag
+          lang={pinnedLang}
+          tDialog={tDialog}
+        />
+      }
+      meta={tDialog("playerInfo", {
+        level: translation.progression?.level ?? 1,
+        detail: formatPlayerListDetail(translation, tClasses),
+      })}
+      badges={
+        playerItem.tag === 1 ? (
+          <BadgeCheck
+            className="size-5 text-green-600"
+            aria-label={tDialog("validatedByChariot")}
+          />
+        ) : null
+      }
+    />
   );
 }
 
 export default function MonsterCodexDialog({
   open,
   onOpenChange,
+  onCharacterSelected,
   onMonsterSelected,
   browseOnly = false,
   embedded = false,
+  skipBackOnClose = false,
   lockedEntityTypeFilter,
+  initialSelection,
+  initialSelectionInvalid = false,
+  onPreviewedEntryChange,
   sharedPortaledFilterOpenTracker,
 }: MonsterCodexDialogProps) {
   const router = useRouter();
@@ -260,7 +281,10 @@ export default function MonsterCodexDialog({
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [previewLangResolving, setPreviewLangResolving] = useState(false);
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
+  const [preselectionError, setPreselectionError] = useState(false);
   const isLoadingRef = useRef(false);
+  const validateButtonRef = useRef<HTMLButtonElement>(null);
+  const focusValidateOnSelectRef = useRef(false);
   const internalPortaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
   const portaledFilterOpenTracker =
     sharedPortaledFilterOpenTracker ?? internalPortaledFilterOpenTrackerRef.current;
@@ -272,9 +296,26 @@ export default function MonsterCodexDialog({
     [portaledFilterOpenTracker],
   );
 
+  // Another dialog stacked on top (e.g. release notes) must close alone, not take this one with it.
+  const stackedDialogGateRef = useRef<ReturnType<typeof createStackedDialogGate> | null>(null);
+  useEffect(() => {
+    const gate = createStackedDialogGate(document);
+    stackedDialogGateRef.current = gate;
+    window.addEventListener("keydown", gate.snapshot, true);
+    window.addEventListener("pointerdown", gate.snapshot, true);
+    return () => {
+      window.removeEventListener("keydown", gate.snapshot, true);
+      window.removeEventListener("pointerdown", gate.snapshot, true);
+      stackedDialogGateRef.current = null;
+    };
+  }, []);
+
   const shouldPreventDialogOutsideDismiss = useCallback(
     (target: EventTarget | null) => {
-      return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target);
+      return (
+        stackedDialogGateRef.current?.shouldIgnoreDismiss() === true ||
+        shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target)
+      );
     },
     [portaledFilterOpenTracker],
   );
@@ -400,6 +441,7 @@ export default function MonsterCodexDialog({
       setPreviewLangResolving(false);
       setPreviewTranslationError(null);
       setError(null);
+      setPreselectionError(initialSelectionInvalid);
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
@@ -422,7 +464,7 @@ export default function MonsterCodexDialog({
     codexMonsterItem: CodexMonsterItem,
     lang: string,
     options?: { fromPreviewLangBar?: boolean },
-  ) => {
+  ): Promise<boolean> => {
     const fromPreview = options?.fromPreviewLangBar ?? false;
     const prevKey = selectedItemKey;
     let currentLangForSameId: string | undefined;
@@ -469,13 +511,13 @@ export default function MonsterCodexDialog({
         }
         if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
         const populated = await CodexService.populateMonstersList([item]);
         item = populated[0];
         if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
       } finally {
         setPreviewLangResolving(false);
@@ -490,8 +532,10 @@ export default function MonsterCodexDialog({
       setSelectedMonster(convertedMonster);
       setSelectedItemKey(`monster:${item._id}:${lang}`);
       setShowMobileDetails(true);
+      return true;
     } catch {
       setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+      return false;
     }
   };
 
@@ -499,7 +543,7 @@ export default function MonsterCodexDialog({
     codexPlayerItem: CodexPlayerItem,
     lang: string,
     options?: { fromPreviewLangBar?: boolean },
-  ) => {
+  ): Promise<boolean> => {
     const fromPreview = options?.fromPreviewLangBar ?? false;
     const prevKey = selectedItemKey;
     let currentLangForSameId: string | undefined;
@@ -546,13 +590,13 @@ export default function MonsterCodexDialog({
         }
         if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
         const populated = await CodexService.populatePlayersList([item]);
         item = populated[0];
         if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
       } finally {
         setPreviewLangResolving(false);
@@ -567,8 +611,10 @@ export default function MonsterCodexDialog({
       setSelectedMonster(convertedMonster);
       setSelectedItemKey(`player:${item._id}:${lang}`);
       setShowMobileDetails(true);
+      return true;
     } catch {
       setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+      return false;
     }
   };
 
@@ -592,15 +638,108 @@ export default function MonsterCodexDialog({
     setPreviewLangStack((s) => s.slice(0, -1));
   };
 
+  const preselectionKind = initialSelection?.kind;
+  const preselectionId = initialSelection?.id;
+  const preselectionLang = initialSelection?.lang ?? null;
+
+  useEffect(() => {
+    if (!open || !preselectionKind || !preselectionId) return;
+    let cancelled = false;
+
+    const applyPreselection = async () => {
+      const fetchLang = preselectionLang ?? userLocale;
+      const item =
+        preselectionKind === "player"
+          ? await CodexService.getPlayerById(preselectionId, fetchLang)
+          : await CodexService.getMonsterById(preselectionId, fetchLang);
+      if (cancelled) return;
+
+      const lang = item
+        ? resolvePreselectionLang({
+            requested: preselectionLang,
+            userLocale,
+            available: item.languages ?? [],
+          })
+        : null;
+      if (!item || !lang) {
+        setPreselectionError(true);
+        return;
+      }
+
+      setSelectedLang(lang);
+      focusValidateOnSelectRef.current = true;
+      const selected =
+        preselectionKind === "player"
+          ? await handlePlayerClick(item as CodexPlayerItem, lang)
+          : await handleMonsterClick(item as CodexMonsterItem, lang);
+      if (cancelled) return;
+      if (!selected) {
+        focusValidateOnSelectRef.current = false;
+        setPreselectionError(true);
+      }
+    };
+
+    void applyPreselection();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, preselectionKind, preselectionId, preselectionLang]);
+
+  const lastEmittedEntryKeyRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!onPreviewedEntryChange) return;
+    // Skip the initial « nothing selected » so a deep link isn't reset before it loads.
+    if (lastEmittedEntryKeyRef.current === undefined && selectedItemKey === null) {
+      lastEmittedEntryKeyRef.current = null;
+      return;
+    }
+    if (lastEmittedEntryKeyRef.current === selectedItemKey) return;
+    lastEmittedEntryKeyRef.current = selectedItemKey;
+    onPreviewedEntryChange(parseCodexSelectionKey(selectedItemKey));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItemKey]);
+
+  useEffect(() => {
+    if (selectedItemKey && focusValidateOnSelectRef.current) {
+      focusValidateOnSelectRef.current = false;
+      validateButtonRef.current?.focus();
+    }
+  }, [selectedItemKey]);
+
   const handleValidate = () => {
-    if (selectedMonster && onMonsterSelected) {
-      onMonsterSelected(selectedMonster);
+    const previewLang =
+      selectedItemKey?.split(":").at(-1) ??
+      selectedCodexPlayer?.languages[0] ??
+      selectedCodexMonster?.languages[0] ??
+      "en";
+
+    let playerDraft: Partial<Player> | null = null;
+    if (selectedEntryKind === "player" && selectedCodexPlayer) {
+      try {
+        playerDraft = CodexService.convertCodexPlayerToChariotPlayer(selectedCodexPlayer, previewLang);
+      } catch {
+        setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+        return;
+      }
+    }
+
+    const selection = resolveCodexCreateSelection({
+      entryKind: selectedEntryKind,
+      npcDraft: selectedEntryKind === "monster" ? selectedMonster : null,
+      playerDraft,
+    });
+    if (!selection) return;
+
+    onCharacterSelected?.(selection);
+    if (selection.kind === "npc") {
+      onMonsterSelected?.(selection.draft);
     }
   };
 
   const handleClose = () => {
     onOpenChange(false);
-    if (!browseOnly && !embedded) {
+    if (!browseOnly && !embedded && !skipBackOnClose) {
       router.back();
     }
   };
@@ -640,15 +779,16 @@ export default function MonsterCodexDialog({
   const dialogBody = (
     <>
       {!embedded ? (
-        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
-          <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
+        <DialogHeader className="min-h-14 shrink-0 justify-center border-b border-frame py-3 pl-6 pr-12">
+          <DialogTitle className="text-xl leading-tight sm:text-2xl sm:leading-none">{tDialog("title")}</DialogTitle>
         </DialogHeader>
       ) : null}
 
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
           <div
-            className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
-            <div className="flex shrink-0 flex-col gap-1.5 w-full overflow-visible">
+            className={`flex min-h-0 w-full flex-col gap-3 p-4 lg:w-1/4 lg:border-r lg:border-frame ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
+            <div className="flex w-full shrink-0 flex-col gap-3 overflow-visible">
+              <CodexIconLegend />
               <div className="flex w-full min-w-0 items-center gap-2">
                 <div className="relative min-w-0 flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -693,7 +833,6 @@ export default function MonsterCodexDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <CodexIconLegend />
               <div className="flex w-full min-w-0 gap-2">
                 {!lockedEntityTypeFilter ? (
                   <Select
@@ -749,7 +888,15 @@ export default function MonsterCodexDialog({
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+            {preselectionError ? (
+              <p
+                role="alert"
+                className="shrink-0 rounded-md border border-red-500/60 px-3 py-2 text-sm text-red-500">
+                {tDialog("preselectionError")}
+              </p>
+            ) : null}
+
+            <div className="scrollbar-none flex-1 overflow-y-auto scroll-smooth">
               {isSearching ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -771,7 +918,7 @@ export default function MonsterCodexDialog({
 
                   return (
                     <React.Fragment>
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-0.5">
                         {searchResults.flatMap((result) => {
                           if (result.kind === "monster") {
                             const monsterItem = result.item;
@@ -846,7 +993,7 @@ export default function MonsterCodexDialog({
                         <div className="flex justify-center pt-4 pb-2">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             onClick={loadMore}
                             disabled={isLoadingMore}
                             className="w-full">
@@ -878,7 +1025,7 @@ export default function MonsterCodexDialog({
           </div>
 
           <div
-            className={`flex flex-col flex-1 min-h-0 w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
+            className={`min-h-[45vh] w-full flex-1 flex-col overflow-hidden p-4 md:p-6 lg:min-h-0 lg:w-3/4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
             <Button
               type="button"
               variant="ghost"
@@ -935,19 +1082,19 @@ export default function MonsterCodexDialog({
         </div>
 
       {!embedded ? (
-        <DialogFooter className="px-6 pb-6 pt-4 border-t shrink-0">
+        <DialogFooter className="shrink-0 border-t border-frame px-6 py-4 sm:items-center">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={handleClose}>
             {tDialog("cancel")}
           </Button>
           {!browseOnly ? (
             <Button
+              ref={validateButtonRef}
               type="button"
               onClick={handleValidate}
-              disabled={!selectedMonster}
-              className="bg-purple hover:bg-purple/90 text-white">
+              disabled={!selectedMonster}>
               {tDialog("validate")}
             </Button>
           ) : null}
@@ -975,7 +1122,13 @@ export default function MonsterCodexDialog({
         onOpenChange(nextOpen);
       }}>
       <DialogContent
-        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        className="flex h-[90vh] flex-col gap-0 p-0 sm:w-4/5 [&>[data-slot=dialog-close]]:top-5"
+        data-own-dialog=""
+        onEscapeKeyDown={(event) => {
+          if (stackedDialogGateRef.current?.shouldIgnoreDismiss()) {
+            event.preventDefault();
+          }
+        }}
         onPointerDownOutside={(event) => {
           const target = event.detail.originalEvent?.target ?? event.target;
           if (shouldPreventDialogOutsideDismiss(target)) {

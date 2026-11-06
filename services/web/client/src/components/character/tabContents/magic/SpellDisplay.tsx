@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Spell } from "@/types/character";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { formatDamageFormula } from "@/utils/spell-damage.utils";
+import { formatDamageFormula, formatSpellDamageList } from "@/utils/spell-damage.utils";
 import { formatSignedBonus } from "@/utils/attack.utils";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 
@@ -45,7 +45,7 @@ export default function SpellDisplay({
   }
 
   return (
-    <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+    <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full">
       {showTitle && (
         <Card className="gap-3 py-4 px-4 md:px-6 flex-col">
           <div className="flex flex-row items-center justify-between gap-3 w-full min-w-0">
@@ -156,14 +156,7 @@ export default function SpellDisplay({
           </Card>
         )}
         {(() => {
-          const damageFormula = spell.damageDetails
-            ? formatDamageFormula(
-                spell.damageDetails.diceCount,
-                spell.damageDetails.diceType,
-                spell.damageDetails.bonus,
-                spell.damageDetails.damageType,
-              )
-            : spell.damage || null;
+          const damageFormula = formatSpellDamageList(spell.damageDetails, spell.damage);
 
           return damageFormula ? (
             <Card className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-4 py-3 px-3 md:py-4 md:px-6">

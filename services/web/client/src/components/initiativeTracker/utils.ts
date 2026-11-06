@@ -79,7 +79,7 @@ export function trackerStatusFieldsFromCharacter(
  * FR-session-combat-sync — miroir complet des champs de fiche affichés dans le tracker.
  * Utilisé lors d'un refresh temps réel de fiche pour resynchroniser toutes les lignes concernées.
  */
-/** FR-tracker-initiative-modifier-display — bonus d'initiative fiche (`stats.initiative`). */
+/** FR-combat-initiative-tracker — bonus d'initiative fiche (`stats.initiative`). */
 export function resolveInitiativeModifierFromStats(
   stats?: { initiative?: number | null } | null,
 ): number {
@@ -226,6 +226,7 @@ export function sanitizeInitiativeTrackerRowForPlayer(row: InitiativeTrackerRow)
     tempHitPoints: fieldVis.hitPoints ? row.tempHitPoints : 0,
     armorClass: fieldVis.armorClass ? row.armorClass : 0,
     conditions: fieldVis.conditions ? row.conditions : [],
+    customEffects: fieldVis.conditions ? row.customEffects ?? [] : [],
     concentration: fieldVis.concentration ? row.concentration ?? null : null,
     pendingConcentrationCheck: fieldVis.concentration ? row.pendingConcentrationCheck ?? null : null,
     groupLabel: fieldVis.groupLabel ? row.groupLabel : "",
@@ -283,4 +284,76 @@ export function resolvePlayerTrackerDisplayName(
   }
 
   return displayName.length > 0 ? displayName : null;
+}
+
+/**
+ * FR-combat-initiative-tracker — pre-combat guidance. Rows are seeded with
+ * `initiative = modifier` (roll 0), which no die can produce, so it means "not entered".
+ */
+export function isInitiativeMissing(row: Pick<InitiativeTrackerRow, "initiative" | "initiativeModifier">): boolean {
+  return row.initiative === resolveInitiativeModifier(row.initiativeModifier);
+}
+
+export function countMissingInitiatives(
+  rows: Pick<InitiativeTrackerRow, "initiative" | "initiativeModifier">[],
+): number {
+  return rows.filter(isInitiativeMissing).length;
+}
+
+export type RemovableTrackerGroup = {
+  value: string;
+  label: string;
+  memberCount: number;
+};
+
+/** FR-combat-initiative-tracker — groups that can be removed as a whole (never session participants). */
+export function getRemovableTrackerGroups(
+  rows: Pick<InitiativeTrackerRow, "groupId" | "groupLabel">[],
+): RemovableTrackerGroup[] {
+  const byId = new Map<string, RemovableTrackerGroup>();
+  for (const row of rows) {
+    if (row.groupId === SESSION_PARTICIPANTS_GROUP_ID) continue;
+    const existing = byId.get(row.groupId);
+    if (existing) {
+      existing.memberCount += 1;
+      continue;
+    }
+    byId.set(row.groupId, { value: row.groupId, label: row.groupLabel || row.groupId, memberCount: 1 });
+  }
+  return Array.from(byId.values()).sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/** Removing a group is offered only when at least one opposing group would remain. */
+export function canRemoveTrackerGroup(rows: Pick<InitiativeTrackerRow, "groupId" | "groupLabel">[]): boolean {
+  return getRemovableTrackerGroups(rows).length >= 2;
+}
+
+/** FR-combat-initiative-tracker — "add combatants" is offered only if someone is left to add. */
+export function hasAddableCombatants(
+  candidateCharacterIds: Iterable<string>,
+  rows: Pick<InitiativeTrackerRow, "characterId">[],
+): boolean {
+  const inRoster = new Set(rows.map((row) => row.characterId));
+  for (const id of candidateCharacterIds) {
+    if (id && !inRoster.has(id)) return true;
+  }
+  return false;
+}
+
+/** Marks editable initiative inputs so the table can freeze row order while one is focused. */
+export const INITIATIVE_INPUT_ATTRIBUTE = "data-initiative-input";
+
+export function isInitiativeInputTarget(target: EventTarget | null): boolean {
+  return (target as Element | null)?.hasAttribute?.(INITIATIVE_INPUT_ATTRIBUTE) ?? false;
+}
+
+/** Keeps the captured display order; rows added meanwhile go last, removed rows are dropped. */
+export function orderRowsByFrozenIds<T extends { id: string }>(rows: T[], frozenIds: string[]): T[] {
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const frozen = frozenIds.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [row] : [];
+  });
+  const known = new Set(frozenIds);
+  return [...frozen, ...rows.filter((row) => !known.has(row.id))];
 }

@@ -148,4 +148,32 @@ describe("ProfileReferralSection", () => {
     expect(html).toContain('data-tier-state="pending"');
     expect(html).toContain('data-tier-state="pending-current"');
   });
+
+  it("keeps the copied link button fully green while it is locked", () => {
+    const html = renderToStaticMarkup(
+      <ProfileReferralSection
+        referralInfo={baseReferralInfo}
+        linkCopyState="success"
+        onCopyLink={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain("linkCopied");
+    expect(html).toContain("disabled:opacity-100");
+    expect(html).toContain("disabled:hover:bg-green");
+    expect(html).not.toContain("disabled:hover:bg-gray-middle-light");
+  });
+
+  it("locks the copy button without the green state while copying", () => {
+    const html = renderToStaticMarkup(
+      <ProfileReferralSection
+        referralInfo={baseReferralInfo}
+        linkCopyState="loading"
+        onCopyLink={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('aria-label="copyLinkAriaLabel" disabled=""');
+    expect(html).not.toContain("bg-green");
+  });
 });

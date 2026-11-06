@@ -11,10 +11,18 @@ const sidebarPath = resolve(
 describe("FR-session-participant-labels — GM session players sidebar", () => {
   const source = readFileSync(sidebarPath, "utf8");
 
-  it("nominal: renders character MediaAvatar for roster and guest rows", () => {
-    expect(source).toContain('scope="character"');
+  it("nominal: renders SidebarCharacterAvatar for roster and guest rows", () => {
+    expect(source).toContain("SidebarCharacterAvatar");
+    expect(source).toContain("buildSidebarCharacterAvatarBatchItems");
     expect(source).toContain("useMediaAvatarBatch");
-    expect(source).toContain("SIDEBAR_AVATAR_SIZE");
+  });
+
+  it("nominal: nests session companions under assigned players", () => {
+    expect(source).toContain("companionsGroupedByPlayerId");
+    expect(source).toContain("SidebarCompanionNest");
+    expect(source).toContain("npcKind");
+    expect(source).not.toContain("linkedToPlayer");
+    expect(source).toContain("ungroupedSessionCompanions");
   });
 
   it("edge: uses loading placeholder instead of raw character id", () => {

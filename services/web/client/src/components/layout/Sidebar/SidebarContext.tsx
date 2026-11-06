@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonVariants } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
@@ -18,7 +19,7 @@ import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessio
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
-import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { cn } from "@/lib/utils";
 
 export default function SidebarContext() {
@@ -29,9 +30,7 @@ export default function SidebarContext() {
   const openArchived = useAppSelector(selectOpenArchivedGroups);
   const groupToOpen = useAppSelector(selectGroupToOpen);
   const archivedGroupsTotal = useAppSelector(selectArchivedGroupsTotal);
-  const isInSession = useAppSelector(selectIsInSession);
-  const sessionStatus = useAppSelector(selectSessionStatus);
-  const actionsDisabled = isInSession && sessionStatus === "launched";
+  const actionsDisabled = useAppSelector(selectIsSessionLaunched);
   const [isDeleteAllArchivedPending, setIsDeleteAllArchivedPending] = useState(false);
   const [isDeletingAllArchived, setIsDeletingAllArchived] = useState(false);
   const {
@@ -98,7 +97,7 @@ export default function SidebarContext() {
 
   return (
     <nav
-      className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-4 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+      className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-4 pr-2 scroll-smooth scrollbar-none"
       aria-label={t("gmNavigation")}>
       {selectedCampaign && <h2 className="shrink-0 text-lg text-white">{selectedCampaign.label}</h2>}
 
@@ -109,12 +108,9 @@ export default function SidebarContext() {
         <button
           type="button"
           aria-label={t("createGroup")}
-          className="sidebar-btn-white flex w-full cursor-pointer items-center justify-between rounded-[12px] border bg-white px-3 py-1.5 text-left text-sm text-black transition-all duration-100 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
+          className={cn(buttonVariants({ variant: "primary", align: "start" }), "w-full")}>
+          <LayersPlus aria-hidden="true" />
           {t("createGroup")}
-          <LayersPlus
-            className="h-4 w-4 shrink-0"
-            aria-hidden="true"
-          />
         </button>
       </CreateGroupDialog>
 

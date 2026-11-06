@@ -1,182 +1,152 @@
-import { Card } from "@/components/ui/card";
-import { NPC } from "@/types/character";
+import CharacterIdentityCard from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
+import { NPC, Player } from "@/types/character";
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 import AbilityScores from "@/components/character/tabContents/general/shared/AbilityScores";
 import AbilitiesSection from "@/components/character/tabContents/shared/AbilitiesSection";
-import NpcColumn2 from "@/components/character/tabContents/general/view/NpcColumn2";
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
+import SavingThrow from "@/components/character/tabContents/general/shared/SavingThrow";
+import SkillsNpc from "@/components/character/tabContents/general/shared/SkillsNpc";
+import {
+  GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS,
+  GENERAL_BENTO_CONTAINER_CLASS,
+  GENERAL_BENTO_GRID_CLASS,
+  NPC_VIEW_SLOTS as SLOTS,
+} from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import NpcStatistics from "@/components/character/tabContents/shared/NpcStatistics";
 import SensesSection from "@/components/character/tabContents/general/shared/SensesSection";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
   accentColor: string;
-  onCharacterUpdate?: (updated?: NPC) => void;
+  /** @see FR-character-detail-view */
+  avatar?: ReactNode;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
-export default function NpcGeneralTabContent({ npc, accentColor, onCharacterUpdate }: NpcGeneralTabContentProps) {
+export default function NpcGeneralTabContent({
+  npc,
+  accentColor,
+  avatar,
+  onCharacterUpdate,
+}: NpcGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
   const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
   const tAlignment = useTranslations("alignments");
-  const tEdit = useTranslations("characterDetail.edit");
 
+  const languages = npc?.stats?.languages?.length > 0 ? npc.stats.languages.join(", ") : t("noLanguages");
+
+  /** @see FR-character-general-bento-layout */
   return (
-    <div
-      className="w-full flex flex-col gap-2 px-2 sm:px-0"
-      role="main"
-      aria-label={tNpc("general.npcInfoLabel")}>
-      <div className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-3 gap-2">
-        {/* Colonne 1 : Personnage et Maitrises */}
-        <section
-          className="flex flex-col gap-2 md:gap-4"
-          aria-labelledby="character-info-section"
-          aria-label={tNpc("general.characterInfo")}>
-          {/* Personnage */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6"
-            role="region"
-            aria-labelledby="character-heading">
-            <h2
-              id="character-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("character")}
-            </h2>
-            <dl className="flex flex-col gap-2">
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{tEdit("firstname")} :</dt>
-                <dd className="text-sm sm:text-base">{npc?.firstname}</dd>
-              </div>
-              {npc.lastname && (
-                <div className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">{tEdit("lastname")} :</dt>
-                  <dd className="text-sm sm:text-base">{npc?.lastname}</dd>
-                </div>
-              )}
-              {npc.surname && (
-                <div className="flex flex-wrap gap-1">
-                  <dt className="text-sm sm:text-base font-semibold">{tEdit("surname")} :</dt>
-                  <dd className="text-sm sm:text-base">{npc?.surname}</dd>
-                </div>
-              )}
-              <div className="flex flex-wrap gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{tNpc("typeLabel")} :</dt>
-                <dd className="text-sm sm:text-base">
-                  {npc?.profile?.type} {npc?.profile?.subtype?.length > 0 && `(${npc?.profile?.subtype})`}
-                </dd>
-              </div>
-            </dl>
-          </Card>
-
-          <NpcStatistics
-            npc={npc}
-            accentColor={accentColor}
-          />
-
-          <NpcColumn2
-            npc={npc}
-            accentColor={accentColor}
-            className="sm:hidden flex"
-          />
-
-          {/* Caractéristiques */}
-          <div>
-            <AbilityScores
-              character={npc}
-              accentColor={accentColor}
-            />
-          </div>
-
-          {/* Maitrise */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6"
-            role="region"
-            aria-labelledby="proficiencies-heading">
-            <h2
-              id="proficiencies-heading"
-              className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
-              {t("proficiencies")}
-            </h2>
-            <dl className="flex flex-col gap-2">
-              <div className="flex flex-col">
-                <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
-                <dd
-                  className="text-sm sm:text-base"
-                  aria-label={`${t("languages")} : ${npc?.stats?.languages?.length > 0 ? npc.stats.languages.join(", ") : t("noLanguages")}`}>
-                  {npc?.stats?.languages?.length > 0 ? npc.stats.languages.join(", ") : t("noLanguages")}
-                </dd>
-              </div>
-              <div className="flex flex-col gap-1">
-                <dt className="text-sm sm:text-base font-semibold">{t("senses")} :</dt>
-                <dd>
-                  <SensesSection
-                    senses={npc?.stats?.senses}
-                    accentColor={accentColor}
-                    embedded
-                  />
-                </dd>
-              </div>
-            </dl>
-          </Card>
-        </section>
-
-        {/* Colonne 2 : Jets de sauvegarde et Compétences */}
-        <NpcColumn2
-          npc={npc}
+    <div className={`${GENERAL_BENTO_CONTAINER_CLASS} px-2 sm:px-0`}>
+      <div
+        className={GENERAL_BENTO_GRID_CLASS}
+        role="main"
+        aria-label={tNpc("general.npcInfoLabel")}>
+        {/* Personnage */}
+        <CharacterIdentityCard
           accentColor={accentColor}
-          className="hidden sm:flex"
+          className={SLOTS.character}
+          avatar={avatar}
+          firstname={npc?.firstname}
+          lastname={npc?.lastname}
+          surname={npc?.surname}
+          facts={[
+            {
+              key: "type",
+              label: tNpc("typeLabel"),
+              value: npc?.profile?.type,
+              secondary: npc?.profile?.subtype,
+            },
+            {
+              key: "alignment",
+              label: tPlayer("alignment"),
+              value: npc?.profile?.alignment ? tAlignment(npc.profile.alignment) : undefined,
+            },
+          ]}
         />
 
-        {/* Colonne 3 : Alignement, Perception passive et Aptitudes */}
-        <section
-          className="flex flex-col gap-2 md:gap-4 sm:col-span-2 lg:col-span-1"
-          aria-labelledby="additional-info-section"
-          aria-label={tNpc("general.additionalInfo")}>
-          {/* Alignement */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
-            role="region"
-            aria-labelledby="alignment-heading">
-            <h2
-              id="alignment-heading"
-              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
-              {tPlayer("alignment")}
-            </h2>
-            <p
-              className="font-semibold text-sm sm:text-base"
-              aria-label={`${tPlayer("alignment")} : ${tAlignment(npc?.profile?.alignment)}`}>
-              {tAlignment(npc?.profile?.alignment)}
-            </p>
-          </Card>
+        <NpcStatistics
+          npc={npc}
+          accentColor={accentColor}
+          className={`${SLOTS.statistics} justify-between`}
+          showPassivePerception
+        />
 
-          {/* Perception passive */}
-          <Card
-            className="gap-3 py-4 px-4 md:px-6 flex-row items-center justify-between"
-            role="region"
-            aria-labelledby="passive-perception-heading">
-            <h2
-              id="passive-perception-heading"
-              className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
-              {t("passivePerception")}
-            </h2>
-            <p
-              className="font-semibold text-lg sm:text-xl"
-              aria-label={`${t("passivePerception")} : ${npc?.stats?.passivePerception}`}>
-              {npc?.stats?.passivePerception}
-            </p>
-          </Card>
+        <GeneralSectionCard
+          headingId="skills-heading"
+          title={t("skills")}
+          accentColor={accentColor}
+          className={SLOTS.skills}>
+          <SkillsNpc stats={npc?.stats} />
+        </GeneralSectionCard>
 
-          {/* Aptitudes */}
-          <AbilitiesSection
-            abilities={npc.abilities}
-            accentColor={accentColor}
-            title={t("characterAbilities")}
-            headingId="abilities-heading"
-            className="gap-3 py-4 px-4 md:px-6"
-            characterId={npc._id}
-            characterKind="npcs"
-            onAfterAbilityUse={onCharacterUpdate}
-          />
-        </section>
+        <AbilityScores
+          character={npc}
+          accentColor={accentColor}
+          className={SLOTS.abilityScores}
+        />
+
+        <GeneralSectionCard
+          headingId="saving-throws-heading"
+          title={t("savingThrows")}
+          accentColor={accentColor}
+          className={SLOTS.savingThrows}>
+          <div
+            className="grid flex-1 content-evenly grid-cols-3 gap-x-2 gap-y-1"
+            role="list">
+            {npc?.stats &&
+              Object.keys(npc.stats.savingThrows).map((key) => (
+                <SavingThrow
+                  key={key}
+                  skillName={key as keyof typeof npc.stats.abilityScores}
+                  accentColor={accentColor}
+                  stats={npc.stats}
+                />
+              ))}
+          </div>
+        </GeneralSectionCard>
+
+        <AbilitiesSection
+          abilities={npc.abilities}
+          accentColor={accentColor}
+          title={t("characterAbilities")}
+          headingId="abilities-heading"
+          boundedList
+          boundedClassName={GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS}
+          className={`gap-3 ${SLOTS.abilities}`}
+          characterId={npc._id}
+          characterKind="npcs"
+          onAfterAbilityUse={onCharacterUpdate}
+        />
+
+        <GeneralSectionCard
+          headingId="proficiencies-heading"
+          title={t("proficiencies")}
+          accentColor={accentColor}
+          className={SLOTS.proficiencies}>
+          <dl className="grid flex-1 content-start gap-x-6 gap-y-3 @lg:grid-cols-2">
+            <div className="flex flex-col">
+              <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
+              <dd
+                className="text-sm sm:text-base wrap-break-word"
+                aria-label={`${t("languages")} : ${languages}`}>
+                {languages}
+              </dd>
+            </div>
+            <div className="flex flex-col gap-1">
+              <dt className="text-sm sm:text-base font-semibold">{t("senses")} :</dt>
+              <dd>
+                <SensesSection
+                  senses={npc?.stats?.senses}
+                  accentColor={accentColor}
+                  embedded
+                />
+              </dd>
+            </div>
+          </dl>
+        </GeneralSectionCard>
       </div>
     </div>
   );

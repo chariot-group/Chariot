@@ -17,11 +17,17 @@ const SessionTimeWarningToast = dynamic(
   { ssr: false, loading: () => null },
 );
 
+const SessionPlayerCompanionSyncClient = dynamic(
+  () => import("@/components/SessionPlayerCompanionSyncClient"),
+  { ssr: false, loading: () => null },
+);
+
 export default function SessionCharacterSyncClientDynamic() {
   return (
     <>
       <SessionCharacterSyncClient />
       <SessionBattleSyncClient />
+      <SessionPlayerCompanionSyncClient />
       <SessionTimeWarningToast />
     </>
   );

@@ -23,6 +23,17 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { cn } from "@/lib/utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import { DeletePlayerWithCompanionsDialog } from "@/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog";
+import { deletePlayerCharacterWithCompanionChoice, syncReduxAfterPlayerDelete } from "@/lib/playerDeleteCompanions";
+import {
+  applyCompanionModeAfterPlayerCreated,
+  createPlayerDuplicateFromFull,
+  effectiveDuplicateCompanionMode,
+  syncReduxAfterCompanionMove,
+  syncReduxAfterCompanionNpcCreate,
+  type PlayerDuplicateCompanionMode,
+} from "@/lib/playerDuplicateCompanions";
+import type { NPC } from "@/types/character";
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
 import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
@@ -37,7 +48,8 @@ import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherG
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
 import {
   selectIsInSession,
-  selectSessionStatus,
+  selectSessionCode,
+  selectIsSessionLaunched,
   selectGmGuestCharacterIds,
   addGmGuestCharacterToSession,
   removeGmGuestCharacterFromSession,
@@ -50,6 +62,13 @@ import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/co
 import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
 import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
 import { isNpcGroupCharacter } from "@/lib/isNpcGroupCharacter";
+import {
+  buildSidebarCharacterAvatarBatchItems,
+  sidebarCharacterAvatarImageUrl,
+} from "@/lib/buildSidebarCharacterAvatarBatch";
+import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
+import { collapsedActiveGroupCharacterId } from "@/components/layout/Sidebar/shared/sidebarCollapsedActive";
+import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 
 interface GroupListProps {
   groups: Group[];
@@ -87,10 +106,21 @@ export default function GroupList({
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
-  const sessionStatus = useAppSelector(selectSessionStatus);
+  const sessionCode = useAppSelector(selectSessionCode);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
   const battleInitialized = useAppSelector(selectBattleInitialized);
-  const actionsDisabled = isInSession && sessionStatus === "launched";
+  const actionsDisabled = isSessionLaunched;
+
+  const avatarBatchItems = React.useMemo(
+    () => buildSidebarCharacterAvatarBatchItems(groups.flatMap((group) => group.characters ?? [])),
+    [groups],
+  );
+  const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
+    avatarBatchItems,
+    isInSession ? sessionCode : null,
+    avatarBatchItems.length > 0,
+  );
 
   const [groupPendingDelete, setGroupPendingDelete] = React.useState<Group | null>(null);
   const [groupToEdit, setGroupToEdit] = React.useState<Group | null>(null);
@@ -98,6 +128,10 @@ export default function GroupList({
     character: GroupCharacter;
     groupId: string;
   } | null>(null);
+  const [deleteCompanionsPreview, setDeleteCompanionsPreview] = React.useState<NPC[]>([]);
+  const [loadingDeleteCompanions, setLoadingDeleteCompanions] = React.useState(false);
+  const [duplicateCompanionsPreview, setDuplicateCompanionsPreview] = React.useState<NPC[]>([]);
+  const [loadingDuplicateCompanions, setLoadingDuplicateCompanions] = React.useState(false);
   const [characterToMove, setCharacterToMove] = React.useState<{
     character: GroupCharacter;
     groupId: string;
@@ -119,17 +153,11 @@ export default function GroupList({
   const openGroupIds = Array.isArray(openGroupId) ? openGroupId : [];
 
   const existingCharacterNames = React.useMemo(
-    () =>
-      groups.flatMap((group) =>
-        (group.characters ?? []).map((c) => characterDisplayName(c)).filter(Boolean),
-      ),
+    () => groups.flatMap((group) => (group.characters ?? []).map((c) => characterDisplayName(c)).filter(Boolean)),
     [groups],
   );
 
-  const existingGroupLabels = React.useMemo(
-    () => groups.map((group) => group.label.trim()).filter(Boolean),
-    [groups],
-  );
+  const existingGroupLabels = React.useMemo(() => groups.map((group) => group.label.trim()).filter(Boolean), [groups]);
 
   const selectedCharacterId = pathname?.includes("/characters/")
     ? pathname.split("/characters/")[1]?.split("/")[0]?.split("?")[0]
@@ -146,41 +174,131 @@ export default function GroupList({
     }
   }, [groupPendingDelete, isDeletingGroup, onDeleteGroup]);
 
-  const handleConfirmDeleteCharacter = React.useCallback(async () => {
-    if (!characterPendingDelete || isDeletingCharacter || !selectedCampaignId) return;
-
-    const { character, groupId } = characterPendingDelete;
-    const deletingCharacterId = character._id;
-
-    try {
-      setIsDeletingCharacter(true);
-      await CharacterService.deleteCharacter(deletingCharacterId);
-      setCharacterPendingDelete(null);
-      dispatch(removeCharacterFromGroup({ groupId, characterId: deletingCharacterId }));
-
-      if (selectedCharacterId === deletingCharacterId) {
-        const remainingGroup = groups.find((group) => group._id === groupId);
-        const nextCharacter = remainingGroup?.characters?.find((item) => item._id !== deletingCharacterId);
-        if (nextCharacter?._id) {
-          router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${nextCharacter._id}`);
-        } else {
-          router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/new/players`);
-        }
-      }
-    } catch (error) {
-      console.error("Error deleting character:", error);
-    } finally {
-      setIsDeletingCharacter(false);
+  React.useEffect(() => {
+    if (!characterPendingDelete || isNpcGroupCharacter(characterPendingDelete.character)) {
+      setDeleteCompanionsPreview([]);
+      setLoadingDeleteCompanions(false);
+      return;
     }
-  }, [
-    characterPendingDelete,
-    dispatch,
-    groups,
-    isDeletingCharacter,
-    router,
-    selectedCampaignId,
-    selectedCharacterId,
-  ]);
+
+    let cancelled = false;
+    setLoadingDeleteCompanions(true);
+    void CharacterService.getNpcsByLinkedPlayers([characterPendingDelete.character._id])
+      .then((npcs) => {
+        if (!cancelled) setDeleteCompanionsPreview(npcs);
+      })
+      .catch(() => {
+        if (!cancelled) setDeleteCompanionsPreview([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDeleteCompanions(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [characterPendingDelete]);
+
+  React.useEffect(() => {
+    if (!characterToDuplicate || isNpcGroupCharacter(characterToDuplicate.character)) {
+      setDuplicateCompanionsPreview([]);
+      setLoadingDuplicateCompanions(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingDuplicateCompanions(true);
+    void CharacterService.getNpcsByLinkedPlayers([characterToDuplicate.character._id])
+      .then((npcs) => {
+        if (!cancelled) setDuplicateCompanionsPreview(npcs);
+      })
+      .catch(() => {
+        if (!cancelled) setDuplicateCompanionsPreview([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDuplicateCompanions(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [characterToDuplicate]);
+
+  const isPendingGroupPlayer = characterPendingDelete && !isNpcGroupCharacter(characterPendingDelete.character);
+
+  const showPlayerCompanionDeleteDialog = Boolean(
+    isPendingGroupPlayer && (loadingDeleteCompanions || deleteCompanionsPreview.length > 0),
+  );
+
+  const navigateAfterGroupCharacterDelete = React.useCallback(
+    (deletingCharacterId: string, groupId: string, deleteLinkedCompanions: boolean, companions: NPC[]) => {
+      const viewingDeletedSheet =
+        selectedCharacterId === deletingCharacterId ||
+        (deleteLinkedCompanions && companions.some((npc) => npc._id === selectedCharacterId));
+      if (!viewingDeletedSheet || !selectedCampaignId) return;
+      const remainingGroup = groups.find((group) => group._id === groupId);
+      const nextCharacter = remainingGroup?.characters?.find((item) => item._id !== deletingCharacterId);
+      if (nextCharacter?._id) {
+        router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${nextCharacter._id}`);
+      } else {
+        router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/new/players`);
+      }
+    },
+    [groups, router, selectedCampaignId, selectedCharacterId],
+  );
+
+  const executeGroupCharacterDelete = React.useCallback(
+    async (deleteLinkedCompanions: boolean) => {
+      if (!characterPendingDelete || isDeletingCharacter || !selectedCampaignId) return;
+
+      const { character, groupId } = characterPendingDelete;
+      const deletingCharacterId = character._id;
+      const deletingPlayer = !isNpcGroupCharacter(character);
+
+      try {
+        setIsDeletingCharacter(true);
+        if (deletingPlayer) {
+          await deletePlayerCharacterWithCompanionChoice(deletingCharacterId, deleteLinkedCompanions);
+          syncReduxAfterPlayerDelete(dispatch, {
+            playerId: deletingCharacterId,
+            deleteLinkedCompanions,
+            companions: deleteCompanionsPreview,
+            campaignGroupId: groupId,
+          });
+        } else {
+          await CharacterService.deleteCharacter(deletingCharacterId);
+          dispatch(removeCharacterFromGroup({ groupId, characterId: deletingCharacterId }));
+        }
+        setCharacterPendingDelete(null);
+        navigateAfterGroupCharacterDelete(
+          deletingCharacterId,
+          groupId,
+          deleteLinkedCompanions,
+          deleteCompanionsPreview,
+        );
+      } catch (error) {
+        console.error("Error deleting character:", error);
+      } finally {
+        setIsDeletingCharacter(false);
+      }
+    },
+    [
+      characterPendingDelete,
+      deleteCompanionsPreview,
+      dispatch,
+      isDeletingCharacter,
+      navigateAfterGroupCharacterDelete,
+      selectedCampaignId,
+    ],
+  );
+
+  const handleConfirmDeleteCharacter = React.useCallback(async () => {
+    await executeGroupCharacterDelete(false);
+  }, [executeGroupCharacterDelete]);
+
+  const pendingDeleteCharacterName = characterPendingDelete
+    ? characterDisplayName(characterPendingDelete.character)
+    : "";
 
   const handleDuplicateCharacter = React.useCallback(
     async (
@@ -189,20 +307,40 @@ export default function GroupList({
       name: string,
       count: number,
       andMove = false,
+      companionMode: PlayerDuplicateCompanionMode = "playerOnly",
+      companions: NPC[] = [],
     ) => {
       if (!selectedCampaignId) return;
       try {
         const full = await CharacterService.getCharacterById(source._id);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { _id, createdBy, deletedAt, groups, ...rest } = full;
         const isNpc = !("progression" in full);
-        const type = isNpc ? "npcs" : "players";
+        const mode = effectiveDuplicateCompanionMode(companionMode, count);
 
         const createdChars: GroupCharacter[] = [];
         const copyNames = buildSequentialCopyNames(name, count);
+        let npcNames = existingCharacterNames;
+
         for (const copyName of copyNames) {
-          const payload = { ...rest, firstname: copyName, lastname: "", groups: [groupId] };
-          const created = await CharacterService.createCharacter(type, payload as typeof rest);
+          let created;
+          if (isNpc) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { _id, createdBy, deletedAt, groups, ...rest } = full;
+            const payload = { ...rest, firstname: copyName, lastname: "", groups: [groupId] };
+            created = await CharacterService.createCharacter("npcs", payload as typeof rest);
+          } else {
+            created = await createPlayerDuplicateFromFull(full, copyName, [groupId]);
+            const { createdCompanions, movedCompanions, nextNpcNames } = await applyCompanionModeAfterPlayerCreated({
+              mode,
+              newPlayerId: created._id,
+              companions,
+              existingNpcNames: npcNames,
+            });
+            npcNames = nextNpcNames;
+            for (const npc of createdCompanions) {
+              syncReduxAfterCompanionNpcCreate(dispatch, npc);
+            }
+            syncReduxAfterCompanionMove(dispatch, movedCompanions);
+          }
 
           dispatch(
             addCharacterToGroup({
@@ -238,7 +376,7 @@ export default function GroupList({
         throw new Error("duplicate failed");
       }
     },
-    [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
+    [dispatch, existingCharacterNames, isMobile, router, selectedCampaignId, setOpenMobile, t],
   );
 
   const handleDuplicateGroup = React.useCallback(
@@ -290,9 +428,7 @@ export default function GroupList({
 
         if (firstCreatedGroupId) {
           if (firstCharId) {
-            router.push(
-              `/campaigns/${selectedCampaignId}/groups/${firstCreatedGroupId}/characters/${firstCharId}`,
-            );
+            router.push(`/campaigns/${selectedCampaignId}/groups/${firstCreatedGroupId}/characters/${firstCharId}`);
           }
           if (isMobile) setOpenMobile(false);
         }
@@ -413,9 +549,7 @@ export default function GroupList({
             id: isGuest ? "removeFromSession" : "addToSession",
             label: isGuest ? t("removeFromSession") : t("addToSession"),
             onSelect: () =>
-              isGuest
-                ? handleRemoveGmGuestFromSession(character)
-                : void handleAddGmGuestToSession(character),
+              isGuest ? handleRemoveGmGuestFromSession(character) : void handleAddGmGuestToSession(character),
           },
         ];
       }
@@ -465,7 +599,24 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, gmGuestCharacterIds, handleAddGmGuestToSession, handleRemoveGmGuestFromSession, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, requestCharacterPdfExport, router, selectedCampaignId, setOpenMobile, t],
+    [
+      actionsDisabled,
+      activeGroupsHasMore,
+      activeGroupsTotal,
+      archivedGroupsHasMore,
+      archivedGroupsTotal,
+      gmGuestCharacterIds,
+      handleAddGmGuestToSession,
+      handleRemoveGmGuestFromSession,
+      isMobile,
+      loadedActiveGroupIds,
+      loadedArchivedGroupIds,
+      requestCharacterPdfExport,
+      router,
+      selectedCampaignId,
+      setOpenMobile,
+      t,
+    ],
   );
 
   if (groups.length === 0) {
@@ -477,13 +628,24 @@ export default function GroupList({
       {groups.map((group) => {
         const isOpen = openGroupIds.includes(group._id);
         const groupActions = buildGroupActions(group);
+        const hiddenActiveId = collapsedActiveGroupCharacterId(isOpen, selectedCharacterId, group.characters);
+        const hiddenActiveCharacter = hiddenActiveId
+          ? group.characters?.find((character) => character._id === hiddenActiveId)
+          : undefined;
+        const hiddenActiveName = hiddenActiveCharacter ? characterDisplayName(hiddenActiveCharacter) : "";
+        const activeTooltip = hiddenActiveName ? t("groupActiveCharacterTooltip", { name: hiddenActiveName }) : null;
 
         return (
           <Collapsible
             key={group._id}
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
-            <div className="flex w-full items-center rounded-[12px] bg-card py-2 px-1.5 pl-3">
+            <div
+              title={activeTooltip ?? undefined}
+              className={cn(
+                "flex w-full items-center rounded-[12px] py-1.5 pr-1.5 pl-1 transition-colors duration-100",
+                activeTooltip ? "bg-white/15 text-white" : "hover:bg-white/10",
+              )}>
               <SidebarItemWithActions
                 actions={groupActions}
                 disabled={actionsDisabled}
@@ -517,20 +679,20 @@ export default function GroupList({
                     aria-hidden="true"
                     className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
                   />
-                  <span className={cn("min-w-0 flex-1 truncate text-sm text-left", isOpen && "font-bold")}>
-                    {group.label}
-                  </span>
+                  <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">{group.label}</span>
+                  {activeTooltip ? <span className="sr-only">{activeTooltip}</span> : null}
                 </CollapsibleTrigger>
               </SidebarItemWithActions>
             </div>
 
             <CollapsibleContent
               id={`group-${group._id}-content`}
-              className="mt-1 ml-3 flex flex-col gap-1">
+              className="mt-1 ml-4 flex flex-col gap-1">
               {group.characters && group.characters.length > 0 ? (
                 group.characters.map((character) => {
                   const isSelected = selectedCharacterId === character._id;
                   const characterActions = buildCharacterActions(character, group._id);
+                  const displayName = characterDisplayName(character);
 
                   return (
                     <SidebarItemWithActions
@@ -540,32 +702,28 @@ export default function GroupList({
                       contextMenuLabel={t("characterActions")}
                       className={cn(
                         "rounded-[12px] transition-all duration-100",
-                        isSelected ? "bg-white text-black" : "hover:bg-white/10",
-                      )}
-                      overflowTriggerClassName={
-                        isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-                      }>
+                        isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+                      )}>
                       <Link
                         href={`/campaigns/${selectedCampaignId}/groups/${group._id}/characters/${character._id}`}
                         aria-current={isSelected ? "page" : undefined}
-                        aria-label={`${character.firstname} ${character.lastname}${isSelected ? ` (${t("selected")})` : ""}`}
-                        title={`${character.firstname} ${character.lastname}`}
+                        aria-label={`${displayName}${isSelected ? ` (${t("selected")})` : ""}`}
+                        title={displayName}
                         className={cn(
                           "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
-                          isSelected && "pl-4 font-bold text-black",
+                          isSelected && "font-bold",
                         )}
                         onClick={() => {
                           if (isMobile) setOpenMobile(false);
                         }}>
-                        {isSelected && (
-                          <span
-                            className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                            aria-hidden="true"
-                          />
-                        )}
-                        <span className="min-w-0 flex-1 truncate">
-                          {character.firstname} {character.lastname}
-                        </span>
+                        <SidebarCharacterAvatar
+                          characterId={character._id}
+                          storedValue={character.avatar}
+                          alt={displayName}
+                          sessionCode={isInSession ? sessionCode : null}
+                          avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, character._id, character.avatar)}
+                        />
+                        <span className="min-w-0 flex-1 truncate">{displayName}</span>
                       </Link>
                     </SidebarItemWithActions>
                   );
@@ -592,7 +750,7 @@ export default function GroupList({
       />
 
       <ConfirmDialog
-        open={!!characterPendingDelete}
+        open={!!characterPendingDelete && !showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeletingCharacter) setCharacterPendingDelete(null);
         }}
@@ -602,6 +760,29 @@ export default function GroupList({
         cancelLabel={t("cancel")}
         onConfirm={handleConfirmDeleteCharacter}
         isLoading={isDeletingCharacter}
+      />
+
+      <DeletePlayerWithCompanionsDialog
+        open={showPlayerCompanionDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open && !isDeletingCharacter) setCharacterPendingDelete(null);
+        }}
+        playerName={pendingDeleteCharacterName}
+        companions={deleteCompanionsPreview}
+        isLoading={isDeletingCharacter}
+        isLoadingCompanions={loadingDeleteCompanions}
+        title={t("deletePlayerWithCompanionsTitle")}
+        description={t("deletePlayerWithCompanionsDescription")}
+        companionsListLabel={t("deletePlayerWithCompanionsListLabel")}
+        cancelLabel={t("cancel")}
+        keepCompanionsLabel={t("deletePlayerKeepCompanions")}
+        deleteAllLabel={t("deletePlayerAndCompanions", { count: deleteCompanionsPreview.length })}
+        keepCompanionsAriaLabel={t("deletePlayerKeepCompanionsAria")}
+        deleteAllAriaLabel={t("deletePlayerAndCompanionsAria", {
+          count: deleteCompanionsPreview.length,
+        })}
+        onKeepCompanions={() => executeGroupCharacterDelete(false)}
+        onDeleteWithCompanions={() => executeGroupCharacterDelete(true)}
       />
 
       <EditGroupDialog
@@ -636,9 +817,7 @@ export default function GroupList({
           const pending = pendingMoveAfterDuplicate;
           if (!pending) return;
           await Promise.all(
-            pending.characters.slice(1).map((c) =>
-              moveCharacterToGroup(c._id, pending.groupId, targetGroupId),
-            ),
+            pending.characters.slice(1).map((c) => moveCharacterToGroup(c._id, pending.groupId, targetGroupId)),
           );
           for (const c of pending.characters) {
             dispatch(removeCharacterFromGroup({ groupId: pending.groupId, characterId: c._id }));
@@ -655,11 +834,29 @@ export default function GroupList({
           if (!open) setCharacterToDuplicate(null);
         }}
         existingNames={existingCharacterNames}
-        onDuplicate={(name, count) =>
-          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, false)
+        companions={duplicateCompanionsPreview}
+        isLoadingCompanions={loadingDuplicateCompanions}
+        onDuplicate={(name, count, companionMode) =>
+          handleDuplicateCharacter(
+            characterToDuplicate!.character,
+            characterToDuplicate!.groupId,
+            name,
+            count,
+            false,
+            companionMode,
+            duplicateCompanionsPreview,
+          )
         }
-        onDuplicateAndMove={(name, count) =>
-          handleDuplicateCharacter(characterToDuplicate!.character, characterToDuplicate!.groupId, name, count, true)
+        onDuplicateAndMove={(name, count, companionMode) =>
+          handleDuplicateCharacter(
+            characterToDuplicate!.character,
+            characterToDuplicate!.groupId,
+            name,
+            count,
+            true,
+            companionMode,
+            duplicateCompanionsPreview,
+          )
         }
       />
 

@@ -298,7 +298,7 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
                 throw new BadRequestException(message);
             }
 
-            /* FR-session-lobby-wheel-quota-invariant: égalité exacte requise pour lancer. */
+            /* FR-session-lobby-wheel-deposit: égalité exacte requise pour lancer. */
             const tokensByUser = await this.redisService.getTokens(code);
             const totalDeposited = sumTokenMap(tokensByUser);
             const quota = session.participants.length;
@@ -348,7 +348,12 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
 
             const existingParticipant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
 
-            if (session.status === SessionStatus.launched && !existingParticipant) {
+            /* FR-session-lobby-modal: un ancien participant peut revenir dans une session lancée. */
+            if (
+                session.status === SessionStatus.launched &&
+                !existingParticipant &&
+                !(await this.redisService.isFormerParticipant(code, userId))
+            ) {
                 const message: string = `Session with code ${code} is already launched and user ${userId} is not a participant`;
                 this.logger.warn(message, this.SERVICE_NAME);
                 throw new ForbiddenException(message);
@@ -404,7 +409,7 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
                 throw new BadRequestException(message);
             }
 
-            /* FR-session-lobby-wheel-leave-refund + FR-session-lobby-wheel-quota-invariant */
+            /* FR-session-lobby-wheel-deposit */
             let tokensByUser: Record<string, number> | undefined;
             if (session.status === SessionStatus.activated) {
                 await this.redisService.clearUserTokens(code, userId);
@@ -413,6 +418,12 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
             await this.prisma.sessionParticipant.delete({
                 where: { id: participant.id },
             });
+
+            /* FR-session-lobby-modal: autorise le retour jusqu'à l'expiration de la session lancée. */
+            if (session.status === SessionStatus.launched && session.expiresAt) {
+                const ttlSeconds = Math.floor((new Date(session.expiresAt).getTime() - Date.now()) / 1000);
+                await this.redisService.addFormerParticipant(code, userId, ttlSeconds);
+            }
 
             const updated: SessionWithParticipants = await this._findSession(code);
 
@@ -526,6 +537,7 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
         userId: string,
         characterId: string,
         mode: 'roster-read' | 'gm-edit',
+        linkedPlayerId?: string,
     ): Promise<IResponse<{ ok: true }>> {
         try {
             const session = await this._findSession(code);
@@ -536,26 +548,37 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
 
             const cid = characterId.trim();
             const inRoster = session.participants.some((p) => p.characterId === cid);
-            if (!inRoster) {
-                throw new ForbiddenException('Character is not part of this session roster');
-            }
+            if (inRoster) {
+                if (mode === 'roster-read') {
+                    return { message: 'Access granted', data: { ok: true } };
+                }
 
-            if (mode === 'roster-read') {
+                if (me.status !== ParticipantStatus.gameMaster) {
+                    throw new ForbiddenException('Only the game master can edit this character in session');
+                }
+
+                const heldByPlayer = session.participants.some(
+                    (p) => p.status !== ParticipantStatus.gameMaster && p.characterId === cid,
+                );
+                if (!heldByPlayer) {
+                    throw new ForbiddenException('Character is not assigned to a player in this session');
+                }
+
                 return { message: 'Access granted', data: { ok: true } };
             }
 
-            if (me.status !== ParticipantStatus.gameMaster) {
+            const linkedId = linkedPlayerId?.trim();
+            if (linkedId && this.isAssignedNonGmCharacter(session, linkedId)) {
+                if (mode === 'roster-read') {
+                    return { message: 'Access granted', data: { ok: true } };
+                }
+                if (me.status === ParticipantStatus.gameMaster) {
+                    return { message: 'Access granted', data: { ok: true } };
+                }
                 throw new ForbiddenException('Only the game master can edit this character in session');
             }
 
-            const heldByPlayer = session.participants.some(
-                (p) => p.status !== ParticipantStatus.gameMaster && p.characterId === cid,
-            );
-            if (!heldByPlayer) {
-                throw new ForbiddenException('Character is not assigned to a player in this session');
-            }
-
-            return { message: 'Access granted', data: { ok: true } };
+            throw new ForbiddenException('Character is not part of this session roster');
         } catch (error: unknown) {
             if (error instanceof HttpException) {
                 throw error;
@@ -567,10 +590,121 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
     }
 
     /**
+     * GM-only: every playerId must be a Player character assigned on the session roster.
+     * Includes a MJ who chose a PJ (creator join) — still not a wheel seat / companion participant.
+     * @see FR-session-player-companion-combatants
+     */
+    async validateCompanionLookupForAdventure(
+        code: string,
+        userId: string,
+        playerIds: string[],
+    ): Promise<IResponse<{ ok: true }>> {
+        try {
+            const session = await this._findSession(code);
+            const me = session.participants.find((p) => p.userId === userId);
+            if (!me) {
+                throw new ForbiddenException('User is not a session participant');
+            }
+            if (me.status !== ParticipantStatus.gameMaster) {
+                throw new ForbiddenException('Only the game master can list player companions in session');
+            }
+
+            for (const rawId of playerIds) {
+                const playerId = rawId.trim();
+                if (!playerId || !this.isAssignedSessionPlayerCharacter(session, playerId)) {
+                    throw new ForbiddenException('Player is not an assigned session character');
+                }
+            }
+
+            return { message: 'Access granted', data: { ok: true } };
+        } catch (error: unknown) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            const message = `Error validating companion lookup for session ${code}: ${(error as Error).message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    private normalizeSessionCharacterId(value: string | null | undefined): string | null {
+        if (value == null) return null;
+        const trimmed = String(value).trim();
+        return trimmed.length > 0 ? trimmed : null;
+    }
+
+    /**
+     * Autorise la diffusion WS `session:character-sheet-updated` (émetteur exclu par le gateway).
+     * @see FR-session-player-companion-combatants — PNJ liés hors `participant.characterId`
+     */
+    canBroadcastCharacterSheetUpdate(
+        session: SessionWithParticipants,
+        userId: string,
+        characterId: string,
+        linkedPlayerId?: string,
+    ): { ok: true } | { ok: false; reason: string } {
+        const me = session.participants.find((participant) => participant.userId === userId);
+        if (!me) {
+            return { ok: false, reason: 'Not a session participant' };
+        }
+
+        const cid = this.normalizeSessionCharacterId(characterId);
+        if (!cid) {
+            return { ok: false, reason: 'Missing characterId' };
+        }
+
+        if (me.status === ParticipantStatus.gameMaster) {
+            return { ok: true };
+        }
+
+        const myCharacterId = this.normalizeSessionCharacterId(me.characterId);
+        if (myCharacterId && myCharacterId === cid) {
+            return { ok: true };
+        }
+
+        const linkedId = this.normalizeSessionCharacterId(linkedPlayerId);
+        if (
+            linkedId &&
+            myCharacterId &&
+            linkedId === myCharacterId &&
+            this.isAssignedNonGmCharacter(session, linkedId)
+        ) {
+            return { ok: true };
+        }
+
+        return { ok: false, reason: 'Character is not on this session roster' };
+    }
+
+    private isAssignedNonGmCharacter(
+        session: { participants: Array<{ status: ParticipantStatus; characterId?: string | null }> },
+        characterId: string,
+    ): boolean {
+        const target = this.normalizeSessionCharacterId(characterId);
+        if (!target) return false;
+        return session.participants.some(
+            (participant) =>
+                participant.status !== ParticipantStatus.gameMaster &&
+                this.normalizeSessionCharacterId(participant.characterId) === target,
+        );
+    }
+
+    /** PJ présent sur le roster (joueur connecté ou MJ avec un personnage choisi). */
+    private isAssignedSessionPlayerCharacter(
+        session: { participants: Array<{ status: ParticipantStatus; characterId?: string | null }> },
+        characterId: string,
+    ): boolean {
+        const target = this.normalizeSessionCharacterId(characterId);
+        if (!target) return false;
+        return session.participants.some(
+            (participant) => this.normalizeSessionCharacterId(participant.characterId) === target,
+        );
+    }
+
+    /**
      * Vérifie qu'un utilisateur authentifié est participant de la session ET que
      * targetUserId est le MJ (creatorUserId) de cette session.
      * Utilisé par le service media pour : PP du MJ et avatars PNJ du MJ.
-     * @see FR-media-avatar-read-access
+     * @see FR-media-avatars
      */
     async validateGmOwnership(
         code: string,
@@ -595,6 +729,43 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
                 throw error;
             }
             const message = `Error validating GM ownership for session ${code}: ${(error as Error).message}`;
+            this.logger.error(message, null, this.SERVICE_NAME);
+            throw new InternalServerErrorException(message);
+        }
+    }
+
+    /**
+     * Vérifie qu'un utilisateur authentifié est participant de la session ET que
+     * targetUserId est également participant (ou MJ) de cette même session.
+     * Utilisé par le service adventure pour la lecture de profil public d'un
+     * autre utilisateur (nom, avatar) — relation = co-participation à une session active.
+     * @see FR-user-public-profile-read-access
+     */
+    async validateCoParticipant(
+        code: string,
+        requesterId: string,
+        targetUserId: string,
+    ): Promise<IResponse<{ ok: true }>> {
+        try {
+            const session = await this._findSession(code);
+
+            const isParticipant = (userId: string) =>
+                session.creatorUserId === userId || session.participants.some((p) => p.userId === userId);
+
+            if (!isParticipant(requesterId)) {
+                throw new ForbiddenException('User is not a session participant');
+            }
+
+            if (!isParticipant(targetUserId)) {
+                throw new ForbiddenException('Target user is not a participant of this session');
+            }
+
+            return { message: 'Access granted', data: { ok: true } };
+        } catch (error: unknown) {
+            if (error instanceof HttpException) {
+                throw error;
+            }
+            const message = `Error validating co-participation for session ${code}: ${(error as Error).message}`;
             this.logger.error(message, null, this.SERVICE_NAME);
             throw new InternalServerErrorException(message);
         }

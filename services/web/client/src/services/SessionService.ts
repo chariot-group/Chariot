@@ -23,6 +23,7 @@ export type SessionParticipantsDetails = {
 
 export type SessionEntity = {
     id: string;
+    code: string;
     status: SessionStatus;
     creatorUserId: string;
     creatorCampaignId: string;
@@ -59,6 +60,18 @@ class SessionService {
         const response = await apiClient().get<{ data: SessionEntity }>(
             `${gatewayUrl}/session/sessions/${code}`,
         );
+
+        return response.data.data;
+    }
+
+    async getMySessions(): Promise<SessionEntity[]> {
+        const gatewayUrl = process.env.NEXT_PUBLIC_API_URL;
+
+        if (!gatewayUrl) {
+            throw new Error('API URL is not defined. Set NEXT_PUBLIC_API_URL in your environment.');
+        }
+
+        const response = await apiClient().get<{ data: SessionEntity[] }>(`${gatewayUrl}/session/sessions`);
 
         return response.data.data;
     }

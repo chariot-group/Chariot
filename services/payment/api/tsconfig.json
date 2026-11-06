@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "nodenext",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "target": "ES2021",
+    "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
@@ -18,8 +18,14 @@
     "skipLibCheck": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
+    "useUnknownInCatchVariables": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "moduleResolution": "nodenext",
+    "resolvePackageJsonExports": true,
+    "rootDir": ".",
+    "strict": false,
+    "useDefineForClassFields": false
   }
 }

@@ -189,7 +189,7 @@ export function SessionHealthDialog({
             />
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="min-w-9 px-2 text-lg font-semibold"
               disabled={!canApplyCurrent || busyAction !== null}
@@ -200,7 +200,7 @@ export function SessionHealthDialog({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="min-w-9 px-2 text-lg font-semibold"
               disabled={!canApplyCurrent || busyAction !== null}
@@ -211,7 +211,7 @@ export function SessionHealthDialog({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="min-w-9 px-2 text-lg font-semibold"
               disabled={!canApplyCurrent || busyAction !== null}
@@ -255,7 +255,7 @@ export function SessionHealthDialog({
 
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 className="min-w-9 px-2 text-lg font-semibold"
                 disabled={!canApplyTemp || busyAction !== null}

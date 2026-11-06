@@ -13,6 +13,7 @@ import {
   Sparkles,
   Sprout,
   Stone,
+  Wand2,
   ZapOff,
 } from "lucide-react";
 import type { LucideProps } from "lucide-react";
@@ -99,4 +100,11 @@ export const CONDITION_META: Record<ActiveInitiativeTrackerCondition, ConditionM
     badgeClassName: "border-stone-300/45 bg-stone-500/25 text-stone-100",
     optionClassName: "text-stone-100 ring-stone-300/25",
   },
+};
+
+/** @see FR-tracker-custom-effects */
+export const CUSTOM_EFFECT_META: ConditionMeta = {
+  Icon: Wand2,
+  badgeClassName: "border-secondary/45 bg-secondary/20 text-pink",
+  optionClassName: "text-pink ring-secondary/30",
 };

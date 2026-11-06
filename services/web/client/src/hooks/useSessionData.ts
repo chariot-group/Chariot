@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { registerRemoteCharacterSheetUpdatedListener } from "@/lib/sessionCharacterSyncBridge";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,6 +28,8 @@ import { isSessionUnavailableMessage } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
 import type { Character } from "@/types/character";
 import type { Campaign } from "@/types/campaign";
+import { loadCompanionCountsForPlayers, orderSessionCharactersLikeSidebar } from "@/lib/sessionJoinCompanionVisibility";
+import { selectCharactersWithoutGroup } from "@/store/slices/characterSlice";
 
 const CHARACTER_FETCH_RETRY_DELAY_MS = 350;
 
@@ -62,6 +64,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     participantAvatars: Record<string, string | null | undefined>;
     characterDetails: Record<string, Character>;
     myCharacters: Character[];
+    companionCountByCharacterId: Record<string, number>;
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
     getCharacterLabel: (characterId: string | null) => string;
     isLoading: boolean;
@@ -77,12 +80,20 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 
     const participantNames = useAppSelector(selectSessionParticipantDisplayNames);
     const isAlreadyInSession = useAppSelector(selectIsInSession);
+    const sidebarPlayers = useAppSelector(selectCharactersWithoutGroup);
 
     const [campaignLabel, setCampaignLabel] = useState<string | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
     const [participantAvatars, setParticipantAvatars] = useState<Record<string, string | null | undefined>>({});
     const [characterDetails, setCharacterDetails] = useState<Record<string, Character>>({});
-    const [myCharacters, setMyCharacters] = useState<Character[]>([]);
+    const [fetchedMyCharacters, setFetchedMyCharacters] = useState<Character[]>([]);
+    const myCharacters = useMemo(
+        () => orderSessionCharactersLikeSidebar(fetchedMyCharacters, sidebarPlayers),
+        [fetchedMyCharacters, sidebarPlayers],
+    );
+    const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>(
+        {},
+    );
     const [isLoading, setIsLoading] = useState(true);
 
     /** Toujours à jour : les handlers WebSocket gardent une ref stable (voir `useSessionSocket` deps `[token]`). */
@@ -130,6 +141,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         };
 
         const init = async () => {
+            setCompanionCountByCharacterId({});
             try {
                 const session = await sessionService.getSession(code);
                 if (cancelled) return;
@@ -177,7 +189,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
                 const profileEntries = await Promise.all(
                     data.participants.map(async (p) => {
                         try {
-                            const user = await UserService.getUserById(p.userId);
+                            const user = await UserService.getUserById(p.userId, code);
                             return {
                                 userId: p.userId,
                                 label: formatSessionParticipantUserLabel(user) ?? SESSION_PARTICIPANT_NAME_LOADING,
@@ -212,7 +224,13 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 
             try {
                 const res = await characterService.getPlayersWithoutGroup(1, 100);
-                setMyCharacters(res.data);
+                setFetchedMyCharacters(res.data);
+                void loadCompanionCountsForPlayers(
+                    res.data.map((character) => character._id),
+                    (ids) => characterService.getNpcsByLinkedPlayers(ids),
+                ).then((counts) => {
+                    if (!cancelled) setCompanionCountByCharacterId(counts);
+                });
             } catch {
                 // silently fail
             }
@@ -241,6 +259,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         participantAvatars,
         characterDetails,
         myCharacters,
+        companionCountByCharacterId,
         fetchCharacterDetails,
         getCharacterLabel,
         isLoading,

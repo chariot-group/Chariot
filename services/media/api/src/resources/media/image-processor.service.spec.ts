@@ -48,7 +48,7 @@ function createFile(
   };
 }
 
-/** @see FR-media-avatar-format */
+/** @see FR-media-avatars */
 describe('ImageProcessorService', () => {
   const service = new ImageProcessorService();
 

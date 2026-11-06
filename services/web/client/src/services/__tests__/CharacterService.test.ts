@@ -34,11 +34,16 @@ describe("CharacterService.updateCharacter — FR-session-combat-sync", () => {
 
     await CharacterService.updateCharacter("players", "char-player", { firstname: "Lyra" }, "ABC123");
 
-    expect(emitCharacterSheetUpdatedMock).toHaveBeenCalledWith("ABC123", "char-player");
+    expect(emitCharacterSheetUpdatedMock).toHaveBeenCalledWith("ABC123", "char-player", {
+      linkedPlayerId: undefined,
+    });
   });
 
   it("edge: also broadcasts after updating an NPC sheet during a session", async () => {
-    const payload = { message: "ok", data: { _id: "char-npc" } };
+    const payload = {
+      message: "ok",
+      data: { _id: "char-npc", kind: "npc", linkedPlayerId: "char-player" },
+    };
     patchMock.mockResolvedValue({ data: payload });
     getSessionSnapshotForBroadcastMock.mockReturnValue({ code: "ABC123", isInSession: true });
 
@@ -46,7 +51,9 @@ describe("CharacterService.updateCharacter — FR-session-combat-sync", () => {
 
     await CharacterService.updateCharacter("npcs", "char-npc", { surname: "Goblin boss" }, "ABC123");
 
-    expect(emitCharacterSheetUpdatedMock).toHaveBeenCalledWith("ABC123", "char-npc");
+    expect(emitCharacterSheetUpdatedMock).toHaveBeenCalledWith("ABC123", "char-npc", {
+      linkedPlayerId: "char-player",
+    });
   });
 
   it("error: does not broadcast when no active session snapshot is available", async () => {

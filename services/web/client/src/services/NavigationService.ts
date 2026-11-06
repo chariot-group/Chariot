@@ -10,7 +10,10 @@ import {
     selectCharactersWithoutGroup,
     selectCharactersWithoutGroupLoading,
     clearCharacters,
+    setLinkedNpcs,
+    setUnlinkedNpcsWithoutGroup,
 } from '@/store/slices/characterSlice';
+import type { NPC } from '@/types/character';
 import { isCharacterAccessDeniedError } from '@/lib/characterAccessError';
 import { reportClientIssue } from "@/logger/reportClientIssue";
 import {
@@ -23,7 +26,13 @@ import {
 
 interface NavigationDestination {
     path: string;
-    reason: 'character-without-group' | 'character-in-campaign' | 'character-in-space' | 'no-characters';
+    reason:
+        | 'character-without-group'
+        | 'character-in-campaign'
+        | 'character-in-space'
+        | 'no-characters'
+        | 'no-characters-player-space'
+        | 'no-characters-campaign';
     groupId?: string;
     characterId?: string;
 }
@@ -32,6 +41,21 @@ type CampaignGroup = { _id: string; characters?: Array<{ _id: string }> };
 type GroupRef = string | { _id?: string };
 
 class NavigationService {
+    private async loadPlayerSpaceNpcs(dispatch: AppDispatch, players: Array<{ _id?: string }>): Promise<void> {
+        const playerIds = players.map((player) => player._id).filter((id): id is string => Boolean(id));
+        try {
+            const [unlinkedResponse, linked] = await Promise.all([
+                CharacterService.getUnlinkedNpcsWithoutGroup(1, 50),
+                CharacterService.getNpcsByLinkedPlayers(playerIds),
+            ]);
+            dispatch(setUnlinkedNpcsWithoutGroup((unlinkedResponse.data ?? []) as NPC[]));
+            dispatch(setLinkedNpcs(linked));
+        } catch {
+            dispatch(setLinkedNpcs([]));
+            dispatch(setUnlinkedNpcsWithoutGroup([]));
+        }
+    }
+
     private async loadCharactersWithoutGroup(
         dispatch: AppDispatch,
         getState: () => RootState,
@@ -51,6 +75,7 @@ class NavigationService {
                     characters: response.data,
                     total: response.pagination.totalItems
                 }));
+                await this.loadPlayerSpaceNpcs(dispatch, response.data);
             } catch (error) {
                 dispatch(fetchCharactersWithoutGroupFailure(
                     error instanceof Error ? error.message : 'Failed to fetch characters'
@@ -68,6 +93,7 @@ class NavigationService {
                 characters: response.data,
                 total: response.pagination.totalItems
             }));
+            await this.loadPlayerSpaceNpcs(dispatch, response.data);
         } catch (error) {
             dispatch(fetchCharactersWithoutGroupFailure(
                 error instanceof Error ? error.message : 'Failed to fetch characters'
@@ -88,7 +114,7 @@ class NavigationService {
 
         dispatch(fetchCampaignsStart());
         try {
-            const result = await CampaignService.getCampaigns({ page: 1, limit: 10 });
+            const result = await CampaignService.getCampaigns({ page: 1, offset: 10 });
             dispatch(fetchCampaignsSuccess({
                 campaigns: result.data,
                 total: result.totalItems,
@@ -149,6 +175,11 @@ class NavigationService {
                 }
             }
 
+            // FR-welcome-onboarding-fallbacks: a user with a campaign never lands on welcome.
+            if (campaigns.length > 0) {
+                return { path: `/${locale}/campaigns/${campaigns[0]._id}`, reason: 'no-characters-campaign' };
+            }
+
             return { path: `/${locale}/welcome`, reason: 'no-characters' };
 
         } catch (error) {
@@ -198,7 +229,7 @@ class NavigationService {
                 }
             }
 
-            return { path: `/${locale}/welcome`, reason: 'no-characters' };
+            return { path: `/${locale}/campaigns/${campaignId}`, reason: 'no-characters-campaign' };
 
         } catch (error) {
             reportClientIssue("error", "Error determining space destination", "Navigation", error);
@@ -222,12 +253,49 @@ class NavigationService {
                 };
             }
 
-            return { path: `/${locale}/welcome`, reason: 'no-characters' };
+            return { path: `/${locale}/characters`, reason: 'no-characters-player-space' };
 
         } catch (error) {
             reportClientIssue("error", "Error determining player space destination", "Navigation", error);
             return { path: `/${locale}/welcome`, reason: 'no-characters' };
         }
+    }
+
+    /**
+     * Logo click (FR-welcome-onboarding-fallbacks): the current space has priority, then the other one;
+     * welcome only when the user has no campaign and no Player-space character.
+     */
+    async determineLogoDestination(
+        locale: string,
+        dispatch: AppDispatch,
+        getState: () => RootState,
+        context: { contextMode: 'player' | 'gm' | string | null; campaignId: string | null },
+    ): Promise<NavigationDestination> {
+        const isCharacterDestination = (destination: NavigationDestination) => destination.reason.startsWith('character');
+        try {
+            const prioritized =
+                context.contextMode === 'gm' && context.campaignId
+                    ? await this.determineSpaceDestination(context.campaignId, locale)
+                    : context.contextMode === 'player'
+                      ? await this.determinePlayerSpaceDestination(locale, dispatch, getState)
+                      : null;
+            if (prioritized && isCharacterDestination(prioritized)) return prioritized;
+
+            const fallback = await this.determinePostLoginDestination(locale, dispatch, getState);
+            if (isCharacterDestination(fallback)) return fallback;
+            // No campaign and no character anywhere: welcome. Otherwise the current space's fallback keeps priority.
+            if (fallback.reason === 'no-characters') return fallback;
+            if (
+                prioritized &&
+                (prioritized.reason === 'no-characters-campaign' || prioritized.reason === 'no-characters-player-space')
+            ) {
+                return prioritized;
+            }
+            return fallback;
+        } catch (error) {
+            reportClientIssue("error", "Error determining logo destination", "Navigation", error);
+        }
+        return { path: `/${locale}/welcome`, reason: 'no-characters' };
     }
 
     shouldRedirectAfterLogin(currentPath: string): boolean {

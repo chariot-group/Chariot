@@ -17,7 +17,7 @@ type SessionLobbyAvatarBatchInput = {
 /**
  * Builds presigned-URL batch items for session lobby participant cards.
  * GM → user scope (PP, session-readable). Players → character scope only (never player PP).
- * @see FR-media-avatar-read-access
+ * @see FR-media-avatars
  */
 export function buildSessionLobbyAvatarBatchItems(
   input: SessionLobbyAvatarBatchInput,

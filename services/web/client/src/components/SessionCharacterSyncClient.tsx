@@ -7,12 +7,14 @@ import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
     selectIsInSession,
+    selectIsSessionLaunched,
     selectSessionCode,
     selectSessionCampaignId,
     selectSessionParticipants,
     selectBattleInitialized,
     selectInitiativeTrackerRows,
     selectCharacterSheetRemoteVersions,
+    selectSessionCompanionNpcs,
     clearCurrentSession,
     mergeSessionParticipantDisplayNames,
     removeSessionParticipantByUserId,
@@ -62,6 +64,8 @@ import { captureSessionEndContext, navigateAfterSessionEnd } from "@/lib/session
 import { useStore } from "react-redux";
 import type { RootState } from "@/store";
 import { trackerMirrorFieldsFromCharacter } from "@/components/initiativeTracker/utils";
+import { refreshCompanionSidebarCachesFromRemoteSheet } from "@/lib/sessionCompanionSidebarSync";
+import { selectLinkedNpcs } from "@/store/slices/characterSlice";
 
 /** Évite les rafales HTTP lors des reconnexions Socket.IO rapprochées. */
 const ROSTER_HTTP_SYNC_DEBOUNCE_MS = 600;
@@ -92,12 +96,15 @@ export default function SessionCharacterSyncClient() {
     const rootStore = useStore<RootState>();
     const { token } = useKeycloak();
     const isInSession = useAppSelector(selectIsInSession);
+    const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
     const code = useAppSelector(selectSessionCode);
     const campaignId = useAppSelector(selectSessionCampaignId);
     const participants = useAppSelector(selectSessionParticipants);
     const battleInitialized = useAppSelector(selectBattleInitialized);
     const initiativeTrackerRows = useAppSelector(selectInitiativeTrackerRows);
     const remoteCharacterVersions = useAppSelector(selectCharacterSheetRemoteVersions);
+    const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
+    const linkedNpcs = useAppSelector(selectLinkedNpcs);
     const user = useAppSelector(selectUser);
 
     const participantsRef = useRef(participants);
@@ -111,6 +118,7 @@ export default function SessionCharacterSyncClient() {
     const appStoreRef = useRef(appStore);
     const hasProcessedSessionEndRef = useRef(false);
     const lastSyncedVersionsRef = useRef<Map<string, number>>(new Map());
+    const lastCompanionSidebarVersionsRef = useRef<Map<string, number>>(new Map());
 
     useEffect(() => {
         participantsRef.current = participants;
@@ -133,6 +141,7 @@ export default function SessionCharacterSyncClient() {
     useEffect(() => {
         if (!isInSession || !code) {
             lastSyncedVersionsRef.current.clear();
+            lastCompanionSidebarVersionsRef.current.clear();
             return;
         }
         const isGameMaster = participants.some(
@@ -184,6 +193,54 @@ export default function SessionCharacterSyncClient() {
         user?.keycloakId,
     ]);
 
+    /** FR-session-player-companion-combatants — noms PNJ liés dans la sidebar MJ / Mes personnages (PJ). */
+    useEffect(() => {
+        if (!isInSession || !code) {
+            return;
+        }
+
+        const companionSidebarIds = new Set<string>([
+            ...sessionCompanionNpcs.map((npc) => npc._id).filter(Boolean),
+            ...linkedNpcs.map((npc) => npc._id).filter(Boolean),
+        ]);
+        if (companionSidebarIds.size === 0) {
+            lastCompanionSidebarVersionsRef.current.clear();
+            return;
+        }
+
+        let cancelled = false;
+
+        companionSidebarIds.forEach((characterId) => {
+            const remoteVersion = remoteCharacterVersions[characterId] ?? 0;
+            const lastSeen = lastCompanionSidebarVersionsRef.current.get(characterId) ?? 0;
+            if (remoteVersion <= lastSeen) return;
+            lastCompanionSidebarVersionsRef.current.set(characterId, remoteVersion);
+
+            void refreshCompanionSidebarCachesFromRemoteSheet(
+                characterId,
+                code,
+                dispatch,
+                () => appStore.getState(),
+            ).catch(() => {
+                if (!cancelled) {
+                    lastCompanionSidebarVersionsRef.current.set(characterId, lastSeen);
+                }
+            });
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        appStore,
+        code,
+        dispatch,
+        isInSession,
+        linkedNpcs,
+        remoteCharacterVersions,
+        sessionCompanionNpcs,
+    ]);
+
     const isCurrentUserGameMaster = useEffectEvent(() => {
         const userId = userIdRef.current;
         if (!userId) return false;
@@ -225,8 +282,8 @@ export default function SessionCharacterSyncClient() {
     }, [token]);
 
     useEffect(() => {
-        setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
-    }, [isInSession, code]);
+        setSessionSnapshotForBroadcast(isSessionLaunched && code ? { code, isInSession: true } : null);
+    }, [isSessionLaunched, code]);
 
     /** FR-session-combat-sync — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
     useEffect(() => {

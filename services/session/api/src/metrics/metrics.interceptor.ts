@@ -22,6 +22,11 @@ export class MetricsInterceptor implements NestInterceptor {
     ) { }
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+        // HTTP metrics only: since NestJS 12 global interceptors also wrap gateway handlers.
+        if (context.getType() !== 'http') {
+            return next.handle();
+        }
+
         const startTime = Date.now();
         const request = context.switchToHttp().getRequest();
         const { method, url, route } = request;
