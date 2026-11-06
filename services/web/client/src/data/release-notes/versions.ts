@@ -2,7 +2,7 @@ import type { ReleaseNote } from '@/data/release-notes/types';
 
 export const ALL_RELEASE_NOTES: ReleaseNote[] = [
   {
-    version: '2.11.0',
+    version: '2.11.1',
     date: '2026-11-06',
     translations: {
       fr: {
