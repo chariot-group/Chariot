@@ -458,6 +458,10 @@ export default function GmSessionPlayersSidebarSection() {
               companionCharacterIds={nestedCompanionIds}
               selectedCharacterId={selectedCharacterId}
               headerSelected={isSelected}
+              activeCompanionName={(() => {
+                const active = nestedCompanions.find((npc) => npc._id === selectedCharacterId);
+                return active ? characterDisplayName(active) || t("unnamedCharacter") : null;
+              })()}
               rowBody={({ isOpen }) => renderPlayerRowBody(isOpen, true)}>
               {nestedCompanions.map((npc) => {
                 const npcSelected = selectedCharacterId === npc._id;

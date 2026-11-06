@@ -1,9 +1,11 @@
 "use client";
 
+import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { InitiativeModifierHint } from "@/components/initiativeTracker/InitiativeModifierHint";
 import { useInitiativeTextInput } from "@/components/initiativeTracker/useInitiativeTextInput";
 import {
+  INITIATIVE_INPUT_ATTRIBUTE,
   initiativeRollFromTotal,
   initiativeTotalFromRoll,
   resolveInitiativeModifier,
@@ -52,12 +54,22 @@ export function InitiativeNumberInput({
     resetKey,
   );
 
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
   const modifierText = formatSignedBonus(resolvedModifier);
   const hintAriaLabel = modifierAriaLabel ?? modifierText;
   const combinedAriaLabel = showModifier ? `${ariaLabel}, ${hintAriaLabel}` : ariaLabel;
 
   return (
-    <div className={cn(INITIATIVE_CONTAINER_CLASS, containerClassName)}>
+    <div
+      className={cn(INITIATIVE_CONTAINER_CLASS, containerClassName)}
+      onMouseDownCapture={(event) => {
+        // Stepper buttons cancel the mousedown default, so the input would never take focus
+        // (and the tracker could not freeze its row order while the GM keeps clicking).
+        if ((event.target as Element).closest('[data-slot="number-input-stepper"]')) {
+          inputRef.current?.focus();
+        }
+      }}>
       {showModifier ? (
         <div className="flex justify-center">
           <InitiativeModifierHint
@@ -67,7 +79,9 @@ export function InitiativeNumberInput({
         </div>
       ) : null}
       <Input
+        ref={inputRef}
         type="number"
+        {...{ [INITIATIVE_INPUT_ATTRIBUTE]: "" }}
         step={1}
         value={initiativeInput.value}
         aria-label={combinedAriaLabel}

@@ -12,6 +12,7 @@ import { selectOpenGroupId } from "@/store/slices/groupSlice";
 import {
   resolveCampaignContextUrlSync,
   shouldApplyCampaignIdFromPlan,
+  shouldApplyGroupRepairFromPlan,
 } from "@/lib/campaignContextUrlSync";
 
 /**
@@ -42,12 +43,10 @@ export default function CampaignContextUrlSync() {
       return;
     }
 
-    // Group-only repair (e.g. after clearGroups wiped openGroupId) — never fight an in-flight
-    // campaign select that updated Redux before the URL.
-    if (plan.campaignId) return;
-
-    if (plan.groupIdToOpen !== undefined) {
-      dispatch(setGroupToOpen(plan.groupIdToOpen));
+    // Group-only expand on navigation — never fight an in-flight campaign select, and never
+    // re-open a group the user just collapsed while the URL did not change.
+    if (shouldApplyGroupRepairFromPlan(plan, pathnameChanged)) {
+      dispatch(setGroupToOpen(plan.groupIdToOpen as string | null));
     }
   }, [dispatch, pathname, selectedCampaignId, openGroupId]);
 

@@ -1429,6 +1429,7 @@ When adding a rule:
 - Tracker list is always displayed sorted by:
   1. initiative descending
   2. group label ascending (tie-breaker)
+- While an initiative field is being edited (focused) before combat start, the displayed order MUST stay frozen so the row under the pointer does not move between consecutive arrow/spinner clicks. The value is still stored on every change; the list re-sorts when the field loses focus (blur or Enter), and always once initiatives lock at combat start.
 - Before combat start:
   - initiatives are editable
   - grouped initiative edit mode is available (bulk apply to selected rows)
@@ -1491,7 +1492,23 @@ When adding a rule:
   - removes all tracker rows sharing that `groupId` in one action;
   - applies the same per-row cleanup rules as “leave initiative” (active turn advance, turn-action purge, clear battle if no rows remain);
   - the virtual session-participants group (`__session_participants__`) MUST remain non-removable as a whole when it still has members (individual participant rows may still leave initiative via the row action);
-  - removing a group MUST NOT reopen or reset `initBattleDraft` selection state beyond what is implied by the surviving tracker rows.
+  - removing a group MUST NOT reopen or reset `initBattleDraft` selection state beyond what is implied by the surviving tracker rows;
+  - the group to remove MUST be chosen from a select listing only removable groups (never free-text entry of a group name);
+  - the "remove a group" action MUST be offered only when the roster contains at least 2 non-participant groups (so removing one always leaves at least one opposing group).
+- The "add combatants" action MUST be offered only when at least one campaign group or group member is not yet in the roster; otherwise it is hidden.
+
+**Pre-Combat Initiative Guidance (GM)**:
+
+- Before combat start, the tracker MUST make explicit that initiatives are to be entered before starting combat:
+  - rows without an entered initiative are visually highlighted and perceivable to assistive technologies;
+  - a counter shows how many initiatives remain to be entered (e.g. "3 initiatives à saisir");
+  - the start-combat control states what remains to be done.
+- Starting combat with missing initiatives is allowed but MUST require an explicit confirmation that names the number of missing initiatives.
+
+**Row Context Menu (GM)**:
+
+- Right-clicking a tracker row MUST open a context menu titled with the character name (to confirm the clicked row) and a single neutral-styled action: **leave initiative** for that row only. It MUST NOT select the row, alter the current multi-selection, or expose multi-selection actions (grouped initiative, display configuration, bulk leave); those stay in the selection bar.
+- The menu MUST be openable from the keyboard (Menu key / Shift+F10) and the per-row leave-initiative action MUST remain available on touch devices.
 
 **Reset and End States**:
 
@@ -1549,6 +1566,11 @@ When adding a rule:
 - Persist/rehydration normalization of session tracker state
 - Cancel preparation before start clears battle state without requiring `startBattle`
 - Remove entire group from roster (before and after start) while keeping unrelated rows; session-participants group cannot be removed as a whole when it has members
+- Remove-group uses a select of removable groups; hidden with fewer than 2 non-participant groups
+- Add-combatants hidden when no campaign group/member remains to add
+- Pre-combat: missing-initiative rows highlighted, counter accurate, start with missing initiatives requires confirmation
+- Context menu: only leave-initiative for the clicked row, no selection side effect, keyboard opening
+- Initiative edit: order frozen while the field is focused, re-sorted on blur, and on combat start
 
 **References**:
 
@@ -1626,6 +1648,7 @@ When adding a rule:
 - The document must describe current conventions as observable facts before proposing standardization guidance
 - Agent workflow rules (`AGENTS.md`) must explicitly require consulting the design rules document before any frontend feature implementation
 - The design document should be updated when major UI conventions change
+- Password visibility toggles (web client and Keycloak theme) must stay reachable by keyboard (no `tabindex="-1"`), show a visible focus indicator (`:focus-visible`), and expose their state via `aria-pressed` with a stable accessible name (RGAA 7.1, 7.3, 10.7)
 
 **Prohibitions**:
 
@@ -2097,13 +2120,14 @@ Each initiative tracker row carries:
 
 ### Initiative Tracker - Bulk Selection UX Consistency and State Reflection (formerly FR-tracker-bulk-selection)
 
-**Rule**: Bulk selection workflows in the Game Master initiative tracker must expose a consistent, explicit, and state-aware UX for both display configuration and grouped initiative editing.
+**Rule**: Bulk selection in the Game Master initiative tracker follows a "select first, act next" pattern: rows are always selectable, and the actions available for the current selection are offered afterwards.
 
 **Requirements**:
 
-- The tracker must expose bulk-selection entry points for both grouped initiative editing and grouped display configuration using explicit configuration wording that identifies the target action.
-- Bulk-selection mode must present a clear active state, the current number of selected rows, and an obvious way to clear or exit the selection.
-- The selection interaction pattern must stay consistent between grouped initiative editing and grouped display configuration across desktop and mobile layouts.
+- Every tracker row MUST display a permanently visible selection checkbox; a "select all" control MUST be available. There is no separate per-action selection mode.
+- As soon as at least one row is selected, a selection action bar MUST appear showing the selected count, a clear-selection control, and the actions applicable to the selection: grouped initiative edit (before combat start only), grouped display configuration, leave initiative.
+- Actions unavailable in the current state (e.g. initiative after start) are hidden or disabled with an explanation.
+- The pattern MUST be identical on desktop and mobile layouts.
 - When the GM reopens grouped display configuration for a current multi-selection:
   - any field whose selected rows all share the same current value must be shown with that active value;
   - any field whose selected rows do not share the same current value must be shown with an explicit mixed state;
@@ -2119,13 +2143,13 @@ Each initiative tracker row carries:
 
 - Resetting grouped display controls to unrelated defaults when the current selection already has active shared values.
 - Hiding the distinction between a shared value and a mixed value in grouped display configuration.
-- Using ambiguous wording that does not let the GM distinguish between grouped initiative editing and grouped display configuration.
+- Requiring the GM to pick an action before selecting rows.
 
 **Tests**:
 
 - Reopening grouped display configuration for rows sharing the same display settings preloads those settings.
 - Reopening grouped display configuration for rows with different settings shows a mixed state and preserves untouched values on save.
-- Grouped initiative and grouped display selection modes expose distinct labels, active state, selection count, and exit/clear actions on desktop and mobile.
+- Checkboxes always visible; selecting rows shows the action bar with count, clear, and state-aware actions on desktop and mobile.
 - Keyboard and screen-reader coverage includes active mode, selected count, and mixed-state announcements.
 
 **References**:
@@ -5170,6 +5194,46 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/CharacterDetailView.tsx`
 - `docs/design.md` — sections 2.3, 2.4, 5.1
 - `docs/functional-rules.md` — FR-frontend-design, FR-character-sheet-pdf-export
+## FR-sidebar-linked-npc-nesting-collapse: Replier les PNJ liés sous un PJ dans la sidebar
+
+**Rule**: In Player space **Mes personnages** and in the in-session GM section **Joueurs (session)** (FR-npc-player-link, FR-session-player-companion-combatants), when a Player row has one or more nested linked NPCs, the user MUST be able to collapse and expand that nested list without losing navigation to the Player or NPC sheets.
+
+**Requirements**:
+
+- Applies only where nested companion rows already exist (Player sidebar and session GM roster); campaign group lists MUST NOT gain companion nesting or collapse (FR-npc-player-link).
+- Default state is **expanded** (same visibility as before this rule) when the user has not collapsed that Player nest.
+- A dedicated chevron control on the Player row MUST toggle collapse; clicking the Player name/row MUST still navigate to the Player sheet (chevron MUST NOT be the only way to open the sheet).
+- The collapsible **header** MUST reuse the same visual pattern as GM campaign **groups** in `GroupList` (`bg-card`, chevron inside the row beside the label, bold label when expanded). Nested NPC rows use the same content indent as group characters (`mt-1 ml-3`); no continuous `purple` list rail (FR-npc-player-link).
+- Collapsed nests MUST hide nested NPC rows from view and from keyboard focus (`CollapsibleContent` / equivalent); the companions list MUST only render when expanded.
+- Persist per-Player nest collapse in Redux `sidebar` slice (same persistence contract as `openSessionPlayers` / `openArchivedGroups` via existing localStorage middleware).
+- When the user navigates to a nested NPC sheet, that nest MUST auto-expand **once** (on selection change) so the active NPC is visible. After that, the user MUST remain free to collapse the nest, even while the NPC stays selected (the nest MUST NOT be forced open).
+- While the nest is **collapsed** and a nested NPC is the selected sheet, the Player header MUST NOT use the selected style (`bg-white/15`, bold, `aria-current`) because the displayed sheet is not the Player's. Instead it MUST use the discreet "contains active" style (`bg-white/10`, regular weight) and expose a concise tooltip on the header (i18n: "Displayed sheet: {name}") plus an accessible text announcing the displayed NPC. No avatar/icon is added to the Player row. The indication MUST disappear when the nest is expanded.
+- **In launched session (Player space)**: the session character row (with its nest) is rendered first, followed by a separator and a toggle header « Hors session (N) » grouping the other rows. This section is **collapsed by default**, its state is kept for the current session only (reset on a new session), and the header uses the "contains active" style + tooltip when collapsed while one of its characters is displayed. If the session character is not in the list, the list is unchanged. Toggle: `<button>` with `aria-expanded`/`aria-controls`.
+- Accessibility: chevron `aria-expanded`, dynamic `aria-label` (i18n: collapse/expand companions of `{name}`), visible focus, list `aria-label` unchanged (`companionsListLabel`). Align with FR-frontend-design and FR-sidebar-navigation.
+
+**Prohibitions**:
+
+- Removing nested NPC rows or duplicate root rows (FR-npc-player-link).
+- Collapsing by default on first visit without user action.
+- Using color alone to indicate collapsed vs expanded.
+- Adding link/unlink actions to the chevron control.
+
+**Tests**:
+
+- Nominal: Player with linked NPCs shows chevron; toggle hides and shows nested rows; Player link still navigates.
+- Edge: collapsed state survives reload (localStorage).
+- Edge: navigating to a nested NPC sheet expands its parent nest once; the user can then collapse it again.
+- Edge: collapsed nest with a selected nested NPC shows the "contains active" style and tooltip, not the selected style.
+- Failure: Player with zero linked NPCs MUST NOT show a nest chevron.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
+- `services/web/client/src/components/layout/Sidebar/GmSessionPlayersSidebarSection.tsx`
+- `services/web/client/src/components/layout/Sidebar/shared/SidebarCompanionNest.tsx`
+- `services/web/client/src/store/slices/sidebarSlice.ts`
+- `docs/functional-rules.md` — FR-npc-player-link, FR-sidebar-navigation, FR-frontend-design, FR-session-player-companion-combatants
+
 ---
 
 ## FR-player-companion-choice: Player Deletion and Duplication With Linked Companions
@@ -5990,3 +6054,141 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/tabContents/general/view/NpcGeneralTabContent.tsx`
 - `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-detail-view, FR-frontend-design
+
+---
+
+## FR-welcome-onboarding-fallbacks: Welcome Page and Empty-Space Fallback Pages
+
+**Status**: Proposed (pending functional confirmation). Amends the « Fallback - Welcome Page » clauses of FR-post-auth-navigation and FR-session-end-navigation.
+
+**Rule**: A user who has no character to land on is sent to the fallback page of the space they are in, not to a global page. `/{locale}/welcome` is the onboarding page of a user who has **neither a campaign nor a character in the Player space**.
+
+**Pages**:
+
+| Page | Route | Shown when |
+| --- | --- | --- |
+| Welcome | `/{locale}/welcome` | The user has no campaign **and** no Player-space character |
+| Player space fallback | `/{locale}/characters` | Player space context, no character without group |
+| Campaign fallback | `/{locale}/campaigns/{campaignId}` | In a campaign, no character in any of its groups (active or archived) |
+
+**Destination resolution** (extends `NavigationService`; reasons `no-characters-player-space` and `no-characters-campaign` are added to `no-characters`):
+
+1. Post-login / default: character without group → character in a campaign → otherwise, if the user has at least one campaign → the fallback of its first campaign; otherwise → `/welcome`.
+2. Leaving a Player-space sheet (deleting the last character, access denied): Player space fallback if the user still has a campaign or arrived from the Player space; `/welcome` only if the user has no campaign.
+3. Leaving a campaign sheet or deleting a group / character in a campaign: another character of the campaign if any, else the **Campaign fallback of that campaign** (never `/welcome`).
+4. End of session: same resolution as FR-session-end-navigation, with the fallbacks above replacing `/welcome`.
+5. Resolution failure, 404 catch-all, Keycloak `redirectUri`, logo click outside a session, checkout return, profile guard: unchanged, they keep targeting `/welcome`. `/welcome` itself MUST redirect an authenticated user who has a campaign or a Player-space character to their resolved destination (no dead-end for users who already have data).
+
+**Welcome page content**:
+
+- Options: **Create a campaign** and **Create a character**. The option **Join a session** is not offered on this page: the user has no Player-space character, so it cannot be used.
+- Each option shows a concise paragraph (1-2 sentences) under its title, explaining what it does:
+  - Campaign: become Game Master, create a universe, invite players, prepare sessions.
+  - Character: create a hero in the Player space, alone or to join a campaign.
+- Texts are i18n keys (fr/en) under `welcome.<option>.description`.
+- Query `?join={code}` (legacy session link) keeps opening the join flow; if the user has no Player-space character, the join dialog shows the existing « at least one character required » guidance with a link to character creation.
+
+**Player space fallback content**:
+
+- Title, short explanation (« Your Player space has no character yet »), primary action **Create a character**, secondary action **Join a session** only once the user has a character (not applicable here), so it is not shown; a link to the campaigns the user belongs to is shown when any exist.
+
+**Campaign fallback content**:
+
+- Title with the campaign name, short explanation (« No character in this campaign yet »), actions by role: GM → **Create a group** / **Create a character for a group**; player → **Create a character** (campaign group flow). Actions already forbidden to the role by existing rules stay hidden.
+
+**Accessibility (FR-frontend-design)**:
+
+- One `h1` per page; option lists use `role="list"` / `listitem`; each option's description is linked with `aria-describedby`.
+- Descriptions and fallback texts keep WCAG AA contrast; actions are keyboard reachable with visible focus; layout follows `docs/design.md` (Welcome: `grid-cols-1`, `xl:grid-cols-2`).
+- Interactive elements follow the UI consistency checks (cursor, hover, contrast, scrollbar).
+
+**Prohibitions**:
+
+- Redirecting to `/welcome` a user who has a campaign or a Player-space character.
+- Showing an option that is unusable for the current user (disabled or hidden-by-tooltip is replaced by omission).
+- Hardcoded `router.push('/welcome')` in place of the destination resolution.
+- Relative imports (AGENTS.md §11.1).
+
+**Tests**:
+
+- Nominal: no campaign + no character → `/welcome` with 2 options, each with a description; player-space-only user with no character → Player space fallback; campaign with empty groups → Campaign fallback.
+- Edge: empty first group but second group has a character → character (not fallback); archived-only characters → character; user with a campaign but no character at login → first campaign fallback, not `/welcome`; deleting the last character of a campaign → Campaign fallback of that campaign.
+- Edge: `/welcome` visited by a user who has data → redirected to their destination; `?join=` still opens the join flow.
+- Failure / guard: resolution throws → `/welcome`; GM vs player actions on the Campaign fallback; descriptions linked via `aria-describedby`.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/welcome/page.tsx`
+- `services/web/client/src/components/layout/Welcome/Choice.tsx`
+- `services/web/client/src/services/NavigationService.ts`
+- `services/web/client/src/lib/sessionEndNavigation.ts`
+- `services/web/client/src/components/PostLoginNavigator.tsx`
+- `docs/functional-rules.md` — FR-post-auth-navigation, FR-session-end-navigation, FR-session-lobby-navigation, FR-frontend-design
+
+### Amendment — FR-welcome-onboarding-fallbacks (2026-11-05)
+
+Supersedes the conflicting clauses above and the logo clause of FR-session-lobby-navigation (« logo click outside a session redirects to `/welcome` »).
+
+- **Logo click outside a session**: the app MUST resolve the destination (character without group → character in a campaign → campaign fallback → `/welcome`) and navigate there **directly**, with no intermediate display of `/welcome`. `/welcome` is reached only when the user has neither campaign nor Player-space character.
+- **Fallback imagery**: the Player space fallback and the Campaign fallback MUST show the same illustration as the matching Welcome option (`public/welcome/character.webp`, `public/welcome/campaign.webp`), decorative (`alt=""`).
+- **Fallback CTAs**: on the Campaign fallback, the two actions MUST differ visually: « Créer un groupe » is the primary call to action (violet accent), « Créer un personnage » is secondary (`variant="secondary"`).
+- **Welcome → campaign**: after a campaign is created from the Welcome page, the app MUST navigate to the Campaign fallback of that campaign.
+- **Welcome → character**: the Welcome « Create a character » CTA opens the creation form in Player space context; cancelling it while the user has no Player-space character MUST land on the Player space fallback (not back to Welcome).
+- **Player space fallback without campaign**: when the user is in Player space with no character, the destination is the Player space fallback **even without a campaign** (the « welcome when no campaign » clause of the destination resolution above no longer applies to Player space resolution). `/welcome` remains the first-arrival page (post-login with no data, logo click).
+- **Tests**: logo click resolves a destination without pushing `/welcome` first (nominal); user with no data → `/welcome` (edge); resolution failure → `/welcome` (failure); creation cancel with no character → Player space fallback.
+
+### Amendment 2 — Logo click and welcome visibility (FR-welcome-onboarding-fallbacks)
+
+Supersedes the logo clauses of the first amendment. **Welcome MUST NEVER be displayed to a user who has at least one campaign or at least one Player-space character**; `/welcome` itself MUST redirect such a user (character if any, else the campaign fallback). Outside a session, a logo click MUST resolve: (1) the **current space first** (campaign context → first character of that campaign; Player space → first Player-space character); (2) otherwise any character of the other space; (3) otherwise the fallback of the current campaign, else of the first campaign; (4) `/{locale}/welcome` **only when the user has no campaign and no Player-space character** (or on resolution error). Tests: current space with character wins (nominal); empty current space + character elsewhere → that character (edge); empty campaign + empty Player space → campaign fallback, never welcome (edge); no campaign/no character or error → welcome (failure).
+
+### Amendment 3 — Logo resolution matrix (FR-welcome-onboarding-fallbacks)
+
+Corrects Amendment 2 step (3): when neither space holds a character but the user has a campaign, the logo goes to the fallback of the **current space** (Player space → `/{locale}/characters`; campaign context → `/{locale}/campaigns/{id}`), never to the other space's fallback. Welcome only when the user has no campaign and no Player-space character. Full resolution order: current space character → other space character → current space fallback → welcome.
+
+| Current space | Player char | Campaigns | Destination |
+| --- | --- | --- | --- |
+| Player | yes | any | first Player-space character |
+| Player | no | one empty | Player space fallback |
+| Player | no | one with a character | that character |
+| Player | no | none | welcome |
+| Campaign A | any | A has a character | A's character |
+| Campaign A (empty) | yes | any | Player-space character |
+| Campaign A (empty) | no | B has a character | B's character |
+| Campaign A (empty) | no | all empty | A's fallback |
+| none | yes | any | Player-space character |
+| none | no | one empty | its fallback |
+| none | no | none | welcome |
+
+Guards: welcome is never returned when a campaign or a Player-space character exists; an unavailable current campaign (deleted / error) falls back to the post-login resolution. Covered by `NavigationService.logo.test.ts` (13 matrix cases + 2 guards).
+
+
+---
+
+## FR-sidebar-group-collapsed-active-indicator: Collapsed group containing the displayed character
+
+**Rule**: In the GM campaign sidebar (`GroupList`), a group MUST always be collapsible by the user. When a group is collapsed and one of its characters is the currently displayed sheet, the group header MUST be rendered in the selected style so the user knows where the active sheet lives.
+
+**Requirements**:
+
+- Collapsed + contains the displayed character: header uses the selected row style (`bg-white/15`, white text; label already bold per `docs/design.md` §5.5).
+- Expanded, or collapsed without the displayed character: header keeps its default style (hover `bg-white/10`).
+- The collapsed highlighted header MUST expose a concise tooltip (i18n: "Displayed character: {name}") and an accessible text announcing the displayed character. `aria-current` stays on the character link only.
+- Collapsing MUST NOT be blocked or reverted by selection changes.
+- Color MUST NOT be the only channel: tooltip and accessible text are mandatory (FR-frontend-design).
+
+**Prohibitions**:
+
+- Forcing a group open because it contains the displayed character.
+- Applying this rule to companion nests (see FR-sidebar-linked-npc-nesting-collapse, which uses a distinct style).
+
+**Tests**:
+
+- Nominal: collapsed group containing the selected character gets the selected header style and tooltip.
+- Edge: expanding the group removes the highlight; selecting another group character keeps collapse state.
+- Failure: collapsed group without the displayed character keeps the default style.
+
+**References**:
+
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
+- `docs/design.md` §5.5
+

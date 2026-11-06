@@ -39,6 +39,7 @@ import {
   initiativeTotalFromRoll,
   resolveInitiativeModifierFromStats,
   trackerDeathSavesFailuresFromCharacter,
+  hasAddableCombatants,
   trackerKindFromCharacter,
 } from "@/components/initiativeTracker/utils";
 
@@ -471,5 +472,46 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * FR-combat-initiative-tracker — whether "add combatants" has anyone left to offer.
+ * Returns `true` while campaign groups are loading or on fetch failure so the action is never wrongly hidden.
+ */
+export function useHasAddableCombatants(): boolean {
+  const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
+  const session = useAppSelector(selectCurrentSession);
+  const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
+  const trackerRows = useAppSelector(selectInitiativeTrackerRows);
+  const [campaignCharacterIds, setCampaignCharacterIds] = React.useState<string[] | null>(null);
+
+  React.useEffect(() => {
+    if (!selectedCampaignId) return;
+    let mounted = true;
+    setCampaignCharacterIds(null);
+    groupService
+      .getAllGroupsByCampaign(selectedCampaignId, "active")
+      .then((groups) => {
+        if (!mounted) return;
+        setCampaignCharacterIds(
+          (groups as BattleGroup[]).flatMap((group) => (group.characters ?? []).map((member) => member._id)),
+        );
+      })
+      .catch(() => {
+        if (mounted) setCampaignCharacterIds(null);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCampaignId]);
+
+  if (campaignCharacterIds == null) return true;
+  const sessionCharacterIds = (session?.participants ?? [])
+    .map((participant) => participant.characterId)
+    .filter((id): id is string => typeof id === "string" && id.length > 0);
+  return hasAddableCombatants(
+    [...campaignCharacterIds, ...sessionCharacterIds, ...(gmGuestCharacterIds ?? [])],
+    trackerRows,
   );
 }

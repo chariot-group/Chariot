@@ -5,6 +5,7 @@ import {
   resolveCampaignContextUrlSync,
   resolveCampaignIdToSync,
   shouldApplyCampaignIdFromPlan,
+  shouldApplyGroupRepairFromPlan,
 } from "@/lib/campaignContextUrlSync";
 
 /** @see FR-campaign-context-url-sync: Cohérence campagne URL / Redux et historique navigateur */
@@ -144,6 +145,24 @@ describe("FR-campaign-context-url-sync — campaign URL → Redux sync helpers",
           false,
         ),
       ).toBe(false);
+    });
+  });
+
+  describe("shouldApplyGroupRepairFromPlan", () => {
+    const plan = { campaignId: null, groupIdToOpen: "g1" as string | null };
+
+    it("nominal: re-expands the group of the URL when the pathname changed", () => {
+      expect(shouldApplyGroupRepairFromPlan(plan, true)).toBe(true);
+    });
+
+    it("edge: user collapse (same pathname) must not be reverted", () => {
+      expect(shouldApplyGroupRepairFromPlan(plan, false)).toBe(false);
+    });
+
+    it("failure / guard: no plan, in-flight campaign sync or untouched group → no repair", () => {
+      expect(shouldApplyGroupRepairFromPlan(null, true)).toBe(false);
+      expect(shouldApplyGroupRepairFromPlan({ campaignId: "c", groupIdToOpen: "g1" }, true)).toBe(false);
+      expect(shouldApplyGroupRepairFromPlan({ campaignId: null, groupIdToOpen: undefined }, true)).toBe(false);
     });
   });
 });

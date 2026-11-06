@@ -9,7 +9,12 @@ import {
   upsertPlayerSpaceNpc,
 } from "@/store/slices/characterSlice";
 import { useMemo, useState } from "react";
-import { Loader2, Swords, UserPlus } from "lucide-react";
+import { useStore } from "react-redux";
+import { useLocale } from "use-intl";
+import NavigationService from "@/services/NavigationService";
+import type { RootState } from "@/store";
+import { ChevronRight, Loader2, Swords, UserPlus } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
@@ -57,6 +62,8 @@ import {
   persistSidebarNpcLinkedPlayer,
   playerSpaceSidebarActionIds,
   requiresNpcLinkReassignmentConfirm,
+  splitSidebarRowsBySessionCharacter,
+  type PlayerSidebarRow,
 } from "@/lib/npcPlayerLink";
 import { SidebarCharacterKindBadge } from "@/components/layout/Sidebar/shared/SidebarCharacterKindBadge";
 import { SidebarCompanionNest } from "@/components/layout/Sidebar/shared/SidebarCompanionNest";
@@ -75,6 +82,8 @@ import { truncateForSidebarMenuLabel } from "@/lib/truncateForSidebarMenuLabel";
  *
  * autoFetch=false : NavigationService charge la première page à la connexion ; le hook respecte le cooldown 3 s.
  */
+const OUT_OF_SESSION_CONTENT_ID = "sidebar-out-of-session-characters";
+
 export default function CharactersWithoutGroupList() {
   const t = useTranslations("sidebar");
   const { characters, linkedNpcs, unlinkedNpcs, loading, loadingMore, hasMore, loadMoreCharacters, error } =
@@ -84,6 +93,8 @@ export default function CharactersWithoutGroupList() {
   const router = useRouter();
 
   const dispatch = useAppDispatch();
+  const store = useStore<RootState>();
+  const locale = useLocale();
   const { user } = useUser();
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
@@ -94,6 +105,8 @@ export default function CharactersWithoutGroupList() {
   const sessionCharacterId =
     isSessionLaunched ? (currentParticipant?.characterId ?? null) : null;
   const actionsDisabled = isSessionLaunched;
+  // Expanded only for the session code it was opened in: collapsed by default in every new session.
+  const [outOfSessionOpenCode, setOutOfSessionOpenCode] = useState<string | null>(null);
   const { setOpenMobile } = useSidebar();
   const [characterPendingDelete, setCharacterPendingDelete] = useState<Character | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -126,7 +139,10 @@ export default function CharactersWithoutGroupList() {
     if (nextCharacter?._id) {
       router.replace(`/characters/${nextCharacter._id}`);
     } else {
-      router.replace("/welcome");
+      // FR-welcome-onboarding-fallbacks: player space fallback if a campaign exists, else welcome.
+      void NavigationService.determinePlayerSpaceDestination(locale, dispatch, store.getState).then((destination) =>
+        router.replace(destination.path),
+      );
     }
   };
 
@@ -177,6 +193,21 @@ export default function CharactersWithoutGroupList() {
     isInSession ? sessionCode : null,
     avatarBatchItems.length > 0,
   );
+
+  const sessionSplit = useMemo(
+    () => splitSidebarRowsBySessionCharacter(sidebarRows, sessionCharacterId),
+    [sidebarRows, sessionCharacterId],
+  );
+  const outOfSessionOpen = Boolean(sessionCode) && outOfSessionOpenCode === sessionCode;
+  const hiddenActiveCharacter =
+    sessionSplit && !outOfSessionOpen && selectedCharacterId
+      ? sessionSplit.otherRows
+          .flatMap((row) => [row.character, ...(row.type === "player" ? row.companions : [])])
+          .find((character) => character._id === selectedCharacterId)
+      : undefined;
+  const outOfSessionActiveTooltip = hiddenActiveCharacter
+    ? t("outOfSessionActiveTooltip", { name: characterDisplayName(hiddenActiveCharacter) || t("unnamedCharacter") })
+    : null;
 
   const renderRowAvatar = (characterId: string, storedValue: string | undefined, alt: string) => (
     <SidebarCharacterAvatar
@@ -382,6 +413,165 @@ export default function CharactersWithoutGroupList() {
     );
   }
 
+  const loadMoreButton = hasMore ? (
+    <button
+      type="button"
+      key="characters-without-group-load-more"
+      onClick={() => void loadMoreCharacters()}
+      disabled={loadingMore}
+      aria-busy={loadingMore}
+      aria-label={t("loadMoreCharactersAria")}
+      className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
+      {loadingMore ? (
+        <Loader2
+          className="w-4 h-4 animate-spin mx-auto"
+          aria-hidden
+        />
+      ) : (
+        t("loadMoreCharacters")
+      )}
+    </button>
+  ) : null;
+
+  const renderRow = (row: PlayerSidebarRow, index: number) => {
+    const character = row.character;
+    const isNpcRow = row.type === "npc" || !isPlayer(character);
+    const isSelected = selectedCharacterId === character._id;
+    const displayName = characterDisplayName(character) || t("unnamedCharacter");
+    const isSessionCharacter = sessionCharacterId === character._id;
+    const characterActions = buildCharacterActions(character);
+    const kindLabel = isNpcRow ? t("npcKind") : t("playerKind");
+    const companions = row.type === "player" ? row.companions : [];
+
+    const playerLinkLabel = `${displayName}${isSelected ? ` (${t("selected")})` : ""}`;
+
+    const renderPlayerLink = (nestOpen: boolean, inNestHeader: boolean) => (
+      <Link
+        href={`/characters/${character._id}`}
+        aria-current={isSelected ? "page" : undefined}
+        aria-label={playerLinkLabel}
+        onClick={() => dispatch(clearSelectedCampaign())}
+        className={cn(
+          "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+          inNestHeader ? "justify-between py-0 pr-1" : "justify-between rounded-[12px] py-1.5 px-3",
+          isSelected && "font-bold",
+        )}>
+        {renderRowAvatar(character._id, character.avatar, displayName)}
+        <span className={cn("min-w-0 flex-1 truncate text-left", (isSelected || nestOpen) && "font-bold")}>
+          {displayName}
+        </span>
+        {isSessionCharacter && (
+          <Swords
+            aria-label={t("sessionCharacter")}
+            className="ml-1 h-3.5 w-3.5 shrink-0 text-yellow"
+          />
+        )}
+      </Link>
+    );
+
+    if (row.type !== "player") {
+      const npcRowHeader = (
+        <SidebarItemWithActions
+          actions={characterActions}
+          disabled={characterActions.length === 0}
+          contextMenuLabel={t("characterActions")}
+          className={cn(
+            "rounded-[12px] transition-all duration-150",
+            isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+          )}>
+          <Link
+            href={`/characters/${character._id}`}
+            aria-current={isSelected ? "page" : undefined}
+            aria-label={`${displayName} (${kindLabel})${isSelected ? ` (${t("selected")})` : ""}`}
+            onClick={() => dispatch(clearSelectedCampaign())}
+            className={cn(
+              "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
+              isSelected && "font-bold",
+            )}>
+            {renderRowAvatar(character._id, character.avatar, displayName)}
+            <span className={cn("min-w-0 flex-1 truncate", isSelected && "font-bold")}>{displayName}</span>
+            <SidebarCharacterKindBadge
+              label={kindLabel}
+              selected={isSelected}
+            />
+          </Link>
+        </SidebarItemWithActions>
+      );
+      return <div key={character._id ?? `character-${index}`}>{npcRowHeader}</div>;
+    }
+
+    const companionIds = companions.map((npc) => npc._id).filter(Boolean) as string[];
+
+    if (companionIds.length === 0) {
+      return (
+        <SidebarItemWithActions
+          key={character._id ?? `character-${index}`}
+          actions={characterActions}
+          disabled={characterActions.length === 0}
+          contextMenuLabel={t("characterActions")}
+          className={cn(
+            "rounded-[12px] transition-all duration-150",
+            isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+          )}>
+          {renderPlayerLink(false, false)}
+        </SidebarItemWithActions>
+      );
+    }
+
+    return (
+      <SidebarCompanionNest
+        key={character._id ?? `character-${index}`}
+        nestId={character._id}
+        playerName={displayName}
+        companionCharacterIds={companionIds}
+        selectedCharacterId={selectedCharacterId}
+        headerSelected={isSelected}
+        activeCompanionName={(() => {
+          const active = companions.find((npc) => npc._id === selectedCharacterId);
+          return active ? characterDisplayName(active) || t("unnamedCharacter") : null;
+        })()}
+        actions={characterActions}
+        actionsDisabled={characterActions.length === 0}
+        contextMenuLabel={t("characterActions")}
+        rowBody={({ isOpen }) => renderPlayerLink(isOpen, true)}>
+        {companions.map((npc) => {
+          const npcSelected = selectedCharacterId === npc._id;
+          const npcName = characterDisplayName(npc) || t("unnamedCharacter");
+          const npcActions = buildCharacterActions(npc);
+          return (
+            <li key={npc._id}>
+              <SidebarItemWithActions
+                actions={npcActions}
+                disabled={npcActions.length === 0}
+                contextMenuLabel={t("characterActions")}
+                className={cn(
+                  "rounded-[12px] transition-all duration-100",
+                  npcSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+                )}>
+                <Link
+                  href={`/characters/${npc._id}`}
+                  aria-current={npcSelected ? "page" : undefined}
+                  aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
+                  onClick={() => dispatch(clearSelectedCampaign())}
+                  className={cn(
+                    "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
+                    npcSelected && "font-bold",
+                  )}>
+                  {renderRowAvatar(npc._id, npc.avatar, npcName)}
+                  <span className={cn("text-sm min-w-0 flex-1 truncate", npcSelected && "font-bold")}>{npcName}</span>
+                  <SidebarCharacterKindBadge
+                    label={t("npcKind")}
+                    selected={npcSelected}
+                  />
+                </Link>
+              </SidebarItemWithActions>
+            </li>
+          );
+        })}
+      </SidebarCompanionNest>
+    );
+  };
+
   return (
     <nav
       className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-4 focus-visible:outline-none"
@@ -404,163 +594,56 @@ export default function CharactersWithoutGroupList() {
       </CreateCharacterDialog>
 
       <div className="mt-1 flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain scroll-smooth pt-0.5 pr-0.5 scrollbar-none">
-        {sidebarRows.map((row, index) => {
-          const character = row.character;
-          const isNpcRow = row.type === "npc" || !isPlayer(character);
-          const isSelected = selectedCharacterId === character._id;
-          const displayName = characterDisplayName(character) || t("unnamedCharacter");
-          const isSessionCharacter = sessionCharacterId === character._id;
-          const characterActions = buildCharacterActions(character);
-          const kindLabel = isNpcRow ? t("npcKind") : t("playerKind");
-          const companions = row.type === "player" ? row.companions : [];
-
-          const playerLinkLabel = `${displayName}${isSelected ? ` (${t("selected")})` : ""}`;
-
-          const renderPlayerLink = (nestOpen: boolean, inNestHeader: boolean) => (
-            <Link
-              href={`/characters/${character._id}`}
-              aria-current={isSelected ? "page" : undefined}
-              aria-label={playerLinkLabel}
-              onClick={() => dispatch(clearSelectedCampaign())}
-              className={cn(
-                "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
-                inNestHeader
-                  ? "justify-between py-0 pr-1"
-                  : "justify-between rounded-[12px] py-1.5 px-3",
-                isSelected && "font-bold",
-              )}>
-              {renderRowAvatar(character._id, character.avatar, displayName)}
-              <span className={cn("min-w-0 flex-1 truncate text-left", (isSelected || nestOpen) && "font-bold")}>
-                {displayName}
-              </span>
-              {isSessionCharacter && (
-                <Swords
-                  aria-label={t("sessionCharacter")}
-                  className="ml-1 h-3.5 w-3.5 shrink-0 text-yellow"
+        {sessionSplit ? (
+          <>
+            <section aria-label={t("sessionCharacterSection")}>{renderRow(sessionSplit.sessionRow, 0)}</section>
+            {sessionSplit.otherRows.length === 0 && loadMoreButton}
+            {sessionSplit.otherRows.length > 0 && (
+              <>
+                <hr
+                  aria-hidden="true"
+                  className="my-1 shrink-0 border-white/20"
                 />
-              )}
-            </Link>
-          );
-
-          if (row.type !== "player") {
-            const npcRowHeader = (
-              <SidebarItemWithActions
-                actions={characterActions}
-                disabled={characterActions.length === 0}
-                contextMenuLabel={t("characterActions")}
-                className={cn(
-                  "rounded-[12px] transition-all duration-150",
-                  isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
-                )}>
-                <Link
-                  href={`/characters/${character._id}`}
-                  aria-current={isSelected ? "page" : undefined}
-                  aria-label={`${displayName} (${kindLabel})${isSelected ? ` (${t("selected")})` : ""}`}
-                  onClick={() => dispatch(clearSelectedCampaign())}
-                  className={cn(
-                    "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
-                    isSelected && "font-bold",
-                  )}>
-                  {renderRowAvatar(character._id, character.avatar, displayName)}
-                  <span className={cn("min-w-0 flex-1 truncate", isSelected && "font-bold")}>{displayName}</span>
-                  <SidebarCharacterKindBadge
-                    label={kindLabel}
-                    selected={isSelected}
-                  />
-                </Link>
-              </SidebarItemWithActions>
-            );
-            return <div key={character._id ?? `character-${index}`}>{npcRowHeader}</div>;
-          }
-
-          const companionIds = companions.map((npc) => npc._id).filter(Boolean) as string[];
-
-          if (companionIds.length === 0) {
-            return (
-              <SidebarItemWithActions
-                key={character._id ?? `character-${index}`}
-                actions={characterActions}
-                disabled={characterActions.length === 0}
-                contextMenuLabel={t("characterActions")}
-                className={cn(
-                  "rounded-[12px] transition-all duration-150",
-                  isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
-                )}>
-                {renderPlayerLink(false, false)}
-              </SidebarItemWithActions>
-            );
-          }
-
-          return (
-            <SidebarCompanionNest
-              key={character._id ?? `character-${index}`}
-              nestId={character._id}
-              playerName={displayName}
-              companionCharacterIds={companionIds}
-              selectedCharacterId={selectedCharacterId}
-              headerSelected={isSelected}
-              actions={characterActions}
-              actionsDisabled={characterActions.length === 0}
-              contextMenuLabel={t("characterActions")}
-              rowBody={({ isOpen }) => renderPlayerLink(isOpen, true)}>
-              {companions.map((npc) => {
-                const npcSelected = selectedCharacterId === npc._id;
-                const npcName = characterDisplayName(npc) || t("unnamedCharacter");
-                const npcActions = buildCharacterActions(npc);
-                return (
-                  <li key={npc._id}>
-                    <SidebarItemWithActions
-                      actions={npcActions}
-                      disabled={npcActions.length === 0}
-                      contextMenuLabel={t("characterActions")}
-                      className={cn(
-                        "rounded-[12px] transition-all duration-100",
-                        npcSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
-                      )}>
-                      <Link
-                        href={`/characters/${npc._id}`}
-                        aria-current={npcSelected ? "page" : undefined}
-                        aria-label={`${npcName} (${t("npcKind")})${npcSelected ? ` (${t("selected")})` : ""}`}
-                        onClick={() => dispatch(clearSelectedCampaign())}
-                        className={cn(
-                          "relative flex min-w-0 flex-1 shrink-0 cursor-pointer items-center gap-2 py-1.5 px-3 focus-visible:ring-1 focus-visible:ring-white/50",
-                          npcSelected && "font-bold",
-                        )}>
-                        {renderRowAvatar(npc._id, npc.avatar, npcName)}
-                        <span className={cn("text-sm min-w-0 flex-1 truncate", npcSelected && "font-bold")}>
-                          {npcName}
-                        </span>
-                        <SidebarCharacterKindBadge
-                          label={t("npcKind")}
-                          selected={npcSelected}
-                        />
-                      </Link>
-                    </SidebarItemWithActions>
-                  </li>
-                );
-              })}
-            </SidebarCompanionNest>
-          );
-        })}
-
-        {hasMore && (
-          <button
-            type="button"
-            key="characters-without-group-load-more"
-            onClick={() => void loadMoreCharacters()}
-            disabled={loadingMore}
-            aria-busy={loadingMore}
-            aria-label={t("loadMoreCharactersAria")}
-            className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
-            {loadingMore ? (
-              <Loader2
-                className="w-4 h-4 animate-spin mx-auto"
-                aria-hidden
-              />
-            ) : (
-              t("loadMoreCharacters")
+                <Collapsible
+                  open={outOfSessionOpen}
+                  onOpenChange={(open) => setOutOfSessionOpenCode(open ? sessionCode : null)}
+                  className="flex flex-col gap-2">
+                  <CollapsibleTrigger
+                    type="button"
+                    aria-controls={OUT_OF_SESSION_CONTENT_ID}
+                    aria-label={t(outOfSessionOpen ? "outOfSessionCollapseAria" : "outOfSessionExpandAria", {
+                      count: sessionSplit.otherRows.length,
+                    })}
+                    title={outOfSessionActiveTooltip ?? undefined}
+                    className={cn(
+                      "flex w-full shrink-0 cursor-pointer items-center gap-2 rounded-[12px] py-1.5 px-3 text-sm text-white/80 transition-all duration-150 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+                      outOfSessionActiveTooltip && "bg-white/10 text-white",
+                      outOfSessionOpen && "font-bold text-white",
+                    )}>
+                    <ChevronRight
+                      aria-hidden="true"
+                      className={cn("h-4 w-4 shrink-0 transition-all duration-100", outOfSessionOpen && "rotate-90")}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-left">
+                      {t("outOfSessionToggle", { count: sessionSplit.otherRows.length })}
+                    </span>
+                    {outOfSessionActiveTooltip ? <span className="sr-only">{outOfSessionActiveTooltip}</span> : null}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent
+                    id={OUT_OF_SESSION_CONTENT_ID}
+                    className="flex flex-col gap-2">
+                    {sessionSplit.otherRows.map((row, index) => renderRow(row, index + 1))}
+                    {loadMoreButton}
+                  </CollapsibleContent>
+                </Collapsible>
+              </>
             )}
-          </button>
+          </>
+        ) : (
+          <>
+            {sidebarRows.map((row, index) => renderRow(row, index))}
+            {loadMoreButton}
+          </>
         )}
       </div>
 

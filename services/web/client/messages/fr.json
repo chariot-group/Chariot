@@ -29,6 +29,8 @@
     "companionsListLabel": "Compagnons de {name}",
     "collapseCompanionsAria": "Replier les compagnons de {name}",
     "expandCompanionsAria": "Déplier les compagnons de {name}",
+    "companionActiveTooltip": "Fiche affichée : {name}",
+    "groupActiveCharacterTooltip": "Personnage affiché : {name}",
     "linkNpc": "Lier à un personnage",
     "unlinkNpc": "Retirer du personnage",
     "unlinkNpcFrom": "Retirer de {name}",
@@ -209,7 +211,12 @@
       "editError": "Échec de la modification du lien.",
       "collapseAriaLabel": "Replier les liens rapides",
       "expandAriaLabel": "Déplier les liens rapides"
-    }
+    },
+    "sessionCharacterSection": "Personnage de session",
+    "outOfSessionToggle": "Hors session ({count})",
+    "outOfSessionExpandAria": "Afficher les {count} personnages hors session",
+    "outOfSessionCollapseAria": "Masquer les {count} personnages hors session",
+    "outOfSessionActiveTooltip": "Fiche affichée : {name}"
   },
   "initTracker": {
     "noCharacters": "Aucun personnage",
@@ -240,7 +247,7 @@
     "initBattleParticipantsCannotBeExcluded": "Les participants ne peuvent pas être exclus de l'initiative",
     "initBattleValidateSelection": "Valider la configuration",
     "addCombatants": "Ajouter au combat",
-    "removeCombatantGroups": "Retirer des groupes",
+    "removeCombatantGroups": "Retirer un groupe",
     "tracker": {
       "addCombatantsDialogTitle": "Ajouter au combat",
       "addCombatantsConfirm": "Ajouter la sélection",
@@ -253,13 +260,13 @@
       "addCombatantsInitiativeFor": "Initiative de {name}",
       "addCombatantsGroupInitiative": "Initiative du groupe",
       "addCombatantsGroupsInCombatHint": "Les groupes déjà en initiative sont présélectionnés.",
-      "removeCombatantGroupsDialogTitle": "Retirer des groupes",
-      "removeCombatantGroupsDescription": "Choisissez les groupes à retirer de l'initiative. Le groupe des participants de session ne peut pas être retiré en bloc.",
+      "removeCombatantGroupsDialogTitle": "Retirer un groupe",
+      "removeCombatantGroupsDescription": "Choisissez le groupe à retirer de l'initiative. Le groupe des participants de session ne peut pas être retiré en bloc.",
       "removeCombatantGroupsEmpty": "Aucun groupe retirable dans l'initiative.",
-      "removeCombatantGroupsPlaceholder": "Rechercher un groupe…",
+      "removeCombatantGroupsPlaceholder": "Choisir un groupe",
       "removeCombatantGroupsNoSearchResult": "Aucun groupe trouvé.",
       "removeCombatantGroupsSelectAll": "Tout sélectionner",
-      "removeCombatantGroupsConfirm": "Retirer la sélection",
+      "removeCombatantGroupsConfirm": "Retirer le groupe",
       "removeCombatantGroupsOption": "{label} ({count})",
       "initiative": "Initiative",
       "character": "Personnage",
@@ -274,11 +281,11 @@
       "viewSheetFor": "Voir la fiche de {name}",
       "initiativeFor": "Initiative de {name}",
       "initiativeModifierFor": "Bonus d'initiative {bonus}",
-      "selectRowFor": "Sélectionner {name} pour l'initiative groupée",
+      "selectRowFor": "Sélectionner {name}",
       "selectRowForVisibility": "Sélectionner {name} pour l'affichage groupé",
       "selectAllRows": "Sélectionner tous les personnages",
       "selectAllRowsShort": "Tous",
-      "groupedInitiativeEnable": "Saisir une initiative groupée",
+      "groupedInitiativeEnable": "Initiative groupée",
       "groupedInitiativeDisable": "Quitter le mode initiative groupée",
       "groupedInitiativeEnableShort": "Initiative",
       "groupedInitiativeDisableShort": "Fermer",
@@ -483,7 +490,16 @@
         "invisible": "Une créature invisible ne peut être vue sans l'aide de la magie ou un sens particulier. En ce qui concerne le fait de se cacher, la créature est considérée dans une zone à visibilité nulle. L'emplacement de la créature peut être détecté par un bruit qu'elle fait ou par les traces qu'elle laisse.\nLes jets d'attaque contre la créature ont un désavantage, et les jets d'attaque de la créature ont un avantage.",
         "paralyzed": "Une créature paralysée est incapable d'agir et ne peut plus bouger ni parler.\nLa créature rate automatiquement ses jets de sauvegarde de Force et de Dextérité.\nLes jets d'attaque contre la créature ont un avantage.\nToute attaque qui touche la créature est un coup critique si l'attaquant est à 1,50 mètre ou moins de la créature.",
         "petrified": "Une créature pétrifiée est transformée, ainsi que tout objet non magique qu'elle porte, en une substance inanimée solide (généralement en pierre). Son poids est multiplié par dix et son vieillissement cesse.\nLa créature est incapable d'agir, ne peut plus bouger ni parler, et n'est plus consciente de ce qui se passe autour d'elle.\nLes jets d'attaque contre la créature ont un avantage.\nLa créature rate automatiquement ses jets de sauvegarde de Force et de Dextérité.\nLa créature obtient la résistance contre tous les types de dégâts.\nLa créature est immunisée contre le poison et la maladie, mais un poison ou une maladie déjà dans son organisme est seulement suspendu, pas neutralisé."
-      }
+      },
+      "selectionToolbar": "Actions sur la sélection",
+      "missingInitiativeRow": "initiative à saisir",
+      "prepInitiativeHint": "Saisissez l'initiative de chaque personnage, puis lancez le combat.",
+      "missingInitiativesCount": "{count, plural, one {# initiative à saisir} other {# initiatives à saisir}}",
+      "allInitiativesEntered": "Toutes les initiatives sont saisies.",
+      "startMissingConfirmTitle": "Initiatives manquantes",
+      "startMissingConfirmDescription": "{count, plural, one {# personnage n'a pas encore d'initiative} other {# personnages n'ont pas encore d'initiative}}. Lancer le combat quand même ?",
+      "startMissingConfirmAction": "Lancer quand même",
+      "startMissingCancelAction": "Revenir à la saisie"
     }
   },
   "multiSelect": {
@@ -768,7 +784,8 @@
     "campaign": {
       "title": "Créer votre première <br /> campagne",
       "button": "Créer une campagne",
-      "button-aria": "Naviguer vers la création de campagne"
+      "button-aria": "Naviguer vers la création de campagne",
+      "description": "Devenez Maître du jeu : créez un univers, invitez vos joueurs et préparez vos parties."
     },
     "session": {
       "title": "Rejoindre <br /> une session",
@@ -780,7 +797,8 @@
     "character": {
       "title": "Créer votre premier <br /> personnage",
       "button": "Créer un personnage",
-      "button-aria": "Naviguer vers la création de personnage"
+      "button-aria": "Naviguer vers la création de personnage",
+      "description": "Créez un héros dans votre espace joueur, pour jouer seul ou rejoindre la campagne d'un MJ."
     },
     "imageCredits": {
       "title": "Crédits des images",
@@ -1953,5 +1971,17 @@
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Naviguer vers une version précédente",
     "latest": "Actuelle"
+  },
+  "playerSpaceFallback": {
+    "title": "Votre espace joueur est vide",
+    "description": "Vous n'avez pas encore de personnage joueur. Créez-en un pour jouer et rejoindre des sessions.",
+    "createCharacter": "Créer un personnage",
+    "campaigns": "Ou retrouvez vos campagnes depuis la barre latérale."
+  },
+  "campaignFallback": {
+    "title": "Aucun personnage dans cette campagne",
+    "description": "Cette campagne ne contient encore aucun personnage. Créez un groupe, puis ajoutez-y vos personnages.",
+    "createGroup": "Créer un groupe",
+    "createCharacter": "Créer un personnage"
   }
 }

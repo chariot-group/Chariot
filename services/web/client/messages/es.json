@@ -29,6 +29,8 @@
     "companionsListLabel": "Compañeros de {name}",
     "collapseCompanionsAria": "Contraer compañeros de {name}",
     "expandCompanionsAria": "Expandir compañeros de {name}",
+    "companionActiveTooltip": "Ficha mostrada: {name}",
+    "groupActiveCharacterTooltip": "Personaje mostrado: {name}",
     "linkNpc": "Vincular a un personaje",
     "unlinkNpc": "Quitar del personaje",
     "unlinkNpcFrom": "Quitar de {name}",
@@ -209,7 +211,12 @@
       "editError": "Error al modificar el enlace.",
       "collapseAriaLabel": "Contraer los enlaces rápidos",
       "expandAriaLabel": "Expandir los enlaces rápidos"
-    }
+    },
+    "sessionCharacterSection": "Personaje de la sesión",
+    "outOfSessionToggle": "Fuera de sesión ({count})",
+    "outOfSessionExpandAria": "Mostrar los {count} personajes fuera de sesión",
+    "outOfSessionCollapseAria": "Ocultar los {count} personajes fuera de sesión",
+    "outOfSessionActiveTooltip": "Ficha mostrada: {name}"
   },
   "initTracker": {
     "noCharacters": "Sin personajes",
@@ -240,7 +247,7 @@
     "initBattleParticipantsCannotBeExcluded": "Los participantes no pueden ser excluidos de la iniciativa",
     "initBattleValidateSelection": "Confirmar configuración",
     "addCombatants": "Añadir al combate",
-    "removeCombatantGroups": "Quitar grupos",
+    "removeCombatantGroups": "Quitar un grupo",
     "tracker": {
       "addCombatantsDialogTitle": "Añadir al combate",
       "addCombatantsConfirm": "Añadir selección",
@@ -253,13 +260,13 @@
       "addCombatantsInitiativeFor": "Iniciativa de {name}",
       "addCombatantsGroupInitiative": "Iniciativa del grupo",
       "addCombatantsGroupsInCombatHint": "Los grupos ya en la iniciativa aparecen preseleccionados.",
-      "removeCombatantGroupsDialogTitle": "Quitar grupos",
-      "removeCombatantGroupsDescription": "Elige los grupos que quieres quitar de la iniciativa. El grupo de participantes de la sesión no se puede quitar por completo.",
+      "removeCombatantGroupsDialogTitle": "Quitar un grupo",
+      "removeCombatantGroupsDescription": "Elige el grupo que quieres quitar de la iniciativa. El grupo de participantes de la sesión no se puede quitar por completo.",
       "removeCombatantGroupsEmpty": "No hay grupos que se puedan quitar de la iniciativa.",
-      "removeCombatantGroupsPlaceholder": "Buscar un grupo…",
+      "removeCombatantGroupsPlaceholder": "Elegir un grupo",
       "removeCombatantGroupsNoSearchResult": "No se encontró ningún grupo.",
       "removeCombatantGroupsSelectAll": "Seleccionar todo",
-      "removeCombatantGroupsConfirm": "Quitar selección",
+      "removeCombatantGroupsConfirm": "Quitar grupo",
       "removeCombatantGroupsOption": "{label} ({count})",
       "initiative": "Iniciativa",
       "character": "Personaje",
@@ -274,11 +281,11 @@
       "viewSheetFor": "Ver la ficha de {name}",
       "initiativeFor": "Iniciativa de {name}",
       "initiativeModifierFor": "Bonificación de iniciativa {bonus}",
-      "selectRowFor": "Seleccionar {name} para iniciativa agrupada",
+      "selectRowFor": "Seleccionar a {name}",
       "selectRowForVisibility": "Seleccionar {name} para visualización agrupada",
       "selectAllRows": "Seleccionar todos los personajes",
       "selectAllRowsShort": "Todos",
-      "groupedInitiativeEnable": "Introducir iniciativa agrupada",
+      "groupedInitiativeEnable": "Iniciativa agrupada",
       "groupedInitiativeDisable": "Salir del modo de iniciativa agrupada",
       "groupedInitiativeEnableShort": "Iniciativa",
       "groupedInitiativeDisableShort": "Cerrar",
@@ -483,7 +490,16 @@
         "invisible": "Una criatura invisible no puede verse sin la ayuda de la magia o un sentido especial. A efectos de ocultarse, la criatura se considera en una zona de visibilidad nula. Su ubicación puede detectarse por el ruido que hace o las huellas que deja.\nLas tiradas de ataque contra la criatura tienen desventaja, y las tiradas de ataque de la criatura tienen ventaja.",
         "paralyzed": "Una criatura paralizada está incapacitada y no puede moverse ni hablar.\nLa criatura falla automáticamente las tiradas de salvación de Fuerza y Destreza.\nLas tiradas de ataque contra la criatura tienen ventaja.\nCualquier ataque que impacte a la criatura es un golpe crítico si el atacante está a 1,50 metros o menos de la criatura.",
         "petrified": "Una criatura petrificada se transforma, junto con cualquier objeto no mágico que lleve, en una sustancia inanimada sólida (normalmente piedra). Su peso se multiplica por diez y deja de envejecer.\nLa criatura está incapacitada, no puede moverse ni hablar y no es consciente de lo que la rodea.\nLas tiradas de ataque contra la criatura tienen ventaja.\nLa criatura falla automáticamente las tiradas de salvación de Fuerza y Destreza.\nLa criatura obtiene resistencia a todo tipo de daño.\nLa criatura es inmune al veneno y a las enfermedades, aunque un veneno o enfermedad ya presente en su organismo queda suspendido, no neutralizado."
-      }
+      },
+      "selectionToolbar": "Acciones sobre la selección",
+      "missingInitiativeRow": "iniciativa por introducir",
+      "prepInitiativeHint": "Introduce la iniciativa de cada personaje y luego inicia el combate.",
+      "missingInitiativesCount": "{count, plural, one {# iniciativa por introducir} other {# iniciativas por introducir}}",
+      "allInitiativesEntered": "Todas las iniciativas están introducidas.",
+      "startMissingConfirmTitle": "Iniciativas pendientes",
+      "startMissingConfirmDescription": "{count, plural, one {# personaje aún no tiene iniciativa} other {# personajes aún no tienen iniciativa}}. ¿Iniciar el combate de todos modos?",
+      "startMissingConfirmAction": "Iniciar igualmente",
+      "startMissingCancelAction": "Volver a la entrada"
     }
   },
   "multiSelect": {
@@ -767,7 +783,8 @@
     "campaign": {
       "title": "Crea tu primera <br /> campaña",
       "button": "Crear una campaña",
-      "button-aria": "Navegar hacia la creación de campaña"
+      "button-aria": "Navegar hacia la creación de campaña",
+      "description": "Conviértete en Director de juego: crea un universo, invita a tus jugadores y prepara tus partidas."
     },
     "session": {
       "title": "Únete a <br /> una sesión",
@@ -779,7 +796,8 @@
     "character": {
       "title": "Crea tu primer <br /> personaje",
       "button": "Crear un personaje",
-      "button-aria": "Navegar hacia la creación de personaje"
+      "button-aria": "Navegar hacia la creación de personaje",
+      "description": "Crea un héroe en tu espacio de jugador, para jugar solo o unirte a la campaña de un DJ."
     },
     "imageCredits": {
       "title": "Créditos de imágenes",
@@ -1903,6 +1921,16 @@
       "title": "Abandonar sesión",
       "description": "Estás a punto de cerrar la sesión. Todos los participantes se desconectarán y deberán unirse a una nueva sesión para seguir jugando juntos.",
       "confirm": "Abandonar sesión"
+    },
+    "sessionLeave": {
+      "title": "¿Salir de la sesión?",
+      "descriptionPlayer": "Te desconectarás de la sesión y tendrás que volver a unirte para seguir jugando. Tu personaje se quitará de los grupos de la campaña.",
+      "descriptionGm": "Te desconectarás de la sesión y tendrás que volver a unirte para seguir jugando. La sesión no terminará para los demás participantes.",
+      "confirm": "Salir de la sesión"
+    },
+    "sessionExit": {
+      "groupAria": "Acciones de fin de sesión",
+      "moreAria": "Más acciones de fin de sesión"
     }
   },
   "header": {
@@ -1939,5 +1967,17 @@
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navegar a una versión anterior",
     "latest": "Actual"
+  },
+  "playerSpaceFallback": {
+    "title": "Tu espacio de jugador está vacío",
+    "description": "Todavía no tienes ningún personaje jugador. Crea uno para jugar y unirte a sesiones.",
+    "createCharacter": "Crear un personaje",
+    "campaigns": "O encuentra tus campañas en la barra lateral."
+  },
+  "campaignFallback": {
+    "title": "Ningún personaje en esta campaña",
+    "description": "Esta campaña aún no tiene personajes. Crea un grupo y añade tus personajes.",
+    "createGroup": "Crear un grupo",
+    "createCharacter": "Crear un personaje"
   }
 }

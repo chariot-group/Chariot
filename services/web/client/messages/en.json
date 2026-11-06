@@ -29,6 +29,8 @@
     "companionsListLabel": "Companions of {name}",
     "collapseCompanionsAria": "Collapse companions of {name}",
     "expandCompanionsAria": "Expand companions of {name}",
+    "companionActiveTooltip": "Displayed sheet: {name}",
+    "groupActiveCharacterTooltip": "Displayed character: {name}",
     "linkNpc": "Link to a character",
     "unlinkNpc": "Remove from character",
     "unlinkNpcFrom": "Remove from {name}",
@@ -209,7 +211,12 @@
       "editError": "Failed to update the link.",
       "collapseAriaLabel": "Collapse quick links",
       "expandAriaLabel": "Expand quick links"
-    }
+    },
+    "sessionCharacterSection": "Session character",
+    "outOfSessionToggle": "Out of session ({count})",
+    "outOfSessionExpandAria": "Show the {count} characters out of session",
+    "outOfSessionCollapseAria": "Hide the {count} characters out of session",
+    "outOfSessionActiveTooltip": "Displayed sheet: {name}"
   },
   "initTracker": {
     "noCharacters": "No characters",
@@ -240,7 +247,7 @@
     "initBattleParticipantsCannotBeExcluded": "Participants cannot be excluded from the initiative",
     "initBattleValidateSelection": "Confirm configuration",
     "addCombatants": "Add to combat",
-    "removeCombatantGroups": "Remove groups",
+    "removeCombatantGroups": "Remove a group",
     "tracker": {
       "addCombatantsDialogTitle": "Add to combat",
       "addCombatantsConfirm": "Add selection",
@@ -253,13 +260,13 @@
       "addCombatantsInitiativeFor": "Initiative for {name}",
       "addCombatantsGroupInitiative": "Group initiative",
       "addCombatantsGroupsInCombatHint": "Groups already in the initiative order are pre-selected.",
-      "removeCombatantGroupsDialogTitle": "Remove groups",
-      "removeCombatantGroupsDescription": "Choose which groups to remove from the initiative order. The session participants group cannot be removed as a whole.",
+      "removeCombatantGroupsDialogTitle": "Remove a group",
+      "removeCombatantGroupsDescription": "Choose the group to remove from the initiative order. The session participants group cannot be removed as a whole.",
       "removeCombatantGroupsEmpty": "No removable groups in the initiative order.",
-      "removeCombatantGroupsPlaceholder": "Search for a group…",
+      "removeCombatantGroupsPlaceholder": "Choose a group",
       "removeCombatantGroupsNoSearchResult": "No group found.",
       "removeCombatantGroupsSelectAll": "Select all",
-      "removeCombatantGroupsConfirm": "Remove selection",
+      "removeCombatantGroupsConfirm": "Remove group",
       "removeCombatantGroupsOption": "{label} ({count})",
       "initiative": "Initiative",
       "character": "Character",
@@ -274,11 +281,11 @@
       "viewSheetFor": "View sheet for {name}",
       "initiativeFor": "Initiative for {name}",
       "initiativeModifierFor": "Initiative bonus {bonus}",
-      "selectRowFor": "Select {name} for grouped initiative",
+      "selectRowFor": "Select {name}",
       "selectRowForVisibility": "Select {name} for grouped display",
       "selectAllRows": "Select all characters",
       "selectAllRowsShort": "All",
-      "groupedInitiativeEnable": "Enter grouped initiative",
+      "groupedInitiativeEnable": "Grouped initiative",
       "groupedInitiativeDisable": "Exit grouped initiative mode",
       "groupedInitiativeEnableShort": "Initiative",
       "groupedInitiativeDisableShort": "Close",
@@ -483,7 +490,16 @@
         "invisible": "An invisible creature is impossible to see without the aid of magic or a special sense. For the purpose of hiding, the creature is heavily obscured. The creature's location can be detected by any noise it makes or any tracks it leaves.\nAttack rolls against the creature have disadvantage, and the creature's attack rolls have advantage.",
         "paralyzed": "A paralyzed creature is incapacitated and can't move or speak.\nThe creature automatically fails Strength and Dexterity saving throws.\nAttack rolls against the creature have advantage.\nAny attack that hits the creature is a critical hit if the attacker is within 1.5 meters of the creature.",
         "petrified": "A petrified creature is transformed, along with any nonmagical object it is wearing or carrying, into a solid inanimate substance (usually stone). Its weight increases by a factor of ten, and it ceases aging.\nThe creature is incapacitated, can't move or speak, and is unaware of its surroundings.\nAttack rolls against the creature have advantage.\nThe creature automatically fails Strength and Dexterity saving throws.\nThe creature has resistance to all damage.\nThe creature is immune to poison and disease, although a poison or disease already in its system is suspended, not neutralized."
-      }
+      },
+      "selectionToolbar": "Selection actions",
+      "missingInitiativeRow": "initiative to enter",
+      "prepInitiativeHint": "Enter each character's initiative, then start combat.",
+      "missingInitiativesCount": "{count, plural, one {# initiative to enter} other {# initiatives to enter}}",
+      "allInitiativesEntered": "All initiatives are entered.",
+      "startMissingConfirmTitle": "Missing initiatives",
+      "startMissingConfirmDescription": "{count, plural, one {# character has no initiative yet} other {# characters have no initiative yet}}. Start combat anyway?",
+      "startMissingConfirmAction": "Start anyway",
+      "startMissingCancelAction": "Back to entry"
     }
   },
   "multiSelect": {
@@ -767,7 +783,8 @@
     "campaign": {
       "title": "Create your first <br /> campaign",
       "button": "Create a campaign",
-      "button-aria": "Navigate to campaign creation"
+      "button-aria": "Navigate to campaign creation",
+      "description": "Become the Game Master: create a universe, invite your players and prepare your games."
     },
     "session": {
       "title": "Join <br /> a session",
@@ -779,7 +796,8 @@
     "character": {
       "title": "Create your first <br /> character",
       "button": "Create a character",
-      "button-aria": "Navigate to character creation"
+      "button-aria": "Navigate to character creation",
+      "description": "Create a hero in your player space, to play solo or join a GM's campaign."
     },
     "imageCredits": {
       "title": "Image credits",
@@ -1949,5 +1967,17 @@
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navigate to a previous version",
     "latest": "Current"
+  },
+  "playerSpaceFallback": {
+    "title": "Your player space is empty",
+    "description": "You have no player character yet. Create one to play and join sessions.",
+    "createCharacter": "Create a character",
+    "campaigns": "Or find your campaigns in the sidebar."
+  },
+  "campaignFallback": {
+    "title": "No character in this campaign",
+    "description": "This campaign has no character yet. Create a group, then add your characters to it.",
+    "createGroup": "Create a group",
+    "createCharacter": "Create a character"
   }
 }
