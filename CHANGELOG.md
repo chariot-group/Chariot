@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.11.0] - 06-11-2026
+
+### Added
+- NPCs can now be linked to a player character and shown in the player space: companion nesting in the sidebar, a companions tab on the sheet, and "Retirer" wording to unlink
+- Custom effects and multiple damage entries in combat: new effect picker in the initiative tracker, synced across the session, plus multi-damage spells
+- Community (codex) pages can be shared through a link or QR code, with the target preselected on arrival
+- Welcome onboarding fallback pages for empty player and campaign spaces; the logo now resolves to the current space
+- Playwright end-to-end scenarios tooling
+
+### Changed
+- Unified neutral theme: centralized color tokens, higher text contrast, consistent borders and scrollbars, and removal of the logo background image
+- Sidebar separates the session character from out-of-session characters; groups and companion nests can be collapsed even with an active character
+- Session character pickers (join dialog and lobby) follow the same order as the player sidebar
+- Major dependency upgrades across all services (TypeScript 6, ESLint 10, Jest 30 on payment) and reworked Dependabot grouping
+
+### Fixed
+- Closed an IDOR on `GET /user/:id`: it now returns a public profile only, and requires a session shared by both users (new session endpoint `validate-co-participant`; deploy session before adventure and web)
+- Accessible password visibility toggle on the Keycloak login theme (focus outline, `aria-pressed`)
+- Restored `@nestjs/swagger` 11 on payment to unbreak `npm ci`
+
+### Versions
+- Web client 2.11.0; session 1.7.0; adventure 2.10.0; gateway 2.6.2; media 1.2.1; payment 1.2.1; admin 1.3.1
+
 ## [2.10.1] - 21-10-2026
 
 ### Changed
