@@ -7,7 +7,7 @@ import {
   GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
-import type { CharacterTab } from "@/components/character/CharacterTabs";
+import type { CharacterTab } from "@/components/character/characterTabsConfig";
 import {
   skeletonCardsForTab,
   type CharacterSheetSkeletonVariant,

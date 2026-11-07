@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useKeycloak } from "@/providers/KeycloakProvider";
-import { CURRENT_APP_VERSION } from "@/data/release-notes";
+import { CURRENT_APP_VERSION } from "@/data/release-notes/currentVersion";
 import {
   getStoredUserId,
   getLastSeenVersion,
   setLastSeenVersion,
   isReleaseNotesMuted,
 } from "@/lib/releaseNotesSeen";
-import { ReleaseNotesModal } from "@/components/dialogs/ReleaseNotesModal";
+import { LazyReleaseNotesModal } from "@/components/lazy/lazyDialogs";
 
 export default function ReleaseNotesProvider() {
   const { authenticated, loading } = useKeycloak();
@@ -37,5 +37,14 @@ export default function ReleaseNotesProvider() {
 
   if (!open) return null;
 
-  return <ReleaseNotesModal open={open} onClose={handleClose} />;
+  // onOpenChange(false) only fires when the modal code fails to load: hide without marking as seen.
+  return (
+    <LazyReleaseNotesModal
+      open={open}
+      onClose={handleClose}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) setOpen(false);
+      }}
+    />
+  );
 }

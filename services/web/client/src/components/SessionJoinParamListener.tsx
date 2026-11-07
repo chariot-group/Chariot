@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
-import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { LazyJoinSessionDialog } from "@/components/lazy/lazyDialogs";
 
 export default function SessionJoinParamListener() {
   const searchParams = useSearchParams();
@@ -28,7 +28,7 @@ export default function SessionJoinParamListener() {
   if (!dialogOpen) return null;
 
   return (
-    <JoinSessionDialog
+    <LazyJoinSessionDialog
       open={dialogOpen}
       onOpenChange={setDialogOpen}
       initialCode={initialCode}

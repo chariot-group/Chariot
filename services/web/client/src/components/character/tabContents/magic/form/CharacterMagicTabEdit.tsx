@@ -39,7 +39,7 @@ import ListRow from "@/components/character/tabContents/shared/listCard/ListRow"
 import ListSelectRow from "@/components/character/tabContents/shared/listCard/ListSelectRow";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import { useIsXlUp } from "@/hooks/use-mobile";
-import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
+import { LazyCodexSpellSearchDialog as CodexSpellSearchDialog } from "@/components/lazy/lazyCharacterEditForms";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
 import SpellEditForm from "@/components/character/tabContents/magic/form/SpellEditForm";
 import SpellcastingEditCard from "@/components/character/tabContents/magic/form/SpellcastingEditCard";

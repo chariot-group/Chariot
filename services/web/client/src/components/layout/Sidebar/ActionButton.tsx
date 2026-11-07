@@ -23,7 +23,7 @@ import {
   openSessionLobby,
   setCurrentSession,
 } from "@/store/slices/sessionSlice";
-import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { LazyJoinSessionDialog } from "@/components/lazy/lazyDialogs";
 import { InitBattleDialog } from "@/components/dialogs/InitBattleDialog";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
 import { useUser } from "@/hooks/useUser";
@@ -58,6 +58,7 @@ type ActionButtonState =
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const tWelcome = useTranslations("welcome");
+  const [isJoinSessionDialogOpen, setIsJoinSessionDialogOpen] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
   const contextMode = useAppSelector((state) => state.environment.contextMode);
@@ -375,7 +376,31 @@ export function ActionButton() {
   );
 
   if (button.state === "joinSession" && !button.disabled) {
-    return <JoinSessionDialog>{buttonContent}</JoinSessionDialog>;
+    // Controlled so the dialog code is fetched on first open (FR-web-first-load-performance).
+    return (
+      <>
+        <Button
+          variant={button.tone === "red" ? "destructive" : "accent"}
+          tone={button.tone === "red" ? undefined : button.tone}
+          size="lg"
+          onClick={() => {
+            button.action();
+            setIsJoinSessionDialogOpen(true);
+          }}
+          onPointerEnter={LazyJoinSessionDialog.preload}
+          onFocus={LazyJoinSessionDialog.preload}
+          aria-haspopup="dialog"
+          aria-expanded={isJoinSessionDialogOpen}
+          className="w-full">
+          {button.icon}
+          <span className="truncate">{button.label}</span>
+        </Button>
+        <LazyJoinSessionDialog
+          open={isJoinSessionDialogOpen}
+          onOpenChange={setIsJoinSessionDialogOpen}
+        />
+      </>
+    );
   }
 
   if (button.state === "initBattle" && !button.disabled) {

@@ -47,6 +47,9 @@ export default function Choice({ image, realm, link, onClick }: ChoiceProps) {
         src={image}
         alt=""
         loading={"eager"}
+        // Rendered at most `max-w-md` (448px): without `sizes`, the 5000px source is served at 3840px
+        // (FR-web-first-load-performance — no asset bigger than the displayed screen needs).
+        sizes="(min-width: 480px) 448px, 100vw"
         aria-hidden="true"
         className="w-full h-auto rounded-t-lg"
       />

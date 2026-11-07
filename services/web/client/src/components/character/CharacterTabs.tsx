@@ -8,19 +8,14 @@ import { cn } from "@/lib/utils";
 import { CircleAlert } from "lucide-react";
 import { useHorizontalWheelScroll } from "@/hooks/useHorizontalWheelScroll";
 
-export const CHARACTER_TABS = ["general", "battle", "magic", "inventory", "history"] as const;
-export type BaseCharacterTab = (typeof CHARACTER_TABS)[number];
-export type CharacterTab = BaseCharacterTab | "companions";
-export const PLAYER_CHARACTER_TABS: CharacterTab[] = [...CHARACTER_TABS, "companions"];
-
-/** @see FR-npc-player-link — Companions tab is Player-space Player sheets, plus session-GM assigned Players. */
-export function tabsForCharacterSheet(
-  isPlayerCharacter: boolean,
-  isPlayerSpace: boolean,
-  showSessionGmCompanionsTab = false,
-): readonly CharacterTab[] {
-  return isPlayerCharacter && (isPlayerSpace || showSessionGmCompanionsTab) ? PLAYER_CHARACTER_TABS : CHARACTER_TABS;
-}
+export {
+  CHARACTER_TABS,
+  PLAYER_CHARACTER_TABS,
+  tabsForCharacterSheet,
+  type BaseCharacterTab,
+  type CharacterTab,
+} from "@/components/character/characterTabsConfig";
+import { CHARACTER_TABS, type CharacterTab } from "@/components/character/characterTabsConfig";
 
 interface CharacterTabsProps {
   activeTab: CharacterTab;

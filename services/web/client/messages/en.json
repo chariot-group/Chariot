@@ -517,7 +517,10 @@
       "campaignCreationFailed": "Failed to create campaign",
       "groupNameRequired": "Group name is required",
       "groupCreationFailed": "Failed to create group"
-    }
+    },
+    "lazyLoading": "Loading…",
+    "lazyLoadError": "This part of the app could not be loaded. Check your connection and try again.",
+    "retry": "Retry"
   },
   "error": {
     "title": "Oops! Something went wrong",

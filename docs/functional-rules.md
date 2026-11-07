@@ -284,6 +284,7 @@ When adding a rule:
 - Redirection logic executes **only once** immediately after successful authentication (`authenticated === true`)
 - Must check characters without group first by calling `GET /characters/players/without-group`
 - If no characters without group, fetch campaigns with `GET /campaigns` and extract the first character from the first campaign's first group
+- `GET /characters/players/without-group` and `GET /campaigns` MAY be issued in parallel to save a round trip on slow networks; the priority above is applied to their results unchanged, and data not needed to choose the destination MUST NOT delay the navigation (FR-web-first-load-performance)
 - Redirection must preserve locale prefix in URL (e.g., `/fr/characters/...`)
 - Navigation must not trigger on every page load, only on the initial post-authentication event
 - Must use Next.js router for navigation to maintain proper history
@@ -6192,3 +6193,83 @@ Guards: welcome is never returned when a campaign or a Player-space character ex
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
 - `docs/design.md` §5.5
 
+
+---
+
+## FR-web-first-load-performance: First-Load Weight of the Web Client and SSO Login Page
+
+**Rule**: On a first visit over a slow network, the web client and the SSO login page MUST NOT ship code or assets that the displayed screen does not need. Secondary dialogs and edit-only forms are loaded on demand; the SSO login page loads only the Chariot theme stylesheet; static brand images are optimized. The authentication flow itself (Keycloak `onLoad: "login-required"`) is unchanged. The round trip app → SSO → app on slow networks is covered by the sub-section *Slow-network authentication round trip* below.
+
+**Scope**: production build of `services/web/client` (routes under `/[locale]`) and the `chariot` Keycloak login theme. Measured baseline (prod, 2026-11-03): `/fr` ≈ 595 KB transferred JS+CSS; Keycloak login page ≈ 235 KB transferred, of which ≈ 202 KB PatternFly.
+
+**Requirements**:
+
+1. **On-demand dialogs (layout)** — The following dialogs MUST NOT be part of the initial JS of any `/[locale]` route; their code MUST be fetched only when the user opens them (or on hover/focus of their trigger as a prefetch):
+   - Session community library dialog (Header button).
+   - Character sheet PDF export dialog (sidebar, both lists).
+   - Release notes modal (loaded only when there are unseen release notes to show).
+   - Duplicate character, delete player with companions, and join session dialogs (sidebar).
+2. **On-demand edit forms (character sheet)** — Character sheet tab edit forms (general, battle, magic, inventory, history, for players and NPCs) and the Codex spell search dialog MUST be fetched only when the user enters edit mode or opens the search. The read-only view of the sheet MUST NOT depend on them.
+3. **Loading feedback** — While an on-demand dialog or edit form is being fetched, the trigger or target area MUST expose a visible, accessible loading state (`aria-busy` or a status region). A fetch failure MUST show a toast and leave the screen usable (no blank page, the trigger can be retried).
+4. **Behavior parity** — Opening, closing, focus management (focus moves into the dialog, returns to the trigger on close, Escape closes), and the data shown by each dialog/form MUST be identical to the pre-change behavior.
+5. **SSO preconnect** — The app layout MUST declare a `preconnect` hint to the configured Keycloak origin (`NEXT_PUBLIC_KEYCLOAK_URL`) so the connection is opened while the app loads.
+6. **Login page stylesheet** — The `chariot` login theme MUST NOT load the Keycloak common PatternFly stylesheets (`stylesCommon`); all login theme pages (login, register, reset password, update password, error/info messages) MUST render correctly with the theme stylesheet only.
+7. **Brand images** — `favicon.svg` and `logo.svg` (web client `public/` and login theme) and the login theme `background.svg` MUST be optimized without visible change (including the favicon light/dark variant).
+8. **Budget** — After the change, the initial JS+CSS of `/[locale]` (outside character sheet routes) MUST be at least 25 % smaller (gzip) than the measured baseline; the login page assets MUST transfer less than 50 KB.
+
+**Prohibitions**:
+
+- Switching Keycloak initialization to `check-sso` / silent iframe (measured slower on high-latency networks and worse for users without an SSO session).
+- Changing the post-login return URL behavior (FR-codex-share-link-preselection, FR-post-auth-navigation).
+- Changing session/WebSocket logic (`sessionSocketPool`, `useSessionValidation`, gateway handlers, battle/sheet sync) as part of this rule (separate, high-attention domain). Deferring the mount of the authenticated shell that contains the session clients (Requirement 11) is allowed; their behavior is not.
+- Persisting tokens (access or refresh) in browser storage to skip the SSO redirect.
+- Server-side session / BFF architecture (separate rule if pursued).
+
+**Tests**:
+
+- Nominal: each listed dialog opens from its trigger, shows the same content as before, and closes with focus returned to the trigger.
+- Nominal: entering edit mode on a character sheet tab shows the edit form; leaving edit mode returns to the view.
+- Edge: opening a dialog twice quickly renders it once (no duplicate fetch side effects).
+- Edge: the release notes modal still opens automatically after login when unseen notes exist, and is not fetched when none exist.
+- Failure: a failed chunk fetch shows an error toast, the page stays usable, and a second click retries.
+- Build check: a production build report shows none of the listed dialog/form modules in the initial chunks of `/[locale]`.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/layout.tsx`
+- `services/web/client/src/components/layout/Header.tsx`, `services/web/client/src/components/layout/SessionCommunityLibraryButton.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`, `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`, `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/ReleaseNotesProvider.tsx`
+- `services/web/client/src/components/character/tabContents/**`
+- `services/sso/keycloak/themes/chariot/login/theme.properties`
+- `docs/functional-rules.md` — FR-codex-share-link-preselection, FR-post-auth-navigation, FR-frontend-design
+
+### Slow-network authentication round trip
+
+The path app → Keycloak login page → back in the app MUST use as few sequential round trips and as little blocking code as possible. Authentication model (`login-required`, PKCE, tokens in memory only), the auth skeleton (FR-auth-loading-skeleton) and the destination priority (FR-post-auth-navigation) are unchanged.
+
+**Reference profile**: 400 kbps down / 400 kbps up / 2000 ms RTT, cold cache, against a production build (`next build && next start` locally, and production). `next dev` measurements are not a reference.
+
+**Requirements**:
+
+9. **Measurement** — A reproducible script (Playwright, throttled at the reference profile) records: time to Keycloak redirect, time to login page rendered, time from login submit to first meaningful content (destination page with its data). Baseline and post-change values are reported in the pull request.
+10. **CORS preflight caching** — Every API reached directly by the browser with an `Authorization` header (gateway and any other cross-origin API) MUST return `Access-Control-Max-Age` (target 7200 s) on preflight responses.
+11. **Auth gate first** — The initial JS of any `/[locale]` route MUST contain only Keycloak initialization and the auth skeleton (FR-auth-loading-skeleton). The authenticated shell (Redux store and persistence, sidebar, header, session/sheet sync clients, post-login navigator, release notes, locale syncs, toasts) MUST be fetched once authenticated; on the return from Keycloak, its download MUST start in parallel with the authorization code exchange. Modules only needed on logout (persisted-state purge) are loaded on demand.
+12. **API preconnect** — In addition to Requirement 5, the layout MUST declare a `preconnect` hint to the API origin (`NEXT_PUBLIC_API_URL`).
+13. **Post-login resolution** — Destination requests are issued in parallel (FR-post-auth-navigation); data not needed to decide the destination (sidebar NPC lists) MUST NOT delay the navigation; the destination route SHOULD be prefetched as soon as it is known.
+14. **No duplicate startup calls** — During the first authenticated render, the same endpoint with the same parameters MUST NOT be requested more than once by different components.
+15. **Login page first paint** — The login theme renders without waiting for a non-critical request: critical CSS inlined or a single stylesheet; the background shows its solid/gradient fallback immediately and the image loads without blocking; `favicon.svg` and `logo.svg` (login theme and web client) reduced to the path precision that keeps rendering unchanged (pixel comparison at 1× and 3×, light and dark), with duplicated variants factored; icon fonts unused by the theme pages are not referenced. Existing login accessibility (password toggle `aria-pressed`, visible focus) is unchanged.
+16. **Dev environment** — The dev Keycloak caches theme static resources by default; disabling it for theme work is an explicit opt-in.
+17. **Budget** — At the reference profile (no typing time), against the Requirement 9 baseline: time to Keycloak redirect −35 % or better; login page rendered −35 % or better; login submit → first meaningful content no slower than the baseline; whole journey (visit → content after login) −25 % or better. The auth gate (Requirement 11) is kept even though it moves the shell download after login on a cold cache: the time saved before the login page is not traded back.
+18. **Same-origin API** — The browser MUST reach the gateway through the app origin under a dedicated path prefix (e.g. `/gateway/*` → gateway, prefix stripped), so authenticated calls need no CORS preflight and no extra TLS connection. The prefix MUST NOT collide with the web client's own `/api/*` routes (health, ready, metrics, logs). The gateway's own host stays available for other clients; its CORS (Requirement 10) is kept. Safeguards: in deployed environments (Traefik), the app-origin route MUST drop the `Cookie` request header and the `Set-Cookie` response header (the API authenticates with the bearer token only; app cookies never reach the backends and the API cannot set cookies on the app origin); the web client's own middleware MUST NOT handle the prefix. Outside Traefik (local dev, local production build), a Next.js rewrite to the gateway MAY provide the same prefix. The session WebSocket and the Codex service are out of scope.
+
+**Tests**:
+
+- Nominal: unauthenticated visit reaches Keycloak without fetching shell chunks (chunk/import guard); after login the FR-post-auth-navigation destination is displayed with its data.
+- Nominal: gateway preflight response carries `Access-Control-Max-Age`; layout declares preconnect to the API and Keycloak origins.
+- Nominal: with the same-origin prefix configured, an authenticated API call from the app sends no preflight and reaches the gateway (adventure, payment and media routes); the web client's `/api/health` still answers from Next.js.
+- Edge: user change at init (FR-user-cache-isolation) still recreates the store once the shell is loaded; page refresh during an active session reconnects the socket once (no duplicate connection, no false disconnect toast).
+- Edge: a startup endpoint used by two components is fetched once.
+- Failure: shell chunk fetch failure shows an accessible error with a retry inside the auth skeleton frame, not a blank page.
+
+**References** (sub-section): `services/web/client/src/providers/KeycloakProvider.tsx`, `services/web/client/src/components/layout/AppShellSkeleton.tsx`, `services/web/client/src/components/PostLoginNavigator.tsx`, `services/web/client/src/services/NavigationService.ts`, `services/gateway/api/src/main.ts`, `services/sso/keycloak/themes/chariot/login/**`, `services/sso/compose.dev.yml` — FR-auth-loading-skeleton, FR-post-auth-navigation, FR-user-cache-isolation, FR-session-websocket-lifecycle
