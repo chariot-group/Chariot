@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e e2e e2e-install e2e-ui e2e-report deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-media lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-media lint-fix-web lint-fix-admin
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e e2e e2e-install e2e-perf e2e-ui e2e-report deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-media lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-media lint-fix-web lint-fix-admin
 
 # Configuration
 SERVICES_DIR := services
@@ -441,6 +441,9 @@ e2e-install: ## Installe Playwright + Chromium pour les scénarios E2E
 
 e2e: ## Lance les scénarios E2E (FILTER=texte pour filtrer, ex. FILTER=session)
 	@cd $(E2E_DIR) && npx playwright test $(if $(FILTER),--grep "$(FILTER)",)
+
+e2e-perf: ## Mesure l'aller-retour SSO en 3G simulée (PERF_RUNS, PERF_LABEL, PERF_LATENCY_MS, PERF_DOWN_KBPS)
+	@cd $(E2E_DIR) && E2E_PERF=1 npx playwright test --project=perf
 
 e2e-ui: ## Ouvre le mode interactif Playwright (liste, lancement, replay pas à pas)
 	@cd $(E2E_DIR) && npx playwright test --ui
