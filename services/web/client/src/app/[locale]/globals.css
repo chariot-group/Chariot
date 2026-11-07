@@ -214,6 +214,24 @@
   body {
     @apply bg-background text-white;
   }
+  /* Neutralise le fond clair imposé par l'autofill navigateur.
+     Le fond est recouvert par une ombre interne ; les ombres ring Tailwind sont conservées pour le focus. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:autofill,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: var(--foreground, #fff);
+    caret-color: var(--foreground, #fff);
+    box-shadow:
+      var(--tw-ring-offset-shadow, 0 0 #0000),
+      var(--tw-ring-shadow, 0 0 #0000),
+      0 0 0 1000px var(--gray-middle-light) inset !important;
+    /* Empêche le fond autofill de transparaître sous la bordure semi-transparente */
+    background-clip: padding-box !important;
+    transition: background-color 99999s ease-out 0s;
+  }
 }
 
 @layer utilities {
