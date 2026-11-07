@@ -3,6 +3,7 @@ import ListCard, { EDIT_LIST_MAX_HEIGHT_CLASS } from "@/components/character/tab
 import ListRow from "@/components/character/tabContents/shared/listCard/ListRow";
 import ListFormSection from "@/components/character/tabContents/shared/listCard/ListFormSection";
 import { Button } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,7 +19,7 @@ import {
 } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
-import { Plus, Trash2, Moon, Clock } from "lucide-react";
+import { Plus, Moon, Clock } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
@@ -193,18 +194,10 @@ const AbilitiesUpdateSection = ({
               isOpen={openAccordionValues.includes(`ability-${index}`)}
               hasError={hasError}
               trailing={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
+                <DeleteIconButton
                   onClick={() => removeAbility(index)}
-                  className="text-red-500"
-                  aria-label={`${tBattle("abilityRemove")} ${label}`}>
-                  <Trash2
-                    className="size-4"
-                    aria-hidden="true"
-                  />
-                </Button>
+                  aria-label={`${tBattle("abilityRemove")} ${label}`}
+                />
               }
               contentClassName="flex flex-col gap-4 pt-1">
               <ListFormSection title={tBattle("formSections.general")}>

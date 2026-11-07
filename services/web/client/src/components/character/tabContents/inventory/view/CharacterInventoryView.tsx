@@ -188,7 +188,7 @@ function InventoryTextCard({
             onChange={(event) => onDraftChange(event.target.value)}
             placeholder={t(field)}
             disabled={busy !== null}
-            className="min-h-36 flex-1"
+            className="min-h-36 flex-1 resize-none"
           />
           <div className="flex flex-row justify-end gap-2">
             <Button

@@ -3,12 +3,13 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Controller, useWatch, type Path, type PathValue, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import type { Character, DamageDetails, HealingDetails, Spell } from "@/types/character";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
@@ -180,8 +181,8 @@ function DiceFormulaRow({
               {tEdit("diceTypeShort")}
             </span>
             <Select
-            value={value?.diceType || undefined}
-            onValueChange={(next) => onChange("diceType", next)}>
+              value={value?.diceType || undefined}
+              onValueChange={(next) => onChange("diceType", next)}>
               <SelectTrigger
                 id={`${id}-dice`}
                 className="w-20"
@@ -549,20 +550,12 @@ export default function SpellEditForm({
                         </Field>
                       }
                       trailing={
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
+                        <DeleteIconButton
                           onClick={() =>
                             damageField.onChange(ensureSpellDamageEditRows(damages.filter((_, i) => i !== damageIndex)))
                           }
-                          aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}>
-                          <Trash2
-                            className="size-4"
-                            aria-hidden="true"
-                          />
-                        </Button>
+                          aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}
+                        />
                       }
                     />
                   );

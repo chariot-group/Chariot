@@ -16,7 +16,8 @@ import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGr
 import { ClassNameEnum, AlignmentEnum } from "@/schemas/character";
 import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
+import { ArrowRightLeft, Plus } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import CharacterNameFields from "@/components/character/tabContents/general/form/CharacterNameFields";
@@ -444,14 +445,10 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                             </span>
                           )}
                           {classFields.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
+                            <DeleteIconButton
                               onClick={() => removeClass(index)}
-                              className="text-red hover:bg-red/10">
-                              <Trash2 className="size-4" />
-                            </Button>
+                              aria-label={t("removeClass", { index: index + 1 })}
+                            />
                           )}
                         </div>
                       </div>

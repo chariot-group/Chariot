@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Card } from "@/components/ui/card";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { StoredUnitNumberInput } from "@/components/ui/stored-unit-number-input";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Controller, FieldValues, UseFormReturn, useFieldArray } from "react-hook-form";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
@@ -133,15 +134,11 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
                 )}
               />
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
+              <DeleteIconButton
                 onClick={() => removeSense(index)}
-                className="self-start justify-self-end text-red hover:bg-red/10"
-                aria-label={t("removeSense")}>
-                <Trash2 className="size-4" />
-              </Button>
+                className="self-start justify-self-end"
+                aria-label={t("removeSense")}
+              />
             </div>
           ))}
         </div>

@@ -139,7 +139,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? `${inputId}-error` : undefined}
                   placeholder={t(APPEARANCE_DESCRIPTION_FIELD.key)}
-                  className="min-h-36"
+                  className="min-h-36 resize-none"
                 />
                 {fieldState.error && (
                   <FieldError
@@ -180,7 +180,7 @@ export default function CharacterHistoryTabEdit({ accentColor, form }: Character
                   aria-invalid={fieldState.invalid}
                   aria-describedby={fieldState.error ? `${inputId}-error` : undefined}
                   placeholder={t(key)}
-                  className="min-h-36 flex-1"
+                  className="min-h-36 flex-1 resize-none"
                 />
                 {fieldState.error && (
                   <FieldError

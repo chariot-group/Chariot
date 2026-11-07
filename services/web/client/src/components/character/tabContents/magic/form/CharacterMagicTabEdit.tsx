@@ -11,11 +11,12 @@ import {
   type UseFormReturn,
 } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { BookOpen, BookOpenCheck, BookPlus, Plus, Trash2 } from "lucide-react";
+import { BookOpen, BookOpenCheck, BookPlus, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import type { AbilityScores, Character, Spell, Spellcasting } from "@/types/character";
 import { Accordion } from "@/components/ui/accordion";
 import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { calculateAbilityBonus, isPlayer } from "@/utils/global.utils";
 import {
   calculateSpellAttackBonus,
@@ -542,18 +543,10 @@ export default function CharacterMagicTabEdit({
                 ariaUnprepared={`${tMagic("preparedPillAriaUnprepared")} : ${name}`}
               />
             )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-red-500"
+            <DeleteIconButton
               onClick={() => removeSpell(index)}
-              aria-label={tMagic("removeSpellWithName", { name })}>
-              <Trash2
-                className="size-4"
-                aria-hidden="true"
-              />
-            </Button>
+              aria-label={tMagic("removeSpellWithName", { name })}
+            />
           </span>
         );
         if (isWide) {

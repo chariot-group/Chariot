@@ -9,6 +9,7 @@ import {
   normalizeUsageType,
 } from "@/components/character/tabContents/battle/shared/actionSummary";
 import { Button } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Input } from "@/components/ui/input";
 import { StoredUnitFeetRangeInput } from "@/components/ui/stored-unit-feet-range-input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +24,7 @@ import {
 } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { Plus, X, Trash2 } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
 import { DiceHelp } from "@/components/ui/dice-help";
@@ -342,18 +343,10 @@ const ActionUpdateSection = ({
               isOpen={openAccordionValues.includes(`action-${index}`)}
               hasError={hasError}
               trailing={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
+                <DeleteIconButton
                   onClick={() => removeAction(index)}
                   aria-label={t("removeActionFromSection", { section: title, index: index + 1 })}
-                  className="text-red-500">
-                  <Trash2
-                    className="size-4"
-                    aria-hidden="true"
-                  />
-                </Button>
+                />
               }>
               <div
                 id={contentId}
@@ -783,22 +776,15 @@ const ActionUpdateSection = ({
                                       />
                                     )}
                                   </Field>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
+                                  <DeleteIconButton
                                     onClick={() => {
                                       damageField.onChange(
                                         damages.filter((_: unknown, i: number) => i !== damageIndex),
                                       );
                                     }}
                                     aria-label={`${tCommon("delete")} ${tEdit("spellDamage")} ${damageIndex + 1}`}
-                                    className="text-red-500 shrink-0">
-                                    <Trash2
-                                      className="size-4"
-                                      aria-hidden="true"
-                                    />
-                                  </Button>
+                                    className="shrink-0"
+                                  />
                                 </div>
                               );
                             })}
