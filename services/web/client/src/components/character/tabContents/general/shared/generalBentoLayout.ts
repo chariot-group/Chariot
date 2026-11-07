@@ -74,7 +74,7 @@ const ABILITIES_STRETCHED_ROWS_CLASS =
  *   explicitly on the band rows (`row-start` given per layout, as the first band height differs; literal
  *   classes so Tailwind generates them).
  */
-const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start-3") =>
+const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start-3" | "@sheet-xl:row-start-5") =>
   ({
     skills: `${HALF} @sheet-md:row-span-3 @sheet-lg:row-span-2 @sheet-lg:col-span-6`,
     abilityScores: `${HALF} @sheet-lg:col-span-3`,
@@ -102,10 +102,23 @@ export const PLAYER_VIEW_SLOTS = {
  */
 export const PLAYER_EDIT_SLOTS = {
   ...PLAYER_VIEW_SLOTS,
-  character: `${FULL} @sheet-lg:col-span-4 @sheet-lg:row-span-3 @sheet-xl:col-span-3 @sheet-xl:row-span-2`,
+  character: `${FULL} @sheet-lg:col-span-4 @sheet-lg:row-span-3 @sheet-xl:col-span-5 @sheet-xl:row-span-4`,
+  statistics: `${FULL} @sheet-lg:col-span-8 @sheet-xl:col-span-5 @sheet-xl:row-span-4`,
+  /** From `@sheet-xl` the 4 tiles stack in one 2-column column; the freed width goes to the Character card. */
   tile: `${HALF} @sheet-lg:col-span-4 @sheet-xl:col-span-2`,
+  ...skillsBand("@sheet-xl:row-start-5"),
+  /** Proficiencies stays at the bottom: under the skills at `@sheet-lg`, full width from `@sheet-xl`. */
   proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-12`,
 } as const;
+
+/**
+ * Row tracks of the PC edit first band. The Character card spans 3 (4) rows: with `auto` tracks its height
+ * would be spread over every row and stretch the tiles. Only one flexible track (`1fr`) absorbs it:
+ * the Statistics row at `@sheet-lg`, the last tile row at `@sheet-xl`.
+ * @see FR-character-general-bento-layout
+ */
+export const PLAYER_EDIT_GRID_ROWS_CLASS =
+  "@sheet-lg:grid-rows-[1fr_auto_auto] @sheet-xl:grid-rows-[auto_auto_auto_1fr]";
 
 /**
  * NPC (GM constraint): tall Skills card as far left as possible, same skills band as the PC.

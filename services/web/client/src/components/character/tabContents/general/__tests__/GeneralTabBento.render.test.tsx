@@ -150,7 +150,7 @@ describe("General tab — single bento grid", () => {
       const outerClass = html.match(/<div class="([^"]*)"/)?.[1] ?? "";
 
       expect(outerClass.startsWith(GENERAL_BENTO_CONTAINER_CLASS)).toBe(true);
-      expect(html.indexOf(`class="${GENERAL_BENTO_GRID_CLASS}"`)).toBeGreaterThan(html.indexOf(outerClass));
+      expect(html.indexOf(`class="${GENERAL_BENTO_GRID_CLASS}`)).toBeGreaterThan(html.indexOf(outerClass));
     });
 
     it(`failure: ${name} has unique ids and every aria-labelledby resolves`, () => {
@@ -245,7 +245,9 @@ describe("General tab — single bento grid", () => {
     for (const name of ["player edit", "npc edit"] as const) {
       const html = CASES[name]();
 
-      expect(html, name).toMatch(/data-stub="abilities"[^>]*data-bounded-class="[^"]*max-h-\[var\(--abilities-rows-max,20rem\)\][^"]*"/);
+      expect(html, name).toMatch(
+        /data-stub="abilities"[^>]*data-bounded-class="[^"]*max-h-\[var\(--abilities-rows-max,20rem\)\][^"]*"/,
+      );
       expect(html, name).not.toContain("max-h-[min(40rem,70dvh)]");
     }
   });
@@ -357,5 +359,74 @@ describe("General tab — single bento grid", () => {
       expect(column).toBeGreaterThan(-1);
       expect(html.indexOf('id="character-surname"')).toBeGreaterThan(heading);
     }
+  });
+
+  describe("multiclass edit selector", () => {
+    const renderPlayerEdit = (classes: unknown[]) => {
+      const values = { ...player, class: classes } as unknown as FieldValues;
+      return render(
+        <WithForm values={values}>
+          {(form) => (
+            <PlayerGeneralTabEdit
+              player={player}
+              accentColor="text-blue"
+              form={form}
+            />
+          )}
+        </WithForm>,
+      );
+    };
+
+    it("nominal: two classes show one selector button per class and only the first class panel", () => {
+      const html = renderPlayerEdit([
+        { name: "Wizard", level: 2, subclass: "Évocation", hitDice: 6 },
+        { name: "Fighter", level: 1, subclass: "", hitDice: 10 },
+      ]);
+
+      expect(html).toContain('aria-label="classSelector"');
+      expect(html.match(/aria-pressed="(true|false)"/g)).toEqual(['aria-pressed="true"', 'aria-pressed="false"']);
+      expect(html).toContain('id="class-name-0"');
+      expect(html).not.toContain('id="class-name-1"');
+    });
+
+    it("edge: a single class shows its button and the add button in place of a second one", () => {
+      const html = renderPlayerEdit([{ name: "Wizard", level: 3, subclass: "", hitDice: 6 }]);
+      const selector = html.slice(html.indexOf('aria-label="classSelector"'));
+
+      expect(selector.match(/aria-pressed="true"/g)).toHaveLength(1);
+      expect(selector.indexOf("addSecondClass")).toBeGreaterThan(selector.indexOf('aria-pressed="true"'));
+      expect(selector.indexOf("addSecondClass")).toBeLessThan(selector.indexOf('id="class-name-0"'));
+    });
+
+    it("failure: two classes hide the add button (a PC never gets a third class)", () => {
+      const html = renderPlayerEdit([
+        { name: "Wizard", level: 2, subclass: "", hitDice: 6 },
+        { name: "Fighter", level: 1, subclass: "", hitDice: 10 },
+      ]);
+
+      expect(html).not.toContain("addSecondClass");
+    });
+
+    it("failure: the selector never renders a class's fields twice (ids stay unique)", () => {
+      const html = renderPlayerEdit([
+        { name: "Wizard", level: 2, subclass: "", hitDice: 6 },
+        { name: "Fighter", level: 1, subclass: "", hitDice: 10 },
+      ]);
+
+      expect(ids(html).filter((id) => id.startsWith("class-"))).toEqual([
+        ...new Set(ids(html).filter((id) => id.startsWith("class-"))),
+      ]);
+    });
+  });
+
+  it("edge: PC edit grid gives the Character card height to one flexible row, so the tiles do not stretch", () => {
+    expect(CASES["player edit"]()).toContain(
+      "@sheet-lg:grid-rows-[1fr_auto_auto] @sheet-xl:grid-rows-[auto_auto_auto_1fr]",
+    );
+  });
+
+  it("edge: edit mode does not stretch the statistics card content over its track", () => {
+    expect(CASES["player edit"]()).not.toMatch(/data-stub="statistics" class="[^"]*justify-between/);
+    expect(CASES["npc edit"]()).not.toMatch(/data-stub="statistics" class="[^"]*justify-between/);
   });
 });

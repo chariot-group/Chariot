@@ -991,7 +991,6 @@
         "maxBelowCurrent": "El valor de PV máximos se ajustó automáticamente para mantenerse mayor o igual que los PV actuales.",
         "hitDiceRemainingClamped": "Los dados de golpe restantes se han limitado al nivel de esta clase."
       },
-      "defense": "Defensa",
       "initiative": "Iniciativa",
       "size": "Tamaño",
       "selectSize": "Seleccionar un tamaño",
@@ -1477,7 +1476,9 @@
         "classLevelExceeds": "Total supera el nivel global",
         "classLevelExceedsGlobal": "Total de niveles de clase ({total}) supera el nivel global ({global})",
         "classLevelInfo": "Nivel de esta clase: {classLevel} | Total: {totalLevel}/{globalLevel}",
-        "addSecondClass": "Añadir una segunda clase"
+        "addSecondClass": "Añadir una segunda clase",
+        "classSelector": "Clase a editar",
+        "classContainsErrors": "Esta clase contiene errores"
       }
     },
     "npc": {

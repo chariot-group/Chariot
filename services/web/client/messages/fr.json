@@ -992,7 +992,6 @@
         "maxBelowCurrent": "La valeur des PV max a été ajustée automatiquement pour rester supérieure ou égale aux PV actuels.",
         "hitDiceRemainingClamped": "Les dés de vie restants ont été plafonnés au niveau de cette classe."
       },
-      "defense": "Défense",
       "initiative": "Initiative",
       "size": "Taille",
       "selectSize": "Sélectionner une taille",
@@ -1481,7 +1480,9 @@
         "classLevelExceeds": "Total supérieur au niveau global",
         "classLevelExceedsGlobal": "Total des niveaux de classe ({total}) dépasse le niveau global ({global})",
         "classLevelInfo": "Niveau de cette classe : {classLevel} | Total : {totalLevel}/{globalLevel}",
-        "addSecondClass": "Ajouter une multiclasse"
+        "addSecondClass": "Ajouter une multiclasse",
+        "classSelector": "Choix de la classe à modifier",
+        "classContainsErrors": "Cette classe contient des erreurs"
       }
     },
     "npc": {

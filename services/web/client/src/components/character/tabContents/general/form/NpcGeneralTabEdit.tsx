@@ -298,7 +298,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
         <NpcStatisticsUpdate
           accentColor={accentColor}
           form={form}
-          className={`${SLOTS.statistics} justify-between`}>
+          className={SLOTS.statistics}>
           {/* Perception passive (FR-character-statistics-card) */}
           <div className="flex flex-col gap-2">
             <Controller

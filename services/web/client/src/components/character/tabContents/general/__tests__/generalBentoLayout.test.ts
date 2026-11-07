@@ -175,11 +175,11 @@ describe("General tab bento layout", () => {
     expect(grid.every((row) => row.every(Boolean))).toBe(true);
   });
 
-  it("edge: on very large screens player edit keeps the 2 × 2 tiles and a full-width proficiencies card", () => {
+  it("edge: on very large screens player edit stacks the 4 tiles in one column next to a wider Character card, proficiencies full width at the bottom", () => {
     const slots: string[] = [...LAYOUTS["player edit"]()];
     const grid = place(slots.slice(0, 6), BREAKPOINTS.wide);
 
-    expect(grid).toHaveLength(2);
+    expect(grid).toHaveLength(4);
     expect(grid.every((row) => row.every(Boolean))).toBe(true);
     expect(startAt(slots[10], "row", BREAKPOINTS.wide)).toBeUndefined();
     expect(spanAt(slots[10], "col", BREAKPOINTS.wide)).toBe(12);
