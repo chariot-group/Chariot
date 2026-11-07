@@ -908,15 +908,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
               )}
             />
 
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-medium">{t("senses")}</h3>
-              <SensesUpdateSection
-                form={form}
-                accentColor={accentColor}
-                embedded
-              />
-            </div>
-
             {/* Tools */}
             <Controller
               name="stats.tools"
@@ -1012,6 +1003,14 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                 </Field>
               )}
             />
+
+            <div className="flex flex-col gap-2 @lg:col-span-full @4xl:col-span-2">
+              <SensesUpdateSection
+                form={form}
+                accentColor={accentColor}
+                embedded
+              />
+            </div>
           </div>
         </GeneralSectionCard>
       </div>

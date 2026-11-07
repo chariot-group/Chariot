@@ -435,17 +435,17 @@ const AbilitiesUpdateSection = ({
                             name={`${fieldArrayName}.${index}.counterResetsOnShortRest`}
                             control={form.control}
                             render={({ field: srField }) => (
-                              <div className="flex w-full min-w-0 min-h-10 items-start gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                              <div className="flex w-full min-w-0 min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
                                 <Clock
                                   size={20}
-                                  className="mt-0.5 shrink-0 text-white sm:size-6"
+                                  className="shrink-0 text-white sm:size-6"
                                   aria-hidden
                                 />
                                 <Checkbox
                                   id={`${fieldArrayName}-counterResetShort-${index}`}
                                   checked={srField.value === true}
                                   onCheckedChange={(c) => srField.onChange(c === true)}
-                                  className="mt-0.5 shrink-0"
+                                  className="shrink-0"
                                 />
                                 <Label
                                   htmlFor={`${fieldArrayName}-counterResetShort-${index}`}
@@ -460,17 +460,17 @@ const AbilitiesUpdateSection = ({
                             name={`${fieldArrayName}.${index}.counterResetsOnLongRest`}
                             control={form.control}
                             render={({ field: lrField }) => (
-                              <div className="flex w-full min-w-0 min-h-10 items-start gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                              <div className="flex w-full min-w-0 min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
                                 <Moon
                                   size={20}
-                                  className="mt-0.5 shrink-0 text-white sm:size-6"
+                                  className="shrink-0 text-white sm:size-6"
                                   aria-hidden
                                 />
                                 <Checkbox
                                   id={`${fieldArrayName}-counterResetLong-${index}`}
                                   checked={lrField.value === true}
                                   onCheckedChange={(c) => lrField.onChange(c === true)}
-                                  className="mt-0.5 shrink-0"
+                                  className="shrink-0"
                                 />
                                 <Label
                                   htmlFor={`${fieldArrayName}-counterResetLong-${index}`}

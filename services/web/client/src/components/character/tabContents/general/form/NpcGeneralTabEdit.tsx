@@ -434,8 +434,7 @@ export default function NpcGeneralTabEdit({ npc, accentColor, avatar, form }: Np
               )}
             />
 
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-medium">{t("senses")}</h3>
+            <div className="flex flex-col gap-2 @lg:col-span-full @4xl:col-span-2">
               <SensesUpdateSection
                 form={form}
                 accentColor={accentColor}

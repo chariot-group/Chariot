@@ -26,20 +26,41 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
     name: "stats.senses",
   });
 
+  const handleAddSense = () => {
+    const newIndex = senseFields.length;
+    appendSense({ name: "", value: null });
+    requestAnimationFrame(() => {
+      const input = document.getElementById(`sense-name-${newIndex}`);
+      input?.scrollIntoView({ block: "nearest" });
+      input?.focus();
+    });
+  };
+
   const content = (
     <>
       <div className="flex items-center justify-between gap-2">
-        {!embedded && (
+        {embedded ? (
+          <h3 className="text-sm font-medium">{t("senses")}</h3>
+        ) : (
           <h2
             id="senses-heading-edit"
             className={`text-xl sm:text-2xl font-semibold truncate ${accentColor}`}>
             {t("senses")}
           </h2>
         )}
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={handleAddSense}
+          aria-label={t("addSense")}>
+          <Plus className="size-4" />
+          <span>{t("addSense")}</span>
+        </Button>
       </div>
 
       {senseFields.length > 0 ? (
-        <div className="flex flex-col gap-2">
+        <div className="grid content-start gap-2 @lg:grid-cols-2">
           {senseFields.map((senseField, index) => (
             <div
               key={senseField.id}
@@ -127,17 +148,6 @@ export default function SensesUpdateSection({ accentColor, form, embedded = fals
       ) : (
         <p className="text-sm sm:text-base text-muted-foreground">{t("noSenses")}</p>
       )}
-
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        onClick={() => appendSense({ name: "", value: null })}
-        className="w-fit"
-        aria-label={t("addSense")}>
-        <Plus className="size-4" />
-        <span>{t("addSense")}</span>
-      </Button>
     </>
   );
 
