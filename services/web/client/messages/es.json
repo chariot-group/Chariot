@@ -553,7 +553,7 @@
     "uploadLabel": "Elegir imagen de perfil",
     "invalidType": "Formato no compatible. Use JPEG (.jpg), PNG (.png), WebP (.webp) o HEIC (.heic).",
     "tooLarge": "La imagen supera el tamaño máximo de {maxMb} MB.",
-    "requirementsHint": "JPEG, PNG, WebP o HEIC · máx. {maxMb} MB · {width}×{height} px recomendado (ratio 4:5)",
+    "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} MB máx.\n{width}×{height} px (4:5) recomendado",
     "uploadSuccess": "Imagen actualizada.",
     "uploadError": "No se pudo actualizar la imagen.",
     "removeSuccess": "Imagen eliminada.",
@@ -991,7 +991,6 @@
         "maxBelowCurrent": "El valor de PV máximos se ajustó automáticamente para mantenerse mayor o igual que los PV actuales.",
         "hitDiceRemainingClamped": "Los dados de golpe restantes se han limitado al nivel de esta clase."
       },
-      "defense": "Defensa",
       "initiative": "Iniciativa",
       "size": "Tamaño",
       "selectSize": "Seleccionar un tamaño",
@@ -1009,6 +1008,13 @@
       "diceCount": "Número de dados",
       "diceType": "Tipo de dado",
       "bonus": "Bonificación",
+      "diceCountShort": "Dados",
+      "diceTypeShort": "Dado",
+      "bonusShort": "Bono",
+      "damageTypeShort": "Tipo",
+      "diceHelpLabel": "Ayuda sobre la notación de dados",
+      "diceHelp": "3d8 = 3 dados de 8 caras · +2 = bonificación fija sumada a la tirada",
+      "diceSuggestionsLabel": "Sugerencias de dados",
       "damageType": "Tipo de daño",
       "damageTypePlaceholder": "Perforante, fuego, fuerza",
       "quickNumberPlaceholder": "Introduce un numero",
@@ -1247,6 +1253,7 @@
         "levelLabel": "Nivel",
         "globalLevel": "Nivel global",
         "classes": "Clase(s)",
+        "removeClass": "Quitar la clase {index}",
         "subclassOf": "Subclase de",
         "proficiencies": "Competencias",
         "languages": "Idioma(s)",
@@ -1469,7 +1476,9 @@
         "classLevelExceeds": "Total supera el nivel global",
         "classLevelExceedsGlobal": "Total de niveles de clase ({total}) supera el nivel global ({global})",
         "classLevelInfo": "Nivel de esta clase: {classLevel} | Total: {totalLevel}/{globalLevel}",
-        "addSecondClass": "Añadir una segunda clase"
+        "addSecondClass": "Añadir una segunda clase",
+        "classSelector": "Clase a editar",
+        "classContainsErrors": "Esta clase contiene errores"
       }
     },
     "npc": {

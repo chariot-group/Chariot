@@ -84,6 +84,31 @@ describe("ListCard / ListRow", () => {
     expect(edit).not.toContain("max-h-[28rem]");
   });
 
+  it("nominal: bounded rows fill the card height left under the header and keep padding for focus rings", () => {
+    const html = renderList([{ name: "Scimitar" }], { bounded: true });
+    const start = html.lastIndexOf('class="', html.indexOf("overflow-y-auto"));
+    const area = html.slice(start, html.indexOf('"', start + 7));
+
+    expect(area).toContain("flex-1");
+    expect(area).toContain("min-h-0");
+    expect(area).toContain("p-0.5");
+  });
+
+  it("nominal: rows are separated by their divider only and the hover covers the line including the delete button", () => {
+    const html = renderList([{ name: "Scimitar" }, { name: "Bow" }]);
+
+    expect(html).not.toContain("mb-1.5");
+    expect(html).toContain("hover:bg-gray-middle-light/50");
+    expect(html.indexOf("hover:bg-gray-middle-light/50")).toBeLessThan(html.indexOf('aria-label="Delete Scimitar"'));
+  });
+
+  it("edge: the chevron is centered on the row, not pinned to the first line", () => {
+    const html = renderList([{ name: "Scimitar", meta: ["Action", "+5"] }]);
+
+    expect(html).toContain("items-center gap-2");
+    expect(html).not.toContain("[&gt;svg]:mt-1");
+  });
+
   it("nominal: fill lets the bounded rows take the card height from xl, the cap stays below", () => {
     const html = renderList([{ name: "Scimitar" }], { bounded: true, fill: true });
 

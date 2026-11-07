@@ -257,8 +257,11 @@ describe("Magic tab — damage and healing form lines", () => {
   it("failure: fields keep accessible names and placeholders never look like values", () => {
     const html = renderEdit(fireball);
 
+    // Column labels are visible (short text) and keep the full name as tooltip.
     for (const key of ["diceCount", "bonus", "damageType"]) {
-      expect(html).toMatch(new RegExp(`<label for="[^"]*-damage-0-[a-z]+" class="sr-only">${key}</label>`));
+      expect(html).toMatch(
+        new RegExp(`<label for="[^"]*-damage-0-[a-z]+" title="${key}" class="[^"]*">${key}Short</label>`),
+      );
     }
     expect(html).toMatch(/-damage-0-dice"[^>]*aria-label="diceType"|aria-label="diceType"[^>]*-damage-0-dice"/);
     expect(html).not.toContain("damageDiceCountPlaceholder");

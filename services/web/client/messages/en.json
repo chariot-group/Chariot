@@ -553,7 +553,7 @@
     "uploadLabel": "Choose a profile image",
     "invalidType": "Unsupported format. Use JPEG (.jpg), PNG (.png), WebP (.webp), or HEIC (.heic).",
     "tooLarge": "Image exceeds the {maxMb} MB size limit.",
-    "requirementsHint": "JPEG, PNG, WebP, or HEIC · max. {maxMb} MB · {width}×{height} px recommended (4:5 ratio)",
+    "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} MB max\n{width}×{height} px (4:5) recommended",
     "uploadSuccess": "Image updated.",
     "uploadError": "Could not update the image.",
     "removeSuccess": "Image removed.",
@@ -991,7 +991,6 @@
         "maxBelowCurrent": "Max HP was automatically adjusted to stay greater than or equal to current HP.",
         "hitDiceRemainingClamped": "Remaining hit dice were capped by this class’s level."
       },
-      "defense": "Defense",
       "initiative": "Initiative",
       "size": "Size",
       "selectSize": "Select a size",
@@ -1009,6 +1008,13 @@
       "diceCount": "Dice Count",
       "diceType": "Dice Type",
       "bonus": "Bonus",
+      "diceCountShort": "Dice",
+      "diceTypeShort": "Die",
+      "bonusShort": "Bonus",
+      "damageTypeShort": "Type",
+      "diceHelpLabel": "Dice notation help",
+      "diceHelp": "3d8 = 3 eight-sided dice · +2 = flat bonus added to the roll",
+      "diceSuggestionsLabel": "Dice suggestions",
       "damageType": "Damage Type",
       "damageTypePlaceholder": "Piercing, fire, force",
       "quickNumberPlaceholder": "Enter a number",
@@ -1247,6 +1253,7 @@
         "levelLabel": "Level",
         "globalLevel": "Global level",
         "classes": "Class(es)",
+        "removeClass": "Remove class {index}",
         "subclassOf": "Subclass of",
         "proficiencies": "Proficiencies",
         "languages": "Language(s)",
@@ -1469,7 +1476,9 @@
         "classLevelExceeds": "Total exceeds global level",
         "classLevelExceedsGlobal": "Total class levels ({total}) exceeds global level ({global})",
         "classLevelInfo": "This class level: {classLevel} | Total: {totalLevel}/{globalLevel}",
-        "addSecondClass": "Add multiclass"
+        "addSecondClass": "Add multiclass",
+        "classSelector": "Class to edit",
+        "classContainsErrors": "This class contains errors"
       }
     },
     "npc": {

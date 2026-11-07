@@ -3,15 +3,17 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Controller, useWatch, type Path, type PathValue, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import type { Character, DamageDetails, HealingDetails, Spell } from "@/types/character";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
+import { DiceHelp } from "@/components/ui/dice-help";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { DICE_TYPES, SPELL_SCHOOLS } from "@/utils/magic.utils";
@@ -148,64 +150,78 @@ function DiceFormulaRow({
 
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <div className="flex min-w-0 flex-wrap items-center gap-2">
-        <div className="flex shrink-0 items-center gap-1.5">
-          <label
-            htmlFor={`${id}-count`}
-            className="sr-only">
-            {tEdit("diceCount")}
-          </label>
-          <Input
-            id={`${id}-count`}
-            type="number"
-            min={0}
-            className="w-16 text-center"
-            value={value?.diceCount ?? ""}
-            onChange={(event) => onChange("diceCount", toNumberOrNull(event.target.value))}
-          />
+      <div className="flex min-w-0 flex-wrap items-end gap-2">
+        <div className="flex shrink-0 items-end gap-1.5">
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor={`${id}-count`}
+              title={tEdit("diceCount")}
+              className="text-xs font-medium text-muted-foreground">
+              {tEdit("diceCountShort")}
+            </label>
+            <Input
+              id={`${id}-count`}
+              type="number"
+              min={0}
+              className="w-16 text-center"
+              value={value?.diceCount ?? ""}
+              onChange={(event) => onChange("diceCount", toNumberOrNull(event.target.value))}
+            />
+          </div>
           <span
-            className="text-sm font-semibold text-muted-foreground"
+            className="flex h-9 items-center text-sm font-semibold text-muted-foreground"
             aria-hidden="true">
             d
           </span>
-          <Select
-            value={value?.diceType || undefined}
-            onValueChange={(next) => onChange("diceType", next)}>
-            <SelectTrigger
-              id={`${id}-dice`}
-              className="w-20"
-              aria-label={tEdit("diceType")}>
-              <SelectValue placeholder="–" />
-            </SelectTrigger>
-            <SelectContent position="popper">
-              <SelectGroup>
-                {DICE_TYPES.map((dice) => (
-                  <SelectItem
-                    key={dice}
-                    value={dice}>
-                    {dice.replace(/^d/, "")}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col gap-1">
+            <span
+              aria-hidden="true"
+              title={tEdit("diceType")}
+              className="text-xs font-medium text-muted-foreground">
+              {tEdit("diceTypeShort")}
+            </span>
+            <Select
+              value={value?.diceType || undefined}
+              onValueChange={(next) => onChange("diceType", next)}>
+              <SelectTrigger
+                id={`${id}-dice`}
+                className="w-20"
+                aria-label={tEdit("diceType")}>
+                <SelectValue placeholder="–" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectGroup>
+                  {DICE_TYPES.map((dice) => (
+                    <SelectItem
+                      key={dice}
+                      value={dice}>
+                      {dice.replace(/^d/, "")}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
           <span
-            className="text-sm font-semibold text-muted-foreground"
+            className="flex h-9 items-center text-sm font-semibold text-muted-foreground"
             aria-hidden="true">
             +
           </span>
-          <label
-            htmlFor={`${id}-bonus`}
-            className="sr-only">
-            {tEdit("bonus")}
-          </label>
-          <Input
-            id={`${id}-bonus`}
-            type="number"
-            className="w-16 text-center"
-            value={value?.bonus ?? ""}
-            onChange={(event) => onChange("bonus", toNumberOrNull(event.target.value))}
-          />
+          <div className="flex flex-col gap-1">
+            <label
+              htmlFor={`${id}-bonus`}
+              title={tEdit("bonus")}
+              className="text-xs font-medium text-muted-foreground">
+              {tEdit("bonusShort")}
+            </label>
+            <Input
+              id={`${id}-bonus`}
+              type="number"
+              className="w-16 text-center"
+              value={value?.bonus ?? ""}
+              onChange={(event) => onChange("bonus", toNumberOrNull(event.target.value))}
+            />
+          </div>
         </div>
         {extra && <div className="min-w-36 flex-1">{extra}</div>}
         {trailing}
@@ -491,7 +507,10 @@ export default function SpellEditForm({
 
             return (
               <div className="flex min-w-0 flex-col gap-2">
-                <span className={LABEL_CLASS}>{tEdit("spellDamage")}</span>
+                <div className="flex items-center gap-1">
+                  <span className={LABEL_CLASS}>{tEdit("spellDamage")}</span>
+                  <DiceHelp />
+                </div>
                 {damages.map((damage, damageIndex) => {
                   const typePath = charPath(`${base}.damageDetails.${damageIndex}.damageType`);
                   const typeState = form.getFieldState(typePath, form.formState);
@@ -510,8 +529,9 @@ export default function SpellEditForm({
                           className="min-w-0 gap-1">
                           <label
                             htmlFor={`${rowId}-type`}
-                            className="sr-only">
-                            {tEdit("damageType")}
+                            title={tEdit("damageType")}
+                            className="text-xs font-medium text-muted-foreground">
+                            {tEdit("damageTypeShort")}
                           </label>
                           <DamageTypeInput
                             id={`${rowId}-type`}
@@ -530,20 +550,12 @@ export default function SpellEditForm({
                         </Field>
                       }
                       trailing={
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
+                        <DeleteIconButton
                           onClick={() =>
                             damageField.onChange(ensureSpellDamageEditRows(damages.filter((_, i) => i !== damageIndex)))
                           }
-                          aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}>
-                          <Trash2
-                            className="size-4"
-                            aria-hidden="true"
-                          />
-                        </Button>
+                          aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}
+                        />
                       }
                     />
                   );
