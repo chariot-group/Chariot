@@ -17,7 +17,11 @@ services:
       NODE_ENV: development
       NODE_OPTIONS: "--max-old-space-size=4096"
       NEXT_PUBLIC_ENV_NAME: development
+      # Direct gateway by default (local Next.js serves HTTP/1.1: same-origin calls would queue behind
+      # JS chunks). To mirror integ/prod's same-origin API (FR-web-first-load-performance), set
+      # GATEWAY_URL=http://localhost:3000/gateway and GATEWAY_INTERNAL_URL=http://chariot-gateway:8082.
       NEXT_PUBLIC_API_URL: ${GATEWAY_URL:-http://localhost:8082}
+      GATEWAY_INTERNAL_URL: ${GATEWAY_INTERNAL_URL:-}
       NEXT_PUBLIC_SESSION_WS_URL: ${SESSION_WS_URL:-http://localhost:9002}
       NEXT_PUBLIC_CODEX_URL: ${CODEX_URL:-http://localhost:9001}
       NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
