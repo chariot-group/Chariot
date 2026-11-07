@@ -52,7 +52,10 @@ describe("AbilitiesSection — list card rows", () => {
     const abilities = [{ name: "Darkvision", description: "See." } as Ability];
     const capped = render(abilities, { boundedList: true, boundedClassName: GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS });
 
-    expect(capped).toContain("max-h-[20rem]");
+    expect(capped).toContain("max-h-[var(--abilities-rows-max,20rem)]");
+    expect(capped).toContain("h-[var(--abilities-rows-h,auto)]");
+    // `flex-1` alone resolves to a 0% basis, which grows with the content while the grid sizes its rows.
+    expect(capped).toContain("basis-auto");
     expect(capped).not.toContain("max-h-[28rem]");
     expect(render(abilities, { boundedList: true })).toContain("max-h-[28rem]");
   });

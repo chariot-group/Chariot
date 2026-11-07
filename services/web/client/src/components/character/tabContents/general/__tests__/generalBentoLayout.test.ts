@@ -276,4 +276,12 @@ describe("General tab bento layout", () => {
 
     expect(emptyCells(slots, BREAKPOINTS.tablet)).not.toEqual([]);
   });
+
+  it("nominal: from @sheet-md the Abilities slot lets its rows fill the stretched card (variables set on the card)", () => {
+    for (const layout of [PLAYER_VIEW_SLOTS, PLAYER_EDIT_SLOTS, NPC_VIEW_SLOTS, NPC_EDIT_SLOTS]) {
+      expect(layout.abilities).toContain("@sheet-md:[--abilities-rows-h:0px]");
+      expect(layout.abilities).toContain("@sheet-md:[--abilities-rows-max:none]");
+      expect(layout.abilities).not.toMatch(/\[&>\[role=group\]\]/);
+    }
+  });
 });

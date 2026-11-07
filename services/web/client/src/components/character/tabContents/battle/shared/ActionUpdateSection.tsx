@@ -8,8 +8,7 @@ import {
   formatActionDamage,
   normalizeUsageType,
 } from "@/components/character/tabContents/battle/shared/actionSummary";
-import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StoredUnitFeetRangeInput } from "@/components/ui/stored-unit-feet-range-input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +26,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Plus, X, Trash2 } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
+import { DiceHelp } from "@/components/ui/dice-help";
+import { DiceInput } from "@/components/ui/dice-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AbilityScores } from "@/types/character";
 import {
@@ -509,7 +510,7 @@ const ActionUpdateSection = ({
                                 bonus: formatSignedBonus(suggestion.attackBonus),
                                 selected: isSelected ? t("selected") : t("notSelected"),
                               })}
-                              className="h-7 px-2 text-xs">
+                              className="h-9 rounded-[15px] px-3 text-xs">
                               {tAbilitiesAbbr(suggestion.key)} {formatSignedBonus(suggestion.attackBonus)}
                             </Button>
                           );
@@ -706,25 +707,26 @@ const ActionUpdateSection = ({
                                   key={damageIndex}
                                   className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-2 @2xl:grid-cols-[minmax(0,10rem)_auto_minmax(0,1fr)_auto]">
                                   <div className="flex min-w-0 flex-col gap-1">
-                                    <label
-                                      htmlFor={`${actionItemId}-damage-${damageIndex}-dice`}
-                                      className={cn(
-                                        "text-xs font-medium text-muted-foreground",
-                                        damageIndex > 0 && "sr-only",
-                                      )}>
-                                      {tEdit("spellDamage")}
-                                    </label>
-                                    <Input
+                                    <div className="flex items-center gap-1">
+                                      <label
+                                        htmlFor={`${actionItemId}-damage-${damageIndex}-dice`}
+                                        className="text-xs font-medium text-muted-foreground">
+                                        {tEdit("spellDamage")}
+                                      </label>
+                                      {damageIndex === 0 && <DiceHelp />}
+                                    </div>
+                                    <DiceInput
                                       id={`${actionItemId}-damage-${damageIndex}-dice`}
                                       value={damage?.dice ?? ""}
-                                      onChange={(event) => updateDamage(damageIndex, "dice", event.target.value)}
+                                      onChange={(value) => updateDamage(damageIndex, "dice", value)}
                                       placeholder="1d6"
                                       className="w-full"
+                                      suggestionsLabel={tEdit("diceSuggestionsLabel")}
                                     />
                                   </div>
                                   <Button
                                     type="button"
-                                    variant="secondary"
+                                    variant={damage?.applyAbilityBonus ? "primary" : "secondary"}
                                     size="sm"
                                     disabled={!hasSelectedAttackAbility}
                                     onClick={() => {
@@ -753,10 +755,7 @@ const ActionUpdateSection = ({
                                         : t("attackDC")
                                     }
                                     aria-pressed={Boolean(damage?.applyAbilityBonus)}
-                                    className={cn(
-                                      "h-9 w-22 px-0 text-xs shrink-0 self-end",
-                                      damage?.applyAbilityBonus && toggleButtonPressedClassName,
-                                    )}>
+                                    className="h-9 w-22 shrink-0 self-end px-0 text-xs">
                                     AUTO {hasSelectedAttackAbility ? formatSignedBonus(selectedDamageModifier) : ""}
                                   </Button>
                                   <Field
@@ -765,10 +764,7 @@ const ActionUpdateSection = ({
                                     className="order-last col-span-full min-w-0 gap-1 @2xl:order-none @2xl:col-span-1">
                                     <label
                                       htmlFor={damageTypePath}
-                                      className={cn(
-                                        "text-xs font-medium text-muted-foreground",
-                                        damageIndex > 0 && "sr-only",
-                                      )}>
+                                      className="text-xs font-medium text-muted-foreground">
                                       {tEdit("damageType")}
                                     </label>
                                     <DamageTypeInput

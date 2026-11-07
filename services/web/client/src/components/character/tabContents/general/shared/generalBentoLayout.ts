@@ -38,12 +38,13 @@ export const BENTO_BOUNDED_LIST_CLASS =
   "max-h-[28rem] overflow-y-auto pr-2 rounded-[10px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover";
 
 /**
- * Lower cap for the Abilities list of the General tab (read and edit modes): the card sits right under
- * the statistics, so a long list must not push the skills band down, and the sheet does not grow on edit.
- * Merged over the shared read / edit caps.
+ * Rows height of the Abilities list of the General tab (read and edit modes), merged over the shared caps.
+ * Below `@sheet-md` it is capped at `20rem` so a long list does not push the next cards down; from `@sheet-md`
+ * the slot (`ABILITIES_STRETCHED_ROWS_CLASS`) makes it fill its stretched card instead.
  * @see FR-character-general-bento-layout
  */
-export const GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS = "max-h-[20rem]";
+export const GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS =
+  "basis-auto h-[var(--abilities-rows-h,auto)] max-h-[var(--abilities-rows-max,20rem)] min-h-[var(--abilities-rows-min,0px)]";
 
 /** Viewport grid (`BENTO_GRID_CLASS`): full width below `xl` (2 cols on mobile, 4 on tablet). */
 export const BENTO_FULL_SLOT = "min-w-0 col-span-2 sm:col-span-4";
@@ -53,6 +54,17 @@ export const BENTO_HALF_SLOT = "min-w-0 col-span-2";
 /** General grid: full width below `@sheet-lg` (2 cols on mobile, 4 on tablet). */
 const FULL = "min-w-0 col-span-2 @sheet-md:col-span-4";
 const HALF = BENTO_HALF_SLOT;
+
+/**
+ * From `@sheet-md` the Abilities card sits beside the Skills card and is stretched by the grid: it sets the
+ * rows-area variables read by `GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS`, so the rows drop the `20rem` cap and
+ * fill the card (`height: 0` + `flex-basis: auto`, `20rem` floor) while the card height stays driven by its
+ * neighbours — a `0%` basis would fall back to the content height while the grid sizes its rows. Variables,
+ * not a `@sheet-md:[&>…]` class: a container query on the rows area would resolve against the card itself.
+ * @see FR-character-list-card
+ */
+const ABILITIES_STRETCHED_ROWS_CLASS =
+  "@sheet-md:[--abilities-rows-h:0px] @sheet-md:[--abilities-rows-max:none] @sheet-md:[--abilities-rows-min:20rem]";
 
 /**
  * Skills band (PC and NPC, DOM order Skills · Ability scores · Saving throws · Abilities · Proficiencies).
@@ -67,7 +79,7 @@ const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start
     skills: `${HALF} @sheet-md:row-span-3 @sheet-lg:row-span-2 @sheet-lg:col-span-6`,
     abilityScores: `${HALF} @sheet-lg:col-span-3`,
     savingThrows: `${HALF} @sheet-lg:col-span-3`,
-    abilities: `${HALF} @sheet-lg:col-span-6 @sheet-lg:row-span-2 @sheet-xl:col-span-3 @sheet-xl:col-start-10 ${bandRowStart}`,
+    abilities: `${HALF} @sheet-lg:col-span-6 @sheet-lg:row-span-2 @sheet-xl:col-span-3 @sheet-xl:col-start-10 ${bandRowStart} ${ABILITIES_STRETCHED_ROWS_CLASS}`,
   }) as const;
 
 export const PLAYER_VIEW_SLOTS = {

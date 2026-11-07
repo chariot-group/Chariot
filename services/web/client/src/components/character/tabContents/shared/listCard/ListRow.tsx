@@ -88,11 +88,11 @@ export default function ListRow({
         "border-b border-border data-[state=open]:rounded-[10px] data-[state=open]:bg-gray-middle-light/30",
         hasError && "rounded-[10px] border-transparent ring-2 ring-destructive",
       )}>
-      <div className="flex min-w-0 items-start gap-1">
+      <div className="flex min-w-0 items-center gap-1 rounded-[10px] hover:bg-gray-middle-light/50">
         <div className="min-w-0 flex-1">
           <AccordionTrigger
             id={triggerId}
-            className="min-w-0 w-full items-start gap-2 rounded-[10px] px-2 py-2.5 text-left hover:bg-gray-middle-light/50 hover:font-medium hover:no-underline [&>svg]:mt-1"
+            className="min-w-0 w-full items-center gap-2 rounded-[10px] px-2 py-2.5 text-left hover:font-medium hover:no-underline [&>svg]:translate-y-0"
             aria-label={triggerLabel}>
             <span className="flex min-w-0 flex-1 flex-col gap-1">
               <span
@@ -109,7 +109,7 @@ export default function ListRow({
             </span>
           </AccordionTrigger>
         </div>
-        {trailing && <div className="shrink-0 pt-1">{trailing}</div>}
+        {trailing && <div className="shrink-0 pr-1">{trailing}</div>}
       </div>
       <AccordionContent
         className={cn("px-2 pb-3 text-sm sm:text-base", contentClassName)}

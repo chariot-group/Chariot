@@ -76,13 +76,13 @@ describe("ActionUpdateSection — expanded row form sections", () => {
     expect(html).toContain("attackSuggestions");
   });
 
-  it("edge: damage column labels are visible on the first entry only", () => {
+  it("edge: damage column labels are visible on every entry", () => {
     const html = render();
     const diceLabels = [...html.matchAll(/<label[^>]*for="[^"]*-damage-\d-dice"[^>]*>/g)].map((match) => match[0]);
 
     expect(diceLabels).toHaveLength(2);
     expect(diceLabels[0]).not.toContain("sr-only");
-    expect(diceLabels[1]).toContain("sr-only");
+    expect(diceLabels[1]).not.toContain("sr-only");
   });
 
   it("failure: the item count is a decorative badge, the heading keeps the list title", () => {

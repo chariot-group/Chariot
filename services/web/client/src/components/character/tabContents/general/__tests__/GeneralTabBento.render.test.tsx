@@ -236,7 +236,7 @@ describe("General tab — single bento grid", () => {
   it("nominal: in read mode the abilities list is capped lower than the shared bounded height", () => {
     for (const name of ["player view", "npc view"] as const) {
       expect(CASES[name](), name).toMatch(
-        /data-stub="abilities"[^>]*data-bounded="true"[^>]*data-bounded-class="max-h-\[20rem\]"/,
+        /data-stub="abilities"[^>]*data-bounded="true"[^>]*data-bounded-class="[^"]*max-h-\[var\(--abilities-rows-max,20rem\)\][^"]*"/,
       );
     }
   });
@@ -245,7 +245,7 @@ describe("General tab — single bento grid", () => {
     for (const name of ["player edit", "npc edit"] as const) {
       const html = CASES[name]();
 
-      expect(html, name).toMatch(/data-stub="abilities"[^>]*data-bounded-class="max-h-\[20rem\]"/);
+      expect(html, name).toMatch(/data-stub="abilities"[^>]*data-bounded-class="[^"]*max-h-\[var\(--abilities-rows-max,20rem\)\][^"]*"/);
       expect(html, name).not.toContain("max-h-[min(40rem,70dvh)]");
     }
   });
