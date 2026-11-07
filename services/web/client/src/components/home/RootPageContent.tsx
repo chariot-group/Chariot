@@ -11,7 +11,11 @@ import { useTranslations } from "next-intl";
 import { useStore } from "react-redux";
 import { RootState } from "@/store";
 
-export default function Home() {
+/**
+ * Locale root (`/{locale}`): landing point of the Keycloak callback. Handles the payment-success
+ * return; post-login navigation itself is done by `PostLoginNavigator` (FR-post-auth-navigation).
+ */
+export default function RootPageContent() {
   const t = useTranslations("payment");
   const toast = useToast();
   const router = useRouter();
