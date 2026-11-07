@@ -145,7 +145,7 @@ export function SpellGroupHeader({
   trailing?: ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-10 bg-card pt-3 pb-1 first:pt-0">
+    <div className="sticky -top-0.5 z-10 bg-card pt-3 pb-1 first:pt-0">
       <div className="flex min-w-0 items-center justify-between gap-2 rounded-[10px] bg-gray-middle-light px-3 py-1.5">
         <h3 className={cn("flex min-w-0 items-center gap-1.5 text-sm font-semibold sm:text-base", accentColor)}>
           <span className="truncate">{label}</span>

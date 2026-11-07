@@ -124,7 +124,7 @@ function SpellSlotTotalInput({
               type="number"
               inputMode="numeric"
               min={0}
-              className="h-8 w-14 text-center"
+              className="h-8 w-14 border border-border bg-card text-center"
               value={value === undefined || value === null ? "" : String(value)}
               aria-invalid={fieldState.invalid}
               aria-label={tMagic("spellSlotsTotalForLevel", { level })}
@@ -718,7 +718,7 @@ export default function CharacterMagicTabEdit({
         collapseLabel={tMagic("collapseAll")}
         emptyLabel={tMagic("noSpells")}>
         {isWide ? (
-          <div className="w-full">{listItems}</div>
+          <div className="flex w-full flex-col gap-1">{listItems}</div>
         ) : (
           <Accordion
             type="multiple"
@@ -728,7 +728,7 @@ export default function CharacterMagicTabEdit({
               if (opened) setSelectedSpell(Number(opened.replace("spell-", "")));
               setOpenRows(next);
             }}
-            className="w-full">
+            className="flex w-full flex-col gap-1">
             {listItems}
           </Accordion>
         )}
