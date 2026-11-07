@@ -13,6 +13,7 @@ import {
   queueCompanionLinkOp,
   requiresNpcLinkReassignmentConfirm,
   sidebarNpcLinkActions,
+  splitSidebarRowsBySessionCharacter,
 } from "@/lib/npcPlayerLink";
 import type { Character, NPC } from "@/types/character";
 
@@ -23,7 +24,7 @@ const player = (id: string): Character =>
     lastname: id,
     groups: [],
     progression: {},
-  }) as Character;
+  }) as unknown as Character;
 
 const npc = (id: string, linkedPlayerId?: string | null, groups: unknown[] = []): NPC =>
   ({
@@ -37,11 +38,7 @@ const npc = (id: string, linkedPlayerId?: string | null, groups: unknown[] = [])
 
 describe("FR-npc-player-link — player sidebar rows", () => {
   it("nominal: nests linked NPCs under their Player", () => {
-    const rows = buildPlayerSidebarRows(
-      [player("p1")],
-      [],
-      [npc("n1", "p1"), npc("n2", "p1")],
-    );
+    const rows = buildPlayerSidebarRows([player("p1")], [], [npc("n1", "p1"), npc("n2", "p1")]);
 
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ type: "player", character: { _id: "p1" } });
@@ -129,11 +126,7 @@ describe("FR-npc-player-link — applyCompanionLinkChange", () => {
   });
 
   it("nominal: unlinking an NPC removes it from the companions list", () => {
-    const next = applyCompanionLinkChange(
-      [npc("n1", "p1"), npc("n2", "p1")],
-      npc("n1", null),
-      "p1",
-    );
+    const next = applyCompanionLinkChange([npc("n1", "p1"), npc("n2", "p1")], npc("n1", null), "p1");
     expect(next.map((item) => item._id)).toEqual(["n2"]);
   });
 
@@ -233,9 +226,14 @@ describe("FR-sidebar-npc-link — sidebarNpcLinkActions", () => {
 
   it("edge: launched session keeps only PDF export", () => {
     expect(playerSpaceSidebarActionIds(npc("n1"), { actionsDisabled: true })).toEqual(["exportPdf"]);
-    expect(
-      playerSpaceSidebarActionIds(npc("n1", "p1"), { actionsDisabled: false }),
-    ).toEqual(["exportPdf", "unlink", "reassign", "duplicate", "edit", "delete"]);
+    expect(playerSpaceSidebarActionIds(npc("n1", "p1"), { actionsDisabled: false })).toEqual([
+      "exportPdf",
+      "unlink",
+      "reassign",
+      "duplicate",
+      "edit",
+      "delete",
+    ]);
   });
 
   it("failure: Player rows and NPCs without id get no link actions", () => {
@@ -262,9 +260,9 @@ describe("FR-sidebar-npc-link — playersForNpcLinkPicker", () => {
   });
 
   it("failure: drops NPCs, blank ids, and empty next-player reassignment", () => {
-    expect(playersForNpcLinkPicker([npc("n1"), player("p1"), { ...player("p0"), _id: "" }]).map((item) => item._id)).toEqual(
-      ["p1"],
-    );
+    expect(
+      playersForNpcLinkPicker([npc("n1"), player("p1"), { ...player("p0"), _id: "" }]).map((item) => item._id),
+    ).toEqual(["p1"]);
     expect(requiresNpcLinkReassignmentConfirm("p1", "p2")).toBe(true);
     expect(requiresNpcLinkReassignmentConfirm("p1", "p1")).toBe(false);
     expect(requiresNpcLinkReassignmentConfirm(null, "p2")).toBe(false);
@@ -309,5 +307,26 @@ describe("FR-sidebar-npc-link — persistSidebarNpcLinkedPlayer", () => {
     };
 
     await expect(persistSidebarNpcLinkedPlayer(npc("n1"), "p1", updateNpc)).rejects.toThrow("api-down");
+  });
+});
+
+describe("splitSidebarRowsBySessionCharacter", () => {
+  const rows = buildPlayerSidebarRows([player("p1"), player("p2")], [npc("n1")], [npc("c1", "p2")]);
+
+  it("puts the session character row first and keeps the others in order", () => {
+    const split = splitSidebarRowsBySessionCharacter(rows, "p2");
+    expect(split?.sessionRow.character._id).toBe("p2");
+    expect(split?.sessionRow.type === "player" && split.sessionRow.companions.map((c) => c._id)).toEqual(["c1"]);
+    expect(split?.otherRows.map((row) => row.character._id)).toEqual(["p1", "n1"]);
+  });
+
+  it("returns an empty out-of-session list when the session character is the only row", () => {
+    const split = splitSidebarRowsBySessionCharacter(buildPlayerSidebarRows([player("p1")], [], []), "p1");
+    expect(split?.otherRows).toEqual([]);
+  });
+
+  it("returns null without session character or when it is missing from the list", () => {
+    expect(splitSidebarRowsBySessionCharacter(rows, null)).toBeNull();
+    expect(splitSidebarRowsBySessionCharacter(rows, "unknown")).toBeNull();
   });
 });

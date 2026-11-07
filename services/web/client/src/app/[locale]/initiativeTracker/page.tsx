@@ -5,7 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { LayersMinus, LayersPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AddCombatantsDialog } from "@/components/dialogs/AddCombatantsDialog";
+import { AddCombatantsDialog, useHasAddableCombatants } from "@/components/dialogs/AddCombatantsDialog";
 import { RemoveCombatantGroupsDialog } from "@/components/dialogs/RemoveCombatantGroupsDialog";
 import { InitiativeTrackerHealthDialog } from "@/components/initiativeTracker/InitiativeTrackerHealthDialog";
 import { InitiativeTrackerTable } from "@/components/initiativeTracker/InitiativeTrackerTable";
@@ -21,6 +21,8 @@ import {
   trackerMirrorFieldsFromCharacter,
   filterRowsForPlayerView,
   isSessionParticipantTrackerRow,
+  canRemoveTrackerGroup,
+  countMissingInitiatives,
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
 import CharacterService from "@/services/CharacterService";
@@ -68,7 +70,7 @@ import {
   selectSessionInitBattleDraft,
   selectTurnsWithActions,
   selectInitiativeTrackerRows,
-  selectIsInSession,
+  selectIsSessionLaunched,
   selectSessionCode,
   selectSessionParticipants,
   selectCustomEffectCatalog,
@@ -84,12 +86,13 @@ import type { InitiativeTrackerRow, TrackerConcentration } from "@/store/slices/
 export default function InitiativeTrackerPage() {
   const t = useTranslations("initTracker.tracker");
   const tInit = useTranslations("initTracker");
+  const hasAddableCombatants = useHasAddableCombatants();
   const tBattle = useTranslations("characterDetail.battle");
   const dispatch = useAppDispatch();
   const store = useAppStore();
   const router = useRouter();
   const sessionCode = useAppSelector(selectSessionCode);
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const participants = useAppSelector(selectSessionParticipants);
   const user = useUser();
   const [healthDialogRow, setHealthDialogRow] = React.useState<InitiativeTrackerRow | null>(null);
@@ -154,6 +157,12 @@ export default function InitiativeTrackerPage() {
     return filterRowsForPlayerView(rows);
   }, [battleStarted, isGameMaster, ownCharacterId, rows]);
 
+  const canRemoveGroup = React.useMemo(() => canRemoveTrackerGroup(rows), [rows]);
+  const missingInitiativeCount = React.useMemo(
+    () => (isGameMaster && !battleStarted ? countMissingInitiatives(rows) : 0),
+    [battleStarted, isGameMaster, rows],
+  );
+
   const activeTurnIndex = React.useMemo(() => {
     if (!activeTurnRowId) return -1;
     return visibleRows.findIndex((row) => row.id === activeTurnRowId);
@@ -175,7 +184,7 @@ export default function InitiativeTrackerPage() {
   const canGoPrevious = previousTurnState === "available";
 
   const broadcastCurrentBattleState = React.useCallback((options?: { includeEnded?: boolean }) => {
-    if (!isGameMaster || !isInSession) return;
+    if (!isGameMaster || !isSessionLaunched) return;
     const snapshot = selectBattleStateSnapshot(
       store.getState() as Parameters<typeof selectBattleStateSnapshot>[0],
     );
@@ -187,7 +196,7 @@ export default function InitiativeTrackerPage() {
       return;
     }
     emitBattleStateUpdate(snapshot);
-  }, [isGameMaster, isInSession, store]);
+  }, [isGameMaster, isSessionLaunched, store]);
 
   const dispatchTrackerAction = React.useCallback((
     action: ReturnType<
@@ -558,7 +567,7 @@ export default function InitiativeTrackerPage() {
       getConditionLabel: (condition: ActiveInitiativeTrackerCondition | "none") => t(`conditions.${condition}`),
       getConditionDescription: (condition: ActiveInitiativeTrackerCondition) =>
         t(`conditionDescriptions.${condition}`),
-      formatConditionEntryDuration: (entry: InitiativeTrackerConditionEntry) => {
+      formatConditionEntryDuration: (entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">) => {
         if (entry.duration?.unit === "untilCombatEnd") {
           return t("conditionDurationUntilCombatEnd");
         }
@@ -622,12 +631,13 @@ export default function InitiativeTrackerPage() {
 
             {isGameMaster ? (
               <div className="flex shrink-0 items-center gap-2">
+                {canRemoveGroup ? (
                 <RemoveCombatantGroupsDialog>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     aria-label={tInit("removeCombatantGroups")}
-                    className="gap-2 rounded-[15px] px-3 sm:px-4">
+                    className="gap-2 px-3 sm:px-4">
                     <LayersMinus
                       className="size-4"
                       aria-hidden="true"
@@ -635,12 +645,14 @@ export default function InitiativeTrackerPage() {
                     <span className="sr-only sm:not-sr-only">{tInit("removeCombatantGroups")}</span>
                   </Button>
                 </RemoveCombatantGroupsDialog>
+                ) : null}
+                {hasAddableCombatants ? (
                 <AddCombatantsDialog>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     aria-label={tInit("addCombatants")}
-                    className="gap-2 rounded-[15px] px-3 sm:px-4">
+                    className="gap-2 px-3 sm:px-4">
                     <LayersPlus
                       className="size-4"
                       aria-hidden="true"
@@ -648,6 +660,7 @@ export default function InitiativeTrackerPage() {
                     <span className="sr-only sm:not-sr-only">{tInit("addCombatants")}</span>
                   </Button>
                 </AddCombatantsDialog>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -693,7 +706,7 @@ export default function InitiativeTrackerPage() {
                 }
               : undefined
           }
-          onHitPointsClick={isGameMaster && isInSession ? (row) => setHealthDialogRow(row) : undefined}
+          onHitPointsClick={isGameMaster && isSessionLaunched ? (row) => setHealthDialogRow(row) : undefined}
           battleStarted={battleStarted}
           currentRound={currentRound}
           onSetConcentration={
@@ -716,10 +729,7 @@ export default function InitiativeTrackerPage() {
           groupedInitiativeLabels={
             isGameMaster && !battleStarted
               ? {
-                  enableMode: t("groupedInitiativeEnable"),
-                  disableMode: t("groupedInitiativeDisable"),
-                  enableModeShort: t("groupedInitiativeEnableShort"),
-                  disableModeShort: t("groupedInitiativeDisableShort"),
+                  action: t("groupedInitiativeEnable"),
                   getSelectedCountLabel: (count) => t("groupedInitiativeSelectedCount", { count }),
                   initiativePlaceholder: t("groupedInitiativePlaceholder"),
                   apply: t("groupedInitiativeApply"),
@@ -733,16 +743,12 @@ export default function InitiativeTrackerPage() {
           bulkVisibilityLabels={
             isGameMaster
               ? {
-                  enableMode: t("bulkVisibilityEnable"),
-                  disableMode: t("bulkVisibilityDisable"),
-                  enableModeShort: t("bulkVisibilityEnableShort"),
-                  disableModeShort: t("bulkVisibilityDisableShort"),
-                  modeTitle: t("bulkVisibilityModeTitle"),
                   getSelectedCountLabel: (count) => t("groupedInitiativeSelectedCount", { count }),
-                  selectAllRows: t("bulkVisibilitySelectAllRows"),
-                  selectAllRowsShort: t("bulkVisibilitySelectAllRowsShort"),
+                  selectAllRows: t("selectAllRows"),
+                  selectAllRowsShort: t("selectAllRowsShort"),
                   clearSelection: t("groupedInitiativeClearSelection"),
                   clearSelectionShort: t("groupedInitiativeClearSelectionShort"),
+                  selectionToolbar: t("selectionToolbar"),
                   title: t("bulkVisibilityDialog.title"),
                   description: t("bulkVisibilityDialog.description"),
                   showToPlayers: t("visibilityDialog.showToPlayers"),
@@ -791,7 +797,15 @@ export default function InitiativeTrackerPage() {
                   previousHintAvailable: t("previousTurnHintAvailable"),
                   previousHintLocked: t("previousTurnHintLocked"),
                   previousHintNoPrevious: t("previousTurnHintNoPrevious"),
+                  prepHint: t("prepInitiativeHint"),
+                  getMissingInitiativesLabel: (count) => t("missingInitiativesCount", { count }),
+                  allInitiativesEntered: t("allInitiativesEntered"),
+                  startMissingConfirmTitle: t("startMissingConfirmTitle"),
+                  getStartMissingConfirmDescription: (count) => t("startMissingConfirmDescription", { count }),
+                  startMissingConfirmAction: t("startMissingConfirmAction"),
+                  startMissingCancelAction: t("startMissingCancelAction"),
                 }}
+                missingInitiativeCount={missingInitiativeCount}
                 onStartCombat={() => {
                   flushPendingInitiativeInputs();
                   dispatchTrackerAction(startBattle());
@@ -804,9 +818,10 @@ export default function InitiativeTrackerPage() {
             ) : null
           }
           newlyCombatantRevealedLabel={!isGameMaster ? t("newlyCombatantRevealed") : undefined}
+          missingInitiativeLabel={isGameMaster && !battleStarted ? t("missingInitiativeRow") : undefined}
         />
 
-        {isGameMaster && isInSession ? (
+        {isGameMaster && isSessionLaunched ? (
           <InitiativeTrackerHealthDialog
             row={healthDialogRow}
             open={healthDialogRow != null}

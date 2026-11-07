@@ -8,7 +8,7 @@ import { useCodexHealth } from "@/hooks/useCodexHealth";
 import { LazySessionCommunityLibraryDialog } from "@/components/lazy/lazyDialogs";
 import { shouldShowSessionCommunityLibraryButton } from "@/lib/sessionCommunityLibrary";
 import { useAppSelector } from "@/store/hooks";
-import { selectCurrentUserParticipant, selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectCurrentUserParticipant, selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { useUser } from "@/hooks/useUser";
 
 /**
@@ -20,14 +20,14 @@ export default function SessionCommunityLibraryButton() {
   const t = useTranslations("header");
   const tMagic = useTranslations("characterDetail.magic");
   const { isAvailable: isCodexAvailable, isChecking } = useCodexHealth();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const user = useUser();
   const currentParticipant = useAppSelector((state) =>
     selectCurrentUserParticipant(state, user.user?.keycloakId || ""),
   );
   const isGameMaster = currentParticipant?.status === "gameMaster";
 
-  if (!shouldShowSessionCommunityLibraryButton(isInSession, isGameMaster)) {
+  if (!shouldShowSessionCommunityLibraryButton(isSessionLaunched, isGameMaster)) {
     return null;
   }
 

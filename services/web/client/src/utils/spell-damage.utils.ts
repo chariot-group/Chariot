@@ -101,15 +101,14 @@ export function isDamageDetailsFilled(details?: DamageDetails | null): boolean {
 }
 
 /** @see FR-character-spell-multi-damage */
-export function coerceSpellDamageDetailsList(
-    damageDetails: DamageDetails | DamageDetails[] | null | undefined,
-): DamageDetails[] {
+/** Accepts raw form values: a list, a single legacy entry, or nothing. */
+export function coerceSpellDamageDetailsList(damageDetails: unknown): DamageDetails[] {
     if (Array.isArray(damageDetails)) {
-        return damageDetails;
+        return damageDetails as DamageDetails[];
     }
 
     if (damageDetails && typeof damageDetails === "object") {
-        return [damageDetails];
+        return [damageDetails as DamageDetails];
     }
 
     return [];

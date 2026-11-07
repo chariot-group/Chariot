@@ -76,7 +76,7 @@ describe("FR-player-space-codex-character-creation — create paths", () => {
   });
 });
 
-describe("FR-codex-npc-search-entity-type — kind-preserving selection", () => {
+describe("FR-codex-search-filters — kind-preserving selection", () => {
   it("nominal: premade player is not sent as an NPC draft", () => {
     const playerDraft = { firstname: "Aragorn" } as Partial<Player>;
     const npcDraft = { firstname: "Goblin" } as Partial<NPC>;

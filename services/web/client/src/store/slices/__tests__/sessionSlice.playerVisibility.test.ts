@@ -25,6 +25,7 @@ const buildRow = (
     firstname: overrides.firstname ?? "Gobelin",
     lastname: "",
     surname: "",
+    initiativeModifier: 0,
     avatar: "",
     initiative: overrides.initiative ?? 10,
     hitPoints: overrides.hitPoints ?? 7,
@@ -130,6 +131,7 @@ describe("FR-session-combat-navigation — session participant rows not maskable
           lifeStatus: false,
           armorClass: false,
           conditions: false,
+          concentration: false,
           groupLabel: false,
         },
       }),
@@ -190,6 +192,7 @@ describe("FR-session-combat-navigation — session participant rows not maskable
             lifeStatus: false,
             armorClass: false,
             conditions: false,
+            concentration: false,
             groupLabel: false,
           },
         },
@@ -295,7 +298,7 @@ describe("FR-session-combat-navigation — applyRemoteBattleState", () => {
   });
 });
 
-describe("FR-tracker-bulk-display — bulk display configuration", () => {
+describe("FR-tracker-bulk-actions — bulk display configuration", () => {
   it("nominal: applies visibility settings and shared alias to selected rows only", () => {
     let state = sessionReducer(
       undefined,
@@ -319,6 +322,7 @@ describe("FR-tracker-bulk-display — bulk display configuration", () => {
             lifeStatus: false,
             armorClass: false,
             conditions: true,
+            concentration: true,
             groupLabel: false,
           },
         },
@@ -345,6 +349,7 @@ describe("FR-tracker-bulk-display — bulk display configuration", () => {
             lifeStatus: false,
             armorClass: true,
             conditions: false,
+            concentration: false,
             groupLabel: true,
           },
         }),

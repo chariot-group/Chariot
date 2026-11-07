@@ -1,0 +1,21 @@
+{
+  "name": "@chariot/e2e",
+  "private": true,
+  "description": "Scénarios end-to-end Playwright pour Chariot (web + SSO + APIs)",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "ui": "playwright test --ui",
+    "headed": "playwright test --headed",
+    "report": "playwright show-report reports/html",
+    "trace": "playwright show-trace",
+    "install:browsers": "playwright install chromium",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^26",
+    "dotenv": "^18.0.0",
+    "typescript": "~6.0.3"
+  }
+}

@@ -193,7 +193,7 @@ export function createLazyComponent<P extends object>(loader: LazyModuleLoader<P
           <p>{t("lazyLoadError")}</p>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={retry}>
             {t("retry")}
           </Button>

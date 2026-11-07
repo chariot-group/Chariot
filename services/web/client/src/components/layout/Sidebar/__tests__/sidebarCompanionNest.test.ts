@@ -15,8 +15,8 @@ const nestPath = resolve(
   "src/components/layout/Sidebar/shared/SidebarCompanionNest.tsx",
 );
 
-/** @see FR-sidebar-linked-npc-nesting-collapse */
-describe("FR-sidebar-linked-npc-nesting-collapse — sidebar UI wiring", () => {
+/** @see FR-sidebar-npc-link */
+describe("FR-sidebar-npc-link — sidebar UI wiring", () => {
   it("nominal: Mes personnages uses collapsible companion nest", () => {
     const source = readFileSync(playerListPath, "utf8");
     expect(source).toContain("SidebarCompanionNest");
@@ -34,7 +34,9 @@ describe("FR-sidebar-linked-npc-nesting-collapse — sidebar UI wiring", () => {
     expect(source).toContain("setCompanionNestCollapsed");
     expect(source).toContain("aria-expanded");
     expect(source).toContain("collapseCompanionsAria");
-    expect(source).toContain("selectedCompanionActive");
+    expect(source).toContain("shouldAutoExpandCompanionNest");
+    expect(source).toContain("companionActiveTooltip");
+    expect(source).not.toContain("selectedCompanionActive ||");
     expect(source).toContain("bg-card");
     expect(source).toContain("mt-1 ml-3");
     expect(source).not.toContain("border-purple");

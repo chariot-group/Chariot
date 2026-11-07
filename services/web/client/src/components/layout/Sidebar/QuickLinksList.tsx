@@ -125,7 +125,7 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
 
       {!collapsed && links.length > 0 && (
         <ul
-          className="flex flex-col gap-1 overflow-y-auto overscroll-contain"
+          className="scrollbar-none flex flex-col gap-1 overflow-y-auto overscroll-contain"
           style={{ maxHeight: "calc(5 * (1.75rem + 0.25rem))" }}
           role="list"
           aria-label={t("title")}>

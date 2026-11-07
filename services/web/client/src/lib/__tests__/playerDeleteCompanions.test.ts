@@ -1,4 +1,4 @@
-/** @see FR-player-delete-companion-choice */
+/** @see FR-player-companion-choice */
 
 import { describe, expect, it, vi } from "vitest";
 import type { NPC } from "@/types/character";
@@ -21,9 +21,9 @@ const npc = (id: string, linkedPlayerId: string, groups: string[] = []): NPC =>
     kind: "npc",
     linkedPlayerId,
     groups,
-  }) as NPC;
+  }) as unknown as NPC;
 
-describe("FR-player-delete-companion-choice", () => {
+describe("FR-player-companion-choice", () => {
   it("nominal: linkedCompanionsForPlayer returns NPCs for the player id", () => {
     const linked = [npc("c1", "p1"), npc("c2", "p1"), npc("c3", "p2")];
     expect(linkedCompanionsForPlayer(linked, "p1").map((item) => item._id)).toEqual(["c1", "c2"]);

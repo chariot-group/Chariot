@@ -81,7 +81,7 @@ function createMemoryStorage(initial = {}) {
   };
 }
 
-describe("FR-admin-kpi-period-persistence parseKpiPeriodSelection", () => {
+describe("FR-admin-business-kpis parseKpiPeriodSelection", () => {
   it("nominal: keeps a stored 12-month selection", () => {
     assert.deepEqual(parseKpiPeriodSelection(JSON.stringify({ preset: 3, period: "monthly" })), {
       preset: 3,
@@ -103,7 +103,7 @@ describe("FR-admin-kpi-period-persistence parseKpiPeriodSelection", () => {
   });
 });
 
-describe("FR-admin-kpi-period-persistence shared selection", () => {
+describe("FR-admin-business-kpis shared selection", () => {
   it("nominal: selecting 12 months then opening another page keeps that preset", () => {
     const storage = createMemoryStorage();
     const firstPageMemory = { current: null };

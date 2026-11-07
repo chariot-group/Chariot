@@ -6,6 +6,7 @@ import sessionReducer, {
   setInitiativeTrackerRows,
   startBattle,
 } from "@/store/slices/sessionSlice";
+import type { RootState } from "@/store";
 import userReducer from "@/store/slices/userSlice";
 import { defaultPlayerFieldVisibilityForKind } from "@/store/slices/sessionSlice";
 
@@ -18,9 +19,9 @@ describe("selectBattleStateSnapshot", () => {
       },
     });
 
-    const first = selectBattleStateSnapshot(store.getState());
+    const first = selectBattleStateSnapshot(store.getState() as RootState);
     store.dispatch(openSessionLobby());
-    const second = selectBattleStateSnapshot(store.getState());
+    const second = selectBattleStateSnapshot(store.getState() as RootState);
 
     expect(second).toBe(first);
   });
@@ -41,6 +42,7 @@ describe("selectBattleStateSnapshot", () => {
           firstname: "A",
           lastname: "",
           surname: "",
+          initiativeModifier: 0,
           avatar: "",
           initiative: 10,
           hitPoints: 10,
@@ -59,9 +61,9 @@ describe("selectBattleStateSnapshot", () => {
       ]),
     );
 
-    const first = selectBattleStateSnapshot(store.getState());
+    const first = selectBattleStateSnapshot(store.getState() as RootState);
     store.dispatch(startBattle());
-    const second = selectBattleStateSnapshot(store.getState());
+    const second = selectBattleStateSnapshot(store.getState() as RootState);
 
     expect(second).not.toBe(first);
     expect(second.battleStarted).toBe(true);

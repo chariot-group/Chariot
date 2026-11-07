@@ -72,14 +72,14 @@ export function ConfirmDialog({
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={isLoading}
             onClick={() => onOpenChange(false)}>
             {cancelLabel}
           </Button>
           <Button
             type="button"
-            variant={destructive ? "destructive" : "default"}
+            variant={destructive ? "destructive" : "accent"}
             disabled={isLoading}
             onClick={handleConfirm}>
             {confirmLabel}

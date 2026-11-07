@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, copySuccessButtonClassName } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
 import { SessionWheelDepositBar } from "@/components/dialogs/SessionWheelDepositBar";
 import { selectSessionStatus, selectSessionTokensByUser, selectSessionCompanionNpcs } from "@/store/slices/sessionSlice";
-import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
+import { SessionExitActions } from "@/components/dialogs/SessionExitActions";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
 import {
@@ -50,7 +50,7 @@ const SESSION_LOBBY_CARD_CLASS = "gap-3 rounded-[15px] p-3 shadow-sm sm:p-4";
 
 function getSessionLobbyParticipantListClassName(participantCount: number): string {
   const base =
-    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scroll-smooth focus-visible:outline-none sm:gap-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar]:w-2";
+    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scroll-smooth focus-visible:outline-none sm:gap-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar]:w-2";
 
   if (participantCount < 5) {
     return base;
@@ -219,7 +219,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
             "flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 pt-2.5 sm:gap-4 sm:px-6 sm:pt-3",
             sessionIsActive && "lg:grid lg:grid-cols-4 lg:items-stretch",
           )}>
-          {/* Session code + QR — only while join is open (activated lobby). @see FR-session-join-qr-code */}
+          {/* Session code + QR — only while join is open (activated lobby). @see FR-session-lobby-modal */}
           {sessionIsActive ? (
             <aside
               aria-labelledby="session-lobby-code-heading"
@@ -318,7 +318,6 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               isLaunching={isLaunching}
               isLeaving={isLeaving}
               quotaFull={quotaFull}
-              leaveLabel={t("players.leaveButton")}
               onAddOne={handleAddToken}
               onRemoveOne={handleRemoveToken}
               onRemoveAll={() => handleRemoveTokenAmount(myDeposited)}
@@ -329,23 +328,12 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
           </div>
         ) : (
           <div className="flex shrink-0 flex-wrap justify-end gap-2 px-4 pb-4 sm:px-6 sm:pb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLeave}
-              disabled={isLeaving}>
-              {t("players.leaveButton")}
-            </Button>
-            {isMJ && (
-              <ConfirmCancelSessionDialog onConfirm={handleCloseSession}>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm">
-                  Clôturer la session
-                </Button>
-              </ConfirmCancelSessionDialog>
-            )}
+            <SessionExitActions
+              isMJ={Boolean(isMJ)}
+              isLeaving={isLeaving}
+              onLeave={handleLeave}
+              onCloseSession={handleCloseSession}
+            />
           </div>
         )}
       </div>
@@ -377,11 +365,11 @@ function SessionLobbyCopyActions({
     return (
       <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           className={cn(
             "h-8 w-full min-w-0 px-3 transition-colors sm:h-9",
-            codeCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+            codeCopyState === "success" && copySuccessButtonClassName,
           )}
           aria-label={t("sessionCode.copyAriaLabel")}
           disabled={codeCopyState !== "idle"}
@@ -394,12 +382,12 @@ function SessionLobbyCopyActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="outline"
+              variant="secondary"
               size="icon"
               aria-label={t("sessionCode.copyLinkAriaLabel")}
               className={cn(
                 "h-8 w-8 shrink-0 transition-colors sm:h-9 sm:w-9",
-                linkCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+                linkCopyState === "success" && copySuccessButtonClassName,
               )}
               disabled={linkCopyState !== "idle"}
               onClick={onCopyLink}>
@@ -417,11 +405,11 @@ function SessionLobbyCopyActions({
   return (
     <div className={cn("flex w-full items-center gap-2", align === "center" ? "justify-center" : "justify-start")}>
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         className={cn(
           "h-8 w-auto shrink-0 px-3 transition-colors",
-          codeCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+          codeCopyState === "success" && copySuccessButtonClassName,
         )}
         aria-label={t("sessionCode.copyAriaLabel")}
         disabled={codeCopyState !== "idle"}
@@ -434,12 +422,12 @@ function SessionLobbyCopyActions({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="outline"
+            variant="secondary"
             size="icon-sm"
             aria-label={t("sessionCode.copyLinkAriaLabel")}
             className={cn(
               "shrink-0 transition-colors",
-              linkCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+              linkCopyState === "success" && copySuccessButtonClassName,
             )}
             disabled={linkCopyState !== "idle"}
             onClick={onCopyLink}>
@@ -504,7 +492,7 @@ function SessionLobbyCodeSection({
               <CollapsibleTrigger asChild>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="shrink-0 gap-1.5"
                   aria-expanded={inviteDetailsOpen}

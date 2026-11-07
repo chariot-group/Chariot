@@ -1,3 +1,4 @@
+import type { Spell } from "@/types/character";
 import { describe, expect, it } from "vitest";
 import {
   getCharacterTabsWithErrors,
@@ -66,7 +67,7 @@ describe("characterFormErrors", () => {
       { name: "Light", level: 0 },
       { name: "Shield", level: 1 },
       { name: "Fireball", level: 3 },
-    ];
+    ] as unknown as Spell[];
     const errors = {
       spellcasting: [
         {
@@ -94,7 +95,7 @@ describe("characterFormErrors", () => {
     const spells = [
       { name: "Detect Magic", usesPerDay: null },
       { name: "Invisibility", usesPerDay: 3 },
-    ];
+    ] as unknown as Spell[];
 
     expect(
       getSpellUsesGroupsWithErrors(

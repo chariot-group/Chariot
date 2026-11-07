@@ -29,7 +29,7 @@ import {
 } from "@/components/initiativeTracker/InitiativeTrackerTable";
 import {
   PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS,
-  TRACKER_GRID_TEMPLATE_COLUMNS,
+  TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION,
 } from "@/components/initiativeTracker/constants";
 import type { InitiativeTrackerTableProps } from "@/components/initiativeTracker/InitiativeTrackerTable";
 
@@ -55,10 +55,7 @@ describe("InitiativeTrackerTable responsive header", () => {
         columnLabels={columnLabels}
         getRowLabels={getRowLabels}
         groupedInitiativeLabels={{
-          enableMode: "Configure grouped initiative",
-          disableMode: "Close grouped initiative",
-          enableModeShort: "Initiative",
-          disableModeShort: "Close",
+          action: "Grouped initiative",
           getSelectedCountLabel: (count) => `${count} selected`,
           initiativePlaceholder: "Initiative",
           apply: "Apply",
@@ -68,16 +65,12 @@ describe("InitiativeTrackerTable responsive header", () => {
           selectAllRowsShort: "All",
         }}
         bulkVisibilityLabels={{
-          enableMode: "Configure display",
-          disableMode: "Close display configuration",
-          enableModeShort: "Display",
-          disableModeShort: "Close",
-          modeTitle: "Display",
           getSelectedCountLabel: (count) => `${count} selected`,
           selectAllRows: "Select all rows",
           selectAllRowsShort: "All",
           clearSelection: "Clear",
           clearSelectionShort: "Clear",
+          selectionToolbar: "Selection actions",
           title: "Display configuration",
           description: "Configure display fields",
           showToPlayers: "Show to players",
@@ -97,6 +90,7 @@ describe("InitiativeTrackerTable responsive header", () => {
             lifeStatus: "Vital status",
             armorClass: "Armor class",
             conditions: "Conditions",
+            concentration: "Concentration",
             groupLabel: "Group",
           },
         }}
@@ -108,13 +102,13 @@ describe("InitiativeTrackerTable responsive header", () => {
     expect(html).toContain("Aff.");
     expect(html).toContain("Initiative");
     expect(html).toContain("Afficher");
-    expect(html).toContain('aria-label="Configure display"');
-    expect(html).toContain('aria-label="Configure grouped initiative"');
-    expect(html).toContain(">Display</span>");
-    expect(html).toContain(">Initiative</span>");
+    // FR-tracker-bulk-actions — select first, act next: select-all always visible, no per-action modes.
+    expect(html).toContain('aria-label="Select all rows"');
+    expect(html).not.toContain("aria-pressed");
+    // Selection toolbar only appears once something is selected.
+    expect(html).not.toContain('role="toolbar"');
     expect(html).toContain("md:hidden");
-    expect(html).toContain('aria-pressed="false"');
-    expect(html).toContain(TRACKER_GRID_TEMPLATE_COLUMNS);
+    expect(html).toContain(TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION);
   });
 
   it("edge: grouped display configure actions require at least one selected row", () => {
@@ -135,6 +129,6 @@ describe("InitiativeTrackerTable responsive header", () => {
     expect(html).toContain("Init.");
     expect(html).toContain(PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS);
     expect(html).not.toContain("Aff.");
-    expect(html).not.toContain('aria-label="Configure display"');
+    expect(html).not.toContain('aria-label="Select all rows"');
   });
 });

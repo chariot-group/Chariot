@@ -1,6 +1,6 @@
 /**
  * Normalizes a Codex spell school field (string label, populated object, or missing).
- * @see FR-codex-spell-school-filter
+ * @see FR-codex-search-filters
  */
 export function resolveCodexSpellSchoolLabel(school: unknown): string {
   if (typeof school === "string") {

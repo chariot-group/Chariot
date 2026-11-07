@@ -7,6 +7,7 @@ import { useKeycloak } from "@/providers/KeycloakProvider";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/store/hooks";
 import {
     selectIsInSession,
+    selectIsSessionLaunched,
     selectSessionCode,
     selectSessionCampaignId,
     selectSessionParticipants,
@@ -95,6 +96,7 @@ export default function SessionCharacterSyncClient() {
     const rootStore = useStore<RootState>();
     const { token } = useKeycloak();
     const isInSession = useAppSelector(selectIsInSession);
+    const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
     const code = useAppSelector(selectSessionCode);
     const campaignId = useAppSelector(selectSessionCampaignId);
     const participants = useAppSelector(selectSessionParticipants);
@@ -280,8 +282,8 @@ export default function SessionCharacterSyncClient() {
     }, [token]);
 
     useEffect(() => {
-        setSessionSnapshotForBroadcast(isInSession && code ? { code, isInSession: true } : null);
-    }, [isInSession, code]);
+        setSessionSnapshotForBroadcast(isSessionLaunched && code ? { code, isInSession: true } : null);
+    }, [isSessionLaunched, code]);
 
     /** FR-session-combat-sync — le MJ n'est pas notifié par WS de ses propres sauvegardes (gateway `client.to`). */
     useEffect(() => {

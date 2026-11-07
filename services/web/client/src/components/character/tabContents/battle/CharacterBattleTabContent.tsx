@@ -6,51 +6,61 @@ import { LazyNPCBattleTabEdit as NPCBattleTabEdit } from "@/components/lazy/lazy
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface Props {
-    character: Character;
-    accentColor: string;
-    form: UseFormReturn<FieldValues>;
-    isEditing: boolean;
-    onCharacterUpdate?: (updated?: Player | NPC) => void;
+  character: Character;
+  accentColor: string;
+  form: UseFormReturn<FieldValues>;
+  isEditing: boolean;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 const isPlayer = (character: Character): character is Player => {
-    return 'progression' in character && 'class' in character && 'profile' in character;
-}
+  return "progression" in character && "class" in character && "profile" in character;
+};
 
 const isNPC = (character: Character): character is NPC => {
-    return 'actions' in character && 'challenge' in character && 'profile' in character;
-}
+  return "actions" in character && "challenge" in character && "profile" in character;
+};
 
 const CharacterBattleTabContent = ({ character, accentColor, form, isEditing, onCharacterUpdate }: Props) => {
-
-    // Mode édition
-    if (isEditing) {
-        if (isPlayer(character)) {
-            return <PlayerBattleTabEdit player={character} accentColor={accentColor} form={form} />;
-        } else if (isNPC(character)) {
-            return <NPCBattleTabEdit npc={character} accentColor={accentColor} form={form} />;
-        }
-    }
-
-    // Mode lecture
+  // Mode édition
+  if (isEditing) {
     if (isPlayer(character)) {
-        return (
-            <PlayerBattleTabContent
-                player={character}
-                accentColor={accentColor}
-                onCharacterUpdate={onCharacterUpdate}
-            />
-        );
+      return (
+        <PlayerBattleTabEdit
+          player={character}
+          accentColor={accentColor}
+          form={form}
+        />
+      );
     } else if (isNPC(character)) {
-        return (
-            <NPCBattleTabContent
-                npc={character}
-                accentColor={accentColor}
-                onCharacterUpdate={onCharacterUpdate}
-            />
-        );
+      return (
+        <NPCBattleTabEdit
+          npc={character}
+          accentColor={accentColor}
+          form={form}
+        />
+      );
     }
+  }
 
-}
+  // Mode lecture
+  if (isPlayer(character)) {
+    return (
+      <PlayerBattleTabContent
+        player={character}
+        accentColor={accentColor}
+        onCharacterUpdate={onCharacterUpdate}
+      />
+    );
+  } else if (isNPC(character)) {
+    return (
+      <NPCBattleTabContent
+        npc={character}
+        accentColor={accentColor}
+        onCharacterUpdate={onCharacterUpdate}
+      />
+    );
+  }
+};
 
-export default CharacterBattleTabContent
+export default CharacterBattleTabContent;

@@ -33,7 +33,6 @@ const IMPORTERS = [
   "components/ReleaseNotesProvider.tsx",
   "components/SessionJoinParamListener.tsx",
   "components/character/CharacterDetailView.tsx",
-  "components/character/tabContents/CharacterInventoryTabContent.tsx",
   "components/character/tabContents/battle/CharacterBattleTabContent.tsx",
   "components/character/tabContents/battle/CharacterNpcBattleTabContent.tsx",
   "components/character/tabContents/battle/CharacterPlayerBattleTabContent.tsx",

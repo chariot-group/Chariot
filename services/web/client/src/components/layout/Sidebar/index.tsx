@@ -8,7 +8,7 @@ import SidebarContext from "@/components/layout/Sidebar/SidebarContext";
 import { ActionButton } from "@/components/layout/Sidebar/ActionButton";
 import { QuickLinksList } from "@/components/layout/Sidebar/QuickLinksList";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import { selectSelectedCampaign } from "@/store/slices/campaignSlice";
 import React, { useState } from "react";
@@ -19,11 +19,9 @@ const TOOLTIP_CURSOR_OFFSET = 4;
 export default function AppSidebar() {
   useCampaigns({ autoFetch: true, pageSize: 5 });
 
-  const isInSession = useAppSelector(selectIsInSession);
-  const sessionStatus = useAppSelector(selectSessionStatus);
   const contextMode = useAppSelector(selectContextMode);
   const selectedCampaign = useAppSelector(selectSelectedCampaign);
-  const isSessionLaunched = isInSession && sessionStatus === "launched";
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const actionsDisabled = isSessionLaunched;
   const quickLinksCampaignId = contextMode === "gm" ? (selectedCampaign?._id ?? null) : null;
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -38,7 +36,7 @@ export default function AppSidebar() {
   };
 
   return (
-    <Sidebar className="sm:bg-transparent text-white border-r border-sidebar-border">
+    <Sidebar className="sm:bg-transparent text-white border-r border-frame">
       <SidebarHeader className="sm:bg-transparent">
         <div
           onMouseEnter={isSessionLaunched ? () => setHeaderTooltipVisible(true) : undefined}

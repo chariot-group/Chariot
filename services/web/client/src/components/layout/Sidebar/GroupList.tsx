@@ -23,10 +23,7 @@ import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialo
 import { cn } from "@/lib/utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
-import {
-  deletePlayerCharacterWithCompanionChoice,
-  syncReduxAfterPlayerDelete,
-} from "@/lib/playerDeleteCompanions";
+import { deletePlayerCharacterWithCompanionChoice, syncReduxAfterPlayerDelete } from "@/lib/playerDeleteCompanions";
 import {
   applyCompanionModeAfterPlayerCreated,
   createPlayerDuplicateFromFull,
@@ -54,7 +51,7 @@ import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateN
 import {
   selectIsInSession,
   selectSessionCode,
-  selectSessionStatus,
+  selectIsSessionLaunched,
   selectGmGuestCharacterIds,
   addGmGuestCharacterToSession,
   removeGmGuestCharacterFromSession,
@@ -67,8 +64,12 @@ import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/co
 import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
 import { useSidebarCharacterPdfExport } from "@/hooks/useSidebarCharacterPdfExport";
 import { isNpcGroupCharacter } from "@/lib/isNpcGroupCharacter";
-import { buildSidebarCharacterAvatarBatchItems, sidebarCharacterAvatarImageUrl } from "@/lib/buildSidebarCharacterAvatarBatch";
+import {
+  buildSidebarCharacterAvatarBatchItems,
+  sidebarCharacterAvatarImageUrl,
+} from "@/lib/buildSidebarCharacterAvatarBatch";
 import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
+import { collapsedActiveGroupCharacterId } from "@/components/layout/Sidebar/shared/sidebarCollapsedActive";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 
 interface GroupListProps {
@@ -108,16 +109,13 @@ export default function GroupList({
   const { isMobile, setOpenMobile } = useSidebar();
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
-  const sessionStatus = useAppSelector(selectSessionStatus);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
   const battleInitialized = useAppSelector(selectBattleInitialized);
-  const actionsDisabled = isInSession && sessionStatus === "launched";
+  const actionsDisabled = isSessionLaunched;
 
   const avatarBatchItems = React.useMemo(
-    () =>
-      buildSidebarCharacterAvatarBatchItems(
-        groups.flatMap((group) => group.characters ?? []),
-      ),
+    () => buildSidebarCharacterAvatarBatchItems(groups.flatMap((group) => group.characters ?? [])),
     [groups],
   );
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(
@@ -157,17 +155,11 @@ export default function GroupList({
   const openGroupIds = Array.isArray(openGroupId) ? openGroupId : [];
 
   const existingCharacterNames = React.useMemo(
-    () =>
-      groups.flatMap((group) =>
-        (group.characters ?? []).map((c) => characterDisplayName(c)).filter(Boolean),
-      ),
+    () => groups.flatMap((group) => (group.characters ?? []).map((c) => characterDisplayName(c)).filter(Boolean)),
     [groups],
   );
 
-  const existingGroupLabels = React.useMemo(
-    () => groups.map((group) => group.label.trim()).filter(Boolean),
-    [groups],
-  );
+  const existingGroupLabels = React.useMemo(() => groups.map((group) => group.label.trim()).filter(Boolean), [groups]);
 
   const selectedCharacterId = pathname?.includes("/characters/")
     ? pathname.split("/characters/")[1]?.split("/")[0]?.split("?")[0]
@@ -234,20 +226,14 @@ export default function GroupList({
     };
   }, [characterToDuplicate]);
 
-  const isPendingGroupPlayer =
-    characterPendingDelete && !isNpcGroupCharacter(characterPendingDelete.character);
+  const isPendingGroupPlayer = characterPendingDelete && !isNpcGroupCharacter(characterPendingDelete.character);
 
   const showPlayerCompanionDeleteDialog = Boolean(
     isPendingGroupPlayer && (loadingDeleteCompanions || deleteCompanionsPreview.length > 0),
   );
 
   const navigateAfterGroupCharacterDelete = React.useCallback(
-    (
-      deletingCharacterId: string,
-      groupId: string,
-      deleteLinkedCompanions: boolean,
-      companions: NPC[],
-    ) => {
+    (deletingCharacterId: string, groupId: string, deleteLinkedCompanions: boolean, companions: NPC[]) => {
       const viewingDeletedSheet =
         selectedCharacterId === deletingCharacterId ||
         (deleteLinkedCompanions && companions.some((npc) => npc._id === selectedCharacterId));
@@ -345,13 +331,12 @@ export default function GroupList({
             created = await CharacterService.createCharacter("npcs", payload as typeof rest);
           } else {
             created = await createPlayerDuplicateFromFull(full, copyName, [groupId]);
-            const { createdCompanions, movedCompanions, nextNpcNames } =
-              await applyCompanionModeAfterPlayerCreated({
-                mode,
-                newPlayerId: created._id,
-                companions,
-                existingNpcNames: npcNames,
-              });
+            const { createdCompanions, movedCompanions, nextNpcNames } = await applyCompanionModeAfterPlayerCreated({
+              mode,
+              newPlayerId: created._id,
+              companions,
+              existingNpcNames: npcNames,
+            });
             npcNames = nextNpcNames;
             for (const npc of createdCompanions) {
               syncReduxAfterCompanionNpcCreate(dispatch, npc);
@@ -445,9 +430,7 @@ export default function GroupList({
 
         if (firstCreatedGroupId) {
           if (firstCharId) {
-            router.push(
-              `/campaigns/${selectedCampaignId}/groups/${firstCreatedGroupId}/characters/${firstCharId}`,
-            );
+            router.push(`/campaigns/${selectedCampaignId}/groups/${firstCreatedGroupId}/characters/${firstCharId}`);
           }
           if (isMobile) setOpenMobile(false);
         }
@@ -568,9 +551,7 @@ export default function GroupList({
             id: isGuest ? "removeFromSession" : "addToSession",
             label: isGuest ? t("removeFromSession") : t("addToSession"),
             onSelect: () =>
-              isGuest
-                ? handleRemoveGmGuestFromSession(character)
-                : void handleAddGmGuestToSession(character),
+              isGuest ? handleRemoveGmGuestFromSession(character) : void handleAddGmGuestToSession(character),
           },
         ];
       }
@@ -620,7 +601,24 @@ export default function GroupList({
 
       return items;
     },
-    [actionsDisabled, activeGroupsHasMore, activeGroupsTotal, archivedGroupsHasMore, archivedGroupsTotal, gmGuestCharacterIds, handleAddGmGuestToSession, handleRemoveGmGuestFromSession, isMobile, loadedActiveGroupIds, loadedArchivedGroupIds, requestCharacterPdfExport, router, selectedCampaignId, setOpenMobile, t],
+    [
+      actionsDisabled,
+      activeGroupsHasMore,
+      activeGroupsTotal,
+      archivedGroupsHasMore,
+      archivedGroupsTotal,
+      gmGuestCharacterIds,
+      handleAddGmGuestToSession,
+      handleRemoveGmGuestFromSession,
+      isMobile,
+      loadedActiveGroupIds,
+      loadedArchivedGroupIds,
+      requestCharacterPdfExport,
+      router,
+      selectedCampaignId,
+      setOpenMobile,
+      t,
+    ],
   );
 
   if (groups.length === 0) {
@@ -632,13 +630,24 @@ export default function GroupList({
       {groups.map((group) => {
         const isOpen = openGroupIds.includes(group._id);
         const groupActions = buildGroupActions(group);
+        const hiddenActiveId = collapsedActiveGroupCharacterId(isOpen, selectedCharacterId, group.characters);
+        const hiddenActiveCharacter = hiddenActiveId
+          ? group.characters?.find((character) => character._id === hiddenActiveId)
+          : undefined;
+        const hiddenActiveName = hiddenActiveCharacter ? characterDisplayName(hiddenActiveCharacter) : "";
+        const activeTooltip = hiddenActiveName ? t("groupActiveCharacterTooltip", { name: hiddenActiveName }) : null;
 
         return (
           <Collapsible
             key={group._id}
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
-            <div className="flex w-full items-center rounded-[12px] bg-card py-2 px-1.5 pl-3">
+            <div
+              title={activeTooltip ?? undefined}
+              className={cn(
+                "flex w-full items-center rounded-[12px] py-1.5 pr-1.5 pl-1 transition-colors duration-100",
+                activeTooltip ? "bg-white/15 text-white" : "hover:bg-white/10",
+              )}>
               <SidebarItemWithActions
                 actions={groupActions}
                 disabled={actionsDisabled}
@@ -672,16 +681,15 @@ export default function GroupList({
                     aria-hidden="true"
                     className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
                   />
-                  <span className={cn("min-w-0 flex-1 truncate text-sm text-left", isOpen && "font-bold")}>
-                    {group.label}
-                  </span>
+                  <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">{group.label}</span>
+                  {activeTooltip ? <span className="sr-only">{activeTooltip}</span> : null}
                 </CollapsibleTrigger>
               </SidebarItemWithActions>
             </div>
 
             <CollapsibleContent
               id={`group-${group._id}-content`}
-              className="mt-1 ml-3 flex flex-col gap-1">
+              className="mt-1 ml-4 flex flex-col gap-1">
               {group.characters && group.characters.length > 0 ? (
                 group.characters.map((character) => {
                   const isSelected = selectedCharacterId === character._id;
@@ -696,11 +704,8 @@ export default function GroupList({
                       contextMenuLabel={t("characterActions")}
                       className={cn(
                         "rounded-[12px] transition-all duration-100",
-                        isSelected ? "bg-white text-black" : "hover:bg-white/10",
-                      )}
-                      overflowTriggerClassName={
-                        isSelected ? "text-black/40 hover:bg-black/10 hover:text-black" : undefined
-                      }>
+                        isSelected ? "bg-white/15 text-white" : "hover:bg-white/10",
+                      )}>
                       <Link
                         href={`/campaigns/${selectedCampaignId}/groups/${group._id}/characters/${character._id}`}
                         aria-current={isSelected ? "page" : undefined}
@@ -708,27 +713,17 @@ export default function GroupList({
                         title={displayName}
                         className={cn(
                           "relative flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 px-3 text-sm focus-visible:ring-1 focus-visible:ring-white/50",
-                          isSelected && "pl-4 font-bold text-black",
+                          isSelected && "font-bold",
                         )}
                         onClick={() => {
                           if (isMobile) setOpenMobile(false);
                         }}>
-                        {isSelected && (
-                          <span
-                            className="absolute left-1.5 top-2 bottom-2 w-[3px] rounded-full bg-primary"
-                            aria-hidden="true"
-                          />
-                        )}
                         <SidebarCharacterAvatar
                           characterId={character._id}
                           storedValue={character.avatar}
                           alt={displayName}
                           sessionCode={isInSession ? sessionCode : null}
-                          avatarImageUrl={sidebarCharacterAvatarImageUrl(
-                            getAvatarUrl,
-                            character._id,
-                            character.avatar,
-                          )}
+                          avatarImageUrl={sidebarCharacterAvatarImageUrl(getAvatarUrl, character._id, character.avatar)}
                         />
                         <span className="min-w-0 flex-1 truncate">{displayName}</span>
                       </Link>
@@ -824,9 +819,7 @@ export default function GroupList({
           const pending = pendingMoveAfterDuplicate;
           if (!pending) return;
           await Promise.all(
-            pending.characters.slice(1).map((c) =>
-              moveCharacterToGroup(c._id, pending.groupId, targetGroupId),
-            ),
+            pending.characters.slice(1).map((c) => moveCharacterToGroup(c._id, pending.groupId, targetGroupId)),
           );
           for (const c of pending.characters) {
             dispatch(removeCharacterFromGroup({ groupId: pending.groupId, characterId: c._id }));

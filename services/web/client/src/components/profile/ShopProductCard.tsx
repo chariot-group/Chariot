@@ -75,7 +75,7 @@ export default function ShopProductCard({
           )}
         </div>
         <Button
-          className="rounded-2xl w-full text-sm mt-1"
+          className="w-full text-sm mt-1"
           disabled={disabled}
           onClick={() => onBuy(product)}
           aria-busy={isLoading}>
@@ -123,7 +123,7 @@ export default function ShopProductCard({
         )}
       </div>
       <Button
-        className="rounded-2xl w-full text-sm mt-1"
+        className="w-full text-sm mt-1"
         disabled={disabled}
         onClick={() => onBuy(product)}
         aria-busy={isLoading}>

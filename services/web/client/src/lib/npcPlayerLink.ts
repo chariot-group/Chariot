@@ -25,8 +25,7 @@ export function playerSpaceNpcsForLinkPicker(npcs: NPC[]): NPC[] {
 }
 
 export type PlayerSidebarRow =
-  | { type: "player"; character: Character; companions: NPC[] }
-  | { type: "npc"; character: NPC };
+  { type: "player"; character: Character; companions: NPC[] } | { type: "npc"; character: NPC };
 
 /**
  * Players with nested linked NPCs, then unlinked without-group NPCs as root rows.
@@ -65,10 +64,21 @@ export function buildPlayerSidebarRows(
   return rows;
 }
 
-export function characterKindLabel(
-  character: Character,
-  labels: { player: string; npc: string },
-): string {
+/**
+ * Splits Player-space rows around the session character (FR-sidebar-linked-npc-nesting-collapse).
+ * Returns null when there is no session character or it is not in the list (list rendered unchanged).
+ */
+export function splitSidebarRowsBySessionCharacter(
+  rows: PlayerSidebarRow[],
+  sessionCharacterId: string | null,
+): { sessionRow: PlayerSidebarRow; otherRows: PlayerSidebarRow[] } | null {
+  if (!sessionCharacterId) return null;
+  const sessionRow = rows.find((row) => row.character._id === sessionCharacterId);
+  if (!sessionRow) return null;
+  return { sessionRow, otherRows: rows.filter((row) => row !== sessionRow) };
+}
+
+export function characterKindLabel(character: Character, labels: { player: string; npc: string }): string {
   return "progression" in character ? labels.player : labels.npc;
 }
 
@@ -104,11 +114,7 @@ export function npcSheetHeaderIdentity(npc: NPC, unnamedFallback: string): NpcSh
  * Updates the companions list after a link or unlink without refetching.
  * @see FR-npc-player-link
  */
-export function applyCompanionLinkChange(
-  companions: NPC[],
-  updated: NPC,
-  playerId: string,
-): NPC[] {
+export function applyCompanionLinkChange(companions: NPC[], updated: NPC, playerId: string): NPC[] {
   const withoutCurrent = companions.filter((npc) => npc._id !== updated._id);
   if (linkedPlayerIdOf(updated) === playerId) {
     return [...withoutCurrent, updated];
@@ -156,10 +162,7 @@ export function sidebarNpcLinkActions(character: Character): SidebarNpcLinkActio
  * @see FR-sidebar-npc-link
  * @see FR-sidebar-context-actions
  */
-export function playerSpaceSidebarActionIds(
-  character: Character,
-  options: { actionsDisabled: boolean },
-): string[] {
+export function playerSpaceSidebarActionIds(character: Character, options: { actionsDisabled: boolean }): string[] {
   const ids = ["exportPdf"];
   if (options.actionsDisabled) return ids;
   ids.push(...sidebarNpcLinkActions(character));

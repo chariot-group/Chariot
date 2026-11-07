@@ -4,16 +4,31 @@ import { LazyCharacterHistoryTabEdit as CharacterHistoryTabEdit } from "@/compon
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterHistoryTabContentProps {
-    character: Character;
-    accentColor: string;
-    form: UseFormReturn<FieldValues>;
-    isEditing: boolean;
+  character: Character;
+  accentColor: string;
+  form: UseFormReturn<FieldValues>;
+  isEditing: boolean;
 }
 
-export default function CharacterHistoryTabContent({ character, accentColor, form, isEditing }: CharacterHistoryTabContentProps) {
-    if (isEditing) {
-        return <CharacterHistoryTabEdit accentColor={accentColor} form={form} />;
-    }
+export default function CharacterHistoryTabContent({
+  character,
+  accentColor,
+  form,
+  isEditing,
+}: CharacterHistoryTabContentProps) {
+  if (isEditing) {
+    return (
+      <CharacterHistoryTabEdit
+        accentColor={accentColor}
+        form={form}
+      />
+    );
+  }
 
-    return <CharacterHistoryView character={character} accentColor={accentColor} />;
+  return (
+    <CharacterHistoryView
+      character={character}
+      accentColor={accentColor}
+    />
+  );
 }

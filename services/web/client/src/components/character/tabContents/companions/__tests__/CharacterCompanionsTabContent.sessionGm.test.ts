@@ -4,10 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const tabPath = resolve(fileURLToPath(new URL("..", import.meta.url)), "CharacterCompanionsTabContent.tsx");
-const panelsPath = resolve(
-  fileURLToPath(new URL("../../..", import.meta.url)),
-  "CharacterTabPanels.tsx",
-);
+const panelsPath = resolve(fileURLToPath(new URL("../../..", import.meta.url)), "CharacterTabPanels.tsx");
 
 function readSource(path: string) {
   return readFileSync(path, "utf8");

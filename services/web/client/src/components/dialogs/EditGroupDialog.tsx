@@ -91,7 +91,7 @@ export function EditGroupDialog({ group, open, onOpenChange, onUpdated }: EditGr
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={isSaving}
             onClick={() => onOpenChange(false)}>
             {tCommon("cancel")}

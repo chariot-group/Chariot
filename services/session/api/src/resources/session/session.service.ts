@@ -298,7 +298,7 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
                 throw new BadRequestException(message);
             }
 
-            /* FR-session-lobby-wheel-quota-invariant: égalité exacte requise pour lancer. */
+            /* FR-session-lobby-wheel-deposit: égalité exacte requise pour lancer. */
             const tokensByUser = await this.redisService.getTokens(code);
             const totalDeposited = sumTokenMap(tokensByUser);
             const quota = session.participants.length;
@@ -348,7 +348,12 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
 
             const existingParticipant: SessionParticipant | undefined = session.participants.find(p => p.userId === userId);
 
-            if (session.status === SessionStatus.launched && !existingParticipant) {
+            /* FR-session-lobby-modal: un ancien participant peut revenir dans une session lancée. */
+            if (
+                session.status === SessionStatus.launched &&
+                !existingParticipant &&
+                !(await this.redisService.isFormerParticipant(code, userId))
+            ) {
                 const message: string = `Session with code ${code} is already launched and user ${userId} is not a participant`;
                 this.logger.warn(message, this.SERVICE_NAME);
                 throw new ForbiddenException(message);
@@ -404,7 +409,7 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
                 throw new BadRequestException(message);
             }
 
-            /* FR-session-lobby-wheel-leave-refund + FR-session-lobby-wheel-quota-invariant */
+            /* FR-session-lobby-wheel-deposit */
             let tokensByUser: Record<string, number> | undefined;
             if (session.status === SessionStatus.activated) {
                 await this.redisService.clearUserTokens(code, userId);
@@ -413,6 +418,12 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
             await this.prisma.sessionParticipant.delete({
                 where: { id: participant.id },
             });
+
+            /* FR-session-lobby-modal: autorise le retour jusqu'à l'expiration de la session lancée. */
+            if (session.status === SessionStatus.launched && session.expiresAt) {
+                const ttlSeconds = Math.floor((new Date(session.expiresAt).getTime() - Date.now()) / 1000);
+                await this.redisService.addFormerParticipant(code, userId, ttlSeconds);
+            }
 
             const updated: SessionWithParticipants = await this._findSession(code);
 
@@ -693,7 +704,7 @@ export class SessionService implements OnModuleInit, OnModuleDestroy {
      * Vérifie qu'un utilisateur authentifié est participant de la session ET que
      * targetUserId est le MJ (creatorUserId) de cette session.
      * Utilisé par le service media pour : PP du MJ et avatars PNJ du MJ.
-     * @see FR-media-avatar-read-access
+     * @see FR-media-avatars
      */
     async validateGmOwnership(
         code: string,

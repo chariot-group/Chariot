@@ -1,6 +1,7 @@
-/** @see FR-player-delete-companion-choice */
+/** @see FR-player-companion-choice */
 
 import type { AppDispatch } from "@/store";
+import { groupRefToId } from "@/utils/group.utils";
 import {
   removeCharacterWithoutGroup,
   removePlayerSpaceNpc,
@@ -42,7 +43,7 @@ export function syncReduxAfterPlayerDelete(
   if (deleteLinkedCompanions) {
     for (const npc of companions) {
       dispatch(removePlayerSpaceNpc(npc._id));
-      const groupIds = (npc.groups ?? []) as string[];
+      const groupIds = (npc.groups ?? []).map(groupRefToId);
       for (const groupId of groupIds) {
         if (!groupId) continue;
         dispatch(removeCharacterFromGroup({ groupId, characterId: npc._id }));

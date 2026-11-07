@@ -1,575 +1,423 @@
 "use client";
 
-import { Character } from "@/types/character";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   Controller,
-  UseFormReturn,
-  useWatch,
   useFieldArray,
   useFormState,
+  useWatch,
   type Path,
   type PathValue,
+  type UseFormReturn,
 } from "react-hook-form";
-import { Field, FieldError } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
-import { useState, useEffect, useLayoutEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  CircleAlert,
-  ArrowRightLeft,
-  Plus,
-  Trash2,
-  ListChevronsDownUp,
-  ListChevronsUpDown,
-  ChevronDown,
-  BookPlus,
-  ArrowLeft,
-  Book,
-  BookOpen,
-  BookOpenCheck,
-} from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BookOpen, BookOpenCheck, BookPlus, Plus, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import type { AbilityScores, Character, Spell, Spellcasting } from "@/types/character";
+import { Accordion } from "@/components/ui/accordion";
+import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
 import { calculateAbilityBonus, isPlayer } from "@/utils/global.utils";
 import {
   calculateSpellAttackBonus,
   calculateSpellSaveDC,
   classWithSpellPrepared,
   countPreparedSpellsInList,
-  DICE_TYPES,
   getSpellLevelsFromSpells,
   hasLevel1OrHigherSpells,
   numberSpellsPrepare,
-  npcUsesKey,
   pruneOrphanSpellSlotsByLevel,
   spellSlotLevelKeysEqual,
-  SPELL_SCHOOLS,
+  toSpellcastingAbilityKey,
 } from "@/utils/magic.utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { ComboboxInput } from "@/components/ui/combobox-input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DamageTypeInput } from "@/components/ui/damage-type-input";
-import {
-  coerceSpellDamageDetailsList,
-  EMPTY_SPELL_DAMAGE_DETAILS,
-  ensureSpellDamageEditRows,
-  hydrateSpellDamageDetails,
-  isDamageDetailsFilled,
-  parseDamageFormula,
-} from "@/utils/spell-damage.utils";
+import { ensureSpellDamageEditRows, hydrateSpellDamageDetails } from "@/utils/spell-damage.utils";
 import { cn } from "@/lib/utils";
-import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { formatSignedBonus } from "@/utils/attack.utils";
-import type { AbilityScores, DamageDetails, HealingDetails, Spell, Spellcasting } from "@/types/character";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
+import { useDistanceUnit } from "@/hooks/useDistanceUnit";
+import { getSpellIndicesWithErrors } from "@/components/character/characterFormErrors";
+import ListCard, { EDIT_LIST_MAX_HEIGHT_CLASS } from "@/components/character/tabContents/shared/listCard/ListCard";
+import ListRow from "@/components/character/tabContents/shared/listCard/ListRow";
+import ListSelectRow from "@/components/character/tabContents/shared/listCard/ListSelectRow";
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
+import { useIsXlUp } from "@/hooks/use-mobile";
 import { LazyCodexSpellSearchDialog as CodexSpellSearchDialog } from "@/components/lazy/lazyCharacterEditForms";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
-import React from "react";
+import SpellEditForm from "@/components/character/tabContents/magic/form/SpellEditForm";
+import SpellcastingEditCard from "@/components/character/tabContents/magic/form/SpellcastingEditCard";
 import {
-  getSpellIndicesWithErrors,
-  getSpellLevelsWithErrors,
-  getSpellUsesGroupsWithErrors,
-} from "@/components/character/characterFormErrors";
-
-const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
-const EMPTY_SPELLS: Spell[] = [];
-const EMPTY_ABILITY_SCORES = {} as AbilityScores;
+  MagicErrorIndicator,
+  SpellcastingSelector,
+  SpellGroupHeader,
+} from "@/components/character/tabContents/magic/shared/SpellcastingParts";
+import {
+  buildSpellGroups,
+  magicBentoGridClass,
+  MAGIC_SLOTS,
+  magicWideSlots,
+  resolveSelectedSpellIndex,
+  spellRowValue,
+  spellSummaryParts,
+  type SpellGroup,
+} from "@/components/character/tabContents/magic/shared/spellList";
+import {
+  useMagicSelection,
+  type MagicSelectionState,
+} from "@/components/character/tabContents/magic/shared/useMagicSelection";
 
 interface CharacterMagicTabEditProps {
   character: Character;
   accentColor: string;
   form: UseFormReturn<Character>;
+  /** Selected block / spell, shared with read mode by the tab container. */
+  selectionState?: MagicSelectionState;
 }
 
 type CharacterClassInfo = { name?: string; level?: number };
-type SpellcastingFormEntry = Spellcasting & {
-  id: string;
-  spellSlotsByUses?: Record<string, { used: number; total: number }>;
-};
 type SpellSlotsByLevel = Spellcasting["spellSlotsByLevel"];
-type SpellSlotFieldValue = number | string | null | undefined;
+
+const EMPTY_SPELLS: Spell[] = [];
+const EMPTY_ABILITY_SCORES = {} as AbilityScores;
+/** Delay before scrolling / focusing a row the accordion just opened (open animation). */
+const ROW_OPEN_DELAY_MS = 350;
 
 /** Dynamic RHF paths (template strings) widen to `string`; cast back to Path without changing runtime. */
-function charPath(path: string): Path<Character> {
-  return path as Path<Character>;
-}
-
-function setCharValue(
+const charPath = (path: string) => path as Path<Character>;
+const setCharValue = (
   form: UseFormReturn<Character>,
   path: string,
   value: unknown,
   options?: Parameters<UseFormReturn<Character>["setValue"]>[2],
-) {
-  form.setValue(charPath(path), value as PathValue<Character, Path<Character>>, options);
-}
+) => form.setValue(charPath(path), value as PathValue<Character, Path<Character>>, options);
 
-function SyncRow({
-  synced,
-  syncedLabel,
-  mismatchLabel,
-  onSync,
-  syncButtonLabel,
+/** Row element of a spell: accordion item, or the selectable row in wide mode. */
+const rowElement = (listId: string, index: number) =>
+  document.getElementById(`${listId}-${spellRowValue(index)}`) ?? document.getElementById(`${listId}-trigger-${index}`);
+
+type SpellSlotFieldValue = number | string | null | undefined;
+
+/**
+ * Slot total of one level, on its group header (`used` stays driven by casting and rests).
+ * @see FR-character-magic-list-card
+ */
+function SpellSlotTotalInput({
+  form,
+  spellcastingIndex,
+  level,
 }: {
-  synced: boolean;
-  syncedLabel: string;
-  mismatchLabel: string;
-  onSync: () => void;
-  syncButtonLabel: string;
+  form: UseFormReturn<Character>;
+  spellcastingIndex: number;
+  level: number;
 }) {
-  if (synced) {
-    return (
-      <div className="flex items-center gap-2 p-2 bg-green/20 rounded text-xs text-green-600 dark:text-green-400">
-        <span>✓ {syncedLabel}</span>
-      </div>
-    );
-  }
+  const tMagic = useTranslations("characterDetail.magic");
+  const totalPath = charPath(`spellcasting.${spellcastingIndex}.spellSlotsByLevel.${level}.total`);
+
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onSync}
-          className="text-xs self-start">
-          <ArrowRightLeft className="size-3 mr-1" />
-          {syncButtonLabel}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{mismatchLabel}</p>
-      </TooltipContent>
-    </Tooltip>
+    <Controller
+      name={totalPath}
+      control={form.control}
+      render={({ field, fieldState }) => {
+        const value = field.value as SpellSlotFieldValue;
+        return (
+          <span className="flex shrink-0 items-center gap-1.5">
+            <Input
+              name={field.name}
+              ref={field.ref}
+              type="number"
+              inputMode="numeric"
+              min={0}
+              className="h-8 w-14 text-center"
+              value={value === undefined || value === null ? "" : String(value)}
+              aria-invalid={fieldState.invalid}
+              aria-label={tMagic("spellSlotsTotalForLevel", { level })}
+              onChange={(event) => {
+                const raw = event.target.value;
+                form.clearErrors(totalPath);
+                if (raw === "") return field.onChange("");
+                const next = Number(raw);
+                if (Number.isFinite(next)) field.onChange(next);
+              }}
+              onBlur={() => {
+                field.onBlur();
+                const raw = form.getValues(totalPath) as SpellSlotFieldValue;
+                if (raw === "" || raw === undefined || raw === null) form.clearErrors(totalPath);
+                else void form.trigger(totalPath);
+              }}
+            />
+            <span
+              className="text-xs text-muted-foreground"
+              aria-hidden="true">
+              {tMagic("slotsLabel")}
+            </span>
+          </span>
+        );
+      }}
+    />
   );
 }
 
-export default function CharacterMagicTabEdit({ character, accentColor, form }: CharacterMagicTabEditProps) {
+/**
+ * Magic tab, edit mode: Spellcasting card + Spells list card; a spell's form opens in its row, or
+ * from `xl` in a panel next to the list (wide mode). Focus only moves on Add, Codex import and Delete (FR-character-magic-list-card).
+ * @see FR-character-magic-list-card, FR-magic-spell-level-categories
+ */
+export default function CharacterMagicTabEdit({
+  character,
+  accentColor,
+  form,
+  selectionState,
+}: CharacterMagicTabEditProps) {
   const tMagic = useTranslations("characterDetail.magic");
-  const tEdit = useTranslations("characterDetail.edit");
-  const tCommon = useTranslations("characterDetail");
   const tClass = useTranslations("classes");
-  const tAbilities = useTranslations("characterDetail.player.general.abilities");
-
-  const [selectedSpellcastingIndex, setSelectedSpellcastingIndex] = useState(0);
-  const [selectedSpellIndex, setSelectedSpellIndex] = useState<number | null>(null);
-  const [openAccordionValues, setOpenAccordionValues] = useState<string[]>([]);
-  const [openSpellDetailsAccordion, setOpenSpellDetailsAccordion] = useState<string[]>([]);
-  const [isCodexDialogOpen, setIsCodexDialogOpen] = useState(false);
-  const [showMobileDetails, setShowMobileDetails] = useState(false);
-  const [preparationEditMode, setPreparationEditMode] = useState(false);
-  const { errors } = useFormState({ control: form.control });
-
+  const tEdit = useTranslations("characterDetail.edit");
+  const { convertRange } = useDistanceUnit();
   const { isAvailable: isCodexAvailable } = useCodexHealth();
+  const listHeadingId = useId();
+  const panelHeadingId = useId();
+  const panelId = useId();
+  const isWide = useIsXlUp();
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+  /** Last spell index added from the Codex, focused when the dialog closes. */
+  const codexImportedIndex = useRef<number | null>(null);
 
-  const selectSpellcasting = useCallback((index: number) => {
-    setSelectedSpellcastingIndex(index);
-    setSelectedSpellIndex(null);
-    setShowMobileDetails(false);
-    setPreparationEditMode(false);
-  }, []);
+  /** Block and spell shown (wide panel: null spell = first in display order), shared with read mode. */
+  const { selection, setBlock, setSpell: setSelectedSpell } = useMagicSelection(selectionState);
+  const selectedSpell = selection.spell;
+  // Below `xl`, the spell selected in read mode starts expanded.
+  const [openRows, setOpenRows] = useState<string[]>(() =>
+    selection.spell === null ? [] : [spellRowValue(selection.spell)],
+  );
+  const [preparationEditMode, setPreparationEditMode] = useState(false);
+  const [isCodexDialogOpen, setIsCodexDialogOpen] = useState(false);
+  const { errors, submitCount } = useFormState({ control: form.control });
 
-  // Manage focus when showing mobile details
-  useEffect(() => {
-    if (showMobileDetails && selectedSpellIndex !== null) {
-      const spellNameInput = document.getElementById(`spell-name-${selectedSpellIndex}`);
-      if (spellNameInput) {
-        spellNameInput.focus();
-      }
-    }
-  }, [showMobileDetails, selectedSpellIndex]);
-
-  // ── Use useFieldArray for spellcasting array management ──
   const {
     fields: spellcastingFields,
     append: appendSpellcasting,
     remove: removeSpellcasting,
-  } = useFieldArray({
-    control: form.control,
-    name: "spellcasting",
-  });
+  } = useFieldArray({ control: form.control, name: "spellcasting" });
+  const sc = Math.min(selection.block, Math.max(0, spellcastingFields.length - 1));
 
-  const spellcastingList = spellcastingFields as SpellcastingFormEntry[];
+  const spells: Spell[] =
+    (useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.spells`) }) as Spell[] | undefined) ??
+    EMPTY_SPELLS;
+  const isInnate = Boolean(useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.isInnate`) }));
+  const watchedBlocks =
+    (useWatch({ control: form.control, name: "spellcasting" }) as Array<Partial<Spellcasting>> | undefined) ?? [];
+  const abilityKey =
+    toSpellcastingAbilityKey(useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.ability`) })) ?? "";
+  const saveDC = useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.saveDC`) }) as number | null;
+  const attackBonus = useWatch({ control: form.control, name: charPath(`spellcasting.${sc}.attackBonus`) }) as
+    number | null;
+  const proficiencyBonus =
+    (useWatch({ control: form.control, name: charPath("stats.proficiencyBonus") }) as number | undefined) ?? 2;
+  const abilityScores =
+    (useWatch({ control: form.control, name: "stats.abilityScores" }) as AbilityScores | undefined) ??
+    EMPTY_ABILITY_SCORES;
+  const classesList =
+    (useWatch({ control: form.control, name: charPath("class") }) as CharacterClassInfo[] | undefined) ?? [];
+  const availableClasses = classesList.flatMap((cls) => ((cls?.name?.length ?? 0) > 1 ? [cls.name as string] : []));
+  const classNames = watchedBlocks.map((block) => block?.className ?? "");
+  const currentClassName = classNames[sc] ?? "";
 
-  // Observer les spells du spellcasting sélectionné avec useWatch
-  const watchedSpells = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spells`,
-  });
-  const currentSpells: Spell[] = watchedSpells ?? EMPTY_SPELLS;
-  const spellIndicesWithErrors = new Set(getSpellIndicesWithErrors(errors, selectedSpellcastingIndex));
-
-  const isInnate: boolean =
-    useWatch({
-      control: form.control,
-      name: `spellcasting.${selectedSpellcastingIndex}.isInnate`,
-    }) ?? false;
-
-  /**
-   * Tout niveau > 0 représenté par un sort doit avoir une ligne d’emplacements.
-   * Les clés orphelines (plus aucun sort à ce niveau) sont purgées — FR-magic-spell-level-categories.
-   */
+  // ── Slots: every level ≥ 1 with spells has a slot row; orphans are pruned (FR-magic-spell-level-categories).
+  // Innate blocks: every uses-per-day value has its tracker entry.
   useLayoutEffect(() => {
-    if (isInnate || spellcastingList.length === 0) return;
-    const basePath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
-    const slotsNow = (form.getValues(charPath(basePath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
-
-    for (const s of currentSpells) {
-      const L = Number(s.level);
-      if (Number.isNaN(L) || L <= 0) continue;
-      const key = String(L);
-      const slotPath = `${basePath}.${key}`;
-      const entry = slotsNow[key] as { total?: SpellSlotFieldValue; used?: SpellSlotFieldValue } | undefined;
-
+    if (spellcastingFields.length === 0) return;
+    if (isInnate) {
+      const byUsesPath = `spellcasting.${sc}.spellSlotsByUses`;
+      const byUses = (form.getValues(charPath(byUsesPath)) as Record<string, unknown> | undefined) ?? {};
+      for (const spell of spells) {
+        const uses = spell.usesPerDay ?? null;
+        if (uses !== null && !byUses[`k${uses}`]) {
+          setCharValue(form, `${byUsesPath}.k${uses}`, { used: 0, total: uses }, { shouldDirty: true });
+        }
+      }
+      return;
+    }
+    const basePath = `spellcasting.${sc}.spellSlotsByLevel`;
+    const slotsNow = (form.getValues(charPath(basePath)) as SpellSlotsByLevel | undefined) ?? {};
+    for (const spell of spells) {
+      const level = Number(spell.level);
+      if (Number.isNaN(level) || level <= 0) continue;
+      const entry = slotsNow[String(level)] as { total?: unknown; used?: unknown } | undefined;
+      const slotPath = `${basePath}.${level}`;
       if (entry == null || typeof entry !== "object") {
         setCharValue(form, slotPath, { total: 1, used: 0 }, { shouldDirty: true });
         continue;
       }
-      const t = entry.total;
-      const u = entry.used;
-      if (t === undefined || t === null) {
-        setCharValue(form, `${slotPath}.total`, 1, { shouldDirty: true });
-      } else if (t !== "" && Number.isNaN(Number(t))) {
-        setCharValue(form, `${slotPath}.total`, 1, { shouldDirty: true });
-      }
-      if (u === undefined || u === null) {
-        setCharValue(form, `${slotPath}.used`, 0, { shouldDirty: true });
-      } else if (u !== "" && Number.isNaN(Number(u))) {
-        setCharValue(form, `${slotPath}.used`, 0, { shouldDirty: true });
-      }
+      const invalid = (value: unknown) =>
+        value === undefined || value === null || (value !== "" && Number.isNaN(Number(value)));
+      if (invalid(entry.total)) setCharValue(form, `${slotPath}.total`, 1, { shouldDirty: true });
+      if (invalid(entry.used)) setCharValue(form, `${slotPath}.used`, 0, { shouldDirty: true });
     }
-
-    const slotsAfterEnsure = (form.getValues(charPath(basePath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
-    const pruned = pruneOrphanSpellSlotsByLevel(slotsAfterEnsure, currentSpells);
-    if (!spellSlotLevelKeysEqual(slotsAfterEnsure, pruned)) {
+    const slotsAfter = (form.getValues(charPath(basePath)) as SpellSlotsByLevel | undefined) ?? {};
+    const pruned = pruneOrphanSpellSlotsByLevel(slotsAfter, spells);
+    if (!spellSlotLevelKeysEqual(slotsAfter, pruned)) {
       setCharValue(form, basePath, pruned, { shouldDirty: true, shouldValidate: false });
     }
-  }, [isInnate, selectedSpellcastingIndex, currentSpells, form, spellcastingList.length]);
+  }, [isInnate, sc, spells, form, spellcastingFields.length]);
 
-  // Fonctions pour manipuler les spells directement
-  const addSpell = useCallback(
-    (spell: Partial<Spell>) => {
-      const spellWithDefaults: Spell = {
-        name: "",
-        level: 0,
-        school: "",
-        description: "",
-        components: [],
-        castingTime: "",
-        duration: "",
-        range: "",
-        ...spell,
-        effectType: spell.effectType || "utility",
-        damageDetails: ensureSpellDamageEditRows(
-          hydrateSpellDamageDetails(spell.damageDetails, spell.damage),
-        ),
-      };
-
-      const spellLevel = Number(spellWithDefaults.level ?? 0);
-      const scRow = form.getValues(`spellcasting.${selectedSpellcastingIndex}`) as Spellcasting | undefined;
-      const innateRow = form.getValues(`spellcasting.${selectedSpellcastingIndex}.isInnate`) ?? false;
-      if (
-        isPlayer(character) &&
-        !innateRow &&
-        scRow &&
-        classWithSpellPrepared(scRow) &&
-        spellLevel > 0 &&
-        spellWithDefaults.prepared === undefined
-      ) {
-        spellWithDefaults.prepared = false;
+  // ── PC with a single class: blocks follow that class name (default and rename).
+  const singleClassName = isPlayer(character) && availableClasses.length === 1 ? availableClasses[0] : null;
+  useEffect(() => {
+    if (!singleClassName) return;
+    (form.getValues("spellcasting") ?? []).forEach((block, index) => {
+      if ((block.className ?? "") !== singleClassName) {
+        form.setValue(`spellcasting.${index}.className`, singleClassName, { shouldDirty: true });
       }
+    });
+  }, [singleClassName, form]);
 
-      const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
-      form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, [...currentSpells, spellWithDefaults], {
-        shouldDirty: true,
+  // ── Submitting with errors opens the invalid rows and scrolls to the first one (FR-character-list-card).
+  useEffect(() => {
+    if (submitCount === 0) return;
+    const invalid = getSpellIndicesWithErrors(errors, sc).map(spellRowValue);
+    if (invalid.length === 0) return;
+    if (isWide) {
+      const first = getSpellIndicesWithErrors(errors, sc)[0];
+      setSelectedSpell(first);
+      setTimeout(() => rowElement(listHeadingId, first)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 0);
+      return;
+    }
+    setOpenRows((prev) => Array.from(new Set([...prev, ...invalid])));
+    setTimeout(() => {
+      rowElement(listHeadingId, Number(invalid[0].replace("spell-", "")))?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
       });
+    }, ROW_OPEN_DELAY_MS);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submitCount]);
 
-      const spellLevelAfter = Number(spellWithDefaults.level || 0);
-      if (spellLevelAfter > 0) {
-        const currentSlots = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`) || {};
-        if (!currentSlots[spellLevelAfter]) {
-          form.setValue(
-            `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${spellLevelAfter}`,
-            { total: 1, used: 0 },
-            { shouldDirty: true },
-          );
-        }
-      }
+  const usesPreparedMechanic =
+    isPlayer(character) &&
+    !isInnate &&
+    spellcastingFields.length > 0 &&
+    classWithSpellPrepared({ ...(watchedBlocks[sc] as Spellcasting), className: currentClassName });
+  const showPreparedToggle =
+    usesPreparedMechanic && hasLevel1OrHigherSpells({ ...(watchedBlocks[sc] as Spellcasting), spells });
+  useEffect(() => {
+    if (!showPreparedToggle && preparationEditMode) setPreparationEditMode(false);
+  }, [showPreparedToggle, preparationEditMode]);
 
-      const uses = spellWithDefaults.usesPerDay ?? null;
-      if (uses !== null) {
-        const currentByUses =
-          (form.getValues(charPath(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`)) as unknown as
-            Record<string, { used: number; total: number }> | undefined) || {};
-        if (!currentByUses[`k${uses}`]) {
-          setCharValue(
-            form,
-            `spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}`,
-            { used: 0, total: uses },
-            { shouldDirty: true },
-          );
-        }
-      }
-
-      // Open the accordion for the new spell based on display mode
-      const accordionKey = !isInnate
-        ? `level-${spellWithDefaults.level || 0}`
-        : npcUsesKey(spellWithDefaults.usesPerDay ?? null);
-      if (!openAccordionValues.includes(accordionKey)) {
-        setOpenAccordionValues([...openAccordionValues, accordionKey]);
-      }
-
-      setSelectedSpellIndex(currentSpells.length);
-    },
-    [form, selectedSpellcastingIndex, openAccordionValues, isInnate, character],
-  );
-
-  const removeSpell = useCallback(
+  const selectBlock = useCallback(
     (index: number) => {
-      const currentSpells = form.getValues(`spellcasting.${selectedSpellcastingIndex}.spells`) || [];
-      const newSpells = currentSpells.filter((_, i: number) => i !== index);
-      form.setValue(`spellcasting.${selectedSpellcastingIndex}.spells`, newSpells, { shouldDirty: true });
-
-      const slotsPath = `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel`;
-      const slotsNow = (form.getValues(charPath(slotsPath)) as unknown as SpellSlotsByLevel | undefined) ?? {};
-      const pruned = pruneOrphanSpellSlotsByLevel(slotsNow, newSpells);
-      if (!spellSlotLevelKeysEqual(slotsNow, pruned)) {
-        setCharValue(form, slotsPath, pruned, { shouldDirty: true, shouldValidate: false });
-      }
-
-      if (selectedSpellIndex === index) {
-        setSelectedSpellIndex(null);
-        setShowMobileDetails(false);
-      } else if (selectedSpellIndex !== null && selectedSpellIndex > index) {
-        setSelectedSpellIndex(selectedSpellIndex - 1);
-      }
+      setBlock(index);
+      setOpenRows([]);
+      setPreparationEditMode(false);
     },
-    [form, selectedSpellcastingIndex, selectedSpellIndex],
+    [setBlock],
   );
 
-  const appendSpellHelper = useCallback(() => {
-    const levels = getSpellLevelsFromSpells(currentSpells);
-    const defaultLevel = levels.length > 0 ? levels[0] : 1;
-    addSpell({
+  /**
+   * Opens a row (wide mode: selects it in the panel), scrolls it into view in the bounded list and
+   * focuses `focusId`.
+   */
+  const revealRow = (index: number, focusId: string) => {
+    if (isWide) setSelectedSpell(index);
+    else {
+      const value = spellRowValue(index);
+      setOpenRows((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    }
+    setTimeout(
+      () => {
+        rowElement(listHeadingId, index)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        document.getElementById(focusId)?.focus({ preventScroll: true });
+      },
+      isWide ? 0 : ROW_OPEN_DELAY_MS,
+    );
+  };
+
+  /** Appends a spell (defaults, prepared flag, slot entries) and returns its index. */
+  const appendSpell = (spell: Partial<Spell>): number => {
+    const list = (form.getValues(charPath(`spellcasting.${sc}.spells`)) as Spell[] | undefined) ?? [];
+    const next: Spell = {
       name: "",
-      level: defaultLevel,
+      level: 0,
       school: "",
       description: "",
       components: [],
       castingTime: "",
       duration: "",
       range: "",
-      effectType: "utility",
-      usesPerDay: null,
-    });
-  }, [currentSpells, addSpell]);
-
-  const addSpellFromCodex = useCallback(
-    (spell: Partial<Spell>) => {
-      addSpell(spell);
-    },
-    [addSpell],
-  );
-
-  const appendSpellDamageRow = useCallback(() => {
-    if (selectedSpellIndex === null) return;
-    const path = charPath(`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails`);
-    const current = coerceSpellDamageDetailsList(form.getValues(path));
-    setCharValue(form, path, [...current, { ...EMPTY_SPELL_DAMAGE_DETAILS }], { shouldDirty: true });
-    setOpenSpellDetailsAccordion((prev) => (prev.includes("damage") ? prev : [...prev, "damage"]));
-  }, [form, selectedSpellcastingIndex, selectedSpellIndex]);
-
-  // ── Reactive watches (must be at top level) ──
-  const proficiencyBonus: number =
-    (useWatch({
-      control: form.control,
-      name: "stats.proficiencyBonus" as Path<Character>,
-    }) as number | undefined) ?? 2;
-  const abilityScores: AbilityScores =
-    (useWatch({ control: form.control, name: "stats.abilityScores" }) as AbilityScores | undefined) ??
-    EMPTY_ABILITY_SCORES;
-  const classesList: CharacterClassInfo[] =
-    (useWatch({
-      control: form.control,
-      name: "class" as Path<Character>,
-    }) as CharacterClassInfo[] | undefined) ?? [];
-  const availableSpellcastingClasses = classesList.filter(
-    (cls): cls is CharacterClassInfo & { name: string } => (cls?.name?.length ?? 0) > 1,
-  );
-  const hasAvailableSpellcastingClasses = availableSpellcastingClasses.length > 0;
-
-  const watchedSpellcastingClassNames =
-    (
-      useWatch({
-        control: form.control,
-        name: "spellcasting",
-      }) as Array<{ className?: string }> | undefined
-    )?.map((sc) => sc?.className ?? "") ?? [];
-
-  const currentClassName: string = watchedSpellcastingClassNames[selectedSpellcastingIndex] ?? "";
-  const currentAbilityKey: string =
-    useWatch({ control: form.control, name: `spellcasting.${selectedSpellcastingIndex}.ability` }) ?? "";
-  const currentSaveDC: number | null = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.saveDC`,
-  });
-  const currentAttackBonus: number | null = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.attackBonus`,
-  });
-
-  // Watch current spell damage and healing details
-  const spellWatchIndex = selectedSpellIndex ?? 0;
-  const currentDamageDetails = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.damageDetails`,
-  }) as DamageDetails | DamageDetails[] | undefined;
-  const currentHealingDetails = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.healingDetails`,
-  }) as HealingDetails | undefined;
-  const currentDamage = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.damage`,
-  }) as string | undefined;
-  const currentHealing = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.healing`,
-  }) as string | undefined;
-  const currentEffectType = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.effectType`,
-  }) as Spell["effectType"] | undefined;
-  const currentUsesPerDay = useWatch({
-    control: form.control,
-    name: `spellcasting.${selectedSpellcastingIndex}.spells.${spellWatchIndex}.usesPerDay`,
-  }) as number | null | undefined;
-
-  // Sync spellcasting className when the player has a single class
-  // – covers: setting the default when className is blank, and propagating a class rename.
-  useEffect(() => {
-    if (!isPlayer(character)) return;
-    if (availableSpellcastingClasses.length !== 1) return;
-    const singleClassName = availableSpellcastingClasses[0].name;
-    const currentList = form.getValues("spellcasting") ?? [];
-    currentList.forEach((sc, i) => {
-      if ((sc.className ?? "") !== singleClassName) {
-        form.setValue(`spellcasting.${i}.className`, singleClassName, { shouldDirty: true });
-      }
-    });
-  }, [availableSpellcastingClasses, character, form]);
-
-  // NPC: sync spellSlotsByUses when usesPerDay changes on the selected spell
-  useEffect(() => {
-    if (!isInnate || selectedSpellIndex === null) return;
-    const uses: number | null = currentUsesPerDay ?? null;
-    if (uses === null) return;
-    const currentByUses =
-      (form.getValues(charPath(`spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses`)) as unknown as
-        Record<string, { used: number; total: number }> | undefined) || {};
-    if (!currentByUses[`k${uses}`]) {
-      setCharValue(
-        form,
-        `spellcasting.${selectedSpellcastingIndex}.spellSlotsByUses.k${uses}`,
-        { used: 0, total: uses },
-        { shouldDirty: true },
-      );
+      ...spell,
+      effectType: spell.effectType || "utility",
+      damageDetails: ensureSpellDamageEditRows(hydrateSpellDamageDetails(spell.damageDetails, spell.damage)),
+    };
+    const block = form.getValues(charPath(`spellcasting.${sc}`)) as Spellcasting | undefined;
+    if (
+      isPlayer(character) &&
+      !block?.isInnate &&
+      block &&
+      classWithSpellPrepared(block) &&
+      Number(next.level) > 0 &&
+      next.prepared === undefined
+    ) {
+      next.prepared = false;
     }
-  }, [currentUsesPerDay, selectedSpellIndex, selectedSpellcastingIndex, form, isInnate]);
+    setCharValue(form, `spellcasting.${sc}.spells`, [...list, next], { shouldDirty: true });
+    return list.length;
+  };
 
-  // Auto-parse old damage/healing formulas when spell is selected
-  useEffect(() => {
-    if (selectedSpellIndex === null) {
-      return;
-    }
+  const addSpell = () => {
+    const levels = getSpellLevelsFromSpells(spells);
+    const index = appendSpell({ level: levels[0] ?? 1, usesPerDay: null });
+    revealRow(index, `${listHeadingId}-spell-${index}-name`);
+  };
 
-    // Hydrate legacy single-object or formula string into a damageDetails list
-    const hydratedDamages = hydrateSpellDamageDetails(currentDamageDetails, currentDamage);
-    const currentDamageList = coerceSpellDamageDetailsList(currentDamageDetails);
-    const needsDamageHydration =
-      !Array.isArray(currentDamageDetails) ||
-      (currentDamageList.length === 0 && hydratedDamages.some(isDamageDetailsFilled)) ||
-      (currentDamageList.length > 0 &&
-        !currentDamageList.some(isDamageDetailsFilled) &&
-        hydratedDamages.some(isDamageDetailsFilled));
+  const addSpellFromCodex = (spell: Partial<Spell>) => {
+    codexImportedIndex.current = appendSpell(spell);
+  };
 
-    if (needsDamageHydration && (hydratedDamages.length > 0 || Array.isArray(currentDamageDetails) === false)) {
-      form.setValue(
-        `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails`,
-        ensureSpellDamageEditRows(hydratedDamages),
-        { shouldDirty: hydratedDamages.some(isDamageDetailsFilled) && !currentDamageList.some(isDamageDetailsFilled) },
-      );
-    }
+  const onCodexOpenChange = (open: boolean) => {
+    setIsCodexDialogOpen(open);
+    if (open || codexImportedIndex.current === null) return;
+    const index = codexImportedIndex.current;
+    codexImportedIndex.current = null;
+    revealRow(index, `${listHeadingId}-trigger-${index}`);
+  };
 
-    const damageDetailsPath =
-      `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails` as Path<Character>;
-    const damageDetailsAfterHydration = coerceSpellDamageDetailsList(form.getValues(damageDetailsPath));
-    if (damageDetailsAfterHydration.length === 0) {
-      form.setValue(damageDetailsPath, ensureSpellDamageEditRows([]), { shouldDirty: false });
-    }
-
-    // Parse and fill healing fields if old healing exists but healingDetails is empty
-    if (currentHealing && currentHealing.trim() !== "") {
-      const hasHealingDetails =
-        currentHealingDetails &&
-        (currentHealingDetails.diceCount ||
-          currentHealingDetails.diceType ||
-          (currentHealingDetails.bonus !== null && currentHealingDetails.bonus !== undefined));
-
-      if (!hasHealingDetails) {
-        const parsed = parseDamageFormula(currentHealing);
-        if (parsed.diceCount || parsed.diceType) {
-          form.setValue(
-            `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails`,
-            {
-              diceCount: parsed.diceCount,
-              diceType: parsed.diceType,
-              bonus: parsed.bonus,
-            },
-            { shouldDirty: true },
-          );
-        }
+  const removeSpell = (index: number) => {
+    const list = (form.getValues(charPath(`spellcasting.${sc}.spells`)) as Spell[] | undefined) ?? [];
+    const nextSpells = list.filter((_, i) => i !== index);
+    setCharValue(form, `spellcasting.${sc}.spells`, nextSpells, { shouldDirty: true });
+    if (!isInnate) {
+      const slotsPath = `spellcasting.${sc}.spellSlotsByLevel`;
+      const slotsNow = (form.getValues(charPath(slotsPath)) as SpellSlotsByLevel | undefined) ?? {};
+      const pruned = pruneOrphanSpellSlotsByLevel(slotsNow, nextSpells);
+      if (!spellSlotLevelKeysEqual(slotsNow, pruned)) {
+        setCharValue(form, slotsPath, pruned, { shouldDirty: true, shouldValidate: false });
       }
     }
-  }, [
-    selectedSpellIndex,
-    currentDamage,
-    currentHealing,
-    currentDamageDetails,
-    currentHealingDetails,
-    form,
-    selectedSpellcastingIndex,
-  ]);
-
-  const abilityScore: number = currentAbilityKey ? (abilityScores[currentAbilityKey as keyof AbilityScores] ?? 10) : 10;
-  const abilityMod: number = calculateAbilityBonus(abilityScore);
-  const calculatedSaveDC: number = calculateSpellSaveDC(proficiencyBonus, abilityScore);
-  const calculatedAttackBonus: number = calculateSpellAttackBonus(proficiencyBonus, abilityScore);
-
-  // ── Functions to manage spellcasting ──
-  const addSpellcasting = () => {
-    if (isPlayer(character) && !hasAvailableSpellcastingClasses) {
-      return;
-    }
-
-    const candidateClasses = isPlayer(character) ? availableSpellcastingClasses : classesList;
-
-    // Find a class that doesn't have spellcasting yet
-    const classWithoutSpellcasting = candidateClasses.find((cls) => {
-      const className = cls?.name?.toLowerCase();
-      if (!className) return false;
-      return !spellcastingList.some((sc) => {
-        const scClassName = sc?.className?.toLowerCase();
-        return scClassName === className;
-      });
+    setOpenRows((prev) =>
+      prev
+        .filter((value) => value !== spellRowValue(index))
+        .map((value) => {
+          const i = Number(value.replace("spell-", ""));
+          return i > index ? spellRowValue(i - 1) : value;
+        }),
+    );
+    // Next row in display order, else previous, else « Add a spell » (FR-character-list-card).
+    const order = buildSpellGroups(list, { isInnate, sort: false }).flatMap((group) => group.indices);
+    const position = order.indexOf(index);
+    const target = order[position + 1] ?? order[position - 1];
+    const shifted = target === undefined ? null : target > index ? target - 1 : target;
+    // Wide mode: the deleted spell's panel moves to the spell receiving focus; others keep theirs.
+    setSelectedSpell((prev) => {
+      const current = resolveSelectedSpellIndex(buildSpellGroups(list, { isInnate, sort: false }), prev);
+      if (current === null || current === index) return shifted;
+      return current > index ? current - 1 : current;
     });
+    setTimeout(() => {
+      const next = shifted === null ? null : document.getElementById(`${listHeadingId}-trigger-${shifted}`);
+      (next ?? addButtonRef.current)?.focus();
+    }, 0);
+  };
 
-    const newSpellcasting = {
-      className: classWithoutSpellcasting?.name || "",
+  const addBlock = () => {
+    const taken = new Set(classNames.map((name) => name.toLowerCase()));
+    const candidates = isPlayer(character) ? availableClasses : classesList.map((cls) => cls?.name ?? "");
+    appendSpellcasting({
+      className: candidates.find((name) => name && !taken.has(name.toLowerCase())) ?? "",
       ability: "intelligence",
       saveDC: 10,
       attackBonus: 2,
@@ -577,1808 +425,344 @@ export default function CharacterMagicTabEdit({ character, accentColor, form }: 
       spellSlotsByLevel: {},
       totalSlots: 0,
       spells: [],
-    };
-
-    appendSpellcasting(newSpellcasting);
-    selectSpellcasting(spellcastingList.length);
-  };
-
-  const removeCurrentSpellcasting = () => {
-    if (spellcastingList.length > 0) {
-      removeSpellcasting(selectedSpellcastingIndex);
-      if (selectedSpellcastingIndex >= spellcastingList.length - 1) {
-        setSelectedSpellcastingIndex(Math.max(0, spellcastingList.length - 2));
-        setSelectedSpellIndex(null);
-        setShowMobileDetails(false);
-      }
-    }
-  };
-
-  const selectedSpellcastingEarly = spellcastingList[selectedSpellcastingIndex];
-  const usesPreparedMechanicEarly =
-    isPlayer(character) &&
-    !isInnate &&
-    !!selectedSpellcastingEarly &&
-    classWithSpellPrepared({ ...(selectedSpellcastingEarly as Spellcasting), className: currentClassName });
-  const hasPrepEligibleSpellsEarly = hasLevel1OrHigherSpells({
-    ...(selectedSpellcastingEarly as Spellcasting),
-    spells: currentSpells,
-  });
-  const showPreparedSpellsButtonEarly = usesPreparedMechanicEarly && hasPrepEligibleSpellsEarly;
-
-  useEffect(() => {
-    if (!showPreparedSpellsButtonEarly && preparationEditMode) {
-      setPreparationEditMode(false);
-    }
-  }, [showPreparedSpellsButtonEarly, preparationEditMode]);
-
-  const openAccordionAllowedSignature = (() => {
-    if (spellcastingList.length === 0) return "";
-    if (!isInnate) {
-      return getSpellLevelsFromSpells(currentSpells)
-        .map((level) => `level-${level}`)
-        .join("|");
-    }
-    const seen = new Set<number | null>();
-    currentSpells.forEach((spell) => seen.add(spell.usesPerDay ?? null));
-    return Array.from(seen).map(npcUsesKey).join("|");
-  })();
-
-  useEffect(() => {
-    const allowed = new Set(openAccordionAllowedSignature ? openAccordionAllowedSignature.split("|") : []);
-    setOpenAccordionValues((prev) => {
-      const next = prev.filter((key) => allowed.has(key));
-      return next.length === prev.length ? prev : next;
     });
-  }, [openAccordionAllowedSignature]);
+    selectBlock(spellcastingFields.length);
+  };
 
-  // If no spellcasting, show interface to create first one
-  if (spellcastingList.length === 0) {
+  const removeBlock = () => {
+    removeSpellcasting(sc);
+    selectBlock(Math.max(0, Math.min(sc, spellcastingFields.length - 2)));
+  };
+
+  if (spellcastingFields.length === 0) {
+    const blocked = isPlayer(character) && availableClasses.length === 0;
     return (
       <div
-        className="w-full flex flex-col gap-4 md:gap-6 px-2 sm:px-0 items-center justify-center py-12"
+        className="flex w-full flex-col items-center justify-center gap-4 py-12"
         role="region"
-        aria-labelledby="magic-tab-edit">
-        <h2
-          id="magic-tab-edit"
-          className="sr-only">
-          {tMagic("spells")}
-        </h2>
-        <p className="text-center text-muted-foreground text-base">{tMagic("noMagicAbilities")}</p>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button
-                type="button"
-                onClick={addSpellcasting}
-                variant="outline"
-                size="lg"
-                disabled={isPlayer(character) && !hasAvailableSpellcastingClasses}
-                className="flex items-center gap-2">
-                <Plus className="size-4" />
-                {tMagic("addSpellcasting")}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          {isPlayer(character) && !hasAvailableSpellcastingClasses && (
-            <TooltipContent>
-              <p>{tMagic("spellcastingClassRequiresClass")}</p>
-            </TooltipContent>
-          )}
-        </Tooltip>
+        aria-label={tMagic("mainRegion")}>
+        <p className="text-center text-base text-muted-foreground">{tMagic("noMagicAbilities")}</p>
+        <Button
+          type="button"
+          variant="primary"
+          onClick={addBlock}
+          disabled={blocked}>
+          <Plus aria-hidden="true" />
+          {tMagic("addSpellcasting")}
+        </Button>
+        {blocked && <p className="text-sm text-muted-foreground">{tMagic("spellcastingClassRequiresClass")}</p>}
       </div>
     );
   }
 
-  const selectedSpellcasting = spellcastingList[selectedSpellcastingIndex];
-
-  const usesPreparedMechanic =
-    isPlayer(character) &&
-    !isInnate &&
-    !!selectedSpellcasting &&
-    classWithSpellPrepared({ ...(selectedSpellcasting as Spellcasting), className: currentClassName });
-
-  const maxPreparedSlots =
+  const abilityScore = abilityKey ? (abilityScores[abilityKey] ?? 10) : 10;
+  const modifier = calculateAbilityBonus(abilityScore);
+  const calculatedAttackBonus = calculateSpellAttackBonus(proficiencyBonus, abilityScore);
+  const maxPrepared =
     usesPreparedMechanic && isPlayer(character)
-      ? numberSpellsPrepare(selectedSpellcasting as Spellcasting, character)
+      ? numberSpellsPrepare({ ...(watchedBlocks[sc] as Spellcasting), className: currentClassName }, character)
       : 0;
+  const preparedCount = usesPreparedMechanic ? countPreparedSpellsInList(spells) : 0;
 
-  const preparedSpellsCounted = usesPreparedMechanic ? countPreparedSpellsInList(currentSpells) : 0;
-
-  const atPreparedLimit = usesPreparedMechanic && maxPreparedSlots > 0 && preparedSpellsCounted >= maxPreparedSlots;
-
-  const hasPrepEligibleSpells = hasLevel1OrHigherSpells({
-    ...(selectedSpellcasting as Spellcasting),
-    spells: currentSpells,
+  const blockLabels = classNames.map((name) => {
+    if (!name) return tMagic("newSpellcasting");
+    const cls = classesList.find((c) => c?.name?.toLowerCase() === name.toLowerCase());
+    return isPlayer(character) && cls?.name ? `${tClass(cls.name)} ${tMagic("level")} ${cls.level}` : name;
   });
-  const showPreparedSpellsButton = usesPreparedMechanic && hasPrepEligibleSpells;
-
-  // ── Prepared spells (calculated) ──
-  const modSign = abilityMod >= 0 ? `+${abilityMod}` : `${abilityMod}`;
-
-  const saveDCSynced = isPlayer(character) && currentSaveDC === calculatedSaveDC;
-  const attackBonusSynced = isPlayer(character) && currentAttackBonus === calculatedAttackBonus;
-
-  // Build sorted level list from spells only (byLevel) or uses-per-day groups (byUses).
-  // @see FR-magic-spell-level-categories
-  const levels: number[] = !isInnate ? getSpellLevelsFromSpells(currentSpells) : [];
-  const npcUsesGroups: Array<number | null> = [];
-
-  if (isInnate) {
-    const seen = new Set<number | null>();
-    currentSpells.forEach((spell) => {
-      seen.add(spell.usesPerDay ?? null);
-    });
-    const groups = Array.from(seen);
-    groups.sort((a, b) => {
-      if (a === null) return -1;
-      if (b === null) return 1;
-      return a - b;
-    });
-    npcUsesGroups.push(...groups);
-  }
-
-  const spellIndicesByLevel = levels.reduce<Record<number, number[]>>((acc, level) => {
-    acc[level] = currentSpells.reduce<number[]>((indices, spell, index) => {
-      if (Number(spell.level) === level) indices.push(index);
-      return indices;
-    }, []);
-    return acc;
-  }, {});
-  const spellLevelsWithErrors = getSpellLevelsWithErrors(errors, selectedSpellcastingIndex, currentSpells);
-
-  if (usesPreparedMechanic) {
-    for (const lvl of levels) {
-      const idxList = spellIndicesByLevel[lvl];
-      if (!idxList?.length) continue;
-      idxList.sort((ai, bi) => {
-        const a = currentSpells[ai];
-        const b = currentSpells[bi];
-        if (lvl > 0) {
-          const pa = a.prepared === true ? 0 : 1;
-          const pb = b.prepared === true ? 0 : 1;
-          if (pa !== pb) return pa - pb;
-        }
-        return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
-      });
-    }
-  } else {
-    for (const lvl of levels) {
-      const idxList = spellIndicesByLevel[lvl];
-      if (!idxList?.length) continue;
-      idxList.sort((ai, bi) =>
-        (currentSpells[ai].name || "").localeCompare(currentSpells[bi].name || "", undefined, {
-          sensitivity: "base",
-        }),
-      );
-    }
-  }
-
-  // NPC: spell indices grouped by usesPerDay, sorted alphabetically within each group
-  const npcSpellIndicesByUses = npcUsesGroups.reduce<Record<string, number[]>>((acc, uses) => {
-    const key = npcUsesKey(uses);
-    acc[key] = currentSpells
-      .map((spell, index: number) => ({ spell, index }))
-      .filter(({ spell }) => (spell.usesPerDay ?? null) === uses)
-      .sort(({ spell: a }, { spell: b }) => (a.name || "").localeCompare(b.name || ""))
-      .map(({ index }: { index: number }) => index);
-    return acc;
-  }, {});
-  const spellUsesGroupsWithErrors = getSpellUsesGroupsWithErrors(
-    errors,
-    selectedSpellcastingIndex,
-    currentSpells,
-    npcUsesKey,
+  const canAddBlock = isPlayer(character) && availableClasses.length > spellcastingFields.length;
+  const invalidBlocks = new Set(
+    watchedBlocks.flatMap((_, index) => (form.getFieldState(charPath(`spellcasting.${index}`)).invalid ? [index] : [])),
   );
+  const invalidSpells = new Set(getSpellIndicesWithErrors(errors, sc));
 
-  const allSpellAccordionKeys = !isInnate
-    ? levels.filter((level) => (spellIndicesByLevel[level] ?? []).length > 0).map((level) => `level-${level}`)
-    : npcUsesGroups.filter((uses) => (npcSpellIndicesByUses[npcUsesKey(uses)] ?? []).length > 0).map(npcUsesKey);
-  const hasSpellAccordions = allSpellAccordionKeys.length > 0;
+  const groups = buildSpellGroups(spells, { isInnate, sort: false });
+  const shownSpell = isWide ? resolveSelectedSpellIndex(groups, selectedSpell) : null;
+  const showSelectorEarly = blockLabels.length > 1 || canAddBlock;
+  const wideSlots = magicWideSlots(showSelectorEarly);
+  const groupLabel = (group: SpellGroup) =>
+    group.kind === "uses"
+      ? group.value === null
+        ? tMagic("npc.atWill")
+        : tMagic("npc.usesPerDay", { count: group.value })
+      : group.value === 0
+        ? tMagic("cantrips")
+        : tMagic("spellLevelShort", { level: group.value ?? 0 });
 
-  // ── Keyboard navigation for tabs ──
-  const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      const nextIndex = (index + 1) % spellcastingList.length;
-      selectSpellcasting(nextIndex);
-      // Focus next tab
-      setTimeout(() => {
-        document.getElementById(`spellcasting-tab-${nextIndex}`)?.focus();
-      }, 0);
-    } else if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      const prevIndex = (index - 1 + spellcastingList.length) % spellcastingList.length;
-      selectSpellcasting(prevIndex);
-      // Focus previous tab
-      setTimeout(() => {
-        document.getElementById(`spellcasting-tab-${prevIndex}`)?.focus();
-      }, 0);
-    } else if (e.key === "Home") {
-      e.preventDefault();
-      selectSpellcasting(0);
-      setTimeout(() => {
-        document.getElementById(`spellcasting-tab-0`)?.focus();
-      }, 0);
-    } else if (e.key === "End") {
-      e.preventDefault();
-      const lastIndex = spellcastingList.length - 1;
-      selectSpellcasting(lastIndex);
-      setTimeout(() => {
-        document.getElementById(`spellcasting-tab-${lastIndex}`)?.focus();
-      }, 0);
-    }
+  const togglePrepared = (index: number) => {
+    const spell = spells[index];
+    if (!spell) return;
+    const nextPrepared = spell.prepared !== true;
+    const others = spells.filter((s, i) => i !== index && Number(s.level) > 0 && s.prepared === true).length;
+    if (nextPrepared && maxPrepared > 0 && others >= maxPrepared) return;
+    setCharValue(form, `spellcasting.${sc}.spells.${index}.prepared`, nextPrepared, { shouldDirty: true });
   };
 
-  const renderErrorIndicator = (label: string) => (
-    <span className="inline-flex items-center text-red shrink-0">
-      <CircleAlert
-        className="size-4"
-        aria-hidden="true"
-      />
-      <span className="sr-only">{label}</span>
-    </span>
-  );
+  // Group sub-headings and rows are siblings of one list, so a row changing level is moved,
+  // not remounted: it stays open and keeps the focus.
+  const listItems: ReactNode[] = groups.flatMap((group) => {
+    const hasGroupError = group.indices.some((index) => invalidSpells.has(index));
+    return [
+      <SpellGroupHeader
+        key={`group-${group.key}`}
+        label={groupLabel(group)}
+        accentColor={accentColor}
+        error={hasGroupError ? <MagicErrorIndicator label={tMagic("spellCategoryContainsErrors")} /> : undefined}
+        trailing={
+          group.kind === "level" && (group.value ?? 0) > 0 ? (
+            <SpellSlotTotalInput
+              form={form}
+              spellcastingIndex={sc}
+              level={group.value ?? 0}
+            />
+          ) : undefined
+        }
+      />,
+      ...group.indices.map((index) => {
+        const spell = spells[index];
+        const value = spellRowValue(index);
+        const name = spell?.name || tMagic("newSpell");
+        const hasError = invalidSpells.has(index);
+        const showPill = usesPreparedMechanic && Number(spell?.level) > 0;
+        const others = spells.filter((s, i) => i !== index && Number(s.level) > 0 && s.prepared === true).length;
+        const label = hasError
+          ? tMagic("spellContainsErrorsAria", { name })
+          : tMagic("spellRowLabel", { name, group: groupLabel(group) });
+        const trailing = (
+          <span className="flex items-center gap-1">
+            {showPill && (
+              <SpellPreparedPill
+                isPrepared={spell?.prepared === true}
+                interactive={preparationEditMode}
+                prepareBlocked={spell?.prepared !== true && maxPrepared > 0 && others >= maxPrepared}
+                onToggle={() => togglePrepared(index)}
+                preparedTooltip={tMagic("preparedBookmarkPreparedTooltip")}
+                unpreparedTooltip={tMagic("preparedBookmarkUnpreparedTooltip")}
+                prepareBlockedTooltip={tMagic("spellPrepareLimitTooltip")}
+                ariaPrepared={`${tMagic("preparedPillAriaPrepared")} : ${name}`}
+                ariaUnprepared={`${tMagic("preparedPillAriaUnprepared")} : ${name}`}
+              />
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="text-red-500"
+              onClick={() => removeSpell(index)}
+              aria-label={tMagic("removeSpellWithName", { name })}>
+              <Trash2
+                className="size-4"
+                aria-hidden="true"
+              />
+            </Button>
+          </span>
+        );
+        if (isWide) {
+          return (
+            <ListSelectRow
+              key={value}
+              id={`${listHeadingId}-trigger-${index}`}
+              name={name}
+              meta={spell ? spellSummaryParts(spell, convertRange) : []}
+              metaStyle="pills"
+              label={label}
+              isSelected={shownSpell === index}
+              hasError={hasError}
+              onSelect={() => setSelectedSpell(index)}
+              controlsId={panelId}
+              trailing={trailing}
+            />
+          );
+        }
+        return (
+          <ListRow
+            key={value}
+            id={`${listHeadingId}-${value}`}
+            value={value}
+            triggerId={`${listHeadingId}-trigger-${index}`}
+            name={name}
+            meta={spell ? spellSummaryParts(spell, convertRange) : []}
+            metaStyle="pills"
+            triggerLabel={label}
+            isOpen={openRows.includes(value)}
+            hasError={hasError}
+            contentLabel={name}
+            trailing={trailing}>
+            <SpellEditForm
+              form={form}
+              spellcastingIndex={sc}
+              spellIndex={index}
+              idPrefix={`${listHeadingId}-spell-${index}`}
+              isInnate={isInnate}
+              attackBonus={calculatedAttackBonus}
+            />
+          </ListRow>
+        );
+      }),
+    ];
+  });
 
-  const errorCardClassName = "border-red/75 bg-red/8";
+  const showSelector = showSelectorEarly;
 
   return (
-    <div
-      className="w-full flex flex-col gap-2 md:gap-4 px-2 sm:px-0 min-h-0 max-xl:max-h-none xl:flex-1 xl:min-h-0 xl:h-full xl:max-h-full relative"
-      role="main"
-      aria-labelledby="magic-tab-edit">
-      <h2
-        id="magic-tab-edit"
-        className="sr-only">
-        {tMagic("spells")}
-      </h2>
+    <div className={magicBentoGridClass(showSelector)}>
+      {showSelector && (
+        <SpellcastingSelector
+          className={MAGIC_SLOTS.selector}
+          labels={blockLabels}
+          selectedIndex={sc}
+          onSelect={selectBlock}
+          invalidIndices={invalidBlocks}
+          errorLabel={tMagic("spellCategoryContainsErrors")}
+          trailing={
+            canAddBlock ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={addBlock}
+                aria-label={tMagic("addSpellcasting")}>
+                <Plus aria-hidden="true" />
+                {tEdit("add")}
+              </Button>
+            ) : null
+          }
+        />
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-[1fr] xl:grid-cols-[1fr_1fr] 2xl:grid-cols-[1.35fr_1fr] min-[1920px]:grid-cols-[1.5fr_1fr] min-[2560px]:grid-cols-[1.65fr_1fr] gap-2 md:gap-4 min-h-0 max-xl:h-auto xl:flex-1 xl:min-h-0 xl:h-full xl:overflow-hidden">
-        {/* ══ Left column ══ */}
-        <div
-          className={`flex flex-col gap-2 md:gap-4 min-h-0 max-xl:h-auto max-xl:overflow-visible xl:h-full xl:overflow-hidden ${showMobileDetails ? "hidden xl:flex" : "flex"}`}>
-          {/* Spellcasting class tabs */}
-          {isPlayer(character) && spellcastingList.length > 0 && (
-            <div className="flex flex-col gap-2 shrink-0">
-              <div
-                className="flex flex-wrap gap-2"
-                role="tablist"
-                aria-label={tMagic("spellcastingClass")}>
-                {spellcastingList.map((sc, index) => {
-                  const liveClassName = watchedSpellcastingClassNames[index] ?? sc?.className ?? "";
-                  let label = liveClassName || tMagic("newSpellcasting");
-                  if (isPlayer(character) && liveClassName) {
-                    const cls = classesList.find((c) => c?.name?.toLowerCase() === liveClassName.toLowerCase());
-                    label = cls?.name ? `${tClass(cls.name)} ${tMagic("level")} ${cls.level}` : liveClassName;
-                  }
-                  const isSelected = selectedSpellcastingIndex === index;
-                  return (
-                    <Card
-                      key={sc.id || index}
-                      className={`gap-3 p-3 sm:p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md ${isSelected ? `bg-${accentColor}` : ""}`}
-                      onClick={() => {
-                        selectSpellcasting(index);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          selectSpellcasting(index);
-                        } else {
-                          handleTabKeyDown(e, index);
-                        }
-                      }}
-                      role="tab"
-                      tabIndex={isSelected ? 0 : -1}
-                      aria-selected={isSelected}
-                      aria-controls={`spellcasting-panel-${index}`}
-                      id={`spellcasting-tab-${index}`}>
-                      <span
-                        className={`${isSelected ? "text-black" : accentColor} text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-semibold`}>
-                        {label}
-                      </span>
-                    </Card>
-                  );
-                })}
-                {availableSpellcastingClasses.length > spellcastingList.length && (
-                  <Card
-                    className="gap-3 p-4 md:px-6 cursor-pointer transition-all duration-200 hover:shadow-md border-dashed"
-                    onClick={addSpellcasting}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        addSpellcasting();
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={tMagic("addSpellcasting")}>
-                    <Plus
-                      className={`size-5 md:size-6 ${accentColor}`}
-                      aria-hidden="true"
-                    />
-                  </Card>
-                )}
-              </div>
-            </div>
-          )}
+      <SpellcastingEditCard
+        form={form}
+        accentColor={accentColor}
+        className={isWide ? wideSlots.spellcasting : MAGIC_SLOTS.spellcasting}
+        isPlayerCharacter={isPlayer(character)}
+        spellcastingIndex={sc}
+        blockLabel={blockLabels[sc] ?? ""}
+        onRemoveBlock={removeBlock}
+        availableClasses={availableClasses}
+        isInnate={isInnate}
+        abilityKey={abilityKey}
+        saveDC={saveDC}
+        attackBonus={attackBonus}
+        calculated={{
+          saveDC: calculateSpellSaveDC(proficiencyBonus, abilityScore),
+          attackBonus: calculatedAttackBonus,
+          proficiency: proficiencyBonus,
+          modifier: modifier >= 0 ? `+${modifier}` : `${modifier}`,
+        }}
+        prepared={usesPreparedMechanic ? { current: preparedCount, max: maxPrepared } : null}
+      />
 
-          {/* Spellcasting stats card */}
-          <Card className="gap-3 sm:gap-4 p-3 sm:p-4 md:px-6 shrink-0">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <h3 className={`text-sm sm:text-base md:text-lg font-semibold ${accentColor}`}>
-                  {tEdit("spellcastingStats")}
-                </h3>
-                {!isPlayer(character) && (
-                  <Controller
-                    name={`spellcasting.${selectedSpellcastingIndex}.isInnate`}
-                    control={form.control}
-                    defaultValue={isInnate}
-                    render={({ field }) => (
-                      <div className="flex items-center gap-1.5">
-                        <Checkbox
-                          id={`sc-displaymode-${selectedSpellcastingIndex}`}
-                          checked={field.value ?? isInnate}
-                          onCheckedChange={(checked) => field.onChange(!!checked)}
-                        />
-                        <label
-                          htmlFor={`sc-displaymode-${selectedSpellcastingIndex}`}
-                          className="text-xs text-muted-foreground cursor-pointer select-none">
-                          {tMagic("displayMode.byUses")}
-                        </label>
-                      </div>
-                    )}
-                  />
-                )}
-              </div>
-              {spellcastingList.length > 0 && (
-                <ConfirmDialog
-                  title={tMagic("removeSpellcastingTitle")}
-                  description={tMagic("removeSpellcastingDescription", {
-                    className: selectedSpellcasting?.className || "",
-                  })}
-                  confirmLabel={tMagic("removeSpellcastingConfirm")}
-                  cancelLabel={tCommon("cancel")}
-                  onConfirm={removeCurrentSpellcasting}>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-500 hover:text-red-600"
-                    aria-label={tMagic("removeSpellcasting")}>
-                    <Trash2
-                      className="size-4"
-                      aria-hidden="true"
-                    />
-                  </Button>
-                </ConfirmDialog>
+      <ListCard
+        headingId={listHeadingId}
+        title={tMagic("spells")}
+        count={spells.length}
+        accentColor={accentColor}
+        className={isWide ? wideSlots.spells : MAGIC_SLOTS.spells}
+        bounded
+        fill
+        boundedClassName={EDIT_LIST_MAX_HEIGHT_CLASS}
+        actions={
+          <>
+            <Button
+              ref={addButtonRef}
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={addSpell}
+              aria-label={tMagic("addSpell")}>
+              <Plus aria-hidden="true" />
+              <span className="hidden @md:inline">{tMagic("addSpell")}</span>
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsCodexDialogOpen(true)}
+              disabled={!isCodexAvailable}
+              title={isCodexAvailable ? undefined : tMagic("codexUnavailable")}
+              aria-label={isCodexAvailable ? tMagic("addCodexSpell") : tMagic("codexUnavailable")}>
+              <BookPlus aria-hidden="true" />
+              <span className="hidden @md:inline">{tMagic("addCodexSpellShort")}</span>
+            </Button>
+          </>
+        }
+        toolbar={
+          showPreparedToggle ? (
+            <div className="flex min-w-0 flex-col gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                aria-pressed={preparationEditMode}
+                className={cn("self-start", preparationEditMode && toggleButtonPressedClassName)}
+                onClick={() => setPreparationEditMode((v) => !v)}>
+                {preparationEditMode ? <BookOpenCheck aria-hidden="true" /> : <BookOpen aria-hidden="true" />}
+                {preparationEditMode ? tMagic("finishChangingPrepared") : tMagic("changePreparedSpells")}
+              </Button>
+              {preparationEditMode && (
+                <p
+                  className="text-sm text-muted-foreground"
+                  role="status">
+                  {tMagic("preparationModeBanner")}
+                </p>
               )}
             </div>
+          ) : undefined
+        }
+        expanded={openRows.length > 0}
+        onToggleAll={
+          isWide
+            ? undefined
+            : () => setOpenRows(openRows.length > 0 ? [] : spells.map((_, index) => spellRowValue(index)))
+        }
+        expandLabel={tMagic("expandAll")}
+        collapseLabel={tMagic("collapseAll")}
+        emptyLabel={tMagic("noSpells")}>
+        {isWide ? (
+          <div className="w-full">{listItems}</div>
+        ) : (
+          <Accordion
+            type="multiple"
+            value={openRows}
+            onValueChange={(next) => {
+              const opened = next.find((value) => !openRows.includes(value));
+              if (opened) setSelectedSpell(Number(opened.replace("spell-", "")));
+              setOpenRows(next);
+            }}
+            className="w-full">
+            {listItems}
+          </Accordion>
+        )}
+      </ListCard>
 
-            {/* Row 1 : Class name + Ability select */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Class name */}
-
-              {isPlayer(character) && (
-                <Controller
-                  name={`spellcasting.${selectedSpellcastingIndex}.className`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`sc-classname-${selectedSpellcastingIndex}`}
-                        className="text-sm font-medium">
-                        {tEdit("className")}
-                      </label>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="w-full">
-                            <Select
-                              value={field.value ?? ""}
-                              onValueChange={field.onChange}
-                              disabled={!hasAvailableSpellcastingClasses}>
-                              <SelectTrigger
-                                id={`sc-classname-${selectedSpellcastingIndex}`}
-                                className="w-full">
-                                <SelectValue placeholder={tEdit("selectClass")} />
-                              </SelectTrigger>
-                              <SelectContent position="item-aligned">
-                                <SelectGroup>
-                                  {availableSpellcastingClasses.map((cls, index: number) => (
-                                    <SelectItem
-                                      key={`${cls.name}-${index}`}
-                                      value={cls.name}>
-                                      {tClass(cls.name)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                          </span>
-                        </TooltipTrigger>
-                        {!hasAvailableSpellcastingClasses && (
-                          <TooltipContent>
-                            <p>{tMagic("spellcastingClassRequiresClass")}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              )}
-              {/* Ability */}
-              <Controller
-                name={`spellcasting.${selectedSpellcastingIndex}.ability`}
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    orientation="vertical">
-                    <label
-                      htmlFor={`sc-ability-${selectedSpellcastingIndex}`}
-                      className="text-sm font-medium">
-                      {tEdit("spellcastingAbility")}
-                    </label>
-                    <Select
-                      value={field.value ?? ""}
-                      onValueChange={field.onChange}>
-                      <SelectTrigger
-                        id={`sc-ability-${selectedSpellcastingIndex}`}
-                        className="w-full">
-                        <SelectValue placeholder={tEdit("spellcastingAbility")} />
-                      </SelectTrigger>
-                      <SelectContent position="item-aligned">
-                        <SelectGroup>
-                          {ABILITY_KEYS.map((key) => (
-                            <SelectItem
-                              key={key}
-                              value={key}>
-                              {tAbilities(key)}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-            </div>
-
-            {/* Row 2 : Save DC + Attack Bonus with auto-calc */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Save DC */}
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Controller
-                  name={`spellcasting.${selectedSpellcastingIndex}.saveDC`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`sc-savedc-${selectedSpellcastingIndex}`}
-                        className="text-sm font-medium">
-                        {tEdit("spellSaveDC")}
-                      </label>
-                      <Input
-                        {...field}
-                        id={`sc-savedc-${selectedSpellcastingIndex}`}
-                        aria-invalid={fieldState.invalid}
-                        placeholder={String(calculatedSaveDC)}
-                        type="number"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-
-                {isPlayer(character) && currentAbilityKey && (
-                  <div className="self-start sm:self-end mb-0 sm:mb-0.5">
-                    <SyncRow
-                      synced={saveDCSynced}
-                      syncedLabel={tMagic("saveDCSynced")}
-                      mismatchLabel={tMagic("saveDCMismatch", {
-                        calculated: calculatedSaveDC,
-                        prof: proficiencyBonus,
-                        mod: modSign,
-                      })}
-                      onSync={() =>
-                        form.setValue(`spellcasting.${selectedSpellcastingIndex}.saveDC`, calculatedSaveDC, {
-                          shouldDirty: true,
-                        })
-                      }
-                      syncButtonLabel={tMagic("syncSaveDC", { dc: calculatedSaveDC })}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Attack Bonus */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <Controller
-                  name={`spellcasting.${selectedSpellcastingIndex}.attackBonus`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`sc-atk-${selectedSpellcastingIndex}`}
-                        className="text-sm font-medium">
-                        {tEdit("spellAttackBonus")}
-                      </label>
-                      <Input
-                        {...field}
-                        id={`sc-atk-${selectedSpellcastingIndex}`}
-                        aria-invalid={fieldState.invalid}
-                        placeholder={`+${calculatedAttackBonus}`}
-                        type="number"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-                {isPlayer(character) && currentAbilityKey && (
-                  <div className="self-start sm:self-end mb-0 sm:mb-0.5">
-                    <SyncRow
-                      synced={attackBonusSynced}
-                      syncedLabel={tMagic("attackBonusSynced")}
-                      mismatchLabel={tMagic("attackBonusMismatch", {
-                        calculated: calculatedAttackBonus,
-                        prof: proficiencyBonus,
-                        mod: modSign,
-                      })}
-                      onSync={() =>
-                        form.setValue(`spellcasting.${selectedSpellcastingIndex}.attackBonus`, calculatedAttackBonus, {
-                          shouldDirty: true,
-                        })
-                      }
-                      syncButtonLabel={tMagic("syncAttackBonus", { bonus: calculatedAttackBonus })}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {usesPreparedMechanic && (
-              <div className="flex flex-col gap-1 pt-1">
-                {atPreparedLimit ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm cursor-default">
-                        <Book
-                          className="size-4 shrink-0"
-                          aria-hidden
-                        />
-                        <span>
-                          {tMagic("preparedSpells")}:{" "}
-                          <strong>
-                            {tMagic("preparedSpellsUsage", {
-                              current: preparedSpellsCounted,
-                              max: maxPreparedSlots,
-                            })}
-                          </strong>
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{tMagic("preparedSpellsLimitReachedTooltip")}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <div className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm">
-                    <Book
-                      className="size-4 shrink-0"
-                      aria-hidden
-                    />
-                    <span>
-                      {tMagic("preparedSpells")}:{" "}
-                      <strong>
-                        {tMagic("preparedSpellsUsage", {
-                          current: preparedSpellsCounted,
-                          max: maxPreparedSlots,
-                        })}
-                      </strong>
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-          </Card>
-
-          {/* Spell list */}
-          <div className="flex flex-col gap-2 max-xl:flex-none xl:flex-1 xl:min-h-0 xl:overflow-hidden">
-            <Card className="gap-2 p-3 sm:p-4 md:px-6 flex-row flex-wrap justify-between items-center shrink-0">
-              <h3 className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>{tMagic("spells")}</h3>
-              <div className="flex items-center gap-2 flex-wrap justify-end">
-                {showPreparedSpellsButton ? (
-                  <Button
-                    type="button"
-                    variant={preparationEditMode ? "default" : "outline"}
-                    size="sm"
-                    className={cn(
-                      "rounded-[15px] text-xs sm:text-sm gap-1.5",
-                      preparationEditMode && "ring-2 ring-ring ring-offset-2 ring-offset-background",
-                    )}
-                    onClick={() => setPreparationEditMode((v) => !v)}>
-                    {preparationEditMode ? (
-                      <BookOpenCheck className="size-4 shrink-0" />
-                    ) : (
-                      <BookOpen className="size-4 shrink-0" />
-                    )}
-                    <span>
-                      {preparationEditMode ? tMagic("finishChangingPrepared") : tMagic("changePreparedSpells")}
-                    </span>
-                  </Button>
-                ) : null}
-                <ButtonGroup>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsCodexDialogOpen(true)}
-                          disabled={!isCodexAvailable}
-                          className="flex items-center gap-2 border rounded-r-none">
-                          <BookPlus className="size-4" />
-                          <span className="hidden sm:block">{tMagic("addCodexSpell")}</span>
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    {!isCodexAvailable && (
-                      <TooltipContent>
-                        <p>{tMagic("codexUnavailable")}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                  <ButtonGroupSeparator />
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="border"
-                        aria-label={tMagic("moreSpellOptions")}>
-                        <ChevronDown className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="min-w-40 border-none bg-transparent">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={appendSpellHelper}
-                        className="flex items-center gap-2 border hover:bg-card">
-                        <Plus className="size-4" />
-                        <span className="hidden sm:block">{tMagic("addSpell")}</span>
-                      </Button>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </ButtonGroup>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!hasSpellAccordions) return;
-                    setOpenAccordionValues(openAccordionValues.length > 0 ? [] : allSpellAccordionKeys);
-                  }}
-                  disabled={!hasSpellAccordions}
-                  className={`text-sm p-2 focus:outline-none ${hasSpellAccordions ? "cursor-pointer hover:underline focus:underline" : "cursor-not-allowed opacity-45"} ${accentColor}`}
-                  aria-label={
-                    openAccordionValues.length > 0 ? tMagic("collapseAllSpellLevels") : tMagic("expandAllSpellLevels")
-                  }
-                  aria-expanded={openAccordionValues.length > 0}>
-                  {openAccordionValues.length > 0 ? <ListChevronsDownUp /> : <ListChevronsUpDown />}
-                </button>
-              </div>
-            </Card>
-
-            {showPreparedSpellsButton && preparationEditMode ? (
-              <div
-                className="rounded-[15px] border border-border bg-muted/40 px-3 py-2.5 sm:px-4 text-sm"
-                role="status">
-                <div className="flex gap-2.5 items-start">
-                  <BookOpen
-                    className="size-4 shrink-0 text-muted-white mt-0.5"
-                    aria-hidden
-                  />
-                  <p className="leading-snug text-white">{tMagic("preparationModeBanner")}</p>
-                </div>
-              </div>
-            ) : null}
-
-            <nav
-              className="flex flex-col gap-2 max-xl:min-h-[min(50svh,32rem)] max-xl:overflow-visible max-xl:flex-none xl:min-h-0 xl:flex-1 xl:overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
-              aria-label={tMagic("spellListRegion")}>
-              {!isInnate ? (
-                /* ── Accordion by level ── */
-                levels.length > 0 ? (
-                  <Accordion
-                    type="multiple"
-                    value={openAccordionValues}
-                    onValueChange={setOpenAccordionValues}
-                    className="w-full flex flex-col gap-2">
-                    {levels.map((level) => {
-                      const indices = spellIndicesByLevel[level] ?? [];
-                      /** On n’affiche une section que si `indices.length > 0` : dès qu’un sort existe à ce niveau > 0, il faut pouvoir régler les emplacements. */
-                      const hasSlots = level > 0;
-                      const hasLevelError = Boolean(spellLevelsWithErrors[level]);
-
-                      return (
-                        spellIndicesByLevel[level].length > 0 && (
-                          <AccordionItem
-                            key={level}
-                            value={`level-${level}`}
-                            className="flex flex-col gap-2 w-full content-center">
-                            <Card
-                              data-invalid={hasLevelError || undefined}
-                              aria-invalid={hasLevelError || undefined}
-                              className={cn(
-                                "flex flex-row justify-between gap-0 p-0 overflow-hidden",
-                                hasLevelError && errorCardClassName,
-                              )}>
-                              <div className="relative w-full">
-                                <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
-                                  <h3
-                                    className={`inline-flex items-center gap-1.5 text-base md:text-lg font-medium ${accentColor}`}>
-                                    <span>{level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level })}</span>
-                                    {hasLevelError ? renderErrorIndicator(tMagic("spellCategoryContainsErrors")) : null}
-                                  </h3>
-                                </AccordionTrigger>
-                                {hasSlots && (
-                                  <div
-                                    className="flex items-center gap-1 sm:gap-1.5 shrink-0 absolute right-12 sm:right-14 top-1/2 -translate-y-1/2"
-                                    onClick={(e) => e.stopPropagation()}
-                                    onKeyDown={(e) => e.stopPropagation()}>
-                                    <Controller
-                                      name={`spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total`}
-                                      control={form.control}
-                                      render={({ field, fieldState }) => {
-                                        const slotTotalPath =
-                                          `spellcasting.${selectedSpellcastingIndex}.spellSlotsByLevel.${level}.total` as const;
-                                        const fieldValue = field.value as SpellSlotFieldValue;
-                                        return (
-                                          <Input
-                                            name={field.name}
-                                            ref={field.ref}
-                                            value={
-                                              fieldValue === undefined || fieldValue === null || fieldValue === ""
-                                                ? ""
-                                                : String(fieldValue)
-                                            }
-                                            className="w-14 min-w-14 text-center h-9 text-sm"
-                                            type="number"
-                                            inputMode="numeric"
-                                            aria-invalid={fieldState.invalid}
-                                            onClick={(e) => e.stopPropagation()}
-                                            aria-label={tMagic("spellSlotsTotalForLevel", { level })}
-                                            onChange={(e) => {
-                                              const raw = e.target.value;
-                                              if (raw === "") {
-                                                field.onChange("");
-                                                form.clearErrors(slotTotalPath);
-                                                return;
-                                              }
-                                              const next = Number(raw);
-                                              if (!Number.isFinite(next)) return;
-                                              field.onChange(next);
-                                              form.clearErrors(slotTotalPath);
-                                            }}
-                                            onBlur={() => {
-                                              const raw = form.getValues(slotTotalPath) as SpellSlotFieldValue;
-                                              if (raw === "" || raw === undefined || raw === null) {
-                                                form.clearErrors(slotTotalPath);
-                                                field.onBlur();
-                                                return;
-                                              }
-                                              field.onBlur();
-                                              void form.trigger(slotTotalPath);
-                                            }}
-                                          />
-                                        );
-                                      }}
-                                    />
-                                    <span className="text-[10px] sm:text-xs text-muted-foreground hidden sm:inline">
-                                      {tMagic("slotsLabel")}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </Card>
-
-                            <AccordionContent className="pb-2">
-                              <ul className="flex flex-wrap gap-2">
-                                {indices.length === 0 ? (
-                                  <li className="text-sm text-muted-foreground px-2">{tMagic("noSpellsInLevel")}</li>
-                                ) : (
-                                  indices.map((spellIndex) => {
-                                    const spell = currentSpells[spellIndex];
-                                    const spellName = spell?.name;
-                                    const isSelected = selectedSpellIndex === spellIndex;
-                                    const hasSpellError = spellIndicesWithErrors.has(spellIndex);
-                                    const spellLabel = spellName || tMagic("newSpell");
-                                    const showBookmarks = usesPreparedMechanic && level > 0;
-                                    const prepEditRow = preparationEditMode && showBookmarks;
-
-                                    const openSpellDetail = () => {
-                                      setSelectedSpellIndex(spellIndex);
-                                      setShowMobileDetails(true);
-                                    };
-
-                                    if (!showBookmarks) {
-                                      return (
-                                        <li key={spellIndex}>
-                                          <Card
-                                            onClick={openSpellDetail}
-                                            onKeyDown={(e) => {
-                                              if (e.key === "Enter" || e.key === " ") {
-                                                e.preventDefault();
-                                                openSpellDetail();
-                                              }
-                                            }}
-                                            data-invalid={hasSpellError || undefined}
-                                            className={cn(
-                                              `border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 p-2 sm:px-3 md:px-4 flex-row items-center cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`,
-                                              hasSpellError && errorCardClassName,
-                                            )}
-                                            role="button"
-                                            tabIndex={0}
-                                            aria-label={
-                                              hasSpellError
-                                                ? tMagic("spellContainsErrorsAria", { name: spellLabel })
-                                                : spellLabel
-                                            }>
-                                            <span
-                                              className={`truncate text-xs sm:text-sm md:text-base flex-1 min-w-0 ${isSelected ? "font-bold" : ""}`}
-                                              aria-hidden="true">
-                                              {spellLabel}
-                                            </span>
-                                            {hasSpellError ? renderErrorIndicator(tMagic("spellContainsErrors")) : null}
-                                          </Card>
-                                        </li>
-                                      );
-                                    }
-
-                                    const countExcl = currentSpells.reduce((acc, s, i) => {
-                                      if (i === spellIndex) return acc;
-                                      if (Number(s.level) > 0 && s.prepared === true) return acc + 1;
-                                      return acc;
-                                    }, 0);
-                                    const prepareBlockedBookmark =
-                                      spell?.prepared !== true && maxPreparedSlots > 0 && countExcl >= maxPreparedSlots;
-
-                                    const toggleLocalPrepared = () => {
-                                      if (!prepEditRow || !spell) return;
-                                      const currentlyPrepared = spell.prepared === true;
-                                      const nextPrepared = !currentlyPrepared;
-                                      if (nextPrepared) {
-                                        const cx = currentSpells.reduce((acc, s, i) => {
-                                          if (i === spellIndex) return acc;
-                                          if (Number(s.level) > 0 && s.prepared === true) return acc + 1;
-                                          return acc;
-                                        }, 0);
-                                        if (maxPreparedSlots > 0 && cx >= maxPreparedSlots) return;
-                                      }
-                                      form.setValue(
-                                        `spellcasting.${selectedSpellcastingIndex}.spells.${spellIndex}.prepared`,
-                                        nextPrepared ? true : false,
-                                        { shouldDirty: true },
-                                      );
-                                    };
-
-                                    return (
-                                      <li key={spellIndex}>
-                                        <Card
-                                          onClick={openSpellDetail}
-                                          onKeyDown={(e) => {
-                                            if (e.key === "Enter" || e.key === " ") {
-                                              e.preventDefault();
-                                              openSpellDetail();
-                                            }
-                                          }}
-                                          data-invalid={hasSpellError || undefined}
-                                          className={cn(
-                                            `border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 py-2 pl-2 pr-2 sm:pl-3 sm:pr-3 md:px-3 flex-row items-center cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`,
-                                            hasSpellError && errorCardClassName,
-                                          )}
-                                          role="button"
-                                          tabIndex={0}
-                                          aria-label={
-                                            hasSpellError
-                                              ? tMagic("spellContainsErrorsAria", { name: spellLabel })
-                                              : spellLabel
-                                          }>
-                                          <div className="flex flex-row items-center gap-2 min-w-0 flex-1">
-                                            <SpellPreparedPill
-                                              isPrepared={spell?.prepared === true}
-                                              interactive={prepEditRow}
-                                              prepareBlocked={prepareBlockedBookmark}
-                                              onToggle={() => toggleLocalPrepared()}
-                                              preparedTooltip={tMagic("preparedBookmarkPreparedTooltip")}
-                                              unpreparedTooltip={tMagic("preparedBookmarkUnpreparedTooltip")}
-                                              prepareBlockedTooltip={tMagic("spellPrepareLimitTooltip")}
-                                              ariaPrepared={tMagic("preparedPillAriaPrepared")}
-                                              ariaUnprepared={tMagic("preparedPillAriaUnprepared")}
-                                            />
-                                            <span
-                                              className={cn(
-                                                "truncate text-xs sm:text-sm md:text-base flex-1 min-w-0",
-                                                isSelected && "font-bold",
-                                              )}
-                                              aria-hidden="true">
-                                              {spellLabel}
-                                            </span>
-                                            {hasSpellError ? renderErrorIndicator(tMagic("spellContainsErrors")) : null}
-                                          </div>
-                                        </Card>
-                                      </li>
-                                    );
-                                  })
-                                )}
-                              </ul>
-                            </AccordionContent>
-                          </AccordionItem>
-                        )
-                      );
-                    })}
-                  </Accordion>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">{tMagic("noMagicAbilities")}</p>
-                )
-              ) : /* ── Accordion by uses per day ── */
-              npcUsesGroups.length > 0 ? (
-                <Accordion
-                  type="multiple"
-                  value={openAccordionValues}
-                  onValueChange={setOpenAccordionValues}
-                  className="w-full flex flex-col gap-2">
-                  {npcUsesGroups.map((uses) => {
-                    const key = npcUsesKey(uses);
-                    const indices = npcSpellIndicesByUses[key] ?? [];
-                    const hasUsesGroupError = Boolean(spellUsesGroupsWithErrors[key]);
-
-                    return (
-                      <AccordionItem
-                        key={key}
-                        value={key}
-                        className="flex flex-col gap-2 w-full content-center">
-                        <Card
-                          data-invalid={hasUsesGroupError || undefined}
-                          aria-invalid={hasUsesGroupError || undefined}
-                          className={cn(
-                            "flex flex-row justify-between gap-0 p-0 overflow-hidden",
-                            hasUsesGroupError && errorCardClassName,
-                          )}>
-                          <div className="relative w-full">
-                            <AccordionTrigger className="flex-1 py-4 px-4 md:px-6 hover:no-underline w-full">
-                              <h3
-                                className={`inline-flex items-center gap-1.5 text-base md:text-lg font-medium ${accentColor}`}>
-                                <span>
-                                  {uses === null ? tMagic("npc.atWill") : tMagic("npc.usesPerDay", { count: uses })}
-                                </span>
-                                {hasUsesGroupError ? renderErrorIndicator(tMagic("spellCategoryContainsErrors")) : null}
-                              </h3>
-                            </AccordionTrigger>
-                          </div>
-                        </Card>
-
-                        <AccordionContent className="pb-2">
-                          <ul className="flex flex-wrap gap-2">
-                            {indices.length === 0 ? (
-                              <li className="text-sm text-muted-foreground px-2">{tMagic("noSpellsInLevel")}</li>
-                            ) : (
-                              indices.map((spellIndex) => {
-                                const spell = currentSpells[spellIndex];
-                                const spellName = spell?.name;
-                                const isSelected = selectedSpellIndex === spellIndex;
-                                const hasSpellError = spellIndicesWithErrors.has(spellIndex);
-                                const spellLabel = spellName || tMagic("newSpell");
-
-                                return (
-                                  <li key={spellIndex}>
-                                    <Card
-                                      onClick={() => {
-                                        setSelectedSpellIndex(spellIndex);
-                                        setShowMobileDetails(true);
-                                      }}
-                                      onKeyDown={(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                          e.preventDefault();
-                                          setSelectedSpellIndex(spellIndex);
-                                          setShowMobileDetails(true);
-                                        }
-                                      }}
-                                      data-invalid={hasSpellError || undefined}
-                                      className={cn(
-                                        `border ${isSelected ? `border-${accentColor}` : "border-transparent"} gap-2 sm:gap-3 p-2 sm:px-3 md:px-4 flex-col cursor-pointer hover:border-${accentColor} pr-8 sm:pr-10`,
-                                        hasSpellError && errorCardClassName,
-                                      )}
-                                      role="button"
-                                      tabIndex={0}
-                                      aria-label={
-                                        hasSpellError
-                                          ? tMagic("spellContainsErrorsAria", { name: spellLabel })
-                                          : spellLabel
-                                      }>
-                                      <div className="flex items-center gap-1.5 min-w-0">
-                                        <span
-                                          className={`truncate text-xs sm:text-sm md:text-base ${isSelected ? "font-bold" : ""}`}
-                                          aria-hidden="true">
-                                          {spellLabel}
-                                        </span>
-                                        {hasSpellError ? renderErrorIndicator(tMagic("spellContainsErrors")) : null}
-                                      </div>
-                                      {uses !== null && (
-                                        <span className="text-[10px] sm:text-xs text-muted-foreground">
-                                          {spell?.used ?? 0} / {uses}
-                                        </span>
-                                      )}
-                                    </Card>
-                                  </li>
-                                );
-                              })
-                            )}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-                    );
-                  })}
-                </Accordion>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">{tMagic("noMagicAbilities")}</p>
-              )}
-            </nav>
+      {isWide && shownSpell !== null && (
+        <GeneralSectionCard
+          headingId={panelHeadingId}
+          title={spells[shownSpell]?.name || tMagic("newSpell")}
+          accentColor={accentColor}
+          headingClassName="wrap-break-word"
+          className={wideSlots.detail}>
+          <div
+            id={panelId}
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-[10px] pr-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-scrollbar-track"
+            role="group"
+            aria-labelledby={panelHeadingId}
+            tabIndex={0}>
+            <SpellEditForm
+              key={`${sc}-${shownSpell}`}
+              form={form}
+              spellcastingIndex={sc}
+              spellIndex={shownSpell}
+              idPrefix={`${listHeadingId}-spell-${shownSpell}`}
+              isInnate={isInnate}
+              attackBonus={calculatedAttackBonus}
+            />
           </div>
-        </div>
+        </GeneralSectionCard>
+      )}
 
-        {/* ══ Right column: spell detail edit ══ */}
-        <div
-          className={`flex flex-col gap-2 min-h-0 max-xl:h-auto xl:h-full max-xl:overflow-visible xl:overflow-hidden xl:border-l xl:pl-4 ${showMobileDetails ? "flex" : "hidden xl:flex"}`}
-          role="region"
-          aria-label={tMagic("spellDetailRegion")}>
-          {/* Back button: single-column layouts (mobile through laptop lg) */}
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setShowMobileDetails(false)}
-            className="xl:hidden self-start shrink-0 h-8 px-2"
-            aria-label={tMagic("backToList")}>
-            <ArrowLeft className="size-4" />
-            {tMagic("backToList")}
-          </Button>
-          {selectedSpellIndex === null ? (
-            <div
-              className="flex items-center justify-center h-full min-h-48"
-              role="status"
-              aria-live="polite">
-              <p className="text-muted-foreground text-sm text-center px-4">{tMagic("selectSpellToEdit")}</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
-              {/* Name */}
-              <Card className="gap-2 sm:gap-3 py-3 sm:py-4 px-3 sm:px-4 md:px-6 flex flex-row">
-                <Controller
-                  name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.name`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <div className="flex flex-row items-center justify-between">
-                        <label
-                          htmlFor={`spell-name-${selectedSpellIndex}`}
-                          className={`text-base sm:text-lg md:text-xl lg:text-2xl font-semibold ${accentColor}`}>
-                          {tEdit("spellName")}
-                        </label>
-                        <ConfirmDialog
-                          title={tMagic("removeSpellTitle")}
-                          description={tMagic("removeSpellDescription", {
-                            name: currentSpells[selectedSpellIndex]?.name || tMagic("newSpell"),
-                          })}
-                          confirmLabel={tMagic("removeSpellConfirm")}
-                          cancelLabel={tCommon("cancel")}
-                          onConfirm={() => {
-                            if (selectedSpellIndex !== null) removeSpell(selectedSpellIndex);
-                          }}>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="text-red-500 hover:text-red-600"
-                            aria-label={tMagic("removeSpellWithName", {
-                              name: currentSpells[selectedSpellIndex]?.name || tMagic("newSpell"),
-                            })}>
-                            <Trash2
-                              className="size-4"
-                              aria-hidden="true"
-                            />
-                          </Button>
-                        </ConfirmDialog>
-                      </div>
-                      <Input
-                        {...field}
-                        value={field.value ?? ""}
-                        id={`spell-name-${selectedSpellIndex}`}
-                        aria-invalid={fieldState.invalid}
-                        placeholder={tEdit("spellName")}
-                        type="text"
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              </Card>
-
-              {/* Spell metadata grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-2 items-start">
-                {/* Level */}
-                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
-                  <Controller
-                    name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.level`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical">
-                        <label
-                          htmlFor={`spell-level-${selectedSpellIndex}`}
-                          className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                          {tEdit("spellLevelLabel")}
-                        </label>
-                        <Input
-                          {...field}
-                          id={`spell-level-${selectedSpellIndex}`}
-                          aria-invalid={fieldState.invalid}
-                          type="number"
-                          min={0}
-                          max={9}
-                          className="w-full"
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                </Card>
-
-                {/* Uses per day (NPC only) */}
-                {isInnate && (
-                  <React.Fragment>
-                    <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
-                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
-                        <Controller
-                          name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.usesPerDay`}
-                          control={form.control}
-                          render={({ field, fieldState }) => (
-                            <Field
-                              data-invalid={fieldState.invalid}
-                              orientation="vertical">
-                              <label
-                                htmlFor={`spell-uses-per-day-${selectedSpellIndex}`}
-                                className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                                {tMagic("npc.usesPerDayLabel")}
-                              </label>
-                              <Input
-                                {...field}
-                                value={field.value ?? ""}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  field.onChange(val === "" ? null : Number(val));
-                                }}
-                                id={`spell-uses-per-day-${selectedSpellIndex}`}
-                                aria-invalid={fieldState.invalid}
-                                type="number"
-                                min={1}
-                                placeholder={tMagic("npc.atWill")}
-                                className="w-20"
-                              />
-                              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                            </Field>
-                          )}
-                        />
-                      </div>
-                    </Card>
-                    <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
-                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
-                        <Controller
-                          name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.used`}
-                          control={form.control}
-                          render={({ field, fieldState }) => (
-                            <Field
-                              data-invalid={fieldState.invalid}
-                              orientation="vertical">
-                              <label
-                                htmlFor={`spell-used-${selectedSpellIndex}`}
-                                className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                                {tMagic("npc.usedSpellLabel")}
-                              </label>
-                              <Input
-                                {...field}
-                                value={field.value ?? 0}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                                id={`spell-used-${selectedSpellIndex}`}
-                                aria-invalid={fieldState.invalid}
-                                type="number"
-                                min={0}
-                                className="w-20"
-                              />
-                              {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                            </Field>
-                          )}
-                        />
-                      </div>
-                    </Card>
-                  </React.Fragment>
-                )}
-
-                {/* School */}
-                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6 col-span-2 sm:col-span-1">
-                  <Controller
-                    name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.school`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical">
-                        <label
-                          htmlFor={`spell-school-${selectedSpellIndex}`}
-                          className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                          {tMagic("spellDetails.school")}
-                        </label>
-                        <ComboboxInput
-                          id={`spell-school-${selectedSpellIndex}`}
-                          value={field.value ?? ""}
-                          onChange={field.onChange}
-                          suggestions={SPELL_SCHOOLS}
-                          placeholder={tMagic("spellDetails.school")}
-                          aria-invalid={fieldState.invalid}
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                </Card>
-
-                {/* Effect Type */}
-                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6 col-span-2 sm:col-span-1">
-                  <Controller
-                    name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.effectType`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical">
-                        <label className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                          {tEdit("spellEffectType")}
-                        </label>
-                        <Select
-                          value={field.value || "utility"}
-                          onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent position="item-aligned">
-                            <SelectGroup>
-                              <SelectItem value="utility">{tMagic("effectTypes.utility")}</SelectItem>
-                              <SelectItem value="attack">{tMagic("effectTypes.attack")}</SelectItem>
-                              <SelectItem value="heal">{tMagic("effectTypes.heal")}</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                </Card>
-
-                {/* Casting Time */}
-                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
-                  <Controller
-                    name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.castingTime`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical">
-                        <label
-                          htmlFor={`spell-casting-time-${selectedSpellIndex}`}
-                          className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                          {tMagic("spellDetails.castingTime")}
-                        </label>
-                        <Input
-                          {...field}
-                          value={field.value ?? ""}
-                          id={`spell-casting-time-${selectedSpellIndex}`}
-                          aria-invalid={fieldState.invalid}
-                          placeholder={tMagic("spellDetails.castingTime")}
-                          type="text"
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                </Card>
-
-                {/* Range */}
-                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
-                  <Controller
-                    name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.range`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical">
-                        <label
-                          htmlFor={`spell-range-${selectedSpellIndex}`}
-                          className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                          {tMagic("spellDetails.range")}
-                        </label>
-                        <Input
-                          {...field}
-                          value={field.value ?? ""}
-                          id={`spell-range-${selectedSpellIndex}`}
-                          aria-invalid={fieldState.invalid}
-                          placeholder={tMagic("spellDetails.range")}
-                          type="text"
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                </Card>
-
-                {/* Duration */}
-                <Card className="flex flex-col gap-1 py-2 px-2 sm:py-3 sm:px-3 md:py-4 md:px-6">
-                  <Controller
-                    name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.duration`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical">
-                        <label
-                          htmlFor={`spell-duration-${selectedSpellIndex}`}
-                          className={`font-semibold text-sm md:text-base shrink-0 ${accentColor}`}>
-                          {tMagic("spellDetails.duration")}
-                        </label>
-                        <Input
-                          {...field}
-                          value={field.value ?? ""}
-                          id={`spell-duration-${selectedSpellIndex}`}
-                          aria-invalid={fieldState.invalid}
-                          placeholder={tMagic("spellDetails.duration")}
-                          type="text"
-                        />
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                </Card>
-
-                {/* Damage & Healing Accordion */}
-                <Accordion
-                  type="multiple"
-                  value={openSpellDetailsAccordion}
-                  onValueChange={setOpenSpellDetailsAccordion}
-                  className="w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3 flex flex-col gap-2">
-                  {/* Damage */}
-                  <AccordionItem
-                    value="damage"
-                    className="flex flex-col gap-2 w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3">
-                    <Card className="flex flex-row items-center justify-between gap-2 p-0 overflow-hidden">
-                      <AccordionTrigger className="min-w-0 flex-1 py-2 sm:py-3 px-3 sm:px-4 md:px-6 hover:no-underline">
-                        <h3 className={`text-sm md:text-base font-semibold ${accentColor}`}>{tEdit("spellDamage")}</h3>
-                      </AccordionTrigger>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          appendSpellDamageRow();
-                        }}
-                        aria-label={tEdit("addDamageToSpell")}
-                        className="mr-3 sm:mr-4 shrink-0 flex items-center gap-2">
-                        <Plus
-                          className="size-4"
-                          aria-hidden="true"
-                        />
-                        {tEdit("add")}
-                      </Button>
-                    </Card>
-
-                    <AccordionContent className="pb-2 pt-0">
-                      <div className="flex flex-col gap-2 w-full min-w-0">
-                        {currentEffectType === "attack" && (
-                          <Card className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full sm:max-w-xs">
-                            <label
-                              htmlFor={`spell-attack-bonus-${selectedSpellIndex}`}
-                              className="text-xs font-medium">
-                              {tMagic("attackBonus")}
-                            </label>
-                            <Input
-                              id={`spell-attack-bonus-${selectedSpellIndex}`}
-                              value={formatSignedBonus(calculatedAttackBonus)}
-                              readOnly
-                              aria-readonly="true"
-                            />
-                          </Card>
-                        )}
-                        <Controller
-                          name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails`}
-                          control={form.control}
-                          render={({ field: damageField }) => {
-                            const damages = coerceSpellDamageDetailsList(damageField.value);
-
-                            const updateDamage = (
-                              damageIndex: number,
-                              key: keyof DamageDetails,
-                              value: string | number | null,
-                            ) => {
-                              const updatedDamages = [...damages];
-                              const currentDamage = updatedDamages[damageIndex] ?? { ...EMPTY_SPELL_DAMAGE_DETAILS };
-
-                              if (key === "damageType" && typeof value === "string") {
-                                const normalizedValue = value.trim();
-                                const duplicatedType = updatedDamages.some((damage, indexInList) => {
-                                  if (indexInList === damageIndex) return false;
-                                  return (
-                                    (damage?.damageType ?? "").trim().toLowerCase() === normalizedValue.toLowerCase()
-                                  );
-                                });
-                                if (normalizedValue && duplicatedType) return;
-                                updatedDamages[damageIndex] = {
-                                  ...currentDamage,
-                                  damageType: normalizedValue,
-                                };
-                                damageField.onChange(updatedDamages);
-                                return;
-                              }
-
-                              updatedDamages[damageIndex] = {
-                                ...currentDamage,
-                                [key]: value,
-                              };
-                              damageField.onChange(updatedDamages);
-                            };
-
-                            return (
-                              <>
-                                {damages.map((damage, damageIndex) => {
-                                  const damageTypePath =
-                                    `spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.damageDetails.${damageIndex}.damageType` as Path<Character>;
-                                  const damageTypeState = form.getFieldState(damageTypePath, form.formState);
-                                  const damageTypeErrorId = `spell-${selectedSpellIndex}-damage-${damageIndex}-type-error`;
-                                  const diceCountId = `spell-damage-dice-count-${selectedSpellIndex}-${damageIndex}`;
-                                  const bonusId = `spell-damage-bonus-${selectedSpellIndex}-${damageIndex}`;
-                                  const damageTypeId = `spell-damage-type-${selectedSpellIndex}-${damageIndex}`;
-
-                                  return (
-                                    <Card
-                                      key={damageIndex}
-                                      className="@container/spell-dmg-entry flex w-full min-w-0 flex-col gap-1 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6">
-                                      <div className="flex items-center justify-between gap-2">
-                                        <span className={`text-sm font-semibold ${accentColor}`}>
-                                          {tEdit("spellDamageEntry", { index: damageIndex + 1 })}
-                                        </span>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="icon"
-                                          onClick={() => {
-                                            damageField.onChange(
-                                              ensureSpellDamageEditRows(
-                                                damages.filter((_: DamageDetails, i: number) => i !== damageIndex),
-                                              ),
-                                            );
-                                          }}
-                                          aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}
-                                          className="text-red-500 shrink-0">
-                                          <Trash2 className="size-4" />
-                                        </Button>
-                                      </div>
-                                      <div className="grid w-full min-w-0 grid-cols-2 gap-x-2 gap-y-2 @md/spell-dmg-entry:grid-cols-[7rem_6.5rem_5.5rem_minmax(0,1fr)] @md/spell-dmg-entry:gap-x-3 @md/spell-dmg-entry:gap-y-1">
-                                        <div className="flex min-w-0 flex-col gap-0.5">
-                                          <label
-                                            htmlFor={diceCountId}
-                                            className="text-xs font-medium leading-tight">
-                                            {tEdit("diceCount")}
-                                          </label>
-                                          <Input
-                                            id={diceCountId}
-                                            value={damage?.diceCount ?? ""}
-                                            type="number"
-                                            min={0}
-                                            className="w-full"
-                                            placeholder={tEdit("damageDiceCountPlaceholder")}
-                                            onChange={(event) => {
-                                              const nextValue = event.target.value;
-                                              updateDamage(
-                                                damageIndex,
-                                                "diceCount",
-                                                nextValue === "" ? null : Number(nextValue),
-                                              );
-                                            }}
-                                          />
-                                        </div>
-                                        <div className="flex min-w-0 flex-col gap-0.5">
-                                          <span className="text-xs font-medium leading-tight">{tEdit("diceType")}</span>
-                                          <Select
-                                            value={damage?.diceType || undefined}
-                                            onValueChange={(value) => updateDamage(damageIndex, "diceType", value)}>
-                                            <SelectTrigger className="w-full">
-                                              <SelectValue placeholder={tEdit("damageDiceTypePlaceholder")} />
-                                            </SelectTrigger>
-                                            <SelectContent position="item-aligned">
-                                              <SelectGroup>
-                                                {DICE_TYPES.map((dice) => (
-                                                  <SelectItem
-                                                    key={dice}
-                                                    value={dice}>
-                                                    {dice}
-                                                  </SelectItem>
-                                                ))}
-                                              </SelectGroup>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="col-span-2 flex min-w-0 flex-col gap-0.5 @md/spell-dmg-entry:col-span-1">
-                                          <label
-                                            htmlFor={bonusId}
-                                            className="text-xs font-medium leading-tight">
-                                            {tEdit("bonus")}
-                                          </label>
-                                          <Input
-                                            id={bonusId}
-                                            value={damage?.bonus ?? ""}
-                                            type="number"
-                                            className="w-full"
-                                            placeholder={tEdit("zeroPlaceholder")}
-                                            onChange={(event) => {
-                                              const nextValue = event.target.value;
-                                              updateDamage(
-                                                damageIndex,
-                                                "bonus",
-                                                nextValue === "" ? null : Number(nextValue),
-                                              );
-                                            }}
-                                          />
-                                        </div>
-                                        <Field
-                                          data-invalid={damageTypeState.invalid}
-                                          orientation="vertical"
-                                          className="col-span-2 min-w-0 gap-0.5 @md/spell-dmg-entry:col-span-1">
-                                          <label
-                                            htmlFor={damageTypeId}
-                                            className="text-xs font-medium leading-tight">
-                                            {tEdit("damageType")}
-                                          </label>
-                                          <DamageTypeInput
-                                            id={damageTypeId}
-                                            value={damage?.damageType ?? ""}
-                                            onChange={(value) => updateDamage(damageIndex, "damageType", value)}
-                                            placeholder={tEdit("damageTypePlaceholder")}
-                                            aria-invalid={damageTypeState.invalid}
-                                            aria-describedby={damageTypeState.error ? damageTypeErrorId : undefined}
-                                          />
-                                          {damageTypeState.error && (
-                                            <FieldError
-                                              id={damageTypeErrorId}
-                                              errors={[damageTypeState.error]}
-                                            />
-                                          )}
-                                        </Field>
-                                      </div>
-                                    </Card>
-                                  );
-                                })}
-                              </>
-                            );
-                          }}
-                        />
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  {/* Healing */}
-                  <AccordionItem
-                    value="healing"
-                    className="flex flex-col gap-2 w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3">
-                    <Card className="flex flex-row justify-between gap-0 p-0 overflow-hidden">
-                      <AccordionTrigger className="flex-1 py-2 sm:py-3 px-3 sm:px-4 md:px-6 hover:no-underline w-full">
-                        <h3 className={`text-sm md:text-base font-semibold ${accentColor}`}>{tEdit("spellHealing")}</h3>
-                      </AccordionTrigger>
-                    </Card>
-
-                    <AccordionContent className="pb-2">
-                      <Card className="flex flex-col gap-2 sm:gap-3 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full">
-                        <div className="grid w-full min-w-0 grid-cols-2 gap-x-2 gap-y-2 sm:grid-cols-[7rem_6.5rem_5.5rem] sm:gap-x-3 sm:gap-y-1">
-                          {/* Nombre de dés */}
-                          <div className="flex min-w-0 flex-col gap-0.5">
-                            <Controller
-                              name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.diceCount`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field
-                                  data-invalid={fieldState.invalid}
-                                  orientation="vertical"
-                                  className="gap-0.5">
-                                  <label
-                                    htmlFor={`spell-healing-dice-count-${selectedSpellIndex}`}
-                                    className="text-xs font-medium leading-tight">
-                                    {tEdit("diceCount")}
-                                  </label>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    id={`spell-healing-dice-count-${selectedSpellIndex}`}
-                                    type="number"
-                                    min={0}
-                                    className="w-full"
-                                    placeholder={tEdit("healingDiceCountPlaceholder")}
-                                  />
-                                </Field>
-                              )}
-                            />
-                          </div>
-
-                          {/* Type de dé */}
-                          <div className="flex min-w-0 flex-col gap-0.5">
-                            <Controller
-                              name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.diceType`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field
-                                  data-invalid={fieldState.invalid}
-                                  orientation="vertical"
-                                  className="gap-0.5">
-                                  <label className="text-xs font-medium leading-tight">{tEdit("diceType")}</label>
-                                  <Select
-                                    value={field.value ?? ""}
-                                    onValueChange={field.onChange}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder={tEdit("healingDiceTypePlaceholder")} />
-                                    </SelectTrigger>
-                                    <SelectContent position="item-aligned">
-                                      <SelectGroup>
-                                        {DICE_TYPES.map((dice) => (
-                                          <SelectItem
-                                            key={dice}
-                                            value={dice}>
-                                            {dice}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectGroup>
-                                    </SelectContent>
-                                  </Select>
-                                </Field>
-                              )}
-                            />
-                          </div>
-
-                          {/* Bonus */}
-                          <div className="col-span-2 flex min-w-0 flex-col gap-0.5 sm:col-span-1">
-                            <Controller
-                              name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.healingDetails.bonus`}
-                              control={form.control}
-                              render={({ field, fieldState }) => (
-                                <Field
-                                  data-invalid={fieldState.invalid}
-                                  orientation="vertical"
-                                  className="gap-0.5">
-                                  <label
-                                    htmlFor={`spell-healing-bonus-${selectedSpellIndex}`}
-                                    className="text-xs font-medium leading-tight">
-                                    {tEdit("bonus")}
-                                  </label>
-                                  <Input
-                                    {...field}
-                                    value={field.value ?? ""}
-                                    id={`spell-healing-bonus-${selectedSpellIndex}`}
-                                    type="number"
-                                    className="w-full"
-                                    placeholder={tEdit("zeroPlaceholder")}
-                                  />
-                                </Field>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      </Card>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-
-                {/* Components */}
-                <Card className="flex flex-col gap-2 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6 w-full col-span-2 sm:col-span-3 lg:col-span-2 xl:col-span-3">
-                  <Controller
-                    name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.components`}
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field
-                        data-invalid={fieldState.invalid}
-                        orientation="vertical">
-                        <fieldset>
-                          <legend className={`font-semibold text-sm md:text-base ${accentColor}`}>
-                            {tMagic("spellDetails.components")}
-                          </legend>
-                          <div className="flex gap-4 flex-wrap mt-2">
-                            {["V", "S", "M"].map((component) => {
-                              const isChecked = (field.value ?? []).includes(component);
-                              return (
-                                <div
-                                  key={component}
-                                  className="flex items-center gap-2">
-                                  <Checkbox
-                                    id={`spell-component-${component}-${selectedSpellIndex}`}
-                                    checked={isChecked}
-                                    onCheckedChange={(checked) => {
-                                      const currentValue = field.value ?? [];
-                                      if (checked) {
-                                        field.onChange([...currentValue, component]);
-                                      } else {
-                                        field.onChange(currentValue.filter((c: string) => c !== component));
-                                      }
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={`spell-component-${component}-${selectedSpellIndex}`}
-                                    className="text-sm font-medium cursor-pointer select-none">
-                                    {component}
-                                  </label>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </fieldset>
-                        {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                      </Field>
-                    )}
-                  />
-                </Card>
-              </div>
-
-              {/* Description */}
-              <Card className="flex flex-col gap-2 py-2 sm:py-3 px-2 sm:px-3 md:py-4 md:px-6">
-                <Controller
-                  name={`spellcasting.${selectedSpellcastingIndex}.spells.${selectedSpellIndex}.description`}
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      orientation="vertical">
-                      <label
-                        htmlFor={`spell-description-${selectedSpellIndex}`}
-                        className={`font-semibold text-sm md:text-base ${accentColor}`}>
-                        {tMagic("spellDetails.description")}
-                      </label>
-                      <Textarea
-                        {...field}
-                        value={field.value ?? ""}
-                        id={`spell-description-${selectedSpellIndex}`}
-                        aria-invalid={fieldState.invalid}
-                        placeholder={tMagic("spellDetails.description")}
-                        rows={5}
-                      />
-                      {fieldState.error && <FieldError errors={[fieldState.error]} />}
-                    </Field>
-                  )}
-                />
-              </Card>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Dialog de recherche Codex */}
       <CodexSpellSearchDialog
         open={isCodexDialogOpen}
-        onOpenChange={setIsCodexDialogOpen}
+        onOpenChange={onCodexOpenChange}
         onSpellSelected={addSpellFromCodex}
         accentColor={accentColor}
       />

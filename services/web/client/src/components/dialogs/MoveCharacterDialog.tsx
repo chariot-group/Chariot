@@ -219,7 +219,7 @@ export function MoveCharacterDialog({
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             disabled={isMoving}
             onClick={() => onOpenChange(false)}>
             {tCommon("cancel")}

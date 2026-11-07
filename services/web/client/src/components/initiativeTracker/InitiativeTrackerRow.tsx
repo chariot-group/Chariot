@@ -67,6 +67,9 @@ type InitiativeTrackerRowProps = {
   isSelected?: boolean;
   onSelectionChange?: (selected: boolean) => void;
   selectRowLabel?: string;
+  /** FR-combat-initiative-tracker — pre-combat guidance: initiative not entered yet. */
+  initiativeMissing?: boolean;
+  initiativeMissingLabel?: string;
   isExpanded?: boolean;
   onToggleExpanded?: () => void;
   gridTemplateColumns?: string;
@@ -163,6 +166,8 @@ export function InitiativeTrackerRow({
   isSelected = false,
   onSelectionChange,
   selectRowLabel,
+  initiativeMissing = false,
+  initiativeMissingLabel,
   isExpanded = false,
   onToggleExpanded,
   gridTemplateColumns = TRACKER_GRID_TEMPLATE_COLUMNS,
@@ -556,7 +561,11 @@ export function InitiativeTrackerRow({
           <InitiativeNumberInput
             value={row.initiative}
             resetKey={row.id}
-            ariaLabel={labels.initiativeFor}
+            ariaLabel={
+              initiativeMissing && initiativeMissingLabel
+                ? `${labels.initiativeFor}, ${initiativeMissingLabel}`
+                : labels.initiativeFor
+            }
             modifier={modifier}
             modifierAriaLabel={modifierAriaLabel}
             showModifier={showModifier}
@@ -567,6 +576,7 @@ export function InitiativeTrackerRow({
             className={cn(
               "h-9 rounded-[15px] bg-gray-middle-light px-3 text-center text-sm text-white",
               compact && "px-2",
+              initiativeMissing && "border-2 border-yellow/70",
             )}
           />
         )
@@ -587,7 +597,7 @@ export function InitiativeTrackerRow({
         aria-controls={tabletDetailsId}
         aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
         onClick={onToggleExpanded}
-        className="absolute left-2 top-1/2 hidden size-7 -translate-y-1/2 rounded-full text-white/65 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 md:inline-flex lg:hidden">
+        className="absolute left-2 top-1/2 hidden size-7 -translate-y-1/2 text-white/65 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 md:inline-flex lg:hidden">
         {isExpanded ? (
           <ChevronDown className="size-4" aria-hidden="true" />
         ) : (
@@ -748,7 +758,7 @@ export function InitiativeTrackerRow({
                 variant="ghost"
                 size="icon-sm"
                 aria-label={labels.conditionFor}
-                className="shrink-0 rounded-full text-white/80 hover:bg-white/10 hover:text-white"
+                className="shrink-0 text-white/80 hover:bg-white/10 hover:text-white"
                 onClick={() => openConcentrationDialog("set")}>
                 <Pencil className="size-4" />
               </Button>
@@ -859,7 +869,7 @@ export function InitiativeTrackerRow({
               aria-controls={detailsId}
               aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
               onClick={onToggleExpanded}
-              className="size-9 shrink-0 rounded-[12px] text-white/75 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40">
+              className="size-9 shrink-0 text-white/75 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40">
               {isExpanded ? (
                 <ChevronDown className="size-5" aria-hidden="true" />
               ) : (

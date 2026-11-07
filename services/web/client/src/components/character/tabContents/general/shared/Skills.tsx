@@ -86,7 +86,7 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
   const t = useTranslations("characterDetail.player.general");
 
   return (
-    <div className="grid grid-cols-1 min-[1440px]:grid-cols-2 gap-1">
+    <div className="grid flex-1 content-between grid-cols-1 @sm:grid-cols-2 @xl:grid-cols-3 gap-1">
       {skillsConfig.map(({ key, translationKey, abilityKey, icon }) => {
         const masteryLevel = stats?.masteries[key as keyof typeof stats.masteries] || 0;
         const proficiencyBonus = stats?.proficiencyBonus || 2;
@@ -98,7 +98,7 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
         return (
           <div
             key={key}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-[10px] hover:bg-gray-middle-light/50 transition-colors">
+            className="flex items-center gap-2 px-2 py-1.5 rounded-[10px]">
             {/* Icône compétence */}
             <span className="shrink-0 text-muted-foreground">{icon}</span>
 
@@ -109,9 +109,7 @@ export default function Skills({ accentColor, stats }: SkillsProps) {
                   {skillFullName}
                 </span>
               </div>
-              <div className="text-xs text-muted-foreground leading-tight">
-                {t(`abilities.${abilityKey}`)}
-              </div>
+              <div className="text-xs text-muted-foreground leading-tight">{t(`abilities.${abilityKey}`)}</div>
             </div>
 
             {/* Bonus + maîtrise */}

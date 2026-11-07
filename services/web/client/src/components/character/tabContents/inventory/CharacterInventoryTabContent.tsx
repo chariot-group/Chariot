@@ -4,23 +4,34 @@ import { LazyCharacterInventoryTabEdit as CharacterInventoryTabEdit } from "@/co
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterInventoryTabContentProps {
-    accentColor: string;
-    character: Player | NPC;
-    form: UseFormReturn<FieldValues>;
-    isEditing: boolean;
-    onCharacterUpdate?: (updated?: Player | NPC) => void;
+  accentColor: string;
+  character: Player | NPC;
+  form: UseFormReturn<FieldValues>;
+  isEditing: boolean;
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
 export default function CharacterInventoryTabContent({
-    accentColor,
-    character,
-    form,
-    isEditing,
-    onCharacterUpdate,
+  accentColor,
+  character,
+  form,
+  isEditing,
+  onCharacterUpdate,
 }: CharacterInventoryTabContentProps) {
-    if (isEditing) {
-        return <CharacterInventoryTabEdit accentColor={accentColor} form={form} />;
-    }
+  if (isEditing) {
+    return (
+      <CharacterInventoryTabEdit
+        accentColor={accentColor}
+        form={form}
+      />
+    );
+  }
 
-    return <CharacterInventoryView accentColor={accentColor} character={character} onCharacterUpdate={onCharacterUpdate} />;
+  return (
+    <CharacterInventoryView
+      accentColor={accentColor}
+      character={character}
+      onCharacterUpdate={onCharacterUpdate}
+    />
+  );
 }

@@ -26,7 +26,7 @@ function sortPromoCodesByStatus(promoCodes) {
     );
 }
 
-describe("FR-admin-promo-expiration-display", () => {
+describe("FR-admin-promo-affiliation-lifecycle", () => {
     const now = new Date("2026-06-25T12:00:00.000Z");
     const futureExpiry = "2026-12-31T00:00:00.000Z";
     const pastExpiry = "2026-01-01T00:00:00.000Z";
