@@ -41,10 +41,11 @@ export default function ListSelectRow({
   return (
     <div
       className={cn(
-        "flex min-w-0 items-start gap-1 rounded-[10px] border-b border-border transition-colors",
-        !isSelected && "hover:bg-gray-middle-light/50",
-        isSelected && "rounded-[10px] border-transparent bg-gray-middle-light/60",
-        hasError && "rounded-[10px] border-transparent ring-2 ring-destructive",
+        "flex min-w-0 items-center gap-1 rounded-[10px] border-b border-border transition-colors",
+        !isSelected && "hover:bg-gray-middle-light/25",
+        // Inset rings: an outer ring is covered by the sticky group header above the first row.
+        isSelected && "rounded-[10px] border-transparent bg-gray-middle-light ring-1 ring-inset ring-white/50",
+        hasError && "rounded-[10px] border-transparent ring-2 ring-inset ring-destructive",
       )}>
       <button
         type="button"
@@ -63,7 +64,7 @@ export default function ListSelectRow({
           style={metaStyle}
         />
       </button>
-      {trailing && <div className="shrink-0 pt-2 pr-1">{trailing}</div>}
+      {trailing && <div className="shrink-0 pr-1">{trailing}</div>}
     </div>
   );
 }

@@ -118,7 +118,7 @@ export default function ListCard({
         <p className="text-sm text-muted-foreground sm:text-base">{emptyLabel}</p>
       ) : bounded ? (
         <div
-          className={cn(BENTO_BOUNDED_LIST_CLASS, boundedClassName, fill && LIST_ROWS_FILL_CLASS)}
+          className={cn(BENTO_BOUNDED_LIST_CLASS, "min-h-0 flex-1 p-0.5 pr-2", boundedClassName, fill && LIST_ROWS_FILL_CLASS)}
           role="group"
           aria-labelledby={headingId}
           tabIndex={0}>

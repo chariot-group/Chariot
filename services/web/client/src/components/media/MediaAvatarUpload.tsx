@@ -260,7 +260,7 @@ export function MediaAvatarUpload({
       <p
         id={requirementsId}
         className={cn(
-          "text-xs text-gray-light leading-snug text-center max-w-56 wrap-break-word",
+          "whitespace-pre-line text-[11px] text-muted-foreground/70 leading-tight text-center max-w-56 wrap-break-word",
           size === "sheet" && "max-sm:sr-only",
         )}>
         {requirementsHint}

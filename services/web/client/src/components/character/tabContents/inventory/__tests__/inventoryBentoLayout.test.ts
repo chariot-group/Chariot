@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { BREAKPOINTS, emptyCells, place, spanAt } from "@/components/character/tabContents/__tests__/bentoPlacement";
 import {
   INVENTORY_BENTO_GRID_CLASS,
+  INVENTORY_EDIT_GRID_CLASS,
+  INVENTORY_EDIT_PANEL_CLASS,
   INVENTORY_SLOTS,
 } from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
 import { nextCoinValue, normalizeCoinAmount } from "@/components/character/tabContents/inventory/shared/coins";
@@ -72,5 +74,27 @@ describe("In-session coin operations", () => {
     expect(normalizeCoinAmount("-7")).toBe(0);
     expect(nextCoinValue(10, "-7", "add")).toBe(10);
     expect(nextCoinValue(10, "abc", "set")).toBe(0);
+  });
+});
+
+/** @see FR-character-inventory-bento-layout (edit mode fills the page height) */
+describe("Inventory edit mode height", () => {
+  it("nominal: from sm the panel fills the scroll area and the grid grows with it", () => {
+    expect(INVENTORY_EDIT_PANEL_CLASS.split(" ")).toEqual(
+      expect.arrayContaining(["sm:flex", "sm:flex-1", "sm:flex-col"]),
+    );
+    expect(INVENTORY_EDIT_GRID_CLASS.split(" ")).toEqual(
+      expect.arrayContaining(["sm:flex-1", "sm:grid-rows-[auto_1fr]"]),
+    );
+  });
+
+  it("edge: on mobile the cards keep their content height (no stretch below sm)", () => {
+    for (const cls of [...INVENTORY_EDIT_PANEL_CLASS.split(" "), ...INVENTORY_EDIT_GRID_CLASS.split(" ")]) {
+      expect(cls).not.toMatch(/^(flex-1|h-full)$/);
+    }
+  });
+
+  it("guard: read mode grid is unchanged (no flex growth)", () => {
+    expect(INVENTORY_BENTO_GRID_CLASS).not.toContain("flex-1");
   });
 });

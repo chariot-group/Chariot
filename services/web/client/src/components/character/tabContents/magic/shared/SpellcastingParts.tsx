@@ -17,6 +17,8 @@ interface SpellcastingSelectorProps {
   /** Index of blocks containing invalid fields (error indicator next to the label). */
   invalidIndices?: ReadonlySet<number>;
   errorLabel?: string;
+  /** Accessible name of the group; defaults to the spellcasting class label. */
+  ariaLabel?: string;
   className?: string;
 }
 
@@ -32,6 +34,7 @@ export function SpellcastingSelector({
   trailing,
   invalidIndices,
   errorLabel,
+  ariaLabel,
   className,
 }: SpellcastingSelectorProps) {
   const tMagic = useTranslations("characterDetail.magic");
@@ -40,7 +43,7 @@ export function SpellcastingSelector({
     <div
       className={cn("flex min-w-0 flex-wrap gap-2", className)}
       role="group"
-      aria-label={tMagic("spellcastingClass")}>
+      aria-label={ariaLabel ?? tMagic("spellcastingClass")}>
       {labels.map((label, index) => {
         const isSelected = index === selectedIndex;
         const hasError = invalidIndices?.has(index) ?? false;
@@ -145,7 +148,7 @@ export function SpellGroupHeader({
   trailing?: ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-10 bg-card pt-3 pb-1 first:pt-0">
+    <div className="sticky -top-0.5 z-10 bg-card pt-3 pb-1 first:pt-0">
       <div className="flex min-w-0 items-center justify-between gap-2 rounded-[10px] bg-gray-middle-light px-3 py-1.5">
         <h3 className={cn("flex min-w-0 items-center gap-1.5 text-sm font-semibold sm:text-base", accentColor)}>
           <span className="truncate">{label}</span>

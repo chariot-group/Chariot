@@ -554,7 +554,7 @@
     "uploadLabel": "Choisir une image de profil",
     "invalidType": "Format non pris en charge. Utilisez JPEG (.jpg), PNG (.png), WebP (.webp) ou HEIC (.heic).",
     "tooLarge": "L'image dépasse la taille maximale de {maxMb} Mo.",
-    "requirementsHint": "JPEG, PNG, WebP ou HEIC · max. {maxMb} Mo · {width}×{height} px recommandé (ratio 4:5)",
+    "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} Mo max\n{width}×{height} px (4:5) conseillé",
     "uploadSuccess": "Image mise à jour.",
     "uploadError": "Impossible de mettre à jour l'image.",
     "removeSuccess": "Image supprimée.",
@@ -992,7 +992,6 @@
         "maxBelowCurrent": "La valeur des PV max a été ajustée automatiquement pour rester supérieure ou égale aux PV actuels.",
         "hitDiceRemainingClamped": "Les dés de vie restants ont été plafonnés au niveau de cette classe."
       },
-      "defense": "Défense",
       "initiative": "Initiative",
       "size": "Taille",
       "selectSize": "Sélectionner une taille",
@@ -1007,9 +1006,12 @@
       "spellEffectType": "Type d'effet",
       "spellDamage": "Dégâts",
       "spellHealing": "Soins",
-      "diceCount": "Nombre de dés",
-      "diceType": "Type de dé",
       "bonus": "Bonus",
+      "diceHelpLabel": "Aide sur la notation des dés",
+      "diceHelp": "3d8 = 3 dés à 8 faces · +2 = bonus fixe ajouté au résultat",
+      "diceSuggestionsLabel": "Suggestions de dés",
+      "diceFormula": "Dés",
+      "invalidDiceFormula": "Formule de dés invalide (ex. 8d6+2, dés d4 à d20 ou d100).",
       "damageType": "Type de dégâts",
       "damageTypePlaceholder": "Perforant, feu, force",
       "quickNumberPlaceholder": "Saisir un nombre",
@@ -1248,6 +1250,7 @@
         "levelLabel": "Niveau",
         "globalLevel": "Niveau global",
         "classes": "Classe(s)",
+        "removeClass": "Retirer la classe {index}",
         "subclassOf": "Sous classe de",
         "proficiencies": "Maîtrises",
         "languages": "Langue(s)",
@@ -1473,7 +1476,9 @@
         "classLevelExceeds": "Total supérieur au niveau global",
         "classLevelExceedsGlobal": "Total des niveaux de classe ({total}) dépasse le niveau global ({global})",
         "classLevelInfo": "Niveau de cette classe : {classLevel} | Total : {totalLevel}/{globalLevel}",
-        "addSecondClass": "Ajouter une multiclasse"
+        "addSecondClass": "Ajouter une multiclasse",
+        "classSelector": "Choix de la classe à modifier",
+        "classContainsErrors": "Cette classe contient des erreurs"
       }
     },
     "npc": {
