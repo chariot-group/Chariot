@@ -1,19 +1,23 @@
 services:
   chariot-mongo:
-    image: mongo:latest
+    image: mongo:8.2
     platform: linux/amd64
     container_name: chariot-mongodb
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "27017:27017"
     volumes:
       - chariot_mongodb_data:/data/db
-      - chariot_mongodb_logs:/var/log/mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${CHARIOT_MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${CHARIOT_MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${CHARIOT_MONGO_INITDB_DATABASE}
-    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend", "--wiredTigerCacheSizeGB", "0.5"]
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.5"]
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
       interval: 30s
@@ -81,7 +85,6 @@ services:
 
 volumes:
   chariot_mongodb_data:
-  chariot_mongodb_logs:
   chariot_adventure_logs:
 
 networks:
