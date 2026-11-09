@@ -2,7 +2,7 @@ name: chariot-adventure-prod
 
 services:
   chariot-mongo:
-    image: mongo:latest
+    image: mongo:8.2
     platform: linux/amd64
     container_name: chariot-mongodb-prod
     restart: unless-stopped
