@@ -124,6 +124,7 @@
     "loadMoreGroupsAria": "Charger plus de groupes",
     "loadMoreCharacters": "Charger plus",
     "loadMoreCharactersAria": "Charger plus de personnages",
+    "loadingMore": "Chargement des éléments suivants…",
     "addToSession": "Rejoindre la session",
     "removeFromSession": "Quitter la session",
     "gmGuestCharacter": "Invité MJ",
@@ -518,7 +519,10 @@
       "campaignCreationFailed": "Échec de la création de la campagne",
       "groupNameRequired": "Le nom du groupe est requis",
       "groupCreationFailed": "Échec de la création du groupe"
-    }
+    },
+    "lazyLoading": "Chargement…",
+    "lazyLoadError": "Impossible de charger cette partie de l'application. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer"
   },
   "error": {
     "title": "Oups ! Une erreur s'est produite",

@@ -28,3 +28,20 @@ export function stripOidcCallbackParams(): boolean {
   window.history.replaceState(window.history.state, "", url);
   return true;
 }
+
+/**
+ * True when the URL is a Keycloak authorization callback (fragment or query response mode):
+ * the code exchange is about to run, so the authenticated shell can be fetched in parallel.
+ * @see FR-web-first-load-performance (Slow-network authentication round trip)
+ */
+export function isOidcCallbackUrl(href: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(href);
+  } catch {
+    return false;
+  }
+  return [new URLSearchParams(url.hash.replace(/^#/, "")), url.searchParams].some(
+    (params) => params.has("state") && (params.has("code") || params.has("error")),
+  );
+}

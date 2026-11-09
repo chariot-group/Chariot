@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarLoadMoreButton } from "@/components/layout/Sidebar/SidebarLoadMoreButton";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setContextMode, selectIsGmMode } from "@/store/slices/environmentSlice";
 import {
@@ -236,20 +237,13 @@ export default function SidebarEnvironment() {
                 );
               })}
               {hasMore && (
-                <button
-                  type="button"
-                  onClick={() => void loadMoreCampaigns()}
-                  disabled={loadingMore}
-                  className="flex w-full cursor-pointer items-center justify-center rounded-[10px] px-3 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50">
-                  {loadingMore ? (
-                    <Loader2
-                      className="h-3.5 w-3.5 animate-spin"
-                      aria-hidden
-                    />
-                  ) : (
-                    t("loadMoreCampaigns")
-                  )}
-                </button>
+                <SidebarLoadMoreButton
+                  loading={loadingMore}
+                  onLoadMore={() => loadMoreCampaigns()}
+                  label={t("loadMoreCampaigns")}
+                  ariaLabel={t("loadMoreCampaignsAria")}
+                  className="flex w-full cursor-pointer items-center justify-center rounded-[10px] px-3 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+                />
               )}
             </>
           )}

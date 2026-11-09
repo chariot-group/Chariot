@@ -68,3 +68,20 @@ Conventions:
 Locally, `auth.setup.ts` creates (or resets) `e2e-gm` and `e2e-player` through the Keycloak admin API.
 On a hosted environment, leave `KEYCLOAK_ADMIN_*` empty and provide existing dedicated test accounts.
 Never use real user accounts.
+
+## Measuring loading times on a slow network
+
+`next dev` ships 10–20× more JavaScript than a production build (unminified, compiled on demand):
+slow-network tests on it are not representative (FR-web-first-load-performance).
+
+```bash
+make web-prod-local                     # replaces the dev web container with a production build on :3000
+make e2e-perf PERF_RUNS=3               # app → Keycloak → back in the app, 3G profile, cold cache
+make web-dev-local                      # back to next dev
+```
+
+`make e2e-perf` reports, per phase (before the Keycloak redirect, login page, after login submit),
+the elapsed time, requests, CORS preflights and transferred bytes, in `reports/perf/*.json`.
+Options: `PERF_RUNS`, `PERF_LABEL`, `PERF_LATENCY_MS` / `PERF_DOWN_KBPS` / `PERF_UP_KBPS`
+(default 2000 ms / 400 / 400), `PERF_THINK_MS` (typing time on the login page),
+`PERF_TRACE_REQUESTS=1` (list every request). Point `.env` at another environment to measure it.

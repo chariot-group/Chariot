@@ -57,6 +57,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-    // Matcher to handle all routes except static files, _next and API routes
-    matcher: ["/((?!api|_next|.*\\..*).*)"],
+    // Matcher to handle all routes except static files, _next, API routes and the same-origin
+    // gateway prefix (FR-web-first-load-performance, requirement 18)
+    matcher: ["/((?!api|gateway/|_next|.*\\..*).*)"],
 };

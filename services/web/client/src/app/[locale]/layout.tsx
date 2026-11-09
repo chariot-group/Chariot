@@ -2,23 +2,11 @@ import type { Metadata } from "next";
 import { Inter_Tight } from "next/font/google";
 import "./globals.css";
 import { KeycloakProvider } from "@/providers/KeycloakProvider";
-import ReduxProvider from "@/providers/ReduxProvider";
-import ToastContainer from "@/components/ToastContainer";
-import LocaleDetector from "@/components/LocaleDetector";
-import AccountLocaleSync from "@/components/AccountLocaleSync";
-import CampaignContextUrlSync from "@/components/CampaignContextUrlSync";
+import AuthenticatedShellGate from "@/components/layout/AuthenticatedShellGate";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@/i18n/request";
-import PostLoginNavigator from "@/components/PostLoginNavigator";
-import ReleaseNotesProvider from "@/components/ReleaseNotesProvider";
-import SessionCharacterSyncClientDynamic from "@/components/SessionCharacterSyncClientDynamic";
-import SessionLobbyDialogDynamic from "@/components/dialogs/SessionLobbyDialogDynamic";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/layout/Sidebar";
-import Header from "@/components/layout/Header";
-import { Suspense } from "react";
-import SessionJoinParamListener from "@/components/SessionJoinParamListener";
+import { preconnect } from "react-dom";
 
 const interTight = Inter_Tight({
   variable: "--font-inter-tight",
@@ -38,6 +26,23 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
+/**
+ * Opens the SSO and API connections while the app loads: login-required redirects to Keycloak,
+ * and the first API calls follow the code exchange (FR-web-first-load-performance, req. 5 and 12).
+ */
+function preconnectToAuthAndApi() {
+  for (const url of [process.env.NEXT_PUBLIC_KEYCLOAK_URL, process.env.NEXT_PUBLIC_API_URL]) {
+    if (!url) continue;
+    try {
+      // No crossOrigin: navigation to Keycloak and credentialed API calls (axios withCredentials)
+      // both use the credentialed connection pool.
+      preconnect(new URL(url).origin);
+    } catch {
+      // Malformed URL: skip the hint, Keycloak init / API calls report the real error.
+    }
+  }
+}
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
@@ -51,34 +56,15 @@ export default async function RootLayout({
 }>) {
   const { locale } = await params;
   const messages = await getMessages();
+  preconnectToAuthAndApi();
 
   return (
     <html lang={locale}>
       <body className={`${interTight.variable} antialiased font-sans overflow-hidden h-dvh`}>
         <NextIntlClientProvider messages={messages}>
           <KeycloakProvider>
-            <ReduxProvider>
-              <SessionCharacterSyncClientDynamic />
-              <SessionLobbyDialogDynamic />
-              <Suspense>
-                <SessionJoinParamListener />
-              </Suspense>
-              <SidebarProvider className="h-dvh min-h-0 overflow-hidden">
-                <AppSidebar />
-
-                <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative">
-                  <PostLoginNavigator />
-                  <ReleaseNotesProvider />
-                  <LocaleDetector />
-                  <AccountLocaleSync />
-                  <CampaignContextUrlSync />
-                  <ToastContainer />
-                  <Header />
-
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
-                </div>
-              </SidebarProvider>
-            </ReduxProvider>
+            {/* The shell (Redux, sidebar, header, session clients) loads once authenticated. */}
+            <AuthenticatedShellGate>{children}</AuthenticatedShellGate>
           </KeycloakProvider>
         </NextIntlClientProvider>
       </body>

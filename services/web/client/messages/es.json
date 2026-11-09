@@ -124,6 +124,7 @@
     "loadMoreGroupsAria": "Cargar más grupos",
     "loadMoreCharacters": "Cargar más",
     "loadMoreCharactersAria": "Cargar más personajes",
+    "loadingMore": "Cargando más elementos…",
     "addToSession": "Unirse a la sesión",
     "removeFromSession": "Salir de la sesión",
     "gmGuestCharacter": "Invitado MJ",
@@ -517,7 +518,10 @@
       "campaignCreationFailed": "Error al crear la campaña",
       "groupNameRequired": "El nombre del grupo es requerido",
       "groupCreationFailed": "Error al crear el grupo"
-    }
+    },
+    "lazyLoading": "Cargando…",
+    "lazyLoadError": "No se pudo cargar esta parte de la aplicación. Comprueba tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
   },
   "error": {
     "title": "¡Ups! Algo salió mal",

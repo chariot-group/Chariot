@@ -31,9 +31,11 @@ services:
       - start
       - --optimized
       - --import-realm
-      - --spi-theme-static-max-age=-1
-      - --spi-theme-cache-themes=false
-      - --spi-theme-cache-templates=false
+      # Theme cache ON by default, like integ/prod (FR-web-first-load-performance, requirement 16).
+      # Theme work: set KEYCLOAK_THEME_STATIC_MAX_AGE=-1 and KEYCLOAK_THEME_CACHE=false in .env.
+      - --spi-theme-static-max-age=${KEYCLOAK_THEME_STATIC_MAX_AGE:-2592000}
+      - --spi-theme-cache-themes=${KEYCLOAK_THEME_CACHE:-true}
+      - --spi-theme-cache-templates=${KEYCLOAK_THEME_CACHE:-true}
     ports:
       - "${KEYCLOAK_PORT:-8080}:8080"
     environment:
