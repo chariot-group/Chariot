@@ -84,16 +84,18 @@ const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start
 
 export const PLAYER_VIEW_SLOTS = {
   character: `${FULL} @sheet-lg:col-span-4 @sheet-lg:row-span-2 @sheet-xl:col-span-3`,
-  statistics: `${FULL} @sheet-lg:col-span-8 @sheet-xl:col-span-5 @sheet-xl:row-span-2`,
-  /** Proficiency bonus, passive perception, inspiration, exhaustion (one row next to the statistics from `@sheet-xl`). */
+  /** From `@sheet-xl` a single row: the 4 tiles fill the cells right under it (Proficiencies placed on the right). */
+  statistics: `${FULL} @sheet-lg:col-span-8 @sheet-xl:col-span-4`,
+  /** Proficiency bonus, passive perception, inspiration, exhaustion (one row under the statistics from `@sheet-xl`). */
   tile: "min-w-0 col-span-1 @sheet-lg:col-span-2 @sheet-xl:col-span-1",
   /** The first band takes 2 rows from `@sheet-xl`, so the skills band starts on row 3. */
   ...skillsBand("@sheet-xl:row-start-3"),
   /**
    * Under the skills from `@sheet-lg` (sections in columns, container queries). From `@sheet-xl`
-   * it moves up under the tiles, next to the statistics (explicit placement, DOM order unchanged).
+   * it moves up to the right of the statistics and tiles, over the 2 rows of the first band
+   * (explicit placement, DOM order unchanged).
    */
-  proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-4 @sheet-xl:col-start-9 @sheet-xl:row-start-2`,
+  proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-5 @sheet-xl:col-start-8 @sheet-xl:row-start-1 @sheet-xl:row-span-2`,
 } as const;
 
 /**

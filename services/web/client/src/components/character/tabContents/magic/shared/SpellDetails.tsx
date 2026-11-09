@@ -11,7 +11,7 @@ interface SpellDetailsProps {
   /** Spell attack bonus of the block, shown for attack spells. */
   attackBonus?: number | null;
   isNpc?: boolean;
-  /** In-session cast controls, under the description. */
+  /** In-session cast controls, at the top of the details (the wide panel puts them on its heading line). */
   castControls?: ReactNode;
 }
 
@@ -75,9 +75,10 @@ function EffectCell({ label, lines, span }: { label: string; lines: SpellEffectL
 }
 
 /**
- * Spell details, read mode (expanded row or wide panel): damage on a full line, short traits filling
+ * Spell details, read mode (expanded row or wide panel): in-session cast controls first (right-aligned),
+ * then damage on a full line, short traits filling
  * their lines, then duration · components · healing on a line of their own, classes last, then
- * the description in its own section, then the in-session cast controls (no nested cards).
+ * the description in its own section (no nested cards).
  * @see FR-character-magic-list-card
  */
 export default function SpellDetails({ spell, attackBonus = null, isNpc = false, castControls }: SpellDetailsProps) {
@@ -140,6 +141,10 @@ export default function SpellDetails({ spell, attackBonus = null, isNpc = false,
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
+      {/* `empty:hidden`: out of session the controls render nothing, so no gap is left above the traits */}
+      {castControls && (
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 empty:hidden">{castControls}</div>
+      )}
       {(hasFirstLines || hasLastLines) && (
         <div className="flex min-w-0 flex-col gap-2">
           {hasFirstLines && (
@@ -177,7 +182,6 @@ export default function SpellDetails({ spell, attackBonus = null, isNpc = false,
           <p className="whitespace-pre-wrap wrap-break-word leading-relaxed">{spell.description}</p>
         </div>
       )}
-      {castControls && <div className="flex min-w-0 flex-wrap items-center gap-2">{castControls}</div>}
     </div>
   );
 }

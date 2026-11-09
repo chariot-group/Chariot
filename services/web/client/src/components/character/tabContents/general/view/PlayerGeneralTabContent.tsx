@@ -22,6 +22,7 @@ import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import CharacterService from "@/services/CharacterService";
 import { toast } from "react-toastify";
 import SensesSection from "@/components/character/tabContents/general/shared/SensesSection";
+import ProficiencyValue from "@/components/character/tabContents/general/shared/ProficiencyValue";
 
 interface PlayerGeneralTabContentProps {
   player: Player;
@@ -120,6 +121,7 @@ export default function PlayerGeneralTabContent({
                 size="sm"
                 className="h-auto min-h-8 w-full whitespace-normal"
                 disabled={isInspirationLoading}
+                aria-label={t("inspirationUseButtonLabel")}
                 onClick={async () => {
                   if (!onCharacterUpdate) return;
                   setIsInspirationLoading(true);
@@ -237,7 +239,12 @@ export default function PlayerGeneralTabContent({
           <dl className="grid flex-1 content-start gap-x-6 gap-y-3 @lg:grid-cols-2 @4xl:grid-cols-3">
             <div className="flex flex-col">
               <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
-              <dd className="text-sm sm:text-base wrap-break-word">{player?.stats?.languages.join(", ")}</dd>
+              <dd>
+                <ProficiencyValue
+                  items={player?.stats?.languages}
+                  emptyLabel={t("noLanguages")}
+                />
+              </dd>
             </div>
             <div className="flex flex-col gap-1">
               <dt className="text-sm sm:text-base font-semibold">{t("senses")} :</dt>
@@ -251,15 +258,30 @@ export default function PlayerGeneralTabContent({
             </div>
             <div className="flex flex-col">
               <dt className="text-sm sm:text-base font-semibold">{t("tools")} :</dt>
-              <dd className="text-sm sm:text-base wrap-break-word">{player?.stats?.tools.join(", ")}</dd>
+              <dd>
+                <ProficiencyValue
+                  items={player?.stats?.tools}
+                  emptyLabel={t("noTools")}
+                />
+              </dd>
             </div>
             <div className="flex flex-col">
               <dt className="text-sm sm:text-base font-semibold">{t("weapons")} :</dt>
-              <dd className="text-sm sm:text-base wrap-break-word">{player?.stats?.weapons.join(", ")}</dd>
+              <dd>
+                <ProficiencyValue
+                  items={player?.stats?.weapons}
+                  emptyLabel={t("noWeapons")}
+                />
+              </dd>
             </div>
             <div className="flex flex-col">
               <dt className="text-sm sm:text-base font-semibold">{t("armors")} :</dt>
-              <dd className="text-sm sm:text-base wrap-break-word">{player?.stats?.armors.join(", ")}</dd>
+              <dd>
+                <ProficiencyValue
+                  items={player?.stats?.armors}
+                  emptyLabel={t("noArmors")}
+                />
+              </dd>
             </div>
           </dl>
         </GeneralSectionCard>

@@ -148,29 +148,32 @@ describe("General tab bento layout", () => {
     }
   });
 
-  it("nominal: on very large screens the four PC tiles sit side by side next to the statistics, proficiencies right under them", () => {
+  it("nominal: on very large screens the four PC tiles sit side by side under the statistics, proficiencies on the right", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
-    const tiles = place(slots.slice(0, 6), BREAKPOINTS.wide);
+    const bp = BREAKPOINTS.wide;
     const proficiencies = slots[10];
-    const withProficiencies = place([...slots.slice(0, 6), proficiencies], BREAKPOINTS.wide);
+    const withoutTiles = place([slots[0], slots[1], proficiencies], bp);
+    const withProficiencies = place([...slots.slice(0, 6), proficiencies], bp);
 
-    // The four tiles complete the first row; the 4 right cells of the second row are left for proficiencies
-    expect(tiles[0].every(Boolean)).toBe(true);
-    expect(tiles[1].slice(8)).toEqual([false, false, false, false]);
-    expect(spanAt(slots[2], "col", BREAKPOINTS.wide)).toBe(1);
-    expect(spanAt(slots[1], "col", BREAKPOINTS.wide)).toBe(5);
+    // Character 3 · Statistics 4 · Proficiencies 5 over 2 rows: the only free cells, for the tiles, are under the statistics
+    expect(withoutTiles.map((row) => row.map((f) => (f ? 1 : 0)).join(""))).toEqual(["111111111111", "111000011111"]);
+    expect(spanAt(slots[0], "col", bp)).toBe(3);
+    expect(spanAt(slots[1], "col", bp)).toBe(4);
+    expect(spanAt(slots[2], "col", bp)).toBe(1);
     expect(withProficiencies).toHaveLength(2);
     expect(withProficiencies.every((row) => row.every(Boolean))).toBe(true);
-    expect([startAt(proficiencies, "col", BREAKPOINTS.wide), startAt(proficiencies, "row", BREAKPOINTS.wide)]).toEqual([
-      9, 2,
-    ]);
+    expect([
+      startAt(proficiencies, "col", bp),
+      startAt(proficiencies, "row", bp),
+      spanAt(proficiencies, "row", bp),
+    ]).toEqual([8, 1, 2]);
   });
 
   it("edge: on very large screens the skills band comes right after the first band", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
     const grid = place(slots, BREAKPOINTS.wide);
 
-    // Band 1 (2 rows, proficiencies under the tiles) · skills band (2 rows)
+    // Band 1 (2 rows: tiles under the statistics, proficiencies on the right) · skills band (2 rows)
     expect(grid).toHaveLength(4);
     expect(grid.every((row) => row.every(Boolean))).toBe(true);
   });
@@ -240,16 +243,16 @@ describe("General tab bento layout", () => {
     expect(emptyCells(slots, BREAKPOINTS.tablet)).not.toEqual([]);
   });
 
-  it("failure: proficiencies without its explicit wide placement would leave a hole under the tiles", () => {
+  it("failure: proficiencies without its wide row span would leave a hole under it", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
-    slots[10] = slots[10].replace("@sheet-xl:row-start-2", "");
+    slots[10] = slots[10].replace("@sheet-xl:row-span-2", "");
 
     expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
   });
 
-  it("failure: statistics without its wide row span would leave holes next to the tiles", () => {
+  it("failure: statistics spanning both rows of the first band would push the tiles out from under it", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
-    slots[1] = slots[1].replace("@sheet-xl:row-span-2", "");
+    slots[1] = `${slots[1]} @sheet-xl:row-span-2`;
 
     expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
   });
