@@ -1,5 +1,6 @@
 "use client";
 
+import { replaceCharacterTabInUrl } from "@/lib/characterTabUrl";
 import { SquarePen, X, Save, FileDown } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
@@ -118,17 +119,10 @@ export default function CharacterDetailView({
   const requestedTab = (searchParams.get("tab") as CharacterTab) || "general";
   const activeTab = availableTabs.includes(requestedTab) ? requestedTab : "general";
 
-  // Fonction pour changer d'onglet et mettre à jour l'URL
-  const handleTabChange = React.useCallback(
-    (newTab: string) => {
-      const tab = newTab as CharacterTab;
-      // Mettre à jour l'URL sans recharger la page
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("tab", tab);
-      router.replace(`?${params.toString()}`, { scroll: false });
-    },
-    [router, searchParams],
-  );
+  // History API, not the router: no server round trip, instant even on 3G (FR-character-detail-view)
+  const handleTabChange = React.useCallback((newTab: string) => {
+    replaceCharacterTabInUrl(newTab);
+  }, []);
 
   // Déterminer le type de personnage
   const characterType: CharacterType = isPlayer(character) ? "players" : "npcs";

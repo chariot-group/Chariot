@@ -1,5 +1,6 @@
 "use client";
 
+import { CompanionsTabSkeleton } from "@/components/character/skeleton/CharacterSheetSkeleton";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Link2, UserPlus } from "lucide-react";
@@ -194,13 +195,10 @@ export default function CharacterCompanionsTabContent({
 
   if (loading) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2
-          className="h-6 w-6 animate-spin text-white/70"
-          aria-hidden="true"
-        />
-        <span className="sr-only">{t("loading")}</span>
-      </div>
+      <CompanionsTabSkeleton
+        showActions={showLiaisonActions}
+        label={t("loading")}
+      />
     );
   }
 

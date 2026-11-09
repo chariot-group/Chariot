@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarLoadMoreButton } from "@/components/layout/Sidebar/SidebarLoadMoreButton";
 import { buttonVariants } from "@/components/ui/button";
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import {
@@ -416,23 +417,15 @@ export default function CharactersWithoutGroupList() {
   }
 
   const loadMoreButton = hasMore ? (
-    <button
-      type="button"
+    <SidebarLoadMoreButton
       key="characters-without-group-load-more"
-      onClick={() => void loadMoreCharacters()}
-      disabled={loadingMore}
-      aria-busy={loadingMore}
-      aria-label={t("loadMoreCharactersAria")}
-      className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
-      {loadingMore ? (
-        <Loader2
-          className="w-4 h-4 animate-spin mx-auto"
-          aria-hidden
-        />
-      ) : (
-        t("loadMoreCharacters")
-      )}
-    </button>
+      loading={loadingMore}
+      onLoadMore={loadMoreCharacters}
+      label={t("loadMoreCharacters")}
+      ariaLabel={t("loadMoreCharactersAria")}
+      withAvatar
+      className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white focus-visible:border"
+    />
   ) : null;
 
   const renderRow = (row: PlayerSidebarRow, index: number) => {

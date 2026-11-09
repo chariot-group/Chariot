@@ -192,6 +192,12 @@ When adding a rule:
 - GM mode: Campaign management, NPC management, Encounter builder, World settings
 - Shared: User profile, Settings, Logout
 
+**« Load more » pagination (characters without group, active / archived groups, campaigns)**:
+
+- While a next page is loading, the « Load more » button is replaced by skeleton rows shaped like the list items (avatar circle + name bar for characters, name bar for groups and campaigns), same style as the app shell sidebar skeleton (FR-auth-loading-skeleton, `docs/design.md` §5.3.8) — never a spinner.
+- A single request at a time per list: a synchronous in-flight guard ignores any further call until the whole load is over (for characters, including the linked NPCs fetch). On failure the button comes back and can be retried.
+- Accessibility: the skeleton is a `role="status"` region with `aria-busy="true"` and a translated `sr-only` label (en, es, fr); shapes are `aria-hidden`, not focusable, pulse disabled under `prefers-reduced-motion`. The button has a translated `aria-label`.
+
 **Prohibitions**:
 
 - Using global variables or React Context for navigation state (Redux is mandatory)
@@ -209,6 +215,7 @@ When adding a rule:
 - Keyboard navigation and accessibility compliance
 - Focus trap functionality in mobile overlay mode
 - SSR hydration without Redux state mismatches
+- « Load more » guard: nominal (one call → one page), edge (second call while in flight → ignored, single request), failure (request error → guard released, retry possible)
 
 **References**:
 
@@ -408,7 +415,7 @@ When adding a rule:
   - **Magie** (Magic): Pink accent (`bg-pink`)
   - **Inventaire** (Inventory): Yellow accent (`bg-yellow`)
   - **Histoire** (History): Green accent (`bg-green`)
-- Tab state management using React state (`useState`)
+- Active tab stored in the `tab` URL parameter (deep-linkable; unknown or missing value → General). Switching tab (sheet and creation form) updates the URL in place with the native History API (`window.history.replaceState`, kept in sync with `useSearchParams` by Next): it MUST NOT trigger a router navigation nor any network request, so the switch is instant even on a slow network (3G). Other URL parameters are kept and no history entry is added.
 - Visual indication of active tab through background color and text color
 - Inactive tabs display gray background with hover state
 - Tab labels must be internationalized using `next-intl` with key `characterDetail.tabs.{tabName}`
@@ -510,6 +517,7 @@ When adding a rule:
 - Component renders correctly with NPC character data
 - Type guard correctly identifies Player vs NPC
 - Tab switching updates active state correctly
+- Tab URL builder: nominal (sets `tab`, keeps other params), edge (replaces an existing `tab`, keeps the hash), guard (no router navigation: only `history.replaceState` is called)
 - Keyboard navigation works (Tab, Enter, Arrow keys)
 - ARIA attributes are properly set
 - Challenge rating fractions display correctly for NPCs (1/8, 1/4, 1/2)
@@ -5937,6 +5945,7 @@ Each initiative tracker row carries:
 - **Tab content**: placeholder cards placed with the tab's own bento slots (`generalBentoLayout`, `battleBentoLayout`, `inventoryBentoLayout`, `historyBentoLayout`, `spellList`) for the guessed kind, in read mode. Card shapes match the sheet cards (`bg-card`, same radius and padding as `GeneralSectionCard`), headings tinted with the tab domain color; inner placeholders use the existing `Skeleton` primitive. Companions tab: a simple list of card placeholders.
 - **States**: the skeleton covers every non-ready state the spinner covered (auth loading, user transition, fetch in progress, error pending redirect, missing character pending redirect). The error / redirect behavior is unchanged.
 - **Motion**: the pulse animation is disabled under `prefers-reduced-motion` (static placeholders).
+- **Companions tab loading**: once the sheet is shown, the Companions tab still fetches its linked NPCs; while it does, the tab shows the same Companions placeholders as the sheet skeleton (one shared component), without the two action button placeholders when liaison actions are disabled (GM in session) — never a spinner.
 - **Single source**: one skeleton component shared by both routes; no duplicated markup per route.
 
 **Accessibility (FR-frontend-design)**:
@@ -5956,7 +5965,7 @@ Each initiative tracker row carries:
 
 - Nominal: the variant resolver returns NPC + requested tab on the campaign route and PC + requested tab on the player space route.
 - Edge: missing or unknown `tab` → General; `tab=companions` → PC with 6 tabs; `tab=companions` on the campaign route → PC (companions kept).
-- Failure / guard: each tab skeleton uses only slots defined in the matching bento layout file; the skeleton exposes `role="status"`, `aria-busy` and no focusable element. Visual fidelity and reduced motion are checked manually (the web client has no DOM test runner).
+- Failure / guard: each tab skeleton uses only slots defined in the matching bento layout file; the skeleton exposes `role="status"`, `aria-busy` and no focusable element. The Companions tab loading skeleton exposes `role="status"`, `aria-busy`, no focusable element, and the action placeholders only when liaison actions are enabled. Visual fidelity and reduced motion are checked manually (the web client has no DOM test runner).
 
 **References**:
 
