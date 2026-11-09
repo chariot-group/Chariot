@@ -210,7 +210,15 @@
       "editLinkSave": "Save changes",
       "editError": "Failed to update the link.",
       "collapseAriaLabel": "Collapse quick links",
-      "expandAriaLabel": "Expand quick links"
+      "expandAriaLabel": "Expand quick links",
+      "visibilityLegend": "Visibility",
+      "visibleInAllCampaigns": "Available in all my campaigns",
+      "visibleInPlayerSpace": "Available in the player space",
+      "ownLinksCampaign": "Links of this campaign",
+      "ownLinksPlayer": "Player space links",
+      "sharedLinks": "Shared links",
+      "deleteSharedLinkDialogDescription": "This link is shared: it will disappear from every space where it is visible. This action cannot be undone.",
+      "sharedLinksHint": "Shared with other spaces"
     },
     "sessionCharacterSection": "Session character",
     "outOfSessionToggle": "Out of session ({count})",

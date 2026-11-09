@@ -5,10 +5,11 @@ import { useTranslations } from "next-intl";
 import { useQuickLinks } from "@/hooks/useQuickLinks";
 import { AddQuickLinkDialog } from "@/components/dialogs/AddQuickLinkDialog";
 import { getIconByName } from "@/lib/quickLinkIcons";
+import { isSharedQuickLink, splitQuickLinks } from "@/lib/quickLinkVisibility";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { showToast } from "@/lib/toast";
 import type { QuickLink } from "@/types/quickLink";
@@ -28,6 +29,8 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingLink, setEditingLink] = useState<QuickLink | null>(null);
+  const { own: ownLinks, shared: sharedLinks } = useMemo(() => splitQuickLinks(links), [links]);
+  const pendingDeleteLink = links.find((link) => link._id === pendingDeleteId);
 
   const storageKey = getCollapseStorageKey(campaignId);
   const [collapsed, setCollapsed] = useState(() => {
@@ -82,6 +85,41 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
     ];
   };
 
+  const renderLink = (link: QuickLink) => {
+    const Icon = getIconByName(link.icon);
+    const actions = buildLinkActions(link);
+
+    return (
+      <li key={link._id}>
+        <SidebarItemWithActions
+          actions={actions}
+          disabled={disabled}
+          contextMenuLabel={t("linkActions", { label: link.label })}
+          className="rounded-[12px] transition-all duration-150 hover:bg-white/10">
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${link.label} (${t("opensInNewTab")})`}
+            className={cn(
+              "group/ql flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[12px] px-3 py-1.5 text-sm text-white/70 transition-all duration-100",
+              "hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
+            )}>
+            <Icon
+              className="h-3.5 w-3.5 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="min-w-0 flex-1 truncate">{link.label}</span>
+            <ExternalLink
+              className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover/ql:opacity-60"
+              aria-hidden="true"
+            />
+          </a>
+        </SidebarItemWithActions>
+      </li>
+    );
+  };
+
   if (links.length === 0 && disabled) return null;
 
   return (
@@ -124,46 +162,43 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
       </div>
 
       {!collapsed && links.length > 0 && (
-        <ul
+        <div
           className="scrollbar-none flex flex-col gap-1 overflow-y-auto overscroll-contain"
-          style={{ maxHeight: "calc(5 * (1.75rem + 0.25rem))" }}
-          role="list"
-          aria-label={t("title")}>
-          {links.map((link) => {
-            const Icon = getIconByName(link.icon);
-            const actions = buildLinkActions(link);
-
-            return (
-              <li key={link._id}>
-                <SidebarItemWithActions
-                  actions={actions}
-                  disabled={disabled}
-                  contextMenuLabel={t("linkActions", { label: link.label })}
-                  className="rounded-[12px] transition-all duration-150 hover:bg-white/10">
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${link.label} (${t("opensInNewTab")})`}
-                    className={cn(
-                      "group/ql flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[12px] px-3 py-1.5 text-sm text-white/70 transition-all duration-100",
-                      "hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
-                    )}>
-                    <Icon
-                      className="h-3.5 w-3.5 shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="min-w-0 flex-1 truncate">{link.label}</span>
-                    <ExternalLink
-                      className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover/ql:opacity-60"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </SidebarItemWithActions>
-              </li>
-            );
-          })}
-        </ul>
+          style={{ maxHeight: "calc(5 * (1.75rem + 0.25rem))" }}>
+          {ownLinks.length > 0 && (
+            <ul
+              className="flex flex-col gap-1"
+              role="list"
+              aria-label={campaignId ? t("ownLinksCampaign") : t("ownLinksPlayer")}>
+              {ownLinks.map(renderLink)}
+            </ul>
+          )}
+          {ownLinks.length > 0 && sharedLinks.length > 0 && (
+            <div className="mx-3 my-1 flex shrink-0 items-center gap-2">
+              <span
+                className="h-px flex-1 bg-sidebar-border"
+                aria-hidden="true"
+              />
+              <span
+                title={t("sharedLinksHint")}
+                className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-white/40">
+                {t("sharedLinks")}
+              </span>
+              <span
+                className="h-px flex-1 bg-sidebar-border"
+                aria-hidden="true"
+              />
+            </div>
+          )}
+          {sharedLinks.length > 0 && (
+            <ul
+              className="flex flex-col gap-1"
+              role="list"
+              aria-label={`${t("sharedLinks")} — ${t("sharedLinksHint")}`}>
+              {sharedLinks.map(renderLink)}
+            </ul>
+          )}
+        </div>
       )}
 
       <AddQuickLinkDialog
@@ -181,7 +216,11 @@ export function QuickLinksList({ campaignId, disabled = false }: QuickLinksListP
           if (!open && !isDeleting) setPendingDeleteId(null);
         }}
         title={t("deleteLinkDialogTitle")}
-        description={t("deleteLinkDialogDescription")}
+        description={
+          pendingDeleteLink && isSharedQuickLink(pendingDeleteLink)
+            ? t("deleteSharedLinkDialogDescription")
+            : t("deleteLinkDialogDescription")
+        }
         confirmLabel={t("delete")}
         cancelLabel={t("cancel")}
         onConfirm={handleDelete}

@@ -3440,6 +3440,8 @@ Each initiative tracker row carries:
 - `url` : URL externe valide (string, commence par `http://` ou `https://`)
 - `label` : libellé visible (string, non vide, max 60 caractères)
 - `campaignId` : identifiant MongoDB de la campagne associée, ou `null` pour l'espace joueur
+- `visibleInAllCampaigns` : booléen, défaut `false` ; si `true`, le lien est aussi visible sous toutes les campagnes de l'espace MJ de l'utilisateur
+- `visibleInPlayerSpace` : booléen, défaut `false` ; n'a d'effet que si `campaignId !== null` ; si `true`, le lien créé depuis une campagne est aussi visible dans l'espace joueur
 - `createdBy` : `keycloakId` de l'utilisateur propriétaire (renseigné côté backend depuis le JWT)
 
 ### Backend (Adventure API)
@@ -3471,6 +3473,24 @@ Each initiative tracker row carries:
 - Les liens sont chargés via un hook dédié (`useQuickLinks`) qui appelle le backend
 - Le state local est géré dans le hook (pas de Redux slice dédié pour les liens rapides)
 
+### Visibilité multi-espaces et liens communs
+
+- **Espace d'origine** : l'espace où le lien a été créé (la campagne `campaignId`, ou l'espace joueur si `campaignId === null`). Il reste immuable.
+- **Dialog (création et modification)** : deux options sous forme de cases à cocher / switchs :
+  - "Accessible depuis toutes mes campagnes" (`visibleInAllCampaigns`) — proposée dans tous les contextes ;
+  - "Accessible depuis l'espace joueur" (`visibleInPlayerSpace`) — proposée uniquement quand l'espace d'origine est une campagne.
+  - Les deux options sont décochées par défaut et modifiables après création (`PATCH`).
+- **Visibilité** :
+  - Sous une campagne X : liens dont `campaignId === X`, plus tous les liens `visibleInAllCampaigns === true` (quelle que soit leur origine).
+  - Dans l'espace joueur : liens dont `campaignId === null`, plus les liens `visibleInPlayerSpace === true`.
+  - Un lien n'apparaît jamais deux fois dans la même liste.
+- **Lien commun** : un lien visible dans plus d'un espace (`visibleInAllCampaigns === true`, ou `campaignId !== null && visibleInPlayerSpace === true`). Les autres liens sont **propres** à leur espace.
+- **Affichage** : dans la section "Liens rapides", les liens propres à l'espace courant sont affichés en haut, puis un séparateur titré « Liens communs » (lignes `--sidebar-border` de part et d'autre, info-bulle « Partagés avec d'autres espaces »), puis les liens communs. Le séparateur n'est affiché que si les deux groupes sont non vides. Le scroll interne (hauteur max) s'applique à l'ensemble des deux groupes.
+- **Actions** : modifier / supprimer un lien commun depuis n'importe quel espace agit sur le lien unique (pas de copie) ; la confirmation de suppression d'un lien commun précise qu'il disparaîtra de tous les espaces où il est visible.
+- **Backend** : `GET /quick-links?campaignId=<id>` et `?campaignId=null` renvoient l'union définie ci-dessus ; `POST` et `PATCH` acceptent `visibleInAllCampaigns?` et `visibleInPlayerSpace?` (booléens) ; `visibleInPlayerSpace` est forcé à `false` quand `campaignId === null`.
+- **Données existantes** : les liens sans ces champs sont lus comme `false` (aucun changement de comportement).
+- **Accessibilité** : chaque option a un label associé et est activable au clavier ; les deux groupes sont des listes distinctes avec un `aria-label` explicite ("Liens de cette campagne" / "Liens de l'espace joueur", "Liens communs") ; le séparateur est décoratif (`aria-hidden` ou `role="separator"`).
+
 ### Accessibilité
 
 - Chaque lien externe possède un `aria-label` mentionnant qu'il s'ouvre dans un nouvel onglet
@@ -3495,6 +3515,15 @@ Each initiative tracker row carries:
 - **Edge** : label vide → bouton Créer désactivé côté frontend, rejeté côté backend (400)
 - **Edge** : tentative de suppression d'un lien appartenant à un autre utilisateur → 403
 - **Failure** : erreur réseau à la création → toast erreur, dialog reste ouvert
+- **Nominal** : lien créé dans la campagne A avec "toutes mes campagnes" → visible sous A et B, dans le groupe "communs"
+- **Nominal** : lien créé dans la campagne A avec "espace joueur" → visible sous A et dans l'espace joueur, groupe "communs" ; non visible sous B
+- **Nominal** : liens propres et communs présents → propres en haut, séparateur, communs en bas
+- **Edge** : un seul groupe non vide → pas de séparateur
+- **Edge** : survol d'une case à cocher du dialog → curseur pointer (le label aussi)
+- **Edge** : lien de l'espace joueur → l'option "espace joueur" n'est pas proposée ; `visibleInPlayerSpace: true` envoyé avec `campaignId` nul est ignoré (stocké `false`)
+- **Edge** : décocher "toutes mes campagnes" sur un lien commun → il ne reste visible que dans son espace d'origine
+- **Edge** : lien existant sans les nouveaux champs → traité comme propre à son espace
+- **Failure** : `visibleInAllCampaigns` non booléen → 400
 
 **Références** :
 - `services/adventure/api/src/resources/quick-link/`
@@ -3502,6 +3531,7 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useQuickLinks.ts`
 - `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx`
 - `services/web/client/src/components/dialogs/AddQuickLinkDialog.tsx`
+- `services/web/client/src/lib/quickLinkVisibility.ts`
 
 ---
 

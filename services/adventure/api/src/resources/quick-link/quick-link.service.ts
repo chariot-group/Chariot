@@ -30,11 +30,18 @@ export class QuickLinkService {
     userId: string,
   ): Promise<IResponse<QuickLink>> {
     try {
+      const campaignId = dto.campaignId
+        ? new Types.ObjectId(dto.campaignId)
+        : null;
       const link = await this.quickLinkModel.create({
         icon: dto.icon,
         url: dto.url,
         label: dto.label,
-        campaignId: dto.campaignId ? new Types.ObjectId(dto.campaignId) : null,
+        campaignId,
+        visibleInAllCampaigns: dto.visibleInAllCampaigns ?? false,
+        // Player-space links are already visible in the player space.
+        visibleInPlayerSpace:
+          campaignId !== null && (dto.visibleInPlayerSpace ?? false),
         createdBy: userId,
       });
 
@@ -58,11 +65,17 @@ export class QuickLinkService {
         deletedAt: null,
       };
 
-      if (campaignId !== undefined) {
-        filter.campaignId =
-          campaignId === 'null' || campaignId === ''
-            ? null
-            : new Types.ObjectId(campaignId);
+      // A space lists its own links plus the links shared with it.
+      if (campaignId === 'null' || campaignId === '') {
+        filter.$or = [
+          { campaignId: null },
+          { campaignId: { $ne: null }, visibleInPlayerSpace: true },
+        ];
+      } else if (campaignId !== undefined) {
+        filter.$or = [
+          { campaignId: new Types.ObjectId(campaignId) },
+          { visibleInAllCampaigns: true },
+        ];
       }
 
       const links = await this.quickLinkModel.find(filter).exec();
@@ -96,6 +109,13 @@ export class QuickLinkService {
       if (dto.icon !== undefined) link.icon = dto.icon;
       if (dto.url !== undefined) link.url = dto.url;
       if (dto.label !== undefined) link.label = dto.label;
+      if (dto.visibleInAllCampaigns !== undefined) {
+        link.visibleInAllCampaigns = dto.visibleInAllCampaigns;
+      }
+      if (dto.visibleInPlayerSpace !== undefined) {
+        link.visibleInPlayerSpace =
+          link.campaignId != null && dto.visibleInPlayerSpace;
+      }
 
       await link.save();
 
