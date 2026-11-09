@@ -17,6 +17,9 @@ interface DiceInputProps {
   className?: string;
   /** Accessible name of the suggestions list. */
   suggestionsLabel: string;
+  onBlur?: () => void;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
 }
 
 /**
@@ -24,7 +27,17 @@ interface DiceInputProps {
  * fills the field and keeps the focus so a bonus can follow; any other text stays accepted as typed.
  * @see FR-character-list-card
  */
-export function DiceInput({ id, value, onChange, placeholder, className, suggestionsLabel }: DiceInputProps) {
+export function DiceInput({
+  id,
+  value,
+  onChange,
+  placeholder,
+  className,
+  suggestionsLabel,
+  onBlur,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
+}: DiceInputProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [dropdownStyle, setDropdownStyle] = useState<CSSProperties>({});
@@ -94,12 +107,17 @@ export function DiceInput({ id, value, onChange, placeholder, className, suggest
           setHighlightedIndex(-1);
         }}
         onKeyDown={handleKeyDown}
-        onBlur={close}
+        onBlur={() => {
+          close();
+          onBlur?.();
+        }}
         placeholder={placeholder}
         className={className}
         autoComplete="off"
         role="combobox"
         aria-autocomplete="list"
+        aria-invalid={ariaInvalid}
+        aria-describedby={ariaDescribedBy}
         aria-expanded={isExpanded}
         aria-controls={isExpanded ? listId : undefined}
         aria-activedescendant={isExpanded && highlightedIndex >= 0 ? `${listId}-${highlightedIndex}` : undefined}
