@@ -1113,6 +1113,14 @@ When adding a rule:
 - After the parrain uses their discount at checkout, their tier **resets to 0** (pending count reset to 0)
 - Pending filleuls who have not yet made a purchase do not contribute to the discount tier
 
+#### Profile Tiers Display
+
+- The profile referral card shows the parrain's progress over all tiers, with reached (primary), pending-reachable (yellow, not guaranteed) and upcoming states
+- Both views start at 0 %: the parrain with no validated filleul already sits on the bar (no separate "max" label; the last tier shows the cap)
+- From `lg` (≥1024px): one segmented bar with a leading 0 % segment then one segment per tier, each labelled with its discount (`text-xs` minimum)
+- Below `lg` (mobile and tablet): a compact view replaces the segmented bar — current discount in large type, one continuous progress bar whose current fill always shows a visible start knob at 0 % from 0 to the max (primary for the current discount, yellow up to the pending-reachable discount), and a text line stating the pending potential when it exceeds the current discount (colour is never the only cue)
+- Both views expose the same `progressbar` (`aria-valuemin=0`, `aria-valuemax` = max discount, `aria-valuenow` = current discount); only one is rendered visible at a time
+
 #### Discount Application Rules
 
 - Referral discounts are applied **automatically** — no code entry required by the user
@@ -1147,6 +1155,7 @@ When adding a rule:
 - User cannot register with their own referral code
 - `checkUserReferralDiscount` returns null when no discount is available
 - `checkUserReferralDiscount` fails gracefully (returns null) without blocking checkout
+- Profile tiers compact view: shows the current discount and next tier goal; with pending filleuls, the yellow fill reaches the pending discount and the potential is stated in text; with 0 filleuls, 0 %, the 0 % segment marked current and the start knob visible
 
 **References**:
 

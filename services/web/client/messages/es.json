@@ -722,8 +722,6 @@
     "referral": {
       "yourCode": "Enlace de referido",
       "tiersProgressAriaLabel": "Progreso de niveles de referidos",
-      "maxDiscountLabel": "Máx.",
-      "maxDiscountAriaLabel": "Descuento máximo posible: {discount} %",
       "noApplicableDiscount": "0 %",
       "tierSegmentAriaLabel": "{count, plural, one {# referido} other {# referidos}}: {discount} % de descuento",
       "copyCode": "Copiar código",
@@ -739,6 +737,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 referido esperando 1ª compra} one {# referido esperando 1ª compra} other {# referidos esperando 1ª compra}}",
       "tiersTitle": "Niveles de referidos",
       "tiersSubtitle": "Cuanto más refieras, más ahorras",
+      "compactCurrentLabel": "Descuento disponible",
+      "compactPendingPotential": "Hasta un {discount} % cuando tus ahijados pendientes hagan su primera compra",
       "tierReferral": "referido",
       "tierReferrals": "referidos",
       "currentDiscount": "Descuento disponible: {discount} %",

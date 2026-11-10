@@ -722,8 +722,6 @@
     "referral": {
       "yourCode": "Referral link",
       "tiersProgressAriaLabel": "Referral tier progress",
-      "maxDiscountLabel": "Max",
-      "maxDiscountAriaLabel": "Maximum possible discount: {discount}%",
       "noApplicableDiscount": "0%",
       "tierSegmentAriaLabel": "{count, plural, one {# referral} other {# referrals}}: {discount}% discount",
       "copyCode": "Copy code",
@@ -739,6 +737,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 referral awaiting 1st purchase} one {# referral awaiting 1st purchase} other {# referrals awaiting 1st purchase}}",
       "tiersTitle": "Referral tiers",
       "tiersSubtitle": "The more you refer, the more you save",
+      "compactCurrentLabel": "Available discount",
+      "compactPendingPotential": "Up to {discount}% once your pending referrals make their first purchase",
       "tierReferral": "referral",
       "tierReferrals": "referrals",
       "currentDiscount": "Available discount: {discount}%",

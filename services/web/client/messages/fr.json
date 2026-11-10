@@ -723,8 +723,6 @@
     "referral": {
       "yourCode": "Lien de parrainage",
       "tiersProgressAriaLabel": "Progression des paliers de parrainage",
-      "maxDiscountLabel": "Max",
-      "maxDiscountAriaLabel": "Réduction maximale possible : {discount} %",
       "noApplicableDiscount": "0 %",
       "tierSegmentAriaLabel": "{count, plural, one {# filleul} other {# filleuls}} : {discount} % de réduction",
       "copyCode": "Copier le code",
@@ -740,6 +738,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 filleul en attente du 1er achat} one {# filleul en attente du 1er achat} other {# filleuls en attente du 1er achat}}",
       "tiersTitle": "Paliers de parrainage",
       "tiersSubtitle": "Plus vous parrainez, plus vous économisez",
+      "compactCurrentLabel": "Réduction disponible",
+      "compactPendingPotential": "Jusqu'à {discount} % quand vos filleuls en attente auront acheté",
       "tierReferral": "filleul",
       "tierReferrals": "filleuls",
       "currentDiscount": "Réduction disponible : {discount} %",
