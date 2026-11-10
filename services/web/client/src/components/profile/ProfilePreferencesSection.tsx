@@ -34,7 +34,7 @@ export default function ProfilePreferencesSection({ onViewReleaseNotes }: Profil
       id="profile-section-preferences"
       title={t("sections.preferences")}>
       <Card
-        className="flex flex-col gap-0 p-4 sm:p-5"
+        className="flex flex-col gap-0"
         role="region"
         aria-labelledby="profile-preferences-heading">
         <h3

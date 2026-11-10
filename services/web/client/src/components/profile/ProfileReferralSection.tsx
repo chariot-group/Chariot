@@ -41,7 +41,7 @@ export default function ProfileReferralSection({
 
   return (
     <Card
-      className="flex flex-col gap-3 p-4 sm:p-5"
+      className="flex flex-col gap-3"
       role="region"
       aria-labelledby="referral-tiers-heading">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">

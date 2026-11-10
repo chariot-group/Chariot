@@ -3822,13 +3822,14 @@ Each initiative tracker row carries:
 - Formats d'upload acceptés : JPEG (`.jpg`, `.jpeg`), PNG (`.png`), WebP (`.webp`), HEIC/HEIF (convertis côté serveur)
 - Taille maximale d'upload : 5 Mo
 - Affichage `main` : tous les conteneurs DOIVENT respecter le ratio 4:5 (`aspect-[4/5]`) ; les vignettes circulaires (`thumb`, `xs`) restent carrées
+- Exception photo de profil (page profil, taille `profile`, lecture et édition) : la variante `main` est affichée dans un cercle (`aspect-square rounded-full`, `object-cover object-center`), placé en haut à gauche de la carte identité. Le traitement serveur (4:5) est inchangé ; seul l'affichage recadre. L'aide d'upload de cette taille recommande 400×400 px (image recadrée en cercle) au lieu de 400×500 px (4:5)
 - Recadrage CSS uniforme : `object-cover object-center` sur toutes les instances `MediaAvatar`
 - L'UI d'upload DOIT exposer une aide lisible (ou `aria-describedby` équivalent) listant extensions, taille max et dimensions recommandées (400×500 px, ratio 4:5)
 
 **Prohibitions** :
 
 - Ne pas stocker la variante `main` en carré 1:1
-- Ne pas utiliser des ratios d'affichage divergents pour le même avatar (ex. `aspect-video` sur le profil utilisateur)
+- Ne pas utiliser des ratios d'affichage divergents pour le même avatar (ex. `aspect-video` sur le profil utilisateur), hormis l'exception cercle de la photo de profil ci-dessus
 - Ne pas combiner largeur et hauteur fixes Tailwind qui modifient le ratio selon le breakpoint
 
 **Tests** :
@@ -3836,6 +3837,7 @@ Each initiative tracker row carries:
 - Nominal : upload PNG portrait → `main` 4:5 WebP, `thumb` carré WebP
 - Edge : image paysage large → recadrage centré sans déformation
 - Failure : format non supporté → message d'erreur mentionnant les extensions acceptées
+- Profil : le conteneur `profile` est carré et rond, son aide d'upload mentionne 400×400 px ; la taille `sheet` garde 4:5 et 400×500 px
 
 **References** :
 
