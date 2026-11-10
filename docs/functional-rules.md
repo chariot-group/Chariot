@@ -3038,6 +3038,8 @@ Each initiative tracker row carries:
 - On close (button or Escape), `markVersionSeen(CURRENT_APP_VERSION)` is dispatched; the modal does not reappear for that version.
 - The modal displays the current version's notes by default.
 - A `Select` allows navigating to previous versions without closing the modal.
+- Version navigation is responsive: below `sm` (<640px) the `Select` sits above the notes and the notes take the full modal width; from `sm` the versions are listed in a side navigation (`nav`) whose active entry carries `aria-current="true"`. Both expose every version of `ALL_RELEASE_NOTES` and behave identically (no close, no `markVersionSeen`).
+- On mobile the whole modal body scrolls (no nested scroll area capped below the viewport) and no text or control escapes the modal (`docs/design.md` §6.4).
 - The locale is derived from the URL pathname prefix.
 
 **Profile Page Entry Point**:
@@ -3071,6 +3073,7 @@ Each initiative tracker row carries:
 - `ReleaseNotesModal`: does NOT dispatch `markVersionSeen` on close when `readOnly={true}`.
 - `ReleaseNotesModal`: Select renders all versions from `ALL_RELEASE_NOTES`.
 - `ReleaseNotesModal`: switching Select updates displayed content without closing.
+- `ReleaseNotesModal`: mobile `Select` defaults to `CURRENT_APP_VERSION`; side navigation marks only the selected version with `aria-current`; an unknown selected version falls back to the latest note.
 - `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
 
 **References**:
