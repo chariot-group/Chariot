@@ -3039,7 +3039,8 @@ Each initiative tracker row carries:
 - The modal displays the current version's notes by default.
 - A `Select` allows navigating to previous versions without closing the modal.
 - Version navigation is responsive: below `sm` (<640px) the `Select` sits above the notes and the notes take the full modal width; from `sm` the versions are listed in a side navigation (`nav`) whose active entry carries `aria-current="true"`. Both expose every version of `ALL_RELEASE_NOTES` and behave identically (no close, no `markVersionSeen`).
-- On mobile the whole modal body scrolls (no nested scroll area capped below the viewport) and no text or control escapes the modal (`docs/design.md` §6.4).
+- The "current" badge marks `CURRENT_APP_VERSION` inside the version navigation itself (side navigation entry from `sm`, `Select` option and its trigger value below `sm`), not in the note header.
+- The note header (title, date or version picker) stays pinned and only the highlights scroll (no nested scroll area capped below the viewport) and no text or control escapes the modal (`docs/design.md` §6.4).
 - The locale is derived from the URL pathname prefix.
 
 **Profile Page Entry Point**:

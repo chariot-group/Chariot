@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import {
+  CurrentVersionBadge,
   resolveSelectedNote,
   VersionSelect,
   VersionSidebar,
@@ -14,20 +15,23 @@ const noop = () => {};
 
 /** @see FR-release-notes (responsive version navigation) */
 describe("ReleaseNotesModal version navigation", () => {
-  it("nominal: mobile select is labelled and defaults to the current version", () => {
+  it("nominal: mobile select is labelled and its closed value spaces the current dot", () => {
     const html = renderToStaticMarkup(
       <VersionSelect
         notes={ALL_RELEASE_NOTES}
-        selectedVersion={CURRENT_APP_VERSION}
+        selectedVersion={ALL_RELEASE_NOTES[0].version}
         locale="en"
         onSelect={noop}
         label="Navigate to a previous version"
+        currentVersion={ALL_RELEASE_NOTES[0].version}
+        currentLabel="Current"
       />,
     );
 
     expect(html).toContain('aria-label="Navigate to a previous version"');
     expect(html).toContain('role="combobox"');
     expect(html).toContain("rounded-full");
+    expect(html).toMatch(/class="flex items-center gap-1\.5">[^<]*<span[^>]*bg-accent/);
   });
 
   it("nominal: side navigation lists every version and only marks the selected one", () => {
@@ -39,6 +43,8 @@ describe("ReleaseNotesModal version navigation", () => {
         locale="en"
         onSelect={noop}
         label="Versions"
+        currentVersion={ALL_RELEASE_NOTES[0].version}
+        currentLabel="Current"
       />,
     );
 
@@ -47,6 +53,21 @@ describe("ReleaseNotesModal version navigation", () => {
     expect(html.match(/<button/g)).toHaveLength(ALL_RELEASE_NOTES.length);
     expect(html.match(/aria-current="true"/g)).toHaveLength(1);
     expect(html).toMatch(new RegExp(`aria-current="true"[^>]*>.*?${selected.replace(/\./g, "\\.")}`));
+    expect(html.match(/>Current</g)).toHaveLength(1);
+    expect(html).toMatch(new RegExp(`${ALL_RELEASE_NOTES[0].version.replace(/\./g, "\\.")}<span[^>]*>.*?Current`));
+  });
+
+  it("edge: mobile current marker is a dot with a screen-reader label only", () => {
+    const html = renderToStaticMarkup(
+      <CurrentVersionBadge
+        label="Current"
+        compact
+      />,
+    );
+
+    expect(html).toContain("rounded-full bg-accent");
+    expect(html).toContain('<span class="sr-only">Current</span>');
+    expect(html).not.toContain("border-accent");
   });
 
   it("edge: an unknown version falls back to the latest note", () => {

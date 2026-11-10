@@ -32,13 +32,44 @@ interface VersionNavProps {
   locale: SupportedLocale;
   onSelect: (v: string) => void;
   label: string;
+  currentVersion: string;
+  currentLabel: string;
+}
+
+export function CurrentVersionBadge({ label, compact = false }: { label: string; compact?: boolean }) {
+  if (compact) {
+    return (
+      <span
+        className="inline-block w-1.5 h-1.5 shrink-0 rounded-full bg-accent"
+        title={label}>
+        <span className="sr-only">{label}</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1 text-[10px] lg:text-[11px] font-normal text-primary-light bg-accent/10 border border-accent/25 rounded-full px-1.5 py-0.5 leading-none">
+      <span className="w-1 h-1 rounded-full bg-accent" aria-hidden="true" />
+      {label}
+    </span>
+  );
 }
 
 export function resolveSelectedNote(notes: ReleaseNote[], version: string): ReleaseNote | undefined {
   return notes.find((n) => n.version === version) ?? notes[0];
 }
 
-export function VersionSelect({ notes, selectedVersion, locale, onSelect, label }: VersionNavProps) {
+export function VersionSelect({
+  notes,
+  selectedVersion,
+  locale,
+  onSelect,
+  label,
+  currentVersion,
+  currentLabel,
+}: VersionNavProps) {
+  const selectedNote = resolveSelectedNote(notes, selectedVersion);
+
   return (
     <Select
       value={selectedVersion}
@@ -47,17 +78,36 @@ export function VersionSelect({ notes, selectedVersion, locale, onSelect, label 
         size="sm"
         aria-label={label}
         className="data-[size=sm]:h-7 max-w-full gap-1 rounded-full bg-white/[0.05] px-2.5 py-0 text-[11px] text-white/60 shadow-none">
-        <SelectValue />
+        <SelectValue>
+          {selectedNote && (
+            <span className="flex items-center gap-1.5">
+              {selectedNote.version} · {formatDate(selectedNote.date, locale)}
+              {selectedNote.version === currentVersion && (
+                <CurrentVersionBadge
+                  label={currentLabel}
+                  compact
+                />
+              )}
+            </span>
+          )}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent
         position="popper"
         align="start"
-        className="max-h-[min(50dvh,var(--radix-select-content-available-height))]">
+        scrollButtons="overlay"
+        className="max-h-[min(15rem,var(--radix-select-content-available-height))]">
         {notes.map((note) => (
           <SelectItem
             key={note.version}
             value={note.version}>
             {note.version} · {formatDate(note.date, locale)}
+            {note.version === currentVersion && (
+              <CurrentVersionBadge
+                label={currentLabel}
+                compact
+              />
+            )}
           </SelectItem>
         ))}
       </SelectContent>
@@ -65,7 +115,15 @@ export function VersionSelect({ notes, selectedVersion, locale, onSelect, label 
   );
 }
 
-export function VersionSidebar({ notes, selectedVersion, locale, onSelect, label }: VersionNavProps) {
+export function VersionSidebar({
+  notes,
+  selectedVersion,
+  locale,
+  onSelect,
+  label,
+  currentVersion,
+  currentLabel,
+}: VersionNavProps) {
   return (
     <nav
       className="hidden sm:block w-[148px] lg:w-[180px] shrink-0 border-r border-frame overflow-y-auto cursor-default
@@ -90,8 +148,9 @@ export function VersionSidebar({ notes, selectedVersion, locale, onSelect, label
                 : "border-l-transparent text-white/35 hover:text-white/65 hover:bg-white/[0.03]"
             }`}
           >
-            <span className="block text-xs lg:text-sm font-medium leading-none mb-1 lg:mb-1.5">
+            <span className="flex flex-wrap items-center gap-1.5 text-xs lg:text-sm font-medium leading-none mb-1 lg:mb-1.5">
               {note.version}
+              {note.version === currentVersion && <CurrentVersionBadge label={currentLabel} />}
             </span>
             <span className="block text-[11px] lg:text-xs leading-none text-white/30">
               {formatDate(note.date, locale)}
@@ -106,15 +165,11 @@ export function VersionSidebar({ notes, selectedVersion, locale, onSelect, label
 function ReleaseNoteContent({
   note,
   locale,
-  isLatest,
   versionPicker,
-  t,
 }: {
   note: ReleaseNote;
   locale: SupportedLocale;
-  isLatest: boolean;
   versionPicker: React.ReactNode;
-  t: ReturnType<typeof useTranslations<"releaseNotes">>;
 }) {
   const translation = note.translations[locale];
   return (
@@ -128,12 +183,6 @@ function ReleaseNoteContent({
           <p className="hidden sm:block text-[11px] lg:text-sm text-white/30">
             {formatDate(note.date, locale)}
           </p>
-          {isLatest && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] lg:text-xs text-primary-light bg-accent/10 border border-accent/25 rounded-full px-2 py-0.5 lg:px-2.5 lg:py-1 leading-none">
-              <span className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-accent" aria-hidden="true" />
-              {t("latest")}
-            </span>
-          )}
         </div>
       </div>
 
@@ -181,7 +230,6 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
 
   const currentNote = resolveSelectedNote(ALL_RELEASE_NOTES, selectedVersion);
   const activeVersion = currentNote?.version ?? CURRENT_APP_VERSION;
-  const isLatest = currentNote?.version === CURRENT_APP_VERSION;
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
@@ -199,6 +247,8 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
             locale={locale}
             onSelect={setSelectedVersion}
             label={t("versionsNavLabel")}
+            currentVersion={CURRENT_APP_VERSION}
+            currentLabel={t("latest")}
           />
 
           <div
@@ -209,7 +259,6 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
               <ReleaseNoteContent
                 note={currentNote}
                 locale={locale}
-                isLatest={isLatest}
                 versionPicker={
                   <VersionSelect
                     notes={ALL_RELEASE_NOTES}
@@ -217,9 +266,10 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
                     locale={locale}
                     onSelect={setSelectedVersion}
                     label={t("versionSelectAriaLabel")}
+                    currentVersion={CURRENT_APP_VERSION}
+                    currentLabel={t("latest")}
                   />
                 }
-                t={t}
               />
             )}
           </div>
