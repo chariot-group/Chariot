@@ -559,6 +559,7 @@
     "invalidType": "Format non pris en charge. Utilisez JPEG (.jpg), PNG (.png), WebP (.webp) ou HEIC (.heic).",
     "tooLarge": "L'image dépasse la taille maximale de {maxMb} Mo.",
     "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} Mo max\n{width}×{height} px (4:5) conseillé",
+    "requirementsHintRound": "JPEG · PNG · WebP · HEIC — {maxMb} Mo max\n{width}×{height} px conseillé (recadrée en cercle)",
     "uploadSuccess": "Image mise à jour.",
     "uploadError": "Impossible de mettre à jour l'image.",
     "removeSuccess": "Image supprimée.",
@@ -722,8 +723,6 @@
     "referral": {
       "yourCode": "Lien de parrainage",
       "tiersProgressAriaLabel": "Progression des paliers de parrainage",
-      "maxDiscountLabel": "Max",
-      "maxDiscountAriaLabel": "Réduction maximale possible : {discount} %",
       "noApplicableDiscount": "0 %",
       "tierSegmentAriaLabel": "{count, plural, one {# filleul} other {# filleuls}} : {discount} % de réduction",
       "copyCode": "Copier le code",
@@ -739,6 +738,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 filleul en attente du 1er achat} one {# filleul en attente du 1er achat} other {# filleuls en attente du 1er achat}}",
       "tiersTitle": "Paliers de parrainage",
       "tiersSubtitle": "Plus vous parrainez, plus vous économisez",
+      "compactCurrentLabel": "Réduction disponible",
+      "compactPendingPotential": "Jusqu'à {discount} % quand vos filleuls en attente auront acheté",
       "tierReferral": "filleul",
       "tierReferrals": "filleuls",
       "currentDiscount": "Réduction disponible : {discount} %",
@@ -1979,6 +1980,7 @@
     "close": "Fermer",
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Naviguer vers une version précédente",
+    "versionsNavLabel": "Versions",
     "latest": "Actuelle"
   },
   "playerSpaceFallback": {

@@ -1113,6 +1113,14 @@ When adding a rule:
 - After the parrain uses their discount at checkout, their tier **resets to 0** (pending count reset to 0)
 - Pending filleuls who have not yet made a purchase do not contribute to the discount tier
 
+#### Profile Tiers Display
+
+- The profile referral card shows the parrain's progress over all tiers, with reached (primary), pending-reachable (yellow, not guaranteed) and upcoming states
+- Both views start at 0 %: the parrain with no validated filleul already sits on the bar (no separate "max" label; the last tier shows the cap)
+- From `lg` (≥1024px): one segmented bar with a leading 0 % segment then one segment per tier, each labelled with its discount (`text-xs` minimum)
+- Below `lg` (mobile and tablet): a compact view replaces the segmented bar — current discount in large type, one continuous progress bar whose current fill always shows a visible start knob at 0 % from 0 to the max (primary for the current discount, yellow up to the pending-reachable discount), and a text line stating the pending potential when it exceeds the current discount (colour is never the only cue)
+- Both views expose the same `progressbar` (`aria-valuemin=0`, `aria-valuemax` = max discount, `aria-valuenow` = current discount); only one is rendered visible at a time
+
 #### Discount Application Rules
 
 - Referral discounts are applied **automatically** — no code entry required by the user
@@ -1147,6 +1155,7 @@ When adding a rule:
 - User cannot register with their own referral code
 - `checkUserReferralDiscount` returns null when no discount is available
 - `checkUserReferralDiscount` fails gracefully (returns null) without blocking checkout
+- Profile tiers compact view: shows the current discount and next tier goal; with pending filleuls, the yellow fill reaches the pending discount and the potential is stated in text; with 0 filleuls, 0 %, the 0 % segment marked current and the start knob visible
 
 **References**:
 
@@ -3038,6 +3047,9 @@ Each initiative tracker row carries:
 - On close (button or Escape), `markVersionSeen(CURRENT_APP_VERSION)` is dispatched; the modal does not reappear for that version.
 - The modal displays the current version's notes by default.
 - A `Select` allows navigating to previous versions without closing the modal.
+- Version navigation is responsive: below `sm` (<640px) the `Select` sits above the notes and the notes take the full modal width; from `sm` the versions are listed in a side navigation (`nav`) whose active entry carries `aria-current="true"`. Both expose every version of `ALL_RELEASE_NOTES` and behave identically (no close, no `markVersionSeen`).
+- The "current" badge marks `CURRENT_APP_VERSION` inside the version navigation itself (side navigation entry from `sm`, `Select` option and its trigger value below `sm`), not in the note header.
+- The note header (title, date or version picker) stays pinned and only the highlights scroll (no nested scroll area capped below the viewport) and no text or control escapes the modal (`docs/design.md` §6.4).
 - The locale is derived from the URL pathname prefix.
 
 **Profile Page Entry Point**:
@@ -3071,6 +3083,7 @@ Each initiative tracker row carries:
 - `ReleaseNotesModal`: does NOT dispatch `markVersionSeen` on close when `readOnly={true}`.
 - `ReleaseNotesModal`: Select renders all versions from `ALL_RELEASE_NOTES`.
 - `ReleaseNotesModal`: switching Select updates displayed content without closing.
+- `ReleaseNotesModal`: mobile `Select` defaults to `CURRENT_APP_VERSION`; side navigation marks only the selected version with `aria-current`; an unknown selected version falls back to the latest note.
 - `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
 
 **References**:
@@ -3818,13 +3831,14 @@ Each initiative tracker row carries:
 - Formats d'upload acceptés : JPEG (`.jpg`, `.jpeg`), PNG (`.png`), WebP (`.webp`), HEIC/HEIF (convertis côté serveur)
 - Taille maximale d'upload : 5 Mo
 - Affichage `main` : tous les conteneurs DOIVENT respecter le ratio 4:5 (`aspect-[4/5]`) ; les vignettes circulaires (`thumb`, `xs`) restent carrées
+- Exception photo de profil (page profil, taille `profile`, lecture et édition) : la variante `main` est affichée dans un cercle (`aspect-square rounded-full`, `object-cover object-center`), placé en haut à gauche de la carte identité. Le traitement serveur (4:5) est inchangé ; seul l'affichage recadre. L'aide d'upload de cette taille recommande 400×400 px (image recadrée en cercle) au lieu de 400×500 px (4:5)
 - Recadrage CSS uniforme : `object-cover object-center` sur toutes les instances `MediaAvatar`
 - L'UI d'upload DOIT exposer une aide lisible (ou `aria-describedby` équivalent) listant extensions, taille max et dimensions recommandées (400×500 px, ratio 4:5)
 
 **Prohibitions** :
 
 - Ne pas stocker la variante `main` en carré 1:1
-- Ne pas utiliser des ratios d'affichage divergents pour le même avatar (ex. `aspect-video` sur le profil utilisateur)
+- Ne pas utiliser des ratios d'affichage divergents pour le même avatar (ex. `aspect-video` sur le profil utilisateur), hormis l'exception cercle de la photo de profil ci-dessus
 - Ne pas combiner largeur et hauteur fixes Tailwind qui modifient le ratio selon le breakpoint
 
 **Tests** :
@@ -3832,6 +3846,7 @@ Each initiative tracker row carries:
 - Nominal : upload PNG portrait → `main` 4:5 WebP, `thumb` carré WebP
 - Edge : image paysage large → recadrage centré sans déformation
 - Failure : format non supporté → message d'erreur mentionnant les extensions acceptées
+- Profil : le conteneur `profile` est carré et rond, son aide d'upload mentionne 400×400 px ; la taille `sheet` garde 4:5 et 400×500 px
 
 **References** :
 

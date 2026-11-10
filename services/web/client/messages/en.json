@@ -558,6 +558,7 @@
     "invalidType": "Unsupported format. Use JPEG (.jpg), PNG (.png), WebP (.webp), or HEIC (.heic).",
     "tooLarge": "Image exceeds the {maxMb} MB size limit.",
     "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} MB max\n{width}×{height} px (4:5) recommended",
+    "requirementsHintRound": "JPEG · PNG · WebP · HEIC — {maxMb} MB max\n{width}×{height} px recommended (cropped to a circle)",
     "uploadSuccess": "Image updated.",
     "uploadError": "Could not update the image.",
     "removeSuccess": "Image removed.",
@@ -721,8 +722,6 @@
     "referral": {
       "yourCode": "Referral link",
       "tiersProgressAriaLabel": "Referral tier progress",
-      "maxDiscountLabel": "Max",
-      "maxDiscountAriaLabel": "Maximum possible discount: {discount}%",
       "noApplicableDiscount": "0%",
       "tierSegmentAriaLabel": "{count, plural, one {# referral} other {# referrals}}: {discount}% discount",
       "copyCode": "Copy code",
@@ -738,6 +737,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 referral awaiting 1st purchase} one {# referral awaiting 1st purchase} other {# referrals awaiting 1st purchase}}",
       "tiersTitle": "Referral tiers",
       "tiersSubtitle": "The more you refer, the more you save",
+      "compactCurrentLabel": "Available discount",
+      "compactPendingPotential": "Up to {discount}% once your pending referrals make their first purchase",
       "tierReferral": "referral",
       "tierReferrals": "referrals",
       "currentDiscount": "Available discount: {discount}%",
@@ -1975,6 +1976,7 @@
     "close": "Close",
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navigate to a previous version",
+    "versionsNavLabel": "Versions",
     "latest": "Current"
   },
   "playerSpaceFallback": {
