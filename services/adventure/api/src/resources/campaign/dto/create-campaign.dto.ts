@@ -1,6 +1,7 @@
 import {
   IsString,
   MaxLength,
+  MinLength,
   ValidateNested,
   IsEnum,
   IsOptional,
@@ -13,11 +14,13 @@ import {
   GAME_SYSTEMS,
   GameSystem,
 } from '@/common/constants/game-system.constant';
+import { NAME_LABEL_MAX_LENGTH } from '@/common/constants/label.constant';
 
 export class CreateCampaignDto {
   @ApiProperty({ example: 'Epic Adventure' })
   @IsString()
-  @MaxLength(50)
+  @MinLength(1)
+  @MaxLength(NAME_LABEL_MAX_LENGTH)
   readonly label: string;
 
   @ApiProperty({

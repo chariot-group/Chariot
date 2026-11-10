@@ -22,6 +22,7 @@ import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog"
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { cn } from "@/lib/utils";
+import { TruncatedText } from "@/components/ui/truncated-text";
 
 export default function SidebarContext() {
   const t = useTranslations("sidebar");
@@ -100,7 +101,14 @@ export default function SidebarContext() {
     <nav
       className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-4 pr-2 scroll-smooth scrollbar-none"
       aria-label={t("gmNavigation")}>
-      {selectedCampaign && <h2 className="shrink-0 text-lg text-white">{selectedCampaign.label}</h2>}
+      {selectedCampaign && (
+        <TruncatedText
+          as="h2"
+          lines={2}
+          text={selectedCampaign.label}
+          className="shrink-0 text-lg text-white"
+        />
+      )}
 
       {/* ── Active groups — shown directly, no collapsible wrapper ── */}
       <CreateGroupDialog

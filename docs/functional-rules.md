@@ -2763,6 +2763,13 @@ Each initiative tracker row carries:
 - Error indicators must remain compatible with keyboard navigation and screen readers.
 - Validation behavior and messages must be internationalized for supported locales.
 
+### Group and campaign names
+
+- A group name and a campaign name MUST be 1 to 50 characters long after trimming, on creation and on rename. The API (adventure) MUST enforce the same limit on create and update endpoints; the web client MUST use one shared constant for it.
+- The create and rename dialogs MUST show a character counter (`n/50`) under the name field, linked to the input with `aria-describedby`.
+- Above 50 characters the field MUST show a translated message stating the limit (e.g. "Le nom ne doit pas dépasser 50 caractères"), expose `aria-invalid="true"`, and the save action MUST stay disabled. A pasted name MUST NOT be truncated silently.
+- An API validation error on `label` (HTTP 400) MUST be shown on the name field with the same message, not as a generic creation/update failure toast. The generic toast is reserved for non-validation failures (network, 5xx).
+
 **Prohibitions**:
 
 - Showing only a generic toast such as "form cannot be submitted" when field-level errors exist.
@@ -2778,11 +2785,16 @@ Each initiative tracker row carries:
 - API validation errors with field paths are displayed on the corresponding fields.
 - Global errors are shown only for non-field-specific failures.
 - Keyboard and screen-reader accessibility expose invalid field and tab error states.
+- Group/campaign names — nominal: a 50-character name is accepted (client and API), counter shows `50/50`.
+- Group/campaign names — edge: a 51-character pasted name is kept as typed, shows the field error, marks the input invalid and disables save; a name padded with spaces is measured after trimming.
+- Group/campaign names — failure: an API 400 on `label` shows the field-level message; a network/5xx error keeps the generic toast. `UpdateCampaignDto` / `UpdateGroupDto` reject a 51-character `label`.
 
 **References**:
 
 - `services/web/client/src/`
 - `services/web/client/src/components/character/`
+- `services/web/client/src/components/dialogs/` (`CreateGroupDialog`, `EditGroupDialog`, `CreateCampaignDialog`, `EditCampaignDialog`)
+- `services/adventure/api/src/resources/group/dto/`, `services/adventure/api/src/resources/campaign/dto/`
 
 ---
 

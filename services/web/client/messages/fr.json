@@ -522,7 +522,11 @@
     },
     "lazyLoading": "Chargement…",
     "lazyLoadError": "Impossible de charger cette partie de l'application. Vérifiez votre connexion et réessayez.",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "nameLabel": {
+      "tooLong": "Le nom ne doit pas dépasser {max} caractères",
+      "counterUnit": "caractères"
+    }
   },
   "error": {
     "title": "Oups ! Une erreur s'est produite",

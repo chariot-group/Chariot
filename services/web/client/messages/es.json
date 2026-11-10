@@ -521,7 +521,11 @@
     },
     "lazyLoading": "Cargando…",
     "lazyLoadError": "No se pudo cargar esta parte de la aplicación. Comprueba tu conexión e inténtalo de nuevo.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "nameLabel": {
+      "tooLong": "El nombre no debe superar los {max} caracteres",
+      "counterUnit": "caracteres"
+    }
   },
   "error": {
     "title": "¡Ups! Algo salió mal",

@@ -34,6 +34,61 @@ import { Campaign } from "@/types/campaign";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { truncatedTextTooltipClassName, useIsTextTruncated } from "@/components/ui/truncated-text";
+
+interface CampaignMenuButtonProps {
+  label: string;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+/**
+ * Campaign row of the GM space menu: full name in a tooltip (hover and keyboard focus) only when truncated.
+ * Touch screens have no hover and a tap selects the campaign, so the name wraps on two lines there instead.
+ */
+function CampaignMenuButton({ label, isSelected, onSelect }: CampaignMenuButtonProps) {
+  const { ref, truncated } = useIsTextTruncated<HTMLSpanElement>(label);
+  const [tooltipOpen, setTooltipOpen] = React.useState(false);
+
+  return (
+    <Tooltip
+      open={truncated && tooltipOpen}
+      onOpenChange={setTooltipOpen}>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={onSelect}
+          className={cn(
+            menuItemClassName,
+            "focus-visible:ring-1 focus-visible:ring-white/50",
+            isSelected && "font-medium",
+          )}>
+          <BookOpen
+            className="h-4 w-4 shrink-0 text-white/60"
+            aria-hidden="true"
+          />
+          <span
+            ref={ref}
+            className="min-w-0 flex-1 truncate text-left pointer-coarse:line-clamp-2 pointer-coarse:whitespace-normal pointer-coarse:break-words">
+            {label}
+          </span>
+          {isSelected && (
+            <Check
+              className="h-4 w-4 shrink-0 text-white"
+              aria-hidden="true"
+            />
+          )}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="right"
+        className={truncatedTextTooltipClassName}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export default function SidebarEnvironment() {
   const t = useTranslations("sidebar");
@@ -44,15 +99,8 @@ export default function SidebarEnvironment() {
   const store = useStore<RootState>();
   const isGmMode = useAppSelector(selectIsGmMode);
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
-  const {
-    campaigns,
-    loading,
-    hasMore,
-    loadingMore,
-    loadMoreCampaigns,
-    deleteCampaign,
-    refreshCampaigns,
-  } = useCampaigns({ autoFetch: false, pageSize: 5 });
+  const { campaigns, loading, hasMore, loadingMore, loadMoreCampaigns, deleteCampaign, refreshCampaigns } =
+    useCampaigns({ autoFetch: false, pageSize: 5 });
 
   const [campaignToEdit, setCampaignToEdit] = React.useState<Campaign | null>(null);
   const [campaignPendingDelete, setCampaignPendingDelete] = React.useState<Campaign | null>(null);
@@ -191,7 +239,7 @@ export default function SidebarEnvironment() {
         <DropdownMenuContent
           align="start"
           sideOffset={8}
-          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto">
+          className="w-(--radix-dropdown-menu-trigger-width) min-w-56 max-h-[min(24rem,70vh)] overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-3">
               <Loader2
@@ -213,26 +261,11 @@ export default function SidebarEnvironment() {
                     actions={campaignActions}
                     contextMenuLabel={t("campaignActions")}
                     className="rounded-[10px]">
-                    <button
-                      type="button"
-                      onClick={() => void handleCampaignSelect(campaign._id)}
-                      className={cn(
-                        menuItemClassName,
-                        "focus-visible:ring-1 focus-visible:ring-white/50",
-                        isSelected && "font-medium",
-                      )}>
-                      <BookOpen
-                        className="h-4 w-4 shrink-0 text-white/60"
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0 flex-1 truncate text-left">{campaign.label}</span>
-                      {isSelected && (
-                        <Check
-                          className="h-4 w-4 shrink-0 text-white"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </button>
+                    <CampaignMenuButton
+                      label={campaign.label}
+                      isSelected={isSelected}
+                      onSelect={() => void handleCampaignSelect(campaign._id)}
+                    />
                   </SidebarItemWithActions>
                 );
               })}

@@ -10,12 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { NameLabelField } from "@/components/dialogs/NameLabelField";
+import { isNameLabelValid, isNameLabelValidationError } from "@/lib/nameLabel";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import GroupService from "@/services/GroupService";
 import { showToast } from "@/lib/toast";
+import { TOAST_EMBEDDED_NAME_MAX_LENGTH, truncateForSidebarMenuLabel } from "@/lib/truncateForSidebarMenuLabel";
 import { Group } from "@/types/campaign";
 
 interface EditGroupDialogProps {
@@ -30,32 +31,41 @@ export function EditGroupDialog({ group, open, onOpenChange, onUpdated }: EditGr
   const tCommon = useTranslations("common");
   const [label, setLabel] = React.useState("");
   const [isSaving, setIsSaving] = React.useState(false);
+  const [labelServerError, setLabelServerError] = React.useState(false);
 
   React.useEffect(() => {
     if (open && group) {
       setLabel(group.label);
+      setLabelServerError(false);
     }
   }, [group, open]);
 
   const handleSave = async () => {
-    if (!group || isSaving || !label.trim()) return;
+    if (!group || isSaving || !isNameLabelValid(label)) return;
 
     setIsSaving(true);
     try {
       await GroupService.updateGroup(group._id, { label: label.trim() });
       await onUpdated?.();
-      showToast(t("groupUpdatedSuccess", { name: label.trim() }), "success");
+      showToast(
+        t("groupUpdatedSuccess", { name: truncateForSidebarMenuLabel(label, TOAST_EMBEDDED_NAME_MAX_LENGTH) }),
+        "success",
+      );
       onOpenChange(false);
     } catch (error) {
       console.error("Error updating group:", error);
-      showToast(t("groupUpdateFailed"), "error");
+      if (isNameLabelValidationError(error)) {
+        setLabelServerError(true);
+      } else {
+        showToast(t("groupUpdateFailed"), "error");
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter" && !isSaving && label.trim()) {
+    if (event.key === "Enter" && !isSaving && isNameLabelValid(label)) {
       event.preventDefault();
       void handleSave();
     }
@@ -75,18 +85,19 @@ export function EditGroupDialog({ group, open, onOpenChange, onUpdated }: EditGr
           <DialogDescription>{t("editGroupDialogDescription")}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="edit-group-name">{t("groupName")}</Label>
-            <Input
-              id="edit-group-name"
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-              placeholder={t("groupNamePlaceholder")}
-              disabled={isSaving}
-              autoFocus
-              className="rounded-[15px]"
-            />
-          </div>
+          <NameLabelField
+            id="edit-group-name"
+            label={t("groupName")}
+            placeholder={t("groupNamePlaceholder")}
+            value={label}
+            onChange={(value) => {
+              setLabel(value);
+              setLabelServerError(false);
+            }}
+            disabled={isSaving}
+            autoFocus
+            serverError={labelServerError}
+          />
         </div>
         <DialogFooter>
           <Button
@@ -98,7 +109,7 @@ export function EditGroupDialog({ group, open, onOpenChange, onUpdated }: EditGr
           </Button>
           <Button
             type="button"
-            disabled={isSaving || !label.trim()}
+            disabled={isSaving || !isNameLabelValid(label)}
             onClick={() => void handleSave()}>
             {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {tCommon("save")}
