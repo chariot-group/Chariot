@@ -5764,6 +5764,7 @@ Each initiative tracker row carries:
 - **Visual weight**: cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not white pills; values `text-base`/`sm:text-lg`; no "?" tooltip buttons — the visible label replaces them (tooltip texts stay available as accessible names).
 - **NPC passive perception** (General tab only, decision 2026-11-04): a 4th key stat cell « Perc. passive » (Eye icon) next to CA / Init. / Taille; the row shows 2 × 2 cells below `sm` and one row of 4 from `sm`. In edit mode the passive perception override field and its mismatch warning sit at the bottom of the NPC statistics edit card. The Combat tab keeps 3 cells.
 - **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC).
+- **Short rest dialog — healing line** (decision 2026-11-12): when the PC has hit dice left to spend, the « Hit points recovered: +N » line is always shown below the hit dice section, from the dialog opening, so the layout does not shift. N is the sum of the dice values already entered (empty or invalid entries count as 0), so it reads `+0` before any die is added or filled. Without hit dice to spend the line is not shown. The line is announced politely to assistive technologies (`aria-live="polite"`) when N changes.
 - **Fill** (FR-character-general-bento-layout, FR-character-battle-bento-layout): when the card is stretched, its blocks spread from top to bottom (`justify-between`); the key stats row never leaves a hole on mobile.
 
 **Accessibility (FR-frontend-design)**:
@@ -5781,6 +5782,7 @@ Each initiative tracker row carries:
 - Nominal: PC and NPC cards render exactly three key stat cells (CA, initiative, size) with visible labels, and one speeds line listing non-zero speeds; the NPC General-tab card renders a 4th passive perception cell.
 - Edge: all speeds 0 → no speeds line; dual units → secondary unit shown in the speed line.
 - Failure: no "?" tooltip buttons and no white pill (`bg-white`) in the card.
+- Short rest: opening the dialog with hit dice left shows « +0 »; filling one die updates N; an empty or invalid die counts as 0; no hit dice left → no healing line.
 
 **References**:
 

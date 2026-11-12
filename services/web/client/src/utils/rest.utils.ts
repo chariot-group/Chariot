@@ -156,3 +156,21 @@ export function buildShortRestUpdatePayload(
         },
     };
 }
+
+/**
+ * Aperçu des PV récupérés pendant la saisie d'un repos court : somme des valeurs
+ * de dés déjà valides (entier dans [1, face du dé]) ; une saisie vide ou invalide compte pour 0.
+ */
+export function sumShortRestHitDicePreview(
+    rows: ReadonlyArray<{ classIndex: number; value: string }>,
+    classesList: ReadonlyArray<Class>,
+): number {
+    let total = 0;
+    for (const row of rows) {
+        const c = classesList[row.classIndex];
+        if (!c) continue;
+        const v = Number.parseInt(row.value.trim(), 10);
+        if (Number.isInteger(v) && v >= 1 && v <= hitDieSide(c)) total += v;
+    }
+    return total;
+}
