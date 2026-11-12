@@ -38,6 +38,8 @@ import {
   type SessionLobbyParticipantAvatarDescriptor,
 } from "@/lib/sessionLobbyAvatarBatch";
 import { shouldShowSessionLobbyInvitePanel } from "@/lib/sessionInAppNavigation";
+import { resolveSessionLobbyCardLabels } from "@/lib/sessionLobbyCardLabels";
+import { sortSessionLobbyParticipants } from "@/lib/sortSessionLobbyParticipants";
 import { computeMaxAddableWheels, isWheelQuotaMetForLaunch, sumDepositedWheels } from "@/lib/sessionWheelDeposit";
 import { cn } from "@/lib/utils";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
@@ -112,6 +114,8 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
       }),
     [participants, participantAvatars, characterDetails],
   );
+
+  const sortedParticipants = useMemo(() => sortSessionLobbyParticipants(participants), [participants]);
 
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(avatarBatchItems, code, !isLoading && participants.length > 0);
 
@@ -269,7 +273,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               className={getSessionLobbyParticipantListClassName(participants.length)}
               tabIndex={0}>
               {participants.length > 0 &&
-                participants.map((participant: SessionParticipant) => {
+                sortedParticipants.map((participant: SessionParticipant) => {
                   const avatarDescriptor = resolveSessionLobbyParticipantAvatar(
                     participant,
                     participantAvatars,
@@ -630,7 +634,11 @@ function SessionLobbyParticipantCard({
 }: SessionLobbyParticipantCardProps) {
   const t = useTranslations("sessionPage");
   const isGameMaster = participant.status === "gameMaster";
-  const avatarAlt = isGameMaster ? participantName : characterLabel?.trim() || participantName;
+  const { primary: primaryLabel, secondary: secondaryLabel } = resolveSessionLobbyCardLabels({
+    isGameMaster,
+    participantName,
+    characterLabel,
+  });
 
   return (
     <Card
@@ -644,14 +652,14 @@ function SessionLobbyParticipantCard({
             storedValue={avatarDescriptor?.storedValue}
             size="thumb"
             sessionCode={sessionCode}
-            alt={avatarAlt}
+            alt={primaryLabel}
             enabled={Boolean(avatarDescriptor?.storedValue?.trim())}
             avatarImageUrl={avatarImageUrl}
             className="self-center"
           />
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
             <div className="flex min-w-0 items-center gap-2">
-              <p className="min-w-0 flex-1 truncate text-base font-semibold text-white">{participantName}</p>
+              <p className="min-w-0 flex-1 truncate text-base font-semibold text-white">{primaryLabel}</p>
               <div className="flex shrink-0 items-center gap-1.5">
                 {participantDeposits > 0 ? (
                   <span
@@ -678,9 +686,7 @@ function SessionLobbyParticipantCard({
                 ) : null}
               </div>
             </div>
-            {!(isMe && isPlayer && sessionIsActive) ? (
-              <p className="truncate text-sm text-muted-foreground">{characterLabel ?? " "}</p>
-            ) : null}
+            {secondaryLabel ? <p className="truncate text-sm text-muted-foreground">{secondaryLabel}</p> : null}
             {showCompanionNames && !isGameMaster && companionNames ? (
               <p className="truncate text-xs text-white/55">{companionNames}</p>
             ) : null}

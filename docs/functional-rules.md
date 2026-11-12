@@ -2216,6 +2216,13 @@ Each initiative tracker row carries:
 - Both surfaces MUST show the character avatar when an avatar stored value is available, resolving the presigned URL with `sessionCode` (FR-media-avatars).
 - Session roster rows in the GM sidebar MUST follow **FR-sidebar-character-avatars** (same avatar rules as campaign and Player-space lists).
 
+**Lobby Card Hierarchy & Ordering**:
+
+- On a session lobby participant card, when a player has an assigned character, the primary (prominent) line MUST be the character display name and the secondary line MUST be the participant label (resolved per the priority above), so name and avatar describe the same identity.
+- When no character is assigned (Game Master, or player who has not picked one yet), the primary line MUST be the participant label and the character line MUST stay empty.
+- The secondary participant label MUST remain visible for the current user too, including while the character selector is shown.
+- Lobby participants MUST be displayed in a deterministic order identical for every client of the same session: Game Master first, then players by server `joinedAt` ascending, ties broken by `userId`. Order MUST NOT depend on WebSocket event arrival order or on which client loaded first.
+
 **Prohibitions**:
 
 - Displaying a participant email as their session label
@@ -2229,6 +2236,10 @@ Each initiative tracker row carries:
 - Nominal: user with `username` shows that username in lobby, GM sidebar, and initiative tracker when character sheet is unavailable
 - Nominal: assigned character shows `firstname` (+ `lastname`) and avatar in lobby card and GM sidebar (never Mongo id)
 - Edge: user without `username` but with `firstName` + `lastName` shows the full name
+- Nominal: lobby card of a player with a character shows the character name as primary line and the username as secondary line; GM card shows the username as primary line
+- Nominal: lobby participants sorted GM first, then by `joinedAt` ascending
+- Edge: a participant appended by `session:participant-joined` before HTTP sync is placed by `joinedAt`, not at the end by arrival; same order on two clients with different arrival orders
+- Edge: tie on `joinedAt` is broken by `userId`; character still loading shows `...` as primary line with username as secondary
 - Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
 - Edge: initial API failure followed by WebSocket username still updates the displayed label
 - Edge: character sheet still loading shows `...` for the character name (not character id)
