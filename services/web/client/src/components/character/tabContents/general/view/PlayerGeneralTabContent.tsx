@@ -7,6 +7,7 @@ import {
   GENERAL_ABILITIES_LIST_MAX_HEIGHT_CLASS,
   GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
+  PLAYER_GRID_ROWS_CLASS,
   PLAYER_VIEW_SLOTS as SLOTS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import { NPC, Player } from "@/types/character";
@@ -55,7 +56,7 @@ export default function PlayerGeneralTabContent({
   return (
     <div className={`${GENERAL_BENTO_CONTAINER_CLASS} px-2 sm:px-0`}>
       <div
-        className={GENERAL_BENTO_GRID_CLASS}
+        className={`${GENERAL_BENTO_GRID_CLASS} ${PLAYER_GRID_ROWS_CLASS}`}
         role="main"
         aria-label={t("characterInfoLabel")}>
         {/* Personnage */}
