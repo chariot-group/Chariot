@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { deletePlayerCharacterWithCompanionChoice, syncReduxAfterPlayerDelete } from "@/lib/playerDeleteCompanions";
+import { localeFromPathname, resolveCampaignDeleteDestination } from "@/lib/campaignDeleteNavigation";
 import {
   applyCompanionModeAfterPlayerCreated,
   createPlayerDuplicateFromFull,
@@ -238,15 +239,23 @@ export default function GroupList({
         selectedCharacterId === deletingCharacterId ||
         (deleteLinkedCompanions && companions.some((npc) => npc._id === selectedCharacterId));
       if (!viewingDeletedSheet || !selectedCampaignId) return;
+      const deletedIds = new Set([
+        deletingCharacterId,
+        ...(deleteLinkedCompanions ? companions.map((npc) => npc._id) : []),
+      ]);
       const remainingGroup = groups.find((group) => group._id === groupId);
-      const nextCharacter = remainingGroup?.characters?.find((item) => item._id !== deletingCharacterId);
+      const nextCharacter = remainingGroup?.characters?.find((item) => !deletedIds.has(item._id));
       if (nextCharacter?._id) {
         router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${nextCharacter._id}`);
-      } else {
-        router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/new/players`);
+        return;
       }
+      // Group now empty: another character of the campaign, else the Campaign fallback
+      // (FR-welcome-onboarding-fallbacks §3), never the creation form.
+      void resolveCampaignDeleteDestination(selectedCampaignId, localeFromPathname(pathname)).then((path) =>
+        router.replace(path),
+      );
     },
-    [groups, router, selectedCampaignId, selectedCharacterId],
+    [groups, pathname, router, selectedCampaignId, selectedCharacterId],
   );
 
   const executeGroupCharacterDelete = React.useCallback(
