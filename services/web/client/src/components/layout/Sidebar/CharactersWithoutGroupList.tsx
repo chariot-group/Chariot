@@ -578,13 +578,12 @@ export default function CharactersWithoutGroupList() {
       <CreateCharacterDialog>
         <button
           type="button"
-          aria-label={t("createCharacter")}
           className={cn(buttonVariants({ variant: "primary", align: "start" }), "w-full shrink-0")}>
-          {t("createCharacter")}
           <UserPlus
             aria-hidden="true"
             className="size-5"
           />
+          {t("createCharacter")}
         </button>
       </CreateCharacterDialog>
 
