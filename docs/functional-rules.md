@@ -6069,7 +6069,7 @@ Each initiative tracker row carries:
 
 - **Scope**: read mode of `PlayerGeneralTabContent` and `NpcGeneralTabContent`. Card slot, heading (« Personnage », accent color), avatar placement and edit mode are unchanged (FR-character-general-bento-layout, FR-character-detail-view).
 - **Level 1 — Name**: first name + last name on one line, the most prominent text of the card (`text-lg sm:text-xl font-bold`). The nickname (`surname`), when present, sits right below in muted italic between « ». No visible « Prénom / Nom / Surnom » labels.
-- **Long names** (functional decision 2026-11-04, touch compromise): on devices with hover (`@media (hover: hover)`), the name line and the nickname are each truncated on one line with an ellipsis, and their full text is exposed in a native `title` shown on hover. On devices without hover (touch), they are **not** truncated and wrap (`wrap-break-word`), so the full name stays readable without a tooltip (FR-tooltip-accessibility). Truncation is visual only: the full text stays in the DOM for screen readers.
+- **Long names** (functional decision 2026-11-12, replaces the 2026-11-04 touch compromise): on every screen size, the name line and the nickname are each clamped to **two lines** with an ellipsis (`TruncatedText`, `lines={2}`). When — and only when — the text is actually cut, its full value is shown in the app tooltip (`TooltipContent`, `truncatedTextTooltipClassName`) on mouse hover, and toggled by a tap on touch devices (the name is not interactive, so the tap has no other effect; FR-tooltip-accessibility). Text that fits shows no tooltip and no `cursor-help`. Truncation is visual only: the full text stays in the DOM for screen readers. No native `title` attribute.
 - **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell uses the statistics card cell style (design.md §5.3.4: `bg-gray-middle-light/50`, `rounded-[10px]`, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary line:
   - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. 2 × 2 cells; when an odd number of cells is shown (an empty value is not rendered), the last one spans the whole row so no empty slot suggests a missing fact.
   - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment. Two equal columns.
@@ -6091,21 +6091,24 @@ Each initiative tracker row carries:
 
 - Flat `Label : value` rows of identical weight for the identity.
 - Showing a class twice (classes line + subclass line).
-- Truncating the name on touch devices, or truncating it without a `title` carrying the full text.
+- Truncating the name or nickname without the app tooltip carrying the full text, or opening that tooltip when nothing is cut.
+- Clamping the name differently by screen size or pointer type.
 - Fixed heights or inner scroll on the card.
 
 **Tests**:
 
 - Nominal: PC with name, nickname, race/subrace, level/XP and two classes renders the full name, the nickname, two fact cells (race, level) and two class rows with their subclass.
 - Edge: no last name / no nickname / no subrace / class without subclass → the part is omitted (no empty secondary line, no empty parentheses); NPC renders name + one type cell and no classes block.
-- Edge: a long name and nickname carry their full text in `title` and are truncated only under the hover media variant (wrap otherwise).
+- Edge: a long name and nickname are clamped to two lines on every screen size (`line-clamp-2`, no hover-only variant) and carry no native `title`; the tooltip content is the full text.
+- Edge: a name that fits shows no `cursor-help` and its tooltip cannot open; a touch tap on a cut name toggles the tooltip (`TruncatedText` tests).
 - Failure / guard: PC with an empty class list renders no classes block; the `sr-only` labels are present for the identity fields.
 
 **References**:
 
 - `services/web/client/src/components/character/tabContents/general/view/PlayerGeneralTabContent.tsx`
 - `services/web/client/src/components/character/tabContents/general/view/NpcGeneralTabContent.tsx`
-- `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4
+- `services/web/client/src/components/ui/truncated-text.tsx`
+- `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4, §6.4
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-detail-view, FR-frontend-design
 
 ---

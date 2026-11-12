@@ -60,7 +60,7 @@ export function getTruncatedTextClassName(lines: TruncatedLines, truncated: bool
 interface TruncatedTextProps {
   /** Full text, shown in the tooltip when the rendered content is cut. */
   text: string;
-  as?: "span" | "h2" | "p";
+  as?: "span" | "h2" | "p" | "dl" | "dd";
   lines?: TruncatedLines;
   className?: string;
   id?: string;
