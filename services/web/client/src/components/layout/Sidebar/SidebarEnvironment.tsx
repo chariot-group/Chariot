@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BookOpen, Check, ChevronDown, Loader2, PlusCircleIcon, User } from "lucide-react";
+import { BookOpen, ChevronDown, Loader2, PlusCircleIcon, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
 import { EditCampaignDialog } from "@/components/dialogs/EditCampaignDialog";
@@ -28,7 +28,7 @@ import { RootState } from "@/store";
 import NavigationService from "@/services/NavigationService";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { menuItemClassName } from "@/components/ui/menu-styles";
+import { menuItemClassName, menuItemSelectedClassName } from "@/components/ui/menu-styles";
 import * as React from "react";
 import { Campaign } from "@/types/campaign";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
@@ -59,10 +59,11 @@ function CampaignMenuButton({ label, isSelected, onSelect }: CampaignMenuButtonP
         <button
           type="button"
           onClick={onSelect}
+          aria-current={isSelected ? "true" : undefined}
           className={cn(
             menuItemClassName,
             "focus-visible:ring-1 focus-visible:ring-white/50",
-            isSelected && "font-medium",
+            isSelected && menuItemSelectedClassName,
           )}>
           <BookOpen
             className="h-4 w-4 shrink-0 text-white/60"
@@ -73,12 +74,6 @@ function CampaignMenuButton({ label, isSelected, onSelect }: CampaignMenuButtonP
             className="min-w-0 flex-1 truncate text-left pointer-coarse:line-clamp-2 pointer-coarse:whitespace-normal pointer-coarse:break-words">
             {label}
           </span>
-          {isSelected && (
-            <Check
-              className="h-4 w-4 shrink-0 text-white"
-              aria-hidden="true"
-            />
-          )}
         </button>
       </TooltipTrigger>
       <TooltipContent
@@ -250,7 +245,7 @@ export default function SidebarEnvironment() {
           ) : campaigns.length === 0 ? (
             <div className="px-3 py-2 text-xs text-white/40">{t("noCampaigns")}</div>
           ) : (
-            <>
+            <div className="flex flex-col gap-1">
               {campaigns.map((campaign) => {
                 const isSelected = selectedCampaignId === campaign._id && isGmMode;
                 const campaignActions = buildCampaignActions(campaign);
@@ -278,7 +273,7 @@ export default function SidebarEnvironment() {
                   className="flex w-full cursor-pointer items-center justify-center rounded-[10px] px-3 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
                 />
               )}
-            </>
+            </div>
           )}
 
           <DropdownMenuSeparator />

@@ -313,7 +313,7 @@ Every floating menu shares one style, defined once in `components/ui/menu-styles
 
 - Surface: `bg-popover border-frame rounded-[14px] p-1.5`
 - Row: `rounded-[10px] px-3 py-2 text-sm text-white`, hover and keyboard highlight `bg-white/10`
-- Selected/checked row: `bg-white/15 font-medium`, check icon in white
+- Selected/checked row: `bg-white/15 font-medium`; check icon in white only for checkbox/radio items of the primitives. Selection rows of the GM space menu (campaigns) use the background alone, no check icon, and expose `aria-current="true"`
 - Leading icons: `size-4`, `text-white/60`; destructive rows: `text-destructive`, hover `bg-destructive/10`
 - Separator: `mx-1 my-1 h-px bg-white/10`
 

@@ -56,3 +56,27 @@ describe("Sidebar — long campaign names", () => {
     expect(context).toMatch(/\{selectedCampaign && \(\s*<TruncatedText/);
   });
 });
+
+/** @see design.md §5.4 — selected campaign in the GM space menu */
+describe("Sidebar — selected campaign row", () => {
+  const row = environment.match(/function CampaignMenuButton[\s\S]*?\n}\n/)?.[0] ?? "";
+
+  it("nominal: the selected campaign uses the shared selected-row background", () => {
+    expect(row).toContain("isSelected && menuItemSelectedClassName");
+  });
+
+  it("edge: selection is announced to assistive tech, not only shown by color", () => {
+    expect(row).toContain('aria-current={isSelected ? "true" : undefined}');
+  });
+
+  it("failure guard: no check icon is rendered on the selected campaign", () => {
+    expect(row).not.toContain("<Check");
+    expect(environment).not.toMatch(/import \{[^}]*\bCheck\b[^}]*\} from "lucide-react"/);
+  });
+});
+
+describe("Sidebar — campaign rows spacing", () => {
+  it("nominal: campaign rows are stacked with a gap so selected/hovered backgrounds never touch", () => {
+    expect(environment).toMatch(/<div className="flex flex-col gap-1">\s*\{campaigns\.map/);
+  });
+});
