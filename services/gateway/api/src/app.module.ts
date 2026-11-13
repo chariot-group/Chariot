@@ -44,10 +44,6 @@ import { MetricsInterceptor } from "@/metrics/metrics.interceptor";
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: MetricsInterceptor,
-    },
   ],
 })
 export class AppModule {}
