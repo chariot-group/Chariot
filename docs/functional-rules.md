@@ -5205,6 +5205,7 @@ Each initiative tracker row carries:
 **Utility types** (minority, kept): `ghost` (transparent, `hover:bg-white/10`), `link` (text), `destructive` (critical action), icon-only triggers, and toggles (`aria-pressed`), which never use a violet fill:
   - Segmented selector (exactly one option active among a few, e.g. Player / GM, attack ability suggestion): active option = **primary white**, inactive options = **secondary**.
   - Filter toggle (independent on/off chip, e.g. Action / Bonus action / Reaction priority): `secondary`, pressed state = documented selection gray (`docs/design.md` section 5.1).
+- **Copy confirmation** (copy code / copy link buttons, e.g. session lobby invite, profile referral link): after a successful copy the button keeps its **secondary** look (dark fill, minor border, light text); only the content changes — the icon becomes a check mark in the button's own text color (white) and the label becomes the "copied" text. The button width MUST NOT change between states: the label slot reserves the width of the longest of the two labels. While the confirmation is shown the button is disabled but stays at full opacity with no hover change. A green fill or green icon MUST NOT be used. Shared class: `copySuccessButtonClassName`.
 
 **Sizes**:
 
@@ -5243,6 +5244,7 @@ Each initiative tracker row carries:
 - Nominal: `buttonVariants` returns the documented classes for each type (`primary`, `accent` per tone, `secondary`) and each size; the default is `accent` + `violet`
 - Edge: `accent` with `tone="red"` renders dark text; `align="start"` left-aligns content; `lg` uses the 15px radius, the other sizes 13px
 - Failure/guard: disabled buttons expose no hover style change; an inactive segmented option renders the secondary style
+- Copy confirmation: keeps the secondary fill and text color (nominal); both labels are rendered in the same slot so the width is constant, and the button stays at full opacity while disabled and hovered (edge); never renders a green fill or icon (guard)
 
 **References**:
 

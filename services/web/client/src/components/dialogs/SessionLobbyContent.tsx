@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, copySuccessButtonClassName } from "@/components/ui/button";
+import { StableLabel } from "@/components/ui/stable-label";
 import { Card } from "@/components/ui/card";
 import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
@@ -363,7 +364,8 @@ function SessionLobbyCopyActions({
   fullWidth = false,
 }: SessionLobbyCopyActionsProps) {
   const t = useTranslations("sessionPage");
-  const copyLabel = codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton");
+  const copyLabels = [t("sessionCode.copyButton"), t("sessionCode.copySuccess")];
+  const copyLabel = codeCopyState === "success" ? copyLabels[1] : copyLabels[0];
 
   if (fullWidth) {
     return (
@@ -381,7 +383,7 @@ function SessionLobbyCopyActions({
           {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />}
           {codeCopyState === "success" && <Check className="h-3.5 w-3.5 shrink-0" />}
           {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5 shrink-0" />}
-          <span className="truncate">{copyLabel}</span>
+          <StableLabel label={copyLabel} alternates={copyLabels} />
         </Button>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -421,7 +423,7 @@ function SessionLobbyCopyActions({
         {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         {codeCopyState === "success" && <Check className="h-3.5 w-3.5" />}
         {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5" />}
-        <span className="hidden sm:inline">{copyLabel}</span>
+        <StableLabel label={copyLabel} alternates={copyLabels} className="hidden sm:grid" />
       </Button>
       <Tooltip>
         <TooltipTrigger asChild>
