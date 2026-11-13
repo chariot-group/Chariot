@@ -2,11 +2,20 @@
 
 import * as React from "react";
 import { MoreVertical } from "lucide-react";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -25,6 +34,29 @@ export interface SidebarItemWithActionsProps {
   menuContentClassName?: string;
   /** Rendered before the trailing overflow control (e.g. primary row actions). */
   trailingBeforeOverflow?: React.ReactNode;
+  /** Full item name shown as the first, non-interactive label of the menus (never truncated). */
+  menuTitle?: string;
+}
+
+/** Long names wrap instead of being cut: the menu title is the touch access to the full name. */
+const menuTitleClassName = "text-sm font-bold text-white break-words text-pretty";
+
+function SidebarMenuTitle({ title, variant }: { title: string; variant: "context" | "dropdown" }) {
+  if (variant === "context") {
+    return (
+      <>
+        <ContextMenuLabel className={menuTitleClassName}>{title}</ContextMenuLabel>
+        <ContextMenuSeparator />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <DropdownMenuLabel className={menuTitleClassName}>{title}</DropdownMenuLabel>
+      <DropdownMenuSeparator />
+    </>
+  );
 }
 
 const defaultOverflowTriggerClassName = "text-white/40 hover:bg-white/20 hover:text-white focus-visible:ring-white/50";
@@ -129,11 +161,13 @@ function SidebarOverflowDropdown({
   contextMenuLabel,
   overflowTriggerClassName,
   menuContentClassName,
+  menuTitle,
 }: {
   actions: SidebarActionItem[];
   contextMenuLabel: string;
   overflowTriggerClassName?: string;
   menuContentClassName?: string;
+  menuTitle?: string;
 }) {
   return (
     <DropdownMenu>
@@ -159,6 +193,12 @@ function SidebarOverflowDropdown({
         sideOffset={4}
         className={menuContentClassName ?? defaultMenuContentClassName}
         aria-label={contextMenuLabel}>
+        {menuTitle ? (
+          <SidebarMenuTitle
+            title={menuTitle}
+            variant="dropdown"
+          />
+        ) : null}
         <SidebarActionMenuItems
           actions={actions}
           variant="dropdown"
@@ -177,6 +217,7 @@ export function SidebarItemWithActions({
   overflowTriggerClassName,
   menuContentClassName,
   trailingBeforeOverflow,
+  menuTitle,
 }: SidebarItemWithActionsProps) {
   const showOverflowMenu = useIsTabletOrMobile();
   const hasActions = !disabled && actions.length > 0;
@@ -205,6 +246,7 @@ export function SidebarItemWithActions({
             contextMenuLabel={contextMenuLabel}
             overflowTriggerClassName={overflowTriggerClassName}
             menuContentClassName={menuContentClassName}
+            menuTitle={menuTitle}
           />
         </div>
       </div>
@@ -221,6 +263,12 @@ export function SidebarItemWithActions({
           <ContextMenuContent
             className={menuContentClassName ?? defaultMenuContentClassName}
             aria-label={contextMenuLabel}>
+            {menuTitle ? (
+              <SidebarMenuTitle
+                title={menuTitle}
+                variant="context"
+              />
+            ) : null}
             <SidebarActionMenuItems
               actions={actions}
               variant="context"
@@ -240,6 +288,12 @@ export function SidebarItemWithActions({
       <ContextMenuContent
         className={menuContentClassName ?? defaultMenuContentClassName}
         aria-label={contextMenuLabel}>
+        {menuTitle ? (
+          <SidebarMenuTitle
+            title={menuTitle}
+            variant="context"
+          />
+        ) : null}
         <SidebarActionMenuItems
           actions={actions}
           variant="context"

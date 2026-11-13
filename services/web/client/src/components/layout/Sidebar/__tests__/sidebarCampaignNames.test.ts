@@ -15,7 +15,7 @@ describe("Sidebar — long campaign names", () => {
     expect(row).toContain("useIsTextTruncated<HTMLSpanElement>(label)");
     expect(row).toContain("open={truncated && tooltipOpen}");
     expect(row).toMatch(/<TooltipTrigger asChild>\s*<button/);
-    expect(row).toMatch(/ref=\{ref\}\s*className="min-w-0 flex-1 truncate text-left /);
+    expect(row).toMatch(/ref=\{ref\}\s*className="min-w-0 flex-1 truncate text-left"/);
     expect(environment).toContain("<CampaignMenuButton");
   });
 
@@ -26,11 +26,12 @@ describe("Sidebar — long campaign names", () => {
     expect(row).not.toContain("cursor-help");
   });
 
-  it("edge: on touch screens (no hover) campaign rows wrap on two lines instead of a tooltip", () => {
+  it("edge: campaign names stay on one line on every screen size, touch included", () => {
     const row = environment.match(/function CampaignMenuButton[\s\S]*?\n}\n/)?.[0] ?? "";
 
-    expect(row).toContain("pointer-coarse:line-clamp-2 pointer-coarse:whitespace-normal pointer-coarse:break-words");
-    expect(row).toContain("onClick={onSelect}");
+    expect(row).toContain('className="min-w-0 flex-1 truncate text-left"');
+    expect(row).not.toContain("pointer-coarse:");
+    expect(row).not.toContain("line-clamp");
   });
 
   it("edge: GM space menu width is bounded (trigger width, at least 14rem) with Tailwind v4 var syntax", () => {
@@ -61,8 +62,16 @@ describe("Sidebar — long campaign names", () => {
 describe("Sidebar — selected campaign row", () => {
   const row = environment.match(/function CampaignMenuButton[\s\S]*?\n}\n/)?.[0] ?? "";
 
-  it("nominal: the selected campaign uses the shared selected-row background", () => {
-    expect(row).toContain("isSelected && menuItemSelectedClassName");
+  it("nominal: the selected background is on the row wrapper so it covers the touch overflow (⋮)", () => {
+    const wrapper = environment.match(/<SidebarItemWithActions[\s\S]*?<CampaignMenuButton/)?.[0] ?? "";
+
+    expect(wrapper).toContain('isSelected ? menuItemSelectedClassName : "hover:bg-white/10"');
+  });
+
+  it("failure guard: the button never paints its own hover or selected background over the wrapper", () => {
+    expect(row).toContain("hover:bg-transparent");
+    expect(row).toContain('isSelected && "font-medium focus:bg-transparent"');
+    expect(row).not.toContain("menuItemSelectedClassName");
   });
 
   it("edge: selection is announced to assistive tech, not only shown by color", () => {

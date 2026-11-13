@@ -44,8 +44,8 @@ interface CampaignMenuButtonProps {
 }
 
 /**
- * Campaign row of the GM space menu: full name in a tooltip (hover and keyboard focus) only when truncated.
- * Touch screens have no hover and a tap selects the campaign, so the name wraps on two lines there instead.
+ * Campaign row of the GM space menu: name always on one line, full name in a tooltip (hover and keyboard focus)
+ * only when truncated. The selected background is drawn by the row wrapper so it also covers the touch overflow (⋮).
  */
 function CampaignMenuButton({ label, isSelected, onSelect }: CampaignMenuButtonProps) {
   const { ref, truncated } = useIsTextTruncated<HTMLSpanElement>(label);
@@ -62,8 +62,9 @@ function CampaignMenuButton({ label, isSelected, onSelect }: CampaignMenuButtonP
           aria-current={isSelected ? "true" : undefined}
           className={cn(
             menuItemClassName,
-            "focus-visible:ring-1 focus-visible:ring-white/50",
-            isSelected && menuItemSelectedClassName,
+            // hover and selected backgrounds belong to the row wrapper (also covers the touch ⋮)
+            "focus-visible:ring-1 focus-visible:ring-white/50 hover:bg-transparent",
+            isSelected && "font-medium focus:bg-transparent",
           )}>
           <BookOpen
             className="h-4 w-4 shrink-0 text-white/60"
@@ -71,7 +72,7 @@ function CampaignMenuButton({ label, isSelected, onSelect }: CampaignMenuButtonP
           />
           <span
             ref={ref}
-            className="min-w-0 flex-1 truncate text-left pointer-coarse:line-clamp-2 pointer-coarse:whitespace-normal pointer-coarse:break-words">
+            className="min-w-0 flex-1 truncate text-left">
             {label}
           </span>
         </button>
@@ -255,7 +256,10 @@ export default function SidebarEnvironment() {
                     key={campaign._id}
                     actions={campaignActions}
                     contextMenuLabel={t("campaignActions")}
-                    className="rounded-[10px]">
+                    className={cn(
+                      "rounded-[10px] transition-colors",
+                      isSelected ? menuItemSelectedClassName : "hover:bg-white/10",
+                    )}>
                     <CampaignMenuButton
                       label={campaign.label}
                       isSelected={isSelected}

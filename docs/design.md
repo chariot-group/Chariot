@@ -313,7 +313,7 @@ Every floating menu shares one style, defined once in `components/ui/menu-styles
 
 - Surface: `bg-popover border-frame rounded-[14px] p-1.5`
 - Row: `rounded-[10px] px-3 py-2 text-sm text-white`, hover and keyboard highlight `bg-white/10`
-- Selected/checked row: `bg-white/15 font-medium`; check icon in white only for checkbox/radio items of the primitives. Selection rows of the GM space menu (campaigns) use the background alone, no check icon, and expose `aria-current="true"`
+- Selected/checked row: `bg-white/15 font-medium`; check icon in white only for checkbox/radio items of the primitives. Selection rows of the GM space menu (campaigns) use the background alone, no check icon, and expose `aria-current="true"`; the selected and hover backgrounds are on the whole row (wrapper), including the touch overflow (⋮), and the campaign name always stays on one line (`truncate`, tooltip when cut)
 - Leading icons: `size-4`, `text-white/60`; destructive rows: `text-destructive`, hover `bg-destructive/10`
 - Separator: `mx-1 my-1 h-px bg-white/10`
 
@@ -324,7 +324,7 @@ Sidebar context menus and touch overflow menus show an icon per action (FR-sideb
 ## 5.5 Sidebar Rows
 
 - Selected character row: `bg-white/15` (same gray as selected menu rows), white bold text, no left bar and no label shift; hover `bg-white/10`
-- Group header: no resting background (hover `bg-white/10`), label always bold. The label lines up with its characters: header `pl-1` + `size-4` chevron + `gap-2` = characters `ml-4` + `px-3` (28px)
+- Group header: no resting background (hover `bg-white/10`), label always bold, one line (`truncate`), no name tooltip on hover; the full name is the first label of the group menu (`⋮` / right-click) (FR-sidebar-context-actions). The label lines up with its characters: header `pl-1` + `size-4` chevron + `gap-2` = characters `ml-4` + `px-3` (28px)
 - Create buttons (character, group): `buttonVariants({ variant: "primary", align: "start" })`, full width, icon on the **left** of the label
 
 ## 5.6 Numeric Inputs

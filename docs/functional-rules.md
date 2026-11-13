@@ -3257,6 +3257,14 @@ Each initiative tracker row carries:
 - Tapping the row still performs primary navigation; the overflow control MUST NOT block navigation.
 - Desktop viewports (`lg` and above) MUST keep right-click context menu as the primary secondary-action entry point.
 
+**Truncated group names** (functional decision 2026-11-13):
+
+- A group name is always shown on one line in the sidebar header (`truncate`), on every screen size, in the active and archived sections.
+- The group header MUST NOT show the group name in a hover tooltip (decision 2026-11-13). No native `title` attribute on the header either: the "contains displayed sheet" indication (FR-sidebar-group-collapsed-active-indicator) is shown in the app tooltip (`TooltipContent`) on hover and keyboard focus, and only then.
+- Touch and desktop: the full name is read in the group menus. The group context menu and overflow menu (`⋮`) MUST start with the full group name as a non-interactive menu label (wrapping on several lines, never truncated), followed by a separator, then the actions. Tapping the header still only expands/collapses the group (no tap tooltip on the header).
+- This is the touch access to the full name required by FR-tooltip-accessibility; no extra `?` button on the header. When actions are disabled (active session), there is no menu and the full name stays available to screen readers only (truncation is visual).
+- Screen readers read the full name from the DOM (truncation is visual only).
+
 **Confirmation dialogs**:
 
 - **Enter** MUST confirm the primary/destructive action when focus is inside the dialog and no text input is focused.
@@ -3286,6 +3294,9 @@ Each initiative tracker row carries:
 - Confirmation: Enter confirms, Escape cancels on delete dialogs.
 - Edge: move character excludes current group; delete redirects when viewing deleted entity.
 - Failure: confirm dialog ignores Enter while `isDeleting` / async in progress.
+- Truncated group names — nominal: a cut group name is shown in full as the first label of the group menu.
+- Truncated group names — edge: hovering the header never shows the name; a collapsed group holding the displayed sheet shows the active indication in the app tooltip (no native `title`).
+- Truncated group names — failure/guard: tapping the header still toggles the group; the menu title is not a menu item (not selectable).
 
 **References**:
 

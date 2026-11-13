@@ -21,6 +21,8 @@ import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { truncatedTextTooltipClassName } from "@/components/ui/truncated-text";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import { deletePlayerCharacterWithCompanionChoice, syncReduxAfterPlayerDelete } from "@/lib/playerDeleteCompanions";
@@ -84,6 +86,47 @@ interface GroupListProps {
   loadedActiveGroupIds: string[];
   loadedArchivedGroupIds: string[];
   onRefreshGroups: () => Promise<void>;
+}
+
+interface GroupHeaderTriggerProps {
+  groupId: string;
+  label: string;
+  isOpen: boolean;
+  /** "Contains displayed sheet" text of a collapsed group (FR-sidebar-group-collapsed-active-indicator). */
+  activeTooltip: string | null;
+}
+
+/**
+ * Group header toggle: name on one line, no name tooltip (the full name is the group menu title,
+ * FR-sidebar-context-actions). The app tooltip only shows the displayed-sheet indication of a collapsed group.
+ */
+function GroupHeaderTrigger({ groupId, label, isOpen, activeTooltip }: GroupHeaderTriggerProps) {
+  const [tooltipOpen, setTooltipOpen] = React.useState(false);
+
+  return (
+    <Tooltip
+      open={Boolean(activeTooltip) && tooltipOpen}
+      onOpenChange={setTooltipOpen}>
+      <TooltipTrigger asChild>
+        <CollapsibleTrigger
+          aria-expanded={isOpen}
+          aria-controls={`group-${groupId}-content`}
+          className="flex w-full min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
+          <ChevronRight
+            aria-hidden="true"
+            className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
+          />
+          <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">{label}</span>
+          {activeTooltip ? <span className="sr-only">{activeTooltip}</span> : null}
+        </CollapsibleTrigger>
+      </TooltipTrigger>
+      <TooltipContent
+        side="right"
+        className={truncatedTextTooltipClassName}>
+        {activeTooltip}
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 export default function GroupList({
@@ -652,7 +695,6 @@ export default function GroupList({
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
             <div
-              title={activeTooltip ?? undefined}
               className={cn(
                 "flex w-full items-center rounded-[12px] py-1.5 pr-1.5 pl-1 transition-colors duration-100",
                 activeTooltip ? "bg-white/15 text-white" : "hover:bg-white/10",
@@ -661,6 +703,7 @@ export default function GroupList({
                 actions={groupActions}
                 disabled={actionsDisabled}
                 contextMenuLabel={t("groupActions")}
+                menuTitle={group.label}
                 className="min-w-0 flex-1"
                 trailingBeforeOverflow={
                   !isArchivedSection && selectedCampaignId ? (
@@ -682,17 +725,12 @@ export default function GroupList({
                     </CreateCharacterDialog>
                   ) : undefined
                 }>
-                <CollapsibleTrigger
-                  aria-expanded={isOpen}
-                  aria-controls={`group-${group._id}-content`}
-                  className="flex w-full min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
-                  <ChevronRight
-                    aria-hidden="true"
-                    className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
-                  />
-                  <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">{group.label}</span>
-                  {activeTooltip ? <span className="sr-only">{activeTooltip}</span> : null}
-                </CollapsibleTrigger>
+                <GroupHeaderTrigger
+                  groupId={group._id}
+                  label={group.label}
+                  isOpen={isOpen}
+                  activeTooltip={activeTooltip}
+                />
               </SidebarItemWithActions>
             </div>
 

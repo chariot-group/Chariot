@@ -16,7 +16,7 @@ describe("Sidebar rows — groups and selection", () => {
     expect(header).toContain("hover:bg-white/10");
     // collapsed group holding the displayed character uses the selected style (FR-sidebar-group-collapsed-active-indicator)
     expect(header).toContain("bg-white/15");
-    expect(groupList).toContain('<span className="min-w-0 flex-1 truncate text-left text-sm font-bold">');
+    expect(groupList).toContain('<span className="min-w-0 flex-1 truncate text-left text-sm font-bold">{label}</span>');
   });
 
   it("edge: group label lines up with its characters (pl-1 + 16px chevron + gap-2 = ml-4 + px-3)", () => {
