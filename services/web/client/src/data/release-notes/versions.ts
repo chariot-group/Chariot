@@ -2,7 +2,55 @@ import type { ReleaseNote } from '@/data/release-notes/types';
 
 export const ALL_RELEASE_NOTES: ReleaseNote[] = [
   {
-    version: '2.11.0',
+    version: '2.11.2',
+    date: '2026-11-13',
+    translations: {
+      fr: {
+        title: 'Chargement plus rapide, fiches repensées & liens partagés',
+        highlights: [
+          { text: 'Chariot se charge nettement plus vite, y compris la page de connexion, surtout sur une connexion lente.' },
+          { text: 'Les fiches de personnage adoptent une mise en page en tuiles et des formulaires plus clairs : multiclasse, dés de vie par classe, dégâts des sorts saisis comme « 8d6+2 ».' },
+          { text: 'Vos liens rapides peuvent être visibles depuis toutes vos campagnes ou depuis l\'espace joueur, regroupés sous « Liens communs ».' },
+          { text: 'Repos long pour les PNJ, pour vos PJ hors session et pour tout un groupe d\'un clic depuis la barre latérale.' },
+          { text: 'L\'onglet compagnons est repensé, avec recherche et sélection multiple.' },
+          { text: 'Tracker d\'initiative : le bonus ajouté automatiquement est affiché pendant la saisie, Tab passe à l\'initiative suivante, et la vue mobile est plus lisible.' },
+          { text: 'Dans le lobby, chaque participant apparaît sous le nom de son personnage, dans le même ordre pour tout le monde.' },
+          { text: 'Meilleur affichage sur mobile et tablette : boutique, notes de version, profil et parrainage.' },
+          { text: 'Corrections : le MJ ne repasse plus par l\'accueil à la fin d\'un combat, et les noms de groupes et campagnes sont limités à 50 caractères avec un compteur.' },
+        ],
+      },
+      en: {
+        title: 'Faster loading, redesigned sheets & shared links',
+        highlights: [
+          { text: 'Chariot loads noticeably faster, including the login page, especially on slow connections.' },
+          { text: 'Character sheets get a tile layout and clearer forms: multiclass, hit dice per class, spell damage typed as "8d6+2".' },
+          { text: 'Your quick links can be visible from all your campaigns or from the player space, grouped under "Common links".' },
+          { text: 'Long rest for NPCs, for your player characters outside a session, and for a whole group in one click from the sidebar.' },
+          { text: 'The companions tab is redesigned, with search and multiple selection.' },
+          { text: 'Initiative tracker: the automatically added bonus is shown while you type, Tab moves to the next initiative, and the mobile view is easier to read.' },
+          { text: 'In the lobby, each participant appears under their character name, in the same order for everyone.' },
+          { text: 'Better display on mobile and tablet: shop, release notes, profile and referral.' },
+          { text: 'Fixes: the GM no longer goes through the welcome page at the end of a combat, and group and campaign names are limited to 50 characters with a counter.' },
+        ],
+      },
+      es: {
+        title: 'Carga más rápida, fichas rediseñadas y enlaces compartidos',
+        highlights: [
+          { text: 'Chariot carga mucho más rápido, incluida la página de inicio de sesión, sobre todo con conexiones lentas.' },
+          { text: 'Las fichas de personaje adoptan un diseño en mosaicos y formularios más claros: multiclase, dados de golpe por clase, daño de conjuros escrito como «8d6+2».' },
+          { text: 'Tus enlaces rápidos pueden verse desde todas tus campañas o desde el espacio de jugador, agrupados en «Enlaces comunes».' },
+          { text: 'Descanso largo para los PNJ, para tus personajes jugadores fuera de sesión y para todo un grupo con un clic desde la barra lateral.' },
+          { text: 'La pestaña de compañeros se rediseña, con búsqueda y selección múltiple.' },
+          { text: 'Rastreador de iniciativa: el bonificador añadido automáticamente se muestra mientras escribes, Tab pasa a la siguiente iniciativa y la vista móvil es más legible.' },
+          { text: 'En el lobby, cada participante aparece con el nombre de su personaje, en el mismo orden para todos.' },
+          { text: 'Mejor visualización en móvil y tableta: tienda, notas de versión, perfil y referidos.' },
+          { text: 'Correcciones: el DJ ya no pasa por la página de bienvenida al final de un combate, y los nombres de grupos y campañas se limitan a 50 caracteres con un contador.' },
+        ],
+      },
+    },
+  },
+  {
+    version: '2.11.1',
     date: '2026-11-06',
     translations: {
       fr: {
