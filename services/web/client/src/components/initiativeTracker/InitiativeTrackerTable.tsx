@@ -36,6 +36,8 @@ import {
   isInitiativeMissing,
   isInitiativeInputTarget,
   orderRowsByFrozenIds,
+  findAdjacentInitiativeInput,
+  getVisibleInitiativeInputs,
   resolveInitiativeModifier,
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
@@ -568,10 +570,26 @@ export function InitiativeTrackerTable({
       <div
         className="mt-3 flex w-full min-w-0 flex-col gap-3 md:gap-2.5"
         onFocusCapture={(event) => {
-          if (isInitiativeInputTarget(event.target)) setFrozenOrder(rows.map((row) => row.id));
+          if (isInitiativeInputTarget(event.target)) setFrozenOrder((current) => current ?? rows.map((row) => row.id));
         }}
         onBlurCapture={(event) => {
-          if (isInitiativeInputTarget(event.target)) setFrozenOrder(null);
+          // Tabbing from one initiative field to another keeps the order frozen.
+          if (isInitiativeInputTarget(event.target) && !isInitiativeInputTarget(event.relatedTarget)) {
+            setFrozenOrder(null);
+          }
+        }}
+        onKeyDownCapture={(event) => {
+          if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return;
+          if (!isInitiativeInputTarget(event.target)) return;
+          const next = findAdjacentInitiativeInput(
+            getVisibleInitiativeInputs(event.currentTarget),
+            event.target as HTMLElement,
+            event.shiftKey,
+          );
+          if (!next) return;
+          event.preventDefault();
+          next.focus();
+          if (next instanceof HTMLInputElement) next.select();
         }}>
         {displayRows.map((row) => {
           const rowLabels = getRowLabels(row);

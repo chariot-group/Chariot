@@ -1447,7 +1447,8 @@ When adding a rule:
 - Tracker list is always displayed sorted by:
   1. initiative descending
   2. group label ascending (tie-breaker)
-- While an initiative field is being edited (focused) before combat start, the displayed order MUST stay frozen so the row under the pointer does not move between consecutive arrow/spinner clicks. The value is still stored on every change; the list re-sorts when the field loses focus (blur or Enter), and always once initiatives lock at combat start.
+- While an initiative field is being edited (focused) before combat start, the displayed order MUST stay frozen so the row under the pointer does not move between consecutive arrow/spinner clicks. The value is still stored on every change; the list re-sorts when focus leaves the initiative fields (blur to anything else, or Enter), and always once initiatives lock at combat start. Moving focus from one initiative field to another keeps the order frozen.
+- **Keyboard entry**: in an editable initiative field, `Tab` moves focus to the next row's initiative field in displayed order, skipping the other controls of the row; `Shift+Tab` moves to the previous one. On the last (resp. first) field, `Tab` (resp. `Shift+Tab`) keeps the native focus order. Each field commits its value when left, as on blur.
 - Before combat start:
   - initiatives are editable
   - grouped initiative edit mode is available (bulk apply to selected rows)
@@ -1642,6 +1643,8 @@ When adding a rule:
 
 - Nominal: modifier hint shows dice icon, signed bonus (`+2`), and tooltip/accessible name “bonus d'initiative +2”.
 - Nominal: GM types `15` with modifier `+2`, blurs or starts combat → stored/displayed total `17`; sort uses `17`.
+- Nominal: `Tab` in an initiative field focuses the next row's initiative field; `Shift+Tab` the previous one; order stays frozen while tabbing between fields.
+- Edge: `Tab` on the last initiative field keeps native focus order; hidden duplicate fields (mobile / desktop layouts) are skipped.
 - Nominal: Start combat while focus is still in an initiative field → pending text is flushed; totals are not left at `0`.
 - Edge: player preparatory input shows modifier only on own row; missing legacy `initiativeModifier` displays/adds as `0`.
 - Edge: re-focus after commit of `17` with mod `+2` shows roll `15` in the input; second commit still yields `17`.

@@ -371,3 +371,20 @@ export function orderRowsByFrozenIds<T extends { id: string }>(rows: T[], frozen
   const known = new Set(frozenIds);
   return [...frozen, ...rows.filter((row) => !known.has(row.id))];
 }
+
+/**
+ * FR-combat-initiative-tracker — keyboard entry: the initiative field to focus on `Tab` / `Shift+Tab`,
+ * or `null` to keep the native focus order (first / last field, unknown field).
+ */
+export function findAdjacentInitiativeInput<T>(inputs: T[], current: T, backwards: boolean): T | null {
+  const index = inputs.indexOf(current);
+  if (index === -1) return null;
+  return inputs[backwards ? index - 1 : index + 1] ?? null;
+}
+
+/** Editable initiative fields of a container in DOM order, ignoring the ones hidden by the responsive layout. */
+export function getVisibleInitiativeInputs(container: ParentNode): HTMLElement[] {
+  return Array.from(container.querySelectorAll<HTMLElement>(`[${INITIATIVE_INPUT_ATTRIBUTE}]`)).filter(
+    (input) => !input.hasAttribute("disabled") && input.getClientRects().length > 0,
+  );
+}
