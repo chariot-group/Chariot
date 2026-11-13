@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Textarea } from "@/components/ui/textarea";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import {
-  INVENTORY_BENTO_GRID_CLASS,
+  INVENTORY_EDIT_GRID_CLASS,
   INVENTORY_SLOTS,
 } from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
 import { COIN_CONFIG, type CoinKey } from "@/components/character/tabContents/inventory/shared/coins";
@@ -29,7 +29,7 @@ export default function CharacterInventoryTabEdit({ accentColor, form }: Charact
   const coinErrors = COIN_CONFIG.map(({ key }) => treasureErrors?.[key]).filter(Boolean);
 
   return (
-    <div className={INVENTORY_BENTO_GRID_CLASS}>
+    <div className={INVENTORY_EDIT_GRID_CLASS}>
       <GeneralSectionCard
         headingId="coins-heading"
         title={t("coins")}
@@ -113,7 +113,7 @@ export default function CharacterInventoryTabEdit({ accentColor, form }: Charact
                     aria-invalid={fieldState.invalid}
                     aria-describedby={fieldState.error ? `${id}-error` : undefined}
                     placeholder={t(key)}
-                    className="min-h-36 flex-1"
+                    className="min-h-36 flex-1 resize-none"
                   />
                   {fieldState.error && (
                     <FieldError

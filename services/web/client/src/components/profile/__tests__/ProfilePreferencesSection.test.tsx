@@ -54,6 +54,14 @@ describe("ProfilePreferencesSection", () => {
     expect(html).toContain('role="combobox"');
   });
 
+  it("nominal: the preferences card uses the standard card padding like the other sections", () => {
+    const html = renderToStaticMarkup(<ProfilePreferencesSection />);
+    const card = html.match(/data-slot="card" class="([^"]+)"/)?.[1] ?? "";
+
+    expect(card).toContain("p-6");
+    expect(card).not.toMatch(/(^| )(p-4|sm:p-5)( |$)/);
+  });
+
   it("nominal: displays app version when NEXT_PUBLIC_APP_VERSION is defined", () => {
     process.env.NEXT_PUBLIC_APP_VERSION = "1.2.3";
     const html = renderToStaticMarkup(<ProfilePreferencesSection onViewReleaseNotes={() => {}} />);

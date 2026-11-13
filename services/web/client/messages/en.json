@@ -124,6 +124,7 @@
     "loadMoreGroupsAria": "Load more groups",
     "loadMoreCharacters": "Load more",
     "loadMoreCharactersAria": "Load more characters",
+    "loadingMore": "Loading more items…",
     "addToSession": "Join the session",
     "removeFromSession": "Leave the session",
     "gmGuestCharacter": "GM Guest",
@@ -525,7 +526,10 @@
       "campaignCreationFailed": "Failed to create campaign",
       "groupNameRequired": "Group name is required",
       "groupCreationFailed": "Failed to create group"
-    }
+    },
+    "lazyLoading": "Loading…",
+    "lazyLoadError": "This part of the app could not be loaded. Check your connection and try again.",
+    "retry": "Retry"
   },
   "error": {
     "title": "Oops! Something went wrong",
@@ -561,7 +565,8 @@
     "uploadLabel": "Choose a profile image",
     "invalidType": "Unsupported format. Use JPEG (.jpg), PNG (.png), WebP (.webp), or HEIC (.heic).",
     "tooLarge": "Image exceeds the {maxMb} MB size limit.",
-    "requirementsHint": "JPEG, PNG, WebP, or HEIC · max. {maxMb} MB · {width}×{height} px recommended (4:5 ratio)",
+    "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} MB max\n{width}×{height} px (4:5) recommended",
+    "requirementsHintRound": "JPEG · PNG · WebP · HEIC — {maxMb} MB max\n{width}×{height} px recommended (cropped to a circle)",
     "uploadSuccess": "Image updated.",
     "uploadError": "Could not update the image.",
     "removeSuccess": "Image removed.",
@@ -725,8 +730,6 @@
     "referral": {
       "yourCode": "Referral link",
       "tiersProgressAriaLabel": "Referral tier progress",
-      "maxDiscountLabel": "Max",
-      "maxDiscountAriaLabel": "Maximum possible discount: {discount}%",
       "noApplicableDiscount": "0%",
       "tierSegmentAriaLabel": "{count, plural, one {# referral} other {# referrals}}: {discount}% discount",
       "copyCode": "Copy code",
@@ -742,6 +745,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 referral awaiting 1st purchase} one {# referral awaiting 1st purchase} other {# referrals awaiting 1st purchase}}",
       "tiersTitle": "Referral tiers",
       "tiersSubtitle": "The more you refer, the more you save",
+      "compactCurrentLabel": "Available discount",
+      "compactPendingPotential": "Up to {discount}% once your pending referrals make their first purchase",
       "tierReferral": "referral",
       "tierReferrals": "referrals",
       "currentDiscount": "Available discount: {discount}%",
@@ -999,7 +1004,6 @@
         "maxBelowCurrent": "Max HP was automatically adjusted to stay greater than or equal to current HP.",
         "hitDiceRemainingClamped": "Remaining hit dice were capped by this class’s level."
       },
-      "defense": "Defense",
       "initiative": "Initiative",
       "size": "Size",
       "selectSize": "Select a size",
@@ -1014,9 +1018,12 @@
       "spellEffectType": "Effect Type",
       "spellDamage": "Damage",
       "spellHealing": "Healing",
-      "diceCount": "Dice Count",
-      "diceType": "Dice Type",
       "bonus": "Bonus",
+      "diceHelpLabel": "Dice notation help",
+      "diceHelp": "3d8 = 3 eight-sided dice · +2 = flat bonus added to the roll",
+      "diceSuggestionsLabel": "Dice suggestions",
+      "diceFormula": "Dice",
+      "invalidDiceFormula": "Invalid dice formula (e.g. 8d6+2, dice d4 to d20 or d100).",
       "damageType": "Damage Type",
       "damageTypePlaceholder": "Piercing, fire, force",
       "quickNumberPlaceholder": "Enter a number",
@@ -1255,6 +1262,7 @@
         "levelLabel": "Level",
         "globalLevel": "Global level",
         "classes": "Class(es)",
+        "removeClass": "Remove class {index}",
         "subclassOf": "Subclass of",
         "proficiencies": "Proficiencies",
         "languages": "Language(s)",
@@ -1477,7 +1485,9 @@
         "classLevelExceeds": "Total exceeds global level",
         "classLevelExceedsGlobal": "Total class levels ({total}) exceeds global level ({global})",
         "classLevelInfo": "This class level: {classLevel} | Total: {totalLevel}/{globalLevel}",
-        "addSecondClass": "Add multiclass"
+        "addSecondClass": "Add multiclass",
+        "classSelector": "Class to edit",
+        "classContainsErrors": "This class contains errors"
       }
     },
     "npc": {
@@ -1974,6 +1984,7 @@
     "close": "Close",
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navigate to a previous version",
+    "versionsNavLabel": "Versions",
     "latest": "Current"
   },
   "playerSpaceFallback": {

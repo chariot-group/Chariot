@@ -11,11 +11,12 @@ import {
   type UseFormReturn,
 } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { BookOpen, BookOpenCheck, BookPlus, Plus, Trash2 } from "lucide-react";
+import { BookOpen, BookOpenCheck, BookPlus, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import type { AbilityScores, Character, Spell, Spellcasting } from "@/types/character";
 import { Accordion } from "@/components/ui/accordion";
 import { Button, toggleButtonPressedClassName } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { calculateAbilityBonus, isPlayer } from "@/utils/global.utils";
 import {
   calculateSpellAttackBonus,
@@ -39,7 +40,7 @@ import ListRow from "@/components/character/tabContents/shared/listCard/ListRow"
 import ListSelectRow from "@/components/character/tabContents/shared/listCard/ListSelectRow";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import { useIsXlUp } from "@/hooks/use-mobile";
-import CodexSpellSearchDialog from "@/components/character/tabContents/magic/CodexSpellSearchDialog";
+import { LazyCodexSpellSearchDialog as CodexSpellSearchDialog } from "@/components/lazy/lazyCharacterEditForms";
 import SpellPreparedPill from "@/components/character/tabContents/magic/SpellPreparedPill";
 import SpellEditForm from "@/components/character/tabContents/magic/form/SpellEditForm";
 import SpellcastingEditCard from "@/components/character/tabContents/magic/form/SpellcastingEditCard";
@@ -124,7 +125,7 @@ function SpellSlotTotalInput({
               type="number"
               inputMode="numeric"
               min={0}
-              className="h-8 w-14 text-center"
+              className="h-8 w-14 border border-border bg-card text-center"
               value={value === undefined || value === null ? "" : String(value)}
               aria-invalid={fieldState.invalid}
               aria-label={tMagic("spellSlotsTotalForLevel", { level })}
@@ -542,18 +543,10 @@ export default function CharacterMagicTabEdit({
                 ariaUnprepared={`${tMagic("preparedPillAriaUnprepared")} : ${name}`}
               />
             )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-red-500"
+            <DeleteIconButton
               onClick={() => removeSpell(index)}
-              aria-label={tMagic("removeSpellWithName", { name })}>
-              <Trash2
-                className="size-4"
-                aria-hidden="true"
-              />
-            </Button>
+              aria-label={tMagic("removeSpellWithName", { name })}
+            />
           </span>
         );
         if (isWide) {
@@ -718,7 +711,7 @@ export default function CharacterMagicTabEdit({
         collapseLabel={tMagic("collapseAll")}
         emptyLabel={tMagic("noSpells")}>
         {isWide ? (
-          <div className="w-full">{listItems}</div>
+          <div className="flex w-full flex-col gap-1">{listItems}</div>
         ) : (
           <Accordion
             type="multiple"
@@ -728,7 +721,7 @@ export default function CharacterMagicTabEdit({
               if (opened) setSelectedSpell(Number(opened.replace("spell-", "")));
               setOpenRows(next);
             }}
-            className="w-full">
+            className="flex w-full flex-col gap-1">
             {listItems}
           </Accordion>
         )}

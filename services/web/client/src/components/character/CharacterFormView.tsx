@@ -1,5 +1,6 @@
 "use client";
 
+import { replaceCharacterTabInUrl } from "@/lib/characterTabUrl";
 import { X, Save } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import { useTranslations } from "next-intl";
@@ -195,14 +196,10 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
 
   const playerCodexData = characterType === "players" ? reduxPlayerCodexDraft : null;
 
-  // Fonction pour changer d'onglet et mettre à jour l'URL
+  // History API, not the router: no server round trip, instant even on 3G (FR-character-detail-view)
   const handleTabChange = useCallback((newTab: string) => {
-    const tab = newTab as CharacterTab;
-    // Mettre à jour l'URL sans recharger la page
-    const currentParams = new URLSearchParams(searchParams.toString());
-    currentParams.set("tab", tab);
-    router.replace(`?${currentParams.toString()}`, { scroll: false });
-  }, [router, searchParams]);
+    replaceCharacterTabInUrl(newTab);
+  }, []);
 
   const defaultSavingThrows = DEFAULT_SAVING_THROWS;
   const defaultMasteries = DEFAULT_MASTERIES;

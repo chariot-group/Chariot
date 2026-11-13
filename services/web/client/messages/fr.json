@@ -124,6 +124,7 @@
     "loadMoreGroupsAria": "Charger plus de groupes",
     "loadMoreCharacters": "Charger plus",
     "loadMoreCharactersAria": "Charger plus de personnages",
+    "loadingMore": "Chargement des éléments suivants…",
     "addToSession": "Rejoindre la session",
     "removeFromSession": "Quitter la session",
     "gmGuestCharacter": "Invité MJ",
@@ -526,7 +527,10 @@
       "campaignCreationFailed": "Échec de la création de la campagne",
       "groupNameRequired": "Le nom du groupe est requis",
       "groupCreationFailed": "Échec de la création du groupe"
-    }
+    },
+    "lazyLoading": "Chargement…",
+    "lazyLoadError": "Impossible de charger cette partie de l'application. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer"
   },
   "error": {
     "title": "Oups ! Une erreur s'est produite",
@@ -562,7 +566,8 @@
     "uploadLabel": "Choisir une image de profil",
     "invalidType": "Format non pris en charge. Utilisez JPEG (.jpg), PNG (.png), WebP (.webp) ou HEIC (.heic).",
     "tooLarge": "L'image dépasse la taille maximale de {maxMb} Mo.",
-    "requirementsHint": "JPEG, PNG, WebP ou HEIC · max. {maxMb} Mo · {width}×{height} px recommandé (ratio 4:5)",
+    "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} Mo max\n{width}×{height} px (4:5) conseillé",
+    "requirementsHintRound": "JPEG · PNG · WebP · HEIC — {maxMb} Mo max\n{width}×{height} px conseillé (recadrée en cercle)",
     "uploadSuccess": "Image mise à jour.",
     "uploadError": "Impossible de mettre à jour l'image.",
     "removeSuccess": "Image supprimée.",
@@ -726,8 +731,6 @@
     "referral": {
       "yourCode": "Lien de parrainage",
       "tiersProgressAriaLabel": "Progression des paliers de parrainage",
-      "maxDiscountLabel": "Max",
-      "maxDiscountAriaLabel": "Réduction maximale possible : {discount} %",
       "noApplicableDiscount": "0 %",
       "tierSegmentAriaLabel": "{count, plural, one {# filleul} other {# filleuls}} : {discount} % de réduction",
       "copyCode": "Copier le code",
@@ -743,6 +746,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 filleul en attente du 1er achat} one {# filleul en attente du 1er achat} other {# filleuls en attente du 1er achat}}",
       "tiersTitle": "Paliers de parrainage",
       "tiersSubtitle": "Plus vous parrainez, plus vous économisez",
+      "compactCurrentLabel": "Réduction disponible",
+      "compactPendingPotential": "Jusqu'à {discount} % quand vos filleuls en attente auront acheté",
       "tierReferral": "filleul",
       "tierReferrals": "filleuls",
       "currentDiscount": "Réduction disponible : {discount} %",
@@ -1000,7 +1005,6 @@
         "maxBelowCurrent": "La valeur des PV max a été ajustée automatiquement pour rester supérieure ou égale aux PV actuels.",
         "hitDiceRemainingClamped": "Les dés de vie restants ont été plafonnés au niveau de cette classe."
       },
-      "defense": "Défense",
       "initiative": "Initiative",
       "size": "Taille",
       "selectSize": "Sélectionner une taille",
@@ -1015,9 +1019,12 @@
       "spellEffectType": "Type d'effet",
       "spellDamage": "Dégâts",
       "spellHealing": "Soins",
-      "diceCount": "Nombre de dés",
-      "diceType": "Type de dé",
       "bonus": "Bonus",
+      "diceHelpLabel": "Aide sur la notation des dés",
+      "diceHelp": "3d8 = 3 dés à 8 faces · +2 = bonus fixe ajouté au résultat",
+      "diceSuggestionsLabel": "Suggestions de dés",
+      "diceFormula": "Dés",
+      "invalidDiceFormula": "Formule de dés invalide (ex. 8d6+2, dés d4 à d20 ou d100).",
       "damageType": "Type de dégâts",
       "damageTypePlaceholder": "Perforant, feu, force",
       "quickNumberPlaceholder": "Saisir un nombre",
@@ -1256,6 +1263,7 @@
         "levelLabel": "Niveau",
         "globalLevel": "Niveau global",
         "classes": "Classe(s)",
+        "removeClass": "Retirer la classe {index}",
         "subclassOf": "Sous classe de",
         "proficiencies": "Maîtrises",
         "languages": "Langue(s)",
@@ -1481,7 +1489,9 @@
         "classLevelExceeds": "Total supérieur au niveau global",
         "classLevelExceedsGlobal": "Total des niveaux de classe ({total}) dépasse le niveau global ({global})",
         "classLevelInfo": "Niveau de cette classe : {classLevel} | Total : {totalLevel}/{globalLevel}",
-        "addSecondClass": "Ajouter une multiclasse"
+        "addSecondClass": "Ajouter une multiclasse",
+        "classSelector": "Choix de la classe à modifier",
+        "classContainsErrors": "Cette classe contient des erreurs"
       }
     },
     "npc": {
@@ -1978,6 +1988,7 @@
     "close": "Fermer",
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Naviguer vers une version précédente",
+    "versionsNavLabel": "Versions",
     "latest": "Actuelle"
   },
   "playerSpaceFallback": {

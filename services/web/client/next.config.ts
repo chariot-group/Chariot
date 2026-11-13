@@ -21,6 +21,15 @@ const nextConfig: NextConfig = {
     },
   },
   allowedDevOrigins: ["192.168.1.186"],
+  /**
+   * Same-origin API outside Traefik (local dev, local prod build): /gateway/* → gateway.
+   * Deployed environments route /gateway/* in Traefik instead (no hop through Next.js).
+   * @see FR-web-first-load-performance (requirement 18)
+   */
+  async rewrites() {
+    const gatewayUrl = process.env.GATEWAY_INTERNAL_URL?.replace(/\/+$/, "");
+    return gatewayUrl ? [{ source: "/gateway/:path*", destination: `${gatewayUrl}/:path*` }] : [];
+  },
   env: {
     NEXT_PUBLIC_APP_VERSION: packageJson.version,
   },

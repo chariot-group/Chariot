@@ -19,6 +19,7 @@
   "include": [
     "src/**/*.ts",
     "scenarios/**/*.ts",
+    "perf/**/*.ts",
     "playwright.config.ts"
   ]
 }

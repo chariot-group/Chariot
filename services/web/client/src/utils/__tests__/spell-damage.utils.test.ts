@@ -5,7 +5,9 @@ import {
   coerceSpellDamageDetailsList,
   ensureSpellDamageEditRows,
   formatSpellDamageList,
+  formatSpellDiceFormula,
   hydrateSpellDamageDetails,
+  parseSpellDiceFormula,
 } from "@/utils/spell-damage.utils";
 
 describe("FR-character-spell-multi-damage — spell damage helpers", () => {
@@ -66,5 +68,29 @@ describe("FR-character-spell-multi-damage — spell damage helpers", () => {
     ).toBe("8d6 fire");
 
     expect(formatSpellDamageList([])).toBeNull();
+  });
+});
+
+/** @see FR-character-magic-list-card (spell dice field) */
+describe("FR-character-magic-list-card — spell dice field parsing", () => {
+  it("nominal: a typed formula is stored as structured dice and shown back as the same text", () => {
+    const dice = parseSpellDiceFormula("8d6+2");
+
+    expect(dice).toEqual({ diceCount: 8, diceType: "d6", bonus: 2 });
+    expect(formatSpellDiceFormula(dice)).toBe("8d6+2");
+  });
+
+  it("edge: spaces, negative bonus, d% and an empty text are accepted", () => {
+    expect(parseSpellDiceFormula(" 2d6 - 1 ")).toEqual({ diceCount: 2, diceType: "d6", bonus: -1 });
+    expect(parseSpellDiceFormula("1D%")).toEqual({ diceCount: 1, diceType: "d100", bonus: null });
+    expect(parseSpellDiceFormula("3d8+0")).toEqual({ diceCount: 3, diceType: "d8", bonus: null });
+    expect(parseSpellDiceFormula("")).toEqual({ diceCount: null, diceType: null, bonus: null });
+    expect(formatSpellDiceFormula(null)).toBe("");
+  });
+
+  it("failure: text, unfinished formulas, non-standard dice and zero dice are rejected", () => {
+    for (const text of ["abc", "2d", "d6", "2d7", "0d6", "2d6+", "2d6 feu"]) {
+      expect(parseSpellDiceFormula(text)).toBeNull();
+    }
   });
 });

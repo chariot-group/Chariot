@@ -2,7 +2,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { CHARACTER_TABS, PLAYER_CHARACTER_TABS } from "@/components/character/CharacterTabs";
-import CharacterSheetSkeleton from "@/components/character/skeleton/CharacterSheetSkeleton";
+import CharacterSheetSkeleton, { CompanionsTabSkeleton } from "@/components/character/skeleton/CharacterSheetSkeleton";
 import {
   resolveCharacterSheetSkeletonVariant,
   skeletonCardsForTab,
@@ -112,5 +112,33 @@ describe("CharacterSheetSkeleton — rendering and accessibility", () => {
       expect(html).not.toMatch(/tabindex=/i);
       expect(html.replace(/<span class="sr-only">[^<]*<\/span>/, "").replace(/<[^>]+>/g, "")).toBe("");
     }
+  });
+});
+
+describe("CompanionsTabSkeleton — Companions tab loading (FR-character-sheet-skeleton)", () => {
+  const render = (showActions: boolean) =>
+    renderToStaticMarkup(
+      <CompanionsTabSkeleton
+        showActions={showActions}
+        label="Loading companions"
+      />,
+    );
+
+  it("nominal: status region with the label and three companion card placeholders", () => {
+    const html = render(true);
+    expect(html).toContain('role="status"');
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain("Loading companions");
+    expect(html.match(/size-12/g)).toHaveLength(3);
+  });
+
+  it("edge: no action placeholders when liaison actions are disabled (GM in session)", () => {
+    expect(render(true)).toContain("bg-purple/40");
+    expect(render(false)).not.toContain("bg-purple/40");
+  });
+
+  it("guard: no spinner and no focusable element", () => {
+    const html = render(true);
+    expect(html).not.toMatch(/<(button|a|input)\b|tabindex|animate-spin/);
   });
 });

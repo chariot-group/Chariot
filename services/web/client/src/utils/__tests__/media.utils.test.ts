@@ -37,9 +37,9 @@ describe("media.utils (client)", () => {
     expect(shouldRefreshPresignedUrl(later)).toBe(false);
   });
 
-  it("nominal: sheet and profile sizes keep a 4:5 aspect ratio", () => {
+  it("nominal: sheet keeps a 4:5 aspect ratio, the profile photo is a square circle (FR-media-avatars exception)", () => {
     expect(MEDIA_AVATAR_SIZE_CLASS.sheet).toContain("aspect-[4/5]");
-    expect(MEDIA_AVATAR_SIZE_CLASS.profile).toContain("aspect-[4/5]");
+    expect(MEDIA_AVATAR_SIZE_CLASS.profile).toContain("aspect-square");
     expect(MEDIA_AVATAR_SIZE_CLASS.thumb).toContain("aspect-square");
   });
 

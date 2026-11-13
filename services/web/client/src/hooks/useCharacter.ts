@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
+import { createInFlightGuard } from '@/lib/inFlightGuard';
 import CharacterService from '@/services/CharacterService';
 import {
     isCharacterAccessDeniedError,
@@ -204,7 +205,10 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
         return cleaned.length === rawCharacters.length ? rawCharacters : cleaned;
     }, [rawCharacters]);
     const loading = useAppSelector(selectCharactersWithoutGroupLoading);
-    const loadingMore = useAppSelector(selectCharactersWithoutGroupLoadingMore);
+    const loadingMorePlayers = useAppSelector(selectCharactersWithoutGroupLoadingMore);
+    const [loadMoreInFlight, setLoadMoreInFlight] = useState(false);
+    const loadingMore = loadingMorePlayers || loadMoreInFlight;
+    const loadMoreGuardRef = useRef(createInFlightGuard());
     const error = useAppSelector(selectCharactersWithoutGroupError);
     const hasMore = useAppSelector(selectCharactersWithoutGroupHasMore);
     const currentPage = useAppSelector(selectCharactersWithoutGroupCurrentPage);
@@ -246,20 +250,26 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
     const loadMoreCharacters = useCallback(async () => {
         if (loadingMore || !hasMore) return;
 
-        try {
-            dispatch(loadMoreCharactersWithoutGroupStart());
-            const nextPage = currentPage + 1;
-            const response = await CharacterService.getPlayersWithoutGroup(nextPage, pageSize);
-            dispatch(loadMoreCharactersWithoutGroupSuccess({
-                characters: response.data,
-                total: response.pagination.totalItems
-            }));
-            const allPlayers = [...characters, ...response.data];
-            await loadPlayerSpaceNpcs(allPlayers);
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to load more characters';
-            dispatch(fetchCharactersWithoutGroupFailure(errorMessage));
-        }
+        // Busy until the linked NPCs are loaded too, not only the players page (FR-sidebar-navigation)
+        await loadMoreGuardRef.current.run(async () => {
+            setLoadMoreInFlight(true);
+            try {
+                dispatch(loadMoreCharactersWithoutGroupStart());
+                const nextPage = currentPage + 1;
+                const response = await CharacterService.getPlayersWithoutGroup(nextPage, pageSize);
+                dispatch(loadMoreCharactersWithoutGroupSuccess({
+                    characters: response.data,
+                    total: response.pagination.totalItems
+                }));
+                const allPlayers = [...characters, ...response.data];
+                await loadPlayerSpaceNpcs(allPlayers);
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Failed to load more characters';
+                dispatch(fetchCharactersWithoutGroupFailure(errorMessage));
+            } finally {
+                setLoadMoreInFlight(false);
+            }
+        });
     }, [dispatch, currentPage, pageSize, loadingMore, hasMore, characters, loadPlayerSpaceNpcs]);
 
     /**

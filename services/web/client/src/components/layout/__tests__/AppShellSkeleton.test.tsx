@@ -11,15 +11,21 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(navigation.search),
 }));
 
-const renderAt = (pathname: string, search = "") => {
+const renderAt = (pathname: string, search = "", onRetry?: () => void) => {
   navigation.pathname = pathname;
   navigation.search = search;
   return renderToStaticMarkup(
     <NextIntlClientProvider
       locale="en"
       timeZone="UTC"
-      messages={{ auth: { loading: "Loading...", logoutEscape: "Log out" } }}>
-      <AppShellSkeleton onLogout={() => undefined} />
+      messages={{
+        auth: { loading: "Loading...", logoutEscape: "Log out" },
+        common: { lazyLoadError: "Could not load", retry: "Retry" },
+      }}>
+      <AppShellSkeleton
+        onLogout={() => undefined}
+        onRetry={onRetry}
+      />
     </NextIntlClientProvider>,
   );
 };
@@ -74,5 +80,18 @@ describe("AppShellSkeleton — rendering and accessibility", () => {
     expect(html.match(/<(button|a|input|select|textarea)\b/g)).toEqual(["<button"]);
     expect(html).toMatch(/<button[^>]*type="button"[^>]*>Log out<\/button>/);
     expect(html).not.toContain("animate-spin");
+  });
+
+  it("failure: shell load failure keeps the frame, shows an alert with retry, and is no longer busy (FR-web-first-load-performance)", () => {
+    const html = renderAt("/fr/characters/abc", "", () => undefined);
+
+    expect(html).toMatch(/role="alert"/);
+    expect(html).toContain("Could not load");
+    expect(html).not.toContain('aria-busy="true"');
+    expect(html).not.toContain('role="status"');
+    // Log out escape hatch and retry are the two focusable elements
+    expect(html.match(/<button/g)).toHaveLength(2);
+    expect(html).toContain(">Retry</button>");
+    expect(html).toContain(">Log out</button>");
   });
 });

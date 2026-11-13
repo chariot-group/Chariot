@@ -33,6 +33,9 @@ async function bootstrap() {
         credentials: true,
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
         exposedHeaders: ['Authorization'],
+        // Browsers cache the preflight (Chrome caps at 7200 s): no OPTIONS round trip before each
+        // authenticated call on slow networks (FR-web-first-load-performance, requirement 10).
+        maxAge: 7200,
     });
 
     app.use(

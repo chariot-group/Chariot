@@ -8,7 +8,7 @@ import {
   CHARACTER_TABS,
   PLAYER_CHARACTER_TABS,
   type CharacterTab,
-} from "@/components/character/CharacterTabs";
+} from "@/components/character/characterTabsConfig";
 import {
   NPC_VIEW_SLOTS,
   PLAYER_VIEW_SLOTS,
@@ -19,7 +19,7 @@ import {
 } from "@/components/character/tabContents/battle/shared/battleBentoLayout";
 import { INVENTORY_SLOTS } from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
 import { HISTORY_SLOTS } from "@/components/character/tabContents/history/shared/historyBentoLayout";
-import { MAGIC_SLOTS } from "@/components/character/tabContents/magic/shared/spellList";
+import { MAGIC_SLOTS } from "@/components/character/tabContents/magic/shared/magicBentoLayout";
 
 export type CharacterSheetRoute = "campaign" | "playerSpace";
 export type CharacterSheetSkeletonKind = "player" | "npc";
