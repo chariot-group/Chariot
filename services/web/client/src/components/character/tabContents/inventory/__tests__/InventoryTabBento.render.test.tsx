@@ -42,6 +42,9 @@ const CASES = {
 };
 
 /** @see FR-character-inventory-bento-layout */
+/** A tinted box (not a hover / open state): forbidden inside sheet cards, decision 2026-11-13. */
+const TINTED_BOX = /(?<![:\w-])bg-gray-middle-light\/\d+/;
+
 describe("Inventory tab — single bento grid", () => {
   beforeEach(() => {
     session.inSession = false;
@@ -84,6 +87,11 @@ describe("Inventory tab — single bento grid", () => {
       "30 copperPieces",
     ]);
     expect(html).not.toContain('role="text"');
+    expect(html).toContain("grid-cols-3");
+    expect(html).toContain("@sm:grid-cols-5");
+    // No delimiter, no vertical rule, no tinted box (decision 2026-11-13)
+    expect(html).not.toContain("border-l");
+    expect(html).not.toMatch(TINTED_BOX);
   });
 
   it("edge: a value ≥ 1 000 is abbreviated with the full value kept for assistive tech", () => {
@@ -112,6 +120,8 @@ describe("Inventory tab — single bento grid", () => {
     const html = CASES.view();
 
     expect(html.match(/<button[^>]*aria-label="[^"]*editCoinAmountAria" aria-haspopup="dialog"/g)).toHaveLength(5);
+    expect(html).toContain("hover:bg-gray-middle-light/50");
+    expect(html).not.toMatch(TINTED_BOX);
     expect(html).toContain("editField");
   });
 

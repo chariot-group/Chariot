@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
+import { FACT_CELL_CLASS, FACT_CELLS_FRAME_CLASS } from "@/components/character/tabContents/shared/factCell";
+import { cn } from "@/lib/utils";
 
 /** One key fact cell (PC race / level, NPC type). */
 export interface IdentityFact {
@@ -39,7 +41,9 @@ interface CharacterIdentityCardProps {
 export const TRUNCATE_ON_HOVER_DEVICES_CLASS = "min-w-0 wrap-break-word [@media(hover:hover)]:truncate";
 
 /** Two columns; an odd last cell spans the row so no empty slot suggests a missing fact. */
-export const FACTS_TWO_COLUMNS_CLASS = "grid-cols-2 [&>div:last-child:nth-child(odd)]:col-span-2";
+/** One column below `@md` card width (mobile); two from `@md` so type / alignment / FP are not squeezed. */
+export const FACTS_TWO_COLUMNS_CLASS =
+  "grid-cols-1 @md:grid-cols-2 @md:[&>div:last-child:nth-child(odd)]:col-span-2";
 
 const isFilled = (value: ReactNode) => value !== null && value !== undefined && value !== false && value !== "";
 
@@ -52,21 +56,32 @@ export function IdentityFactCells({ facts }: { facts: IdentityFact[] }) {
   if (visibleFacts.length === 0) return null;
 
   return (
-    <dl className={`grid gap-2 ${visibleFacts.length > 1 ? FACTS_TWO_COLUMNS_CLASS : "grid-cols-1"}`}>
-      {visibleFacts.map((fact) => (
-        <div
-          key={fact.key}
-          className="flex min-w-0 flex-col gap-0.5 rounded-[10px] bg-gray-middle-light/50 px-2.5 py-2">
-          <dt className="truncate text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
-            {fact.label}
-          </dt>
-          <dd className="text-base font-bold wrap-break-word sm:text-lg">{fact.value}</dd>
-          {isFilled(fact.secondary) && (
-            <dd className="text-xs text-muted-foreground wrap-break-word sm:text-sm">{fact.secondary}</dd>
-          )}
-        </div>
-      ))}
-    </dl>
+    <div className={cn("@container", FACT_CELLS_FRAME_CLASS)}>
+      <dl
+        className={cn(
+          "grid gap-x-4 gap-y-3 @md:gap-y-2",
+          visibleFacts.length > 1 ? FACTS_TWO_COLUMNS_CLASS : "grid-cols-1",
+        )}>
+        {visibleFacts.map((fact) => (
+          <div
+            key={fact.key}
+            className={FACT_CELL_CLASS}>
+            <dt className="truncate text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
+              {fact.label}
+            </dt>
+            {/* Secondary info on the value line: every cell is two lines, side-by-side cells keep the same height */}
+            <dd className="flex min-w-0 flex-col gap-0.5 text-base font-bold wrap-break-word @md:block sm:text-lg">
+              <span className="min-w-0 wrap-break-word">{fact.value}</span>
+              {isFilled(fact.secondary) && (
+                <span className="text-xs font-normal text-muted-foreground wrap-break-word sm:text-sm @md:ml-1 @md:inline @md:font-normal">
+                  {fact.secondary}
+                </span>
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 
@@ -150,7 +165,7 @@ export default function CharacterIdentityCard({
               {classes.map((c) => (
                 <li
                   key={c.name}
-                  className="flex items-start justify-between gap-2 rounded-[10px] bg-gray-middle-light/50 px-2.5 py-2">
+                  className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold wrap-break-word sm:text-base">{c.name}</p>
                     {c.subclass && (

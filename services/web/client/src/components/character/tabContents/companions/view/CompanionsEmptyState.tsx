@@ -39,11 +39,11 @@ export function CompanionsEmptyState({ actions }: CompanionsEmptyStateProps) {
         title={t("emptyExamplesTitle")}
         accentColor="text-primary-light"
         className={COMPANIONS_SLOTS.emptyExamples}>
-        <ul className="grid flex-1 auto-rows-fr gap-2">
+        <ul className="grid flex-1 auto-rows-fr gap-3">
           {examples.map(({ key, icon: Icon, label }) => (
             <li
               key={key}
-              className="flex items-center gap-3 rounded-[10px] bg-gray-middle-light/50 px-3 py-2 text-sm text-white/85">
+              className="flex items-center gap-3 text-sm text-white/85">
               <Icon
                 className="size-5 shrink-0 text-white/70"
                 aria-hidden="true"

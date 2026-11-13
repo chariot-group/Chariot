@@ -3,6 +3,7 @@ import CharacterIdentityCard, {
   FACTS_TWO_COLUMNS_CLASS,
 } from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
 import { render } from "@/components/character/tabContents/__tests__/bentoRender";
+import { FACT_CELL_CLASS } from "@/components/character/tabContents/shared/factCell";
 
 /** React escapes `&` and `>` inside attribute values. */
 const escapeAttr = (value: string) => value.replace(/&/g, "&amp;").replace(/>/g, "&gt;");
@@ -11,7 +12,7 @@ const textOf = (html: string) =>
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-const factCells = (html: string) => html.match(/<div class="flex min-w-0 flex-col gap-0\.5 rounded-\[10px\]/g) ?? [];
+const factCells = (html: string) => html.split(`<div class="${FACT_CELL_CLASS}"`).slice(1);
 
 const pcFacts = [
   { key: "race", label: "raceLabel", value: "Elfe", secondary: "Berserker" },
@@ -41,9 +42,17 @@ describe("CharacterIdentityCard", () => {
     expect(text).toContain("firstname Aria lastname Vent-Clair");
     expect(text).toContain("« La Brise »");
     expect(factCells(html)).toHaveLength(2);
-    expect(html).toContain(`<dl class="grid gap-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`);
+    expect(html).toContain('<ul class="flex flex-col gap-2"');
+    expect(html).not.toContain("border-l");
+    expect(html).not.toMatch(/(?<![:\w-])bg-gray-middle-light\/\d+/);
+    expect(html).toContain(
+      `<dl class="grid gap-x-4 gap-y-3 @md:gap-y-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`,
+    );
     expect(text).toContain("raceLabel Elfe Berserker");
     expect(text).toContain("levelLabel 3 900 XP");
+    expect(html).toContain("@md:inline");
+    expect(html).toContain(">Berserker</span></dd>");
+    expect(html).toContain(">900 XP</span></dd>");
     expect(html.match(/<li /g)).toHaveLength(2);
     expect(text).toContain("Évocation");
     expect(html).toContain('aria-labelledby="character-classes-heading"');
@@ -63,8 +72,15 @@ describe("CharacterIdentityCard", () => {
     );
 
     expect(factCells(html)).toHaveLength(3);
-    expect(FACTS_TWO_COLUMNS_CLASS).toContain("[&>div:last-child:nth-child(odd)]:col-span-2");
-    expect(html).toContain(`<dl class="grid gap-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`);
+    expect(FACTS_TWO_COLUMNS_CLASS.split(" ")).toEqual([
+      "grid-cols-1",
+      "@md:grid-cols-2",
+      "@md:[&>div:last-child:nth-child(odd)]:col-span-2",
+    ]);
+    expect(html).toContain('<div class="@container min-w-0">');
+    expect(html).toContain(
+      `<dl class="grid gap-x-4 gap-y-3 @md:gap-y-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`,
+    );
     expect(html).not.toContain(">background<");
   });
 
@@ -81,7 +97,7 @@ describe("CharacterIdentityCard", () => {
     const avatarEnd = html.indexOf('<span data-avatar=""></span></div></div>');
 
     expect(avatarEnd).toBeGreaterThan(0);
-    expect(html.indexOf('<dl class="grid gap-2')).toBeGreaterThan(avatarEnd);
+    expect(html.indexOf('<dl class="grid gap-x-4')).toBeGreaterThan(avatarEnd);
     expect(html.indexOf("<ul")).toBeGreaterThan(avatarEnd);
   });
 
@@ -144,8 +160,9 @@ describe("CharacterIdentityCard", () => {
     );
 
     expect(factCells(html)).toHaveLength(1);
-    expect(html).toContain('<dl class="grid gap-2 grid-cols-1">');
+    expect(html).toContain('<dl class="grid gap-x-4 gap-y-3 @md:gap-y-2 grid-cols-1">');
     expect(html.match(/<dd/g)).toHaveLength(2);
+    expect(html).toMatch(/<dd class="[^"]*font-bold[^"]*"><span[^>]*>Humanoïde<\/span><\/dd>/);
     expect(html).not.toContain("«");
     expect(html).not.toContain(">lastname<");
     expect(html).not.toContain("character-classes-heading");

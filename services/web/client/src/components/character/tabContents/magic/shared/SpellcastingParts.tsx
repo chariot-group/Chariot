@@ -4,6 +4,7 @@ import { Book, CircleAlert, Dice5, Target, WandSparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { KeyStat } from "@/components/character/tabContents/shared/StatsSummary";
+import { FACT_CELLS_FRAME_CLASS } from "@/components/character/tabContents/shared/factCell";
 import { formatSignedBonus } from "@/utils/attack.utils";
 
 const ICON_CLASS = "size-4 shrink-0 text-muted-foreground sm:size-5";
@@ -87,33 +88,39 @@ export function SpellcastingStats({ abilityName, attackBonus, saveDC, prepared, 
   const preparedText = prepared ? tMagic("preparedSpellsUsage", { current: prepared.current, max: prepared.max }) : "";
 
   return (
-    <div className={cn("grid min-w-0 gap-2", prepared ? "grid-cols-2 @sm:grid-cols-4" : "grid-cols-3", className)}>
-      <KeyStat
-        label={tMagic("abilityShort")}
-        accessibleLabel={`${tMagic("spellcastingAbility")} ${abilityName || "—"}`}
-        icon={<WandSparkles className={ICON_CLASS} />}
-        value={abilityName || "—"}
-      />
-      <KeyStat
-        label={tMagic("attackShort")}
-        accessibleLabel={`${tMagic("attackBonus")} ${attackText}`}
-        icon={<Target className={ICON_CLASS} />}
-        value={attackText}
-      />
-      <KeyStat
-        label={tMagic("saveDCShort")}
-        accessibleLabel={`${tMagic("saveDC")} ${dcText}`}
-        icon={<Dice5 className={ICON_CLASS} />}
-        value={dcText}
-      />
-      {prepared && (
+    <div className={cn(FACT_CELLS_FRAME_CLASS, className)}>
+      <div
+        className={cn(
+          "grid min-w-0 gap-x-4 gap-y-2",
+          prepared ? "grid-cols-2 @sm:grid-cols-4" : "grid-cols-3",
+        )}>
         <KeyStat
-          label={tMagic("preparedShort")}
-          accessibleLabel={`${tMagic("preparedSpells")} ${preparedText}`}
-          icon={<Book className={ICON_CLASS} />}
-          value={preparedText}
+          label={tMagic("abilityShort")}
+          accessibleLabel={`${tMagic("spellcastingAbility")} ${abilityName || "—"}`}
+          icon={<WandSparkles className={ICON_CLASS} />}
+          value={abilityName || "—"}
         />
-      )}
+        <KeyStat
+          label={tMagic("attackShort")}
+          accessibleLabel={`${tMagic("attackBonus")} ${attackText}`}
+          icon={<Target className={ICON_CLASS} />}
+          value={attackText}
+        />
+        <KeyStat
+          label={tMagic("saveDCShort")}
+          accessibleLabel={`${tMagic("saveDC")} ${dcText}`}
+          icon={<Dice5 className={ICON_CLASS} />}
+          value={dcText}
+        />
+        {prepared && (
+          <KeyStat
+            label={tMagic("preparedShort")}
+            accessibleLabel={`${tMagic("preparedSpells")} ${preparedText}`}
+            icon={<Book className={ICON_CLASS} />}
+            value={preparedText}
+          />
+        )}
+      </div>
     </div>
   );
 }

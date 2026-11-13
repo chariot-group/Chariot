@@ -5,6 +5,10 @@ import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import { formatSignedBonus } from "@/utils/attack.utils";
 import { formatDamageFormula, hydrateSpellDamageDetails } from "@/utils/spell-damage.utils";
 import { cn } from "@/lib/utils";
+import {
+  FACT_CELL_CLASS,
+  FACT_CELLS_FRAME_CLASS,
+} from "@/components/character/tabContents/shared/factCell";
 
 interface SpellDetailsProps {
   spell: Spell;
@@ -44,7 +48,7 @@ export function spellHealingLine(spell: Spell): SpellEffectLine | null {
 }
 
 /** Trait cell: label above, value below. */
-const CELL_CLASS = "flex min-w-0 flex-col gap-0.5 rounded-[10px] bg-gray-middle-light/60 px-3 py-2";
+const CELL_CLASS = FACT_CELL_CLASS;
 
 /**
  * Cell width by kind. Short traits grow to fill their line (no holes, whatever is filled in);
@@ -65,7 +69,9 @@ function EffectCell({ label, lines, span }: { label: string; lines: SpellEffectL
             className="flex min-w-0 items-baseline gap-1.5">
             <span className="text-sm font-semibold tabular-nums">{line.formula}</span>
             {line.type && (
-              <span className="rounded-full bg-card px-2 py-0.5 text-xs text-muted-foreground">{line.type}</span>
+              <span className="rounded-full bg-gray-middle-light px-2 py-0.5 text-xs text-muted-foreground">
+                {line.type}
+              </span>
             )}
           </span>
         ))}
@@ -146,32 +152,34 @@ export default function SpellDetails({ spell, attackBonus = null, isNpc = false,
         <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 empty:hidden">{castControls}</div>
       )}
       {(hasFirstLines || hasLastLines) && (
-        <div className="flex min-w-0 flex-col gap-2">
-          {hasFirstLines && (
-            <dl className="flex min-w-0 flex-wrap gap-2">
-              {damageLines.length > 0 && (
-                <EffectCell
-                  label={tMagic("damage")}
-                  lines={damageLines}
-                  span="full"
-                />
-              )}
-              {shortTraits.map(renderCell)}
-            </dl>
-          )}
-          {hasLastLines && (
-            <dl className="flex min-w-0 flex-wrap gap-2">
-              {longTraits.map(renderCell)}
-              {healingLine && (
-                <EffectCell
-                  label={tMagic("healing")}
-                  lines={[healingLine]}
-                  span="short"
-                />
-              )}
-              {classes && renderCell([tGeneral("general.classes"), classes, "full"])}
-            </dl>
-          )}
+        <div className={FACT_CELLS_FRAME_CLASS}>
+          <div className="flex min-w-0 flex-col gap-2">
+            {hasFirstLines && (
+              <dl className="flex min-w-0 flex-wrap gap-x-4 gap-y-2">
+                {damageLines.length > 0 && (
+                  <EffectCell
+                    label={tMagic("damage")}
+                    lines={damageLines}
+                    span="full"
+                  />
+                )}
+                {shortTraits.map(renderCell)}
+              </dl>
+            )}
+            {hasLastLines && (
+              <dl className="flex min-w-0 flex-wrap gap-x-4 gap-y-2">
+                {longTraits.map(renderCell)}
+                {healingLine && (
+                  <EffectCell
+                    label={tMagic("healing")}
+                    lines={[healingLine]}
+                    span="short"
+                  />
+                )}
+                {classes && renderCell([tGeneral("general.classes"), classes, "full"])}
+              </dl>
+            )}
+          </div>
         </div>
       )}
       {spell.description && (

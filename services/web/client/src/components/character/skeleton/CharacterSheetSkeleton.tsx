@@ -93,7 +93,7 @@ function SkeletonCardBody({ card }: { card: SkeletonCard }) {
           {Array.from({ length: body.count }, (_, index) => (
             <div
               key={index}
-              className="flex flex-col items-center gap-2 rounded-[10px] bg-gray-middle-light/50 px-2 py-3">
+              className="flex flex-col gap-2 py-1">
               <SkeletonBar className="h-3 w-3/5" />
               <SkeletonBar className="h-5 w-2/5" />
             </div>
@@ -175,15 +175,17 @@ function SkeletonCompanions({ showActions = true }: { showActions?: boolean }) {
             <Skeleton className={cn(SKELETON_BAR_CLASS, "aspect-[4/5] w-16 shrink-0 rounded-[15px] sm:w-20 md:w-24")} />
           </div>
           {/* Fact cells (type, alignment, challenge rating), same grid as the « Personnage » card */}
-          <div className="grid grid-cols-2 gap-2">
-            {["type", "alignment", "cr"].map((cell) => (
-              <div
-                key={cell}
-                className="flex flex-col gap-1.5 rounded-[10px] bg-gray-middle-light/50 px-2.5 py-2 last:odd:col-span-2">
-                <SkeletonBar className="h-2.5 w-1/2" />
-                <SkeletonBar className="h-4 w-2/3" />
-              </div>
-            ))}
+          <div className="min-w-0">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {["type", "alignment", "cr"].map((cell) => (
+                <div
+                  key={cell}
+                  className="flex flex-col gap-1.5 last:odd:col-span-2">
+                  <SkeletonBar className="h-2.5 w-1/2" />
+                  <SkeletonBar className="h-4 w-2/3" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ))}

@@ -3,6 +3,7 @@ import { render } from "@/components/character/tabContents/__tests__/bentoRender
 import { IdentityFactCells } from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
 import { npcIdentityFacts } from "@/components/character/tabContents/general/shared/npcIdentityFacts";
 import type { NPC } from "@/types/character";
+import { FACT_CELL_CLASS } from "@/components/character/tabContents/shared/factCell";
 
 const labels = {
   type: "Type",
@@ -15,7 +16,7 @@ const textOf = (html: string) =>
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-const factCells = (html: string) => html.match(/<div class="flex min-w-0 flex-col gap-0\.5 rounded-\[10px\]/g) ?? [];
+const factCells = (html: string) => html.split(`<div class="${FACT_CELL_CLASS}"`).slice(1);
 
 const npc = (overrides: Partial<NPC>) =>
   ({ _id: "n1", firstname: "Grak", profile: { type: "Humanoïde", subtype: "Orc" }, ...overrides }) as unknown as NPC;
@@ -41,6 +42,15 @@ describe("npcIdentityFacts", () => {
     const html = render(<IdentityFactCells facts={npcIdentityFacts(npc({}), labels)} />);
     expect(factCells(html)).toHaveLength(2);
     expect(textOf(html)).toContain("Facteur de puissance 0 0 XP");
+  });
+
+  it("guard: fact cells have no delimiter between rows, never a left rule nor a tinted box", () => {
+    const html = render(<IdentityFactCells facts={npcIdentityFacts(npc({}), labels)} />);
+
+    expect(html).not.toContain("border-t border-border");
+    expect(html).not.toContain("border-l");
+    expect(html).not.toContain("bg-gray-middle-light");
+    expect(html).not.toContain("rounded-[10px]");
   });
 
   it("failure / guard: non-finite XP falls back to 0 and an empty type is not rendered", () => {
