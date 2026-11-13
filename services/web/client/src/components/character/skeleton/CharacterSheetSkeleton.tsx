@@ -10,6 +10,10 @@ import {
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import type { CharacterTab } from "@/components/character/characterTabsConfig";
 import {
+  COMPANIONS_BENTO_GRID_CLASS,
+  COMPANIONS_SLOTS,
+} from "@/components/character/tabContents/companions/shared/companionsBentoLayout";
+import {
   skeletonCardsForTab,
   type CharacterSheetSkeletonVariant,
   type SkeletonCard,
@@ -152,26 +156,37 @@ function SkeletonCardShell({ card, tab }: { card: SkeletonCard; tab: CharacterTa
 /** Companions tab placeholders; `showActions` false when liaison actions are disabled (GM in session). */
 function SkeletonCompanions({ showActions = true }: { showActions?: boolean }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className={COMPANIONS_BENTO_GRID_CLASS}>
       {showActions ? (
-        <div className="flex flex-wrap gap-2">
+        <div className={cn(COMPANIONS_SLOTS.toolbar, "flex flex-wrap gap-2")}>
           <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 w-36 rounded-[13px]")} />
-          <Skeleton className="h-9 w-40 rounded-[13px] bg-purple/40 motion-reduce:animate-none" />
+          <Skeleton className="h-9 w-40 rounded-[13px] bg-white/30 motion-reduce:animate-none" />
         </div>
       ) : null}
-      <div className="grid w-full min-w-0 grid-cols-1 gap-2 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
-        {Array.from({ length: 3 }, (_, index) => (
-          <div
-            key={index}
-            className="flex min-w-0 items-center gap-3 rounded-[15px] bg-card p-4">
-            <Skeleton className={cn(SKELETON_BAR_CLASS, "size-12 shrink-0 rounded-full")} />
+      {Array.from({ length: 3 }, (_, index) => (
+        <div
+          key={index}
+          className={cn(COMPANIONS_SLOTS.companion, "flex flex-col gap-3 rounded-[24px] bg-card p-4 md:px-6")}>
+          <div className="flex items-start gap-3">
             <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <SkeletonBar className="h-4 w-2/3" />
+              <Skeleton className="h-5 w-2/3 rounded-full bg-purple/40 motion-reduce:animate-none" />
               <SkeletonBar className="h-3 w-1/3" />
             </div>
+            <Skeleton className={cn(SKELETON_BAR_CLASS, "aspect-[4/5] w-16 shrink-0 rounded-[15px] sm:w-20 md:w-24")} />
           </div>
-        ))}
-      </div>
+          {/* Fact cells (type, alignment, challenge rating), same grid as the « Personnage » card */}
+          <div className="grid grid-cols-2 gap-2">
+            {["type", "alignment", "cr"].map((cell) => (
+              <div
+                key={cell}
+                className="flex flex-col gap-1.5 rounded-[10px] bg-gray-middle-light/50 px-2.5 py-2 last:odd:col-span-2">
+                <SkeletonBar className="h-2.5 w-1/2" />
+                <SkeletonBar className="h-4 w-2/3" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

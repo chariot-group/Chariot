@@ -1,3 +1,7 @@
+import {
+  COMPANIONS_BENTO_GRID_CLASS,
+  COMPANIONS_SLOTS,
+} from "@/components/character/tabContents/companions/shared/companionsBentoLayout";
 import { NextIntlClientProvider } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -129,12 +133,16 @@ describe("CompanionsTabSkeleton — Companions tab loading (FR-character-sheet-s
     expect(html).toContain('role="status"');
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain("Loading companions");
-    expect(html.match(/size-12/g)).toHaveLength(3);
+    expect(html.match(/aspect-\[4\/5\]/g)).toHaveLength(3);
+    // Same bento grid and slots as the tab (FR-npc-player-link).
+    expect(html).toContain(COMPANIONS_BENTO_GRID_CLASS);
+    expect(html.split(COMPANIONS_SLOTS.companion).length - 1).toBe(3);
+    expect(html).toContain(COMPANIONS_SLOTS.toolbar);
   });
 
   it("edge: no action placeholders when liaison actions are disabled (GM in session)", () => {
-    expect(render(true)).toContain("bg-purple/40");
-    expect(render(false)).not.toContain("bg-purple/40");
+    expect(render(true)).toContain("bg-white/30");
+    expect(render(false)).not.toContain("bg-white/30");
   });
 
   it("guard: no spinner and no focusable element", () => {

@@ -1,4 +1,5 @@
 import CharacterIdentityCard from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
+import { useNpcIdentityFacts } from "@/components/character/tabContents/general/shared/npcIdentityFacts";
 import { NPC, Player } from "@/types/character";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
@@ -32,9 +33,8 @@ export default function NpcGeneralTabContent({
   onCharacterUpdate,
 }: NpcGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
-  const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
-  const tAlignment = useTranslations("alignments");
+  const npcFacts = useNpcIdentityFacts(npc);
 
   /** @see FR-character-general-bento-layout */
   return (
@@ -51,19 +51,7 @@ export default function NpcGeneralTabContent({
           firstname={npc?.firstname}
           lastname={npc?.lastname}
           surname={npc?.surname}
-          facts={[
-            {
-              key: "type",
-              label: tNpc("typeLabel"),
-              value: npc?.profile?.type,
-              secondary: npc?.profile?.subtype,
-            },
-            {
-              key: "alignment",
-              label: tPlayer("alignment"),
-              value: npc?.profile?.alignment ? tAlignment(npc.profile.alignment) : undefined,
-            },
-          ]}
+          facts={npcFacts}
         />
 
         <NpcStatistics

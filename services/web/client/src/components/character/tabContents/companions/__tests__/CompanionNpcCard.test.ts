@@ -17,16 +17,17 @@ describe("FR-npc-player-link — companion NPC cards", () => {
     const tab = readSource(tabPath);
 
     expect(tab).toContain("<CompanionNpcCard");
-    expect(tab).toContain("grid w-full min-w-0 grid-cols-1");
-    expect(tab).toContain("md:grid-cols-2");
-    expect(tab).toContain("xl:grid-cols-3");
+    expect(tab).toContain("COMPANIONS_BENTO_GRID_CLASS");
+    expect(tab).toContain("COMPANIONS_SLOTS.companion");
     expect(card).toContain('from "@/components/ui/card"');
     expect(card).toContain("<MediaAvatar");
     expect(card).toContain('size="sheet"');
     expect(card).toContain("aspect-[4/5]");
     expect(card).toContain("npcSheetHeaderIdentity");
-    expect(card).toContain("formattedChallengeRating");
-    expect(card).toContain("experiencePoints");
+    // Same fact cells as the « Personnage » card (FR-character-identity-card).
+    expect(card).toContain("useNpcIdentityFacts");
+    expect(card).toContain("<IdentityFactCells");
+    expect(card).toContain("text-primary-light");
     expect(card).toContain("buildSessionCharacterHref");
     expect(card).toContain("npc._id");
     expect(card).toContain("absolute inset-0");
@@ -35,13 +36,11 @@ describe("FR-npc-player-link — companion NPC cards", () => {
     expect(card).not.toContain("tabIndex={-1}");
   });
 
-  it("edge: names truncate, unlink is a footer action, and CR uses InfoTooltip", () => {
+  it("edge: names truncate with a title, unlink is a footer action", () => {
     const card = readSource(cardPath);
 
-    expect(card).toContain("grid-cols-[minmax(0,1fr)_auto]");
-    expect(card).toContain("truncate text-left text-lg");
-    expect(card).toContain("<InfoTooltip");
-    expect(card).toContain("challengeRatingAbbr");
+    expect(card).toContain("TRUNCATE_ON_HOVER_DEVICES_CLASS");
+    expect(card).toContain("title={identity.fullName}");
     expect(card).toContain("unlinkAria");
     expect(card).toContain('t("unlink")');
     expect(card).toContain("border-t border-white/10");

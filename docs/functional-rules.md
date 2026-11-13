@@ -432,7 +432,7 @@ When adding a rule:
 **For NPC Characters**:
 
 - Character name (prominent display)
-- Challenge Rating (CR) with abbreviated label "ID" and tooltip "Indice de dangerosité"
+- Challenge Rating (CR) with abbreviated label "FP" and tooltip "Facteur de puissance"
 - Fractional CR display for values < 1:
   - 0.125 → "1/8"
   - 0.25 → "1/4"
@@ -4575,10 +4575,20 @@ Each initiative tracker row carries:
 - Tab id: `companions`. Labels (i18n `characterDetail.tabs.companions`): FR « Compagnons », EN « Companions », ES « Compañeros ».
 - Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (the only tab with light text: black is unreadable on the violet `#4e00de`, `docs/design.md` violet usage rule). Do not invent a new color.
 - Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
-- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST show the NPC identity summary (FR-character-detail-view): avatar (4:5, User placeholder when missing), name, surname when present, and CR with abbreviated « ID » tooltip plus XP in parentheses. When the NPC belongs to a group, the first group label MAY appear as secondary metadata. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
+- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST reuse the read-mode « Personnage » card presentation (FR-character-identity-card): the NPC name is the card heading (bold, tab violet `text-primary-light`) with the nickname in muted italic « » below, both next to the avatar (4:5, User placeholder when missing); then, full card width, the same NPC fact cells as the « Personnage » card (Type + subtype, Alignement, Facteur de puissance + XP). When the NPC belongs to a group, the first group label MAY appear as a muted line under the name block. The fact cells MUST come from the same source as the « Personnage » card so both surfaces stay identical. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
 - Read and edit mode (Player space, liaison actions enabled): the same list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. Managing liaisons MUST NOT require entering full-sheet edit mode for the other tabs. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
 - Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST NOT open a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
 - Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
+
+**Companions tab — bento layout** (aligned with FR-character-history-bento-layout / FR-character-inventory-bento-layout):
+
+- The tab MUST use the shared viewport bento grid (`BENTO_GRID_CLASS`: 2 / 4 / 12 columns, one gap) with its slots in a dedicated layout file; every card is a direct grid child (the companion list uses `display: contents` with `role="list"`), no `h-fit`. Fixed bands (toolbar, empty state) leave no empty cell at 2 / 4 / 12 columns; only the last row of the companion list MAY be partial (variable count).
+- **With companions**: liaison actions (when enabled) form a full-width toolbar row (link `secondary`, create-linked `primary`); each companion card is a direct grid child: full width on mobile, half from `sm`, a third (`col-span-4`) from `xl`. This supersedes « 2 from `md` » above.
+- **Empty state**: no free-floating bordered box. Two `GeneralSectionCard` on one band: **« Aucun compagnon pour l'instant »** (description; when liaison actions are enabled the link / create-linked buttons sit inside this card, at its bottom right, the separate toolbar is not rendered and the « boutons ci-dessus » hint is removed) and **« Quelques exemples »** (the two examples as tinted cells `bg-gray-middle-light/50`, `rounded-[10px]`, with a decorative icon). Full width each below `sm`, 2 + 2 at `sm`, 8 + 4 at `xl`. Session GM (no liaison actions): same two cards, no buttons.
+- Card headings use the tab violet as text (`text-primary-light`, `docs/design.md` violet usage rule: `purple` / `#4e00de` is unreadable as text on `bg-card`).
+- Create-linked is a `primary` button (white fill, dark text, like the sheet Edit button); link stays `secondary`.
+- The Companions skeleton (FR-character-sheet-skeleton) MUST use the same grid and slots (toolbar row + companion card placeholders).
+- Tests: nominal — with companions, one grid whose direct children are the toolbar and the cards with their slot classes; edge — empty state renders the two cards with unique headings resolving `aria-labelledby`, buttons inside the first card when actions are enabled; guard — session GM empty state renders no link / create button.
 
 **NPC character sheet — linked Player footer shortcut**:
 
@@ -4657,6 +4667,8 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/NpcLinkedPlayerFooterLink.tsx`
 - `services/web/client/src/components/character/tabContents/companions/CharacterCompanionsTabContent.tsx`
 - `services/web/client/src/components/character/tabContents/companions/CompanionNpcCard.tsx`
+- `services/web/client/src/components/character/tabContents/companions/view/CompanionsEmptyState.tsx`
+- `services/web/client/src/components/character/tabContents/companions/shared/companionsBentoLayout.ts`
 - `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
 - `docs/functional-rules.md` — FR-character-detail-view, FR-characters-without-group, FR-sidebar-navigation, FR-sidebar-context-actions, FR-character-duplicate, FR-character-sheet-pdf-export, FR-frontend-design, FR-session-player-companion-combatants
@@ -6101,7 +6113,7 @@ Each initiative tracker row carries:
 - **Long names** (functional decision 2026-11-04, touch compromise): on devices with hover (`@media (hover: hover)`), the name line and the nickname are each truncated on one line with an ellipsis, and their full text is exposed in a native `title` shown on hover. On devices without hover (touch), they are **not** truncated and wrap (`wrap-break-word`), so the full name stays readable without a tooltip (FR-tooltip-accessibility). Truncation is visual only: the full text stays in the DOM for screen readers.
 - **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell uses the statistics card cell style (design.md §5.3.4: `bg-gray-middle-light/50`, `rounded-[10px]`, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary line:
   - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. 2 × 2 cells; when an odd number of cells is shown (an empty value is not rendered), the last one spans the whole row so no empty slot suggests a missing fact.
-  - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment. Two equal columns.
+  - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment · « Facteur de puissance » → formatted challenge rating (`1/4`, `2`…), « X XP » as secondary line. Same two-column grid as the PC (an odd last cell spans the row). The challenge rating cell is always rendered (CR `0` included): it carries the CR / XP information formerly shown in the removed sheet header (decision 2026-11-13).
   - Alignment and background live in this card (decision 2026-11-04): they are identity data and no longer get their own General-tab tiles, which stretched to their row height for a single value. In edit mode their fields (alignment select, background combobox) sit in the « Personnage » edit card, after race and level and **before the classes**.
   Empty secondary lines are omitted; a cell whose value is empty is not rendered.
 - **Level 3 — Classes (PC only)**: small uppercase muted label « Classes », then one plain row per class (`bg-gray-middle-light/50`, `rounded-[10px]`, same cell style as the statistics card, design.md §5.3.4): class name in bold + a level badge, subclass in muted text under the class name when set. This replaces both the « Classes : » line and the « Sous-classe de X : » lines (each class is shown once). The block is hidden when the PC has no class.
@@ -6127,6 +6139,7 @@ Each initiative tracker row carries:
 
 - Nominal: PC with name, nickname, race/subrace, level/XP and two classes renders the full name, the nickname, two fact cells (race, level) and two class rows with their subclass.
 - Edge: no last name / no nickname / no subrace / class without subclass → the part is omitted (no empty secondary line, no empty parentheses); NPC renders name + one type cell and no classes block.
+- Nominal: NPC with type, CR `1/4` and 50 XP renders a « Facteur de puissance » cell with `1/4` and « 50 XP » as secondary line; NPC with CR 0 still renders the cell (`0`, « 0 XP »).
 - Edge: a long name and nickname carry their full text in `title` and are truncated only under the hover media variant (wrap otherwise).
 - Failure / guard: PC with an empty class list renders no classes block; the `sr-only` labels are present for the identity fields.
 

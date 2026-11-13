@@ -44,6 +44,33 @@ export const FACTS_TWO_COLUMNS_CLASS = "grid-cols-2 [&>div:last-child:nth-child(
 const isFilled = (value: ReactNode) => value !== null && value !== undefined && value !== false && value !== "";
 
 /**
+ * Key fact cells of the « Personnage » card (statistics cell style); empty values are not rendered.
+ * Reused by the Companions-tab cards. @see FR-character-identity-card, FR-npc-player-link
+ */
+export function IdentityFactCells({ facts }: { facts: IdentityFact[] }) {
+  const visibleFacts = facts.filter((fact) => isFilled(fact.value));
+  if (visibleFacts.length === 0) return null;
+
+  return (
+    <dl className={`grid gap-2 ${visibleFacts.length > 1 ? FACTS_TWO_COLUMNS_CLASS : "grid-cols-1"}`}>
+      {visibleFacts.map((fact) => (
+        <div
+          key={fact.key}
+          className="flex min-w-0 flex-col gap-0.5 rounded-[10px] bg-gray-middle-light/50 px-2.5 py-2">
+          <dt className="truncate text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
+            {fact.label}
+          </dt>
+          <dd className="text-base font-bold wrap-break-word sm:text-lg">{fact.value}</dd>
+          {isFilled(fact.secondary) && (
+            <dd className="text-xs text-muted-foreground wrap-break-word sm:text-sm">{fact.secondary}</dd>
+          )}
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/**
  * Read-mode « Personnage » card: name (next to the avatar) → key fact cells → classes, full width.
  * @see FR-character-identity-card, FR-character-general-bento-layout
  */
@@ -59,7 +86,6 @@ export default function CharacterIdentityCard({
 }: CharacterIdentityCardProps) {
   const t = useTranslations("characterDetail.player.general");
   const tEdit = useTranslations("characterDetail.edit");
-  const visibleFacts = facts.filter((fact) => isFilled(fact.value));
   const fullName = [firstname, lastname].filter(Boolean).join(" ");
 
   return (
@@ -108,23 +134,7 @@ export default function CharacterIdentityCard({
             {avatar ? <div className="shrink-0 self-start">{avatar}</div> : null}
           </div>
 
-          {visibleFacts.length > 0 && (
-            <dl className={`grid gap-2 ${visibleFacts.length > 1 ? FACTS_TWO_COLUMNS_CLASS : "grid-cols-1"}`}>
-              {visibleFacts.map((fact) => (
-                <div
-                  key={fact.key}
-                  className="flex min-w-0 flex-col gap-0.5 rounded-[10px] bg-gray-middle-light/50 px-2.5 py-2">
-                  <dt className="truncate text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {fact.label}
-                  </dt>
-                  <dd className="text-base font-bold wrap-break-word sm:text-lg">{fact.value}</dd>
-                  {isFilled(fact.secondary) && (
-                    <dd className="text-xs text-muted-foreground wrap-break-word sm:text-sm">{fact.secondary}</dd>
-                  )}
-                </div>
-              ))}
-            </dl>
-          )}
+          <IdentityFactCells facts={facts} />
         </div>
 
         {classes.length > 0 && (
