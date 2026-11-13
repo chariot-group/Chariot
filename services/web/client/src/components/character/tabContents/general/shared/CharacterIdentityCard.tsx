@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { TruncatedText } from "@/components/ui/truncated-text";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { FACT_CELL_CLASS, FACT_CELLS_FRAME_CLASS } from "@/components/character/tabContents/shared/factCell";
@@ -33,13 +34,6 @@ interface CharacterIdentityCardProps {
   classes?: IdentityClassItem[];
 }
 
-/**
- * One line + ellipsis where hover can reveal the `title`; wraps on touch devices so the full
- * text stays readable without a tooltip (FR-tooltip-accessibility).
- * @see FR-character-identity-card
- */
-export const TRUNCATE_ON_HOVER_DEVICES_CLASS = "min-w-0 wrap-break-word [@media(hover:hover)]:truncate";
-
 /** Two columns; an odd last cell spans the row so no empty slot suggests a missing fact. */
 /** One column below `@md` card width (mobile); two from `@md` so type / alignment / FP are not squeezed. */
 export const FACTS_TWO_COLUMNS_CLASS =
@@ -51,6 +45,9 @@ export const FACTS_DENSE_TWO_COLUMNS_CLASS =
 
 /** @deprecated Use FACTS_DENSE_TWO_COLUMNS_CLASS */
 export const FACTS_COMPANION_TWO_COLUMNS_CLASS = FACTS_DENSE_TWO_COLUMNS_CLASS;
+
+/** Companions-tab cards only: truncate on hover devices, wrap on touch (the « Personnage » card uses `TruncatedText`). */
+export const TRUNCATE_ON_HOVER_DEVICES_CLASS = "min-w-0 wrap-break-word [@media(hover:hover)]:truncate";
 
 const isFilled = (value: ReactNode) => value !== null && value !== undefined && value !== false && value !== "";
 
@@ -112,7 +109,8 @@ export function IdentityFactCells({
 }
 
 /**
- * Read-mode « Personnage » card: name beside avatar; facts full card width (`@container` grid); classes below (PC).
+ * Read-mode « Personnage » card: name beside avatar; facts full card width; classes below (PC).
+ * Name and nickname are clamped to two lines on every screen; the app tooltip shows them in full when cut.
  * @see FR-character-identity-card, FR-character-general-bento-layout
  */
 export default function CharacterIdentityCard({
@@ -143,33 +141,38 @@ export default function CharacterIdentityCard({
                 className={`text-xl font-semibold sm:text-2xl ${accentColor}`}>
                 {t("character")}
               </h2>
-              <dl
-                title={fullName}
-                className={`text-lg font-bold sm:text-xl ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
-                <div className="inline">
-                  <dt className="sr-only">{tEdit("firstname")}</dt>
-                  <dd className="inline">{firstname}</dd>
-                </div>
-                {lastname && (
-                  <div className="ml-[0.3em] inline">
-                    <dt className="sr-only">{tEdit("lastname")}</dt>
-                    <dd className="inline">{lastname}</dd>
+              <div className="flex min-w-0 flex-col gap-1">
+                <TruncatedText
+                  as="dl"
+                  lines={2}
+                  text={fullName}
+                  className="text-lg font-bold sm:text-xl">
+                  <div className="inline">
+                    <dt className="sr-only">{tEdit("firstname")}</dt>
+                    <dd className="inline">{firstname}</dd>
                   </div>
-                )}
-              </dl>
-              <div className="min-h-[1.375rem] sm:min-h-[1.5rem]">
-                {surname ? (
+                  {lastname && (
+                    <div className="ml-[0.3em] inline">
+                      <dt className="sr-only">{tEdit("lastname")}</dt>
+                      <dd className="inline">{lastname}</dd>
+                    </div>
+                  )}
+                </TruncatedText>
+                <div className="min-h-[1.375rem] sm:min-h-[1.5rem]">
+                  {surname ? (
                   <dl className="min-w-0">
                     <div>
                       <dt className="sr-only">{tEdit("surname")}</dt>
-                      <dd
-                        title={`« ${surname} »`}
-                        className={`text-sm italic text-muted-foreground sm:text-base ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
-                        « {surname} »
-                      </dd>
+                      <TruncatedText
+                        as="dd"
+                        lines={2}
+                        text={`« ${surname} »`}
+                        className="text-sm italic text-muted-foreground sm:text-base"
+                      />
                     </div>
                   </dl>
                 ) : null}
+                </div>
               </div>
             </div>
             {avatar ? <div className="shrink-0 self-start">{avatar}</div> : null}

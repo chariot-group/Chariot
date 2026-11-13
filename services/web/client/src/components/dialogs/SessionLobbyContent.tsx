@@ -23,14 +23,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
 import { SessionWheelDepositBar } from "@/components/dialogs/SessionWheelDepositBar";
-import { selectSessionStatus, selectSessionTokensByUser, selectSessionCompanionNpcs } from "@/store/slices/sessionSlice";
+import {
+  selectSessionStatus,
+  selectSessionTokensByUser,
+  selectSessionCompanionNpcs,
+} from "@/store/slices/sessionSlice";
 import { SessionExitActions } from "@/components/dialogs/SessionExitActions";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
-import {
-  companionNamesLine,
-  companionsGroupedByPlayerId,
-} from "@/lib/sessionPlayerCompanions";
+import { companionNamesLine, companionsGroupedByPlayerId } from "@/lib/sessionPlayerCompanions";
 import {
   buildSessionLobbyAvatarBatchItems,
   getSessionLobbyParticipantAvatarUrl,
@@ -40,6 +41,7 @@ import {
 import { shouldShowSessionLobbyInvitePanel } from "@/lib/sessionInAppNavigation";
 import { computeMaxAddableWheels, isWheelQuotaMetForLaunch, sumDepositedWheels } from "@/lib/sessionWheelDeposit";
 import { cn } from "@/lib/utils";
+import { TruncatedText } from "@/components/ui/truncated-text";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 import SessionTimer from "@/components/layout/SessionTimer";
@@ -84,10 +86,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
   const [linkCopyState, setLinkCopyState] = useState<SessionLobbyCopyState>("idle");
   const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
   const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
-  const companionsByPlayerId = useMemo(
-    () => companionsGroupedByPlayerId(sessionCompanionNpcs),
-    [sessionCompanionNpcs],
-  );
+  const companionsByPlayerId = useMemo(() => companionsGroupedByPlayerId(sessionCompanionNpcs), [sessionCompanionNpcs]);
 
   const {
     campaignLabel,
@@ -102,6 +101,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     getCharacterLabel,
     isLoading,
   } = useSessionData({ code, idCampaign, campaign }) as ReturnType<typeof useSessionData>;
+  const lobbyCampaignName = campaign?.label || campaignLabel || undefined;
 
   const avatarBatchItems = useMemo(
     () =>
@@ -199,19 +199,21 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
       />
       <div
         className="flex h-full min-h-0 flex-col"
-        aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
+        aria-label={t("mainAriaLabel", { label: lobbyCampaignName ?? t("campaignFallback") })}>
         <div
           className={cn(
             "flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 px-4 pt-4 sm:px-6 sm:pt-6",
             "pr-12 sm:pr-14",
           )}>
-          <h2
+          <TruncatedText
+            as="h2"
             id="session-lobby-players-heading"
-            className="min-w-0 break-words text-xl font-bold sm:text-xl lg:text-lg">
+            text={lobbyCampaignName ? `${t("title")} - ${lobbyCampaignName}` : t("title")}
+            className="flex-1 text-xl font-bold sm:text-xl lg:text-lg">
             {t("title")}
-            <span className="font-normal text-muted-foreground"> {campaign?.label ?? `- ${campaignLabel}`}</span>
+            {lobbyCampaignName && <span className="font-normal text-muted-foreground"> - {lobbyCampaignName}</span>}
             <span className="sr-only"> ({participants.length})</span>
-          </h2>
+          </TruncatedText>
           <SessionTimer />
         </div>
         <div
@@ -425,10 +427,7 @@ function SessionLobbyCopyActions({
             variant="secondary"
             size="icon-sm"
             aria-label={t("sessionCode.copyLinkAriaLabel")}
-            className={cn(
-              "shrink-0 transition-colors",
-              linkCopyState === "success" && copySuccessButtonClassName,
-            )}
+            className={cn("shrink-0 transition-colors", linkCopyState === "success" && copySuccessButtonClassName)}
             disabled={linkCopyState !== "idle"}
             onClick={onCopyLink}>
             {linkCopyState === "success" ? <Check className="h-3.5 w-3.5" /> : <Link className="h-3.5 w-3.5" />}

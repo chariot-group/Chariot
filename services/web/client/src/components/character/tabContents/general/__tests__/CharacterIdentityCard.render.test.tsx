@@ -95,7 +95,7 @@ describe("CharacterIdentityCard", () => {
     expect(html.indexOf("<ul")).toBeGreaterThan(avatarEnd);
   });
 
-  it("edge: long name and nickname carry their full text in title and truncate only on hover devices", () => {
+  it("edge: long name and nickname are clamped to two lines on every screen, without native title", () => {
     const longLast = "de la Tour-Sombre-des-Brumes-Éternelles";
     const html = render(
       <CharacterIdentityCard
@@ -107,15 +107,19 @@ describe("CharacterIdentityCard", () => {
       />,
     );
 
-    expect(html).toContain(`<dl title="Aria ${longLast}" class="`);
-    expect(html).toContain('title="« La Brise du Nord Lointain »"');
-    expect(html.match(/\[@media\(hover:hover\)\]:truncate/g)).toHaveLength(2);
-    // No unconditional truncation: touch devices wrap the full text
-    expect(html).not.toMatch(/class="[^"]*(?<!:)\btruncate\b[^"]*"[^>]*>(?:<div|« )/);
-    expect(html.match(/wrap-break-word \[@media\(hover:hover\)\]:truncate/g)).toHaveLength(2);
+    expect(html).toMatch(/<dl[^>]*class="[^"]*line-clamp-2 break-words[^"]*text-lg font-bold sm:text-xl"/);
+    expect(html).toMatch(
+      /<dd[^>]*class="[^"]*line-clamp-2 break-words[^"]*italic[^"]*"[^>]*>« La Brise du Nord Lointain »<\/dd>/,
+    );
+    expect(html.match(/line-clamp-2/g)).toHaveLength(2);
+    // Same clamp everywhere: no hover- or pointer-only variant, no native title
+    expect(html).not.toMatch(/\[@media\(hover:hover\)\]|pointer-coarse:/);
+    expect(html).not.toContain("title=");
+    // Full text stays in the DOM for screen readers
+    expect(textOf(html)).toContain(`Aria lastname ${longLast}`);
   });
 
-  it("failure: without last name the title is the first name only (no trailing space)", () => {
+  it("failure: a name that is not measured as cut shows no help cursor (tooltip cannot open)", () => {
     const html = render(
       <CharacterIdentityCard
         accentColor="text-blue"
@@ -124,8 +128,8 @@ describe("CharacterIdentityCard", () => {
       />,
     );
 
-    expect(html).toContain('<dl title="Gobelin" class="');
-    expect(html).not.toContain('title="« ');
+    expect(html).not.toContain("cursor-help");
+    expect(html).not.toContain("«");
   });
 
   it("nominal: name labels stay available to screen readers", () => {

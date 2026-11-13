@@ -10,12 +10,13 @@ import {
 import { CampaignGroupDto } from '@/resources/group/dto/sub/campaigns.dto';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { NAME_LABEL_MAX_LENGTH } from '@/common/constants/label.constant';
 
 export class CreateGroupDto {
   @ApiProperty({ example: 'Adventurers' })
   @IsString()
   @MinLength(1)
-  @MaxLength(50)
+  @MaxLength(NAME_LABEL_MAX_LENGTH)
   readonly label: string;
 
   @ApiProperty({
