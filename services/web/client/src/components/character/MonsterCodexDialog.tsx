@@ -15,7 +15,8 @@ import CodexService, {
   CodexPlayerTranslation,
   CodexSearchResultItem,
 } from "@/services/CodexService";
-import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft, Check, ChevronDown, Layers, ListMinus, ListPlus, X } from "lucide-react";
+import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft, Check, ChevronDown, Layers, ListMinus, ListPlus } from "lucide-react";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -1200,18 +1201,11 @@ export default function MonsterCodexDialog({
                           <span className="block truncate text-sm font-medium">{displayName}</span>
                           <span className="block truncate text-xs text-muted-foreground">{kindLabel}</span>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
+                        <DeleteIconButton
                           onClick={() => handleRemoveFromQueue(key)}
                           aria-label={tDialog("removeEntryFromSelection", { name: displayName })}
-                          className="size-7 shrink-0 text-muted-foreground hover:text-destructive">
-                          <X
-                            className="size-3.5"
-                            aria-hidden="true"
-                          />
-                        </Button>
+                          className="size-7 shrink-0"
+                        />
                       </li>
                     );
                   })}
