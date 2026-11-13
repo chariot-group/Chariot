@@ -437,7 +437,15 @@ const AbilitiesUpdateSection = ({
                                 <Checkbox
                                   id={`${fieldArrayName}-counterResetShort-${index}`}
                                   checked={srField.value === true}
-                                  onCheckedChange={(c) => srField.onChange(c === true)}
+                                  onCheckedChange={(c) => {
+                                    srField.onChange(c === true);
+                                    // FR-character-long-rest: a short-rest recharge also recharges on a long rest.
+                                    if (c === true) {
+                                      form.setValue(`${fieldArrayName}.${index}.counterResetsOnLongRest`, true, {
+                                        shouldDirty: true,
+                                      });
+                                    }
+                                  }}
                                   className="shrink-0"
                                 />
                                 <Label

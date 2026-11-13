@@ -217,7 +217,13 @@
     "outOfSessionToggle": "Hors session ({count})",
     "outOfSessionExpandAria": "Afficher les {count} personnages hors session",
     "outOfSessionCollapseAria": "Masquer les {count} personnages hors session",
-    "outOfSessionActiveTooltip": "Fiche affichée : {name}"
+    "outOfSessionActiveTooltip": "Fiche affichée : {name}",
+    "longRestGroup": "Repos long du groupe",
+    "longRestGroupDialogTitle": "Repos long : {group}",
+    "longRestGroupDialogDescription": "{players, plural, =0 {Aucun PJ} one {1 PJ} other {# PJ}} et {npcs, plural, =0 {aucun PNJ} one {1 PNJ} other {# PNJ}} récupèrent leurs PV, capacités et emplacements de sort. Les personnages que vous ne pouvez pas modifier sont ignorés.",
+    "longRestGroupConfirm": "Faire le repos long",
+    "longRestGroupSuccess": "{count, plural, =0 {Aucun personnage reposé} one {1 personnage reposé} other {# personnages reposés}}",
+    "longRestGroupSkipped": "{count, plural, one {1 ignoré} other {# ignorés}}"
   },
   "initTracker": {
     "noCharacters": "Aucun personnage",
@@ -933,7 +939,6 @@
     "cancel": "Annuler",
     "longRest": {
       "ariaLabel": "Repos long",
-      "disabledTooltip": "Repos long : uniquement en session",
       "confirmTitle": "Confirmer le repos long ?",
       "confirmIntro": "Un repos long applique les effets suivants :",
       "effectSpellSlots": "Tous les emplacements de sorts dépensés sont récupérés (utilisations remises à zéro).",
@@ -1094,6 +1099,7 @@
       "failures": "Échecs :",
       "deathSavesSessionOnlyNote": "Les jets de sauvegarde contre la mort ne peuvent être modifiés qu'en session.",
       "restSessionOnlyNote": "Les repos ne sont disponibles qu'en session.",
+      "shortRestSessionOnlyNote": "Le repos court n'est disponible qu'en session.",
       "performedThrow": "Jet effectué",
       "unperformedThrow": "Jet non effectué",
       "abilityHasCounter": "Compteur d'utilisations",

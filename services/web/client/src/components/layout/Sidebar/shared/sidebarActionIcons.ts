@@ -6,6 +6,7 @@ import {
   FileDown,
   FolderInput,
   Link,
+  Moon,
   Pencil,
   Trash2,
   Unlink,
@@ -31,4 +32,6 @@ export const SIDEBAR_ACTION_ICONS: Readonly<Record<string, LucideIcon>> = {
   link: Link,
   unlink: Unlink,
   reassign: ArrowLeftRight,
+  /** Group long rest (FR-character-long-rest). */
+  longRest: Moon,
 };

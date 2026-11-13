@@ -217,7 +217,13 @@
     "outOfSessionToggle": "Fuera de sesión ({count})",
     "outOfSessionExpandAria": "Mostrar los {count} personajes fuera de sesión",
     "outOfSessionCollapseAria": "Ocultar los {count} personajes fuera de sesión",
-    "outOfSessionActiveTooltip": "Ficha mostrada: {name}"
+    "outOfSessionActiveTooltip": "Ficha mostrada: {name}",
+    "longRestGroup": "Descanso largo del grupo",
+    "longRestGroupDialogTitle": "Descanso largo: {group}",
+    "longRestGroupDialogDescription": "{players, plural, =0 {Ningún PJ} one {1 PJ} other {# PJ}} y {npcs, plural, =0 {ningún PNJ} one {1 PNJ} other {# PNJ}} recuperan sus PG, capacidades y espacios de conjuro. Los personajes que no puedes editar se omiten.",
+    "longRestGroupConfirm": "Hacer el descanso largo",
+    "longRestGroupSuccess": "{count, plural, =0 {Ningún personaje descansado} one {1 personaje descansado} other {# personajes descansados}}",
+    "longRestGroupSkipped": "{count, plural, one {1 omitido} other {# omitidos}}"
   },
   "initTracker": {
     "noCharacters": "Sin personajes",
@@ -932,7 +938,6 @@
     "cancel": "Cancelar",
     "longRest": {
       "ariaLabel": "Descanso largo",
-      "disabledTooltip": "Descanso largo: solo disponible en sesión",
       "confirmTitle": "¿Confirmar descanso largo?",
       "confirmIntro": "Un descanso largo aplica los siguientes efectos:",
       "effectSpellSlots": "Todos los espacios de conjuro gastados se recuperan (usos a cero).",
@@ -1093,6 +1098,7 @@
       "failures": "Fallos:",
       "deathSavesSessionOnlyNote": "Las tiradas de salvación contra la muerte solo se pueden cambiar durante una sesión.",
       "restSessionOnlyNote": "Los descansos solo están disponibles durante una sesión.",
+      "shortRestSessionOnlyNote": "El descanso corto solo está disponible durante una sesión.",
       "performedThrow": "Tirada realizada",
       "unperformedThrow": "Tirada no realizada",
       "abilityHasCounter": "Contador de usos",

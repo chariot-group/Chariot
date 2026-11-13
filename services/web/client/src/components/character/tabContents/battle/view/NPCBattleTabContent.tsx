@@ -32,6 +32,7 @@ const NPCBattleTabContent = ({ npc, accentColor, onCharacterUpdate }: Props) => 
         npc={npc}
         accentColor={accentColor}
         className={`${SLOTS.statistics} justify-between`}
+        onCharacterUpdate={onCharacterUpdate}
       />
 
       <GeneralSectionCard

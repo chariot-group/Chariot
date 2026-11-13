@@ -217,7 +217,13 @@
     "outOfSessionToggle": "Out of session ({count})",
     "outOfSessionExpandAria": "Show the {count} characters out of session",
     "outOfSessionCollapseAria": "Hide the {count} characters out of session",
-    "outOfSessionActiveTooltip": "Displayed sheet: {name}"
+    "outOfSessionActiveTooltip": "Displayed sheet: {name}",
+    "longRestGroup": "Group long rest",
+    "longRestGroupDialogTitle": "Long rest: {group}",
+    "longRestGroupDialogDescription": "{players, plural, =0 {No PCs} one {1 PC} other {# PCs}} and {npcs, plural, =0 {no NPCs} one {1 NPC} other {# NPCs}} recover their HP, abilities and spell slots. Characters you cannot edit are skipped.",
+    "longRestGroupConfirm": "Take the long rest",
+    "longRestGroupSuccess": "{count, plural, =0 {No character rested} one {1 character rested} other {# characters rested}}",
+    "longRestGroupSkipped": "{count, plural, one {1 skipped} other {# skipped}}"
   },
   "initTracker": {
     "noCharacters": "No characters",
@@ -932,7 +938,6 @@
     "cancel": "Cancel",
     "longRest": {
       "ariaLabel": "Long rest",
-      "disabledTooltip": "Long rest: only available during a session",
       "confirmTitle": "Confirm long rest?",
       "confirmIntro": "A long rest applies the following effects:",
       "effectSpellSlots": "All spent spell slots are recovered (uses reset to zero).",
@@ -1093,6 +1098,7 @@
       "failures": "Failures:",
       "deathSavesSessionOnlyNote": "Death saving throws can only be changed while you are in a session.",
       "restSessionOnlyNote": "Rests are only available during a session.",
+      "shortRestSessionOnlyNote": "Short rests are only available during a session.",
       "performedThrow": "Performed Throw",
       "unperformedThrow": "Unperformed Throw",
       "abilityHasCounter": "Use counter",

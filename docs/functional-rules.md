@@ -3249,7 +3249,7 @@ Each initiative tracker row carries:
 | --- | --- |
 | Character in group (player or NPC) | Move to another group, Edit, Delete |
 | Character in **Mes personnages** | Edit, Delete (plus Duplicate / PDF per later rules; NPC link/unlink per FR-sidebar-npc-link) |
-| Group | Edit (rename), Archive or Unarchive (section-dependent), Delete |
+| Group | Edit (rename), Archive or Unarchive (section-dependent), Delete; active groups also expose **Repos long du groupe** (FR-character-long-rest) |
 | Archives section header | Delete all archived groups (only when at least one archived group exists) |
 | Campaign | Edit (rename), Delete |
 
@@ -3283,6 +3283,7 @@ Each initiative tracker row carries:
 **Session constraints**:
 
 - When sidebar actions are disabled during an active session (existing `disabledInSession` behavior), context menus and overflow controls MUST be disabled consistently.
+- Exception (decision 2026-11-13, FR-character-long-rest): during an active session the group context menu and overflow control stay available for the GM with **only** the « Repos long du groupe » entry enabled; every other group and character action stays disabled.
 
 **Prohibitions**:
 
@@ -5784,7 +5785,7 @@ Each initiative tracker row carries:
 - **Speeds line**: one label/value line `Vitesses : 🏃 9 m · ⛰ 4,5 m · 🌊 9 m` listing only non-zero speeds, each with its icon and an accessible name (e.g. "Vitesse d'escalade 4,5 m"); it wraps like text, never as boxes. Units follow FR-distance-unit-conversion (secondary unit kept when the user enabled both units). When every speed is 0 the line is omitted.
 - **Visual weight**: cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not white pills; values `text-base`/`sm:text-lg`; no "?" tooltip buttons — the visible label replaces them (tooltip texts stay available as accessible names).
 - **NPC passive perception** (General tab only, decision 2026-11-04): a 4th key stat cell « Perc. passive » (Eye icon) next to CA / Init. / Taille; the row shows 2 × 2 cells below `sm` and one row of 4 from `sm`. In edit mode the passive perception override field and its mismatch warning sit at the bottom of the NPC statistics edit card. The Combat tab keeps 3 cells.
-- **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC).
+- **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC). Long rest availability and effects for PC and NPC are owned by FR-character-long-rest.
 - **Short rest dialog — healing line** (decision 2026-11-12): when the PC has hit dice left to spend, the « Hit points recovered: +N » line is always shown below the hit dice section, from the dialog opening, so the layout does not shift. N is the sum of the dice values already entered (empty or invalid entries count as 0), so it reads `+0` before any die is added or filled. Without hit dice to spend the line is not shown. The line is announced politely to assistive technologies (`aria-live="polite"`) when N changes.
 - **Fill** (FR-character-general-bento-layout, FR-character-battle-bento-layout): when the card is stretched, its blocks spread from top to bottom (`justify-between`); the key stats row never leaves a hole on mobile.
 
@@ -6347,3 +6348,62 @@ The path app → Keycloak login page → back in the app MUST use as few sequent
 - Failure: shell chunk fetch failure shows an accessible error with a retry inside the auth skeleton frame, not a blank page.
 
 **References** (sub-section): `services/web/client/src/providers/KeycloakProvider.tsx`, `services/web/client/src/components/layout/AppShellSkeleton.tsx`, `services/web/client/src/components/PostLoginNavigator.tsx`, `services/web/client/src/services/NavigationService.ts`, `services/gateway/api/src/main.ts`, `services/sso/keycloak/themes/chariot/login/**`, `services/sso/compose.dev.yml` — FR-auth-loading-skeleton, FR-post-auth-navigation, FR-user-cache-isolation, FR-session-websocket-lifecycle
+
+---
+
+## FR-character-long-rest: Long Rest (PC and NPC, single and group)
+
+**Rule**: A long rest restores a character's hit points, ability counters and spell resources. The GM MUST be able to apply it to a single NPC or PC sheet in and out of session, and to every character of a group at once from the sidebar group menu.
+
+**Scope**: Owns long rest availability and effects. Complements FR-character-statistics-card (where the rest controls sit), FR-sidebar-context-actions (group menu entry), FR-session-combat-sync (live propagation in session) and FR-session-lobby-navigation (lobby gating). Short rest is not changed: it stays session-only and PC-only.
+
+**Requirements**:
+
+### Effects
+- **Common (PC and NPC)**: current HP set to max HP; temporary HP set to 0; every ability counter flagged « réinitialisation au repos long » set back to full; every spell slot (by level and by uses) and every per-day spell use set back to full.
+- **PC only**: exhaustion level decreased by 1 (minimum 0); hit dice remaining set to the class level, per class.
+- Conditions, death saves, inventory, concentration and initiative tracker effects are NOT changed.
+- The confirmation dialog lists only the effects that actually change something for that character; when nothing changes it says so and the action can still be confirmed.
+
+### Ability counter flags (edit form, PC and NPC)
+- Checking « Réinitialisation au repos court » MUST automatically check « Réinitialisation au repos long » (a short-rest recharge also recharges on a long rest); unchecking it does not uncheck the long rest flag.
+- Checking or unchecking « Réinitialisation au repos long » does not change the short rest flag.
+- Existing data is not migrated.
+
+### Single character (sheet, Statistics card)
+- **NPC sheet**: a « Repos long » button is shown to the GM (sheet editor) **in and out of session**.
+- **PC sheet, GM space**: the « Repos long » button is shown to the GM **in and out of session** for the GM's own PCs.
+- **PC sheet, player space**: unchanged — a PC owned by a player space MUST NEVER get any rest (short or long) out of session, from any surface; the existing « session only » note stays.
+- Being in the lobby only (not launched) counts as out of session (FR-session-lobby-navigation); the GM-space long rest is allowed there as an out-of-session action.
+
+### Group (sidebar)
+- Right-click (desktop) / overflow menu (touch) on an **active** group exposes « Repos long du groupe », in and out of session (exception recorded in FR-sidebar-context-actions). Disabled when the group has no character. Not offered on archived groups.
+- It opens a confirmation dialog stating the group name and the number of PCs and NPCs concerned; Enter confirms, Escape cancels (blocked while running).
+- On confirm, the long rest is applied to every PC and NPC of the group **owned by the GM** (GM-space characters). Characters owned by a player space are never rested out of session; in session they are rested only when the session authorizes the GM to edit them.
+- Characters that cannot be edited or whose update fails are skipped; the others are still rested.
+- At the end, one toast summarizes the result: « N personnages reposés » plus, when applicable, « M ignorés ». The sidebar and any open sheet of a rested character reflect the new values without reload.
+- In session, each rested character is propagated to connected clients through the existing sheet / combat sync (FR-session-combat-sync); a PC's player sees the update on their sheet.
+
+**Prohibitions**:
+- Offering the long rest to a player on their own sheet out of session.
+- Aborting the whole group rest because one character fails.
+- Changing anything else than the listed effects.
+
+**Tests**:
+- Nominal: NPC payload restores HP, clears temp HP, resets long-rest counters and spell slots/uses; PC payload also lowers exhaustion and restores hit dice.
+- Nominal: GM sees the NPC long rest button out of session; GM sees the PC long rest button out of session in GM space.
+- Nominal: group rest on a group of 2 PCs + 1 NPC rests all 3 and shows « 3 personnages reposés ».
+- Edge: character with nothing to recover → dialog shows the « no effect » text; exhaustion 0 stays 0; ability without counter untouched.
+- Edge: in session, group menu shows only « Repos long du groupe » enabled; empty group → entry disabled.
+- Edge (race): a rested character updated in session is broadcast once; a reconnecting client gets the rested values.
+- Failure: one character update rejected (403 / network) → others are rested, toast reports « 1 ignoré »; dialog cannot be closed by Escape while running.
+- Failure: player space out of session → no long rest button; group rest out of session skips a player-space PC (counted as ignored).
+- Nominal: checking the short rest flag checks the long rest flag; Edge: checking the long rest flag leaves the short rest flag unchanged.
+
+**References**:
+- `services/web/client/src/utils/rest.utils.ts`
+- `services/web/client/src/components/character/tabContents/shared/AbilitiesUpdateSection.tsx`
+- `services/web/client/src/components/character/LongRestButton.tsx`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`, `shared/SidebarItemWithActions.tsx`, `shared/sidebarActionIcons.ts`
+- `services/web/client/src/services/CharacterService.ts`
