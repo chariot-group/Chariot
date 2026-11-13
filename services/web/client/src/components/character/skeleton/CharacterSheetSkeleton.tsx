@@ -6,6 +6,7 @@ import {
   BENTO_GRID_CLASS,
   GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
+  PLAYER_GRID_ROWS_CLASS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import type { CharacterTab } from "@/components/character/characterTabsConfig";
 import {
@@ -217,7 +218,12 @@ export function CharacterSheetSkeletonFrame({ kind, activeTab, tabs }: Character
         ) : (
           <div className={GENERAL_BENTO_CONTAINER_CLASS}>
             {/* General follows the width left by the sidebar; other tabs keep the viewport grid */}
-            <div className={activeTab === "general" ? GENERAL_BENTO_GRID_CLASS : BENTO_GRID_CLASS}>
+            <div
+              className={
+                activeTab === "general"
+                  ? cn(GENERAL_BENTO_GRID_CLASS, kind === "player" && PLAYER_GRID_ROWS_CLASS)
+                  : BENTO_GRID_CLASS
+              }>
               {skeletonCardsForTab(activeTab, kind).map((card) => (
                 <SkeletonCardShell
                   key={card.key}

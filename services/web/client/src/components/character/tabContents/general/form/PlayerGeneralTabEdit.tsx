@@ -32,7 +32,7 @@ import {
   GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
   GENERAL_BENTO_STACK_GAP_CLASS,
-  PLAYER_EDIT_GRID_ROWS_CLASS,
+  PLAYER_GRID_ROWS_CLASS,
   PLAYER_EDIT_SLOTS as SLOTS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
@@ -151,7 +151,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
   return (
     <div className={`${GENERAL_BENTO_CONTAINER_CLASS} px-2 sm:px-0`}>
       <div
-        className={`${GENERAL_BENTO_GRID_CLASS} ${PLAYER_EDIT_GRID_ROWS_CLASS}`}
+        className={`${GENERAL_BENTO_GRID_CLASS} ${PLAYER_GRID_ROWS_CLASS}`}
         role="main"
         aria-label={t("characterInfoLabel")}>
         {/* Personnage */}

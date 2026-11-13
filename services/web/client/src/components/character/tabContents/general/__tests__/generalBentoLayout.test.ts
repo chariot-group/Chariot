@@ -13,6 +13,7 @@ import {
   NPC_EDIT_SLOTS,
   NPC_VIEW_SLOTS,
   PLAYER_EDIT_SLOTS,
+  PLAYER_GRID_ROWS_CLASS,
   PLAYER_VIEW_SLOTS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 
@@ -74,11 +75,13 @@ describe("General tab bento layout", () => {
     }
   }
 
-  it("nominal: player view places the four tiles on one row next to the character card on desktop", () => {
-    const grid = place([...LAYOUTS["player view"]()].slice(0, 6), BREAKPOINTS.desktop);
+  it("nominal: player view places the four tiles 2 × 2 under the statistics on desktop, like edit mode", () => {
+    const slots: string[] = [...LAYOUTS["player view"]()];
+    const grid = place(slots.slice(0, 6), BREAKPOINTS.desktop);
 
-    expect(grid).toHaveLength(2);
-    expect(grid[1].every(Boolean)).toBe(true);
+    expect(grid).toHaveLength(3);
+    expect(grid.every((row) => row.every(Boolean))).toBe(true);
+    expect(spanAt(slots[2], "col", BREAKPOINTS.desktop)).toBe(4);
   });
 
   it("edge: the NPC character card never spans rows, so a sparse identity is not stretched", () => {
@@ -148,35 +151,30 @@ describe("General tab bento layout", () => {
     }
   });
 
-  it("nominal: on very large screens the four PC tiles sit side by side next to the statistics, proficiencies right under them", () => {
-    const slots: string[] = [...LAYOUTS["player view"]()];
-    const tiles = place(slots.slice(0, 6), BREAKPOINTS.wide);
-    const proficiencies = slots[10];
-    const withProficiencies = place([...slots.slice(0, 6), proficiencies], BREAKPOINTS.wide);
-
-    // The four tiles complete the first row; the 4 right cells of the second row are left for proficiencies
-    expect(tiles[0].every(Boolean)).toBe(true);
-    expect(tiles[1].slice(8)).toEqual([false, false, false, false]);
-    expect(spanAt(slots[2], "col", BREAKPOINTS.wide)).toBe(1);
-    expect(spanAt(slots[1], "col", BREAKPOINTS.wide)).toBe(5);
-    expect(withProficiencies).toHaveLength(2);
-    expect(withProficiencies.every((row) => row.every(Boolean))).toBe(true);
-    expect([startAt(proficiencies, "col", BREAKPOINTS.wide), startAt(proficiencies, "row", BREAKPOINTS.wide)]).toEqual([
-      9, 2,
-    ]);
+  it("nominal: the PC slots (tiles and proficiencies included) are the same in read and edit modes", () => {
+    expect(PLAYER_VIEW_SLOTS).toEqual(PLAYER_EDIT_SLOTS);
+    for (const bp of Object.values(BREAKPOINTS)) {
+      expect(spanAt(PLAYER_VIEW_SLOTS.tile, "col", bp)).toBe(spanAt(PLAYER_EDIT_SLOTS.tile, "col", bp));
+      expect(startAt(PLAYER_VIEW_SLOTS.proficiencies, "row", bp)).toBeUndefined();
+    }
   });
 
-  it("edge: on very large screens the skills band comes right after the first band", () => {
-    const slots: string[] = [...LAYOUTS["player view"]()];
-    const grid = place(slots, BREAKPOINTS.wide);
+  it("nominal: read and edit PC grids share the row tracks that keep the tiles at their content height", () => {
+    const read = readFileSync(
+      `${process.cwd()}/src/components/character/tabContents/general/view/PlayerGeneralTabContent.tsx`,
+      "utf8",
+    );
+    const edit = readFileSync(
+      `${process.cwd()}/src/components/character/tabContents/general/form/PlayerGeneralTabEdit.tsx`,
+      "utf8",
+    );
 
-    // Band 1 (2 rows, proficiencies under the tiles) · skills band (2 rows)
-    expect(grid).toHaveLength(4);
-    expect(grid.every((row) => row.every(Boolean))).toBe(true);
+    for (const source of [read, edit]) expect(source).toContain("PLAYER_GRID_ROWS_CLASS");
+    expect(PLAYER_GRID_ROWS_CLASS).toContain("@sheet-xl:grid-rows-[auto_auto_auto_1fr]");
   });
 
-  it("edge: on very large screens player edit stacks the 4 tiles in one column next to a wider Character card, proficiencies full width at the bottom", () => {
-    const slots: string[] = [...LAYOUTS["player edit"]()];
+  it("edge: on very large screens the PC stacks the 4 tiles in one column next to a wider Character card, proficiencies full width at the bottom", () => {
+    const slots: string[] = [...LAYOUTS["player view"]()];
     const grid = place(slots.slice(0, 6), BREAKPOINTS.wide);
 
     expect(grid).toHaveLength(4);
@@ -215,6 +213,34 @@ describe("General tab bento layout", () => {
     expect(grid).toHaveLength(LAYOUTS["npc view"]().length);
   });
 
+  /** Sheet between `@sheet-sm` (22rem) and `@sheet-md`: large phone (425px) or tablet with the sidebar open. */
+  const SHEET_SM = { prefixes: ["", "@sheet-sm:"], columns: 2 };
+
+  it("nominal: from @sheet-sm (large phone, tablet with the sidebar open) the PC tiles stay 2 × 2 under the statistics", () => {
+    for (const name of ["player view", "player edit"] as const) {
+      const slots: string[] = [...LAYOUTS[name]()];
+
+      expect(place(slots.slice(0, 6), SHEET_SM), name).toHaveLength(4);
+      expect(spanAt(slots[2], "col", SHEET_SM), name).toBe(1);
+      expect(emptyCells(slots, SHEET_SM), name).toEqual([]);
+    }
+  });
+
+  it("edge: below @sheet-sm (small phones) the PC tiles stay full width, one per row", () => {
+    const slots: string[] = [...LAYOUTS["player view"]()];
+
+    expect(spanAt(slots[2], "col", BREAKPOINTS.mobile)).toBe(2);
+    expect(place(slots.slice(0, 6), BREAKPOINTS.mobile)).toHaveLength(6);
+  });
+
+  it("failure: without the @sheet-md reset the tiles would shrink to a quarter width on tablet", () => {
+    const tile = PLAYER_VIEW_SLOTS.tile.replace("@sheet-md:col-span-2", "");
+    const tablet = { prefixes: ["", "@sheet-sm:", "@sheet-md:"], columns: 4 };
+
+    expect(spanAt(PLAYER_VIEW_SLOTS.tile, "col", tablet)).toBe(2);
+    expect(spanAt(tile, "col", tablet)).toBe(1);
+  });
+
   it("edge: the other sheet tabs keep the viewport grid", () => {
     expect(BENTO_GRID_CLASS).toMatch(/(^| )sm:grid-cols-4( |$)/);
     expect(BENTO_GRID_CLASS).not.toContain("@sheet-");
@@ -223,7 +249,8 @@ describe("General tab bento layout", () => {
   it("failure: the container sizes used by the General slots are declared in the theme", () => {
     const css = readFileSync(`${process.cwd()}/src/app/[locale]/globals.css`, "utf8");
 
-    for (const size of ["md", "lg", "xl"]) expect(css).toMatch(new RegExp(`--container-sheet-${size}:\\s*\\d+rem;`));
+    for (const size of ["sm", "md", "lg", "xl"])
+      expect(css).toMatch(new RegExp(`--container-sheet-${size}:\\s*\\d+rem;`));
   });
 
   it("failure: NPC skills without their row span would leave a hole under the skills", () => {
@@ -240,16 +267,9 @@ describe("General tab bento layout", () => {
     expect(emptyCells(slots, BREAKPOINTS.tablet)).not.toEqual([]);
   });
 
-  it("failure: proficiencies without its explicit wide placement would leave a hole under the tiles", () => {
+  it("failure: read tiles back on a single row would leave holes next to the stacked edit layout on very large screens", () => {
     const slots: string[] = [...LAYOUTS["player view"]()];
-    slots[10] = slots[10].replace("@sheet-xl:row-start-2", "");
-
-    expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
-  });
-
-  it("failure: statistics without its wide row span would leave holes next to the tiles", () => {
-    const slots: string[] = [...LAYOUTS["player view"]()];
-    slots[1] = slots[1].replace("@sheet-xl:row-span-2", "");
+    for (const i of [2, 3, 4, 5]) slots[i] = slots[i].replace("@sheet-xl:col-span-2", "@sheet-xl:col-span-1");
 
     expect(emptyCells(slots, BREAKPOINTS.wide)).not.toEqual([]);
   });

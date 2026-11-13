@@ -3,9 +3,9 @@
  *
  * The grid follows the width available to the sheet, not the viewport: an open sidebar leaves less
  * room, so the grid columns are driven by container queries on `GENERAL_BENTO_CONTAINER_CLASS`
- * (sizes defined in `globals.css`): 2 columns below `@sheet-md` (36rem), 4 from `@sheet-md`,
- * 12 from `@sheet-lg` (56rem). From `@sheet-xl` (96rem, very large screens) the grid keeps 12 columns
- * with a wide placement: the first band is denser so cards do not stretch.
+ * (sizes defined in `globals.css`): 2 columns below `@sheet-md` (36rem; PC tiles 2 × 2 from `@sheet-sm`, 22rem),
+ * 4 from `@sheet-md`, 12 from `@sheet-lg` (56rem). From `@sheet-xl` (96rem, very large screens) the grid keeps 12 columns
+ * with a wide placement of the skills band.
  * Every card is a direct child of the grid and gets one slot class below. Spans are
  * chosen so that each row is filled at every width (no empty cell), with the DOM
  * order as reading order (no `order-*`, no dense packing).
@@ -74,7 +74,7 @@ const ABILITIES_STRETCHED_ROWS_CLASS =
  *   explicitly on the band rows (`row-start` given per layout, as the first band height differs; literal
  *   classes so Tailwind generates them).
  */
-const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start-3" | "@sheet-xl:row-start-5") =>
+const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start-5") =>
   ({
     skills: `${HALF} @sheet-md:row-span-3 @sheet-lg:row-span-2 @sheet-lg:col-span-6`,
     abilityScores: `${HALF} @sheet-lg:col-span-3`,
@@ -82,43 +82,37 @@ const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start
     abilities: `${HALF} @sheet-lg:col-span-6 @sheet-lg:row-span-2 @sheet-xl:col-span-3 @sheet-xl:col-start-10 ${bandRowStart} ${ABILITIES_STRETCHED_ROWS_CLASS}`,
   }) as const;
 
-export const PLAYER_VIEW_SLOTS = {
-  character: `${FULL} @sheet-lg:col-span-4 @sheet-lg:row-span-2 @sheet-xl:col-span-3`,
-  statistics: `${FULL} @sheet-lg:col-span-8 @sheet-xl:col-span-5 @sheet-xl:row-span-2`,
-  /** Proficiency bonus, passive perception, inspiration, exhaustion (one row next to the statistics from `@sheet-xl`). */
-  tile: "min-w-0 col-span-1 @sheet-lg:col-span-2 @sheet-xl:col-span-1",
-  /** The first band takes 2 rows from `@sheet-xl`, so the skills band starts on row 3. */
-  ...skillsBand("@sheet-xl:row-start-3"),
-  /**
-   * Under the skills from `@sheet-lg` (sections in columns, container queries). From `@sheet-xl`
-   * it moves up under the tiles, next to the statistics (explicit placement, DOM order unchanged).
-   */
-  proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-4 @sheet-xl:col-start-9 @sheet-xl:row-start-2`,
-} as const;
-
 /**
- * Edit tiles hold form controls and the Proficiencies form is long: from `@sheet-xl` the tiles stay
- * 2 × 2 and Proficiencies stays full width (not moved up next to the statistics).
+ * PC read and edit modes share the same slots at every width (decision 2026-11-12), so the sheet does not
+ * reshuffle when toggling edit:
+ * - `@sheet-lg`: Character (4, 3 rows) · Statistics (8) · the 4 tiles 2 × 2 under it (4 cols each).
+ * - `@sheet-xl`: Character (5, 4 rows) · Statistics (5, 4 rows) · the 4 tiles stacked in one column (2 cols).
+ * - Proficiencies: under the skills at `@sheet-lg`, full width after the skills band from `@sheet-xl`.
+ * Pair the grid with `PLAYER_GRID_ROWS_CLASS`.
  */
-export const PLAYER_EDIT_SLOTS = {
-  ...PLAYER_VIEW_SLOTS,
+export const PLAYER_VIEW_SLOTS = {
   character: `${FULL} @sheet-lg:col-span-4 @sheet-lg:row-span-3 @sheet-xl:col-span-5 @sheet-xl:row-span-4`,
   statistics: `${FULL} @sheet-lg:col-span-8 @sheet-xl:col-span-5 @sheet-xl:row-span-4`,
-  /** From `@sheet-xl` the 4 tiles stack in one 2-column column; the freed width goes to the Character card. */
-  tile: `${HALF} @sheet-lg:col-span-4 @sheet-xl:col-span-2`,
+  /**
+   * Proficiency bonus, passive perception, inspiration, exhaustion: half width on tablet, 2 × 2 at `@sheet-lg`.
+   * Below `@sheet-md` they stay 2 × 2 from `@sheet-sm` (22rem: large phones, tablet with the sidebar open),
+   * one per row on small phones (decision 2026-11-13).
+   */
+  tile: `${HALF} @sheet-sm:col-span-1 @sheet-md:col-span-2 @sheet-lg:col-span-4 @sheet-xl:col-span-2`,
+  /** The first band takes 4 rows from `@sheet-xl`, so the skills band starts on row 5. */
   ...skillsBand("@sheet-xl:row-start-5"),
-  /** Proficiencies stays at the bottom: under the skills at `@sheet-lg`, full width from `@sheet-xl`. */
   proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-12`,
 } as const;
 
+export const PLAYER_EDIT_SLOTS = PLAYER_VIEW_SLOTS;
+
 /**
- * Row tracks of the PC edit first band. The Character card spans 3 (4) rows: with `auto` tracks its height
- * would be spread over every row and stretch the tiles. Only one flexible track (`1fr`) absorbs it:
- * the Statistics row at `@sheet-lg`, the last tile row at `@sheet-xl`.
+ * Row tracks of the PC first band (read and edit modes). The Character card spans 3 (4) rows: with `auto`
+ * tracks its height would be spread over every row and stretch the tiles. Only one flexible track (`1fr`)
+ * absorbs it: the Statistics row at `@sheet-lg`, the last tile row at `@sheet-xl`.
  * @see FR-character-general-bento-layout
  */
-export const PLAYER_EDIT_GRID_ROWS_CLASS =
-  "@sheet-lg:grid-rows-[1fr_auto_auto] @sheet-xl:grid-rows-[auto_auto_auto_1fr]";
+export const PLAYER_GRID_ROWS_CLASS = "@sheet-lg:grid-rows-[1fr_auto_auto] @sheet-xl:grid-rows-[auto_auto_auto_1fr]";
 
 /**
  * NPC (GM constraint): tall Skills card as far left as possible, same skills band as the PC.
