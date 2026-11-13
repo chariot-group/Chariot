@@ -1,6 +1,6 @@
 import { NPC, Player } from "@/types/character";
 import CharacterInventoryView from "@/components/character/tabContents/inventory/view/CharacterInventoryView";
-import CharacterInventoryTabEdit from "@/components/character/tabContents/inventory/form/CharacterInventoryTabEdit";
+import { LazyCharacterInventoryTabEdit as CharacterInventoryTabEdit } from "@/components/lazy/lazyCharacterEditForms";
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterInventoryTabContentProps {

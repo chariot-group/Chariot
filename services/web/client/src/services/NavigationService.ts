@@ -75,7 +75,9 @@ class NavigationService {
                     characters: response.data,
                     total: response.pagination.totalItems
                 }));
-                await this.loadPlayerSpaceNpcs(dispatch, response.data);
+                // Sidebar data, not needed to choose a destination: do not delay navigation
+                // (FR-web-first-load-performance, slow-network round trip).
+                void this.loadPlayerSpaceNpcs(dispatch, response.data);
             } catch (error) {
                 dispatch(fetchCharactersWithoutGroupFailure(
                     error instanceof Error ? error.message : 'Failed to fetch characters'
@@ -93,7 +95,9 @@ class NavigationService {
                 characters: response.data,
                 total: response.pagination.totalItems
             }));
-            await this.loadPlayerSpaceNpcs(dispatch, response.data);
+            // Sidebar data, not needed to choose a destination: do not delay navigation
+            // (FR-web-first-load-performance, slow-network round trip).
+            void this.loadPlayerSpaceNpcs(dispatch, response.data);
         } catch (error) {
             dispatch(fetchCharactersWithoutGroupFailure(
                 error instanceof Error ? error.message : 'Failed to fetch characters'
@@ -110,7 +114,9 @@ class NavigationService {
         const isLoading = selectCampaignsLoading(state);
         const campaigns = selectCampaigns(state);
 
-        if (isLoading || (!options?.forceRefresh && campaigns.length > 0)) return;
+        // A forced refresh always fetches: another loader (sidebar) may be in flight with other paging,
+        // and post-login resolution must not read an empty list meanwhile.
+        if (!options?.forceRefresh && (isLoading || campaigns.length > 0)) return;
 
         dispatch(fetchCampaignsStart());
         try {
@@ -133,6 +139,9 @@ class NavigationService {
         getState: () => RootState,
     ): Promise<NavigationDestination> {
         try {
+            // Both lists leave together to save round trips on slow networks; the priority below is
+            // unchanged (FR-post-auth-navigation). loadCampaigns never rejects (failure → store).
+            const campaignsLoaded = this.loadCampaigns(dispatch, getState, { forceRefresh: true });
             await this.loadCharactersWithoutGroup(dispatch, getState, { forceRefresh: true });
             const charactersWithoutGroup = selectCharactersWithoutGroup(getState());
 
@@ -153,13 +162,25 @@ class NavigationService {
                 }
             }
 
-            await this.loadCampaigns(dispatch, getState, { forceRefresh: true });
+            await campaignsLoaded;
             const campaigns = selectCampaigns(getState());
 
             if (campaigns.length > 0) {
+                // Details are requested in parallel but read in list order (same priority).
+                const detailsById = new Map(
+                    campaigns
+                        .filter((campaign) => campaign.groups?.active && campaign.groups.active.length > 0)
+                        .map((campaign) => {
+                            const details = CampaignService.getCampaignById(campaign._id);
+                            // Unread results after an early return must not surface as unhandled rejections.
+                            details.catch(() => undefined);
+                            return [campaign._id, details] as const;
+                        }),
+                );
                 for (const campaign of campaigns) {
-                    if (campaign.groups?.active && campaign.groups.active.length > 0) {
-                        const campaignDetails = await CampaignService.getCampaignById(campaign._id);
+                    const pendingDetails = detailsById.get(campaign._id);
+                    if (pendingDetails) {
+                        const campaignDetails = await pendingDetails;
 
                         // Inspect every active group: an empty first group must not fall back to welcome (FR-session-end-navigation).
                         const activeGroups = (campaignDetails.groups?.active ?? []) as unknown as CampaignGroup[];

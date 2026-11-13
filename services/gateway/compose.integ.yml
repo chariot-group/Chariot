@@ -37,6 +37,18 @@ services:
       - "traefik.http.routers.chariot-gateway-integ.tls.certresolver=letsencrypt"
       - "traefik.http.services.chariot-gateway-integ.loadbalancer.server.port=8082"
       - "traefik.http.routers.chariot-gateway-integ.service=chariot-gateway-integ"
+      # Same-origin API for the web client: https://${FRONTEND_HOST}/gateway/* → gateway (prefix stripped).
+      # No CORS preflight and no extra TLS connection on slow networks. Cookies are dropped both ways:
+      # the API authenticates with the bearer token only. @see FR-web-first-load-performance (req. 18)
+      - "traefik.http.routers.chariot-gateway-integ-app.rule=Host(`${FRONTEND_HOST}`) && PathPrefix(`/gateway/`)"
+      - "traefik.http.routers.chariot-gateway-integ-app.priority=1000"
+      - "traefik.http.routers.chariot-gateway-integ-app.entrypoints=websecure"
+      - "traefik.http.routers.chariot-gateway-integ-app.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.chariot-gateway-integ-app.service=chariot-gateway-integ"
+      - "traefik.http.routers.chariot-gateway-integ-app.middlewares=chariot-gateway-integ-app-strip,chariot-gateway-integ-app-no-cookies"
+      - "traefik.http.middlewares.chariot-gateway-integ-app-strip.stripprefix.prefixes=/gateway"
+      - "traefik.http.middlewares.chariot-gateway-integ-app-no-cookies.headers.customrequestheaders.Cookie="
+      - "traefik.http.middlewares.chariot-gateway-integ-app-no-cookies.headers.customresponseheaders.Set-Cookie="
       - "traefik.docker.network=traefik-public"
       - "com.centurylinklabs.watchtower.enable=true"
     healthcheck:

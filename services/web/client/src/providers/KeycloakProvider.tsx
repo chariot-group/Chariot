@@ -3,10 +3,10 @@
 import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { setKeycloakInstance } from "@/services/ApiService";
+import { setKeycloakInstance } from "@/lib/keycloakInstance";
 import { saveStoredLocale, buildKeycloakAuthOptions, resolveAuthLocale } from "@/hooks/useLocalePreference";
-import { purgePersistedState } from "@/store";
-import { stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
+import { isOidcCallbackUrl, stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
+import { authenticatedShellLoader } from "@/components/layout/authenticatedShellLoader";
 import { clearPostLoginCompleted } from "@/lib/postLoginNavigation";
 import { reportClientIssue } from "@/logger/reportClientIssue";
 import AppShellSkeleton from "@/components/layout/AppShellSkeleton";
@@ -103,6 +103,12 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       };
 
       if (!sharedInitPromise) {
+        // Return from Keycloak: fetch the app shell while the code is exchanged, not after
+        // (FR-web-first-load-performance, slow-network round trip). A plain visit redirects
+        // to Keycloak right away and must not spend bandwidth on it.
+        if (isOidcCallbackUrl(window.location.href)) {
+          authenticatedShellLoader.preload();
+        }
         sharedKeycloak = new Keycloak(keycloakConfig);
         const initOptions: KeycloakInitOptions = {
           onLoad: "login-required",
@@ -215,6 +221,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     const redirectUri = buildWelcomeRedirectUri(locale);
 
     try {
+      // Loaded on demand: the store is part of the authenticated shell, not of the auth gate.
+      const { purgePersistedState } = await import("@/store");
       await purgePersistedState();
       localStorage.removeItem("chariot_user_id");
       clearPostLoginCompleted();

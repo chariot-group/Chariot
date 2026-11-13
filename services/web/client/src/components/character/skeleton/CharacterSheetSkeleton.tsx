@@ -8,7 +8,7 @@ import {
   GENERAL_BENTO_GRID_CLASS,
   PLAYER_GRID_ROWS_CLASS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
-import type { CharacterTab } from "@/components/character/CharacterTabs";
+import type { CharacterTab } from "@/components/character/characterTabsConfig";
 import {
   skeletonCardsForTab,
   type CharacterSheetSkeletonVariant,
@@ -149,13 +149,16 @@ function SkeletonCardShell({ card, tab }: { card: SkeletonCard; tab: CharacterTa
   );
 }
 
-function SkeletonCompanions() {
+/** Companions tab placeholders; `showActions` false when liaison actions are disabled (GM in session). */
+function SkeletonCompanions({ showActions = true }: { showActions?: boolean }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-2">
-        <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 w-36 rounded-[13px]")} />
-        <Skeleton className="h-9 w-40 rounded-[13px] bg-purple/40 motion-reduce:animate-none" />
-      </div>
+      {showActions ? (
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 w-36 rounded-[13px]")} />
+          <Skeleton className="h-9 w-40 rounded-[13px] bg-purple/40 motion-reduce:animate-none" />
+        </div>
+      ) : null}
       <div className="grid w-full min-w-0 grid-cols-1 gap-2 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
         {Array.from({ length: 3 }, (_, index) => (
           <div
@@ -168,6 +171,23 @@ function SkeletonCompanions() {
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Loading state of the Companions tab once the sheet is shown (linked NPCs fetch): same placeholders as the
+ * sheet skeleton, never a spinner. @see FR-character-sheet-skeleton
+ */
+export function CompanionsTabSkeleton({ showActions, label }: { showActions: boolean; label: string }) {
+  return (
+    <div
+      role="status"
+      aria-busy="true">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true">
+        <SkeletonCompanions showActions={showActions} />
       </div>
     </div>
   );

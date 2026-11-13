@@ -67,7 +67,7 @@ export default function Shop({ open, onOpenChange }: ShopProps) {
     <Dialog
       open={open}
       onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{tShop("pageTitle")}</DialogTitle>
           <p className="text-sm text-muted-foreground">{tShop("pageSubtitle")}</p>
@@ -106,7 +106,7 @@ export default function Shop({ open, onOpenChange }: ShopProps) {
 
         {!loading && !error && products.length > 0 && (
           <div className="flex flex-col gap-3">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-5 pt-3 sm:grid-cols-3 sm:gap-3">
               {products
                 .filter((product) => {
                   const tokenPrice = product.metadata?.token_number

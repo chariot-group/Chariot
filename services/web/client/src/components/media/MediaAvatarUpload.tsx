@@ -23,6 +23,35 @@ import {
 
 const requirementsHintId = (scope: MediaAvatarScope, entityId: string) => `avatar-requirements-${scope}-${entityId}`;
 
+type MediaAvatarRequirementsHintProps = {
+  scope: MediaAvatarScope;
+  entityId: string;
+  size?: "sheet" | "profile";
+  className?: string;
+};
+
+/**
+ * Upload requirements (extensions, max size, recommended dimensions) — target of the upload controls'
+ * `aria-describedby`. Rendered by `MediaAvatarUpload`, or by the parent when it passes `renderRequirementsHint={false}`.
+ */
+export function MediaAvatarRequirementsHint({ scope, entityId, size = "sheet", className }: MediaAvatarRequirementsHintProps) {
+  const t = useTranslations("mediaAvatar");
+  // Profile avatars are shown in a circle (FR-media-avatars exception): recommend a square image
+  const isRound = size === "profile";
+
+  return (
+    <p
+      id={requirementsHintId(scope, entityId)}
+      className={cn("whitespace-pre-line text-[11px] text-muted-foreground/70 leading-tight wrap-break-word", className)}>
+      {t(isRound ? "requirementsHintRound" : "requirementsHint", {
+        width: MEDIA_AVATAR_RECOMMENDED_WIDTH_PX,
+        height: isRound ? MEDIA_AVATAR_RECOMMENDED_WIDTH_PX : MEDIA_AVATAR_RECOMMENDED_HEIGHT_PX,
+        maxMb: MEDIA_AVATAR_MAX_UPLOAD_MB,
+      })}
+    </p>
+  );
+}
+
 type MediaAvatarUploadProps = {
   scope: MediaAvatarScope;
   entityId: string;
@@ -38,6 +67,8 @@ type MediaAvatarUploadProps = {
   onPendingRemove?: () => void;
   onAvatarChange?: (avatar: string) => void;
   disabled?: boolean;
+  /** false: the parent renders `MediaAvatarRequirementsHint` (same scope/entityId) where it fits its layout. */
+  renderRequirementsHint?: boolean;
 };
 
 export function MediaAvatarUpload({
@@ -54,6 +85,7 @@ export function MediaAvatarUpload({
   onPendingRemove,
   onAvatarChange,
   disabled = false,
+  renderRequirementsHint = true,
 }: MediaAvatarUploadProps) {
   const t = useTranslations("mediaAvatar");
   const toast = useToast();
@@ -134,11 +166,7 @@ export function MediaAvatarUpload({
   const showRemove = Boolean(storedValue?.trim()) || Boolean(previewUrl?.trim());
   const roundedClass = MEDIA_AVATAR_ROUNDED_CLASS[size];
   const requirementsId = requirementsHintId(scope, entityId);
-  const requirementsHint = t("requirementsHint", {
-    width: MEDIA_AVATAR_RECOMMENDED_WIDTH_PX,
-    height: MEDIA_AVATAR_RECOMMENDED_HEIGHT_PX,
-    maxMb: MEDIA_AVATAR_MAX_UPLOAD_MB,
-  });
+  const isRound = size === "profile";
 
   return (
     <div
@@ -165,6 +193,8 @@ export function MediaAvatarUpload({
           <div
             className={cn(
               "absolute inset-x-0 bottom-0 flex justify-center gap-1 px-1.5 py-1",
+              // Lift the controls inside the circle so its curve does not clip them
+              isRound && "pb-2.5",
               "bg-linear-to-t from-black/85 via-black/55 to-transparent",
             )}>
             <input
@@ -257,14 +287,14 @@ export function MediaAvatarUpload({
         </div>
       ) : null}
 
-      <p
-        id={requirementsId}
-        className={cn(
-          "whitespace-pre-line text-[11px] text-muted-foreground/70 leading-tight text-center max-w-56 wrap-break-word",
-          size === "sheet" && "max-sm:sr-only",
-        )}>
-        {requirementsHint}
-      </p>
+      {renderRequirementsHint ? (
+        <MediaAvatarRequirementsHint
+          scope={scope}
+          entityId={entityId}
+          size={size}
+          className={cn("text-center max-w-56", size === "sheet" && "max-sm:sr-only")}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildUrlWithoutOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
+import { buildUrlWithoutOidcCallbackParams, isOidcCallbackUrl } from "@/lib/stripOidcCallbackParams";
 
 describe("stripOidcCallbackParams", () => {
   it("nominal: strips OIDC callback params after Keycloak redirect", () => {
@@ -26,5 +26,23 @@ describe("stripOidcCallbackParams", () => {
 
     expect(result.stripped).toBe(false);
     expect(result.url).toBe(href);
+  });
+});
+
+describe("isOidcCallbackUrl (FR-web-first-load-performance)", () => {
+  it("nominal: fragment and query callbacks with a code are detected", () => {
+    expect(isOidcCallbackUrl("http://localhost:3000/fr#state=s1&session_state=x&iss=http%3A%2F%2Fkc&code=c1")).toBe(true);
+    expect(isOidcCallbackUrl("http://localhost:3000/fr?state=s1&code=c1")).toBe(true);
+  });
+
+  it("edge: an error callback counts (keycloak-js handles it), a plain visit or a lone state does not", () => {
+    expect(isOidcCallbackUrl("http://localhost:3000/fr#error=login_required&state=s1")).toBe(true);
+    expect(isOidcCallbackUrl("http://localhost:3000/fr/characters/abc?tab=magic")).toBe(false);
+    expect(isOidcCallbackUrl("http://localhost:3000/fr#state=s1")).toBe(false);
+    expect(isOidcCallbackUrl("http://localhost:3000/fr?code=join-123")).toBe(false);
+  });
+
+  it("failure: a malformed URL is not a callback", () => {
+    expect(isOidcCallbackUrl("not a url")).toBe(false);
   });
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarLoadMoreButton } from "@/components/layout/Sidebar/SidebarLoadMoreButton";
 import { buttonVariants } from "@/components/ui/button";
 import { usePlayersWithoutGroup } from "@/hooks/useCharacter";
 import {
@@ -35,13 +36,11 @@ import { Character, NPC } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
-import { DeletePlayerWithCompanionsDialog } from "@/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog";
 import {
   deletePlayerCharacterWithCompanionChoice,
   linkedCompanionsForPlayer,
   syncReduxAfterPlayerDelete,
 } from "@/lib/playerDeleteCompanions";
-import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import {
   applyCompanionModeAfterPlayerCreated,
   createPlayerDuplicateFromFull,
@@ -50,7 +49,11 @@ import {
   syncReduxAfterCompanionNpcCreate,
   type PlayerDuplicateCompanionMode,
 } from "@/lib/playerDuplicateCompanions";
-import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
+import {
+  LazyDeletePlayerWithCompanionsDialog,
+  LazyDuplicateCharacterDialog,
+  LazyExportCharacterSheetPdfDialog,
+} from "@/components/lazy/lazyDialogs";
 import { LinkNpcToPlayerDialog } from "@/components/dialogs/LinkNpcToPlayerDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
@@ -414,23 +417,15 @@ export default function CharactersWithoutGroupList() {
   }
 
   const loadMoreButton = hasMore ? (
-    <button
-      type="button"
+    <SidebarLoadMoreButton
       key="characters-without-group-load-more"
-      onClick={() => void loadMoreCharacters()}
-      disabled={loadingMore}
-      aria-busy={loadingMore}
-      aria-label={t("loadMoreCharactersAria")}
-      className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:border">
-      {loadingMore ? (
-        <Loader2
-          className="w-4 h-4 animate-spin mx-auto"
-          aria-hidden
-        />
-      ) : (
-        t("loadMoreCharacters")
-      )}
-    </button>
+      loading={loadingMore}
+      onLoadMore={loadMoreCharacters}
+      label={t("loadMoreCharacters")}
+      ariaLabel={t("loadMoreCharactersAria")}
+      withAvatar
+      className="text-xs shrink-0 cursor-pointer rounded-[12px] py-1.5 px-3 text-white/90 text-center transition-all duration-100 w-full border border-white/25 hover:bg-white/10 hover:text-white focus-visible:border"
+    />
   ) : null;
 
   const renderRow = (row: PlayerSidebarRow, index: number) => {
@@ -660,7 +655,7 @@ export default function CharactersWithoutGroupList() {
         isLoading={isDeleting}
       />
 
-      <DeletePlayerWithCompanionsDialog
+      <LazyDeletePlayerWithCompanionsDialog
         open={showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeleting) setCharacterPendingDelete(null);
@@ -682,7 +677,7 @@ export default function CharactersWithoutGroupList() {
         onDeleteWithCompanions={() => executeCharacterDelete(true)}
       />
 
-      <DuplicateCharacterDialog
+      <LazyDuplicateCharacterDialog
         character={characterToDuplicate}
         open={!!characterToDuplicate}
         onOpenChange={(open) => {
@@ -695,7 +690,7 @@ export default function CharactersWithoutGroupList() {
         }
       />
 
-      <ExportCharacterSheetPdfDialog
+      <LazyExportCharacterSheetPdfDialog
         character={characterToExport}
         open={!!characterToExport}
         onOpenChange={closeExportDialog}

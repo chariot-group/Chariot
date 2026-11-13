@@ -70,6 +70,30 @@ function ContentPlaceholder() {
 interface AppShellSkeletonProps {
   /** Escape hatch: a user stuck in authentication can still log out. */
   onLogout: () => void;
+  /**
+   * The authenticated shell could not be fetched (slow or lost network): the frame stays,
+   * the content area shows an alert with a retry instead of the placeholders.
+   * @see FR-web-first-load-performance (Slow-network authentication round trip)
+   */
+  onRetry?: () => void;
+}
+
+function ShellLoadFailure({ onRetry }: { onRetry: () => void }) {
+  const t = useTranslations("common");
+
+  return (
+    <div
+      role="alert"
+      className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-4 text-center text-sm text-white/80">
+      <p>{t("lazyLoadError")}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="cursor-pointer rounded-md border border-white/40 px-4 py-2 text-sm text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+        {t("retry")}
+      </button>
+    </div>
+  );
 }
 
 /**
@@ -78,15 +102,16 @@ interface AppShellSkeletonProps {
  * into the sheet's own loading state.
  * @see FR-auth-loading-skeleton
  */
-export default function AppShellSkeleton({ onLogout }: AppShellSkeletonProps) {
+export default function AppShellSkeleton({ onLogout, onRetry }: AppShellSkeletonProps) {
   const t = useTranslations("auth");
+  const failed = Boolean(onRetry);
 
   return (
     <div
-      role="status"
-      aria-busy="true"
+      role={failed ? undefined : "status"}
+      aria-busy={failed ? undefined : true}
       className="flex h-dvh min-h-0 w-full overflow-hidden">
-      <span className="sr-only">{t("loading")}</span>
+      {!failed && <span className="sr-only">{t("loading")}</span>}
       <SidebarPlaceholder />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -109,9 +134,13 @@ export default function AppShellSkeleton({ onLogout }: AppShellSkeletonProps) {
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <Suspense fallback={<GenericContentPlaceholder />}>
-            <ContentPlaceholder />
-          </Suspense>
+          {onRetry ? (
+            <ShellLoadFailure onRetry={onRetry} />
+          ) : (
+            <Suspense fallback={<GenericContentPlaceholder />}>
+              <ContentPlaceholder />
+            </Suspense>
+          )}
         </div>
       </div>
     </div>

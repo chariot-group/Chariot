@@ -1,4 +1,5 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
     fetchCampaignsStart,
@@ -42,6 +43,7 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
     const campaigns = useAppSelector(selectCampaigns);
     const loading = useAppSelector(selectCampaignsLoading);
     const loadingMore = useAppSelector(selectCampaignsLoadingMore);
+    const loadMoreGuardRef = useRef(createInFlightGuard());
     const error = useAppSelector(selectCampaignsError);
     const currentPage = useAppSelector(selectCurrentPage);
     const hasMore = useAppSelector(selectHasMore);
@@ -91,26 +93,28 @@ export function useCampaigns(options: UseCampaignsOptions = {}) {
     const loadMoreCampaigns = useCallback(async (params?: { sort?: string; label?: string }) => {
         if (!hasMore || loadingMore) return;
 
-        try {
-            dispatch(loadMoreCampaignsStart());
-            const result = await CampaignService.getCampaigns({
-                ...params,
-                page: currentPage + 1,
-                offset: pageSize,
-            });
-            dispatch(
-                loadMoreCampaignsSuccess({
-                    campaigns: result.data,
-                    total: result.totalItems,
-                    pageSize,
-                }),
-            );
-            return result.data;
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to load more campaigns';
-            dispatch(fetchCampaignsFailure(errorMessage));
-            throw err;
-        }
+        return loadMoreGuardRef.current.run(async () => {
+            try {
+                dispatch(loadMoreCampaignsStart());
+                const result = await CampaignService.getCampaigns({
+                    ...params,
+                    page: currentPage + 1,
+                    offset: pageSize,
+                });
+                dispatch(
+                    loadMoreCampaignsSuccess({
+                        campaigns: result.data,
+                        total: result.totalItems,
+                        pageSize,
+                    }),
+                );
+                return result.data;
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Failed to load more campaigns';
+                dispatch(fetchCampaignsFailure(errorMessage));
+                throw err;
+            }
+        });
     }, [dispatch, currentPage, pageSize, hasMore, loadingMore]);
 
     /**

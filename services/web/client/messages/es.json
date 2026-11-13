@@ -124,6 +124,7 @@
     "loadMoreGroupsAria": "Cargar más grupos",
     "loadMoreCharacters": "Cargar más",
     "loadMoreCharactersAria": "Cargar más personajes",
+    "loadingMore": "Cargando más elementos…",
     "addToSession": "Unirse a la sesión",
     "removeFromSession": "Salir de la sesión",
     "gmGuestCharacter": "Invitado MJ",
@@ -517,7 +518,10 @@
       "campaignCreationFailed": "Error al crear la campaña",
       "groupNameRequired": "El nombre del grupo es requerido",
       "groupCreationFailed": "Error al crear el grupo"
-    }
+    },
+    "lazyLoading": "Cargando…",
+    "lazyLoadError": "No se pudo cargar esta parte de la aplicación. Comprueba tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
   },
   "error": {
     "title": "¡Ups! Algo salió mal",
@@ -554,6 +558,7 @@
     "invalidType": "Formato no compatible. Use JPEG (.jpg), PNG (.png), WebP (.webp) o HEIC (.heic).",
     "tooLarge": "La imagen supera el tamaño máximo de {maxMb} MB.",
     "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} MB máx.\n{width}×{height} px (4:5) recomendado",
+    "requirementsHintRound": "JPEG · PNG · WebP · HEIC — {maxMb} MB máx.\n{width}×{height} px recomendado (recortada en círculo)",
     "uploadSuccess": "Imagen actualizada.",
     "uploadError": "No se pudo actualizar la imagen.",
     "removeSuccess": "Imagen eliminada.",
@@ -717,8 +722,6 @@
     "referral": {
       "yourCode": "Enlace de referido",
       "tiersProgressAriaLabel": "Progreso de niveles de referidos",
-      "maxDiscountLabel": "Máx.",
-      "maxDiscountAriaLabel": "Descuento máximo posible: {discount} %",
       "noApplicableDiscount": "0 %",
       "tierSegmentAriaLabel": "{count, plural, one {# referido} other {# referidos}}: {discount} % de descuento",
       "copyCode": "Copiar código",
@@ -734,6 +737,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 referido esperando 1ª compra} one {# referido esperando 1ª compra} other {# referidos esperando 1ª compra}}",
       "tiersTitle": "Niveles de referidos",
       "tiersSubtitle": "Cuanto más refieras, más ahorras",
+      "compactCurrentLabel": "Descuento disponible",
+      "compactPendingPotential": "Hasta un {discount} % cuando tus ahijados pendientes hagan su primera compra",
       "tierReferral": "referido",
       "tierReferrals": "referidos",
       "currentDiscount": "Descuento disponible: {discount} %",
@@ -1975,6 +1980,7 @@
     "close": "Cerrar",
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Navegar a una versión anterior",
+    "versionsNavLabel": "Versiones",
     "latest": "Actual"
   },
   "playerSpaceFallback": {
