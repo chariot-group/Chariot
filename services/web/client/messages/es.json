@@ -211,7 +211,15 @@
       "editLinkSave": "Guardar cambios",
       "editError": "Error al modificar el enlace.",
       "collapseAriaLabel": "Contraer los enlaces rápidos",
-      "expandAriaLabel": "Expandir los enlaces rápidos"
+      "expandAriaLabel": "Expandir los enlaces rápidos",
+      "visibilityLegend": "Visibilidad",
+      "visibleInAllCampaigns": "Accesible desde todas mis campañas",
+      "visibleInPlayerSpace": "Accesible desde el espacio de jugador",
+      "ownLinksCampaign": "Enlaces de esta campaña",
+      "ownLinksPlayer": "Enlaces del espacio de jugador",
+      "sharedLinks": "Enlaces comunes",
+      "deleteSharedLinkDialogDescription": "Este enlace es compartido: desaparecerá de todos los espacios donde es visible. Esta acción es irreversible.",
+      "sharedLinksHint": "Compartidos con otros espacios"
     },
     "sessionCharacterSection": "Personaje de la sesión",
     "outOfSessionToggle": "Fuera de sesión ({count})",
