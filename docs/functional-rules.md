@@ -5787,6 +5787,7 @@ Each initiative tracker row carries:
 - **NPC passive perception** (General tab only, decision 2026-11-04): a 4th key stat cell « Perc. passive » (Eye icon) next to CA / Init. / Taille; the row shows 2 × 2 cells below `sm` and one row of 4 from `sm`. In edit mode the passive perception override field and its mismatch warning sit at the bottom of the NPC statistics edit card. The Combat tab keeps 3 cells.
 - **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC). Long rest availability and effects for PC and NPC are owned by FR-character-long-rest.
 - **Short rest dialog — healing line** (decision 2026-11-12): when the PC has hit dice left to spend, the « Hit points recovered: +N » line is always shown below the hit dice section, from the dialog opening, so the layout does not shift. N is the sum of the dice values already entered (empty or invalid entries count as 0), so it reads `+0` before any die is added or filled. Without hit dice to spend the line is not shown. The line is announced politely to assistive technologies (`aria-live="polite"`) when N changes.
+- **Edit mode — hit points fields** (PC and NPC edit forms, decision 2026-11-13): the fields read **current HP, max HP, temporary HP**, in this visual and tab order. Current HP is never above max HP and max HP never below current HP (existing clamp and info toast). When max HP changes to a number while current HP is **empty or equal to the previous max HP** (character at full health, e.g. the 10 / 10 creation defaults), current HP takes the new max value; in that case the max field does not clamp to current HP, so a lower max can be typed digit by digit. Otherwise current HP is left untouched.
 - **Fill** (FR-character-general-bento-layout, FR-character-battle-bento-layout): when the card is stretched, its blocks spread from top to bottom (`justify-between`); the key stats row never leaves a hole on mobile.
 
 **Accessibility (FR-frontend-design)**:
@@ -5804,11 +5805,12 @@ Each initiative tracker row carries:
 - Nominal: PC and NPC cards render exactly three key stat cells (CA, initiative, size) with visible labels, and one speeds line listing non-zero speeds; the NPC General-tab card renders a 4th passive perception cell.
 - Edge: all speeds 0 → no speeds line; dual units → secondary unit shown in the speed line.
 - Failure: no "?" tooltip buttons and no white pill (`bg-white`) in the card.
+- HP edit fields: PC and NPC forms render current, max, temp in this order; max 10 → 45 with current 10 sets current to 45; current empty takes the new max; current 7 with max 10 stays 7 when max becomes 45, and max cannot go below 7.
 - Short rest: opening the dialog with hit dice left shows « +0 »; filling one die updates N; an empty or invalid die counts as 0; no hit dice left → no healing line.
 
 **References**:
 
-- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`, `StatisticsUpdate.tsx`, `NpcStatisticsUpdate.tsx`
 - `docs/functional-rules.md` — FR-distance-unit-conversion, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-frontend-design
 
 ---
