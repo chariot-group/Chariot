@@ -213,6 +213,34 @@ describe("General tab bento layout", () => {
     expect(grid).toHaveLength(LAYOUTS["npc view"]().length);
   });
 
+  /** Sheet between `@sheet-sm` (22rem) and `@sheet-md`: large phone (425px) or tablet with the sidebar open. */
+  const SHEET_SM = { prefixes: ["", "@sheet-sm:"], columns: 2 };
+
+  it("nominal: from @sheet-sm (large phone, tablet with the sidebar open) the PC tiles stay 2 × 2 under the statistics", () => {
+    for (const name of ["player view", "player edit"] as const) {
+      const slots: string[] = [...LAYOUTS[name]()];
+
+      expect(place(slots.slice(0, 6), SHEET_SM), name).toHaveLength(4);
+      expect(spanAt(slots[2], "col", SHEET_SM), name).toBe(1);
+      expect(emptyCells(slots, SHEET_SM), name).toEqual([]);
+    }
+  });
+
+  it("edge: below @sheet-sm (small phones) the PC tiles stay full width, one per row", () => {
+    const slots: string[] = [...LAYOUTS["player view"]()];
+
+    expect(spanAt(slots[2], "col", BREAKPOINTS.mobile)).toBe(2);
+    expect(place(slots.slice(0, 6), BREAKPOINTS.mobile)).toHaveLength(6);
+  });
+
+  it("failure: without the @sheet-md reset the tiles would shrink to a quarter width on tablet", () => {
+    const tile = PLAYER_VIEW_SLOTS.tile.replace("@sheet-md:col-span-2", "");
+    const tablet = { prefixes: ["", "@sheet-sm:", "@sheet-md:"], columns: 4 };
+
+    expect(spanAt(PLAYER_VIEW_SLOTS.tile, "col", tablet)).toBe(2);
+    expect(spanAt(tile, "col", tablet)).toBe(1);
+  });
+
   it("edge: the other sheet tabs keep the viewport grid", () => {
     expect(BENTO_GRID_CLASS).toMatch(/(^| )sm:grid-cols-4( |$)/);
     expect(BENTO_GRID_CLASS).not.toContain("@sheet-");
@@ -221,7 +249,8 @@ describe("General tab bento layout", () => {
   it("failure: the container sizes used by the General slots are declared in the theme", () => {
     const css = readFileSync(`${process.cwd()}/src/app/[locale]/globals.css`, "utf8");
 
-    for (const size of ["md", "lg", "xl"]) expect(css).toMatch(new RegExp(`--container-sheet-${size}:\\s*\\d+rem;`));
+    for (const size of ["sm", "md", "lg", "xl"])
+      expect(css).toMatch(new RegExp(`--container-sheet-${size}:\\s*\\d+rem;`));
   });
 
   it("failure: NPC skills without their row span would leave a hole under the skills", () => {

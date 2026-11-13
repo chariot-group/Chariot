@@ -3,8 +3,8 @@
  *
  * The grid follows the width available to the sheet, not the viewport: an open sidebar leaves less
  * room, so the grid columns are driven by container queries on `GENERAL_BENTO_CONTAINER_CLASS`
- * (sizes defined in `globals.css`): 2 columns below `@sheet-md` (36rem), 4 from `@sheet-md`,
- * 12 from `@sheet-lg` (56rem). From `@sheet-xl` (96rem, very large screens) the grid keeps 12 columns
+ * (sizes defined in `globals.css`): 2 columns below `@sheet-md` (36rem; PC tiles 2 × 2 from `@sheet-sm`, 22rem),
+ * 4 from `@sheet-md`, 12 from `@sheet-lg` (56rem). From `@sheet-xl` (96rem, very large screens) the grid keeps 12 columns
  * with a wide placement of the skills band.
  * Every card is a direct child of the grid and gets one slot class below. Spans are
  * chosen so that each row is filled at every width (no empty cell), with the DOM
@@ -93,8 +93,12 @@ const skillsBand = (bandRowStart: "@sheet-xl:row-start-2" | "@sheet-xl:row-start
 export const PLAYER_VIEW_SLOTS = {
   character: `${FULL} @sheet-lg:col-span-4 @sheet-lg:row-span-3 @sheet-xl:col-span-5 @sheet-xl:row-span-4`,
   statistics: `${FULL} @sheet-lg:col-span-8 @sheet-xl:col-span-5 @sheet-xl:row-span-4`,
-  /** Proficiency bonus, passive perception, inspiration, exhaustion: half width on tablet, 2 × 2 at `@sheet-lg`. */
-  tile: `${HALF} @sheet-lg:col-span-4 @sheet-xl:col-span-2`,
+  /**
+   * Proficiency bonus, passive perception, inspiration, exhaustion: half width on tablet, 2 × 2 at `@sheet-lg`.
+   * Below `@sheet-md` they stay 2 × 2 from `@sheet-sm` (22rem: large phones, tablet with the sidebar open),
+   * one per row on small phones (decision 2026-11-13).
+   */
+  tile: `${HALF} @sheet-sm:col-span-1 @sheet-md:col-span-2 @sheet-lg:col-span-4 @sheet-xl:col-span-2`,
   /** The first band takes 4 rows from `@sheet-xl`, so the skills band starts on row 5. */
   ...skillsBand("@sheet-xl:row-start-5"),
   proficiencies: `${FULL} @sheet-lg:col-span-6 @sheet-xl:col-span-12`,

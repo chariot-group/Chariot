@@ -91,8 +91,10 @@
 
   /*
    * Width available to the character sheet General tab (container queries, sidebar included):
-   * mobile < sheet-md ≤ tablet < sheet-lg ≤ desktop < sheet-xl ≤ wide (FR-character-general-bento-layout)
+   * mobile < sheet-md ≤ tablet < sheet-lg ≤ desktop < sheet-xl ≤ wide (FR-character-general-bento-layout).
+   * sheet-sm: PC tiles 2 × 2 on large phones and tablets with the sidebar open.
    */
+  --container-sheet-sm: 22rem;
   --container-sheet-md: 36rem;
   --container-sheet-lg: 56rem;
   --container-sheet-xl: 96rem;
