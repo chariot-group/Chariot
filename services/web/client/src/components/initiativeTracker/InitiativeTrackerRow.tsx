@@ -530,7 +530,7 @@ export function InitiativeTrackerRow({
   const hasTabletExpansion = totalStateCount > 1;
 
   const renderInitiativeCell = (compact = false) => {
-    const showModifier = !isPlayerView || isOwnCharacter;
+    const showModifier = !battleStarted && (!isPlayerView || isOwnCharacter);
     const modifier = Number.isFinite(row.initiativeModifier) ? Number(row.initiativeModifier) : 0;
     const modifierText = formatSignedBonus(modifier);
     const modifierAriaLabel = labels.initiativeModifierFor(modifierText);

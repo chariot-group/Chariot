@@ -259,7 +259,7 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     expect(html).not.toContain('type="number"');
   });
 
-  it("nominal: locked initiative still shows modifier hint with dice icon", () => {
+  it("edge: initiative locked before combat start still shows modifier hint with dice icon", () => {
     const html = renderToStaticMarkup(
       <InitiativeTrackerRow
         row={baseRow}
@@ -274,6 +274,40 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     expect(html).toContain("Initiative bonus +2");
     expect(html).toContain("+2");
     expect(html).not.toContain('type="number"');
+  });
+
+  it("nominal: once combat has started, initiative cell shows the total only", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        initiativeLocked
+        battleStarted
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain(">12<");
+    expect(html).not.toContain("lucide-dices");
+    expect(html).not.toContain("Initiative bonus +2");
+    expect(html).not.toContain('type="number"');
+  });
+
+  it("guard: player own row hides the bonus once combat has started", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        ownCharacterId={baseRow.characterId}
+        initiativeLocked
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    expect(html).not.toContain("lucide-dices");
+    expect(html).not.toContain("Initiative bonus +2");
   });
 
   it("nominal: grid condition and group cells are isolated to prevent overlap", () => {
