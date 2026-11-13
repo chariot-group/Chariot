@@ -3638,9 +3638,13 @@ Each initiative tracker row carries:
 - The dialog MUST offer **Annuler** (outline) and a **destructive** confirm button; Cancel, Escape and overlay click MUST close without leaving; the confirm button MUST be disabled while leaving
 - Trigger layout: **player** → one solid destructive « Quitter la session » button; **GM** (where closing is available) → split button whose main part is « Clôturer la session » (solid destructive) and whose arrow opens a menu with « Quitter la session »; each action opens its own confirmation dialog. Where the GM cannot close (pre-launch wheel bar), the GM gets the same solid destructive leave button as a player
 - **Rejoining after leaving**: while the session is still valid (not closed, not expired — 8 h after launch), a user who left MUST be able to come back:
-  - **GM**: when the GM is no longer in a session client-side but an active session exists for the selected campaign (GM is its creator), the sidebar action MUST read « Retourner à la session » (not « Lancer une session ») and bring the GM back into that session. « Lancer une session » is shown only when no active session exists for the campaign.
+  - **GM**: when an active session exists for the selected campaign (GM is its creator) and it is either **launched** (non-expired) or **joined by at least one player** (participant other than the GM), the sidebar action MUST read « Retour en session » (not « Lancer une session ») and bring the GM back into that session — whether the GM merely closed the lobby dialog or left it. An **empty lobby that was never launched** MUST show « Lancer une session »; the action reopens/reuses the existing lobby (server-side reuse, no duplicate session). A player who leaves is removed from the roster and no longer counts.
   - **Player, before launch**: rejoining with the session code follows the normal join flow (wheel deposit rules apply, FR-session-lobby-wheel-deposit).
-  - **Player, after launch**: a former participant who explicitly left a launched session MUST be allowed to rejoin it with its code, without spending wheels again (the launch debit is not replayed). Users who never participated in that session MUST still be refused once it is launched (no new player mid-session). The join dialog MUST show a specific error for this refusal and SHOULD prefill the code of the last session the user left. While that last-left session is still active, the player's sidebar action MUST read « Retourner à la session » (opening the prefilled join dialog) instead of « Rejoindre la session ».
+  - **Player, after launch**: a former participant who explicitly left a launched session MUST be allowed to rejoin it with its code, without spending wheels again (the launch debit is not replayed). Users who never participated in that session MUST still be refused once it is launched (no new player mid-session). The join dialog MUST show a specific error for this refusal and SHOULD prefill the code of the last session the user left. While that last-left session is still active, the player's sidebar action MUST read « Retour en session » (opening the prefilled join dialog) instead of « Rejoindre la session ».
+  - **Player leaving a lobby that was never launched**: the left session code MUST NOT be remembered (reset); the sidebar action reads « Rejoindre la session » with no prefilled code. A player who only closed the lobby dialog without leaving is still in the lobby and keeps « Retour en session ».
+  - **Label**: the return action is worded « Retour en session » (EN « Back to Session ») so it fits the sidebar button without truncation.
+  - **Color**: for a player, « Retour en session » uses the same green tone as « Rejoindre la session »; for the GM it keeps the yellow tone of « Lancer une session ».
+  - **Lobby open**: while the lobby dialog is open (user in session), the sidebar action MUST show an indicative « in progress » state — label « Retour en session », role color, active ring distinct from keyboard focus, `aria-current="true"`. The regular label (e.g. « Lancer une session » for an empty lobby) comes back when the dialog closes.
 - Accessibility: titled/described dialog, focus trapped and restored to the trigger, fully keyboard operable, red text contrast OK in light and dark themes
 
 **Tests**:
@@ -3648,7 +3652,12 @@ Each initiative tracker row carries:
 - Nominal: `openSessionLobby` sets `sessionLobbyOpen` to `true`; `closeSessionLobby` resets it to `false`
 - Nominal: player gets a single leave button; GM gets the close split button with leave in its menu; leave description mentions group removal only for a player
 - Failure: leave confirm is blocked while a leave is in progress
-- Nominal: GM out of session with an active session on the selected campaign sees « Retourner à la session »; without one, « Lancer une session »
+- Nominal: GM out of session with a launched active session on the selected campaign sees « Retour en session »; without one, « Lancer une session »
+- Edge: GM whose campaign session is an empty lobby (never launched, no player joined) sees « Lancer une session », after closing the dialog or leaving
+- Edge: GM whose lobby (not launched) was joined by a player sees « Retour en session »
+- Nominal: player « Retour en session » is green, GM's is yellow
+- Nominal: lobby dialog open in session → « Retour en session » in active state; Guard: stale open flag out of session shows no indicator
+- Edge: player leaving a never-launched lobby → left session code reset, « Rejoindre la session »
 - Edge (reconnect): player leaves a launched session and rejoins it with its code → accepted, no wheel debit
 - Failure: user who never participated cannot join a launched session (specific error shown)
 - Edge: calling `openSessionLobby` twice remains idempotent (`true`)

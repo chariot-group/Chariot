@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  resolveReturnToSessionTone,
+  resolveSessionActionRole,
+  shouldShowLobbyOpenIndicator,
   computeSessionRemainingSeconds,
   formatSessionRemainingDuration,
   isSessionTimerLow,
@@ -124,5 +127,45 @@ describe("FR-session-lobby-navigation — header indicator before launch", () =>
   it("guard: stale low remaining time does not show critical before launch", () => {
     expect(resolveHeaderSessionIndicatorTone(false, 60)).toBe("preparing");
     expect(resolveHeaderSessionIndicatorTone(true, 60)).toBe("critical");
+  });
+});
+
+describe("resolveSessionActionRole", () => {
+  it("nominal: roster status wins over context mode", () => {
+    expect(resolveSessionActionRole("gameMaster", "player")).toBe("gm");
+    expect(resolveSessionActionRole("connected", "gm")).toBe("player");
+  });
+
+  it("edge: roster not loaded yet falls back to context mode", () => {
+    expect(resolveSessionActionRole(null, "gm")).toBe("gm");
+    expect(resolveSessionActionRole(undefined, "player")).toBe("player");
+  });
+
+  it("guard: unknown context mode defaults to player", () => {
+    expect(resolveSessionActionRole(null, null)).toBe("player");
+  });
+});
+
+describe("resolveReturnToSessionTone", () => {
+  it("nominal: player return is green like « Rejoindre la session »", () => {
+    expect(resolveReturnToSessionTone("player")).toBe("green");
+  });
+
+  it("nominal: GM return stays yellow like « Lancer une session »", () => {
+    expect(resolveReturnToSessionTone("gm")).toBe("yellow");
+  });
+});
+
+describe("shouldShowLobbyOpenIndicator", () => {
+  it("nominal: lobby open while in session shows the « en cours » state", () => {
+    expect(shouldShowLobbyOpenIndicator(true, true)).toBe(true);
+  });
+
+  it("edge: lobby closed falls back to the regular label", () => {
+    expect(shouldShowLobbyOpenIndicator(true, false)).toBe(false);
+  });
+
+  it("guard: stale open flag out of session never shows the indicator", () => {
+    expect(shouldShowLobbyOpenIndicator(false, true)).toBe(false);
   });
 });
