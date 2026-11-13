@@ -1890,6 +1890,7 @@ When adding a rule:
 **Player Visibility Model**:
 
 Each initiative tracker row carries:
+- The stored path MUST be locale-agnostic (no leading `/{locale}` segment), because locale-aware navigation adds the locale itself; legacy persisted values carrying a locale MUST be normalized on read (otherwise `/{locale}/{locale}/…` falls through not-found to welcome).
 
 - `visible: boolean` — whether the row is shown to players at all.
 - `playerFieldVisibility` — granular field flags:
