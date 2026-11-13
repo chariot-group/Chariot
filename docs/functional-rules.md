@@ -1622,6 +1622,13 @@ When adding a rule:
 - The modifier MUST be paired with the same initiative dice icon used on the character sheet, and MUST expose a tooltip (hover/focus) using the accessible modifier label (e.g. “bonus d'initiative +2”).
 - Accessibility: the modifier MUST be exposed to assistive tech (input `aria-label` and a keyboard-focusable tooltip trigger). The signed numeric modifier remains visible; the icon MUST NOT replace the number.
 - GM sees the modifier for every editable row. A player sees the modifier only on their own editable row (other combatants’ modifiers MUST NOT be shown to players).
+- **Automatic bonus made explicit**: the UI MUST make clear that the field expects the raw d20 roll and that the sheet bonus is added automatically:
+  - the editable field shows a short, muted placeholder naming the roll (`d20`), hidden as soon as the field is focused;
+  - one secondary line above the field, readable size (not smaller than `text-xs`): while no roll is entered it shows the dice icon and the signed bonus (`+5`); once a roll is entered it is replaced by the live calculation (`roll + modifier = total`, e.g. `15 + 5 = 20`), announced to assistive tech; locked fields show the bonus only;
+  - a roll still to enter is marked by a neutral 1px dashed frame whose width does not change on focus, turning solid and brighter while focused (no yellow warning border);
+  - the modifier tooltip / accessible label states that the bonus is added automatically to the roll;
+  - the GM pre-combat guidance states once that the d20 result is to be entered and the sheet initiative bonus is added automatically;
+  - the same placeholder, preview and tooltip apply to **Add combatants** member inputs.
 
 **Prohibitions**:
 
@@ -1637,6 +1644,9 @@ When adding a rule:
 - Edge: player preparatory input shows modifier only on own row; missing legacy `initiativeModifier` displays/adds as `0`.
 - Edge: re-focus after commit of `17` with mod `+2` shows roll `15` in the input; second commit still yields `17`.
 - Failure: add-combatants excluded member shows no initiative input/modifier; included member uses loaded character modifier in the total.
+- Nominal: `d20` placeholder and `+2` bonus shown while empty; with roll `15` the same line shows `15 + 2 = 17` instead of the bonus; tooltip says the bonus is added automatically.
+- Edge: negative or missing modifier shows `8 − 1 = 7` / `8 + 0 = 8`.
+- Guard: empty field or locked initiative shows the bonus, never a calculation.
 
 **References**:
 
@@ -1880,6 +1890,7 @@ When adding a rule:
 
 - `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
 - Updated when the GM navigates to any character detail route during an active session.
+- The stored path MUST be locale-agnostic (no leading `/{locale}` segment), because locale-aware navigation adds the locale itself; legacy persisted values carrying a locale MUST be normalized on read (otherwise `/{locale}/{locale}/…` falls through not-found to welcome).
 - When the session is active, the stored path MUST include the `sessionCode` query parameter so that sheets not owned by the GM (player roster / guest characters) remain readable after navigation back from the initiative tracker (including after cancel/end combat).
 - Cleared when the session ends (`clearCurrentSession`).
 - Navigation consumers (sidebar **Return to Character Sheet**, post-combat redirect) MUST ensure `sessionCode` is present on the target URL while the session is still active.
@@ -1890,7 +1901,6 @@ When adding a rule:
 **Player Visibility Model**:
 
 Each initiative tracker row carries:
-- The stored path MUST be locale-agnostic (no leading `/{locale}` segment), because locale-aware navigation adds the locale itself; legacy persisted values carrying a locale MUST be normalized on read (otherwise `/{locale}/{locale}/…` falls through not-found to welcome).
 
 - `visible: boolean` — whether the row is shown to players at all.
 - `playerFieldVisibility` — granular field flags:

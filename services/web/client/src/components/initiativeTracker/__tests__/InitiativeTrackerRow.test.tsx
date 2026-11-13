@@ -237,8 +237,8 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
 
     expect(html).toContain('type="number"');
     expect(html).toContain("Initiative bonus +2");
-    expect(html).toContain("lucide-dices");
-    expect(html).toContain("+2");
+    // Roll entered: the dice + bonus line is replaced by the calculation.
+    expect(html).toContain("10 + 2 = 12");
     // total 12, modifier 2 → roll field shows 10
     expect(html).toContain('value="10"');
   });

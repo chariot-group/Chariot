@@ -92,6 +92,8 @@ type InitiativeTrackerRowProps = {
   labels: {
     initiativeFor: string;
     initiativeModifierFor: (bonus: string) => string;
+    initiativeRollPlaceholder?: string;
+    initiativeTotalPreview?: string;
     viewSheetFor: string;
     viewSheet: string;
     viewOwnSheet: string;
@@ -569,6 +571,8 @@ export function InitiativeTrackerRow({
             modifier={modifier}
             modifierAriaLabel={modifierAriaLabel}
             showModifier={showModifier}
+            rollPlaceholder={labels.initiativeRollPlaceholder}
+            totalPreviewLabel={labels.initiativeTotalPreview}
             onCommit={(nextValue) => onUpdateRow?.(row.id, { initiative: nextValue })}
             containerClassName={cn(
               compact && "mx-0 max-w-[72px] max-[360px]:max-w-[60px]",
@@ -576,7 +580,8 @@ export function InitiativeTrackerRow({
             className={cn(
               "h-9 rounded-[15px] bg-gray-middle-light px-3 text-center text-sm text-white",
               compact && "px-2",
-              initiativeMissing && "border-2 border-yellow/70",
+              // Same 1px width focused or not; neutral dashed frame marks a roll still to enter.
+              initiativeMissing && "border border-dashed border-white/40 focus-within:border-solid focus-within:border-white/80",
             )}
           />
         )

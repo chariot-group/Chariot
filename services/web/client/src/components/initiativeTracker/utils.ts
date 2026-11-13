@@ -107,6 +107,20 @@ export function initiativeTotalFromRoll(
   return safeRoll + resolveInitiativeModifier(modifier);
 }
 
+/**
+ * FR-combat-initiative-tracker — live preview `roll + modifier = total` (bonus added automatically).
+ * Returns null when no roll is entered (empty text or `0`, the "missing initiative" sentinel).
+ */
+export function formatInitiativeTotalPreview(
+  roll: number | null,
+  modifier?: number | null,
+): string | null {
+  if (roll == null || !Number.isFinite(roll) || roll === 0) return null;
+  const mod = resolveInitiativeModifier(modifier);
+  const operator = mod < 0 ? "−" : "+";
+  return `${roll} ${operator} ${Math.abs(mod)} = ${initiativeTotalFromRoll(roll, mod)}`;
+}
+
 export function trackerMirrorFieldsFromCharacter(
   character: Character,
 ): Pick<

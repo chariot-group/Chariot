@@ -513,6 +513,8 @@ export default function InitiativeTrackerPage() {
     return {
       initiativeFor: t("initiativeFor", { name }),
       initiativeModifierFor: (bonus: string) => t("initiativeModifierFor", { bonus }),
+      initiativeRollPlaceholder: t("initiativeRollPlaceholder"),
+      initiativeTotalPreview: t("initiativeTotalPreview"),
       viewSheetFor: t("viewSheetFor", { name }),
       viewSheet: t("viewSheet"),
       viewOwnSheet: t("viewOwnSheet"),

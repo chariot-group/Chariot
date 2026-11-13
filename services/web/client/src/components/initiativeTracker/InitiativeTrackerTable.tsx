@@ -82,6 +82,8 @@ export type InitiativeTrackerTableProps = {
   getRowLabels: (row: InitiativeTrackerRow) => {
     initiativeFor: string;
     initiativeModifierFor: (bonus: string) => string;
+    initiativeRollPlaceholder?: string;
+    initiativeTotalPreview?: string;
     viewSheetFor: string;
     viewSheet: string;
     conditionFor: string;
