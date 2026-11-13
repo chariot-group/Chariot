@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.11.2] - 13-11-2026
+
+### Added
+- Quick links can be made visible from all of a user's campaigns and/or from the player space; the sidebar lists own links first, then shared links under a "Common links" separator, with a dedicated delete confirmation
+- Long rest for NPCs, for the game master's player characters outside a session, and for a whole group (context menu of an active group, the only action available in session); ticking "short rest" on an ability also ticks "long rest"
+- Companions tab rework: multiple selection, search bar and refreshed layout
+- Opt-in Playwright performance project (`make e2e-perf`) measuring the SSO round trip on a throttled 3G network, and a local production build of the web client (`make web-prod-local` / `make web-dev-local`)
+
+### Changed
+- Faster first load: the root layout only renders Keycloak and the auth skeleton while the app shell loads in parallel (initial JS of `/fr` ~606 → ~218 KB gzip), layout dialogs and sheet edit forms load on demand, post-login requests run in parallel and identical concurrent GETs are shared
+- Lighter SSO login page: the chariot theme inlines a PatternFly subset (~235 → ~31 KB gzip) and brand SVGs are optimized; dev Keycloak caches theme resources by default (`KEYCLOAK_THEME_STATIC_MAX_AGE` / `KEYCLOAK_THEME_CACHE` to opt out)
+- Same-origin API: integ/prod Traefik serves the gateway under `https://${FRONTEND_HOST}/gateway/*` (prefix stripped, cookies dropped); every API caches CORS preflights for two hours (`maxAge: 7200`)
+- Bento layout of the character sheet tabs, character sheet forms reworked (multiclass picker, hit dice per class, visible damage column labels, dice notation help, shared delete buttons, spell damage typed as a dice formula such as `8d6+2`)
+- Initiative tracker: the automatic initiative bonus is made explicit while entering rolls and hidden once combat starts, Tab chains initiative inputs in displayed order, and the mobile card is more readable
+- Session lobby: participant cards show the character name first and use the same deterministic order for every client (GM, then join time); "Back to Session" only appears for a launched or joined session
+- Hit points fields list current HP before max HP, and current HP follow max HP at full health
+- Group and campaign names are limited to 50 characters on create and rename (API and dialogs, with a counter and field-level error); long names are truncated with the full name on hover
+- Sidebar marks the selected campaign with a background instead of a check icon; copy buttons keep a neutral, fixed-width confirmation
+- Responsive fixes: shop pricing, release notes version picker on mobile, profile identity card with a round avatar, referral tiers on mobile and tablet
+- Adventure MongoDB image pinned to 8.2 (`mongo:latest` now resolves to 9.0) and mongod logs sent to stdout with Docker log rotation
+- Dependency updates across all services (NestJS 12.3, Next.js 16.4.5, lucide-react, AWS SDK, …)
+
+### Fixed
+- Fixed the game master going through `/welcome` at the end of a combat: the last consulted sheet is stored without locale prefix
+- Short rest always shows the recovered hit points line (+0 by default)
+- Browser autofill no longer forces a light background on form fields
+
+### Deployment
+- Set `FRONTEND_HOST` in the gateway `.env`, deploy the gateway, then point `INTEG_API_URL` / `PROD_API_URL` to `<app host>/gateway` and rebuild the web client
+
+### Versions
+- Web client 2.11.2; session 1.7.2; adventure 2.11.0; gateway 2.6.3; media 1.2.2; payment 1.2.2; admin 1.3.2
+
 ## [2.11.1] - 06-11-2026
 
 ### Fixed

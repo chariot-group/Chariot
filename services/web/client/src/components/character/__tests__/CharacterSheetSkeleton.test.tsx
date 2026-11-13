@@ -1,8 +1,12 @@
+import {
+  COMPANIONS_BENTO_GRID_CLASS,
+  COMPANIONS_SLOTS,
+} from "@/components/character/tabContents/companions/shared/companionsBentoLayout";
 import { NextIntlClientProvider } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { CHARACTER_TABS, PLAYER_CHARACTER_TABS } from "@/components/character/CharacterTabs";
-import CharacterSheetSkeleton from "@/components/character/skeleton/CharacterSheetSkeleton";
+import CharacterSheetSkeleton, { CompanionsTabSkeleton } from "@/components/character/skeleton/CharacterSheetSkeleton";
 import {
   resolveCharacterSheetSkeletonVariant,
   skeletonCardsForTab,
@@ -112,5 +116,37 @@ describe("CharacterSheetSkeleton — rendering and accessibility", () => {
       expect(html).not.toMatch(/tabindex=/i);
       expect(html.replace(/<span class="sr-only">[^<]*<\/span>/, "").replace(/<[^>]+>/g, "")).toBe("");
     }
+  });
+});
+
+describe("CompanionsTabSkeleton — Companions tab loading (FR-character-sheet-skeleton)", () => {
+  const render = (showActions: boolean) =>
+    renderToStaticMarkup(
+      <CompanionsTabSkeleton
+        showActions={showActions}
+        label="Loading companions"
+      />,
+    );
+
+  it("nominal: status region with the label and three companion card placeholders", () => {
+    const html = render(true);
+    expect(html).toContain('role="status"');
+    expect(html).toContain('aria-busy="true"');
+    expect(html).toContain("Loading companions");
+    expect(html.match(/aspect-\[4\/5\]/g)).toHaveLength(3);
+    // Same bento grid and slots as the tab (FR-npc-player-link).
+    expect(html).toContain(COMPANIONS_BENTO_GRID_CLASS);
+    expect(html.split(COMPANIONS_SLOTS.companion).length - 1).toBe(3);
+    expect(html).toContain(COMPANIONS_SLOTS.toolbar);
+  });
+
+  it("edge: no action placeholders when liaison actions are disabled (GM in session)", () => {
+    expect(render(true)).toContain("bg-white/30");
+    expect(render(false)).not.toContain("bg-white/30");
+  });
+
+  it("guard: no spinner and no focusable element", () => {
+    const html = render(true);
+    expect(html).not.toMatch(/<(button|a|input)\b|tabindex|animate-spin/);
   });
 });

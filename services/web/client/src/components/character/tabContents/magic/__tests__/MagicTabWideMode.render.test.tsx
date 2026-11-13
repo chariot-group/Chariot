@@ -232,38 +232,47 @@ describe("Magic tab — wide edit mode (xl)", () => {
   });
 });
 
-/** @see FR-character-magic-list-card (damage / healing lines read like their formula) */
+/** @see FR-character-magic-list-card (damage / healing lines entered like action damage) */
 describe("Magic tab — damage and healing form lines", () => {
   const fireball = [SPELLS[0]];
 
-  it("nominal: each damage line is count · d · die · + · bonus · type with a formula preview", () => {
+  it("nominal: each damage line is a dice formula field, then the type and delete, like action damage", () => {
     const html = renderEdit(fireball);
 
-    expect(html).toMatch(
-      /-damage-0-count"[\s\S]*aria-hidden="true">d<[\s\S]*-damage-0-dice"[\s\S]*aria-hidden="true">\+<[\s\S]*-damage-0-bonus"[\s\S]*-damage-0-type"/,
-    );
-    expect(html).toContain("= 8d6 feu");
-    expect(html).toContain("= 2d6+1 radiant");
+    expect(html).toMatch(/id="[^"]*-damage-0-dice"[^>]*value="8d6"/);
+    expect(html).toMatch(/id="[^"]*-damage-1-dice"[^>]*value="2d6\+1"/);
+    expect(html).toMatch(/-damage-0-dice"[\s\S]*-damage-0-type"[\s\S]*removeSpellDamage/);
+    expect(html).toMatch(/-damage-0-dice"[^>]*role="combobox"|role="combobox"[^>]*-damage-0-dice"/);
+    // No AUTO ability bonus on spells and no separate count / die / bonus fields.
+    expect(html).not.toContain("AUTO");
+    expect(html).not.toMatch(/-damage-0-(count|bonus)"/);
+    // Dice, type and delete share one line on every width (no wrapping of the type).
+    expect(html).toContain("grid-cols-[minmax(0,2fr)_minmax(0,3fr)_auto]");
+    expect(html).not.toContain("order-last col-span-full");
   });
 
-  it("edge: healing uses the same line without a type, and no preview while dice are empty", () => {
-    const html = renderEdit(fireball);
+  it("edge: healing uses the same dice field without a type; a damage entry without dice shows an empty field", () => {
+    const html = renderEdit([
+      {
+        ...SPELLS[0],
+        damageDetails: [{ diceCount: null, diceType: null, bonus: null, damageType: "feu" }],
+        healingDetails: { diceCount: 2, diceType: "d8", bonus: -1 },
+      },
+    ]);
 
-    expect(html).toMatch(/-healing-count"[\s\S]*-healing-dice"[\s\S]*-healing-bonus"/);
+    expect(html).toMatch(/id="[^"]*-damage-0-dice"[^>]*value=""/);
+    expect(html).toMatch(/id="[^"]*-healing-dice"[^>]*value="2d8-1"/);
     expect(html).not.toContain("-healing-type");
-    expect(html.match(/<p class="text-xs text-muted-foreground">= /g)).toHaveLength(2);
   });
 
-  it("failure: fields keep accessible names and placeholders never look like values", () => {
+  it("failure: every dice field keeps a visible label and shows no error before the user types", () => {
     const html = renderEdit(fireball);
 
-    for (const key of ["diceCount", "bonus", "damageType"]) {
-      expect(html).toMatch(new RegExp(`<label for="[^"]*-damage-0-[a-z]+" class="sr-only">${key}</label>`));
+    for (const field of ["damage-0-dice", "damage-1-dice", "healing-dice"]) {
+      expect(html).toMatch(new RegExp(`<label for="[^"]*-${field}" class="[^"]*">diceFormula</label>`));
     }
-    expect(html).toMatch(/-damage-0-dice"[^>]*aria-label="diceType"|aria-label="diceType"[^>]*-damage-0-dice"/);
-    expect(html).not.toContain("damageDiceCountPlaceholder");
-    expect(html).not.toContain("damageDiceTypePlaceholder");
-    expect(html).not.toContain("zeroPlaceholder");
+    expect(html).not.toContain("invalidDiceFormula");
+    expect(html).not.toMatch(/-dice"[^>]*aria-invalid="true"/);
   });
 });
 

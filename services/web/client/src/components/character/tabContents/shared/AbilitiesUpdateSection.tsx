@@ -3,6 +3,7 @@ import ListCard, { EDIT_LIST_MAX_HEIGHT_CLASS } from "@/components/character/tab
 import ListRow from "@/components/character/tabContents/shared/listCard/ListRow";
 import ListFormSection from "@/components/character/tabContents/shared/listCard/ListFormSection";
 import { Button } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,7 +19,7 @@ import {
 } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
-import { Plus, Trash2, Moon, Clock } from "lucide-react";
+import { Plus, Moon, Clock } from "lucide-react";
 import { Field, FieldError } from "@/components/ui/field";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
@@ -193,18 +194,10 @@ const AbilitiesUpdateSection = ({
               isOpen={openAccordionValues.includes(`ability-${index}`)}
               hasError={hasError}
               trailing={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
+                <DeleteIconButton
                   onClick={() => removeAbility(index)}
-                  className="text-red-500"
-                  aria-label={`${tBattle("abilityRemove")} ${label}`}>
-                  <Trash2
-                    className="size-4"
-                    aria-hidden="true"
-                  />
-                </Button>
+                  aria-label={`${tBattle("abilityRemove")} ${label}`}
+                />
               }
               contentClassName="flex flex-col gap-4 pt-1">
               <ListFormSection title={tBattle("formSections.general")}>
@@ -435,17 +428,25 @@ const AbilitiesUpdateSection = ({
                             name={`${fieldArrayName}.${index}.counterResetsOnShortRest`}
                             control={form.control}
                             render={({ field: srField }) => (
-                              <div className="flex w-full min-w-0 min-h-10 items-start gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                              <div className="flex w-full min-w-0 min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
                                 <Clock
                                   size={20}
-                                  className="mt-0.5 shrink-0 text-white sm:size-6"
+                                  className="shrink-0 text-white sm:size-6"
                                   aria-hidden
                                 />
                                 <Checkbox
                                   id={`${fieldArrayName}-counterResetShort-${index}`}
                                   checked={srField.value === true}
-                                  onCheckedChange={(c) => srField.onChange(c === true)}
-                                  className="mt-0.5 shrink-0"
+                                  onCheckedChange={(c) => {
+                                    srField.onChange(c === true);
+                                    // FR-character-long-rest: a short-rest recharge also recharges on a long rest.
+                                    if (c === true) {
+                                      form.setValue(`${fieldArrayName}.${index}.counterResetsOnLongRest`, true, {
+                                        shouldDirty: true,
+                                      });
+                                    }
+                                  }}
+                                  className="shrink-0"
                                 />
                                 <Label
                                   htmlFor={`${fieldArrayName}-counterResetShort-${index}`}
@@ -460,17 +461,17 @@ const AbilitiesUpdateSection = ({
                             name={`${fieldArrayName}.${index}.counterResetsOnLongRest`}
                             control={form.control}
                             render={({ field: lrField }) => (
-                              <div className="flex w-full min-w-0 min-h-10 items-start gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
+                              <div className="flex w-full min-w-0 min-h-10 items-center gap-2 rounded-[15px] bg-gray-middle-light pl-2 pr-3 py-1.5">
                                 <Moon
                                   size={20}
-                                  className="mt-0.5 shrink-0 text-white sm:size-6"
+                                  className="shrink-0 text-white sm:size-6"
                                   aria-hidden
                                 />
                                 <Checkbox
                                   id={`${fieldArrayName}-counterResetLong-${index}`}
                                   checked={lrField.value === true}
                                   onCheckedChange={(c) => lrField.onChange(c === true)}
-                                  className="mt-0.5 shrink-0"
+                                  className="shrink-0"
                                 />
                                 <Label
                                   htmlFor={`${fieldArrayName}-counterResetLong-${index}`}

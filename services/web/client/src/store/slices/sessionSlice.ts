@@ -10,6 +10,7 @@ import {
 } from "@/components/initiativeTracker/conditionDuration";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import { toLocaleAgnosticPath } from "@/lib/sessionInAppNavigation";
 import {
   buildBattleTurnKey,
   canUndoBattleTurn,
@@ -754,7 +755,7 @@ const sessionSlice = createSlice({
       };
     },
     setLastConsultedSheetPath: (state, action: PayloadAction<string | null>) => {
-      const path = action.payload?.trim() ?? "";
+      const path = toLocaleAgnosticPath(action.payload?.trim() ?? "");
       state.lastConsultedSheetPath = path.length > 0 ? path : null;
     },
     resetInitiativeTracker: (state) => {
@@ -939,7 +940,11 @@ export const selectGmGuestCharacterIds = (state: RootState) => state.session.gmG
 export const selectSessionCompanionNpcs = (state: RootState) => state.session.sessionCompanionNpcs ?? [];
 
 export const selectLastLeftSessionCode = (state: RootState) => state.session.lastLeftSessionCode ?? null;
-export const selectLastConsultedSheetPath = (state: RootState) => state.session.lastConsultedSheetPath ?? null;
+/** Locale-agnostic (legacy persisted values may still carry `/fr/...`). FR-session-combat-navigation */
+export const selectLastConsultedSheetPath = (state: RootState) => {
+  const path = state.session.lastConsultedSheetPath;
+  return path ? toLocaleAgnosticPath(path) : null;
+};
 
 export const selectSessionLobbyOpen = (state: RootState) => state.session.sessionLobbyOpen ?? false;
 export const selectCustomEffectCatalog = (state: RootState) => state.session.customEffectCatalog ?? [];

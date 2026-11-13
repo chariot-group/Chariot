@@ -62,3 +62,27 @@ export function formatSessionRemainingDuration(seconds: number): string {
   const s = seconds % 60;
   return [h, m, s].map((value) => String(value).padStart(2, "0")).join(":");
 }
+
+export type SessionActionRole = "gm" | "player";
+
+/**
+ * FR-session-lobby-modal — rôle de l'utilisateur pour le bouton de session de la barre latérale.
+ * Sans participant connu (roster pas encore chargé), on se fie au mode de contexte.
+ */
+export function resolveSessionActionRole(
+  participantStatus: string | null | undefined,
+  contextMode: string | null | undefined,
+): SessionActionRole {
+  if (participantStatus) return participantStatus === "gameMaster" ? "gm" : "player";
+  return contextMode === "gm" ? "gm" : "player";
+}
+
+/** FR-session-lobby-modal — « Retour en session » : vert pour un joueur (comme « Rejoindre »), jaune pour le MJ. */
+export function resolveReturnToSessionTone(role: SessionActionRole): "green" | "yellow" {
+  return role === "player" ? "green" : "yellow";
+}
+
+/** FR-session-lobby-modal — modale du lobby ouverte en session : bouton à l'état « en cours » (indicatif). */
+export function shouldShowLobbyOpenIndicator(isInSession: boolean, isSessionLobbyOpen: boolean): boolean {
+  return isInSession && isSessionLobbyOpen;
+}

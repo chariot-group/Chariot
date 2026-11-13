@@ -16,6 +16,7 @@ import {
     MAGIC_TAB_BODY_CLASS,
     MAGIC_TAB_PANEL_CLASS,
 } from "@/components/character/tabContents/magic/shared/spellList";
+import { INVENTORY_EDIT_PANEL_CLASS } from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
 import { useAppSelector } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import type { ReactNode } from "react";
@@ -53,7 +54,11 @@ export default function CharacterTabPanels({
                 <TabsContent
                     key={tab}
                     value={tab}
-                    className={cn("mt-0 flex-none focus:outline-none", tab === "magic" && MAGIC_TAB_PANEL_CLASS)}
+                    className={cn(
+                        "mt-0 flex-none focus:outline-none",
+                        tab === "magic" && MAGIC_TAB_PANEL_CLASS,
+                        tab === "inventory" && isEditing && INVENTORY_EDIT_PANEL_CLASS,
+                    )}
                     role="tabpanel"
                     id={`${tab}-content`}
                     aria-labelledby={tab}

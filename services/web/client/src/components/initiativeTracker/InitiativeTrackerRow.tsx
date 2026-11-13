@@ -92,6 +92,8 @@ type InitiativeTrackerRowProps = {
   labels: {
     initiativeFor: string;
     initiativeModifierFor: (bonus: string) => string;
+    initiativeRollPlaceholder?: string;
+    initiativeTotalPreview?: string;
     viewSheetFor: string;
     viewSheet: string;
     viewOwnSheet: string;
@@ -113,6 +115,8 @@ type InitiativeTrackerRowProps = {
     hitPointsFor: string;
     hitPointsSessionTooltip: string;
     hpAbbr: string;
+    /** Short visible labels of the mobile stat cells (full names stay accessible). */
+    shortStatLabels?: { initiative: string; hitPoints: string; armorClass: string };
     hiddenField: string;
     otherGroup: string;
     expandDetails: string;
@@ -526,7 +530,7 @@ export function InitiativeTrackerRow({
   const hasTabletExpansion = totalStateCount > 1;
 
   const renderInitiativeCell = (compact = false) => {
-    const showModifier = !isPlayerView || isOwnCharacter;
+    const showModifier = !battleStarted && (!isPlayerView || isOwnCharacter);
     const modifier = Number.isFinite(row.initiativeModifier) ? Number(row.initiativeModifier) : 0;
     const modifierText = formatSignedBonus(modifier);
     const modifierAriaLabel = labels.initiativeModifierFor(modifierText);
@@ -538,24 +542,25 @@ export function InitiativeTrackerRow({
           <div
             className={cn(
               "mx-auto flex w-full max-w-[88px] flex-col items-center justify-center",
-              compact && "mx-0 max-w-[72px] max-[360px]:max-w-[60px]",
+              compact && "max-w-none",
             )}>
-            {showModifier ? (
-              <InitiativeModifierHint
-                modifierText={modifierText}
-                ariaLabel={modifierAriaLabel}
-              />
-            ) : null}
             <div
               className={cn(
                 "flex h-9 w-full items-center justify-center rounded-[15px] bg-gray-middle-light px-3 text-sm font-medium tabular-nums text-white",
-                compact && "px-2",
+                // Mobile card: plain value, no nested pill.
+                compact && "bg-transparent px-0 text-base font-semibold",
               )}
               aria-label={
                 showModifier ? `${labels.initiativeFor}, ${modifierAriaLabel}` : labels.initiativeFor
               }>
               {row.initiative}
             </div>
+            {showModifier ? (
+              <InitiativeModifierHint
+                modifierText={modifierText}
+                ariaLabel={modifierAriaLabel}
+              />
+            ) : null}
           </div>
         ) : (
           <InitiativeNumberInput
@@ -569,14 +574,17 @@ export function InitiativeTrackerRow({
             modifier={modifier}
             modifierAriaLabel={modifierAriaLabel}
             showModifier={showModifier}
+            rollPlaceholder={labels.initiativeRollPlaceholder}
+            totalPreviewLabel={labels.initiativeTotalPreview}
             onCommit={(nextValue) => onUpdateRow?.(row.id, { initiative: nextValue })}
             containerClassName={cn(
-              compact && "mx-0 max-w-[72px] max-[360px]:max-w-[60px]",
+              compact && "max-w-none",
             )}
             className={cn(
               "h-9 rounded-[15px] bg-gray-middle-light px-3 text-center text-sm text-white",
               compact && "px-2",
-              initiativeMissing && "border-2 border-yellow/70",
+              // Same 1px width focused or not; neutral dashed frame marks a roll still to enter.
+              initiativeMissing && "border border-dashed border-white/40 focus-within:border-solid focus-within:border-white/80",
             )}
           />
         )
@@ -618,12 +626,13 @@ export function InitiativeTrackerRow({
           className={cn(
             hpCellClassName,
             "cursor-pointer transition-colors hover:bg-gray-middle-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
-            compact && "min-w-[5.25rem]",
+            // Clickable on mobile too: keep the field frame (like the initiative input) as affordance.
+            compact && "min-w-0 [&>span:first-child]:text-base [&>span:first-child]:font-semibold",
           )}>
           {hpCellContent}
         </button>
       ) : (
-        <div className={cn(hpCellClassName, "text-sm font-medium", compact && "min-w-[5.25rem]")}>
+        <div className={cn(hpCellClassName, "text-sm font-medium", compact && "min-w-0 bg-transparent [&>span:first-child]:text-base [&>span:first-child]:font-semibold")}>
           {hpCellContent}
         </div>
       )}
@@ -773,8 +782,24 @@ export function InitiativeTrackerRow({
     </div>
   );
 
+  const mobileStatLabels = {
+    initiative: labels.shortStatLabels?.initiative ?? labels.visibilityDialog.fields.initiative,
+    hitPoints: labels.shortStatLabels?.hitPoints ?? labels.visibilityDialog.fields.hitPoints,
+    armorClass: labels.shortStatLabels?.armorClass ?? labels.visibilityDialog.fields.armorClass,
+  };
+
+  const renderMobileStat = (shortLabel: string, fullLabel: string, value: React.ReactNode) => (
+    <div className="flex min-w-0 flex-col items-center gap-1.5">
+      <dt className="w-full truncate text-center text-[11px] font-semibold uppercase tracking-wide text-white/50">
+        <span aria-hidden="true">{shortLabel}</span>
+        <span className="sr-only">{fullLabel}</span>
+      </dt>
+      <dd className="w-full min-w-0">{value}</dd>
+    </div>
+  );
+
   const renderDetailItem = (label: string, value: React.ReactNode) => (
-    <div className="min-w-0 rounded-[15px] bg-black/10 px-3 py-2">
+    <div className="min-w-0">
       <dt className="text-[11px] font-semibold uppercase text-white/45">{label}</dt>
       <dd className="mt-1 min-w-0 break-words text-sm font-medium text-white/85">{value}</dd>
     </div>
@@ -852,15 +877,39 @@ export function InitiativeTrackerRow({
 
       <article
         className={cn(
-          "w-full max-w-full min-w-0 overflow-hidden rounded-[20px] px-3 py-3 text-white shadow-lg transition-colors md:hidden",
+          "w-full max-w-full min-w-0 overflow-hidden rounded-[20px] p-4 text-white shadow-lg transition-colors md:hidden",
           rowBackgroundClass,
           rowRingClass,
         )}
         data-status={status}
         aria-label={status === "alive" ? labels.detailsFor : `${labels.detailsFor}. ${statusLabel}`}>
         <span className="sr-only">{statusLabel}</span>
-        <div className="grid min-w-0 grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] gap-x-2 gap-y-2">
-          <div className="flex min-w-0 items-start">
+        {/* Header on a single line: selection · character · active turn / visibility / expand. */}
+        <div data-slot="tracker-mobile-header" className="flex min-w-0 items-center gap-3">
+          {selectionEnabled ? (
+            <Checkbox
+              checked={isSelected}
+              aria-label={selectRowLabel}
+              onCheckedChange={(checked) => onSelectionChange?.(Boolean(checked))}
+              className="size-5 shrink-0 cursor-pointer"
+            />
+          ) : null}
+
+          <div className="min-w-0 flex-1 overflow-hidden text-left">{renderCharacterColumn()}</div>
+
+          <div className="flex shrink-0 items-center gap-1">
+            {isActiveTurn ? (
+              <span className="max-w-[5.5rem] truncate rounded-full bg-blue/20 px-2 py-0.5 text-[11px] font-semibold text-blue">
+                {labels.activeTurn}
+              </span>
+            ) : null}
+            {!isPlayerView ? (
+              <VisibilityTriggerButton
+                row={row}
+                ariaLabel={labels.visibleFor}
+                onClick={() => setVisibilityOpen(true)}
+              />
+            ) : null}
             <Button
               type="button"
               variant="ghost"
@@ -877,68 +926,34 @@ export function InitiativeTrackerRow({
               )}
             </Button>
           </div>
-
-          <div className="min-w-0 max-w-full overflow-hidden pt-1 text-left">
-            {renderCharacterColumn()}
-          </div>
-
-          <div className="flex min-w-0 flex-col items-end gap-1">
-            {isActiveTurn ? (
-              <span className="max-w-[5.5rem] truncate rounded-full bg-blue/20 px-2 py-0.5 text-[10px] font-semibold text-blue">
-                {labels.activeTurn}
-              </span>
-            ) : null}
-            {!isPlayerView ? (
-              <VisibilityTriggerButton
-                row={row}
-                ariaLabel={labels.visibleFor}
-                onClick={() => setVisibilityOpen(true)}
-              />
-            ) : null}
-          </div>
-
-          {selectionEnabled ? (
-            <div className="col-span-3 flex min-w-0 justify-start">
-              <Checkbox
-                checked={isSelected}
-                aria-label={selectRowLabel}
-                onCheckedChange={(checked) => onSelectionChange?.(Boolean(checked))}
-                className="size-5 shrink-0 cursor-pointer"
-              />
-            </div>
-          ) : null}
-
-          <div className="col-span-3 grid min-w-0 grid-cols-[minmax(4.25rem,0.75fr)_minmax(6.25rem,1fr)_minmax(3.25rem,0.55fr)] gap-2">
-            <div className="min-w-0 rounded-[15px] bg-gray-middle-light/45 px-2 py-2">
-              <span className="mb-1 block truncate text-[10px] font-semibold uppercase text-white/45">
-                {labels.visibilityDialog.fields.initiative}
-              </span>
-              {renderInitiativeCell(true)}
-            </div>
-
-            <div className="min-w-0 rounded-[15px] bg-gray-middle-light/45 px-2 py-2">
-              <span className="mb-1 block truncate text-[10px] font-semibold uppercase text-white/45">
-                {labels.visibilityDialog.fields.hitPoints}
-              </span>
-              {renderHpCell(true)}
-            </div>
-
-            <div className="min-w-0 rounded-[15px] bg-gray-middle-light/45 px-2 py-2">
-              <span className="mb-1 block truncate text-[10px] font-semibold uppercase text-white/45">
-                {labels.visibilityDialog.fields.armorClass}
-              </span>
-              <div className="flex h-9 items-center justify-center rounded-[15px] bg-gray-middle-light px-2 text-sm font-semibold tabular-nums text-white">
-                {showAc ? row.armorClass : hidden}
-              </div>
-            </div>
-          </div>
         </div>
+
+        {/* Three equal stat cells, one background level: short visible label, centered value. */}
+        <dl className="mt-4 grid min-w-0 grid-cols-3 gap-3">
+          {renderMobileStat(
+            mobileStatLabels.initiative,
+            labels.visibilityDialog.fields.initiative,
+            renderInitiativeCell(true),
+          )}
+          {renderMobileStat(
+            mobileStatLabels.hitPoints,
+            labels.visibilityDialog.fields.hitPoints,
+            renderHpCell(true),
+          )}
+          {renderMobileStat(
+            mobileStatLabels.armorClass,
+            labels.visibilityDialog.fields.armorClass,
+            <div className="flex h-9 items-center justify-center text-base font-semibold tabular-nums text-white">
+              {showAc ? row.armorClass : hidden}
+            </div>,
+          )}
+        </dl>
 
         <div
           id={detailsId}
           hidden={!isExpanded}
-          className="mt-3 rounded-[15px] bg-gray-middle-light/40 p-3">
-          <dl className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+          className="mt-4 border-t border-border pt-4">
+          <dl className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
             {renderDetailItem(
               labels.visibilityDialog.fields.groupLabel,
               <span className="flex min-w-0 items-start gap-2 overflow-hidden">{renderGroupContent(true)}</span>,
@@ -948,7 +963,7 @@ export function InitiativeTrackerRow({
               : null}
           </dl>
 
-          <div className="mt-2 rounded-[15px] bg-black/10 px-3 py-2">
+          <div className="mt-3 border-t border-border pt-3">
             <p className="text-[11px] font-semibold uppercase text-white/45">
               {labels.visibilityDialog.fields.conditions}
             </p>

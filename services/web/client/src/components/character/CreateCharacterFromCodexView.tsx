@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import MonsterCodexDialog from "@/components/character/MonsterCodexDialog";
 import { useStore } from "react-redux";
@@ -21,6 +21,12 @@ import {
   type CodexCreateSelection,
   type CodexPreselectionKind,
 } from "@/lib/codexCharacterCreate";
+import { createCharactersFromCodexSelections } from "@/lib/codexBatchCharacterCreate";
+import { upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
+import { addCharacterToGroup } from "@/store/slices/groupSlice";
+import { isPlayer } from "@/utils/global.utils";
+import { toast } from "react-toastify";
+import type { NPC, Player } from "@/types/character";
 
 /**
  * Community library create flow (campaign groups and Player space).
@@ -37,10 +43,14 @@ function CreateCharacterFromCodexContent() {
   const store = useStore<RootState>();
   const { setOpenMobile } = useSidebar();
   const [isDialogOpen, setIsDialogOpen] = useState(true);
+  const [batchCreateInProgress, setBatchCreateInProgress] = useState(false);
   const linkedPlayerId = searchParams.get("linkedPlayerId");
   const codexId = typeof params.codexId === "string" ? params.codexId : null;
   const kindParam = searchParams.get("kind");
   const langParam = searchParams.get("lang");
+  const locale = useLocale();
+  const tDialog = useTranslations("characterDetail.magic.monsterCodexDialog");
+  const tZod = useTranslations("zodErrors");
 
   // Frozen at mount: the URL is rewritten as the user browses and must not re-trigger the preselection.
   const [{ preselection, preselectionInvalid }] = useState(() => {
@@ -49,7 +59,6 @@ function CreateCharacterFromCodexContent() {
     const usable = parsed && linkedPlayerId?.trim() && parsed.kind === "player" ? null : parsed;
     return { preselection: usable, preselectionInvalid: Boolean(codexId) && !usable };
   });
-  const locale = useLocale();
 
   const lockedEntityTypeFilter =
     linkedCreateCodexEntityLock(linkedPlayerId) ??
@@ -74,6 +83,47 @@ function CreateCharacterFromCodexContent() {
     [locale, shouldMirrorUrl],
   );
 
+  const syncCreatedCharacterInStore = useCallback(
+    (createdCharacter: Player | NPC) => {
+      if (context) {
+        dispatch(
+          addCharacterToGroup({
+            groupId: context.groupId,
+            character: {
+              _id: createdCharacter._id,
+              firstname: createdCharacter.firstname,
+              lastname: createdCharacter.lastname,
+              surname: createdCharacter.surname,
+              userId:
+                "userId" in createdCharacter && typeof createdCharacter.userId === "string"
+                  ? createdCharacter.userId
+                  : undefined,
+            },
+          }),
+        );
+      } else {
+        dispatch(upsertCharacterWithoutGroup(createdCharacter));
+        if (!isPlayer(createdCharacter)) {
+          dispatch(upsertPlayerSpaceNpc(createdCharacter as NPC));
+        }
+      }
+    },
+    [context, dispatch],
+  );
+
+  const navigateAfterBatchCreate = useCallback(() => {
+    const linked = linkedPlayerId?.trim();
+    if (linked) {
+      router.replace(`/${locale}/characters/${linked}?tab=companions`);
+      return;
+    }
+    if (context) {
+      router.replace(`/${locale}/campaigns/${context.campaignId}/groups/${context.groupId}`);
+      return;
+    }
+    router.replace(`/${locale}/characters`);
+  }, [context, linkedPlayerId, locale, router]);
+
   const handleCharacterSelected = (selection: CodexCreateSelection) => {
     if (selection.kind === "npc") {
       dispatch(setNpcCodexDraft(selection.draft));
@@ -82,6 +132,30 @@ function CreateCharacterFromCodexContent() {
     }
     setOpenMobile(false);
     router.push(buildCodexDraftFormPath(selection.kind, context, { linkedPlayerId }));
+  };
+
+  const handleCharactersBatchSelected = async (selections: CodexCreateSelection[]) => {
+    if (selections.length === 0) return;
+    setBatchCreateInProgress(true);
+    try {
+      const created = await createCharactersFromCodexSelections(
+        selections,
+        { groupId: context?.groupId, linkedPlayerId },
+        tZod,
+      );
+      created.forEach(syncCreatedCharacterInStore);
+      toast.success(tDialog("batchCreateSuccess", { count: created.length }));
+      isClosingRef.current = true;
+      dispatch(clearCodexDrafts());
+      setOpenMobile(false);
+      setIsDialogOpen(false);
+      navigateAfterBatchCreate();
+    } catch (err) {
+      console.error("Codex batch character create failed:", err);
+      toast.error(tDialog("batchCreateError"));
+    } finally {
+      setBatchCreateInProgress(false);
+    }
   };
 
   const redirectOnClose = shouldRedirectOnCodexClose({
@@ -110,6 +184,8 @@ function CreateCharacterFromCodexContent() {
         open={isDialogOpen}
         onOpenChange={handleDialogClose}
         onCharacterSelected={handleCharacterSelected}
+        onCharactersBatchSelected={handleCharactersBatchSelected}
+        batchCreateInProgress={batchCreateInProgress}
         lockedEntityTypeFilter={lockedEntityTypeFilter}
         initialSelection={preselection}
         initialSelectionInvalid={preselectionInvalid}

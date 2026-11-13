@@ -15,6 +15,7 @@ import { StoredUnitNumberInput } from "@/components/ui/stored-unit-number-input"
 import { QuickNumberCalculator } from "@/components/ui/quick-number-calculator";
 import { useToast } from "@/hooks/useToast";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
+import { currentHitPointsFollowsMax, syncCurrentHitPointsOnMaxChange } from "@/utils/hitPoints.utils";
 
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"] as const;
 
@@ -31,10 +32,27 @@ export default function NpcStatisticsUpdate({ accentColor, form, className, chil
   const t = useTranslations("characterDetail.battle");
   const tEdit = useTranslations("characterDetail.edit");
   const { displayFt, toFeet, unitLabel } = useDistanceUnit();
-  const currentHitPointsValue = Number(form.watch("stats.currentHitPoints") ?? 0);
-  const maxHitPointsValue = Number(form.watch("stats.maxHitPoints") ?? 0);
+  const currentHitPointsInput = form.watch("stats.currentHitPoints");
+  const maxHitPointsInput = form.watch("stats.maxHitPoints");
+  const currentHitPointsValue = Number(currentHitPointsInput ?? 0);
+  const maxHitPointsValue = Number(maxHitPointsInput ?? 0);
   const safeCurrentHitPoints = Number.isFinite(currentHitPointsValue) ? Math.max(0, currentHitPointsValue) : 0;
   const safeMaxHitPoints = Number.isFinite(maxHitPointsValue) ? Math.max(0, maxHitPointsValue) : 0;
+  /** Current HP follows max while empty or equal to it (FR-character-statistics-card). */
+  const currentFollowsMax = currentHitPointsFollowsMax(currentHitPointsInput, maxHitPointsInput);
+
+  function handleMaxHitPointsChange(nextMax: number, onChange: (value: number) => void) {
+    const nextCurrent = syncCurrentHitPointsOnMaxChange(
+      form.getValues("stats.currentHitPoints"),
+      form.getValues("stats.maxHitPoints"),
+      nextMax,
+    );
+    onChange(nextMax);
+    if (nextCurrent !== undefined) {
+      form.setValue("stats.currentHitPoints", nextCurrent, { shouldDirty: true, shouldValidate: true });
+    }
+  }
+
   const currentHpConstraintWarning = tEdit("quickWarnings.currentOutOfBounds");
   const maxHpConstraintWarning = tEdit("quickWarnings.maxBelowCurrent");
   const { info } = useToast();
@@ -409,41 +427,6 @@ export default function NpcStatisticsUpdate({ accentColor, form, className, chil
         <h3 className="text-sm font-medium">{t("healthPoints")}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 items-center">
           <Controller
-            name="stats.maxHitPoints"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field
-                data-invalid={fieldState.invalid}
-                orientation="vertical">
-                <label
-                  htmlFor="health-max"
-                  className="text-sm truncate">
-                  {tEdit("maxHP")}
-                </label>
-                <QuickNumberCalculator
-                  value={field.value ?? ""}
-                  currentValue={field.value}
-                  min={safeCurrentHitPoints}
-                  onValueChange={(nextValue) => field.onChange(nextValue)}
-                  onApply={(nextValue) => field.onChange(nextValue)}
-                  onConstraintResult={({ wasClamped, source }) => handleMaxHpConstraintResult({ wasClamped, source })}
-                  triggerLabel={`${tEdit("maxHP")} quick calculator`}
-                  inputLabel={`${tEdit("maxHP")} value`}
-                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
-                  inputProps={{
-                    id: "health-max",
-                    className: "text-sm",
-                    name: field.name,
-                    onBlur: field.onBlur,
-                    "aria-invalid": fieldState.invalid,
-                    "aria-describedby": fieldState.error ? "health-max-error" : undefined,
-                  }}
-                />
-                {fieldState.error && <FieldError id="health-max-error">{fieldState.error.message}</FieldError>}
-              </Field>
-            )}
-          />
-          <Controller
             name="stats.currentHitPoints"
             control={form.control}
             render={({ field, fieldState }) => (
@@ -478,6 +461,41 @@ export default function NpcStatisticsUpdate({ accentColor, form, className, chil
                   }}
                 />
                 {fieldState.error && <FieldError id="health-current-error">{fieldState.error.message}</FieldError>}
+              </Field>
+            )}
+          />
+          <Controller
+            name="stats.maxHitPoints"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field
+                data-invalid={fieldState.invalid}
+                orientation="vertical">
+                <label
+                  htmlFor="health-max"
+                  className="text-sm truncate">
+                  {tEdit("maxHP")}
+                </label>
+                <QuickNumberCalculator
+                  value={field.value ?? ""}
+                  currentValue={field.value}
+                  min={currentFollowsMax ? 0 : safeCurrentHitPoints}
+                  onValueChange={(nextValue) => handleMaxHitPointsChange(nextValue, field.onChange)}
+                  onApply={(nextValue) => handleMaxHitPointsChange(nextValue, field.onChange)}
+                  onConstraintResult={({ wasClamped, source }) => handleMaxHpConstraintResult({ wasClamped, source })}
+                  triggerLabel={`${tEdit("maxHP")} quick calculator`}
+                  inputLabel={`${tEdit("maxHP")} value`}
+                  tooltipPlaceholder={tEdit("quickNumberPlaceholder")}
+                  inputProps={{
+                    id: "health-max",
+                    className: "text-sm",
+                    name: field.name,
+                    onBlur: field.onBlur,
+                    "aria-invalid": fieldState.invalid,
+                    "aria-describedby": fieldState.error ? "health-max-error" : undefined,
+                  }}
+                />
+                {fieldState.error && <FieldError id="health-max-error">{fieldState.error.message}</FieldError>}
               </Field>
             )}
           />

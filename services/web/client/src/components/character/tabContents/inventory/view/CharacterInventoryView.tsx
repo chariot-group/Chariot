@@ -39,8 +39,8 @@ type TextFieldKey = "equipment" | "treasure";
 
 const EMPTY_LABEL_KEYS = { equipment: "noEquipment", treasure: "noTreasure" } as const;
 
-const COIN_CELL_CLASS =
-  "flex min-w-0 flex-col items-center gap-0.5 rounded-[10px] bg-gray-middle-light/50 px-1 py-2 sm:px-2.5";
+/** Coins always sit on one row: fact cells without delimiter (FR-character-statistics-card). */
+const COIN_CELL_CLASS = "flex min-w-0 flex-col gap-0.5";
 
 /**
  * One coin of the coins strip: icon + short label, then the (abbreviated) value.
@@ -84,7 +84,7 @@ function CoinCell({
         type="button"
         className={cn(
           COIN_CELL_CLASS,
-          "transition-colors hover:bg-gray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "rounded-[10px] p-1.5 text-left transition-colors hover:bg-gray-middle-light/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
         aria-label={`${fullLabel}. ${t("editCoinAmountAria", { coin: t(coin.labelKey) })}`}
         aria-haspopup="dialog"
@@ -188,7 +188,7 @@ function InventoryTextCard({
             onChange={(event) => onDraftChange(event.target.value)}
             placeholder={t(field)}
             disabled={busy !== null}
-            className="min-h-36 flex-1"
+            className="min-h-36 flex-1 resize-none"
           />
           <div className="flex flex-row justify-end gap-2">
             <Button
@@ -342,7 +342,7 @@ export default function CharacterInventoryView({
         title={t("coins")}
         accentColor={accentColor}
         className={cn(INVENTORY_SLOTS.coins, "justify-between")}>
-        <div className="grid min-w-0 grid-cols-5 gap-1.5 sm:gap-2">
+        <div className="grid min-w-0 grid-cols-3 gap-x-2 gap-y-3 @sm:grid-cols-5 @sm:gap-x-1.5 @sm:gap-y-0">
           {COIN_CONFIG.map((coin) => (
             <CoinCell
               key={coin.key}

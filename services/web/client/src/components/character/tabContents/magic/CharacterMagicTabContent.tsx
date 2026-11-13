@@ -1,6 +1,6 @@
 import { Character, NPC, Player } from "@/types/character";
 import CharacterMagicView from "@/components/character/tabContents/magic/view/CharacterMagicView";
-import CharacterMagicTabEdit from "@/components/character/tabContents/magic/form/CharacterMagicTabEdit";
+import { LazyCharacterMagicTabEdit as CharacterMagicTabEdit } from "@/components/lazy/lazyCharacterEditForms";
 import { UseFormReturn, FieldValues } from "react-hook-form";
 import { useState } from "react";
 import {

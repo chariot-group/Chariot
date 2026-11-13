@@ -17,7 +17,11 @@ services:
       NODE_ENV: development
       NODE_OPTIONS: "--max-old-space-size=4096"
       NEXT_PUBLIC_ENV_NAME: development
+      # Direct gateway by default (local Next.js serves HTTP/1.1: same-origin calls would queue behind
+      # JS chunks). To mirror integ/prod's same-origin API (FR-web-first-load-performance), set
+      # GATEWAY_URL=http://localhost:3000/gateway and GATEWAY_INTERNAL_URL=http://chariot-gateway:8082.
       NEXT_PUBLIC_API_URL: ${GATEWAY_URL:-http://localhost:8082}
+      GATEWAY_INTERNAL_URL: ${GATEWAY_INTERNAL_URL:-}
       NEXT_PUBLIC_SESSION_WS_URL: ${SESSION_WS_URL:-http://localhost:9002}
       NEXT_PUBLIC_CODEX_URL: ${CODEX_URL:-http://localhost:9001}
       NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
@@ -39,10 +43,49 @@ services:
     networks:
       - chariot-group-network
     command: ["npm", "run", "dev:docker"]
-  
+
+  # Production build of the same sources, to measure loading times locally (slow-network tests):
+  # `next dev` ships 10-20x more JS and is not representative (FR-web-first-load-performance).
+  # Started only with `make web-prod-local` (profile prod-local); shares port 3000 with chariot-web.
+  chariot-web-prod:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: chariot-web-prod
+    profiles: ["prod-local"]
+    restart: "no"
+    working_dir: /app
+    volumes:
+      - ./client:/app
+      - web_node_modules:/app/node_modules
+      - next_prod_build:/app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: "--max-old-space-size=4096"
+      NEXT_PUBLIC_ENV_NAME: production
+      NEXT_PUBLIC_API_URL: ${GATEWAY_URL:-http://localhost:8082}
+      GATEWAY_INTERNAL_URL: ${GATEWAY_INTERNAL_URL:-}
+      NEXT_PUBLIC_SESSION_WS_URL: ${SESSION_WS_URL:-http://localhost:9002}
+      NEXT_PUBLIC_CODEX_URL: ${CODEX_URL:-http://localhost:9001}
+      NEXT_PUBLIC_KEYCLOAK_URL: ${KEYCLOAK_URL}
+      NEXT_PUBLIC_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      OTEL_ENABLED: "false"
+      LOKI_ENABLED: "false"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - chariot-group-network
+    # Rebuilt at each start so the current sources are measured.
+    command: ["sh", "-c", "npx next build && exec npx next start -p 3000"]
+
 volumes:
   next_cache:
   web_node_modules:
+  next_prod_build:
 
 networks:
   chariot-group-network:

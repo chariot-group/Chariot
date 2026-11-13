@@ -9,6 +9,7 @@ import {
     shouldPlayerShowReturnToBattleOnSessionLobby,
     shouldPlayerShowReturnToSheetOnSessionLobby,
     shouldShowSessionLobbyInvitePanel,
+    toLocaleAgnosticPath,
     withSessionCodeQuery,
 } from "@/lib/sessionInAppNavigation";
 
@@ -197,5 +198,25 @@ describe("GM combat sidebar action button (FR-session-combat-navigation)", () =>
                 pathname: "/fr/initiativeTracker",
             }),
         ).toBe(false);
+    });
+});
+
+describe("FR-session-combat-navigation — toLocaleAgnosticPath", () => {
+    it("nominal: strips the leading locale segment and keeps the query", () => {
+        expect(toLocaleAgnosticPath("/fr/campaigns/c1/groups/g1/characters/x?sessionCode=ABC")).toBe(
+            "/campaigns/c1/groups/g1/characters/x?sessionCode=ABC",
+        );
+        expect(toLocaleAgnosticPath("/en/characters/x")).toBe("/characters/x");
+    });
+
+    it("edge: already locale-agnostic paths and look-alike segments are untouched", () => {
+        expect(toLocaleAgnosticPath("/characters/x")).toBe("/characters/x");
+        expect(toLocaleAgnosticPath("/fresh/characters/x")).toBe("/fresh/characters/x");
+        expect(toLocaleAgnosticPath("/es")).toBe("/");
+        expect(toLocaleAgnosticPath("/es?sessionCode=A")).toBe("/?sessionCode=A");
+    });
+
+    it("guard: empty path stays empty", () => {
+        expect(toLocaleAgnosticPath("")).toBe("");
     });
 });

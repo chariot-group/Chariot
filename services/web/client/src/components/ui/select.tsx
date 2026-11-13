@@ -66,18 +66,71 @@ function SelectTrigger({
   );
 }
 
+/** Tracks whether a scroll container has content hidden above or below its visible area. */
+function useScrollOverflow(element: HTMLElement | null) {
+  const [overflow, setOverflow] = React.useState({ above: false, below: false });
+
+  const update = React.useCallback(() => {
+    if (!element) return;
+    const above = element.scrollTop > 1;
+    const below = element.scrollTop + element.clientHeight < element.scrollHeight - 1;
+    setOverflow((prev) => (prev.above === above && prev.below === below ? prev : { above, below }));
+  }, [element]);
+
+  React.useEffect(() => {
+    if (!element) return;
+    update();
+    element.addEventListener("scroll", update, { passive: true });
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
+    observer?.observe(element);
+    return () => {
+      element.removeEventListener("scroll", update);
+      observer?.disconnect();
+    };
+  }, [element, update]);
+
+  return overflow;
+}
+
+function SelectOverlayScrollHint({ direction, visible }: { direction: "up" | "down"; visible: boolean }) {
+  const Icon = direction === "up" ? ChevronUpIcon : ChevronDownIcon;
+  return (
+    <div
+      aria-hidden="true"
+      data-slot={`select-scroll-${direction}-hint`}
+      className={cn(
+        "pointer-events-none absolute inset-x-0 z-10 flex justify-center transition-opacity duration-150",
+        direction === "up"
+          ? "top-0 rounded-t-[14px] bg-gradient-to-b from-popover from-60% to-transparent pt-1 pb-3"
+          : "bottom-0 rounded-b-[14px] bg-gradient-to-t from-popover from-60% to-transparent pt-3 pb-1",
+        visible ? "opacity-100" : "opacity-0",
+      )}>
+      <Icon className="size-4" />
+    </div>
+  );
+}
+
 function SelectContent({
   className,
   children,
   position = "item-aligned",
   align = "center",
   portalled = true,
+  scrollButtons = "inline",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content> & {
   portalled?: boolean;
+  /**
+   * "overlay" replaces the Radix scroll buttons with always-mounted, non-interactive hints faded in over the list.
+   * Radix buttons shift the items when they mount and, on mount, scroll the focused (selected) item back into view,
+   * which makes the list jump while scrolling.
+   */
+  scrollButtons?: "inline" | "overlay";
 }) {
   const dialogPortalContainer = useDialogPortalContainer();
   const resolvedPosition = portalled ? position : "popper";
+  const [viewportElement, setViewportElement] = React.useState<HTMLDivElement | null>(null);
+  const overflow = useScrollOverflow(scrollButtons === "overlay" ? viewportElement : null);
 
   const content = (
     <SelectPrimitive.Content
@@ -93,8 +146,16 @@ function SelectContent({
       position={resolvedPosition}
       align={align}
       {...props}>
-      <SelectScrollUpButton />
+      {scrollButtons === "overlay" ? (
+        <SelectOverlayScrollHint
+          direction="up"
+          visible={overflow.above}
+        />
+      ) : (
+        <SelectScrollUpButton />
+      )}
       <SelectPrimitive.Viewport
+        ref={setViewportElement}
         className={cn(
           "p-1.5",
           resolvedPosition === "popper" &&
@@ -102,7 +163,14 @@ function SelectContent({
         )}>
         {children}
       </SelectPrimitive.Viewport>
-      <SelectScrollDownButton />
+      {scrollButtons === "overlay" ? (
+        <SelectOverlayScrollHint
+          direction="down"
+          visible={overflow.below}
+        />
+      ) : (
+        <SelectScrollDownButton />
+      )}
     </SelectPrimitive.Content>
   );
 

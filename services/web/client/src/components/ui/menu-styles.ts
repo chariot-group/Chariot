@@ -16,7 +16,7 @@ export const menuItemSelectedClassName = "bg-white/15 font-medium";
 
 /** Destructive row. */
 export const menuItemDestructiveClassName =
-  "text-destructive hover:bg-destructive/10 focus:bg-destructive/10 data-highlighted:bg-destructive/10 *:[svg]:!text-destructive";
+  "text-destructive hover:bg-destructive/10 focus:bg-destructive/10 data-highlighted:bg-destructive/10 [&_svg]:!text-destructive";
 
 /** Leading icons of non-destructive rows. */
 export const menuItemIconClassName = "[&_svg:not([class*='text-'])]:text-white/60";

@@ -38,4 +38,12 @@ describe("FR-session-player-companion-combatants — companions tab without liai
     expect(tab).toContain("showLiaisonActions = canManageLiaisons");
     expect(tab).toContain("persistSidebarNpcLinkedPlayer");
   });
+
+  it("guard: the search toolbar renders without liaison actions (session GM) and filters the list", () => {
+    const tab = readSource(tabPath);
+    expect(tab).toContain("filterCompanionsByQuery(sortedCompanions, searchQuery)");
+    expect(tab).toContain("visibleCompanions.map(");
+    expect(tab).toMatch(/<CompanionsSearchField[\s\S]*\{liaisonActions \?/);
+    expect(tab).not.toMatch(/\{liaisonActions \? \(\s*<div className=\{cn\(COMPANIONS_SLOTS\.toolbar/);
+  });
 });

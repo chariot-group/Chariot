@@ -137,26 +137,6 @@ export function TagInput({
 
   return (
     <div className="relative w-full">
-      {/* Tags display */}
-      {value.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-2">
-          {value.map((tag, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center gap-1 px-2 py-1 bg-blue/20 text-blue rounded-[15px] text-sm">
-              {tag}
-              <button
-                type="button"
-                onClick={() => removeTag(index)}
-                className="hover:bg-blue/30 rounded-[15px] p-0.5 transition-colors cursor-pointer"
-                aria-label={`Remove ${tag}`}>
-                <X size={14} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
       {/* Input field */}
       <div className="relative">
         <Input
@@ -219,6 +199,26 @@ export function TagInput({
           </div>
         )}
       </div>
+
+      {/* Tags display */}
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {value.map((tag, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center gap-1 px-2 py-1 bg-blue/20 text-blue rounded-[12px] text-sm">
+              {tag}
+              <button
+                type="button"
+                onClick={() => removeTag(index)}
+                className="hover:bg-blue/30 rounded-[8px] p-0.5 transition-colors cursor-pointer"
+                aria-label={`Remove ${tag}`}>
+                <X size={14} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

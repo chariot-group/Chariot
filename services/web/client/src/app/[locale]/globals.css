@@ -91,8 +91,10 @@
 
   /*
    * Width available to the character sheet General tab (container queries, sidebar included):
-   * mobile < sheet-md ≤ tablet < sheet-lg ≤ desktop < sheet-xl ≤ wide (FR-character-general-bento-layout)
+   * mobile < sheet-md ≤ tablet < sheet-lg ≤ desktop < sheet-xl ≤ wide (FR-character-general-bento-layout).
+   * sheet-sm: PC tiles 2 × 2 on large phones and tablets with the sidebar open.
    */
+  --container-sheet-sm: 22rem;
   --container-sheet-md: 36rem;
   --container-sheet-lg: 56rem;
   --container-sheet-xl: 96rem;
@@ -213,6 +215,24 @@
   }
   body {
     @apply bg-background text-white;
+  }
+  /* Neutralise le fond clair imposé par l'autofill navigateur.
+     Le fond est recouvert par une ombre interne ; les ombres ring Tailwind sont conservées pour le focus. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:autofill,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: var(--foreground, #fff);
+    caret-color: var(--foreground, #fff);
+    box-shadow:
+      var(--tw-ring-offset-shadow, 0 0 #0000),
+      var(--tw-ring-shadow, 0 0 #0000),
+      0 0 0 1000px var(--gray-middle-light) inset !important;
+    /* Empêche le fond autofill de transparaître sous la bordure semi-transparente */
+    background-clip: padding-box !important;
+    transition: background-color 99999s ease-out 0s;
   }
 }
 

@@ -31,16 +31,7 @@ export function magicBentoGridClass(hasSelector: boolean) {
   return `${BENTO_GRID_CLASS} xl:flex-1 xl:min-h-0 ${rows}`;
 }
 
-/**
- * Bento slots of the Magic tab (read and edit): the class selector, a compact Spellcasting band,
- * then the Spells list, all full width.
- * @see FR-character-magic-list-card
- */
-export const MAGIC_SLOTS = {
-  selector: `${FULL} xl:col-span-12`,
-  spellcasting: `${FULL} xl:col-span-12`,
-  spells: `${FULL} xl:col-span-12`,
-} as const;
+export { MAGIC_SLOTS } from "@/components/character/tabContents/magic/shared/magicBentoLayout";
 
 /**
  * Wide read mode (`xl`, read only): Spellcasting and the Spells list stack in a 5-column left

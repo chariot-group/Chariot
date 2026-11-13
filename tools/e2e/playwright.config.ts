@@ -4,6 +4,21 @@ import { env } from "@/env";
 const isCI = !!process.env.CI;
 
 /**
+ * Mesures sur réseau lent (FR-web-first-load-performance), uniquement à la demande :
+ * `make e2e-perf` (E2E_PERF=1). Exclues de `make e2e`.
+ */
+const perfProjects = process.env.E2E_PERF === "1"
+  ? [
+      {
+        name: "perf",
+        testDir: "./perf",
+        testMatch: /.*\.perf\.ts/,
+        use: { ...devices["Desktop Chrome"], trace: "off" as const, video: "off" as const, screenshot: "off" as const },
+      },
+    ]
+  : [];
+
+/**
  * Scénarios E2E Chariot.
  *
  * - `setup` : provisionne les comptes de test et enregistre leur session SSO (`.auth/`).
@@ -43,5 +58,6 @@ export default defineConfig({
       dependencies: ["setup"],
       use: { ...devices["Desktop Chrome"] },
     },
+    ...perfProjects,
   ],
 });

@@ -58,6 +58,11 @@ describe("MonsterCodexDialog layout", () => {
     expect(list).not.toContain("webkit-scrollbar");
   });
 
+  it("edge: result rows are spaced so queued outlines do not touch", () => {
+    const html = renderEmbedded();
+    expect(html).not.toContain('class="flex flex-col gap-0.5"');
+  });
+
   it("failure guard: embedded closed dialog renders nothing", () => {
     expect(renderEmbedded(false)).toBe("");
   });

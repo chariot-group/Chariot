@@ -1,8 +1,8 @@
 import { Character, Player, NPC } from "@/types/character";
 import PlayerBattleTabContent from "@/components/character/tabContents/battle/view/PlayerBattleTabContent";
 import NPCBattleTabContent from "@/components/character/tabContents/battle/view/NPCBattleTabContent";
-import PlayerBattleTabEdit from "@/components/character/tabContents/battle/form/PlayerBattleTabEdit";
-import NPCBattleTabEdit from "@/components/character/tabContents/battle/form/NPCBattleTabEdit";
+import { LazyPlayerBattleTabEdit as PlayerBattleTabEdit } from "@/components/lazy/lazyCharacterEditForms";
+import { LazyNPCBattleTabEdit as NPCBattleTabEdit } from "@/components/lazy/lazyCharacterEditForms";
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface Props {

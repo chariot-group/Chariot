@@ -1,4 +1,5 @@
 import CharacterIdentityCard from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
+import { useNpcIdentityFacts } from "@/components/character/tabContents/general/shared/npcIdentityFacts";
 import { NPC, Player } from "@/types/character";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
@@ -15,6 +16,7 @@ import {
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import NpcStatistics from "@/components/character/tabContents/shared/NpcStatistics";
 import SensesSection from "@/components/character/tabContents/general/shared/SensesSection";
+import ProficiencyValue from "@/components/character/tabContents/general/shared/ProficiencyValue";
 
 interface NpcGeneralTabContentProps {
   npc: NPC;
@@ -31,11 +33,8 @@ export default function NpcGeneralTabContent({
   onCharacterUpdate,
 }: NpcGeneralTabContentProps) {
   const t = useTranslations("characterDetail.player.general");
-  const tPlayer = useTranslations("characterDetail.player");
   const tNpc = useTranslations("characterDetail.npc");
-  const tAlignment = useTranslations("alignments");
-
-  const languages = npc?.stats?.languages?.length > 0 ? npc.stats.languages.join(", ") : t("noLanguages");
+  const npcFacts = useNpcIdentityFacts(npc);
 
   /** @see FR-character-general-bento-layout */
   return (
@@ -52,19 +51,7 @@ export default function NpcGeneralTabContent({
           firstname={npc?.firstname}
           lastname={npc?.lastname}
           surname={npc?.surname}
-          facts={[
-            {
-              key: "type",
-              label: tNpc("typeLabel"),
-              value: npc?.profile?.type,
-              secondary: npc?.profile?.subtype,
-            },
-            {
-              key: "alignment",
-              label: tPlayer("alignment"),
-              value: npc?.profile?.alignment ? tAlignment(npc.profile.alignment) : undefined,
-            },
-          ]}
+          facts={npcFacts}
         />
 
         <NpcStatistics
@@ -72,6 +59,7 @@ export default function NpcGeneralTabContent({
           accentColor={accentColor}
           className={`${SLOTS.statistics} justify-between`}
           showPassivePerception
+          onCharacterUpdate={onCharacterUpdate}
         />
 
         <GeneralSectionCard
@@ -129,10 +117,11 @@ export default function NpcGeneralTabContent({
           <dl className="grid flex-1 content-start gap-x-6 gap-y-3 @lg:grid-cols-2">
             <div className="flex flex-col">
               <dt className="text-sm sm:text-base font-semibold">{t("languages")} :</dt>
-              <dd
-                className="text-sm sm:text-base wrap-break-word"
-                aria-label={`${t("languages")} : ${languages}`}>
-                {languages}
+              <dd>
+                <ProficiencyValue
+                  items={npc?.stats?.languages}
+                  emptyLabel={t("noLanguages")}
+                />
               </dd>
             </div>
             <div className="flex flex-col gap-1">

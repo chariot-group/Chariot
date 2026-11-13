@@ -14,6 +14,7 @@ import {
   historyHeadingId,
 } from "@/components/character/tabContents/history/shared/historyBentoLayout";
 import { cn } from "@/lib/utils";
+import { FACT_CELL_CLASS, FACT_CELLS_FRAME_CLASS } from "@/components/character/tabContents/shared/factCell";
 
 interface CharacterHistoryViewProps {
   character: Character;
@@ -41,7 +42,7 @@ function AppearanceCell({
 
   return (
     <div
-      className="flex min-w-0 flex-col gap-0.5 rounded-[10px] bg-gray-middle-light/50 px-2.5 py-2"
+      className={FACT_CELL_CLASS}
       role="group"
       aria-label={`${label} : ${isEmpty ? emptyLabel : accessibleValue}`}>
       <span
@@ -174,17 +175,20 @@ export default function CharacterHistoryView({ character, accentColor }: Charact
         title={t("appearance")}
         accentColor={accentColor}
         className={HISTORY_SLOTS.appearance}>
-        <div className="grid min-w-0 grid-cols-2 gap-2 @sm:grid-cols-3 @3xl:grid-cols-6">
-          {cells.map((cell) => (
-            <AppearanceCell
-              key={cell.key}
-              label={t(cell.key)}
-              icon={cell.icon}
-              value={"node" in cell ? cell.node : cell.value}
-              accessibleValue={cell.value}
-              emptyLabel={t("notSpecified")}
-            />
-          ))}
+        <div className={FACT_CELLS_FRAME_CLASS}>
+          <div
+            className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 @sm:grid-cols-3 @3xl:grid-cols-6">
+            {cells.map((cell) => (
+              <AppearanceCell
+                key={cell.key}
+                label={t(cell.key)}
+                icon={cell.icon}
+                value={"node" in cell ? cell.node : cell.value}
+                accessibleValue={cell.value}
+                emptyLabel={t("notSpecified")}
+              />
+            ))}
+          </div>
         </div>
         <div className="flex min-w-0 flex-col gap-1.5">
           <h3

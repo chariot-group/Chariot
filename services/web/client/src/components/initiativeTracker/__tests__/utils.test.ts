@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   isInitiativeInputTarget,
   orderRowsByFrozenIds,
+  findAdjacentInitiativeInput,
   canRemoveTrackerGroup,
   countMissingInitiatives,
   getRemovableTrackerGroups,
@@ -513,5 +514,24 @@ describe("isInitiativeInputTarget", () => {
   it("failure: rejects null and non-marked targets", () => {
     expect(isInitiativeInputTarget(null)).toBe(false);
     expect(isInitiativeInputTarget(target(false))).toBe(false);
+  });
+});
+
+describe("findAdjacentInitiativeInput (FR-combat-initiative-tracker keyboard entry)", () => {
+  const inputs = ["a", "b", "c"];
+
+  it("nominal: Tab goes to the next field, Shift+Tab to the previous one", () => {
+    expect(findAdjacentInitiativeInput(inputs, "a", false)).toBe("b");
+    expect(findAdjacentInitiativeInput(inputs, "c", true)).toBe("b");
+  });
+
+  it("edge: last field on Tab and first field on Shift+Tab keep native focus order", () => {
+    expect(findAdjacentInitiativeInput(inputs, "c", false)).toBeNull();
+    expect(findAdjacentInitiativeInput(inputs, "a", true)).toBeNull();
+  });
+
+  it("guard: unknown field (e.g. hidden duplicate) keeps native focus order", () => {
+    expect(findAdjacentInitiativeInput(inputs, "z", false)).toBeNull();
+    expect(findAdjacentInitiativeInput([], "a", false)).toBeNull();
   });
 });

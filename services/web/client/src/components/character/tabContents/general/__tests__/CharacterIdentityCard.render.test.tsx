@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import CharacterIdentityCard, {
-  FACTS_TWO_COLUMNS_CLASS,
+  FACTS_DENSE_TWO_COLUMNS_CLASS,
 } from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
 import { render } from "@/components/character/tabContents/__tests__/bentoRender";
+import { FACT_CELL_CLASS } from "@/components/character/tabContents/shared/factCell";
 
 /** React escapes `&` and `>` inside attribute values. */
 const escapeAttr = (value: string) => value.replace(/&/g, "&amp;").replace(/>/g, "&gt;");
@@ -11,7 +12,7 @@ const textOf = (html: string) =>
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-const factCells = (html: string) => html.match(/<div class="flex min-w-0 flex-col gap-0\.5 rounded-\[10px\]/g) ?? [];
+const factCells = (html: string) => html.split(`<div class="${FACT_CELL_CLASS}"`).slice(1);
 
 const pcFacts = [
   { key: "race", label: "raceLabel", value: "Elfe", secondary: "Berserker" },
@@ -41,9 +42,17 @@ describe("CharacterIdentityCard", () => {
     expect(text).toContain("firstname Aria lastname Vent-Clair");
     expect(text).toContain("« La Brise »");
     expect(factCells(html)).toHaveLength(2);
-    expect(html).toContain(`<dl class="grid gap-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`);
+    expect(html).toContain('<ul class="flex flex-col gap-2"');
+    expect(html).not.toContain("border-l");
+    expect(html).not.toMatch(/(?<![:\w-])bg-gray-middle-light\/\d+/);
+    expect(html).toContain(
+      `<dl class="grid gap-y-2 gap-x-2 sm:gap-x-3 ${escapeAttr(FACTS_DENSE_TWO_COLUMNS_CLASS)}">`,
+    );
     expect(text).toContain("raceLabel Elfe Berserker");
     expect(text).toContain("levelLabel 3 900 XP");
+    expect(html).toContain("@md:inline");
+    expect(html).toContain(">Berserker</span></dd>");
+    expect(html).toContain(">900 XP</span></dd>");
     expect(html.match(/<li /g)).toHaveLength(2);
     expect(text).toContain("Évocation");
     expect(html).toContain('aria-labelledby="character-classes-heading"');
@@ -63,8 +72,9 @@ describe("CharacterIdentityCard", () => {
     );
 
     expect(factCells(html)).toHaveLength(3);
-    expect(FACTS_TWO_COLUMNS_CLASS).toContain("[&>div:last-child:nth-child(odd)]:col-span-2");
-    expect(html).toContain(`<dl class="grid gap-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`);
+    expect(html).toContain(
+      `<dl class="grid gap-y-2 gap-x-2 sm:gap-x-3 ${escapeAttr(FACTS_DENSE_TWO_COLUMNS_CLASS)}">`,
+    );
     expect(html).not.toContain(">background<");
   });
 
@@ -81,11 +91,11 @@ describe("CharacterIdentityCard", () => {
     const avatarEnd = html.indexOf('<span data-avatar=""></span></div></div>');
 
     expect(avatarEnd).toBeGreaterThan(0);
-    expect(html.indexOf('<dl class="grid gap-2')).toBeGreaterThan(avatarEnd);
+    expect(html.indexOf('<dl class="grid gap-y-2')).toBeGreaterThan(avatarEnd);
     expect(html.indexOf("<ul")).toBeGreaterThan(avatarEnd);
   });
 
-  it("edge: long name and nickname carry their full text in title and truncate only on hover devices", () => {
+  it("edge: long name and nickname are clamped to two lines on every screen, without native title", () => {
     const longLast = "de la Tour-Sombre-des-Brumes-Éternelles";
     const html = render(
       <CharacterIdentityCard
@@ -97,15 +107,19 @@ describe("CharacterIdentityCard", () => {
       />,
     );
 
-    expect(html).toContain(`<dl title="Aria ${longLast}" class="`);
-    expect(html).toContain('title="« La Brise du Nord Lointain »"');
-    expect(html.match(/\[@media\(hover:hover\)\]:truncate/g)).toHaveLength(2);
-    // No unconditional truncation: touch devices wrap the full text
-    expect(html).not.toMatch(/class="[^"]*(?<!:)\btruncate\b[^"]*"[^>]*>(?:<div|« )/);
-    expect(html.match(/wrap-break-word \[@media\(hover:hover\)\]:truncate/g)).toHaveLength(2);
+    expect(html).toMatch(/<dl[^>]*class="[^"]*line-clamp-2 break-words[^"]*text-lg font-bold sm:text-xl"/);
+    expect(html).toMatch(
+      /<dd[^>]*class="[^"]*line-clamp-2 break-words[^"]*italic[^"]*"[^>]*>« La Brise du Nord Lointain »<\/dd>/,
+    );
+    expect(html.match(/line-clamp-2/g)).toHaveLength(2);
+    // Same clamp everywhere: no hover- or pointer-only variant, no native title
+    expect(html).not.toMatch(/\[@media\(hover:hover\)\]|pointer-coarse:/);
+    expect(html).not.toContain("title=");
+    // Full text stays in the DOM for screen readers
+    expect(textOf(html)).toContain(`Aria lastname ${longLast}`);
   });
 
-  it("failure: without last name the title is the first name only (no trailing space)", () => {
+  it("failure: a name that is not measured as cut shows no help cursor (tooltip cannot open)", () => {
     const html = render(
       <CharacterIdentityCard
         accentColor="text-blue"
@@ -114,8 +128,8 @@ describe("CharacterIdentityCard", () => {
       />,
     );
 
-    expect(html).toContain('<dl title="Gobelin" class="');
-    expect(html).not.toContain('title="« ');
+    expect(html).not.toContain("cursor-help");
+    expect(html).not.toContain("«");
   });
 
   it("nominal: name labels stay available to screen readers", () => {
@@ -144,8 +158,9 @@ describe("CharacterIdentityCard", () => {
     );
 
     expect(factCells(html)).toHaveLength(1);
-    expect(html).toContain('<dl class="grid gap-2 grid-cols-1">');
+    expect(html).toContain('<dl class="grid gap-y-2 gap-x-2 sm:gap-x-3 grid-cols-1">');
     expect(html.match(/<dd/g)).toHaveLength(2);
+    expect(html).toMatch(/<dd class="[^"]*font-bold[^"]*"><span[^>]*>Humanoïde<\/span><\/dd>/);
     expect(html).not.toContain("«");
     expect(html).not.toContain(">lastname<");
     expect(html).not.toContain("character-classes-heading");

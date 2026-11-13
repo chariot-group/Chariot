@@ -97,14 +97,15 @@ const buttonVariants = (props?: Parameters<typeof buttonVariantsBase>[0]) => cn(
 const toggleButtonPressedClassName = "border-frame bg-white/15 font-semibold text-white hover:bg-white/15";
 
 /**
- * Confirmed state of a copy button (`variant="secondary"`, disabled while copying):
- * stays a full-opacity green fill even disabled and hovered, so it never flashes dark.
+ * Confirmed state of a copy button (`variant="secondary"`, disabled while confirming):
+ * keeps the secondary look (white text and icon) at full opacity, with no hover change (FR-frontend-button-system).
+ * Pair the label with `StableLabel` so the button keeps its width.
  */
-const copySuccessButtonClassName =
-  "border-green bg-green text-black hover:bg-green disabled:cursor-default disabled:opacity-100 disabled:hover:bg-green";
+const copySuccessButtonClassName = "disabled:cursor-default disabled:opacity-100";
 
 type ButtonVariantProps = VariantProps<typeof buttonVariantsBase>;
 type ButtonTone = NonNullable<ButtonVariantProps["tone"]>;
+type ButtonVariant = NonNullable<ButtonVariantProps["variant"]>;
 
 function Button({
   className,
@@ -132,4 +133,11 @@ function Button({
   );
 }
 
-export { Button, buttonVariants, copySuccessButtonClassName, toggleButtonPressedClassName, type ButtonTone };
+export {
+  Button,
+  buttonVariants,
+  copySuccessButtonClassName,
+  toggleButtonPressedClassName,
+  type ButtonTone,
+  type ButtonVariant,
+};

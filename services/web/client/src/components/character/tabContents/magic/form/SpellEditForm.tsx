@@ -1,29 +1,34 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Controller, useWatch, type Path, type PathValue, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import type { Character, DamageDetails, HealingDetails, Spell } from "@/types/character";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import { DamageTypeInput } from "@/components/ui/damage-type-input";
+import { DiceHelp } from "@/components/ui/dice-help";
+import { DiceInput } from "@/components/ui/dice-input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { DICE_TYPES, SPELL_SCHOOLS } from "@/utils/magic.utils";
+import { SPELL_SCHOOLS } from "@/utils/magic.utils";
 import { formatSignedBonus } from "@/utils/attack.utils";
 import {
   coerceSpellDamageDetailsList,
   EMPTY_SPELL_DAMAGE_DETAILS,
-  formatDamageFormula,
   ensureSpellDamageEditRows,
+  formatSpellDiceFormula,
   hydrateSpellDamageDetails,
   isDamageDetailsFilled,
   parseDamageFormula,
+  parseSpellDiceFormula,
+  type SpellDiceFields,
 } from "@/utils/spell-damage.utils";
 import ListFormSection from "@/components/character/tabContents/shared/listCard/ListFormSection";
 
@@ -116,104 +121,80 @@ const Row = ({ className, children }: { className?: string; children: ReactNode 
   <div className={cn("grid min-w-0 gap-3", className)}>{children}</div>
 );
 
-type DiceValues = Pick<DamageDetails, "diceCount" | "diceType" | "bonus">;
-
-const toNumberOrNull = (raw: string) => (raw === "" ? null : Number(raw));
-
 /**
- * One damage or healing line laid out like its formula: `[count] d [die] + [bonus]`, an optional
- * extra field (damage type) and trailing control, then a muted preview of the resulting formula.
- * Each field keeps an accessible name; « d » and « + » are decorative.
+ * Free-text dice field of a spell damage / healing line, like action damage (`8d6+2`, dice suggestions).
+ * The text is parsed into the structured dice fields; an invalid formula is not stored and shows a
+ * linked error once the user leaves the field. Stored dice changed elsewhere (hydration, Codex) refill it.
  * @see FR-character-magic-list-card, FR-character-spell-multi-damage
  */
-function DiceFormulaRow({
+function SpellDiceField({
   id,
   value,
   onChange,
-  extra,
-  extraText,
-  trailing,
 }: {
   id: string;
-  value: DiceValues | null | undefined;
-  onChange: (key: keyof DiceValues, value: string | number | null) => void;
-  /** Field after the bonus (damage type). */
-  extra?: ReactNode;
-  /** Text appended to the preview (damage type). */
-  extraText?: string | null;
-  trailing?: ReactNode;
+  value: Partial<SpellDiceFields> | null | undefined;
+  onChange: (dice: SpellDiceFields) => void;
 }) {
   const tEdit = useTranslations("characterDetail.edit");
-  const formula = formatDamageFormula(value?.diceCount, value?.diceType, value?.bonus, extraText);
+  const stored = formatSpellDiceFormula(value);
+  const [text, setText] = useState(stored);
+  const [syncedStored, setSyncedStored] = useState(stored);
+  const [showError, setShowError] = useState(false);
+  const parsedText = parseSpellDiceFormula(text);
+  const isInvalid = parsedText === null;
+
+  // Keep the typed text (spacing, unfinished formula) unless the stored dice changed from outside.
+  if (stored !== syncedStored) {
+    setSyncedStored(stored);
+    if (stored !== (parsedText ? formatSpellDiceFormula(parsedText) : "")) {
+      setText(stored);
+      setShowError(false);
+    }
+  }
+
+  const errorId = `${id}-error`;
+  const hasError = showError && isInvalid;
 
   return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <div className="flex min-w-0 flex-wrap items-center gap-2">
-        <div className="flex shrink-0 items-center gap-1.5">
-          <label
-            htmlFor={`${id}-count`}
-            className="sr-only">
-            {tEdit("diceCount")}
-          </label>
-          <Input
-            id={`${id}-count`}
-            type="number"
-            min={0}
-            className="w-16 text-center"
-            value={value?.diceCount ?? ""}
-            onChange={(event) => onChange("diceCount", toNumberOrNull(event.target.value))}
-          />
-          <span
-            className="text-sm font-semibold text-muted-foreground"
-            aria-hidden="true">
-            d
-          </span>
-          <Select
-            value={value?.diceType || undefined}
-            onValueChange={(next) => onChange("diceType", next)}>
-            <SelectTrigger
-              id={`${id}-dice`}
-              className="w-20"
-              aria-label={tEdit("diceType")}>
-              <SelectValue placeholder="–" />
-            </SelectTrigger>
-            <SelectContent position="popper">
-              <SelectGroup>
-                {DICE_TYPES.map((dice) => (
-                  <SelectItem
-                    key={dice}
-                    value={dice}>
-                    {dice.replace(/^d/, "")}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <span
-            className="text-sm font-semibold text-muted-foreground"
-            aria-hidden="true">
-            +
-          </span>
-          <label
-            htmlFor={`${id}-bonus`}
-            className="sr-only">
-            {tEdit("bonus")}
-          </label>
-          <Input
-            id={`${id}-bonus`}
-            type="number"
-            className="w-16 text-center"
-            value={value?.bonus ?? ""}
-            onChange={(event) => onChange("bonus", toNumberOrNull(event.target.value))}
-          />
-        </div>
-        {extra && <div className="min-w-36 flex-1">{extra}</div>}
-        {trailing}
-      </div>
-      {formula && <p className="text-xs text-muted-foreground">= {formula}</p>}
-    </div>
+    <Field
+      data-invalid={hasError}
+      orientation="vertical"
+      className="min-w-0 gap-1">
+      <label
+        htmlFor={id}
+        className="text-xs font-medium text-muted-foreground">
+        {tEdit("diceFormula")}
+      </label>
+      <DiceInput
+        id={id}
+        value={text}
+        onChange={(next) => {
+          setText(next);
+          const parsed = parseSpellDiceFormula(next);
+          if (parsed) setShowError(false);
+          onChange(parsed ?? { diceCount: null, diceType: null, bonus: null });
+        }}
+        onBlur={() => setShowError(isInvalid)}
+        placeholder="1d6"
+        className="w-full"
+        suggestionsLabel={tEdit("diceSuggestionsLabel")}
+        aria-invalid={hasError}
+        aria-describedby={hasError ? errorId : undefined}
+      />
+      {hasError && (
+        <FieldError
+          id={errorId}
+          errors={[{ message: tEdit("invalidDiceFormula") }]}
+        />
+      )}
+    </Field>
   );
 }
+
+/** Damage line: dice · type · delete, always on one line. */
+const DAMAGE_LINE_CLASS =
+  "grid min-w-0 grid-cols-[minmax(0,2fr)_minmax(0,3fr)_auto] items-start gap-2 @2xl:grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto]";
 
 /**
  * Expanded spell row, edit mode: General / Casting / Effects / Description sections.
@@ -472,11 +453,11 @@ export default function SpellEditForm({
           control={form.control}
           render={({ field: damageField }) => {
             const damages = coerceSpellDamageDetailsList(damageField.value);
-            const updateDamage = (damageIndex: number, key: keyof DamageDetails, value: string | number | null) => {
+            const updateDamage = (damageIndex: number, patch: Partial<DamageDetails>) => {
               const next = [...damages];
               const current = next[damageIndex] ?? { ...EMPTY_SPELL_DAMAGE_DETAILS };
-              if (key === "damageType" && typeof value === "string") {
-                const normalized = value.trim();
+              if (typeof patch.damageType === "string") {
+                const normalized = patch.damageType.trim();
                 const duplicated = next.some(
                   (damage, i) =>
                     i !== damageIndex && (damage?.damageType ?? "").trim().toLowerCase() === normalized.toLowerCase(),
@@ -484,68 +465,62 @@ export default function SpellEditForm({
                 if (normalized && duplicated) return;
                 next[damageIndex] = { ...current, damageType: normalized };
               } else {
-                next[damageIndex] = { ...current, [key]: value };
+                next[damageIndex] = { ...current, ...patch };
               }
               damageField.onChange(next);
             };
 
             return (
               <div className="flex min-w-0 flex-col gap-2">
-                <span className={LABEL_CLASS}>{tEdit("spellDamage")}</span>
+                <div className="flex items-center gap-1">
+                  <span className={LABEL_CLASS}>{tEdit("spellDamage")}</span>
+                  <DiceHelp />
+                </div>
                 {damages.map((damage, damageIndex) => {
                   const typePath = charPath(`${base}.damageDetails.${damageIndex}.damageType`);
                   const typeState = form.getFieldState(typePath, form.formState);
                   const rowId = id(`damage-${damageIndex}`);
                   return (
-                    <DiceFormulaRow
+                    <div
                       key={damageIndex}
-                      id={rowId}
-                      value={damage}
-                      onChange={(key, value) => updateDamage(damageIndex, key, value)}
-                      extraText={damage?.damageType}
-                      extra={
-                        <Field
-                          data-invalid={typeState.invalid}
-                          orientation="vertical"
-                          className="min-w-0 gap-1">
-                          <label
-                            htmlFor={`${rowId}-type`}
-                            className="sr-only">
-                            {tEdit("damageType")}
-                          </label>
-                          <DamageTypeInput
-                            id={`${rowId}-type`}
-                            value={damage?.damageType ?? ""}
-                            onChange={(value) => updateDamage(damageIndex, "damageType", value)}
-                            placeholder={tEdit("damageType")}
-                            aria-invalid={typeState.invalid}
-                            aria-describedby={typeState.error ? `${rowId}-type-error` : undefined}
+                      className={DAMAGE_LINE_CLASS}>
+                      <SpellDiceField
+                        id={`${rowId}-dice`}
+                        value={damage}
+                        onChange={(dice) => updateDamage(damageIndex, dice)}
+                      />
+                      <Field
+                        data-invalid={typeState.invalid}
+                        orientation="vertical"
+                        className="min-w-0 gap-1">
+                        <label
+                          htmlFor={`${rowId}-type`}
+                          className="text-xs font-medium text-muted-foreground">
+                          {tEdit("damageType")}
+                        </label>
+                        <DamageTypeInput
+                          id={`${rowId}-type`}
+                          value={damage?.damageType ?? ""}
+                          onChange={(value) => updateDamage(damageIndex, { damageType: value })}
+                          placeholder={tEdit("damageTypePlaceholder")}
+                          aria-invalid={typeState.invalid}
+                          aria-describedby={typeState.error ? `${rowId}-type-error` : undefined}
+                        />
+                        {typeState.error && (
+                          <FieldError
+                            id={`${rowId}-type-error`}
+                            errors={[typeState.error]}
                           />
-                          {typeState.error && (
-                            <FieldError
-                              id={`${rowId}-type-error`}
-                              errors={[typeState.error]}
-                            />
-                          )}
-                        </Field>
-                      }
-                      trailing={
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500"
-                          onClick={() =>
-                            damageField.onChange(ensureSpellDamageEditRows(damages.filter((_, i) => i !== damageIndex)))
-                          }
-                          aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}>
-                          <Trash2
-                            className="size-4"
-                            aria-hidden="true"
-                          />
-                        </Button>
-                      }
-                    />
+                        )}
+                      </Field>
+                      <DeleteIconButton
+                        onClick={() =>
+                          damageField.onChange(ensureSpellDamageEditRows(damages.filter((_, i) => i !== damageIndex)))
+                        }
+                        aria-label={tEdit("removeSpellDamage", { index: damageIndex + 1 })}
+                        className="mt-5 shrink-0"
+                      />
+                    </div>
                   );
                 })}
                 <Button
@@ -567,18 +542,15 @@ export default function SpellEditForm({
           <Controller
             name={charPath(`${base}.healingDetails`)}
             control={form.control}
-            render={({ field }) => {
-              const healing = (field.value as HealingDetails | null | undefined) ?? null;
-              return (
-                <DiceFormulaRow
-                  id={id("healing")}
-                  value={healing}
-                  onChange={(key, value) =>
-                    field.onChange({ diceCount: null, diceType: null, bonus: null, ...healing, [key]: value })
-                  }
+            render={({ field }) => (
+              <div className="max-w-40 min-w-0">
+                <SpellDiceField
+                  id={id("healing-dice")}
+                  value={field.value as HealingDetails | null | undefined}
+                  onChange={field.onChange}
                 />
-              );
-            }}
+              </div>
+            )}
           />
         </div>
       </ListFormSection>

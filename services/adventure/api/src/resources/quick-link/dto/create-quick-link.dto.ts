@@ -4,6 +4,7 @@ import {
   MaxLength,
   IsUrl,
   IsOptional,
+  IsBoolean,
   IsMongoId,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -32,4 +33,14 @@ export class CreateQuickLinkDto {
   @IsOptional()
   @IsMongoId()
   readonly campaignId?: string;
+
+  @ApiProperty({ example: false, required: false })
+  @IsOptional()
+  @IsBoolean()
+  readonly visibleInAllCampaigns?: boolean;
+
+  @ApiProperty({ example: false, required: false })
+  @IsOptional()
+  @IsBoolean()
+  readonly visibleInPlayerSpace?: boolean;
 }

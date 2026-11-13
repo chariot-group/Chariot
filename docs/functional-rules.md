@@ -192,6 +192,12 @@ When adding a rule:
 - GM mode: Campaign management, NPC management, Encounter builder, World settings
 - Shared: User profile, Settings, Logout
 
+**« Load more » pagination (characters without group, active / archived groups, campaigns)**:
+
+- While a next page is loading, the « Load more » button is replaced by skeleton rows shaped like the list items (avatar circle + name bar for characters, name bar for groups and campaigns), same style as the app shell sidebar skeleton (FR-auth-loading-skeleton, `docs/design.md` §5.3.8) — never a spinner.
+- A single request at a time per list: a synchronous in-flight guard ignores any further call until the whole load is over (for characters, including the linked NPCs fetch). On failure the button comes back and can be retried.
+- Accessibility: the skeleton is a `role="status"` region with `aria-busy="true"` and a translated `sr-only` label (en, es, fr); shapes are `aria-hidden`, not focusable, pulse disabled under `prefers-reduced-motion`. The button has a translated `aria-label`.
+
 **Prohibitions**:
 
 - Using global variables or React Context for navigation state (Redux is mandatory)
@@ -209,6 +215,7 @@ When adding a rule:
 - Keyboard navigation and accessibility compliance
 - Focus trap functionality in mobile overlay mode
 - SSR hydration without Redux state mismatches
+- « Load more » guard: nominal (one call → one page), edge (second call while in flight → ignored, single request), failure (request error → guard released, retry possible)
 
 **References**:
 
@@ -284,6 +291,7 @@ When adding a rule:
 - Redirection logic executes **only once** immediately after successful authentication (`authenticated === true`)
 - Must check characters without group first by calling `GET /characters/players/without-group`
 - If no characters without group, fetch campaigns with `GET /campaigns` and extract the first character from the first campaign's first group
+- `GET /characters/players/without-group` and `GET /campaigns` MAY be issued in parallel to save a round trip on slow networks; the priority above is applied to their results unchanged, and data not needed to choose the destination MUST NOT delay the navigation (FR-web-first-load-performance)
 - Redirection must preserve locale prefix in URL (e.g., `/fr/characters/...`)
 - Navigation must not trigger on every page load, only on the initial post-authentication event
 - Must use Next.js router for navigation to maintain proper history
@@ -407,7 +415,7 @@ When adding a rule:
   - **Magie** (Magic): Pink accent (`bg-pink`)
   - **Inventaire** (Inventory): Yellow accent (`bg-yellow`)
   - **Histoire** (History): Green accent (`bg-green`)
-- Tab state management using React state (`useState`)
+- Active tab stored in the `tab` URL parameter (deep-linkable; unknown or missing value → General). Switching tab (sheet and creation form) updates the URL in place with the native History API (`window.history.replaceState`, kept in sync with `useSearchParams` by Next): it MUST NOT trigger a router navigation nor any network request, so the switch is instant even on a slow network (3G). Other URL parameters are kept and no history entry is added.
 - Visual indication of active tab through background color and text color
 - Inactive tabs display gray background with hover state
 - Tab labels must be internationalized using `next-intl` with key `characterDetail.tabs.{tabName}`
@@ -424,7 +432,7 @@ When adding a rule:
 **For NPC Characters**:
 
 - Character name (prominent display)
-- Challenge Rating (CR) with abbreviated label "ID" and tooltip "Indice de dangerosité"
+- Challenge Rating (CR) with abbreviated label "FP" and tooltip "Facteur de puissance"
 - Fractional CR display for values < 1:
   - 0.125 → "1/8"
   - 0.25 → "1/4"
@@ -509,6 +517,7 @@ When adding a rule:
 - Component renders correctly with NPC character data
 - Type guard correctly identifies Player vs NPC
 - Tab switching updates active state correctly
+- Tab URL builder: nominal (sets `tab`, keeps other params), edge (replaces an existing `tab`, keeps the hash), guard (no router navigation: only `history.replaceState` is called)
 - Keyboard navigation works (Tab, Enter, Arrow keys)
 - ARIA attributes are properly set
 - Challenge rating fractions display correctly for NPCs (1/8, 1/4, 1/2)
@@ -1104,6 +1113,14 @@ When adding a rule:
 - After the parrain uses their discount at checkout, their tier **resets to 0** (pending count reset to 0)
 - Pending filleuls who have not yet made a purchase do not contribute to the discount tier
 
+#### Profile Tiers Display
+
+- The profile referral card shows the parrain's progress over all tiers, with reached (primary), pending-reachable (yellow, not guaranteed) and upcoming states
+- Both views start at 0 %: the parrain with no validated filleul already sits on the bar (no separate "max" label; the last tier shows the cap)
+- From `lg` (≥1024px): one segmented bar with a leading 0 % segment then one segment per tier, each labelled with its discount (`text-xs` minimum)
+- Below `lg` (mobile and tablet): a compact view replaces the segmented bar — current discount in large type, one continuous progress bar whose current fill always shows a visible start knob at 0 % from 0 to the max (primary for the current discount, yellow up to the pending-reachable discount), and a text line stating the pending potential when it exceeds the current discount (colour is never the only cue)
+- Both views expose the same `progressbar` (`aria-valuemin=0`, `aria-valuemax` = max discount, `aria-valuenow` = current discount); only one is rendered visible at a time
+
 #### Discount Application Rules
 
 - Referral discounts are applied **automatically** — no code entry required by the user
@@ -1138,6 +1155,7 @@ When adding a rule:
 - User cannot register with their own referral code
 - `checkUserReferralDiscount` returns null when no discount is available
 - `checkUserReferralDiscount` fails gracefully (returns null) without blocking checkout
+- Profile tiers compact view: shows the current discount and next tier goal; with pending filleuls, the yellow fill reaches the pending discount and the potential is stated in text; with 0 filleuls, 0 %, the 0 % segment marked current and the start knob visible
 
 **References**:
 
@@ -1429,7 +1447,8 @@ When adding a rule:
 - Tracker list is always displayed sorted by:
   1. initiative descending
   2. group label ascending (tie-breaker)
-- While an initiative field is being edited (focused) before combat start, the displayed order MUST stay frozen so the row under the pointer does not move between consecutive arrow/spinner clicks. The value is still stored on every change; the list re-sorts when the field loses focus (blur or Enter), and always once initiatives lock at combat start.
+- While an initiative field is being edited (focused) before combat start, the displayed order MUST stay frozen so the row under the pointer does not move between consecutive arrow/spinner clicks. The value is still stored on every change; the list re-sorts when focus leaves the initiative fields (blur to anything else, or Enter), and always once initiatives lock at combat start. Moving focus from one initiative field to another keeps the order frozen.
+- **Keyboard entry**: in an editable initiative field, `Tab` moves focus to the next row's initiative field in displayed order, skipping the other controls of the row; `Shift+Tab` moves to the previous one. On the last (resp. first) field, `Tab` (resp. `Shift+Tab`) keeps the native focus order. Each field commits its value when left, as on blur.
 - Before combat start:
   - initiatives are editable
   - grouped initiative edit mode is available (bulk apply to selected rows)
@@ -1600,10 +1619,19 @@ When adding a rule:
 - **Input semantics**: while editable, the field shows/edits the **roll** (`initiative - initiativeModifier` when reopening a committed value). On commit, Redux `initiative` MUST become `roll + initiativeModifier`.
 - **Flush before lock**: starting combat (and any action that locks initiative inputs) MUST flush pending uncommitted initiative field text into Redux first, then apply the roll+modifier formula, so values are not lost when the GM clicks **Start combat** without blurring each field.
 - Locked / started combat display shows the **total** (`initiative`), not the raw roll alone.
-- Placement: adjacent to the initiative input (including locked total display), visually secondary to the score, without breaking the compact tracker grid on mobile.
+- **Hidden once combat has started**: after combat start, the initiative cell shows the total only — no dice icon, no bonus, no tooltip, and the accessible name of the cell does not mention the bonus (GM and player alike). Before start, a locked field (e.g. player not yet allowed to enter their initiative) still shows the bonus.
+- Placement: adjacent to the initiative input (including locked total display before combat start), visually secondary to the score, without breaking the compact tracker grid on mobile.
+- Mobile card layout: single-line header (selection, character, visibility, expand), three equal stat cells (short visible labels `Init.` / `PV` / `CA`, full names kept for assistive tech) with plain read-only values and no nested card backgrounds; interactive controls (initiative input, GM hit points button) keep their field frame so they read as clickable.
 - The modifier MUST be paired with the same initiative dice icon used on the character sheet, and MUST expose a tooltip (hover/focus) using the accessible modifier label (e.g. “bonus d'initiative +2”).
 - Accessibility: the modifier MUST be exposed to assistive tech (input `aria-label` and a keyboard-focusable tooltip trigger). The signed numeric modifier remains visible; the icon MUST NOT replace the number.
 - GM sees the modifier for every editable row. A player sees the modifier only on their own editable row (other combatants’ modifiers MUST NOT be shown to players).
+- **Automatic bonus made explicit**: the UI MUST make clear that the field expects the raw d20 roll and that the sheet bonus is added automatically:
+  - the editable field shows a short, muted placeholder naming the roll (`d20`), hidden as soon as the field is focused;
+  - one secondary line below the field (so editable and locked values stay aligned with the other cells of the row), readable size (not smaller than `text-xs`): while no roll is entered it shows the dice icon and the signed bonus (`+5`); once a roll is entered it is replaced by the live calculation (`roll + modifier = total`, e.g. `15 + 5 = 20`), announced to assistive tech; locked fields before combat start show the bonus only;
+  - a roll still to enter is marked by a neutral 1px dashed frame whose width does not change on focus, turning solid and brighter while focused (no yellow warning border);
+  - the modifier tooltip / accessible label states that the bonus is added automatically to the roll;
+  - the GM pre-combat guidance states once that the d20 result is to be entered and the sheet initiative bonus is added automatically;
+  - the same placeholder, preview and tooltip apply to **Add combatants** member inputs.
 
 **Prohibitions**:
 
@@ -1615,10 +1643,16 @@ When adding a rule:
 
 - Nominal: modifier hint shows dice icon, signed bonus (`+2`), and tooltip/accessible name “bonus d'initiative +2”.
 - Nominal: GM types `15` with modifier `+2`, blurs or starts combat → stored/displayed total `17`; sort uses `17`.
+- Nominal: `Tab` in an initiative field focuses the next row's initiative field; `Shift+Tab` the previous one; order stays frozen while tabbing between fields.
+- Edge: `Tab` on the last initiative field keeps native focus order; hidden duplicate fields (mobile / desktop layouts) are skipped.
 - Nominal: Start combat while focus is still in an initiative field → pending text is flushed; totals are not left at `0`.
 - Edge: player preparatory input shows modifier only on own row; missing legacy `initiativeModifier` displays/adds as `0`.
 - Edge: re-focus after commit of `17` with mod `+2` shows roll `15` in the input; second commit still yields `17`.
 - Failure: add-combatants excluded member shows no initiative input/modifier; included member uses loaded character modifier in the total.
+- Nominal: `d20` placeholder and `+2` bonus shown while empty; with roll `15` the same line shows `15 + 2 = 17` instead of the bonus; tooltip says the bonus is added automatically.
+- Edge: negative or missing modifier shows `8 − 1 = 7` / `8 + 0 = 8`.
+- Guard: empty field or locked initiative before combat start shows the bonus, never a calculation.
+- Nominal: once combat has started, the initiative cell shows the total only (no dice icon, no bonus, no bonus in the accessible name).
 
 **References**:
 
@@ -1862,6 +1896,7 @@ When adding a rule:
 
 - `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
 - Updated when the GM navigates to any character detail route during an active session.
+- The stored path MUST be locale-agnostic (no leading `/{locale}` segment), because locale-aware navigation adds the locale itself; legacy persisted values carrying a locale MUST be normalized on read (otherwise `/{locale}/{locale}/…` falls through not-found to welcome).
 - When the session is active, the stored path MUST include the `sessionCode` query parameter so that sheets not owned by the GM (player roster / guest characters) remain readable after navigation back from the initiative tracker (including after cancel/end combat).
 - Cleared when the session ends (`clearCurrentSession`).
 - Navigation consumers (sidebar **Return to Character Sheet**, post-combat redirect) MUST ensure `sessionCode` is present on the target URL while the session is still active.
@@ -2200,6 +2235,13 @@ Each initiative tracker row carries:
 - Both surfaces MUST show the character avatar when an avatar stored value is available, resolving the presigned URL with `sessionCode` (FR-media-avatars).
 - Session roster rows in the GM sidebar MUST follow **FR-sidebar-character-avatars** (same avatar rules as campaign and Player-space lists).
 
+**Lobby Card Hierarchy & Ordering**:
+
+- On a session lobby participant card, when a player has an assigned character, the primary (prominent) line MUST be the character display name and the secondary line MUST be the participant label (resolved per the priority above), so name and avatar describe the same identity.
+- When no character is assigned (Game Master, or player who has not picked one yet), the primary line MUST be the participant label and the character line MUST stay empty.
+- The secondary participant label MUST remain visible for the current user too, including while the character selector is shown.
+- Lobby participants MUST be displayed in a deterministic order identical for every client of the same session: Game Master first, then players by server `joinedAt` ascending, ties broken by `userId`. Order MUST NOT depend on WebSocket event arrival order or on which client loaded first.
+
 **Prohibitions**:
 
 - Displaying a participant email as their session label
@@ -2213,6 +2255,10 @@ Each initiative tracker row carries:
 - Nominal: user with `username` shows that username in lobby, GM sidebar, and initiative tracker when character sheet is unavailable
 - Nominal: assigned character shows `firstname` (+ `lastname`) and avatar in lobby card and GM sidebar (never Mongo id)
 - Edge: user without `username` but with `firstName` + `lastName` shows the full name
+- Nominal: lobby card of a player with a character shows the character name as primary line and the username as secondary line; GM card shows the username as primary line
+- Nominal: lobby participants sorted GM first, then by `joinedAt` ascending
+- Edge: a participant appended by `session:participant-joined` before HTTP sync is placed by `joinedAt`, not at the end by arrival; same order on two clients with different arrival orders
+- Edge: tie on `joinedAt` is broken by `userId`; character still loading shows `...` as primary line with username as secondary
 - Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
 - Edge: initial API failure followed by WebSocket username still updates the displayed label
 - Edge: character sheet still loading shows `...` for the character name (not character id)
@@ -2753,6 +2799,13 @@ Each initiative tracker row carries:
 - Error indicators must remain compatible with keyboard navigation and screen readers.
 - Validation behavior and messages must be internationalized for supported locales.
 
+### Group and campaign names
+
+- A group name and a campaign name MUST be 1 to 50 characters long after trimming, on creation and on rename. The API (adventure) MUST enforce the same limit on create and update endpoints; the web client MUST use one shared constant for it.
+- The create and rename dialogs MUST show a character counter (`n/50`) under the name field, linked to the input with `aria-describedby`.
+- Above 50 characters the field MUST show a translated message stating the limit (e.g. "Le nom ne doit pas dépasser 50 caractères"), expose `aria-invalid="true"`, and the save action MUST stay disabled. A pasted name MUST NOT be truncated silently.
+- An API validation error on `label` (HTTP 400) MUST be shown on the name field with the same message, not as a generic creation/update failure toast. The generic toast is reserved for non-validation failures (network, 5xx).
+
 **Prohibitions**:
 
 - Showing only a generic toast such as "form cannot be submitted" when field-level errors exist.
@@ -2768,11 +2821,16 @@ Each initiative tracker row carries:
 - API validation errors with field paths are displayed on the corresponding fields.
 - Global errors are shown only for non-field-specific failures.
 - Keyboard and screen-reader accessibility expose invalid field and tab error states.
+- Group/campaign names — nominal: a 50-character name is accepted (client and API), counter shows `50/50`.
+- Group/campaign names — edge: a 51-character pasted name is kept as typed, shows the field error, marks the input invalid and disables save; a name padded with spaces is measured after trimming.
+- Group/campaign names — failure: an API 400 on `label` shows the field-level message; a network/5xx error keeps the generic toast. `UpdateCampaignDto` / `UpdateGroupDto` reject a 51-character `label`.
 
 **References**:
 
 - `services/web/client/src/`
 - `services/web/client/src/components/character/`
+- `services/web/client/src/components/dialogs/` (`CreateGroupDialog`, `EditGroupDialog`, `CreateCampaignDialog`, `EditCampaignDialog`)
+- `services/adventure/api/src/resources/group/dto/`, `services/adventure/api/src/resources/campaign/dto/`
 
 ---
 
@@ -3000,12 +3058,66 @@ Each initiative tracker row carries:
 - Confirming a Codex premade player opens the Player create form with a Player draft (`kind: player` fields present; NPC-only fields such as challenge rating MUST NOT be invented as the character kind).
 - Edge: `searchPlayers` omits `gameSystem` when unset.
 
+### Codex Spell Search — Multi-Selection Queue
+
+**Rule**: When `CodexSpellSearchDialog` is used for spell import (`browseOnly === false`), the dialog MUST allow queueing multiple spells before a single batch import.
+
+**Behavior**:
+
+- The preview MUST offer **« Sélectionner ce sort »** to add or remove the currently previewed spell in a selection queue (key `${spellId}:${lang}`).
+- When the queue is non-empty, the footer MUST show the queue count, a queue list with per-entry removal, and **« Ajouter la sélection ({count}) »** which calls `onSpellSelected` once per queued spell then closes the dialog.
+- The queue list MUST open as a floating panel above the footer count trigger, closed by default, so the footer height does not grow with the queue. Entries are separated by a divider and removed with the shared trash button.
+- The queue list MUST show the most recently added spell first (last added on top, first added at the bottom). This is display order only: batch import keeps the order in which spells were added.
+- When the queue is empty, **« Utiliser ce sort »** / **« Ajouter ce sort »** MUST import only the previewed spell (unchanged single-spell flow).
+- Queued rows in the results list MUST show a visible queued indicator (not color alone).
+- Results MUST use the same keyboard-selectable result row as the Codex character search (`CodexResultRow`), so selected and queued states look identical in both dialogs.
+- `browseOnly` mode MUST NOT expose queue or import actions.
+
+**Tests**:
+
+- Nominal: queue two spells, batch add invokes `onSpellSelected` twice and closes.
+- Edge: removing the last queued entry leaves single-spell footer actions only.
+- Edge: queueing A then B lists B above A in the queue panel, while batch import still calls `onSpellSelected` for A then B.
+- Guard: session browse (`browseOnly`) renders no selection controls.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/lib/codexSpellQueue.ts`
+
+### Codex Character Search — Multi-Selection Queue
+
+**Rule**: When `MonsterCodexDialog` is used for community-library character import (`browseOnly === false`), the dialog MUST allow queueing multiple Codex monsters and/or premade players before batch creation.
+
+**Behavior**:
+
+- Same interaction pattern as the Codex spell multi-selection queue: **« Sélectionner ce personnage »**, queue list, **« Ajouter la sélection ({count}) »**, queued row affordance.
+- The queue list MUST open as a floating panel above the footer count trigger, closed by default, so the footer height does not grow with the queue.
+- The queue list MUST show the most recently added entry first (last added on top, first added at the bottom). This is display order only: batch creation keeps the order in which entries were added.
+- Queue keys MUST use the existing `kind:id:lang` selection key; each entry MUST resolve to a kind-preserving `CodexCreateSelection` (monster → NPC, premade player → Player).
+- **Single entry, empty queue**: **« Utiliser ce personnage »** MUST keep the current flow (draft in store → create form).
+- **Non-empty queue**: **« Ajouter la sélection »** MUST create every queued character **directly via the character create API** with the same default mapping as the Codex-prefilled create form (`groups` for the current campaign group when applicable, `[]` in Player space, `linkedPlayerId` when in the Companions create-linked flow), then close the dialog **without** opening intermediate create forms.
+- Mixed NPC and Player entries in one batch MUST be allowed when the entity-type filter allows both.
+- `browseOnly` (in-session GM library, FR-session-gm-codex-library) MUST NOT expose the queue or batch create.
+
+**Accessibility (FR-frontend-design)**:
+
+- Queue toggle buttons MUST expose `aria-pressed` and accessible names; the queue count MUST use `aria-live="polite"`.
+
+**Tests**:
+
+- Nominal: queue two entries (NPC + PJ), batch creates two characters and navigates away from the codex route without opening create forms.
+- Nominal: Companions create-linked batch sets `linkedPlayerId` on every created NPC.
+- Edge: campaign group batch assigns `groups` to the active group id.
+- Edge: queueing A then B lists B above A in the queue panel, while batch creation still creates A then B.
+- Guard: `browseOnly` shows validate disabled / no queue controls.
+
 **References**:
 
 - `services/web/client/src/components/character/MonsterCodexDialog.tsx`
-- `services/web/client/src/services/CodexService.ts`
-- `services/web/client/src/utils/codexLocale.utils.ts`
-- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+- `services/web/client/src/components/character/CreateCharacterFromCodexView.tsx`
+- `services/web/client/src/lib/codexCharacterQueue.ts`
+- `services/web/client/src/lib/codexBatchCharacterCreate.ts`
 
 ---
 
@@ -3037,6 +3149,9 @@ Each initiative tracker row carries:
 - On close (button or Escape), `markVersionSeen(CURRENT_APP_VERSION)` is dispatched; the modal does not reappear for that version.
 - The modal displays the current version's notes by default.
 - A `Select` allows navigating to previous versions without closing the modal.
+- Version navigation is responsive: below `sm` (<640px) the `Select` sits above the notes and the notes take the full modal width; from `sm` the versions are listed in a side navigation (`nav`) whose active entry carries `aria-current="true"`. Both expose every version of `ALL_RELEASE_NOTES` and behave identically (no close, no `markVersionSeen`).
+- The "current" badge marks `CURRENT_APP_VERSION` inside the version navigation itself (side navigation entry from `sm`, `Select` option and its trigger value below `sm`), not in the note header.
+- The note header (title, date or version picker) stays pinned and only the highlights scroll (no nested scroll area capped below the viewport) and no text or control escapes the modal (`docs/design.md` §6.4).
 - The locale is derived from the URL pathname prefix.
 
 **Profile Page Entry Point**:
@@ -3070,6 +3185,7 @@ Each initiative tracker row carries:
 - `ReleaseNotesModal`: does NOT dispatch `markVersionSeen` on close when `readOnly={true}`.
 - `ReleaseNotesModal`: Select renders all versions from `ALL_RELEASE_NOTES`.
 - `ReleaseNotesModal`: switching Select updates displayed content without closing.
+- `ReleaseNotesModal`: mobile `Select` defaults to `CURRENT_APP_VERSION`; side navigation marks only the selected version with `aria-current`; an unknown selected version falls back to the latest note.
 - `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
 
 **References**:
@@ -3212,7 +3328,7 @@ Each initiative tracker row carries:
 | --- | --- |
 | Character in group (player or NPC) | Move to another group, Edit, Delete |
 | Character in **Mes personnages** | Edit, Delete (plus Duplicate / PDF per later rules; NPC link/unlink per FR-sidebar-npc-link) |
-| Group | Edit (rename), Archive or Unarchive (section-dependent), Delete |
+| Group | Edit (rename), Archive or Unarchive (section-dependent), Delete; active groups also expose **Repos long du groupe** (FR-character-long-rest) |
 | Archives section header | Delete all archived groups (only when at least one archived group exists) |
 | Campaign | Edit (rename), Delete |
 
@@ -3231,6 +3347,14 @@ Each initiative tracker row carries:
 - Tapping the row still performs primary navigation; the overflow control MUST NOT block navigation.
 - Desktop viewports (`lg` and above) MUST keep right-click context menu as the primary secondary-action entry point.
 
+**Truncated group names** (functional decision 2026-11-13):
+
+- A group name is always shown on one line in the sidebar header (`truncate`), on every screen size, in the active and archived sections.
+- The group header MUST NOT show the group name in a hover tooltip (decision 2026-11-13). No native `title` attribute on the header either: the "contains displayed sheet" indication (FR-sidebar-group-collapsed-active-indicator) is shown in the app tooltip (`TooltipContent`) on hover and keyboard focus, and only then.
+- Touch and desktop: the full name is read in the group menus. The group context menu and overflow menu (`⋮`) MUST start with the full group name as a non-interactive menu label (wrapping on several lines, never truncated), followed by a separator, then the actions. Tapping the header still only expands/collapses the group (no tap tooltip on the header).
+- This is the touch access to the full name required by FR-tooltip-accessibility; no extra `?` button on the header. When actions are disabled (active session), there is no menu and the full name stays available to screen readers only (truncation is visual).
+- Screen readers read the full name from the DOM (truncation is visual only).
+
 **Confirmation dialogs**:
 
 - **Enter** MUST confirm the primary/destructive action when focus is inside the dialog and no text input is focused.
@@ -3246,6 +3370,7 @@ Each initiative tracker row carries:
 **Session constraints**:
 
 - When sidebar actions are disabled during an active session (existing `disabledInSession` behavior), context menus and overflow controls MUST be disabled consistently.
+- Exception (decision 2026-11-13, FR-character-long-rest): during an active session the group context menu and overflow control stay available for the GM with **only** the « Repos long du groupe » entry enabled; every other group and character action stays disabled.
 
 **Prohibitions**:
 
@@ -3260,6 +3385,9 @@ Each initiative tracker row carries:
 - Confirmation: Enter confirms, Escape cancels on delete dialogs.
 - Edge: move character excludes current group; delete redirects when viewing deleted entity.
 - Failure: confirm dialog ignores Enter while `isDeleting` / async in progress.
+- Truncated group names — nominal: a cut group name is shown in full as the first label of the group menu.
+- Truncated group names — edge: hovering the header never shows the name; a collapsed group holding the displayed sheet shows the active indication in the app tooltip (no native `title`).
+- Truncated group names — failure/guard: tapping the header still toggles the group; the menu title is not a menu item (not selectable).
 
 **References**:
 
@@ -3448,6 +3576,8 @@ Each initiative tracker row carries:
 - `url` : URL externe valide (string, commence par `http://` ou `https://`)
 - `label` : libellé visible (string, non vide, max 60 caractères)
 - `campaignId` : identifiant MongoDB de la campagne associée, ou `null` pour l'espace joueur
+- `visibleInAllCampaigns` : booléen, défaut `false` ; si `true`, le lien est aussi visible sous toutes les campagnes de l'espace MJ de l'utilisateur
+- `visibleInPlayerSpace` : booléen, défaut `false` ; n'a d'effet que si `campaignId !== null` ; si `true`, le lien créé depuis une campagne est aussi visible dans l'espace joueur
 - `createdBy` : `keycloakId` de l'utilisateur propriétaire (renseigné côté backend depuis le JWT)
 
 ### Backend (Adventure API)
@@ -3479,6 +3609,24 @@ Each initiative tracker row carries:
 - Les liens sont chargés via un hook dédié (`useQuickLinks`) qui appelle le backend
 - Le state local est géré dans le hook (pas de Redux slice dédié pour les liens rapides)
 
+### Visibilité multi-espaces et liens communs
+
+- **Espace d'origine** : l'espace où le lien a été créé (la campagne `campaignId`, ou l'espace joueur si `campaignId === null`). Il reste immuable.
+- **Dialog (création et modification)** : deux options sous forme de cases à cocher / switchs :
+  - "Accessible depuis toutes mes campagnes" (`visibleInAllCampaigns`) — proposée dans tous les contextes ;
+  - "Accessible depuis l'espace joueur" (`visibleInPlayerSpace`) — proposée uniquement quand l'espace d'origine est une campagne.
+  - Les deux options sont décochées par défaut et modifiables après création (`PATCH`).
+- **Visibilité** :
+  - Sous une campagne X : liens dont `campaignId === X`, plus tous les liens `visibleInAllCampaigns === true` (quelle que soit leur origine).
+  - Dans l'espace joueur : liens dont `campaignId === null`, plus les liens `visibleInPlayerSpace === true`.
+  - Un lien n'apparaît jamais deux fois dans la même liste.
+- **Lien commun** : un lien visible dans plus d'un espace (`visibleInAllCampaigns === true`, ou `campaignId !== null && visibleInPlayerSpace === true`). Les autres liens sont **propres** à leur espace.
+- **Affichage** : dans la section "Liens rapides", les liens propres à l'espace courant sont affichés en haut, puis un séparateur titré « Liens communs » (lignes `--sidebar-border` de part et d'autre, info-bulle « Partagés avec d'autres espaces »), puis les liens communs. Le séparateur n'est affiché que si les deux groupes sont non vides. Le scroll interne (hauteur max) s'applique à l'ensemble des deux groupes.
+- **Actions** : modifier / supprimer un lien commun depuis n'importe quel espace agit sur le lien unique (pas de copie) ; la confirmation de suppression d'un lien commun précise qu'il disparaîtra de tous les espaces où il est visible.
+- **Backend** : `GET /quick-links?campaignId=<id>` et `?campaignId=null` renvoient l'union définie ci-dessus ; `POST` et `PATCH` acceptent `visibleInAllCampaigns?` et `visibleInPlayerSpace?` (booléens) ; `visibleInPlayerSpace` est forcé à `false` quand `campaignId === null`.
+- **Données existantes** : les liens sans ces champs sont lus comme `false` (aucun changement de comportement).
+- **Accessibilité** : chaque option a un label associé et est activable au clavier ; les deux groupes sont des listes distinctes avec un `aria-label` explicite ("Liens de cette campagne" / "Liens de l'espace joueur", "Liens communs") ; le séparateur est décoratif (`aria-hidden` ou `role="separator"`).
+
 ### Accessibilité
 
 - Chaque lien externe possède un `aria-label` mentionnant qu'il s'ouvre dans un nouvel onglet
@@ -3503,6 +3651,15 @@ Each initiative tracker row carries:
 - **Edge** : label vide → bouton Créer désactivé côté frontend, rejeté côté backend (400)
 - **Edge** : tentative de suppression d'un lien appartenant à un autre utilisateur → 403
 - **Failure** : erreur réseau à la création → toast erreur, dialog reste ouvert
+- **Nominal** : lien créé dans la campagne A avec "toutes mes campagnes" → visible sous A et B, dans le groupe "communs"
+- **Nominal** : lien créé dans la campagne A avec "espace joueur" → visible sous A et dans l'espace joueur, groupe "communs" ; non visible sous B
+- **Nominal** : liens propres et communs présents → propres en haut, séparateur, communs en bas
+- **Edge** : un seul groupe non vide → pas de séparateur
+- **Edge** : survol d'une case à cocher du dialog → curseur pointer (le label aussi)
+- **Edge** : lien de l'espace joueur → l'option "espace joueur" n'est pas proposée ; `visibleInPlayerSpace: true` envoyé avec `campaignId` nul est ignoré (stocké `false`)
+- **Edge** : décocher "toutes mes campagnes" sur un lien commun → il ne reste visible que dans son espace d'origine
+- **Edge** : lien existant sans les nouveaux champs → traité comme propre à son espace
+- **Failure** : `visibleInAllCampaigns` non booléen → 400
 
 **Références** :
 - `services/adventure/api/src/resources/quick-link/`
@@ -3510,6 +3667,7 @@ Each initiative tracker row carries:
 - `services/web/client/src/hooks/useQuickLinks.ts`
 - `services/web/client/src/components/layout/Sidebar/QuickLinksList.tsx`
 - `services/web/client/src/components/dialogs/AddQuickLinkDialog.tsx`
+- `services/web/client/src/lib/quickLinkVisibility.ts`
 
 ---
 
@@ -3601,9 +3759,13 @@ Each initiative tracker row carries:
 - The dialog MUST offer **Annuler** (outline) and a **destructive** confirm button; Cancel, Escape and overlay click MUST close without leaving; the confirm button MUST be disabled while leaving
 - Trigger layout: **player** → one solid destructive « Quitter la session » button; **GM** (where closing is available) → split button whose main part is « Clôturer la session » (solid destructive) and whose arrow opens a menu with « Quitter la session »; each action opens its own confirmation dialog. Where the GM cannot close (pre-launch wheel bar), the GM gets the same solid destructive leave button as a player
 - **Rejoining after leaving**: while the session is still valid (not closed, not expired — 8 h after launch), a user who left MUST be able to come back:
-  - **GM**: when the GM is no longer in a session client-side but an active session exists for the selected campaign (GM is its creator), the sidebar action MUST read « Retourner à la session » (not « Lancer une session ») and bring the GM back into that session. « Lancer une session » is shown only when no active session exists for the campaign.
+  - **GM**: when an active session exists for the selected campaign (GM is its creator) and it is either **launched** (non-expired) or **joined by at least one player** (participant other than the GM), the sidebar action MUST read « Retour en session » (not « Lancer une session ») and bring the GM back into that session — whether the GM merely closed the lobby dialog or left it. An **empty lobby that was never launched** MUST show « Lancer une session »; the action reopens/reuses the existing lobby (server-side reuse, no duplicate session). A player who leaves is removed from the roster and no longer counts.
   - **Player, before launch**: rejoining with the session code follows the normal join flow (wheel deposit rules apply, FR-session-lobby-wheel-deposit).
-  - **Player, after launch**: a former participant who explicitly left a launched session MUST be allowed to rejoin it with its code, without spending wheels again (the launch debit is not replayed). Users who never participated in that session MUST still be refused once it is launched (no new player mid-session). The join dialog MUST show a specific error for this refusal and SHOULD prefill the code of the last session the user left. While that last-left session is still active, the player's sidebar action MUST read « Retourner à la session » (opening the prefilled join dialog) instead of « Rejoindre la session ».
+  - **Player, after launch**: a former participant who explicitly left a launched session MUST be allowed to rejoin it with its code, without spending wheels again (the launch debit is not replayed). Users who never participated in that session MUST still be refused once it is launched (no new player mid-session). The join dialog MUST show a specific error for this refusal and SHOULD prefill the code of the last session the user left. While that last-left session is still active, the player's sidebar action MUST read « Retour en session » (opening the prefilled join dialog) instead of « Rejoindre la session ».
+  - **Player leaving a lobby that was never launched**: the left session code MUST NOT be remembered (reset); the sidebar action reads « Rejoindre la session » with no prefilled code. A player who only closed the lobby dialog without leaving is still in the lobby and keeps « Retour en session ».
+  - **Label**: the return action is worded « Retour en session » (EN « Back to Session ») so it fits the sidebar button without truncation.
+  - **Color**: for a player, « Retour en session » uses the same green tone as « Rejoindre la session »; for the GM it keeps the yellow tone of « Lancer une session ».
+  - **Lobby open**: while the lobby dialog is open (user in session), the sidebar action MUST show an indicative « in progress » state — label « Retour en session », role color, active ring distinct from keyboard focus, `aria-current="true"`. The regular label (e.g. « Lancer une session » for an empty lobby) comes back when the dialog closes.
 - Accessibility: titled/described dialog, focus trapped and restored to the trigger, fully keyboard operable, red text contrast OK in light and dark themes
 
 **Tests**:
@@ -3611,7 +3773,12 @@ Each initiative tracker row carries:
 - Nominal: `openSessionLobby` sets `sessionLobbyOpen` to `true`; `closeSessionLobby` resets it to `false`
 - Nominal: player gets a single leave button; GM gets the close split button with leave in its menu; leave description mentions group removal only for a player
 - Failure: leave confirm is blocked while a leave is in progress
-- Nominal: GM out of session with an active session on the selected campaign sees « Retourner à la session »; without one, « Lancer une session »
+- Nominal: GM out of session with a launched active session on the selected campaign sees « Retour en session »; without one, « Lancer une session »
+- Edge: GM whose campaign session is an empty lobby (never launched, no player joined) sees « Lancer une session », after closing the dialog or leaving
+- Edge: GM whose lobby (not launched) was joined by a player sees « Retour en session »
+- Nominal: player « Retour en session » is green, GM's is yellow
+- Nominal: lobby dialog open in session → « Retour en session » in active state; Guard: stale open flag out of session shows no indicator
+- Edge: player leaving a never-launched lobby → left session code reset, « Rejoindre la session »
 - Edge (reconnect): player leaves a launched session and rejoins it with its code → accepted, no wheel debit
 - Failure: user who never participated cannot join a launched session (specific error shown)
 - Edge: calling `openSessionLobby` twice remains idempotent (`true`)
@@ -3817,13 +3984,14 @@ Each initiative tracker row carries:
 - Formats d'upload acceptés : JPEG (`.jpg`, `.jpeg`), PNG (`.png`), WebP (`.webp`), HEIC/HEIF (convertis côté serveur)
 - Taille maximale d'upload : 5 Mo
 - Affichage `main` : tous les conteneurs DOIVENT respecter le ratio 4:5 (`aspect-[4/5]`) ; les vignettes circulaires (`thumb`, `xs`) restent carrées
+- Exception photo de profil (page profil, taille `profile`, lecture et édition) : la variante `main` est affichée dans un cercle (`aspect-square rounded-full`, `object-cover object-center`), placé en haut à gauche de la carte identité. Le traitement serveur (4:5) est inchangé ; seul l'affichage recadre. L'aide d'upload de cette taille recommande 400×400 px (image recadrée en cercle) au lieu de 400×500 px (4:5)
 - Recadrage CSS uniforme : `object-cover object-center` sur toutes les instances `MediaAvatar`
 - L'UI d'upload DOIT exposer une aide lisible (ou `aria-describedby` équivalent) listant extensions, taille max et dimensions recommandées (400×500 px, ratio 4:5)
 
 **Prohibitions** :
 
 - Ne pas stocker la variante `main` en carré 1:1
-- Ne pas utiliser des ratios d'affichage divergents pour le même avatar (ex. `aspect-video` sur le profil utilisateur)
+- Ne pas utiliser des ratios d'affichage divergents pour le même avatar (ex. `aspect-video` sur le profil utilisateur), hormis l'exception cercle de la photo de profil ci-dessus
 - Ne pas combiner largeur et hauteur fixes Tailwind qui modifient le ratio selon le breakpoint
 
 **Tests** :
@@ -3831,6 +3999,7 @@ Each initiative tracker row carries:
 - Nominal : upload PNG portrait → `main` 4:5 WebP, `thumb` carré WebP
 - Edge : image paysage large → recadrage centré sans déformation
 - Failure : format non supporté → message d'erreur mentionnant les extensions acceptées
+- Profil : le conteneur `profile` est carré et rond, son aide d'upload mentionne 400×400 px ; la taille `sheet` garde 4:5 et 400×500 px
 
 **References** :
 
@@ -4529,10 +4698,30 @@ Each initiative tracker row carries:
 - Tab id: `companions`. Labels (i18n `characterDetail.tabs.companions`): FR « Compagnons », EN « Companions », ES « Compañeros ».
 - Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (the only tab with light text: black is unreadable on the violet `#4e00de`, `docs/design.md` violet usage rule). Do not invent a new color.
 - Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
-- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in a **responsive grid**: 1 column on mobile, 2 from `md`, 3 from `xl` (`docs/design.md`). Each card MUST show the NPC identity summary (FR-character-detail-view): avatar (4:5, User placeholder when missing), name, surname when present, and CR with abbreviated « ID » tooltip plus XP in parentheses. When the NPC belongs to a group, the first group label MAY appear as secondary metadata. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
+- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in the Companions tab bento grid (full width below `xl`, two per row from `xl`; see layout section below). Each card MUST reuse the read-mode « Personnage » card presentation (FR-character-identity-card): the NPC name is the card heading (bold, tab violet `text-primary-light`) with the nickname in muted italic « » below, in the column beside the avatar (4:5, User placeholder when missing); the same NPC fact cells as the « Personnage » card (Type + subtype, Alignement, Facteur de puissance + XP) MUST render **in that column under the name block**, using the vertical space next to the avatar (they MUST NOT sit on a separate full-width band below the header row). **Type** and **Alignement** MUST appear **side by side** (two columns) on typical viewports; an odd third cell (FP / XP) spans the row below. When the NPC belongs to a group, the first group label MAY appear as a muted line under the name block. The fact cells MUST come from the same source as the « Personnage » card so both surfaces stay identical. Cards in the same bento row MUST stretch to equal height (`h-full` on the card, grid default align-stretch). A **reserved min-height band** for the nickname line MUST keep cards without a nickname the same header height as cards with one (bento row alignment). Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`).
 - Read and edit mode (Player space, liaison actions enabled): the same list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. Managing liaisons MUST NOT require entering full-sheet edit mode for the other tabs. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
-- Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST NOT open a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
+- Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST open the unlink confirmation dialog defined in FR-sidebar-npc-link; the API call runs only after confirmation. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
 - Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
+
+**Companions tab — bento layout** (aligned with FR-character-history-bento-layout / FR-character-inventory-bento-layout):
+
+- The tab MUST use the shared viewport bento grid (`BENTO_GRID_CLASS`: 2 / 4 / 12 columns, one gap) with its slots in a dedicated layout file; every card is a direct grid child (the companion list uses `display: contents` with `role="list"`), no `h-fit`. Fixed bands (toolbar, empty state) leave no empty cell at 2 / 4 / 12 columns; only the last row of the companion list MAY be partial (variable count).
+- **With companions** (decision 2026-11-13 amended twice): liaison actions (when enabled) form a full-width toolbar row (link `secondary`, create-linked `primary`); each companion card is a direct grid child: **full width below `lg`** (`col-span-2` / `sm:col-span-4`, mobile and tablet unchanged), **half width from `lg`** (`lg:col-span-2`, two cards per row — laptop), **a third from `xl`** (`xl:col-span-4`, three cards per row) so cards stop growing past tablet width on larger screens. `CharacterIdentityCard`'s fact-cell columns are driven by the card's own `@container` width, not the viewport, so they keep reflowing correctly at three per row.
+- **Empty state**: no free-floating bordered box. Two `GeneralSectionCard` on one band: **« Aucun compagnon pour l'instant »** (description; when liaison actions are enabled the link / create-linked buttons sit inside this card, at its bottom right, the separate toolbar is not rendered and the « boutons ci-dessus » hint is removed) and **« Quelques exemples »** (the examples separated by a thin line, FR-character-statistics-card, decision 2026-11-13: no background, with a decorative icon; three from 2026-11-13 — familiar, druid Wild Shape, secondary NPC). Full width each below `lg` (decision 2026-11-13 amended: raised from `sm` — two side-by-side cards were too cramped on tablet and narrow laptop widths), 2 + 2 at `lg`, 8 + 4 at `xl`. Session GM (no liaison actions): same two cards, no buttons.
+- **Empty-state CTA row** (decision 2026-11-13, amended twice same day): the link / create-linked buttons in the « Aucun compagnon pour l'instant » card MUST stay on a single row at every screen width (no wrap, no horizontal scroll). Below a **375px** viewport width (custom breakpoint, `min-[375px]:`, not the `sm` token), each button is **icon-only** (label `sr-only`, `aria-label` set to the button's full text, same pattern as `InitiativeTrackerTurnControls`); from 375px, the label becomes visible again (`sr-only min-[375px]:not-sr-only`) alongside the icon, matching the design.md §6.1 "icon-only responsive buttons" convention. The breakpoint is a deliberate accepted trade-off (decision 2026-11-13, product call): with the real `Inter Tight` font and page/card padding, 375px fits the FR and EN labels (measured minimum ~350px / ~380px) but **not** the longest ES translation (measured minimum 420px) — on an ES phone narrower than ~420px, the ES label can be clipped at the right edge of the card between 375px and 420px. If this is reported as a real-world issue, lower the breakpoint is not the fix (it would only move the same trade-off); shorten the ES strings or switch to per-locale breakpoints instead.
+- Card headings use the tab violet as text (`text-primary-light`, `docs/design.md` violet usage rule: `purple` / `#4e00de` is unreadable as text on `bg-card`).
+- Create-linked is a `primary` button (white fill, dark text, like the sheet Edit button); link stays `secondary`.
+- The Companions skeleton (FR-character-sheet-skeleton) MUST use the same grid and slots (toolbar row + companion card placeholders).
+- Tests: nominal — with companions, one grid whose direct children are the toolbar and the cards with their slot classes, companion slot carries `lg:col-span-2 xl:col-span-4`; edge — empty state cards carry `lg:col-span-2` / `xl:col-span-8` and `xl:col-span-4` (no `sm`-level split) and render with unique headings resolving `aria-labelledby`, buttons inside the first card when actions are enabled; guard — session GM empty state renders no link / create button; edge — empty-state CTA buttons have `aria-label`, an `sr-only sm:not-sr-only` label span, and their row wrapper has no `flex-wrap`.
+
+**Companions tab — search** (decision 2026-11-13):
+
+- With at least one companion, the toolbar row MUST always render (also for the session GM, without liaison buttons) and start with a search field; liaison buttons (when enabled) follow it on the same row. The empty state (no companion) is unchanged: no search field.
+- Filtering is client-side and live (no API call): a companion matches when its display name (first + last name) or its nickname (`surname`) contains the query, ignoring case and diacritics; a blank query shows every companion. Matches keep the alphabetical order.
+- No match: a full-width message « Aucun compagnon ne correspond à « {query} » » without any button (decision 2026-11-13: clearing stays on the search field's clear control and Escape).
+- Accessibility: the field has an accessible label (`type="search"`), a keyboard-operable clear button when non-empty, Escape clears the field, and the result count is announced in a polite live region.
+- The Companions skeleton keeps the toolbar row (search placeholder) so the layout does not shift.
+- Tests: nominal — name and nickname match, diacritics and case ignored; edge — no match, then clearing restores the full list; guard — empty state renders no search field, and the session GM (no liaison actions) still gets the search field.
 
 **NPC character sheet — linked Player footer shortcut**:
 
@@ -4562,7 +4751,7 @@ Each initiative tracker row carries:
 
 - Nested sidebar lists MUST use a list structure with accessible names (Player name + companion list; each NPC name includes a PNJ kind label). Root unlinked NPCs MUST also include the PNJ kind label in their accessible name.
 - Link / unlink / create controls MUST be keyboard-operable with visible focus.
-- Reassignment confirmation dialogs follow FR-sidebar-context-actions (Enter confirm, Escape cancel). Unlink from the Companions tab MUST NOT use a confirmation dialog.
+- Reassignment and unlink confirmation dialogs follow FR-sidebar-context-actions (Enter confirm, Escape cancel).
 
 **Prohibitions**:
 
@@ -4586,7 +4775,7 @@ Each initiative tracker row carries:
 
 - Nominal: in Player space, link an owned NPC to an owned Player **and save the Player form** → NPC has `linkedPlayerId`; Player Companions tab lists it; Player sidebar nests it under that Player.
 - Nominal: selecting an NPC in the Companions picker while editing does not persist until Save.
-- Nominal: unlinking a companion in edit mode removes it from the draft list immediately, without a confirmation dialog, and persists only on Save.
+- Nominal: unlinking a companion from the Companions tab opens the unlink confirmation dialog; on confirm `linkedPlayerId: null` is persisted immediately and the card leaves the list; Cancel/Escape keeps it linked.
 - Nominal: Companions « create linked » opens the create-character dialog limited to NPC + Codex; a Codex monster pre-fills the NPC form with `linkedPlayerId`.
 - Nominal: Player with several linked NPCs shows all of them nested in the Player sidebar and listed on the tab as a responsive Card grid with avatar, name, and CR/XP (no kind badge).
 - Edge: unlinked without-group NPC appears as a root row in the Player sidebar; NPC sheet has no Companions tab and no « Lié à » metadata.
@@ -4611,6 +4800,8 @@ Each initiative tracker row carries:
 - `services/web/client/src/components/character/NpcLinkedPlayerFooterLink.tsx`
 - `services/web/client/src/components/character/tabContents/companions/CharacterCompanionsTabContent.tsx`
 - `services/web/client/src/components/character/tabContents/companions/CompanionNpcCard.tsx`
+- `services/web/client/src/components/character/tabContents/companions/view/CompanionsEmptyState.tsx`
+- `services/web/client/src/components/character/tabContents/companions/shared/companionsBentoLayout.ts`
 - `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
 - `docs/functional-rules.md` — FR-character-detail-view, FR-characters-without-group, FR-sidebar-navigation, FR-sidebar-context-actions, FR-character-duplicate, FR-character-sheet-pdf-export, FR-frontend-design, FR-session-player-companion-combatants
@@ -4694,14 +4885,22 @@ Each initiative tracker row carries:
 **NPC menu actions**:
 
 - **Unlinked root NPC**: menu item **Link to a character** (i18n: FR « Lier à un personnage », EN « Link to a character », ES « Vincular a un personaje »). MUST open a Player picker dialog listing owned Players currently visible in Mes personnages (without-group Players). Confirming a Player MUST persist `linkedPlayerId` immediately and nest the NPC under that Player. Empty state MUST be explicit when no Player is available. The picker MUST NOT list NPCs, GM-only characters, or Players the requester does not own.
-- **Linked nested NPC**: menu item **Unlink** (i18n: FR « Délier », EN « Unlink », ES « Desvincular »). MUST persist `linkedPlayerId: null` immediately. MUST NOT open a confirmation dialog (same as Companions-tab unlink). After success, the NPC MUST leave the nested list: without-group NPCs become a root row; NPCs that still belong to a campaign group MUST disappear from Mes personnages (they remain in the GM group list).
+- **Linked nested NPC**: menu item **Unlink** (i18n: FR « Délier », EN « Unlink », ES « Desvincular »). MUST open an unlink confirmation dialog (same as Companions-tab unlink); confirming MUST persist `linkedPlayerId: null` immediately, Cancel/Escape MUST abort with no change. After success, the NPC MUST leave the nested list: without-group NPCs become a root row; NPCs that still belong to a campaign group MUST disappear from Mes personnages (they remain in the GM group list).
 - **Linked nested NPC**: menu item **Link to another character** (i18n: FR « Lier à un autre personnage », EN « Link to another character », ES « Vincular a otro personaje »). MUST open the same Player picker, excluding the currently linked Player. Confirming a different Player is a **reassignment** and MUST ask for confirmation (FR-npc-player-link). On confirm, persist the new `linkedPlayerId` immediately and nest under the new Player.
 
 **Persistence**:
 
 - Sidebar and Companions-tab link/unlink/reassign MUST call the NPC update API immediately. They MUST NOT wait for a Player sheet Save.
 - On success, Redux Player-space NPC lists MUST update so the sidebar re-nests without a full page reload (toast success).
+- The unlink success toast (sidebar and Companions tab) MUST name the NPC: FR « {name} retiré avec succès. », EN « {name} removed successfully. », ES « {name} quitado con éxito. ». `{name}` is the NPC display name, truncated to `TOAST_EMBEDDED_NAME_MAX_LENGTH` (32 chars, ellipsis), like group/campaign success toasts.
 - On API failure, the sidebar MUST keep the previous nesting and show an error toast.
+
+### Unlink confirmation
+
+- Every unlink entry point (sidebar context/overflow menu, Companions-tab card action) MUST open the same confirmation dialog before calling the API.
+- Wording follows the existing « Retirer » vocabulary of the unlink menu item and toast. Title: FR « Retirer le PNJ », EN « Remove NPC », ES « Quitar PNJ ». Description: FR « Voulez-vous retirer {npc} des compagnons de {player} ? Le PNJ restera dans vos personnages. », EN « Remove {npc} from {player}'s companions? The NPC will stay in your characters. », ES « ¿Quitar a {npc} de los compañeros de {player}? El PNJ seguirá en tus personajes. ». Confirm: FR « Retirer », EN « Remove », ES « Quitar ». Cancel: shared « Annuler ».
+- `{npc}` and `{player}` are display names truncated to `TOAST_EMBEDDED_NAME_MAX_LENGTH` (32 chars).
+- The confirm action is non-destructive styling (the NPC is not deleted): `primary` button variant (white fill, dark text), not `accent` or `destructive`. Enter confirms, Escape/Cancel closes without change; controls are disabled while the request is pending and the dialog stays open on API failure.
 
 **Session and GM**:
 
@@ -4723,18 +4922,21 @@ Each initiative tracker row carries:
 - Draft-only sidebar linking (Companions-tab Save gating MUST NOT apply here).
 - Linking to a Player not visible in Mes personnages (the NPC would vanish from both root and nested lists).
 - Silent reassignment without confirmation.
-- Confirmation dialog on simple unlink.
+- Unlinking without the confirmation dialog.
 - Hardcoded labels bypassing i18n.
 
 **Tests**:
 
 - Nominal: right-click (or overflow) on an unlinked root NPC → pick a visible Player → NPC nests under that Player; `linkedPlayerId` persisted.
-- Nominal: unlink a nested without-group NPC → NPC becomes a root row; `linkedPlayerId` is null.
+- Nominal: Unlink opens the confirmation dialog naming the NPC and the Player; confirming persists `linkedPlayerId: null` and the NPC becomes a root row.
+- Edge: Cancel or Escape in the unlink dialog → no API call, nesting unchanged.
 - Nominal: overflow menu on tablet/mobile exposes the same items and handlers as the context menu.
 - Edge: unlink a nested NPC that still has a campaign group → it leaves Mes personnages and stays in the GM group list.
 - Edge: reassign from Player A to Player B → confirmation required; after confirm, nested only under B.
 - Edge: picker empty when Mes personnages has no Player; Link remains available but cannot persist.
 - Edge: launched session disables link/unlink like Edit/Delete.
+- Nominal: unlink success toast reads « {NPC name} retiré avec succès. ».
+- Edge: NPC name longer than 32 characters → truncated with « … » in the toast.
 - Failure: API error → toast error, previous sidebar nesting unchanged.
 - Failure: GM group NPC rows MUST NOT show link/unlink.
 
@@ -4989,6 +5191,7 @@ Each initiative tracker row carries:
 **Requirements**:
 
 - Each damage entry MUST keep the current structured spell fields: `diceCount`, `diceType`, `bonus`, `damageType`.
+- In edit mode, the dice of an entry (and of healing) MUST be typed in one free-text formula field like action damage (`8d6+2`), parsed into those structured fields (functional decision 2026-11-09, details in FR-character-magic-list-card).
 - Persistence, API DTO/schema, client types, and form schema MUST store spell damage as a list (`damageDetails: DamageDetails[]`), not a single object.
 - Edit mode (player and NPC magic tab) MUST allow adding and removing damage entries independently, with the same interaction pattern as combat actions (add row, delete row, remaining rows stay).
 - When a spell has no damage entries (empty list after load/hydration), edit mode MUST still show one blank damage row so the user can fill dice/type without clicking add first; removing the last row MUST leave one blank row (not zero rows). Persisted data MAY remain an empty list until the user saves a filled entry.
@@ -5155,6 +5358,7 @@ Each initiative tracker row carries:
 **Utility types** (minority, kept): `ghost` (transparent, `hover:bg-white/10`), `link` (text), `destructive` (critical action), icon-only triggers, and toggles (`aria-pressed`), which never use a violet fill:
   - Segmented selector (exactly one option active among a few, e.g. Player / GM, attack ability suggestion): active option = **primary white**, inactive options = **secondary**.
   - Filter toggle (independent on/off chip, e.g. Action / Bonus action / Reaction priority): `secondary`, pressed state = documented selection gray (`docs/design.md` section 5.1).
+- **Copy confirmation** (copy code / copy link buttons, e.g. session lobby invite, profile referral link): after a successful copy the button keeps its **secondary** look (dark fill, minor border, light text); only the content changes — the icon becomes a check mark in the button's own text color (white) and the label becomes the "copied" text. The button width MUST NOT change between states: the label slot reserves the width of the longest of the two labels. While the confirmation is shown the button is disabled but stays at full opacity with no hover change. A green fill or green icon MUST NOT be used. Shared class: `copySuccessButtonClassName`.
 
 **Sizes**:
 
@@ -5193,6 +5397,7 @@ Each initiative tracker row carries:
 - Nominal: `buttonVariants` returns the documented classes for each type (`primary`, `accent` per tone, `secondary`) and each size; the default is `accent` + `violet`
 - Edge: `accent` with `tone="red"` renders dark text; `align="start"` left-aligns content; `lg` uses the 15px radius, the other sizes 13px
 - Failure/guard: disabled buttons expose no hover style change; an inactive segmented option renders the secondary style
+- Copy confirmation: keeps the secondary fill and text color (nominal); both labels are rendered in the same slot so the width is constant, and the button stays at full opacity while disabled and hovered (edge); never renders a green fill or icon (guard)
 
 **References**:
 
@@ -5265,6 +5470,7 @@ Each initiative tracker row carries:
 - Primary destructive action MUST be **delete Player and companions**; secondary confirm MUST be **delete Player only / keep companions**; **Cancel** MUST abort with no deletion.
 - Enter MUST NOT auto-trigger destructive delete when multiple outcomes exist (explicit button activation only).
 - Escape and Cancel MUST close without deleting.
+- After a successful Player deletion (from either dialog, whatever the companion outcome), a success toast MUST name the Player: FR « {name} supprimé avec succès. », EN « {name} deleted successfully. », ES « {name} eliminado con éxito. ». `{name}` is the Player display name truncated to `TOAST_EMBEDDED_NAME_MAX_LENGTH` (32 chars). On API failure, no success toast is shown.
 
 **API**:
 
@@ -5283,6 +5489,8 @@ Each initiative tracker row carries:
 - Edge: Player with zero companions → existing single confirm only.
 - Edge: NPC delete → no companion dialog; no cascade param effect.
 - Failure: invalid cascade on non-Player → ignore flag, normal delete.
+- Nominal: Player deletion success → toast « {Player name} supprimé avec succès. » (truncated beyond 32 chars).
+- Failure: Player delete API error → no success toast.
 
 **References**:
 
@@ -5542,18 +5750,23 @@ Each initiative tracker row carries:
 
 - **Single grid**: every General-tab card (Character, Statistics, compact tiles, Ability scores, Saving throws, Skills, Proficiencies, Abilities) is a direct child of one grid container. Independent flex columns (`Column 1 / 2 / 3`) MUST NOT be used to place cards.
 - **Grid units** (decision 2026-11-04): the grid follows the **width available to the sheet** (container queries on a wrapper of the grid), not the viewport width, so an open sidebar (16rem from `md`) is taken into account and the layout switches back when the sidebar is collapsed. Thresholds on the available width:
-  - `< 36rem`: 2 columns (mobile placement, below "`< sm`").
+  - `< 36rem`: 2 columns (mobile placement, below "`< sm`"); `22rem` is a secondary threshold used only by the PC tiles (see « PC first band »).
   - `36rem` → `56rem`: 4 columns (tablet placement, below "`sm` → `xl`").
   - `≥ 56rem`: 12 columns (desktop placement, below "`≥ xl`").
   - `≥ 96rem` (very large screens): still 12 columns, with a **wide placement** (below "`≥ 3xl`") so cards do not stretch over the extra width. Decision 2026-11-04: adapt the layout like on phones instead of capping the page width.
   - In the placement rules below, `< sm`, `sm` → `xl`, `≥ xl` and `≥ 3xl` name these width ranges. Spacing (gap, page padding) stays viewport-based. Other sheet tabs keep viewport breakpoints.
 - **Uniform spacing**: a single gap token for both axes (`gap-3`, `md:gap-4`). Cards MUST NOT add outer margins or wrapper elements that introduce extra spacing between cards.
-- **Compact tiles** (read mode): short label/value cards (PC: proficiency bonus, passive perception, inspiration, exhaustion) render as compact tiles (label on top, prominent value below) that share a row instead of each taking a full-width row.
-- **Placement intent** (≥ xl, PC read mode):
-  - Band 1: Character (4 cols, spans 2 rows) · Statistics (8 cols) · 4 tiles of 2 cols below Statistics (proficiency bonus, passive perception, inspiration, exhaustion).
+- **Compact tiles** (read mode): short label/value cards (PC: proficiency bonus, passive perception, inspiration, exhaustion) render as compact tiles (label on top, prominent value below), placed exactly like the edit tiles (decision 2026-11-12, see « PC first band »). In session, the inspiration tile's use button shows a short visible label (« Utiliser » / « Use » / « Usar », decision 2026-11-09) — the tile title already names the inspiration — and keeps a full accessible name (« Utiliser le point d'inspiration »).
+- **PC first band** (read **and** edit modes, decision 2026-11-12: read mode follows the edit placement at every width, so the tiles and Proficiencies never move when toggling edit):
+  - `< sm`: every card full width in DOM order. Exception (decision 2026-11-13): from `22rem` of available width (large phones such as 425px, tablet with the sidebar open) the 4 tiles stay half width (2 × 2); below `22rem` (small phones) one tile per row.
+  - `sm` → `xl`: Character and Statistics full width; the 4 tiles half width (2 × 2).
+  - `≥ xl`: Character (4 cols, spans 3 rows) · Statistics (8 cols) · 4 tiles of 4 cols below Statistics (2 × 2: passive perception, inspiration, exhaustion, proficiency bonus).
+  - `≥ 3xl`: Character (5, spans 4 rows) · Statistics (5, spans 4 rows) · the 4 tiles stacked in one column (2 cols) on the right; the skills band starts on row 5.
+  - Row tracks: a single flexible row (`1fr`) absorbs the Character height — the Statistics row at `≥ xl`, the last tile row at `≥ 3xl` — so the other tiles keep their content height.
+- **Placement intent** (≥ xl, PC read and edit modes):
+  - Band 1: see « PC first band ».
   - Band 2 — skills band (decision 2026-11-05, replaces the full-width Abilities band of 2026-11-04): Skills (6, spans 2 rows, 2-column list) on the left; on the right (6): Ability scores (3) and Saving throws (3) side by side, then Abilities and traits under both (6, spans 2 rows); Proficiencies (6) under the Skills, next to the Abilities.
-- **Wide placement intent** (≥ 3xl, PC read mode, decision 2026-11-04): Band 1 (2 rows): Character (3, spans 2 rows) · Statistics (5, spans 2 rows) · on the right (4 cols): the 4 tiles side by side on one row (1 col each), then Proficiencies right under them (4 cols, explicitly placed in that zone, DOM order unchanged). Band 2: skills band — Skills (6, spans 2 rows) · Ability scores then Saving throws under it (3) · Abilities and traits (3, spans 2 rows, explicitly placed on the band rows, DOM order unchanged).
-- **Wide placement intent** (≥ 3xl, PC edit mode): edit tiles hold form controls and the Proficiencies form is long, so edit mode keeps the 4 tiles as a 2 × 2 block (2 cols each) next to the statistics and Proficiencies full width after the skills band (6 under the Skills at `xl`).
+- **Wide placement intent** (≥ 3xl, PC read and edit modes, decision 2026-11-04, revised 2026-11-12): the PC slots are the same in read and edit modes at every width. Band 1: see « PC first band ». Band 2: skills band — Skills (6, spans 2 rows) · Ability scores then Saving throws under it (3) · Abilities and traits (3, spans 2 rows, explicitly placed on the band rows, DOM order unchanged). Band 3: Proficiencies (12, full width, sections in columns), as in edit mode.
 - **PC DOM order**: Character · Statistics · 4 tiles · Skills · Ability scores · Saving throws · Abilities · Proficiencies. On tablet the PC follows the NPC tablet placement. Alignment and background are in the Character card (FR-character-identity-card).
 - **Placement intent** (NPC read and edit modes, decision 2026-11-04 — GM constraint): the Skills card is **tall** (spans 2 rows), placed **as far left as possible** and wide enough for a 2-column skills list; right to its right sit Ability scores and Saving throws, then Abilities. DOM order: Character · Statistics · Skills · Ability scores · Saving throws · Abilities · Proficiencies. Alignment is in the Character card, passive perception in the Statistics card (no NPC tiles).
   - `≥ xl`: Band 1: Character (4) · Statistics (8). Band 2: skills band, same as PC (Proficiencies 6 under the Skills).
@@ -5561,13 +5774,19 @@ Each initiative tracker row carries:
   - `sm` → `xl` (a single-column skills list is tall, so the right column must not be stretched): Character, Statistics full width; Skills (half, spans 3 rows) on the left · on the right (half): Ability scores, Saving throws, Abilities; then Proficiencies full width.
   - `< sm`: every card full width, in DOM order.
 - **Wide lists**: long lists (skills) lay out by card width, not viewport width (container queries on the card), so a wide card shows 2–3 columns and stays balanced with its neighbours.
-- **Edit mode**: same cards, same order and same zones as read mode so the sheet does not reshuffle when toggling edit. Edit tiles hold form controls, so they are wider: 4 cols at `xl` (two per row, Character spans 3 rows for PC), half width at `sm`, full width below `sm`.
-- **Tablet / mobile**: same reading order as the DOM; Character, Statistics and Proficiencies take the full width; on tablet Skills, Ability scores, Saving throws and Abilities take half width (see NPC placement), full width below `sm`; read tiles take 1 column on mobile so a tiles row never leaves an orphan cell.
+- **Edit mode**: same cards, same order and same zones as read mode so the sheet does not reshuffle when toggling edit. Edit tiles hold form controls, so they are wider: 4 cols at `xl` (two per row, Character spans 3 rows for PC), half width at `sm`, full width below `sm`; PC read tiles use the same placement.
+- **Multiclass edit tabs** (decision 2026-11-07): in the Character edit card, when the sheet has more than one class, the class fields (class, level, subclass and their sub-fields) of **one** class are shown at a time; switching class is done with tabs (one tab per class, labelled with the class name, same pattern as the Magic tab spellcasting tabs). A PC has **at most two classes**. The « Add a class » button sits in the selector, in place of a second class button: it is shown only when the sheet has a single class (one class button + add button) and hidden at two classes. Adding a class creates and selects it; removing the selected class selects the remaining one. A new class starts at level 1 and class levels never exceed the global level: when every level is already allocated, adding a class raises the global level by one (multiclassing on level-up); at level 20 the level is taken from the highest class (its remaining hit dice capped to its new level). Picking a class sets its hit die (d12 Barbarian · d10 Fighter, Paladin, Ranger · d6 Sorcerer, Wizard · d8 others) unless the player chose another die. The hit dice of the Statistics card follow the classes of the Character card (controlled die select); when multiclassed they are switched with the same class selector (one class's hit dice at a time). The selector reuses the Magic tab spellcasting selector (labelled toggle group, `aria-pressed` buttons, error indicator on a class holding invalid fields).
+- **Statistics edit groups** (decision 2026-11-07): the Statistics edit card keeps Armor class / Initiative / Size at the top without a title, then opens the **Speeds** and **Hit points** families (hit dice included in Hit points) with their title centred in a horizontal `border` divider; each titled family is a labelled group (`role="group"` + `aria-labelledby`).
+- **Edit-mode stretch** (decision 2026-11-07, overrides "No holes" fill for edit mode): edit cards keep a fixed spacing between their blocks instead of spreading content over the track height; the 4 edit tiles (passive perception, inspiration, exhaustion, proficiency bonus) stay compact (content at the top, session note right below, no forced bottom alignment). Placement keeps rows balanced so no tall blank area remains: the PC edit first band gives the Character card height to a single flexible row (`1fr`) — the Statistics row at `≥ xl`; at `≥ 3xl` the 4 tiles stack in a single column (2 cols wide) right of the statistics, the freed width widens the Character card (5 cols · Statistics 5 · tiles 2), and the last tile row is the flexible one (skills band from row 5) — so the tiles keep their content height. Proficiencies stays at the bottom of the edit form (full width at `≥ 3xl`).
+- **Tablet / mobile**: same reading order as the DOM; Character, Statistics and Proficiencies take the full width; on tablet Skills, Ability scores, Saving throws and Abilities take half width (see NPC placement), full width below `sm`; PC tiles take half width from `22rem` of available width (large phones, tablet with or without the sidebar) and the full width below, in read and edit modes.
 - **No holes, no empty cards**: grid items stretch to their track height (no `h-fit` on grid children), and **every** card distributes its own content over that height, so no card shows a blank area below its content:
   - Grids of values (ability scores, saving throws) spread their rows evenly over the card height.
   - Lists and label/value stacks (Character, Statistics, Skills, Proficiencies) spread their items from the top to the bottom of the card (first item under the heading, last item at the bottom).
   - Tiles keep the label at the top and push the value (or, in edit mode, the session-only note) to the bottom.
   - Bands are still balanced by placement (multi-column skills list, paired cards of similar size) so the extra spacing stays small.
+- **Skills edit toggles** (decision 2026-11-07): the « half-proficiency » and « expertise » checkboxes of the Skills edit card MUST be checked on open when the sheet already holds a mastery level 1 (half) or 3 (expertise) in `stats.masteries`, including when the form values arrive after mount. They stay manually togglable.
+- **Proficiencies empty states** (read mode, PC and NPC, decision 2026-11-09): an empty list of the Proficiencies card shows a muted text like the senses (« Aucun sens renseigné »): « Aucune langue renseignée », « Aucun outil renseigné », « Aucune arme renseignée », « Aucune armure renseignée » (translated in every locale). Blank entries count as empty. The edit form shows no such text.
+- **Senses edit list** (decision 2026-11-07, revised): the senses list is the **last** block of the Proficiencies edit card (PC and NPC), spans the full width of the card grid and lays its rows in 1 / 2 columns; on very wide cards (`@4xl`, 3-column grid) it sits to the right of Armor on two columns instead of a full-width row. The **Add** button is in the heading row so it never moves down as the list grows. It is **not** bounded or scrollable (an invisible scroll area crops field focus rings and borders). Add scrolls the new row into view and focuses its name field.
 - **No inner scroll** on cards, except the **Abilities** list, which is the only unbounded list: past a maximum height it scrolls inside its card, in read and edit modes (FR-character-list-card). The scroll area is keyboard-focusable and labelled.
   - On the General tab the Abilities list is capped at `20rem` in read **and** edit modes (decisions 2026-11-04: a long list must not stretch the skills band, and the sheet does not grow when toggling edit). An expanded ability form scrolls inside that area. The Combat tab and action lists keep their caps (FR-character-list-card).
 - **Single render per card**: a card MUST be rendered once; responsive placement is done by grid classes, not by rendering the same card twice and hiding one (`hidden sm:flex` duplicates are forbidden). In edit mode this also guarantees one form control per field.
@@ -5593,7 +5812,12 @@ Each initiative tracker row carries:
 - Nominal: PC and NPC General tabs (read and edit) render one grid container whose direct children are the cards, each carrying its slot classes.
 - Edge: slot spans fill every row at each breakpoint (2 / 4 / 12 columns) without an empty cell.
 - Edge: the General Abilities list is capped at `20rem` in read and edit modes; the Combat one keeps the shared caps.
+- Edge: the PC slots (tiles and Proficiencies included) are the same in read and edit modes at every width, and the read grid uses the same row tracks as the edit grid.
+- Edge: below `36rem` of available width, PC tiles are half width from `22rem` (2 × 2, no empty cell) and full width below `22rem`.
 - Edge: Abilities come after Saving throws and before Proficiencies in the DOM, in read and edit modes; the skills band leaves no empty cell at `xl` (Skills 6 · Ability scores 3 + Saving throws 3 · Abilities 6 · Proficiencies 6) and at `3xl` (Skills 6 · Ability scores / Saving throws 3 · Abilities 3); the Combat tab order is unchanged (FR-character-battle-bento-layout).
+- Edge: adding a class when every level is allocated raises the global level (or, at 20, takes one from the highest class); picking a class sets its hit die; each class has exactly one hit dice row.
+- Edge: multiclass edit shows one class panel at a time with one selector button per class; with one class the add button stands in the selector; with two classes it is hidden (no third class).
+- Edge: in edit mode Speeds and Hit points titles sit centred in a divider (labelled groups), and the PC edit grid gives the Character height to one flexible row so the tiles do not stretch.
 - Failure / guard: heading `id`s (`saving-throws-heading`, `skills-heading`, …) and form control `id`s (`proficiency-bonus`, …) appear once in the DOM; every `aria-labelledby` resolves to an existing heading.
 
 **References**:
@@ -5670,19 +5894,22 @@ Each initiative tracker row carries:
 
 - **One card per list** (`docs/design.md` §5.3): the card holds the header and the rows. No separate header card, no card per item, no card per field.
 - **Header** (same for every list): title in the accent color and item count on the left (count shown as a small badge vertically centered on the title); controls on the right: expand/collapse all (read and edit), **Add** (edit). Actions add the usage-type filter (Action / Bonus action / Reaction) under the title. The header always stays outside the rows scroll area.
-- **Rows**: plain rows separated by a divider (`border-b`), hover background, accordion behavior; collapsed rows have a uniform height.
+- **Rows**: plain rows separated by a divider (`border-b`) the hover background fills the row up to its dividers (no gap), accordion behavior; collapsed rows have a uniform height. The hover background covers the whole row line, including the delete button, and the chevron is vertically centered on the row.
 - **Collapsed row anatomy** (read and edit), so key information is visible without opening:
   - Line 1: name (truncated when collapsed, wrapped when expanded).
   - Line 2 (muted, one line): Action → usage type · attack bonus or DC · damage (dice + type, several entries joined by " + ") · range. Ability → short/long rest reset icons · remaining uses `remaining / max` (FR-character-ability-counter-display).
   - Right side: chevron; in edit mode, delete button (accessible name includes the item name or index).
 - **Expanded row, read mode**: description (pre-wrap), then for actions a compact definition list (`Attaque/DD : +5 · Dégâts : 1d8 tranchant · Portée : 1,5 m`) — no nested cards. Abilities keep the **Use** button (FR-character-ability-counter-display) under the description.
 - **Expanded row, edit mode**: the open row is tinted to anchor its form, and the form is split into titled sections separated by a divider, so it reads top-down:
-  - Action: **General** (name — wide — and usage type), **Attack** (attack bonus / DC with its ability suggestions labelled "Suggestions", range — FR-character-action-dual-range — with a labelled text button under the field to add or remove the long range, never an icon-only control), **Damage** (one line per entry: dice, AUTO bonus, type, delete; column labels shown on the first entry only), **Description** (full width).
+  - Action: **General** (name — wide — and usage type), **Attack** (attack bonus / DC with its ability suggestions labelled "Suggestions", range — FR-character-action-dual-range — with a labelled text button under the field to add or remove the long range, never an icon-only control), **Damage** (one line per entry: dice, AUTO bonus, type, delete; every column label is visible on **every** entry, decision 2026-11-07; the AUTO button, when selected, uses the same filled `primary` style as the other selected toggle buttons; the ability suggestions use the same `rounded-[15px]` as the form fields). Spell damage lines follow the same labelling (« Dés », « Dé », « Bonus », « Type » above their field, full names as tooltip / accessible name; FR-character-spell-multi-damage)
+  - **Dice help** (decision 2026-11-07): a small « ? » button next to the damage label (actions: dice column label of the first entry; spells: the « Dégâts » label) opens on click, tap or keyboard a short explanation of the dice notation (« 3d8 = 3 dés à 8 faces · +2 = bonus fixe »). It works the same on desktop and touch devices, has an explicit accessible name and closes with Escape or an outside click.
+  - **Dice suggestions** (actions, free-text dice field): while the field is a dice prefix — an optional count then `d`, optionally followed by digits (`d`, `2d`, `2d1`) — a non-blocking list proposes `d4`, `d6`, `d8`, `d10`, `d12` prefixed by the typed count and filtered by the typed faces. Choosing one (click, tap, arrows + Enter) fills the field and keeps the focus so a bonus can follow; Escape closes the list; any other text stays accepted as typed. Spell damage and healing lines use the same field and suggestions (FR-character-magic-list-card)., **Description** (full width).
   - Ability: **General** (name, description), **Uses** (counter toggle, max uses, current uses — session rules unchanged — and rest resets).
+  - Rest-reset options (short / long): icon, checkbox and label are vertically centered in their tile, and the checkbox shows the pointer cursor like its label (all enabled `Checkbox` controls do).
   - Section titles are small uppercase muted headings (`h3`); field labels stay visible (or screen-reader only when the section title already names the single field).
 - **Add**: appends a new row at the end, expands it, scrolls it into view and moves focus to its name field.
 - **Validation**: a row with an invalid field shows a destructive ring on the row and keeps its errors next to the fields (FR-form-field-validation); the row auto-expands when the form is submitted with errors.
-- **Bounded list, read and edit modes** (FR-character-general-bento-layout, FR-character-battle-bento-layout): the rows area has a max height and scrolls inside the card, so long lists never push the following cards down. Read mode uses the shared bounded height (`28rem`); edit mode uses a taller cap (`min(40rem, 70dvh)`) so an expanded form stays usable. Exception: Abilities on the General tab use `20rem` in both modes (FR-character-general-bento-layout). Exception: from `xl` the Magic tab Spells list fills the remaining panel height instead (FR-character-magic-list-card). Dropdowns of the form (usage type, damage type) render in a portal and are never clipped by the scroll area. Add scrolls the new row into view inside the area; submitting with errors scrolls to the first invalid row.
+- **Bounded list, read and edit modes** (FR-character-general-bento-layout, FR-character-battle-bento-layout): the rows area has a max height and scrolls inside the card, so long lists never push the following cards down. The rows area fills the card height left under the header (never smaller than its card; on the General tab, from `@sheet-md` where the Abilities card is stretched beside Skills, the `20rem` cap gives way to filling the card, the card height staying driven by its neighbours) and keeps a small inner padding so focus and error rings are not cropped. Read mode uses the shared bounded height (`28rem`); edit mode uses a taller cap (`min(40rem, 70dvh)`) so an expanded form stays usable. Exception: Abilities on the General tab use `20rem` in both modes (FR-character-general-bento-layout). Exception: from `xl` the Magic tab Spells list fills the remaining panel height instead (FR-character-magic-list-card). Dropdowns of the form (usage type, damage type) render in a portal and are never clipped by the scroll area. Add scrolls the new row into view inside the area; submitting with errors scrolls to the first invalid row.
 - **Empty list**: the header stays visible (FR-character-detail-view) and the body shows a one-line empty state (e.g. "Aucune action").
 - **Single shared implementation** used by `AbilitiesSection`, `ActionSection`, `AbilitiesUpdateSection` and `ActionUpdateSection`, so both lists cannot drift apart again.
 
@@ -5703,6 +5930,7 @@ Each initiative tracker row carries:
 - Nominal: actions and abilities lists (read and edit) render one card with header + rows and no nested `data-slot="card"` inside rows; collapsed action row shows usage type, attack/DC and damage; collapsed ability row shows remaining uses.
 - Edge: empty list keeps header and shows the empty-state line; Add expands the new row and focuses its name field; long names truncate collapsed and wrap expanded.
 - Failure: a row with an invalid field shows the error ring and its error text; delete button accessible name identifies the item.
+- Dice: `2d` suggests `2d4`…`2d12`, `2d1` suggests `2d10` and `2d12`, `1d6+3` or plain text suggests nothing; the dice help button has an accessible name and opens its explanation.
 
 **References**:
 
@@ -5720,16 +5948,18 @@ Each initiative tracker row carries:
 **Requirements**:
 
 - **Key stats row**: armor class, initiative and size in a 3-column row of equal cells (always one row, so no orphan cell). Each cell: short visible label (muted, small: `CA`, `Init.`, `Taille`) and the value (bold), with the existing icon. Size shows its full localized name (e.g. "Moyenne"), the abbreviation is no longer needed.
-- **Speeds line**: one label/value line `Vitesses : 🏃 9 m · ⛰ 4,5 m · 🌊 9 m` listing only non-zero speeds, each with its icon and an accessible name (e.g. "Vitesse d'escalade 4,5 m"); it wraps like text, never as boxes. Units follow FR-distance-unit-conversion (secondary unit kept when the user enabled both units). When every speed is 0 the line is omitted.
-- **Visual weight**: cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not white pills; values `text-base`/`sm:text-lg`; no "?" tooltip buttons — the visible label replaces them (tooltip texts stay available as accessible names).
+- **Speeds line** (decision 2026-11-13 amended): one label/value line `Vitesses : 🏃 9 m · ⛰ 4,5 m · 🌊 9 m` listing only non-zero speeds, each with its icon and an accessible name (e.g. "Vitesse d'escalade 4,5 m"); it wraps like text, never as boxes. Units follow FR-distance-unit-conversion (secondary unit kept when the user enabled both units). When every speed is 0 the line is omitted. The speeds block MUST be separated from the key stats row by a **thin horizontal line** (`border-t border-border pt-3`, parent `gap-4`).
+- **Visual weight** (functional decision 2026-11-13: tinted cells inside cards read as nested cards, « poupée russe »; amended 2026-11-13): cells are **fact cells** with no background, never a tinted box (`bg-gray-middle-light/*` + radius) nor white pills. **One style everywhere**: cells have **no delimiter** (spacing and typography only), including when they wrap on several rows (« Personnage » facts, appearance, spell traits, PC classes list…); never a vertical rule; values `text-base`/`sm:text-lg`; no "?" tooltip buttons — the visible label replaces them (tooltip texts stay available as accessible names).
 - **NPC passive perception** (General tab only, decision 2026-11-04): a 4th key stat cell « Perc. passive » (Eye icon) next to CA / Init. / Taille; the row shows 2 × 2 cells below `sm` and one row of 4 from `sm`. In edit mode the passive perception override field and its mismatch warning sit at the bottom of the NPC statistics edit card. The Combat tab keeps 3 cells.
-- **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC).
+- **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC). Long rest availability and effects for PC and NPC are owned by FR-character-long-rest.
+- **Short rest dialog — healing line** (decision 2026-11-12): when the PC has hit dice left to spend, the « Hit points recovered: +N » line is always shown below the hit dice section, from the dialog opening, so the layout does not shift. N is the sum of the dice values already entered (empty or invalid entries count as 0), so it reads `+0` before any die is added or filled. Without hit dice to spend the line is not shown. The line is announced politely to assistive technologies (`aria-live="polite"`) when N changes.
+- **Edit mode — hit points fields** (PC and NPC edit forms, decision 2026-11-13): the fields read **current HP, max HP, temporary HP**, in this visual and tab order. Current HP is never above max HP and max HP never below current HP (existing clamp and info toast). When max HP changes to a number while current HP is **empty or equal to the previous max HP** (character at full health, e.g. the 10 / 10 creation defaults), current HP takes the new max value; in that case the max field does not clamp to current HP, so a lower max can be typed digit by digit. Otherwise current HP is left untouched.
 - **Fill** (FR-character-general-bento-layout, FR-character-battle-bento-layout): when the card is stretched, its blocks spread from top to bottom (`justify-between`); the key stats row never leaves a hole on mobile.
 
 **Accessibility (FR-frontend-design)**:
 
 - Each key stat cell is a `group` with an accessible name `label + value` (e.g. "Classe d'armure 15"); speed icons are `aria-hidden` and each speed item has an accessible name.
-- Contrast of muted labels on the tinted cell stays WCAG AA.
+- Contrast of muted labels on the card surface stays WCAG AA; the speeds divider is decorative (meaning carried by the visible label).
 
 **Prohibitions**:
 
@@ -5739,12 +5969,17 @@ Each initiative tracker row carries:
 **Tests**:
 
 - Nominal: PC and NPC cards render exactly three key stat cells (CA, initiative, size) with visible labels, and one speeds line listing non-zero speeds; the NPC General-tab card renders a 4th passive perception cell.
+- Guard (decision 2026-11-13 amended): key stat cells use `FACT_CELL_CLASS` with no row delimiter and carry no `bg-gray-middle-light` background, no `rounded-[10px]` and no vertical rule (`border-l`).
+- Guard: « Personnage » facts, classes and appearance use no horizontal rules between rows.
+- Nominal (decision 2026-11-13 amended): the speeds line sits under `border-t border-border pt-3` below the key stats row.
 - Edge: all speeds 0 → no speeds line; dual units → secondary unit shown in the speed line.
 - Failure: no "?" tooltip buttons and no white pill (`bg-white`) in the card.
+- HP edit fields: PC and NPC forms render current, max, temp in this order; max 10 → 45 with current 10 sets current to 45; current empty takes the new max; current 7 with max 10 stays 7 when max becomes 45, and max cannot go below 7.
+- Short rest: opening the dialog with hit dice left shows « +0 »; filling one die updates N; an empty or invalid die counts as 0; no hit dice left → no healing line.
 
 **References**:
 
-- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`, `StatisticsUpdate.tsx`, `NpcStatisticsUpdate.tsx`
 - `docs/functional-rules.md` — FR-distance-unit-conversion, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-frontend-design
 
 ---
@@ -5760,7 +5995,7 @@ Each initiative tracker row carries:
 - **Placement intent**:
   - `≥ sm` (functional decision 2026-11-04: a full-width strip took too much room for five numbers): two equal columns (`sm` 2 + 2 of 4, `xl` 6 + 6 of 12). Left column: Coins, then Equipment right under it. Right column: Treasure, spanning both rows (explicit start `col 2 / row 1`, `row-span-2`; DOM order unchanged, no `order-*`). Rows are `auto 1fr`: the Coins row keeps its content height; when Treasure grows, only the Equipment row (and card) grows with it.
   - `< sm`: every card full width.
-- **Coins card, read mode** (same visual language as FR-character-statistics-card): the five coins (pp, gp, ep, sp, cp, in this order) are five equal cells on **one row at every breakpoint**, sized for the half-width card (no orphan cell). Each cell: coin icon, value (bold), short visible label (`po`, `pa`…, muted small). Cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not bordered pills. Values ≥ 1 000 are abbreviated (`formatCompactNumber`); the full value stays available as the cell accessible name and, outside session, as a tooltip (`InfoTooltip`, FR-tooltip-accessibility) only when the displayed value is abbreviated (in session, the coin dialog shows the full current value).
+- **Coins card, read mode** (same visual language as FR-character-statistics-card): the five coins (pp, gp, ep, sp, cp, in this order) are five equal cells with no delimiter nor background (fact cells). **Responsive layout** (decision 2026-11-13 amended, card is a size container via `GeneralSectionCard`): **from `@sm` card width** → one row of five when it fits; **below `@sm`** only → a `grid-cols-3` grid (rows of 3 then 2, no orphan cell). Each cell: coin icon, value (bold), short visible label (`po`, `pa`…, muted small), not bordered pills nor tinted boxes. In session, the coin buttons show a background only on hover (`hover:bg-gray-middle-light/50`) and a visible focus ring. Values ≥ 1 000 are abbreviated (`formatCompactNumber`); the full value stays available as the cell accessible name and, outside session, as a tooltip (`InfoTooltip`, FR-tooltip-accessibility) only when the displayed value is abbreviated (in session, the coin dialog shows the full current value).
 - **Coins card, read mode in session** (behavior unchanged): when the sheet allows in-session updates, each cell is a button that opens the existing coin dialog (subtract / add / set, value floored at 0, error toast on failure). Outside session, cells are not interactive and not focusable.
 - **Equipment and Treasure cards, read mode**: free text with `whitespace-pre-wrap wrap-break-word`; an empty value shows the existing muted empty-state line (`noEquipment`, `noTreasure`). Long text is **bounded** (`BENTO_BOUNDED_LIST_CLASS`: max height + inner scroll, focusable, labelled by the card heading) so a long inventory does not push the page; the two paired cards end at the same height past the max height. In session, the existing **Modifier** button stays in the card header and the inline editor (textarea + Cancel / Save) replaces the text in place; only one text field is edited at a time.
 - **Edit mode**: same cards, same order, same zones as read mode so the tab does not reshuffle when toggling edit.
@@ -5812,7 +6047,7 @@ Each initiative tracker row carries:
   - `≥ xl`: Band 1: Appearance (12, full width). Band 2: Personality traits, Ideals, Bonds, Flaws (3 each). Band 3: Allies and organizations (4) · Backstory (8).
   - `sm` → `xl`: Appearance full width; the four personality cards half width (two rows of two); Allies and organizations and Backstory full width.
   - `< sm`: every card full width.
-- **Appearance card** (read mode): the six fields (eyes, age, skin, height, weight, hair) are label/value cells using the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), small muted uppercase label with its icon, value below. Cells follow the card width (container queries): 2 columns in a narrow card, 3 from `@sm`, all 6 on one row from `@3xl`. The card is alone on its band, so its height is its content (no stretch, no blank area). Long values wrap (`wrap-break-word`), are never truncated and never overflow. Height and weight follow FR-preferred-measurement-unit / FR-distance-unit-conversion (secondary unit kept). The size category next to the height shows its full localized name (e.g. "Moyenne") instead of an abbreviation in a raw tooltip. An empty value shows a muted dash (`—`) with an accessible "not specified" name.
+- **Appearance card** (read mode): the six fields (eyes, age, skin, height, weight, hair) are label/value stacked fact cells (FR-character-statistics-card, decision 2026-11-13: line between rows, no background), small muted uppercase label with its icon, value below. Cells follow the card width (container queries): 2 columns in a narrow card, 3 from `@sm`, all 6 on one row from `@3xl`. The card is alone on its band, so its height is its content (no stretch, no blank area). Long values wrap (`wrap-break-word`), are never truncated and never overflow. Height and weight follow FR-preferred-measurement-unit / FR-distance-unit-conversion (secondary unit kept). The size category next to the height shows its full localized name (e.g. "Moyenne") instead of an abbreviation in a raw tooltip. An empty value shows a muted dash (`—`) with an accessible "not specified" name.
 - **Appearance description** (read mode): below the cells, a sub-section with a small uppercase muted heading `h3` (« Description », `history-description-heading`), then the free text over the full card width, with the same bounded / empty-state behavior as the text cards.
 - **Text cards** (read mode): free text with `whitespace-pre-wrap wrap-break-word`; long text is **bounded** (`BENTO_BOUNDED_LIST_CLASS`: max height + inner scroll, focusable, labelled by the card heading); an empty value shows a muted empty-state line (i18n `characterDetail.history.notSpecified`, en/fr/es) instead of a blank card.
 - **Edit mode**: same cards, same order, same zones as read mode so the tab does not reshuffle when toggling edit.
@@ -5863,7 +6098,7 @@ Each initiative tracker row carries:
 - **Layout** (same grid and tokens as the other tabs: 2 / 4 / 12 columns, gap `gap-3 md:gap-4`, `GeneralSectionCard`, accent `pink`):
   - Order, all full width at every breakpoint: the **block selector** (when shown), then Spellcasting as a **compact band** (heading and key stats on as few lines as the width allows), then Spells. The selector sits **above** the Spellcasting card, outside it, because it switches both cards (functional decision 2026-11-01). The Spellcasting card MUST NOT hold the slot list nor stretch to the height of the spell list (functional decision 2026-11-01: the side card took too much space).
   - No inner screen switching: the « back to list » view and `showMobileDetails` are removed in read and edit modes; the list is never hidden to show a spell.
-  - **Wide mode** (functional decisions 2026-11-04: rows collapsed by default made spells look hidden and secondary; edit mode follows the same layout): from `xl`, in **read and edit modes**, the Spellcasting band and the Spells list stack in a left column of the same width (`xl:col-span-5`, decision 2026-11-04) and a **spell detail panel** (`xl:col-span-7`) spans both rows on the right; the block selector (when shown) stays full width above. The Spells list and the panel fill the remaining panel height and scroll inside. List rows become selectable rows (same name / summary / trailing tags, prepared marker and, in edit mode, delete button and error ring; no chevron, no expand / collapse all): selecting a row shows that spell in the panel. The first spell in display order is selected by default; switching spellcasting block selects its first spell again. The selected spellcasting block and spell are **kept when switching between read and edit modes** (functional decision 2026-11-04: entering edit mode used to jump back to the first spell). The panel heading is the spell name, then the same content as an expanded read row (traits, description, in-session cast controls; its level / uses cells give the group) or, in edit mode, the spell form (same sections as an expanded edit row). Selection never moves focus. In wide edit mode: « Add a spell » and Codex import select the new spell (instead of expanding it) with the same focus rules; deleting the selected spell selects the spell that receives focus; changing a spell's level moves its row to the new group while the panel keeps the form and the focus; submitting with errors selects the first invalid spell and scrolls its row into view. Below `xl`, rows expand in place as described below.
+  - **Wide mode** (functional decisions 2026-11-04: rows collapsed by default made spells look hidden and secondary; edit mode follows the same layout): from `xl`, in **read and edit modes**, the Spellcasting band and the Spells list stack in a left column of the same width (`xl:col-span-5`, decision 2026-11-04) and a **spell detail panel** (`xl:col-span-7`) spans both rows on the right; the block selector (when shown) stays full width above. The Spells list and the panel fill the remaining panel height and scroll inside. List rows become selectable rows (same name / summary / trailing tags, prepared marker and, in edit mode, delete button and error ring; no chevron, no expand / collapse all): selecting a row shows that spell in the panel. The first spell in display order is selected by default; switching spellcasting block selects its first spell again. The selected spellcasting block and spell are **kept when switching between read and edit modes**, including when saving the sheet returns to read mode (functional decisions 2026-11-04: entering edit mode used to jump back to the first spell; 2026-11-12: saving used to jump back to the first spell). The panel heading is the spell name (with the in-session cast controls at the end of its line), then the same content as an expanded read row (traits, description; its level / uses cells give the group) or, in edit mode, the spell form (same sections as an expanded edit row). Selection never moves focus. In wide edit mode: « Add a spell » and Codex import select the new spell (instead of expanding it) with the same focus rules; deleting the selected spell selects the spell that receives focus; changing a spell's level moves its row to the new group while the panel keeps the form and the focus; submitting with errors selects the first invalid spell and scrolls its row into view. Below `xl`, rows expand in place as described below.
   - **Height fill from `xl`** (functional decision 2026-11-04, exception to the bounded caps of FR-character-list-card): from `xl` the Magic tab panel fills the remaining height of the sheet scroll area (what is left under the app header / navbar, the sheet header and above the sheet footer — derived from the layout, never a hard-coded viewport offset), with a `28rem` minimum below which the sheet scrolls; the grid takes that height, the selector and Spellcasting rows keep their content height and the Spells card fills the remaining height (read and edit). Its rows area absorbs that height and scrolls inside the card (header outside the scroll, sticky level headers unchanged). Below `xl` the shared caps stay (`28rem` read, `min(40rem, 70dvh)` edit) and the page scrolls.
 - **Spellcasting card** (one per active spellcasting block):
   - **Block selector** (above the card, see Layout) when the character has several spellcasting blocks, or in edit mode when a class can still be added: a segmented toggle (FR-frontend-button-system: active = primary white, inactive = secondary) labelled with the class name and level (PC) or the block name (NPC). Edit mode ends the selector with « Add a class »; « Remove this class » stays in the Spellcasting card header (existing rules on available classes unchanged).
@@ -5876,8 +6111,8 @@ Each initiative tracker row carries:
   - **Level groups inside the single list**: rows are grouped by level (cantrips, level 1…9) or, for innate blocks, by uses per day. Each group starts with a **group header** (`h3`, tinted bar, sticky at the top of the scroll area while its rows are visible) so spells are easy to scan by level. A group appears only when it has at least one spell (FR-magic-spell-level-categories). Groups are not collapsible; rows are.
   - **Slots on the group header** (by-level blocks, level ≥ 1): read mode shows the castable count `remaining / total` next to the level name (cantrips show « ∞ »); edit mode shows the `total` number input there (`used` stays driven by casting and rests, as today). **Innate blocks**: each spell row shows its own `used / uses per day` counter.
   - **Collapsed row**: line 1 the name (« New spell » when empty); line 2 the key traits as **small pills** that wrap instead of being truncated (functional decision 2026-11-04: the muted ` · ` line was cut and hard to read in the narrow list): casting time · range · effect dice (damage entries joined with ` + ` without their type, FR-character-spell-multi-damage, else healing); innate blocks add the `used / uses per day` pill. School and damage types stay in the details. Right side: « Concentration » text tag when the spell requires it, prepared marker for prepared classes (level ≥ 1), chevron; edit mode adds the delete button.
-  - **Expanded row, read mode** (same content in the wide read panel): first, when the spell has damage or healing, a **damage cell** (functional decision 2026-11-04): same cell style as the traits, placed first, on the **full line**, entries side by side (dice formula + damage type as a muted text pill, type shown as entered, first letter capitalized) and wrapping to the next line when there are many. Then the other key traits in the same definition list of small tinted cells, label above value, empty traits hidden. Cells are laid out in **wrapping lines without holes**, whatever is filled in (functional decision 2026-11-04: a fixed-column grid left gaps): short traits (level, school, casting time, range, attack bonus, uses per day for NPC) share lines and grow to fill them (minimum width about `8.5rem`); then **duration, components and healing** start a line of their own together (decision 2026-11-04), growing the same way; classes take a full line at the end, then the **description** (pre-wrap) in its own section, separated by a rule and introduced by a visible « Description » label, so it reads clearly apart from the traits (functional decision 2026-11-04). In session, the existing **cast controls** (slot choice with upcast, cantrip cast, concentration prompt — FR-tracker-concentration) sit under the description; their behavior and session messages are unchanged.
-  - **Expanded row, edit mode** (tinted row, `ListFormSection` groups): **General** (name — wide —, level, school, effect type; NPC innate: uses per day), **Casting** (casting time, range, duration, components), **Effects** (damage entries — one line each, add / remove, FR-character-spell-multi-damage —, healing dice). Each damage or healing line **reads like its formula** (functional decision 2026-11-04: separate labelled fields were hard to understand): `[dice count] d [die ▾] + [bonus]`, then for damage the damage type field and the remove button at the end of the line; « d » and « + » are shown between the fields (decorative), each field keeps an accessible name (count, die, bonus, damage type), placeholders never look like values (no « 8 » / « d6 » / « 0 »), and a muted preview « = 8d6+2 Feu » under the line shows the resulting formula once dice are set, **Description** (full width).
+  - **Expanded row, read mode** (same content in the wide read panel): first, when the spell has damage or healing, a **damage cell** (functional decision 2026-11-04): same cell style as the traits, placed first, on the **full line**, entries side by side (dice formula + damage type as a muted text pill, type shown as entered, first letter capitalized) and wrapping to the next line when there are many. Then the other key traits in the same definition list of stacked fact cells (FR-character-statistics-card, decision 2026-11-13: line between rows, no background), label above value, empty traits hidden. Cells are laid out in **wrapping lines without holes**, whatever is filled in (functional decision 2026-11-04: a fixed-column grid left gaps): short traits (level, school, casting time, range, attack bonus, uses per day for NPC) share lines and grow to fill them (minimum width about `8.5rem`); then **duration, components and healing** start a line of their own together (decision 2026-11-04), growing the same way; classes take a full line at the end, then the **description** (pre-wrap) in its own section, separated by a rule and introduced by a visible « Description » label, so it reads clearly apart from the traits (functional decision 2026-11-04). In session, the existing **cast controls** (slot choice with upcast, cantrip cast, concentration prompt — FR-tracker-concentration) are aligned with the spell name (decision 2026-11-09, replaces « under the description »): in the wide read panel they sit at the end of the panel heading line (right of the spell name, outside the scrolling details); in an expanded row (below `xl`, the name being the row trigger, which cannot hold a button) they come first in the details, right-aligned. Out of session they leave no empty space. Their behavior and session messages are unchanged.
+  - **Expanded row, edit mode** (tinted row, `ListFormSection` groups): **General** (name — wide —, level, school, effect type; NPC innate: uses per day), **Casting** (casting time, range, duration, components), **Effects** (damage entries — one line each, add / remove, FR-character-spell-multi-damage —, healing dice). Each damage or healing line is entered **like a combat action damage line** (functional decision 2026-11-09, replaces the `[count] d [die ▾] + [bonus]` fields of 2026-11-04): one free-text **dice field** (`8d6+2`, with the same non-blocking dice suggestions and dice help as actions), then for damage the damage type field and the remove button, **always on one line** in this order: dice · damage type · delete (functional decision 2026-11-09: the type no longer wraps under the dice on narrow widths). There is no AUTO ability bonus on spells (FR-character-spell-multi-damage). The typed formula is stored in the structured fields (`diceCount`, `diceType`, `bonus`); spaces are ignored and the die must be one of d4, d6, d8, d10, d12, d20, d100 (`d%` = d100). A non-empty text that is not a valid formula is shown as an error on leaving the field (`aria-invalid` + linked message with an example) and is not stored (the entry stays incomplete, hence hidden in view / PDF); a valid or emptied text clears the error. Loading or importing a spell shows its stored dice as a formula in the field, **Description** (full width).
   - **Preparation mode** (PC prepared classes): each level ≥ 1 row shows a labelled prepare toggle; the max prepared limit is enforced as today (blocked toggle with its explanation).
 - **Focus and stable rows (fixes the broken autofocus)**:
   - Expanding a row never moves focus by itself; focus stays on the row trigger.
@@ -5906,13 +6141,16 @@ Each initiative tracker row carries:
 **Tests**:
 
 - Nominal: from `xl` the Magic grid takes the panel height with a last `minmax(0, 1fr)` row for the Spells card, whose rows area fills the card (read and edit).
-- Nominal: read and edit render one grid with the Spellcasting and Spells cards; when shown, the block selector is the grid child before the Spellcasting card; spells are rows grouped by level with only non-empty groups; collapsed row shows school · casting time · range · damage; expanded read row shows the definition list and, in session, the cast controls.
+- Nominal: read and edit render one grid with the Spellcasting and Spells cards; when shown, the block selector is the grid child before the Spellcasting card; spells are rows grouped by level with only non-empty groups; collapsed row shows school · casting time · range · damage; expanded read row shows, in session, the cast controls first (right-aligned), then the definition list; the wide read panel shows the cast controls on its heading line, next to the spell name.
 - Edge: the grid rows match the presence of the block selector; below `xl` the Spells rows keep the shared read / edit caps.
 - Nominal (wide read mode): from `xl` read mode renders Spellcasting and the Spells list in a 5-column left column and the detail panel as a sibling grid card on 7 columns spanning both rows; the first spell in display order is shown by default; rows are selectable (`aria-pressed`), without accordion or expand / collapse all.
 - Edge (wide read mode): an empty block shows no detail panel; a selected index out of range falls back to the first spell.
 - Nominal (wide edit mode): from `xl` edit mode renders Spellcasting and the Spells list on the left 5 columns and the form of the first spell in the right panel; rows are selectable with their delete buttons; only one spell form is rendered.
 - Nominal (effect cell): damage entries are rendered side by side (formula + type pill) in a full-line cell placed first; short traits grow to fill their lines; duration, components and healing share a line of their own; classes take the last full line.
 - Edge (effect cell): a legacy damage string is parsed into formula + type; a spell without damage or healing shows no effect cell.
+- Nominal (spell dice field): typing `8d6+2` in a spell damage line stores `diceCount 8`, `diceType d6`, `bonus 2`; a stored entry is shown as `8d6+2` in the field; healing uses the same field.
+- Edge (spell dice field): `2d6 - 1` and `1d%` are accepted (`bonus -1`, `d100`); emptying the field clears the dice.
+- Failure (spell dice field): `abc` or `2d7` shows the linked error on blur and stores no dice.
 - Edge: « Add a spell » expands the new row and focuses its name field without any prior selection; changing a spell level keeps the same row element expanded under its new group; innate block groups by uses per day; several spellcasting blocks switch through the toggle.
 - Failure / guard: list cards without the fill option (Actions, Abilities) stay bounded at every breakpoint.
 - Failure / guard: an invalid spell gets the error ring; heading ids are unique, every `aria-labelledby` resolves, no positive `tabindex`, no nested `data-slot="card"` inside rows. Focus moves (Add, Codex import, Delete, level change) are checked manually: the web client has no DOM test runner.
@@ -5943,7 +6181,9 @@ Each initiative tracker row carries:
 - **Frame**: tab bar, tab content, footer actions bar (the sheet has no identity header), using the same containers, paddings and scroll area as the sheet, so the page does not jump when the data arrives.
 - **Tab content**: placeholder cards placed with the tab's own bento slots (`generalBentoLayout`, `battleBentoLayout`, `inventoryBentoLayout`, `historyBentoLayout`, `spellList`) for the guessed kind, in read mode. Card shapes match the sheet cards (`bg-card`, same radius and padding as `GeneralSectionCard`), headings tinted with the tab domain color; inner placeholders use the existing `Skeleton` primitive. Companions tab: a simple list of card placeholders.
 - **States**: the skeleton covers every non-ready state the spinner covered (auth loading, user transition, fetch in progress, error pending redirect, missing character pending redirect). The error / redirect behavior is unchanged.
+- **Refresh of a displayed sheet** (functional decision 2026-11-12): refetching the sheet already displayed (after saving, real-time sync) MUST NOT show the skeleton nor unmount the sheet: tab state (e.g. the selected spell, FR-character-magic-list-card) is kept. A failed refresh keeps the displayed sheet, except an access denial, which keeps the existing redirect behavior. Only a first load or a switch to another character shows the skeleton.
 - **Motion**: the pulse animation is disabled under `prefers-reduced-motion` (static placeholders).
+- **Companions tab loading**: once the sheet is shown, the Companions tab still fetches its linked NPCs; while it does, the tab shows the same Companions placeholders as the sheet skeleton (one shared component), without the two action button placeholders when liaison actions are disabled (GM in session) — never a spinner.
 - **Single source**: one skeleton component shared by both routes; no duplicated markup per route.
 
 **Accessibility (FR-frontend-design)**:
@@ -5963,7 +6203,9 @@ Each initiative tracker row carries:
 
 - Nominal: the variant resolver returns NPC + requested tab on the campaign route and PC + requested tab on the player space route.
 - Edge: missing or unknown `tab` → General; `tab=companions` → PC with 6 tabs; `tab=companions` on the campaign route → PC (companions kept).
-- Failure / guard: each tab skeleton uses only slots defined in the matching bento layout file; the skeleton exposes `role="status"`, `aria-busy` and no focusable element. Visual fidelity and reduced motion are checked manually (the web client has no DOM test runner).
+- Nominal / edge (refresh): refetching the loaded character is a background refresh (no loading state); a first load or another character id shows the skeleton.
+- Failure (refresh): a failed background refresh keeps the sheet (no error state) unless access is denied.
+- Failure / guard: each tab skeleton uses only slots defined in the matching bento layout file; the skeleton exposes `role="status"`, `aria-busy` and no focusable element. The Companions tab loading skeleton exposes `role="status"`, `aria-busy`, no focusable element, and the action placeholders only when liaison actions are enabled. Visual fidelity and reduced motion are checked manually (the web client has no DOM test runner).
 
 **References**:
 
@@ -6024,14 +6266,14 @@ Each initiative tracker row carries:
 
 - **Scope**: read mode of `PlayerGeneralTabContent` and `NpcGeneralTabContent`. Card slot, heading (« Personnage », accent color), avatar placement and edit mode are unchanged (FR-character-general-bento-layout, FR-character-detail-view).
 - **Level 1 — Name**: first name + last name on one line, the most prominent text of the card (`text-lg sm:text-xl font-bold`). The nickname (`surname`), when present, sits right below in muted italic between « ». No visible « Prénom / Nom / Surnom » labels.
-- **Long names** (functional decision 2026-11-04, touch compromise): on devices with hover (`@media (hover: hover)`), the name line and the nickname are each truncated on one line with an ellipsis, and their full text is exposed in a native `title` shown on hover. On devices without hover (touch), they are **not** truncated and wrap (`wrap-break-word`), so the full name stays readable without a tooltip (FR-tooltip-accessibility). Truncation is visual only: the full text stays in the DOM for screen readers.
-- **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell uses the statistics card cell style (design.md §5.3.4: `bg-gray-middle-light/50`, `rounded-[10px]`, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary line:
-  - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. 2 × 2 cells; when an odd number of cells is shown (an empty value is not rendered), the last one spans the whole row so no empty slot suggests a missing fact.
-  - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment. Two equal columns.
+- **Long names** (functional decision 2026-11-12, replaces the 2026-11-04 touch compromise): on every screen size, the name line and the nickname are each clamped to **two lines** with an ellipsis (`TruncatedText`, `lines={2}`). When — and only when — the text is actually cut, its full value is shown in the app tooltip (`TooltipContent`, `truncatedTextTooltipClassName`) on mouse hover, and toggled by a tap on touch devices (the name is not interactive, so the tap has no other effect; FR-tooltip-accessibility). Text that fits shows no tooltip and no `cursor-help`. Truncation is visual only: the full text stays in the DOM for screen readers. No native `title` attribute.
+- **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell is a stacked fact cell (design.md §5.3.4, decision 2026-11-13: line between rows, no left rule, no background, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary info. The secondary info sits **on the value line**, right after the value (smaller, muted, normal weight), wrapping only when too long, so every cell is two lines (label + value) and cells side by side keep the same height (decision 2026-11-13: a 3-line cell next to a 2-line one looked uneven):
+  - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. **Full card width** below the name/avatar row: **two columns** whenever at least two cells are shown (`denseColumns` / `grid-cols-2`; odd last cell spans the row). Single visible cell stays one column.
+  - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment · « Facteur de puissance » → formatted challenge rating (`1/4`, `2`…), « X XP » as secondary line. Same two-column full-width grid as the PC. The challenge rating cell is always rendered (CR `0` included).
   - Alignment and background live in this card (decision 2026-11-04): they are identity data and no longer get their own General-tab tiles, which stretched to their row height for a single value. In edit mode their fields (alignment select, background combobox) sit in the « Personnage » edit card, after race and level and **before the classes**.
-  Empty secondary lines are omitted; a cell whose value is empty is not rendered.
-- **Level 3 — Classes (PC only)**: small uppercase muted label « Classes », then one plain row per class (`bg-gray-middle-light/50`, `rounded-[10px]`, same cell style as the statistics card, design.md §5.3.4): class name in bold + a level badge, subclass in muted text under the class name when set. This replaces both the « Classes : » line and the « Sous-classe de X : » lines (each class is shown once). The block is hidden when the PC has no class.
-- **Layout**: only the name block (level 1) sits next to the avatar; key facts and classes take the **full card width** below it (no empty column under the avatar).
+  Empty secondary info is omitted; a cell whose value is empty is not rendered. « secondary line » below means this inline secondary info.
+- **Level 3 — Classes (PC only)**: small uppercase muted label « Classes », then one plain row per class, rows separated by a thin line (design.md §5.3.4, decision 2026-11-13: no left rule, no background): class name in bold + a level badge, subclass in muted text under the class name when set. This replaces both the « Classes : » line and the « Sous-classe de X : » lines (each class is shown once). The block is hidden when the PC has no class.
+- **Layout**: only the name block (level 1) sits next to the avatar (reserved nickname min-height when absent); key facts (level 2) use the **full card width** below that row (two-column fact grid when possible — same `denseColumns` helper as Companions, but **not** stacked under the surname in the avatar column). **Classes** (level 3, PC only) stay **full card width** below the facts.
 - **Bento fill**: the PC card spans two rows; name and key facts stay at the top and the classes block is pushed to the bottom (`justify-between`), so the card has no blank bottom (FR-character-general-bento-layout).
 - **Style**: only documented tokens (design.md §2, §4); no new colors, no nested cards.
 
@@ -6046,21 +6288,25 @@ Each initiative tracker row carries:
 
 - Flat `Label : value` rows of identical weight for the identity.
 - Showing a class twice (classes line + subclass line).
-- Truncating the name on touch devices, or truncating it without a `title` carrying the full text.
+- Truncating the name or nickname without the app tooltip carrying the full text, or opening that tooltip when nothing is cut.
+- Clamping the name differently by screen size or pointer type.
 - Fixed heights or inner scroll on the card.
 
 **Tests**:
 
 - Nominal: PC with name, nickname, race/subrace, level/XP and two classes renders the full name, the nickname, two fact cells (race, level) and two class rows with their subclass.
 - Edge: no last name / no nickname / no subrace / class without subclass → the part is omitted (no empty secondary line, no empty parentheses); NPC renders name + one type cell and no classes block.
-- Edge: a long name and nickname carry their full text in `title` and are truncated only under the hover media variant (wrap otherwise).
+- Edge: a long name and nickname are clamped to two lines on every screen size (`line-clamp-2`, no hover-only variant) and carry no native `title`; the tooltip content is the full text.
+- Edge: a name that fits shows no `cursor-help` and its tooltip cannot open; a touch tap on a cut name toggles the tooltip (`TruncatedText` tests).
+- Nominal: NPC with type, CR `1/4` and 50 XP renders a « Facteur de puissance » cell with `1/4` and « 50 XP » as secondary line; NPC with CR 0 still renders the cell (`0`, « 0 XP »).
 - Failure / guard: PC with an empty class list renders no classes block; the `sr-only` labels are present for the identity fields.
 
 **References**:
 
 - `services/web/client/src/components/character/tabContents/general/view/PlayerGeneralTabContent.tsx`
 - `services/web/client/src/components/character/tabContents/general/view/NpcGeneralTabContent.tsx`
-- `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4
+- `services/web/client/src/components/ui/truncated-text.tsx`
+- `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4, §6.4
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-detail-view, FR-frontend-design
 
 ---
@@ -6200,3 +6446,142 @@ Guards: welcome is never returned when a campaign or a Player-space character ex
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`
 - `docs/design.md` §5.5
 
+
+---
+
+## FR-web-first-load-performance: First-Load Weight of the Web Client and SSO Login Page
+
+**Rule**: On a first visit over a slow network, the web client and the SSO login page MUST NOT ship code or assets that the displayed screen does not need. Secondary dialogs and edit-only forms are loaded on demand; the SSO login page loads only the Chariot theme stylesheet; static brand images are optimized. The authentication flow itself (Keycloak `onLoad: "login-required"`) is unchanged. The round trip app → SSO → app on slow networks is covered by the sub-section *Slow-network authentication round trip* below.
+
+**Scope**: production build of `services/web/client` (routes under `/[locale]`) and the `chariot` Keycloak login theme. Measured baseline (prod, 2026-11-03): `/fr` ≈ 595 KB transferred JS+CSS; Keycloak login page ≈ 235 KB transferred, of which ≈ 202 KB PatternFly.
+
+**Requirements**:
+
+1. **On-demand dialogs (layout)** — The following dialogs MUST NOT be part of the initial JS of any `/[locale]` route; their code MUST be fetched only when the user opens them (or on hover/focus of their trigger as a prefetch):
+   - Session community library dialog (Header button).
+   - Character sheet PDF export dialog (sidebar, both lists).
+   - Release notes modal (loaded only when there are unseen release notes to show).
+   - Duplicate character, delete player with companions, and join session dialogs (sidebar).
+2. **On-demand edit forms (character sheet)** — Character sheet tab edit forms (general, battle, magic, inventory, history, for players and NPCs) and the Codex spell search dialog MUST be fetched only when the user enters edit mode or opens the search. The read-only view of the sheet MUST NOT depend on them.
+3. **Loading feedback** — While an on-demand dialog or edit form is being fetched, the trigger or target area MUST expose a visible, accessible loading state (`aria-busy` or a status region). A fetch failure MUST show a toast and leave the screen usable (no blank page, the trigger can be retried).
+4. **Behavior parity** — Opening, closing, focus management (focus moves into the dialog, returns to the trigger on close, Escape closes), and the data shown by each dialog/form MUST be identical to the pre-change behavior.
+5. **SSO preconnect** — The app layout MUST declare a `preconnect` hint to the configured Keycloak origin (`NEXT_PUBLIC_KEYCLOAK_URL`) so the connection is opened while the app loads.
+6. **Login page stylesheet** — The `chariot` login theme MUST NOT load the Keycloak common PatternFly stylesheets (`stylesCommon`); all login theme pages (login, register, reset password, update password, error/info messages) MUST render correctly with the theme stylesheet only.
+7. **Brand images** — `favicon.svg` and `logo.svg` (web client `public/` and login theme) and the login theme `background.svg` MUST be optimized without visible change (including the favicon light/dark variant).
+8. **Budget** — After the change, the initial JS+CSS of `/[locale]` (outside character sheet routes) MUST be at least 25 % smaller (gzip) than the measured baseline; the login page assets MUST transfer less than 50 KB.
+
+**Prohibitions**:
+
+- Switching Keycloak initialization to `check-sso` / silent iframe (measured slower on high-latency networks and worse for users without an SSO session).
+- Changing the post-login return URL behavior (FR-codex-share-link-preselection, FR-post-auth-navigation).
+- Changing session/WebSocket logic (`sessionSocketPool`, `useSessionValidation`, gateway handlers, battle/sheet sync) as part of this rule (separate, high-attention domain). Deferring the mount of the authenticated shell that contains the session clients (Requirement 11) is allowed; their behavior is not.
+- Persisting tokens (access or refresh) in browser storage to skip the SSO redirect.
+- Server-side session / BFF architecture (separate rule if pursued).
+
+**Tests**:
+
+- Nominal: each listed dialog opens from its trigger, shows the same content as before, and closes with focus returned to the trigger.
+- Nominal: entering edit mode on a character sheet tab shows the edit form; leaving edit mode returns to the view.
+- Edge: opening a dialog twice quickly renders it once (no duplicate fetch side effects).
+- Edge: the release notes modal still opens automatically after login when unseen notes exist, and is not fetched when none exist.
+- Failure: a failed chunk fetch shows an error toast, the page stays usable, and a second click retries.
+- Build check: a production build report shows none of the listed dialog/form modules in the initial chunks of `/[locale]`.
+
+**References**:
+
+- `services/web/client/src/app/[locale]/layout.tsx`
+- `services/web/client/src/components/layout/Header.tsx`, `services/web/client/src/components/layout/SessionCommunityLibraryButton.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`, `services/web/client/src/components/layout/Sidebar/CharactersWithoutGroupList.tsx`, `services/web/client/src/components/layout/Sidebar/ActionButton.tsx`
+- `services/web/client/src/components/ReleaseNotesProvider.tsx`
+- `services/web/client/src/components/character/tabContents/**`
+- `services/sso/keycloak/themes/chariot/login/theme.properties`
+- `docs/functional-rules.md` — FR-codex-share-link-preselection, FR-post-auth-navigation, FR-frontend-design
+
+### Slow-network authentication round trip
+
+The path app → Keycloak login page → back in the app MUST use as few sequential round trips and as little blocking code as possible. Authentication model (`login-required`, PKCE, tokens in memory only), the auth skeleton (FR-auth-loading-skeleton) and the destination priority (FR-post-auth-navigation) are unchanged.
+
+**Reference profile**: 400 kbps down / 400 kbps up / 2000 ms RTT, cold cache, against a production build (`next build && next start` locally, and production). `next dev` measurements are not a reference.
+
+**Requirements**:
+
+9. **Measurement** — A reproducible script (Playwright, throttled at the reference profile) records: time to Keycloak redirect, time to login page rendered, time from login submit to first meaningful content (destination page with its data). Baseline and post-change values are reported in the pull request.
+10. **CORS preflight caching** — Every API reached directly by the browser with an `Authorization` header (gateway and any other cross-origin API) MUST return `Access-Control-Max-Age` (target 7200 s) on preflight responses.
+11. **Auth gate first** — The initial JS of any `/[locale]` route MUST contain only Keycloak initialization and the auth skeleton (FR-auth-loading-skeleton). The authenticated shell (Redux store and persistence, sidebar, header, session/sheet sync clients, post-login navigator, release notes, locale syncs, toasts) MUST be fetched once authenticated; on the return from Keycloak, its download MUST start in parallel with the authorization code exchange. Modules only needed on logout (persisted-state purge) are loaded on demand.
+12. **API preconnect** — In addition to Requirement 5, the layout MUST declare a `preconnect` hint to the API origin (`NEXT_PUBLIC_API_URL`).
+13. **Post-login resolution** — Destination requests are issued in parallel (FR-post-auth-navigation); data not needed to decide the destination (sidebar NPC lists) MUST NOT delay the navigation; the destination route SHOULD be prefetched as soon as it is known.
+14. **No duplicate startup calls** — During the first authenticated render, the same endpoint with the same parameters MUST NOT be requested more than once by different components.
+15. **Login page first paint** — The login theme renders without waiting for a non-critical request: critical CSS inlined or a single stylesheet; the background shows its solid/gradient fallback immediately and the image loads without blocking; `favicon.svg` and `logo.svg` (login theme and web client) reduced to the path precision that keeps rendering unchanged (pixel comparison at 1× and 3×, light and dark), with duplicated variants factored; icon fonts unused by the theme pages are not referenced. Existing login accessibility (password toggle `aria-pressed`, visible focus) is unchanged.
+16. **Dev environment** — The dev Keycloak caches theme static resources by default; disabling it for theme work is an explicit opt-in.
+17. **Budget** — At the reference profile (no typing time), against the Requirement 9 baseline: time to Keycloak redirect −35 % or better; login page rendered −35 % or better; login submit → first meaningful content no slower than the baseline; whole journey (visit → content after login) −25 % or better. The auth gate (Requirement 11) is kept even though it moves the shell download after login on a cold cache: the time saved before the login page is not traded back.
+18. **Same-origin API** — The browser MUST reach the gateway through the app origin under a dedicated path prefix (e.g. `/gateway/*` → gateway, prefix stripped), so authenticated calls need no CORS preflight and no extra TLS connection. The prefix MUST NOT collide with the web client's own `/api/*` routes (health, ready, metrics, logs). The gateway's own host stays available for other clients; its CORS (Requirement 10) is kept. Safeguards: in deployed environments (Traefik), the app-origin route MUST drop the `Cookie` request header and the `Set-Cookie` response header (the API authenticates with the bearer token only; app cookies never reach the backends and the API cannot set cookies on the app origin); the web client's own middleware MUST NOT handle the prefix. Outside Traefik (local dev, local production build), a Next.js rewrite to the gateway MAY provide the same prefix. The session WebSocket and the Codex service are out of scope.
+
+**Tests**:
+
+- Nominal: unauthenticated visit reaches Keycloak without fetching shell chunks (chunk/import guard); after login the FR-post-auth-navigation destination is displayed with its data.
+- Nominal: gateway preflight response carries `Access-Control-Max-Age`; layout declares preconnect to the API and Keycloak origins.
+- Nominal: with the same-origin prefix configured, an authenticated API call from the app sends no preflight and reaches the gateway (adventure, payment and media routes); the web client's `/api/health` still answers from Next.js.
+- Edge: user change at init (FR-user-cache-isolation) still recreates the store once the shell is loaded; page refresh during an active session reconnects the socket once (no duplicate connection, no false disconnect toast).
+- Edge: a startup endpoint used by two components is fetched once.
+- Failure: shell chunk fetch failure shows an accessible error with a retry inside the auth skeleton frame, not a blank page.
+
+**References** (sub-section): `services/web/client/src/providers/KeycloakProvider.tsx`, `services/web/client/src/components/layout/AppShellSkeleton.tsx`, `services/web/client/src/components/PostLoginNavigator.tsx`, `services/web/client/src/services/NavigationService.ts`, `services/gateway/api/src/main.ts`, `services/sso/keycloak/themes/chariot/login/**`, `services/sso/compose.dev.yml` — FR-auth-loading-skeleton, FR-post-auth-navigation, FR-user-cache-isolation, FR-session-websocket-lifecycle
+
+---
+
+## FR-character-long-rest: Long Rest (PC and NPC, single and group)
+
+**Rule**: A long rest restores a character's hit points, ability counters and spell resources. The GM MUST be able to apply it to a single NPC or PC sheet in and out of session, and to every character of a group at once from the sidebar group menu.
+
+**Scope**: Owns long rest availability and effects. Complements FR-character-statistics-card (where the rest controls sit), FR-sidebar-context-actions (group menu entry), FR-session-combat-sync (live propagation in session) and FR-session-lobby-navigation (lobby gating). Short rest is not changed: it stays session-only and PC-only.
+
+**Requirements**:
+
+### Effects
+- **Common (PC and NPC)**: current HP set to max HP; temporary HP set to 0; every ability counter flagged « réinitialisation au repos long » set back to full; every spell slot (by level and by uses) and every per-day spell use set back to full.
+- **PC only**: exhaustion level decreased by 1 (minimum 0); hit dice remaining set to the class level, per class.
+- Conditions, death saves, inventory, concentration and initiative tracker effects are NOT changed.
+- The confirmation dialog lists only the effects that actually change something for that character; when nothing changes it says so and the action can still be confirmed.
+
+### Ability counter flags (edit form, PC and NPC)
+- Checking « Réinitialisation au repos court » MUST automatically check « Réinitialisation au repos long » (a short-rest recharge also recharges on a long rest); unchecking it does not uncheck the long rest flag.
+- Checking or unchecking « Réinitialisation au repos long » does not change the short rest flag.
+- Existing data is not migrated.
+
+### Single character (sheet, Statistics card)
+- **NPC sheet**: a « Repos long » button is shown to the GM (sheet editor) **in and out of session**.
+- **PC sheet, GM space**: the « Repos long » button is shown to the GM **in and out of session** for the GM's own PCs.
+- **PC sheet, player space**: unchanged — a PC owned by a player space MUST NEVER get any rest (short or long) out of session, from any surface; the existing « session only » note stays.
+- Being in the lobby only (not launched) counts as out of session (FR-session-lobby-navigation); the GM-space long rest is allowed there as an out-of-session action.
+
+### Group (sidebar)
+- Right-click (desktop) / overflow menu (touch) on an **active** group exposes « Repos long du groupe », in and out of session (exception recorded in FR-sidebar-context-actions). Disabled when the group has no character. Not offered on archived groups.
+- It opens a confirmation dialog stating the group name and the number of PCs and NPCs concerned; Enter confirms, Escape cancels (blocked while running).
+- On confirm, the long rest is applied to every PC and NPC of the group **owned by the GM** (GM-space characters). Characters owned by a player space are never rested out of session; in session they are rested only when the session authorizes the GM to edit them.
+- Characters that cannot be edited or whose update fails are skipped; the others are still rested.
+- At the end, one toast summarizes the result: « N personnages reposés » plus, when applicable, « M ignorés ». The sidebar and any open sheet of a rested character reflect the new values without reload.
+- In session, each rested character is propagated to connected clients through the existing sheet / combat sync (FR-session-combat-sync); a PC's player sees the update on their sheet.
+
+**Prohibitions**:
+- Offering the long rest to a player on their own sheet out of session.
+- Aborting the whole group rest because one character fails.
+- Changing anything else than the listed effects.
+
+**Tests**:
+- Nominal: NPC payload restores HP, clears temp HP, resets long-rest counters and spell slots/uses; PC payload also lowers exhaustion and restores hit dice.
+- Nominal: GM sees the NPC long rest button out of session; GM sees the PC long rest button out of session in GM space.
+- Nominal: group rest on a group of 2 PCs + 1 NPC rests all 3 and shows « 3 personnages reposés ».
+- Edge: character with nothing to recover → dialog shows the « no effect » text; exhaustion 0 stays 0; ability without counter untouched.
+- Edge: in session, group menu shows only « Repos long du groupe » enabled; empty group → entry disabled.
+- Edge (race): a rested character updated in session is broadcast once; a reconnecting client gets the rested values.
+- Failure: one character update rejected (403 / network) → others are rested, toast reports « 1 ignoré »; dialog cannot be closed by Escape while running.
+- Failure: player space out of session → no long rest button; group rest out of session skips a player-space PC (counted as ignored).
+- Nominal: checking the short rest flag checks the long rest flag; Edge: checking the long rest flag leaves the short rest flag unchanged.
+
+**References**:
+- `services/web/client/src/utils/rest.utils.ts`
+- `services/web/client/src/components/character/tabContents/shared/AbilitiesUpdateSection.tsx`
+- `services/web/client/src/components/character/LongRestButton.tsx`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`, `shared/SidebarItemWithActions.tsx`, `shared/sidebarActionIcons.ts`
+- `services/web/client/src/services/CharacterService.ts`

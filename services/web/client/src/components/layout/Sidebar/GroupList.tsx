@@ -21,10 +21,12 @@ import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/ui/sidebar";
 import { CreateCharacterDialog } from "@/components/dialogs/CreateCharacterDialog";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { truncatedTextTooltipClassName } from "@/components/ui/truncated-text";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
-import { DeletePlayerWithCompanionsDialog } from "@/components/layout/Sidebar/shared/DeletePlayerWithCompanionsDialog";
 import { deletePlayerCharacterWithCompanionChoice, syncReduxAfterPlayerDelete } from "@/lib/playerDeleteCompanions";
+import { localeFromPathname, resolveCampaignDeleteDestination } from "@/lib/campaignDeleteNavigation";
 import {
   applyCompanionModeAfterPlayerCreated,
   createPlayerDuplicateFromFull,
@@ -33,12 +35,15 @@ import {
   syncReduxAfterCompanionNpcCreate,
   type PlayerDuplicateCompanionMode,
 } from "@/lib/playerDuplicateCompanions";
-import type { NPC } from "@/types/character";
+import type { NPC, Player } from "@/types/character";
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
-import { DuplicateCharacterDialog } from "@/components/dialogs/DuplicateCharacterDialog";
 import { DuplicateGroupDialog } from "@/components/dialogs/DuplicateGroupDialog";
-import { ExportCharacterSheetPdfDialog } from "@/components/dialogs/ExportCharacterSheetPdfDialog";
+import {
+  LazyDeletePlayerWithCompanionsDialog,
+  LazyDuplicateCharacterDialog,
+  LazyExportCharacterSheetPdfDialog,
+} from "@/components/lazy/lazyDialogs";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
 import CharacterService from "@/services/CharacterService";
 import GroupService from "@/services/GroupService";
@@ -46,6 +51,7 @@ import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
 import { showToast } from "@/lib/toast";
 import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
+import { truncateForToast } from "@/lib/truncateForSidebarMenuLabel";
 import {
   selectIsInSession,
   selectSessionCode,
@@ -57,6 +63,7 @@ import {
   removeInitiativeTrackerRow,
   selectBattleInitialized,
   createInitiativeTrackerRow,
+  touchRemoteCharacterSheet,
 } from "@/store/slices/sessionSlice";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
@@ -69,6 +76,8 @@ import {
 import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
 import { collapsedActiveGroupCharacterId } from "@/components/layout/Sidebar/shared/sidebarCollapsedActive";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
+import { applyGroupLongRest } from "@/lib/groupLongRest";
+import { selectUser } from "@/store/slices/userSlice";
 
 interface GroupListProps {
   groups: Group[];
@@ -81,6 +90,47 @@ interface GroupListProps {
   loadedActiveGroupIds: string[];
   loadedArchivedGroupIds: string[];
   onRefreshGroups: () => Promise<void>;
+}
+
+interface GroupHeaderTriggerProps {
+  groupId: string;
+  label: string;
+  isOpen: boolean;
+  /** "Contains displayed sheet" text of a collapsed group (FR-sidebar-group-collapsed-active-indicator). */
+  activeTooltip: string | null;
+}
+
+/**
+ * Group header toggle: name on one line, no name tooltip (the full name is the group menu title,
+ * FR-sidebar-context-actions). The app tooltip only shows the displayed-sheet indication of a collapsed group.
+ */
+function GroupHeaderTrigger({ groupId, label, isOpen, activeTooltip }: GroupHeaderTriggerProps) {
+  const [tooltipOpen, setTooltipOpen] = React.useState(false);
+
+  return (
+    <Tooltip
+      open={Boolean(activeTooltip) && tooltipOpen}
+      onOpenChange={setTooltipOpen}>
+      <TooltipTrigger asChild>
+        <CollapsibleTrigger
+          aria-expanded={isOpen}
+          aria-controls={`group-${groupId}-content`}
+          className="flex w-full min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
+          <ChevronRight
+            aria-hidden="true"
+            className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
+          />
+          <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">{label}</span>
+          {activeTooltip ? <span className="sr-only">{activeTooltip}</span> : null}
+        </CollapsibleTrigger>
+      </TooltipTrigger>
+      <TooltipContent
+        side="right"
+        className={truncatedTextTooltipClassName}>
+        {activeTooltip}
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 export default function GroupList({
@@ -111,6 +161,7 @@ export default function GroupList({
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const actionsDisabled = isSessionLaunched;
+  const currentUserId = useAppSelector(selectUser)?.keycloakId ?? null;
 
   const avatarBatchItems = React.useMemo(
     () => buildSidebarCharacterAvatarBatchItems(groups.flatMap((group) => group.characters ?? [])),
@@ -147,6 +198,9 @@ export default function GroupList({
   } | null>(null);
 
   const [isDeletingGroup, setIsDeletingGroup] = React.useState(false);
+  /** @see FR-character-long-rest */
+  const [groupPendingLongRest, setGroupPendingLongRest] = React.useState<Group | null>(null);
+  const [isRestingGroup, setIsRestingGroup] = React.useState(false);
   const [isDeletingCharacter, setIsDeletingCharacter] = React.useState(false);
   const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
@@ -236,15 +290,23 @@ export default function GroupList({
         selectedCharacterId === deletingCharacterId ||
         (deleteLinkedCompanions && companions.some((npc) => npc._id === selectedCharacterId));
       if (!viewingDeletedSheet || !selectedCampaignId) return;
+      const deletedIds = new Set([
+        deletingCharacterId,
+        ...(deleteLinkedCompanions ? companions.map((npc) => npc._id) : []),
+      ]);
       const remainingGroup = groups.find((group) => group._id === groupId);
-      const nextCharacter = remainingGroup?.characters?.find((item) => item._id !== deletingCharacterId);
+      const nextCharacter = remainingGroup?.characters?.find((item) => !deletedIds.has(item._id));
       if (nextCharacter?._id) {
         router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/${nextCharacter._id}`);
-      } else {
-        router.replace(`/campaigns/${selectedCampaignId}/groups/${groupId}/characters/new/players`);
+        return;
       }
+      // Group now empty: another character of the campaign, else the Campaign fallback
+      // (FR-welcome-onboarding-fallbacks §3), never the creation form.
+      void resolveCampaignDeleteDestination(selectedCampaignId, localeFromPathname(pathname)).then((path) =>
+        router.replace(path),
+      );
     },
-    [groups, router, selectedCampaignId, selectedCharacterId],
+    [groups, pathname, router, selectedCampaignId, selectedCharacterId],
   );
 
   const executeGroupCharacterDelete = React.useCallback(
@@ -265,6 +327,12 @@ export default function GroupList({
             companions: deleteCompanionsPreview,
             campaignGroupId: groupId,
           });
+          showToast(
+            t("deletePlayerSuccess", {
+              name: truncateForToast(characterDisplayName(character) || t("unnamedCharacter")),
+            }),
+            "success",
+          );
         } else {
           await CharacterService.deleteCharacter(deletingCharacterId);
           dispatch(removeCharacterFromGroup({ groupId, characterId: deletingCharacterId }));
@@ -289,6 +357,7 @@ export default function GroupList({
       isDeletingCharacter,
       navigateAfterGroupCharacterDelete,
       selectedCampaignId,
+      t,
     ],
   );
 
@@ -440,9 +509,59 @@ export default function GroupList({
     [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
   );
 
+  const handleConfirmGroupLongRest = React.useCallback(async () => {
+    if (!groupPendingLongRest || isRestingGroup) return;
+    const group = groupPendingLongRest;
+    setIsRestingGroup(true);
+    try {
+      const { rested, skipped } = await applyGroupLongRest(
+        {
+          characterIds: (group.characters ?? []).map((character) => character._id),
+          currentUserId,
+          sessionCode: isSessionLaunched ? sessionCode : null,
+        },
+        {
+          fetchCharacter: (id, code) =>
+            CharacterService.getCharacterById(id, { sessionCode: code }) as Promise<Player | NPC>,
+          updateCharacter: (type, id, data, code) => CharacterService.updateCharacter(type, id, data, code),
+        },
+      );
+      // In session the sheet sync bridge already bumps the open sheets (FR-session-combat-sync).
+      if (!isSessionLaunched) {
+        for (const character of rested) dispatch(touchRemoteCharacterSheet(character._id));
+      }
+      const message =
+        skipped > 0
+          ? `${t("longRestGroupSuccess", { count: rested.length })} · ${t("longRestGroupSkipped", { count: skipped })}`
+          : t("longRestGroupSuccess", { count: rested.length });
+      showToast(message, rested.length === 0 ? "error" : "success");
+      setGroupPendingLongRest(null);
+    } finally {
+      setIsRestingGroup(false);
+    }
+  }, [currentUserId, dispatch, groupPendingLongRest, isRestingGroup, isSessionLaunched, sessionCode, t]);
+
   const buildGroupActions = React.useCallback(
     (group: Group): SidebarActionItem[] => {
-      if (actionsDisabled) return [];
+      const hasCharacters = (group.characters ?? []).length > 0;
+      const longRestAction: SidebarActionItem = {
+        id: "longRest",
+        label: t("longRestGroup"),
+        disabled: !hasCharacters,
+        onSelect: () => setGroupPendingLongRest(group),
+      };
+
+      // FR-sidebar-context-actions exception: in session only the group long rest stays enabled.
+      if (actionsDisabled) {
+        if (isArchivedSection) return [];
+        return [
+          longRestAction,
+          { id: "edit", label: t("edit"), disabled: true, onSelect: () => undefined },
+          { id: "duplicate", label: t("duplicate"), disabled: true, onSelect: () => undefined },
+          { id: "archive", label: t("archive"), disabled: true, onSelect: () => undefined },
+          { id: "delete", label: t("delete"), variant: "destructive", disabled: true, onSelect: () => undefined },
+        ];
+      }
 
       const items: SidebarActionItem[] = [
         {
@@ -453,6 +572,7 @@ export default function GroupList({
       ];
 
       if (!isArchivedSection) {
+        items.push(longRestAction);
         items.push({
           id: "duplicate",
           label: t("duplicate"),
@@ -641,15 +761,15 @@ export default function GroupList({
             open={isOpen}
             onOpenChange={() => onToggleGroup(group._id)}>
             <div
-              title={activeTooltip ?? undefined}
               className={cn(
                 "flex w-full items-center rounded-[12px] py-1.5 pr-1.5 pl-1 transition-colors duration-100",
                 activeTooltip ? "bg-white/15 text-white" : "hover:bg-white/10",
               )}>
               <SidebarItemWithActions
                 actions={groupActions}
-                disabled={actionsDisabled}
+                disabled={groupActions.length === 0}
                 contextMenuLabel={t("groupActions")}
+                menuTitle={group.label}
                 className="min-w-0 flex-1"
                 trailingBeforeOverflow={
                   !isArchivedSection && selectedCampaignId ? (
@@ -671,17 +791,12 @@ export default function GroupList({
                     </CreateCharacterDialog>
                   ) : undefined
                 }>
-                <CollapsibleTrigger
-                  aria-expanded={isOpen}
-                  aria-controls={`group-${group._id}-content`}
-                  className="flex w-full min-w-0 cursor-pointer items-center gap-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50">
-                  <ChevronRight
-                    aria-hidden="true"
-                    className={cn("h-4 w-4 shrink-0 transition-all duration-100", isOpen && "rotate-90")}
-                  />
-                  <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">{group.label}</span>
-                  {activeTooltip ? <span className="sr-only">{activeTooltip}</span> : null}
-                </CollapsibleTrigger>
+                <GroupHeaderTrigger
+                  groupId={group._id}
+                  label={group.label}
+                  isOpen={isOpen}
+                  activeTooltip={activeTooltip}
+                />
               </SidebarItemWithActions>
             </div>
 
@@ -750,6 +865,23 @@ export default function GroupList({
       />
 
       <ConfirmDialog
+        open={!!groupPendingLongRest}
+        onOpenChange={(open) => {
+          if (!open && !isRestingGroup) setGroupPendingLongRest(null);
+        }}
+        title={t("longRestGroupDialogTitle", { group: groupPendingLongRest?.label ?? "" })}
+        description={t("longRestGroupDialogDescription", {
+          players: (groupPendingLongRest?.characters ?? []).filter((c) => !isNpcGroupCharacter(c)).length,
+          npcs: (groupPendingLongRest?.characters ?? []).filter((c) => isNpcGroupCharacter(c)).length,
+        })}
+        confirmLabel={t("longRestGroupConfirm")}
+        cancelLabel={t("cancel")}
+        onConfirm={handleConfirmGroupLongRest}
+        isLoading={isRestingGroup}
+        destructive={false}
+      />
+
+      <ConfirmDialog
         open={!!characterPendingDelete && !showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeletingCharacter) setCharacterPendingDelete(null);
@@ -762,7 +894,7 @@ export default function GroupList({
         isLoading={isDeletingCharacter}
       />
 
-      <DeletePlayerWithCompanionsDialog
+      <LazyDeletePlayerWithCompanionsDialog
         open={showPlayerCompanionDeleteDialog}
         onOpenChange={(open) => {
           if (!open && !isDeletingCharacter) setCharacterPendingDelete(null);
@@ -827,7 +959,7 @@ export default function GroupList({
         }}
       />
 
-      <DuplicateCharacterDialog
+      <LazyDuplicateCharacterDialog
         character={characterToDuplicate?.character ?? null}
         open={!!characterToDuplicate}
         onOpenChange={(open) => {
@@ -870,7 +1002,7 @@ export default function GroupList({
         onDuplicate={(label, count) => handleDuplicateGroup(groupToDuplicate!, label, count)}
       />
 
-      <ExportCharacterSheetPdfDialog
+      <LazyExportCharacterSheetPdfDialog
         character={characterToExport}
         open={!!characterToExport}
         onOpenChange={closeExportDialog}

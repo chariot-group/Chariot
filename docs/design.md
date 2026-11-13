@@ -217,6 +217,7 @@ The character sheet tab bar (General, Battle, Magic, Inventory, History) is one 
 - Pronounced radius (`rounded-[15px]` or higher)
 - Shadow is used selectively to reinforce visual focus (`shadow-lg`, `shadow-xl`)
 - A section card holds its heading **and** its content (e.g. saving throws, skills), for PCs and NPCs alike; rows inside a card are plain rows (`rounded-[10px]`, `hover:bg-gray-middle-light/50`), never nested cards
+- No tinted box inside a card (« poupée russe », decision 2026-11-13): label/value cells are **fact cells**, one style everywhere — `FACT_CELL_CLASS` (`tabContents/shared/factCell.ts`): no background, no vertical rule, no delimiter between cells (spacing only). Exception: the statistics card speeds line sits under a thin top rule (`border-t border-border`). A tint inside a card is reserved for interaction states (hover, open or selected row), pills/badges and the sticky spell group header
 - Free text (history, descriptions) wraps between words: `whitespace-pre-wrap wrap-break-word`; `break-all` is forbidden on text containers
 
 ## 5.3.1 Character General Tab Bento Grid
@@ -234,7 +235,7 @@ The General tab (PC and NPC, read and edit) is one bento grid (FR-character-gene
 - `GeneralSectionCard` is a size container (`@container`): long inner lists (skills) use container variants (`@sm:grid-cols-2 @xl:grid-cols-3`) so they follow the card width, not the viewport
 - Skills keep the same column steps in read and edit modes (`@sm:grid-cols-2 @xl:grid-cols-3`)
 - The sheet avatar block (`MediaAvatarUpload size="sheet"`) is as wide as the avatar (`w-min`): its requirements hint wraps under the avatar instead of widening the « Personnage » card
-- « Personnage » read card (`shared/CharacterIdentityCard`, FR-character-identity-card): bold name (`text-lg sm:text-xl`), muted italic nickname (only the name block sits next to the avatar), then full-width key fact cells in the statistics cell style (PC race + subrace, level + XP on 2 columns; NPC type + subtype), then PC classes as plain rows (`bg-gray-middle-light/50`, `rounded-[10px]`, level badge, muted subclass) pushed to the bottom; field labels are `sr-only`
+- « Personnage » read card (`shared/CharacterIdentityCard`, FR-character-identity-card): bold name (`text-lg sm:text-xl`), muted italic nickname (only the name block sits next to the avatar), then full-width key fact cells (PC race + subrace, level + XP; NPC type + subtype; **one column below `@md` card width**, two from `@md`), secondary info muted under the value below `@md` and inline from `@md`, then PC classes as plain rows (level badge, muted subclass) pushed to the bottom; field labels are `sr-only`
 - « Personnage » edit card: the name fields (`CharacterNameFields`, shared PC/NPC) sit next to the avatar under the heading, like the read-mode identity list; they stack in a narrow column and go side by side from `@sm`
 - A new card MUST get a slot in every layout of `generalBentoLayout.ts` and keep the placement test (no empty cell at 2 / 4 / 12 columns) green
 
@@ -262,15 +263,15 @@ Every character list uses `tabContents/shared/listCard/ListCard` + `ListRow` (FR
 
 `tabContents/shared/StatsSummary` (FR-character-statistics-card), used by the PC and NPC statistics cards:
 
-- Armor class, initiative and size: one `grid-cols-3` row of equal cells (`bg-gray-middle-light/50`, `rounded-[10px]`), small uppercase muted label + bold value with a Lucide icon (`currentColor`, readable on dark surfaces)
-- Speeds: a single wrapping text line `Vitesses : icon value · icon value`, only non-zero speeds, secondary unit in muted small text
+- Armor class, initiative and size: one `grid-cols-3` row of equal fact cells (`FACT_CELL_CLASS`, no background; a line between rows when the NPC 4-cell row wraps to 2 × 2), small uppercase muted label + bold value with a Lucide icon (`currentColor`, readable on dark surfaces)
+- Speeds: spaced from the key stats row (`gap-4`), a single wrapping text line `Vitesses : icon value · icon value`, only non-zero speeds, secondary unit in muted small text
 - No white pills, no "?" tooltip buttons: the visible label carries the meaning, accessible names keep the full wording
 
 ## 5.3.5 Character Inventory Tab Bento Grid
 
 The Inventory tab reuses the General tab grid and `GeneralSectionCard` (FR-character-inventory-bento-layout), with its slots in `tabContents/inventory/shared/inventoryBentoLayout.ts`:
 
-- Coins: full-width strip; read mode shows five equal cells on one row (`grid-cols-5`, `bg-gray-middle-light/50`, `rounded-[10px]`): icon + short uppercase muted label, then the bold value (abbreviated ≥ 1 000, full value in the accessible name and an `InfoTooltip` outside session). In session, cells are buttons (`hover:bg-gray`) opening the coin dialog
+- Coins: full-width strip; read mode shows five equal fact cells on one row (`grid-cols-5`, no delimiter, no background): icon + short uppercase muted label, then the bold value (abbreviated ≥ 1 000, full value in the accessible name and an `InfoTooltip` outside session). In session, cells are buttons (background on hover only, `rounded-[10px]`, focus ring) opening the coin dialog
 - Coins edit: one labelled input per line in a narrow card, one row of five from `@2xl` (card width)
 - Equipment and Treasure: paired half width from `sm` (6 + 6 at `xl`); read text uses `BENTO_BOUNDED_LIST_CLASS`, empty state is a muted line; edit textareas fill the card (label `sr-only`, the heading names the field)
 - In-session edit button sits at the end of the heading line (`GeneralSectionCard headerAction`)
@@ -280,7 +281,7 @@ The Inventory tab reuses the General tab grid and `GeneralSectionCard` (FR-chara
 The History tab reuses the General tab grid and `GeneralSectionCard` (FR-character-history-bento-layout), with its slots in `tabContents/history/shared/historyBentoLayout.ts`:
 
 - Bands at `xl`: Appearance (12, cells + description); Personality traits, Ideals, Bonds, Flaws (3 each); Allies and organizations (4) · Backstory (8). From `sm` the personality cards go two by two, the others full width
-- Appearance: tinted label/value cells (`bg-gray-middle-light/50`, `rounded-[10px]`), 2 columns, 3 from `@sm`, 6 from `@3xl`; empty values show a muted `—`; the size category shows its full name next to the height (no raw tooltip). The description follows under an uppercase muted `h3` sub-heading, full card width (bounded text in read mode, textarea with visible label in edit mode)
+- Appearance: label/value stacked fact cells (line between rows, no background), 2 columns, 3 from `@sm`, 6 from `@3xl`; empty values show a muted `—`; the size category shows its full name next to the height (no raw tooltip). The description follows under an uppercase muted `h3` sub-heading, full card width (bounded text in read mode, textarea with visible label in edit mode)
 - Text cards: `BENTO_BOUNDED_LIST_CLASS` in read mode, muted `notSpecified` line when empty; edit textareas fill the card with an `sr-only` label
 - No positive `tabIndex`: tab order follows the DOM
 
@@ -293,7 +294,7 @@ The Magic tab (FR-character-magic-list-card) uses the bento grid with full-width
 - Spells: one `ListCard` (bounded below `xl`; from `xl` `fill`: the panel (`MAGIC_TAB_PANEL_CLASS`, `flex-1`, min `28rem`) fills the sheet scroll area through the flex chain, no `dvh` calc; the grid takes the panel height with rows `auto … minmax(0,1fr)` from `magicBentoGridClass`, and the rows area fills the card and scrolls). Each level (or uses-per-day) group starts with `SpellGroupHeader`: tinted bar (`bg-gray-middle-light`), sticky at the top of the scroll area, level name in the accent color, slots on the right — read `SpellSlotsBadge` (pips + `remaining/total`, cantrips `∞`), edit the slot `total` input
 - Collapsed row: name + pills `casting time` `range` `effect dice` (`ListRow` / `ListSelectRow` `metaStyle="pills"`: `rounded-full bg-gray-middle-light px-2 py-0.5 text-xs text-card-foreground/80`, wrapping); trailing concentration tag, prepared pill (`SpellPreparedPill`), delete (edit)
 - Wide mode (`xl`, read and edit): Spellcasting and Spells list stacked on `xl:col-span-5` + spell detail panel `xl:col-span-7` spanning both rows (explicit `col-start` / `row-start`, selector stays full width) (`GeneralSectionCard`, spell name heading, `SpellDetails` or `SpellEditForm` scrolling inside); rows are `ListSelectRow` (`aria-pressed` buttons, trailing prepared pill / delete, error ring), selected row tinted like an open row; first spell selected by default
-- Expanded row: read → `SpellDetails` (traits as a `dl` of tinted cells (`bg-gray-middle-light/60`, label `text-xs` muted above a `font-semibold` value) in a `flex flex-wrap gap-2`: two `dl` lists: (1) damage first on a full line (`basis-full`, entries side by side wrapping, formula `text-sm font-semibold` + muted type pill `bg-card`) then short traits `flex-1 basis-[8.5rem]` (lines fill, no holes); (2) duration, components and healing `flex-1 basis-[8.5rem]` starting their own line, classes `basis-full` last; then a `border-t` Description section with an uppercase muted label; then in-session cast controls); edit → `SpellEditForm` (`ListFormSection`: General / Casting / Effects / Description; Effects damage / healing lines use `DiceFormulaRow`: count `w-16` · « d » · die select `w-20` (items without the « d ») · « + » · bonus `w-16` · damage type `flex-1` · delete, `sr-only` labels, muted `= formula` preview under the line)
+- Expanded row: read → `SpellDetails` (traits as a `dl` of stacked fact cells (line between rows, no background, label `text-xs` muted above a `font-semibold` value) in a `flex flex-wrap gap-2`: two `dl` lists: (1) damage first on a full line (`basis-full`, entries side by side wrapping, formula `text-sm font-semibold` + muted type pill `bg-card`) then short traits `flex-1 basis-[8.5rem]` (lines fill, no holes); (2) duration, components and healing `flex-1 basis-[8.5rem]` starting their own line, classes `basis-full` last; then a `border-t` Description section with an uppercase muted label; then in-session cast controls); edit → `SpellEditForm` (`ListFormSection`: General / Casting / Effects / Description; Effects damage lines use the action damage grid: `SpellDiceField` (`DiceInput` free text `8d6+2` with dice suggestions, error linked on blur) · damage type · delete always on one line (`grid-cols-[minmax(0,2fr)_minmax(0,3fr)_auto]`, from `@2xl` `[minmax(0,10rem)_minmax(0,1fr)_auto]`), visible `text-xs` labels; healing = the same dice field alone (`max-w-40`))
 - Edit keeps the list order inside a group (no re-sorting while typing); group headers and rows are siblings of one `Accordion`, so a level change moves the row without remounting it
 - Add a spell (`primary`, `sm`) and Codex (`secondary`, `sm`) are both visible in the card header
 
@@ -303,9 +304,18 @@ The sheet loading state (FR-character-sheet-skeleton) is `character/skeleton/Cha
 
 - Same frame as `CharacterDetailView` (tab bar, scroll area, footer); tab and PC/NPC guessed from `?tab=` and the route (`characterSheetSkeletonLayout.ts`)
 - Cards placed with the tab's own bento slots: a new card in a bento layout file needs its placeholder there too
-- Placeholders: `Skeleton` in `bg-gray` on `bg-card`, cells `bg-gray-middle-light/50`, headings tinted with the tab domain color (`/25`), active tab filled with its domain color
+- Placeholders: `Skeleton` in `bg-gray` on `bg-card`, cells as fact cells (no background, line between rows), headings tinted with the tab domain color (`/25`), active tab filled with its domain color
 - `role="status"` + `aria-busy` + translated `sr-only` label; shapes `aria-hidden`, nothing focusable; `motion-reduce:animate-none` on every pulse
 - Authentication loading (FR-auth-loading-skeleton): `layout/AppShellSkeleton` draws the shell (sidebar `w-64` from `md`, header box, content) and embeds `CharacterSheetSkeletonFrame` on sheet routes, so the auth and sheet skeletons are the same; the log out escape hatch sits in the profile slot
+
+## 5.3.9 Character Companions Tab Bento Grid
+
+The Companions tab (Player space, FR-npc-player-link) reuses the viewport bento grid, with its slots in `tabContents/companions/shared/companionsBentoLayout.ts`:
+
+- `CharacterIdentityCard` (PJ/PNJ): name + reserved nickname band beside avatar; `IdentityFactCells` **full width below** with `denseColumns` (2-col grid). `CompanionNpcCard`: same 2-col facts **in the narrow column** beside the avatar. Both use `h-full` where the bento grid stretches rows
+- With companions: liaison toolbar on its own full-width row, then one `CompanionNpcCard` per grid cell (full width below `xl`, two per row from `xl`); the list is `ul.contents` + `role="list"` so each item is a grid child
+- Empty: `CompanionsEmptyState`, two `GeneralSectionCard` on one band (8 + 4 at `xl`, 2 + 2 at `sm`): explanation with the link / create-linked buttons pushed to the bottom right (none for the session GM), and examples separated by a thin line (`divide-y`, decorative icon) filling the card
+- Headings use the tab violet as text: `text-primary-light` (the `purple` token is not readable as text on `bg-card`); « Créer un PNJ lié » is a `primary` (white) button like the sheet Edit button, « Lier un PNJ » stays `secondary`
 
 ## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
 
@@ -313,7 +323,7 @@ Every floating menu shares one style, defined once in `components/ui/menu-styles
 
 - Surface: `bg-popover border-frame rounded-[14px] p-1.5`
 - Row: `rounded-[10px] px-3 py-2 text-sm text-white`, hover and keyboard highlight `bg-white/10`
-- Selected/checked row: `bg-white/15 font-medium`, check icon in white
+- Selected/checked row: `bg-white/15 font-medium`; check icon in white only for checkbox/radio items of the primitives. Selection rows of the GM space menu (campaigns) use the background alone, no check icon, and expose `aria-current="true"`; the selected and hover backgrounds are on the whole row (wrapper), including the touch overflow (⋮), and the campaign name always stays on one line (`truncate`, tooltip when cut)
 - Leading icons: `size-4`, `text-white/60`; destructive rows: `text-destructive`, hover `bg-destructive/10`
 - Separator: `mx-1 my-1 h-px bg-white/10`
 
@@ -324,7 +334,7 @@ Sidebar context menus and touch overflow menus show an icon per action (FR-sideb
 ## 5.5 Sidebar Rows
 
 - Selected character row: `bg-white/15` (same gray as selected menu rows), white bold text, no left bar and no label shift; hover `bg-white/10`
-- Group header: no resting background (hover `bg-white/10`), label always bold. The label lines up with its characters: header `pl-1` + `size-4` chevron + `gap-2` = characters `ml-4` + `px-3` (28px)
+- Group header: no resting background (hover `bg-white/10`), label always bold, one line (`truncate`), no name tooltip on hover; the full name is the first label of the group menu (`⋮` / right-click) (FR-sidebar-context-actions). The label lines up with its characters: header `pl-1` + `size-4` chevron + `gap-2` = characters `ml-4` + `px-3` (28px)
 - Create buttons (character, group): `buttonVariants({ variant: "primary", align: "start" })`, full width, icon on the **left** of the label
 
 ## 5.6 Numeric Inputs

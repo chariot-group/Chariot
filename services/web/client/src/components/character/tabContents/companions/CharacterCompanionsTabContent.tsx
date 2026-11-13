@@ -1,5 +1,6 @@
 "use client";
 
+import { CompanionsTabSkeleton } from "@/components/character/skeleton/CharacterSheetSkeleton";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Link2, UserPlus } from "lucide-react";
@@ -14,8 +15,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import CharacterService from "@/services/CharacterService";
+import { UnlinkNpcConfirmDialog } from "@/components/layout/Sidebar/shared/UnlinkNpcConfirmDialog";
 import { characterDisplayName } from "@/lib/duplicateName";
-import { sortCompanionsByDisplayName } from "@/lib/sessionPlayerCompanions";
+import { truncateForToast } from "@/lib/truncateForSidebarMenuLabel";
+import { companionsOfPlayer, sortCompanionsByDisplayName } from "@/lib/sessionPlayerCompanions";
 import {
   applyCompanionLinkChange,
   persistSidebarNpcLinkedPlayer,
@@ -25,8 +28,15 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
 import { selectIsSessionLaunched, selectSessionCode, selectSessionCompanionNpcs } from "@/store/slices/sessionSlice";
 import { normalizeCharacterId } from "@/lib/normalizeCharacterId";
-import { companionsOfPlayer } from "@/lib/sessionPlayerCompanions";
 import { CompanionNpcCard } from "@/components/character/tabContents/companions/CompanionNpcCard";
+import { CompanionsEmptyState } from "@/components/character/tabContents/companions/view/CompanionsEmptyState";
+import { CompanionsSearchField } from "@/components/character/tabContents/companions/view/CompanionsSearchField";
+import { CompanionsNoSearchResult } from "@/components/character/tabContents/companions/view/CompanionsNoSearchResult";
+import { filterCompanionsByQuery } from "@/lib/companionSearch";
+import {
+  COMPANIONS_BENTO_GRID_CLASS,
+  COMPANIONS_SLOTS,
+} from "@/components/character/tabContents/companions/shared/companionsBentoLayout";
 import { showToast } from "@/lib/toast";
 import type { NPC, Player } from "@/types/character";
 import { cn } from "@/lib/utils";
@@ -69,6 +79,8 @@ export default function CharacterCompanionsTabContent({
   const [unlinkedNpcs, setUnlinkedNpcs] = useState<NPC[]>([]);
   const [loadingUnlinked, setLoadingUnlinked] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
+  const [npcPendingUnlink, setNpcPendingUnlink] = useState<NPC | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const companionsRef = useRef<NPC[]>([]);
   companionsRef.current = companions;
 
@@ -158,10 +170,19 @@ export default function CharacterCompanionsTabContent({
         );
         dispatch(upsertPlayerSpaceNpc(updated));
         setCompanions((current) => applyCompanionLinkChange(current, updated, playerId));
-        showToast(linkedPlayerId ? tSidebar("linkNpcSuccess") : tSidebar("unlinkNpcSuccess"), "success");
+        showToast(
+          linkedPlayerId
+            ? tSidebar("linkNpcSuccess")
+            : tSidebar("unlinkNpcSuccess", {
+                name: truncateForToast(characterDisplayName(npc) || tSidebar("unnamedCharacter")),
+              }),
+          "success",
+        );
         if (linkedPlayerId) {
           setUnlinkedNpcs((current) => current.filter((item) => item._id !== npc._id));
           setLinkOpen(false);
+        } else {
+          setNpcPendingUnlink(null);
         }
       } catch {
         showToast(linkedPlayerId ? tSidebar("linkNpcError") : tSidebar("unlinkNpcError"), "error");
@@ -191,93 +212,94 @@ export default function CharacterCompanionsTabContent({
 
   const unnamed = t("unnamedNpc");
   const sortedCompanions = useMemo(() => sortCompanionsByDisplayName(companions), [companions]);
+  const visibleCompanions = useMemo(
+    () => filterCompanionsByQuery(sortedCompanions, searchQuery),
+    [searchQuery, sortedCompanions],
+  );
 
   if (loading) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2
-          className="h-6 w-6 animate-spin text-white/70"
-          aria-hidden="true"
-        />
-        <span className="sr-only">{t("loading")}</span>
-      </div>
+      <CompanionsTabSkeleton
+        showActions={showLiaisonActions}
+        label={t("loading")}
+      />
     );
   }
 
+  const liaisonActions = showLiaisonActions ? (
+    <>
+      <Button
+        type="button"
+        variant="secondary"
+        aria-label={t("linkExisting")}
+        onClick={() => void openLinkDialog()}
+        disabled={isLinking}>
+        <Link2
+          className="size-4"
+          aria-hidden="true"
+        />
+        <span className="sr-only min-[375px]:not-sr-only">{t("linkExisting")}</span>
+      </Button>
+      <CreateCharacterDialog
+        npcOnly
+        linkedPlayerId={playerId}>
+        <Button
+          type="button"
+          variant="primary"
+          aria-label={t("createLinked")}
+          disabled={isLinking}>
+          <UserPlus
+            className="size-4"
+            aria-hidden="true"
+          />
+          <span className="sr-only min-[375px]:not-sr-only">{t("createLinked")}</span>
+        </Button>
+      </CreateCharacterDialog>
+    </>
+  ) : null;
+
   return (
     <section
-      className="flex flex-col gap-4"
+      className={COMPANIONS_BENTO_GRID_CLASS}
       aria-label={t("title")}>
-      {showLiaisonActions ? (
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => void openLinkDialog()}
-            disabled={isLinking}
-            aria-label={t("linkExisting")}
-            className="cursor-pointer">
-            <Link2
-              className="size-4"
-              aria-hidden="true"
-            />
-            {t("linkExisting")}
-          </Button>
-          <CreateCharacterDialog
-            npcOnly
-            linkedPlayerId={playerId}>
-            <Button
-              type="button"
-              disabled={isLinking}
-              aria-label={t("createLinked")}
-              className={cn("cursor-pointer bg-purple text-white hover:bg-purple/80")}>
-              <UserPlus
-                className="size-4"
-                aria-hidden="true"
-              />
-              {t("createLinked")}
-            </Button>
-          </CreateCharacterDialog>
-        </div>
-      ) : null}
-
       {sortedCompanions.length === 0 ? (
-        <div
-          className="flex max-w-2xl flex-col gap-3 rounded-[15px] border border-white/10 bg-card/40 px-4 py-4"
-          role="status"
-          aria-labelledby="companions-empty-title">
-          <h3
-            id="companions-empty-title"
-            className="text-sm font-semibold text-white">
-            {t("emptyTitle")}
-          </h3>
-          <p className="text-sm text-white/70">{t("emptyDescription")}</p>
-          <div>
-            <p className="text-sm font-medium text-white/85">{t("emptyExamplesTitle")}</p>
-            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-white/70">
-              <li>{t("emptyExampleFamiliar")}</li>
-              <li>{t("emptyExampleSecondaryNpc")}</li>
-            </ul>
-          </div>
-          {showLiaisonActions ? <p className="text-sm text-white/70">{t("emptyActionHint")}</p> : null}
-        </div>
+        <CompanionsEmptyState actions={liaisonActions} />
       ) : (
-        <ul className="grid w-full min-w-0 grid-cols-1 gap-2 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
-          {sortedCompanions.map((npc) => (
-            <li
-              key={npc._id}
-              className="min-w-0 h-full">
-              <CompanionNpcCard
-                npc={npc}
-                unnamedFallback={unnamed}
-                isEditing={showLiaisonActions}
-                isPersisting={isLinking}
-                sessionCode={sessionCodeForLookup}
-                onUnlink={(companion) => void persistNpcLink(companion, null)}
-              />
-            </li>
-          ))}
-        </ul>
+        <>
+          {/* Search first, liaison buttons (when enabled) after it — FR-npc-player-link search */}
+          <div className={cn(COMPANIONS_SLOTS.toolbar, "flex flex-wrap items-center gap-2")}>
+            <CompanionsSearchField
+              value={searchQuery}
+              onChange={setSearchQuery}
+              resultCount={visibleCompanions.length}
+            />
+            {liaisonActions ? <div className="flex flex-wrap gap-2 sm:ml-auto">{liaisonActions}</div> : null}
+          </div>
+          {visibleCompanions.length === 0 ? (
+            <CompanionsNoSearchResult query={searchQuery} />
+          ) : (
+            /* `contents`: each item is a grid child; `role="list"` keeps the list semantics in Safari */
+            <ul
+              role="list"
+              aria-label={t("title")}
+              className="contents">
+              {visibleCompanions.map((npc) => (
+                <li
+                  key={npc._id}
+                  className={cn(COMPANIONS_SLOTS.companion, "min-h-0")}>
+                  <CompanionNpcCard
+                    npc={npc}
+                    unnamedFallback={unnamed}
+                    isEditing={showLiaisonActions}
+                    isPersisting={isLinking}
+                    sessionCode={sessionCodeForLookup}
+                    onUnlink={setNpcPendingUnlink}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
 
       <Dialog
@@ -325,6 +347,17 @@ export default function CharacterCompanionsTabContent({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <UnlinkNpcConfirmDialog
+        npcName={npcPendingUnlink ? characterDisplayName(npcPendingUnlink) : null}
+        playerName={characterDisplayName(player)}
+        onCancel={() => setNpcPendingUnlink(null)}
+        onConfirm={() => {
+          if (!npcPendingUnlink) return;
+          void persistNpcLink(npcPendingUnlink, null);
+        }}
+        isLoading={isLinking}
+      />
     </section>
   );
 }

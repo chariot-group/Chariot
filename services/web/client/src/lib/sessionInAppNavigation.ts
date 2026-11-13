@@ -1,3 +1,5 @@
+import { locales } from "@/i18n/request";
+
 export function isSessionLobbyPage(pathname: string): boolean {
     return /\/campaigns\/[^/]+\/session\/[^/]+\/?$/.test(pathname);
 }
@@ -27,6 +29,24 @@ export function buildPlayerSessionCharacterPath(
     sessionCode?: string | null,
 ): string {
     return `/${locale}${buildSessionCharacterHref(characterId, sessionCode)}`;
+}
+
+/**
+ * FR-session-combat-navigation — strip a leading locale segment (`/fr/...` → `/...`).
+ * `@/i18n/navigation` always prefixes the locale; passing an already-prefixed path
+ * produces `/fr/fr/...`, which lands on the not-found page and then on welcome.
+ */
+export function toLocaleAgnosticPath(path: string): string {
+    if (!path) return path;
+    for (const locale of locales) {
+        const prefix = `/${locale}`;
+        if (path === prefix) return "/";
+        if (path.startsWith(`${prefix}/`) || path.startsWith(`${prefix}?`)) {
+            const rest = path.slice(prefix.length);
+            return rest.startsWith("?") ? `/${rest}` : rest;
+        }
+    }
+    return path;
 }
 
 /**

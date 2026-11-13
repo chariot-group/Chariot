@@ -2,13 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { Button, type ButtonTone } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  resolveReturnToSessionTone,
+  resolveSessionActionRole,
+  shouldShowLobbyOpenIndicator,
+} from "@/lib/sessionPresenceUi";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { LucideSwords, PlayCircle, Users, UserCircle } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import sessionService from "@/services/SessionService";
-import { findActiveCampaignSession, isSessionStillActive } from "@/lib/findActiveCampaignSession";
+import {
+  findActiveCampaignSession,
+  hasJoinedPlayer,
+  isLaunchedSessionStillActive,
+  shouldGmReturnToSession,
+} from "@/lib/findActiveCampaignSession";
 import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
 import { setContextMode } from "@/store/slices/environmentSlice";
 import {
@@ -18,12 +29,14 @@ import {
   selectBattleStarted,
   selectIsInSession,
   selectSessionStatus,
+  selectSessionParticipants,
+  selectSessionLobbyOpen,
   selectLastConsultedSheetPath,
   selectLastLeftSessionCode,
   openSessionLobby,
   setCurrentSession,
 } from "@/store/slices/sessionSlice";
-import { JoinSessionDialog } from "@/components/dialogs/JoinSessionDialog";
+import { LazyJoinSessionDialog } from "@/components/lazy/lazyDialogs";
 import { InitBattleDialog } from "@/components/dialogs/InitBattleDialog";
 import { useSessionValidation } from "@/hooks/useSessionValidation";
 import { useUser } from "@/hooks/useUser";
@@ -36,6 +49,9 @@ import {
   withSessionCodeQuery,
 } from "@/lib/sessionInAppNavigation";
 
+/** Lobby ouvert : anneau distinct du focus clavier (offset plus large, couleur de texte du thème). */
+const activeButtonClassName = "ring-2 ring-foreground ring-offset-4 ring-offset-background";
+
 interface ActionButtonConfig {
   label: string;
   action: () => void;
@@ -44,6 +60,8 @@ interface ActionButtonConfig {
   tone: ButtonTone;
   state: ActionButtonState;
   tooltip?: string;
+  /** FR-session-lobby-modal — lobby affiché : état « en cours », indicatif. */
+  active?: boolean;
 }
 
 type ActionButtonState =
@@ -58,6 +76,7 @@ type ActionButtonState =
 export function ActionButton() {
   const t = useTranslations("sidebar");
   const tWelcome = useTranslations("welcome");
+  const [isJoinSessionDialogOpen, setIsJoinSessionDialogOpen] = useState(false);
   const dispatch = useAppDispatch();
   const router = useRouter();
   const contextMode = useAppSelector((state) => state.environment.contextMode);
@@ -65,6 +84,8 @@ export function ActionButton() {
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const isInSession = useAppSelector(selectIsInSession);
   const session = useAppSelector(selectCurrentSession);
+  const sessionParticipants = useAppSelector(selectSessionParticipants);
+  const isSessionLobbyOpen = useAppSelector(selectSessionLobbyOpen);
   const sessionStatus = useAppSelector(selectSessionStatus);
   const user = useUser();
   const lastConsultedSheetPath = useAppSelector(selectLastConsultedSheetPath);
@@ -75,7 +96,7 @@ export function ActionButton() {
 
   useSessionValidation();
 
-  // FR-session-lobby-modal — un MJ sorti d'une session encore active y retourne au lieu d'en « lancer » une.
+  // FR-session-lobby-modal — un MJ sorti d'une session encore active, lancée ou rejointe par un joueur, y retourne ; un lobby vide garde « Lancer une session ».
   const userId = user.user?.keycloakId;
   const [hasActiveCampaignSession, setHasActiveCampaignSession] = useState(false);
   useEffect(() => {
@@ -87,7 +108,9 @@ export function ActionButton() {
     sessionService
       .getMySessions()
       .then((sessions) => {
-        if (!cancelled) setHasActiveCampaignSession(findActiveCampaignSession(sessions, selectedCampaignId, userId) !== null);
+        if (!cancelled) setHasActiveCampaignSession(
+            shouldGmReturnToSession(findActiveCampaignSession(sessions, selectedCampaignId, userId), userId),
+          );
       })
       .catch(() => {
         if (!cancelled) setHasActiveCampaignSession(false);
@@ -97,7 +120,7 @@ export function ActionButton() {
     };
   }, [isInSession, contextMode, selectedCampaignId, userId]);
 
-  // FR-session-lobby-modal — un joueur sorti d'une session encore active y « retourne ».
+  // FR-session-lobby-modal — un joueur sorti d'une session lancée et encore active y « retourne ».
   const lastLeftSessionCode = useAppSelector(selectLastLeftSessionCode);
   const [canReturnToLeftSession, setCanReturnToLeftSession] = useState(false);
   useEffect(() => {
@@ -109,7 +132,7 @@ export function ActionButton() {
     sessionService
       .getSession(lastLeftSessionCode)
       .then((session) => {
-        if (!cancelled) setCanReturnToLeftSession(isSessionStillActive(session));
+        if (!cancelled) setCanReturnToLeftSession(isLaunchedSessionStillActive(session));
       })
       .catch(() => {
         if (!cancelled) setCanReturnToLeftSession(false);
@@ -188,6 +211,20 @@ export function ActionButton() {
       };
     }
 
+    // FR-session-lobby-modal — tant que la modale du lobby est ouverte, le bouton indique qu'on est dans la session.
+    if (shouldShowLobbyOpenIndicator(isInSession, isSessionLobbyOpen)) {
+      const role = resolveSessionActionRole(currentParticipant?.status, contextMode);
+      return {
+        label: t("returnToSession"),
+        state: "returnToSession",
+        action: () => navigateToSession(role === "player" ? "player" : undefined),
+        disabled: false,
+        icon: <PlayCircle aria-hidden="true" />,
+        tone: resolveReturnToSessionTone(role),
+        active: true,
+      };
+    }
+
     if (currentParticipant === null) {
       return {
         label: t("returnToSession"),
@@ -195,15 +232,17 @@ export function ActionButton() {
         action: () => navigateToSession(contextMode === "player" ? "player" : undefined),
         disabled: false,
         icon: <PlayCircle aria-hidden="true" />,
-        tone: "yellow",
+        tone: resolveReturnToSessionTone(resolveSessionActionRole(null, contextMode)),
       };
     }
 
     if (currentParticipant?.status === "gameMaster") {
+      // FR-session-lobby-modal — lobby jamais lancé : le MJ y « retourne » seulement si un joueur l'a rejoint.
       if (!sessionStarted) {
+        const gmHasJoinedPlayer = hasJoinedPlayer(sessionParticipants, userId ?? "");
         return {
-          label: t("returnToSession"),
-          state: "returnToSession",
+          label: t(gmHasJoinedPlayer ? "returnToSession" : "launchSession"),
+          state: gmHasJoinedPlayer ? "returnToSession" : "launchSession",
           action: () => navigateToSession(),
           disabled: false,
           icon: <PlayCircle aria-hidden="true" />,
@@ -265,7 +304,7 @@ export function ActionButton() {
           action: () => navigateToSession("player"),
           disabled: false,
           icon: <PlayCircle aria-hidden="true" />,
-          tone: "yellow",
+          tone: resolveReturnToSessionTone("player"),
         };
       }
 
@@ -339,7 +378,7 @@ export function ActionButton() {
         action: () => navigateToSession(currentParticipant?.status !== "gameMaster" ? "player" : undefined),
         disabled: false,
         icon: <PlayCircle aria-hidden="true" />,
-        tone: "yellow",
+        tone: resolveReturnToSessionTone(resolveSessionActionRole(currentParticipant?.status, contextMode)),
       };
     }
 
@@ -368,14 +407,39 @@ export function ActionButton() {
       size="lg"
       onClick={button.action}
       disabled={button.disabled}
-      className="w-full">
+      aria-current={button.active ? "true" : undefined}
+      className={cn("w-full", button.active && activeButtonClassName)}>
       {button.icon}
       <span className="truncate">{button.label}</span>
     </Button>
   );
 
   if (button.state === "joinSession" && !button.disabled) {
-    return <JoinSessionDialog>{buttonContent}</JoinSessionDialog>;
+    // Controlled so the dialog code is fetched on first open (FR-web-first-load-performance).
+    return (
+      <>
+        <Button
+          variant={button.tone === "red" ? "destructive" : "accent"}
+          tone={button.tone === "red" ? undefined : button.tone}
+          size="lg"
+          onClick={() => {
+            button.action();
+            setIsJoinSessionDialogOpen(true);
+          }}
+          onPointerEnter={LazyJoinSessionDialog.preload}
+          onFocus={LazyJoinSessionDialog.preload}
+          aria-haspopup="dialog"
+          aria-expanded={isJoinSessionDialogOpen}
+          className="w-full">
+          {button.icon}
+          <span className="truncate">{button.label}</span>
+        </Button>
+        <LazyJoinSessionDialog
+          open={isJoinSessionDialogOpen}
+          onOpenChange={setIsJoinSessionDialogOpen}
+        />
+      </>
+    );
   }
 
   if (button.state === "initBattle" && !button.disabled) {

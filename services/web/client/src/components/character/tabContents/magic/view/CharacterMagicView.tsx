@@ -219,23 +219,26 @@ export default function CharacterMagicView({
     );
   };
 
-  const renderDetails = (spell: Spell) => (
+  /** In-session cast controls of a spell (none out of session). */
+  const renderCastControls = (spell: Spell) =>
+    onCharacterUpdate ? (
+      <SpellCastControls
+        characterKind={isPlayer(character) ? "players" : "npcs"}
+        character={character as Player | NPC}
+        spellcasting={activeSpellcasting}
+        selectedSpell={spell}
+        accentColor={accentColor}
+        onCharacterUpdate={onCharacterUpdate}
+      />
+    ) : undefined;
+
+  /** The wide panel shows the cast controls on its heading line, an expanded row at the top of its details. */
+  const renderDetails = (spell: Spell, { withCastControls = true } = {}) => (
     <SpellDetails
       spell={spell}
       attackBonus={activeSpellcasting.attackBonus ?? null}
       isNpc={!isPlayer(character)}
-      castControls={
-        onCharacterUpdate ? (
-          <SpellCastControls
-            characterKind={isPlayer(character) ? "players" : "npcs"}
-            character={character as Player | NPC}
-            spellcasting={activeSpellcasting}
-            selectedSpell={spell}
-            accentColor={accentColor}
-            onCharacterUpdate={onCharacterUpdate}
-          />
-        ) : undefined
-      }
+      castControls={withCastControls ? renderCastControls(spell) : undefined}
     />
   );
 
@@ -411,7 +414,12 @@ export default function CharacterMagicView({
           headingId={detailHeadingId}
           title={shownSpell.name || tMagic("newSpell")}
           accentColor={accentColor}
-          headingClassName="wrap-break-word"
+          headingClassName="min-w-0 wrap-break-word"
+          headerAction={
+            onCharacterUpdate ? (
+              <div className="shrink-0 empty:hidden">{renderCastControls(shownSpell)}</div>
+            ) : undefined
+          }
           className={wideSlots.detail}>
           <div
             id={detailPanelId}
@@ -419,7 +427,7 @@ export default function CharacterMagicView({
             role="group"
             aria-labelledby={detailHeadingId}
             tabIndex={0}>
-            {renderDetails(shownSpell)}
+            {renderDetails(shownSpell, { withCastControls: false })}
           </div>
         </GeneralSectionCard>
       )}

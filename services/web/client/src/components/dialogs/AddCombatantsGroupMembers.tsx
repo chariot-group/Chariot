@@ -31,6 +31,8 @@ type AddCombatantsGroupMembersProps = {
     character: string;
     initiativeFor: string;
     initiativeModifierFor: string;
+    initiativeRollPlaceholder?: string;
+    initiativeTotalPreview?: string;
     groupedSelectedCount: string;
     groupedInitiativePlaceholder: string;
     groupedInitiativeApply: string;
@@ -146,6 +148,8 @@ export function AddCombatantsGroupMembers({
                     modifier={modifier}
                     modifierAriaLabel={modifierAriaLabel}
                     showModifier
+                    rollPlaceholder={labels.initiativeRollPlaceholder}
+                    totalPreviewLabel={labels.initiativeTotalPreview}
                     onCommit={(value) => onMemberInitiativeChange(member._id, value)}
                     className={INITIATIVE_INPUT_CLASS}
                   />

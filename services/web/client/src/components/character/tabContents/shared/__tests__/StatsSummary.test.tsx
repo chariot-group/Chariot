@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import StatsSummary from "@/components/character/tabContents/shared/StatsSummary";
 import { render } from "@/components/character/tabContents/__tests__/bentoRender";
+import { FACT_CELL_CLASS, FACT_CELLS_FRAME_CLASS } from "@/components/character/tabContents/shared/factCell";
 
 const { unitState } = vi.hoisted(() => ({ unitState: { showBoth: false } }));
 
@@ -77,7 +78,7 @@ describe("StatsSummary", () => {
     );
 
     expect(withZero).toContain('aria-label="passivePerception 0"');
-    expect(renderSummary({ walk: 30 })).toContain("grid min-w-0 gap-2 grid-cols-3");
+    expect(renderSummary({ walk: 30 })).toContain("grid min-w-0 gap-x-4 gap-y-2 grid-cols-3");
     expect(renderSummary({ walk: 30 })).not.toContain("statLabels.passivePerception");
   });
 
@@ -87,5 +88,23 @@ describe("StatsSummary", () => {
     expect(html).not.toContain("bg-white");
     expect(html).not.toContain(">?<");
     expect(html).not.toContain("<button");
+  });
+
+  it("guard: key stat cells are fact cells with no delimiter, no vertical rule nor tinted box", () => {
+    const html = renderSummary({ walk: 30 });
+
+    expect(html.split(`class="${FACT_CELL_CLASS}"`)).toHaveLength(4);
+    expect(html).toContain(`<div class="${FACT_CELLS_FRAME_CLASS}">`);
+    expect(html).not.toContain("border-l");
+    expect(html).not.toContain("bg-gray-middle-light");
+    expect(html).not.toContain("rounded-[10px]");
+  });
+
+  it("nominal: the speeds line is separated from the key stats row by a thin divider", () => {
+    const html = renderSummary({ walk: 30 });
+
+    expect(html).toMatch(/^<div class="flex min-w-0 flex-col gap-4">/);
+    expect(html).toContain("border-t border-border pt-3");
+    expect(renderSummary({ walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 })).not.toContain("border-t border-border");
   });
 });

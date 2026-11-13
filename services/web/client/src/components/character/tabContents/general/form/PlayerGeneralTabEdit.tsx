@@ -7,7 +7,7 @@ import {
   useFormState,
   type FieldError as RhfFieldError,
 } from "react-hook-form";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -16,7 +16,8 @@ import { SelectTrigger, Select, SelectValue, SelectContent, SelectItem, SelectGr
 import { ClassNameEnum, AlignmentEnum } from "@/schemas/character";
 import { getLevelFromExperience, getExperienceForLevel, isLevelXpSynced } from "@/utils/global.utils";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
+import { ArrowRightLeft, Plus } from "lucide-react";
 import { TagInput } from "@/components/ui/tag-input";
 import { ComboboxInput } from "@/components/ui/combobox-input";
 import CharacterNameFields from "@/components/character/tabContents/general/form/CharacterNameFields";
@@ -31,12 +32,15 @@ import {
   GENERAL_BENTO_CONTAINER_CLASS,
   GENERAL_BENTO_GRID_CLASS,
   GENERAL_BENTO_STACK_GAP_CLASS,
+  PLAYER_GRID_ROWS_CLASS,
   PLAYER_EDIT_SLOTS as SLOTS,
 } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import StatisticsUpdate from "@/components/character/tabContents/shared/StatisticsUpdate";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import SensesUpdateSection from "@/components/character/tabContents/general/shared/SensesUpdateSection";
+import { addClassLevels, defaultHitDie, MAX_CLASSES } from "@/utils/multiclass.utils";
+import { SpellcastingSelector } from "@/components/character/tabContents/magic/shared/SpellcastingParts";
 
 interface PlayerGeneralTabEditProps {
   player: Player;
@@ -47,7 +51,7 @@ interface PlayerGeneralTabEditProps {
 }
 
 export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form }: PlayerGeneralTabEditProps) {
-  type PlayerClassEntry = { name?: string; level?: number | string };
+  type PlayerClassEntry = { name?: string; level?: number | string; hitDiceRemaining?: number };
 
   const t = useTranslations("characterDetail.player.general");
   const tEdit = useTranslations("characterDetail.edit");
@@ -107,9 +111,37 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
     name: "class",
   });
 
+  // Multiclass: one class edited at a time, picked by the selector (FR-character-general-bento-layout)
+  const [selectedClassIndex, setSelectedClassIndex] = useState(0);
+  const activeClassIndex = Math.min(selectedClassIndex, Math.max(0, classFields.length - 1));
+  const classNames = ((form.watch("class") || []) as PlayerClassEntry[]).map((c) => c?.name);
+  const invalidClassIndices = new Set(
+    (Array.isArray(errors.class) ? errors.class : []).flatMap((e, i) => (e ? [i] : [])),
+  );
+
+  /** Adds a level-1 class, freeing a level for it first (getValues guards a double click). */
+  const addClass = () => {
+    const current = (form.getValues("class") || []) as PlayerClassEntry[];
+    const next = addClassLevels(form.getValues("progression.level"), current);
+    if (!next) return;
+    if (next.globalLevel !== Number(form.getValues("progression.level"))) {
+      form.setValue("progression.level", next.globalLevel, { shouldDirty: true });
+    }
+    next.classes.slice(0, current.length).forEach((entry, i) => {
+      if (entry !== current[i]) {
+        form.setValue(`class.${i}.level`, entry.level, { shouldDirty: true });
+        form.setValue(`class.${i}.hitDiceRemaining`, entry.hitDiceRemaining, { shouldDirty: true });
+      }
+    });
+    appendClass(next.classes[current.length]);
+    setSelectedClassIndex(current.length);
+    void form.trigger(["progression.level", "class"]);
+  };
+
   // Garantit qu'il y a toujours au moins une rangée de classe à l'affichage
   useEffect(() => {
-    if (classFields.length === 0) {
+    // getValues, not classFields: StrictMode runs this twice before the field array updates
+    if ((form.getValues("class") || []).length === 0) {
       appendClass({ name: undefined, subclass: "", level: 1, hitDice: 0 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -119,7 +151,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
   return (
     <div className={`${GENERAL_BENTO_CONTAINER_CLASS} px-2 sm:px-0`}>
       <div
-        className={GENERAL_BENTO_GRID_CLASS}
+        className={`${GENERAL_BENTO_GRID_CLASS} ${PLAYER_GRID_ROWS_CLASS}`}
         role="main"
         aria-label={t("characterInfoLabel")}>
         {/* Personnage */}
@@ -412,7 +444,33 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
 
               {/* Classes dynamiques */}
               <div className="flex flex-col gap-3">
+                {classFields.length > 0 && (
+                  <SpellcastingSelector
+                    labels={classFields.map((_, i) =>
+                      classNames[i] ? tClass(classNames[i] as Parameters<typeof tClass>[0]) : `${t("class")} ${i + 1}`,
+                    )}
+                    selectedIndex={activeClassIndex}
+                    onSelect={setSelectedClassIndex}
+                    invalidIndices={invalidClassIndices}
+                    errorLabel={t("classContainsErrors")}
+                    ariaLabel={t("classSelector")}
+                    trailing={
+                      classFields.length < MAX_CLASSES && (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={addClass}
+                          className="border-dashed">
+                          <Plus className="size-4" />
+                          <span className="truncate">{t("addSecondClass")}</span>
+                        </Button>
+                      )
+                    }
+                  />
+                )}
                 {classFields.map((field, index) => {
+                  if (index !== activeClassIndex) return null;
                   const globalLevel = form.watch("progression.level") || 1;
                   const classLevels = (form.watch("class") || []) as PlayerClassEntry[];
                   const totalClassLevels = classLevels.reduce(
@@ -432,30 +490,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                   return (
                     <div
                       key={field.id}
-                      className={`flex flex-col gap-3 p-4 ${index < 1 && "border-b border-border"}`}>
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold">
-                          {t("class")} {index + 1}
-                        </h4>
-                        <div className="flex items-center gap-2">
-                          {totalClassLevels > globalLevel && (
-                            <span className="text-xs text-red px-2 py-1 bg-red/10 rounded">
-                              ⚠️ {t("classLevelExceeds")}
-                            </span>
-                          )}
-                          {classFields.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeClass(index)}
-                              className="text-red hover:bg-red/10">
-                              <Trash2 className="size-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
+                      className="flex flex-col gap-3">
                       <div className="grid grid-cols-2 gap-2">
                         {/* Class Name Select */}
                         <Controller
@@ -466,14 +501,42 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                               data-invalid={fieldState.invalid}
                               orientation="vertical"
                               className="col-span-2">
-                              <label
-                                htmlFor={`class-name-${index}`}
-                                className="text-sm font-medium">
-                                {t("className")}
-                              </label>
+                              {/* Level warning and delete sit on the label row (no extra row above the fields) */}
+                              <div className="flex min-h-5 items-center justify-between gap-2">
+                                <label
+                                  htmlFor={`class-name-${index}`}
+                                  className="text-sm font-medium">
+                                  {t("className")}
+                                </label>
+                                <div className="-my-2 flex items-center gap-2">
+                                  {totalClassLevels > globalLevel && (
+                                    <span className="text-xs text-red px-2 py-1 bg-red/10 rounded">
+                                      ⚠️ {t("classLevelExceeds")}
+                                    </span>
+                                  )}
+                                  {classFields.length > 1 && (
+                                    <DeleteIconButton
+                                      onClick={() => {
+                                        removeClass(index);
+                                        setSelectedClassIndex(0);
+                                      }}
+                                      aria-label={t("removeClass", { index: index + 1 })}
+                                    />
+                                  )}
+                                </div>
+                              </div>
                               <Select
                                 value={field.value || ""}
-                                onValueChange={field.onChange}>
+                                onValueChange={(value) => {
+                                  const previousDefault = defaultHitDie(field.value);
+                                  const hitDicePath = `class.${index}.hitDice`;
+                                  const hitDice = Number(form.getValues(hitDicePath)) || 0;
+                                  field.onChange(value);
+                                  // Follow the class hit die unless the player picked another one
+                                  if (!hitDice || hitDice === previousDefault) {
+                                    form.setValue(hitDicePath, defaultHitDie(value) ?? hitDice, { shouldDirty: true });
+                                  }
+                                }}>
                                 <SelectTrigger id={`class-name-${index}`}>
                                   <SelectValue placeholder={t("selectClass")} />
                                 </SelectTrigger>
@@ -621,25 +684,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                     </div>
                   );
                 })}
-
-                {/* Bouton pour ajouter une 2e classe (max 2 classes) */}
-                {classFields.length < 2 && (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() =>
-                      appendClass({
-                        name: undefined,
-                        subclass: "",
-                        level: 1,
-                        hitDice: 0,
-                      })
-                    }
-                    className="flex items-center gap-2 border-dashed">
-                    <Plus className="size-4" />
-                    <span className="truncate">{t("addSecondClass")}</span>
-                  </Button>
-                )}
               </div>
             </div>
           </div>
@@ -648,7 +692,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
         <StatisticsUpdate
           accentColor={accentColor}
           form={form}
-          className={`${SLOTS.statistics} justify-between`}
+          className={SLOTS.statistics}
         />
 
         {/* Perception passive */}
@@ -749,7 +793,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
           </div>
           {!isSessionLaunched && (
             <p
-              className="mt-auto text-xs text-muted-foreground"
+              className="text-xs text-muted-foreground"
               role="note">
               {t("inspirationSessionOnlyNote")}
             </p>
@@ -808,7 +852,7 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                 </Select>
                 {!isSessionLaunched && (
                   <p
-                    className="mt-auto text-xs text-muted-foreground"
+                    className="text-xs text-muted-foreground"
                     role="note">
                     {t("exhaustionSessionOnlyNote")}
                   </p>
@@ -908,15 +952,6 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
               )}
             />
 
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-medium">{t("senses")}</h3>
-              <SensesUpdateSection
-                form={form}
-                accentColor={accentColor}
-                embedded
-              />
-            </div>
-
             {/* Tools */}
             <Controller
               name="stats.tools"
@@ -1012,6 +1047,14 @@ export default function PlayerGeneralTabEdit({ player, accentColor, avatar, form
                 </Field>
               )}
             />
+
+            <div className="flex flex-col gap-2 @lg:col-span-full @4xl:col-span-2">
+              <SensesUpdateSection
+                form={form}
+                accentColor={accentColor}
+                embedded
+              />
+            </div>
           </div>
         </GeneralSectionCard>
       </div>

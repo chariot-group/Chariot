@@ -2,11 +2,12 @@
 
 import { Controller, type Path, type UseFormReturn } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { ArrowRightLeft, Check, Trash2 } from "lucide-react";
+import { ArrowRightLeft, Check } from "lucide-react";
 import type { Character } from "@/types/character";
 import { Field, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -116,17 +117,7 @@ export default function SpellcastingEditCard({
           confirmLabel={tMagic("removeSpellcastingConfirm")}
           cancelLabel={tCommon("cancel")}
           onConfirm={onRemoveBlock}>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="text-red-500"
-            aria-label={tMagic("removeSpellcasting")}>
-            <Trash2
-              className="size-4"
-              aria-hidden="true"
-            />
-          </Button>
+          <DeleteIconButton aria-label={tMagic("removeSpellcasting")} />
         </ConfirmDialog>
       }>
       {prepared && (

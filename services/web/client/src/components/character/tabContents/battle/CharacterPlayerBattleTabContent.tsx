@@ -1,6 +1,6 @@
 import { Player } from "@/types/character";
 import PlayerBattleTabContent from "@/components/character/tabContents/battle/view/PlayerBattleTabContent";
-import PlayerBattleTabEdit from "@/components/character/tabContents/battle/form/PlayerBattleTabEdit";
+import { LazyPlayerBattleTabEdit as PlayerBattleTabEdit } from "@/components/lazy/lazyCharacterEditForms";
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterBattleTabContentProps {

@@ -1,4 +1,5 @@
 import type { DamageDetails } from "@/types/character";
+import { DICE_TYPES } from "@/utils/magic.utils";
 
 /** @see FR-character-spell-multi-damage */
 export const EMPTY_SPELL_DAMAGE_DETAILS: DamageDetails = {
@@ -163,4 +164,40 @@ export function formatSpellDamageList(
 
     const fallback = damageFormula?.trim();
     return fallback || null;
+}
+
+export type SpellDiceFields = Pick<DamageDetails, "diceCount" | "diceType" | "bonus">;
+
+const DICE_FORMULA_REGEX = /^(\d+)d(\d+|%)([+-]\d+)?$/i;
+
+/**
+ * Parse the dice field of a spell damage / healing line (`8d6+2`, `2d6 - 1`, `1d%`).
+ * Spaces are ignored and the die must be a standard one; an empty text clears the dice.
+ * @returns the structured dice, or `null` when the text is not a valid formula
+ * @see FR-character-magic-list-card, FR-character-spell-multi-damage
+ */
+export function parseSpellDiceFormula(text: string): SpellDiceFields | null {
+    const compact = text.replace(/\s+/g, "");
+    if (compact === "") {
+        return { diceCount: null, diceType: null, bonus: null };
+    }
+
+    const match = compact.match(DICE_FORMULA_REGEX);
+    if (!match) {
+        return null;
+    }
+
+    const diceCount = parseInt(match[1], 10);
+    const diceType = match[2] === "%" ? "d100" : `d${parseInt(match[2], 10)}`;
+    if (diceCount < 1 || !DICE_TYPES.includes(diceType)) {
+        return null;
+    }
+
+    const bonus = match[3] ? parseInt(match[3], 10) : null;
+    return { diceCount, diceType, bonus: bonus === 0 ? null : bonus };
+}
+
+/** Stored dice → text of the spell dice field (`""` when no dice are set). */
+export function formatSpellDiceFormula(dice: Partial<SpellDiceFields> | null | undefined): string {
+    return formatDamageFormula(dice?.diceCount, dice?.diceType, dice?.bonus) ?? "";
 }
