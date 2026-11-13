@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import CharacterIdentityCard, {
-  FACTS_TWO_COLUMNS_CLASS,
+  FACTS_DENSE_TWO_COLUMNS_CLASS,
 } from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
 import { render } from "@/components/character/tabContents/__tests__/bentoRender";
 import { FACT_CELL_CLASS } from "@/components/character/tabContents/shared/factCell";
@@ -46,7 +46,7 @@ describe("CharacterIdentityCard", () => {
     expect(html).not.toContain("border-l");
     expect(html).not.toMatch(/(?<![:\w-])bg-gray-middle-light\/\d+/);
     expect(html).toContain(
-      `<dl class="grid gap-x-4 gap-y-3 @md:gap-y-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`,
+      `<dl class="grid gap-y-2 gap-x-2 sm:gap-x-3 ${escapeAttr(FACTS_DENSE_TWO_COLUMNS_CLASS)}">`,
     );
     expect(text).toContain("raceLabel Elfe Berserker");
     expect(text).toContain("levelLabel 3 900 XP");
@@ -72,14 +72,8 @@ describe("CharacterIdentityCard", () => {
     );
 
     expect(factCells(html)).toHaveLength(3);
-    expect(FACTS_TWO_COLUMNS_CLASS.split(" ")).toEqual([
-      "grid-cols-1",
-      "@md:grid-cols-2",
-      "@md:[&>div:last-child:nth-child(odd)]:col-span-2",
-    ]);
-    expect(html).toContain('<div class="@container min-w-0">');
     expect(html).toContain(
-      `<dl class="grid gap-x-4 gap-y-3 @md:gap-y-2 ${escapeAttr(FACTS_TWO_COLUMNS_CLASS)}">`,
+      `<dl class="grid gap-y-2 gap-x-2 sm:gap-x-3 ${escapeAttr(FACTS_DENSE_TWO_COLUMNS_CLASS)}">`,
     );
     expect(html).not.toContain(">background<");
   });
@@ -97,7 +91,7 @@ describe("CharacterIdentityCard", () => {
     const avatarEnd = html.indexOf('<span data-avatar=""></span></div></div>');
 
     expect(avatarEnd).toBeGreaterThan(0);
-    expect(html.indexOf('<dl class="grid gap-x-4')).toBeGreaterThan(avatarEnd);
+    expect(html.indexOf('<dl class="grid gap-y-2')).toBeGreaterThan(avatarEnd);
     expect(html.indexOf("<ul")).toBeGreaterThan(avatarEnd);
   });
 
@@ -160,7 +154,7 @@ describe("CharacterIdentityCard", () => {
     );
 
     expect(factCells(html)).toHaveLength(1);
-    expect(html).toContain('<dl class="grid gap-x-4 gap-y-3 @md:gap-y-2 grid-cols-1">');
+    expect(html).toContain('<dl class="grid gap-y-2 gap-x-2 sm:gap-x-3 grid-cols-1">');
     expect(html.match(/<dd/g)).toHaveLength(2);
     expect(html).toMatch(/<dd class="[^"]*font-bold[^"]*"><span[^>]*>Humanoïde<\/span><\/dd>/);
     expect(html).not.toContain("«");

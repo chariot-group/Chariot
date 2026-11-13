@@ -45,22 +45,48 @@ export const TRUNCATE_ON_HOVER_DEVICES_CLASS = "min-w-0 wrap-break-word [@media(
 export const FACTS_TWO_COLUMNS_CLASS =
   "grid-cols-1 @md:grid-cols-2 @md:[&>div:last-child:nth-child(odd)]:col-span-2";
 
+/** Identity column beside avatar (sheet + Companions): two columns on typical widths. */
+export const FACTS_DENSE_TWO_COLUMNS_CLASS =
+  "grid-cols-2 [&>div:last-child:nth-child(odd)]:col-span-2";
+
+/** @deprecated Use FACTS_DENSE_TWO_COLUMNS_CLASS */
+export const FACTS_COMPANION_TWO_COLUMNS_CLASS = FACTS_DENSE_TWO_COLUMNS_CLASS;
+
 const isFilled = (value: ReactNode) => value !== null && value !== undefined && value !== false && value !== "";
 
 /**
  * Key fact cells of the « Personnage » card (statistics cell style); empty values are not rendered.
  * Reused by the Companions-tab cards. @see FR-character-identity-card, FR-npc-player-link
  */
-export function IdentityFactCells({ facts }: { facts: IdentityFact[] }) {
+export function IdentityFactCells({
+  facts,
+  /** Two columns in the narrow column beside the avatar (General « Personnage » + Companions). */
+  denseColumns = false,
+  /** @deprecated Use denseColumns */
+  companionColumns = false,
+}: {
+  facts: IdentityFact[];
+  denseColumns?: boolean;
+  companionColumns?: boolean;
+}) {
+  const useDense = denseColumns || companionColumns;
   const visibleFacts = facts.filter((fact) => isFilled(fact.value));
   if (visibleFacts.length === 0) return null;
 
+  const columnsClass =
+    visibleFacts.length <= 1
+      ? "grid-cols-1"
+      : useDense
+        ? FACTS_DENSE_TWO_COLUMNS_CLASS
+        : FACTS_TWO_COLUMNS_CLASS;
+
   return (
-    <div className={cn("@container", FACT_CELLS_FRAME_CLASS)}>
+    <div className={cn(useDense ? null : "@container", FACT_CELLS_FRAME_CLASS)}>
       <dl
         className={cn(
-          "grid gap-x-4 gap-y-3 @md:gap-y-2",
-          visibleFacts.length > 1 ? FACTS_TWO_COLUMNS_CLASS : "grid-cols-1",
+          "grid gap-y-2",
+          useDense ? "gap-x-2 sm:gap-x-3" : "gap-x-4 gap-y-3 @md:gap-y-2",
+          columnsClass,
         )}>
         {visibleFacts.map((fact) => (
           <div
@@ -86,7 +112,7 @@ export function IdentityFactCells({ facts }: { facts: IdentityFact[] }) {
 }
 
 /**
- * Read-mode « Personnage » card: name (next to the avatar) → key fact cells → classes, full width.
+ * Read-mode « Personnage » card: name beside avatar; facts full card width (`@container` grid); classes below (PC).
  * @see FR-character-identity-card, FR-character-general-bento-layout
  */
 export default function CharacterIdentityCard({
@@ -105,34 +131,34 @@ export default function CharacterIdentityCard({
 
   return (
     <Card
-      className={`gap-3 p-4 md:px-6 ${className}`}
+      className={`h-full min-w-0 gap-2 p-4 md:px-6 ${className}`}
       role="region"
       aria-labelledby="character-heading">
-      <div className="flex flex-1 flex-col justify-between gap-4">
+      <div className="flex h-full min-h-0 flex-1 flex-col justify-between gap-4">
         <div className="flex flex-col gap-3">
           <div className="flex items-start gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
               <h2
                 id="character-heading"
-                className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
+                className={`text-xl font-semibold sm:text-2xl ${accentColor}`}>
                 {t("character")}
               </h2>
-              <div className="flex min-w-0 flex-col gap-1">
-                <dl
-                  title={fullName}
-                  className={`text-lg font-bold sm:text-xl ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
-                  <div className="inline">
-                    <dt className="sr-only">{tEdit("firstname")}</dt>
-                    <dd className="inline">{firstname}</dd>
+              <dl
+                title={fullName}
+                className={`text-lg font-bold sm:text-xl ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
+                <div className="inline">
+                  <dt className="sr-only">{tEdit("firstname")}</dt>
+                  <dd className="inline">{firstname}</dd>
+                </div>
+                {lastname && (
+                  <div className="ml-[0.3em] inline">
+                    <dt className="sr-only">{tEdit("lastname")}</dt>
+                    <dd className="inline">{lastname}</dd>
                   </div>
-                  {lastname && (
-                    <div className="ml-[0.3em] inline">
-                      <dt className="sr-only">{tEdit("lastname")}</dt>
-                      <dd className="inline">{lastname}</dd>
-                    </div>
-                  )}
-                </dl>
-                {surname && (
+                )}
+              </dl>
+              <div className="min-h-[1.375rem] sm:min-h-[1.5rem]">
+                {surname ? (
                   <dl className="min-w-0">
                     <div>
                       <dt className="sr-only">{tEdit("surname")}</dt>
@@ -143,13 +169,16 @@ export default function CharacterIdentityCard({
                       </dd>
                     </div>
                   </dl>
-                )}
+                ) : null}
               </div>
             </div>
             {avatar ? <div className="shrink-0 self-start">{avatar}</div> : null}
           </div>
 
-          <IdentityFactCells facts={facts} />
+          <IdentityFactCells
+            facts={facts}
+            denseColumns
+          />
         </div>
 
         {classes.length > 0 && (

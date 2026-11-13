@@ -25,8 +25,8 @@ interface CompanionNpcCardProps {
 }
 
 /**
- * Linked NPC card reusing the read-mode « Personnage » card: name heading (tab violet) + nickname next to
- * the avatar, then the same NPC fact cells full width. The whole card surface navigates; unlink sits in a
+ * Linked NPC card reusing the read-mode « Personnage » layout: facts in the column beside the avatar.
+ * The whole card surface navigates; unlink sits in a
  * footer above the overlay.
  * @see FR-npc-player-link
  * @see FR-character-identity-card
@@ -46,7 +46,7 @@ export function CompanionNpcCard({
 
   return (
     <Card
-      className="relative min-w-0 h-full w-full gap-3 overflow-hidden p-4 md:px-6"
+      className="relative h-full min-w-0 w-full gap-2 overflow-hidden p-4 md:px-6"
       role="region"
       aria-labelledby={headingId}>
       <Link
@@ -55,8 +55,8 @@ export function CompanionNpcCard({
         className="absolute inset-0 z-0 rounded-[24px] focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/50"
       />
 
-      <div className="pointer-events-none relative z-10 flex flex-1 flex-col gap-3">
-        <div className="flex items-start gap-3">
+      <div className="pointer-events-none relative z-10 flex h-full min-h-0 flex-col gap-2">
+        <div className="flex flex-1 items-start gap-3">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <h2
               id={headingId}
@@ -64,18 +64,26 @@ export function CompanionNpcCard({
               className={`text-lg font-bold text-primary-light sm:text-xl ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
               {identity.fullName}
             </h2>
-            {identity.surname ? (
-              <p
-                title={`« ${identity.surname} »`}
-                className={`text-sm italic text-muted-foreground sm:text-base ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
-                « {identity.surname} »
-              </p>
-            ) : null}
+            <div className="min-h-[1.375rem] sm:min-h-[1.5rem]">
+              {identity.surname ? (
+                <p
+                  title={`« ${identity.surname} »`}
+                  className={`text-sm italic text-muted-foreground sm:text-base ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
+                  « {identity.surname} »
+                </p>
+              ) : null}
+            </div>
             {identity.groupLabel ? (
               <p className={`text-xs text-muted-foreground sm:text-sm ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
                 {identity.groupLabel}
               </p>
             ) : null}
+            <div className="mt-0.5 min-w-0">
+              <IdentityFactCells
+                facts={facts}
+                denseColumns
+              />
+            </div>
           </div>
           <div className="w-16 shrink-0 self-start aspect-[4/5] sm:w-20 md:w-24">
             <MediaAvatar
@@ -89,8 +97,6 @@ export function CompanionNpcCard({
             />
           </div>
         </div>
-
-        <IdentityFactCells facts={facts} />
       </div>
 
       {isEditing ? (

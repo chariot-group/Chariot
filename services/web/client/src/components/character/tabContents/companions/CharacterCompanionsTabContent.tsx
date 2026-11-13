@@ -256,7 +256,7 @@ export default function CharacterCompanionsTabContent({
             {sortedCompanions.map((npc) => (
               <li
                 key={npc._id}
-                className={COMPANIONS_SLOTS.companion}>
+                className={cn(COMPANIONS_SLOTS.companion, "min-h-0")}>
                 <CompanionNpcCard
                   npc={npc}
                   unnamedFallback={unnamed}

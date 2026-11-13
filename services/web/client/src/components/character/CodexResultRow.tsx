@@ -11,6 +11,7 @@ interface CodexResultRowProps {
   /** Rendered on the right (e.g. Chariot / SRD badges). */
   badges?: ReactNode;
   isSelected: boolean;
+  isQueued?: boolean;
   onSelect: () => void;
 }
 
@@ -20,7 +21,15 @@ interface CodexResultRowProps {
  * are not nested inside another interactive element.
  * @see docs/design.md §5.5
  */
-export default function CodexResultRow({ name, meta, leading, badges, isSelected, onSelect }: CodexResultRowProps) {
+export default function CodexResultRow({
+  name,
+  meta,
+  leading,
+  badges,
+  isSelected,
+  isQueued = false,
+  onSelect,
+}: CodexResultRowProps) {
   const nameId = useId();
   const metaId = useId();
 
@@ -29,6 +38,7 @@ export default function CodexResultRow({ name, meta, leading, badges, isSelected
       className={cn(
         "relative flex items-start gap-2 rounded-[10px] px-3 py-2 transition-colors hover:bg-white/10 has-[>button:focus-visible]:ring-2 has-[>button:focus-visible]:ring-ring",
         isSelected && "bg-white/15 hover:bg-white/15",
+        isQueued && !isSelected && "bg-purple/5 ring-1 ring-purple/40",
       )}>
       <button
         type="button"

@@ -3010,12 +3010,59 @@ Each initiative tracker row carries:
 - Confirming a Codex premade player opens the Player create form with a Player draft (`kind: player` fields present; NPC-only fields such as challenge rating MUST NOT be invented as the character kind).
 - Edge: `searchPlayers` omits `gameSystem` when unset.
 
+### Codex Spell Search — Multi-Selection Queue
+
+**Rule**: When `CodexSpellSearchDialog` is used for spell import (`browseOnly === false`), the dialog MUST allow queueing multiple spells before a single batch import.
+
+**Behavior**:
+
+- The preview MUST offer **« Sélectionner ce sort »** to add or remove the currently previewed spell in a selection queue (key `${spellId}:${lang}`).
+- When the queue is non-empty, the footer MUST show the queue count, a collapsible list with per-entry removal, and **« Ajouter la sélection ({count}) »** which calls `onSpellSelected` once per queued spell then closes the dialog.
+- When the queue is empty, **« Utiliser ce sort »** / **« Ajouter ce sort »** MUST import only the previewed spell (unchanged single-spell flow).
+- Queued rows in the results list MUST show a visible queued indicator (not color alone).
+- `browseOnly` mode MUST NOT expose queue or import actions.
+
+**Tests**:
+
+- Nominal: queue two spells, batch add invokes `onSpellSelected` twice and closes.
+- Edge: removing the last queued entry leaves single-spell footer actions only.
+- Guard: session browse (`browseOnly`) renders no selection controls.
+
+**References**:
+
+- `services/web/client/src/components/character/tabContents/magic/CodexSpellSearchDialog.tsx`
+- `services/web/client/src/lib/codexSpellQueue.ts`
+
+### Codex Character Search — Multi-Selection Queue
+
+**Rule**: When `MonsterCodexDialog` is used for community-library character import (`browseOnly === false`), the dialog MUST allow queueing multiple Codex monsters and/or premade players before batch creation.
+
+**Behavior**:
+
+- Same interaction pattern as the Codex spell multi-selection queue: **« Sélectionner ce personnage »**, collapsible queue, **« Ajouter la sélection ({count}) »**, queued row affordance.
+- Queue keys MUST use the existing `kind:id:lang` selection key; each entry MUST resolve to a kind-preserving `CodexCreateSelection` (monster → NPC, premade player → Player).
+- **Single entry, empty queue**: **« Utiliser ce personnage »** MUST keep the current flow (draft in store → create form).
+- **Non-empty queue**: **« Ajouter la sélection »** MUST create every queued character **directly via the character create API** with the same default mapping as the Codex-prefilled create form (`groups` for the current campaign group when applicable, `[]` in Player space, `linkedPlayerId` when in the Companions create-linked flow), then close the dialog **without** opening intermediate create forms.
+- Mixed NPC and Player entries in one batch MUST be allowed when the entity-type filter allows both.
+- `browseOnly` (in-session GM library, FR-session-gm-codex-library) MUST NOT expose the queue or batch create.
+
+**Accessibility (FR-frontend-design)**:
+
+- Queue toggle buttons MUST expose `aria-pressed` and accessible names; the queue count MUST use `aria-live="polite"`.
+
+**Tests**:
+
+- Nominal: queue two entries (NPC + PJ), batch creates two characters and navigates away from the codex route without opening create forms.
+- Nominal: Companions create-linked batch sets `linkedPlayerId` on every created NPC.
+- Edge: campaign group batch assigns `groups` to the active group id.
+- Guard: `browseOnly` shows validate disabled / no queue controls.
+
 **References**:
 
 - `services/web/client/src/components/character/MonsterCodexDialog.tsx`
-- `services/web/client/src/services/CodexService.ts`
-- `services/web/client/src/utils/codexLocale.utils.ts`
-- `services/web/client/src/services/__tests__/CodexService.searchSpells.test.ts`
+- `services/web/client/src/components/character/CreateCharacterFromCodexView.tsx`
+- `services/web/client/src/lib/codexCharacterQueue.ts`
+- `services/web/client/src/lib/codexBatchCharacterCreate.ts`
 
 ---
 
@@ -4575,7 +4622,7 @@ Each initiative tracker row carries:
 - Tab id: `companions`. Labels (i18n `characterDetail.tabs.companions`): FR « Compagnons », EN « Companions », ES « Compañeros ».
 - Tab accent color: existing design token `purple` (`--purple` / `bg-purple`) with **white** text when active (the only tab with light text: black is unreadable on the violet `#4e00de`, `docs/design.md` violet usage rule). Do not invent a new color.
 - Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
-- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in the Companions tab bento grid (full width below `xl`, two per row from `xl`; see layout section below). Each card MUST reuse the read-mode « Personnage » card presentation (FR-character-identity-card): the NPC name is the card heading (bold, tab violet `text-primary-light`) with the nickname in muted italic « » below, both next to the avatar (4:5, User placeholder when missing); then, full card width, the same NPC fact cells as the « Personnage » card (Type + subtype, Alignement, Facteur de puissance + XP). When the NPC belongs to a group, the first group label MAY appear as a muted line under the name block. The fact cells MUST come from the same source as the « Personnage » card so both surfaces stay identical. Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`). Cards stretch to equal row height (`h-full` / `min-w-0`).
+- Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in the Companions tab bento grid (full width below `xl`, two per row from `xl`; see layout section below). Each card MUST reuse the read-mode « Personnage » card presentation (FR-character-identity-card): the NPC name is the card heading (bold, tab violet `text-primary-light`) with the nickname in muted italic « » below, in the column beside the avatar (4:5, User placeholder when missing); the same NPC fact cells as the « Personnage » card (Type + subtype, Alignement, Facteur de puissance + XP) MUST render **in that column under the name block**, using the vertical space next to the avatar (they MUST NOT sit on a separate full-width band below the header row). **Type** and **Alignement** MUST appear **side by side** (two columns) on typical viewports; an odd third cell (FP / XP) spans the row below. When the NPC belongs to a group, the first group label MAY appear as a muted line under the name block. The fact cells MUST come from the same source as the « Personnage » card so both surfaces stay identical. Cards in the same bento row MUST stretch to equal height (`h-full` on the card, grid default align-stretch). A **reserved min-height band** for the nickname line MUST keep cards without a nickname the same header height as cards with one (bento row alignment). Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`).
 - Read and edit mode (Player space, liaison actions enabled): the same list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. Managing liaisons MUST NOT require entering full-sheet edit mode for the other tabs. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
 - Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST NOT open a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
 - Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
@@ -6115,12 +6162,12 @@ Each initiative tracker row carries:
 - **Level 1 — Name**: first name + last name on one line, the most prominent text of the card (`text-lg sm:text-xl font-bold`). The nickname (`surname`), when present, sits right below in muted italic between « ». No visible « Prénom / Nom / Surnom » labels.
 - **Long names** (functional decision 2026-11-04, touch compromise): on devices with hover (`@media (hover: hover)`), the name line and the nickname are each truncated on one line with an ellipsis, and their full text is exposed in a native `title` shown on hover. On devices without hover (touch), they are **not** truncated and wrap (`wrap-break-word`), so the full name stays readable without a tooltip (FR-tooltip-accessibility). Truncation is visual only: the full text stays in the DOM for screen readers.
 - **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell is a stacked fact cell (design.md §5.3.4, decision 2026-11-13: line between rows, no left rule, no background, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary info. The secondary info sits **on the value line**, right after the value (smaller, muted, normal weight), wrapping only when too long, so every cell is two lines (label + value) and cells side by side keep the same height (decision 2026-11-13: a 3-line cell next to a 2-line one looked uneven):
-  - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. **One column below `@md` card width** (decision 2026-11-13 amended: two columns from `@sm` cramped type / alignment / FP on mobile); **2 × 2 from `@md`**. Below `@md`, secondary info (subtype, XP…) stacks under the value; from `@md` it stays inline after the value so side-by-side cells keep even height. When an odd number of cells is shown (an empty value is not rendered), the last one spans the whole row in two-column mode so no empty slot suggests a missing fact.
-  - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment · « Facteur de puissance » → formatted challenge rating (`1/4`, `2`…), « X XP » as secondary line. Same responsive grid as the PC. The challenge rating cell is always rendered (CR `0` included): it carries the CR / XP information formerly shown in the removed sheet header (decision 2026-11-13).
+  - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. **Full card width** below the name/avatar row: **two columns** whenever at least two cells are shown (`denseColumns` / `grid-cols-2`; odd last cell spans the row). Single visible cell stays one column.
+  - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment · « Facteur de puissance » → formatted challenge rating (`1/4`, `2`…), « X XP » as secondary line. Same two-column full-width grid as the PC. The challenge rating cell is always rendered (CR `0` included).
   - Alignment and background live in this card (decision 2026-11-04): they are identity data and no longer get their own General-tab tiles, which stretched to their row height for a single value. In edit mode their fields (alignment select, background combobox) sit in the « Personnage » edit card, after race and level and **before the classes**.
   Empty secondary info is omitted; a cell whose value is empty is not rendered. « secondary line » below means this inline secondary info.
 - **Level 3 — Classes (PC only)**: small uppercase muted label « Classes », then one plain row per class, rows separated by a thin line (design.md §5.3.4, decision 2026-11-13: no left rule, no background): class name in bold + a level badge, subclass in muted text under the class name when set. This replaces both the « Classes : » line and the « Sous-classe de X : » lines (each class is shown once). The block is hidden when the PC has no class.
-- **Layout**: only the name block (level 1) sits next to the avatar; key facts and classes take the **full card width** below it (no empty column under the avatar).
+- **Layout**: only the name block (level 1) sits next to the avatar (reserved nickname min-height when absent); key facts (level 2) use the **full card width** below that row (two-column fact grid when possible — same `denseColumns` helper as Companions, but **not** stacked under the surname in the avatar column). **Classes** (level 3, PC only) stay **full card width** below the facts.
 - **Bento fill**: the PC card spans two rows; name and key facts stay at the top and the classes block is pushed to the bottom (`justify-between`), so the card has no blank bottom (FR-character-general-bento-layout).
 - **Style**: only documented tokens (design.md §2, §4); no new colors, no nested cards.
 

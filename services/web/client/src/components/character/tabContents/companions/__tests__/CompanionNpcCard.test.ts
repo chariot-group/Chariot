@@ -27,6 +27,9 @@ describe("FR-npc-player-link — companion NPC cards", () => {
     // Same fact cells as the « Personnage » card (FR-character-identity-card).
     expect(card).toContain("useNpcIdentityFacts");
     expect(card).toContain("<IdentityFactCells");
+    expect(card).toContain("denseColumns");
+    expect(card).toContain("min-h-[1.375rem]");
+    expect(card).toContain("h-full");
     expect(card).toContain("text-primary-light");
     expect(card).toContain("buildSessionCharacterHref");
     expect(card).toContain("npc._id");
