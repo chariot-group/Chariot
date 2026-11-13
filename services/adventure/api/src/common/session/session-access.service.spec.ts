@@ -5,6 +5,9 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
+import { Logger } from '@nestjs/common';
 import { SessionAccessService } from '@/common/session/session-access.service';
 
 // @see FR-user-public-profile-read-access: User Profile Read Access by ID
@@ -25,7 +28,11 @@ describe('SessionAccessService - assertUserCoParticipant', () => {
         SessionAccessService,
         {
           provide: ConfigService,
-          useValue: { get: jest.fn().mockReturnValue(undefined) },
+          useValue: {
+            get: jest.fn((key: string) =>
+              key === 'NODE_ENV' ? 'test' : undefined,
+            ),
+          },
         },
       ],
     }).compile();
@@ -97,5 +104,66 @@ describe('SessionAccessService - assertUserCoParticipant', () => {
     await expect(
       service.assertUserCoParticipant(authHeader, sessionCode, targetUserId),
     ).rejects.toBeInstanceOf(ServiceUnavailableException);
+  });
+});
+
+// @see FR-user-public-profile-read-access: sans URL du service session, noms/avatars/fiches échouent en 503
+describe('SessionAccessService - CHARIOT_SESSION_API_URL configuration', () => {
+  const build = (env: Record<string, string | undefined>) =>
+    new SessionAccessService({
+      get: (key: string) => env[key],
+    } as unknown as ConfigService);
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it('nominal: uses the configured URL (trailing slash stripped) without error log', async () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    const fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200 });
+    (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;
+
+    const service = build({
+      CHARIOT_SESSION_API_URL: 'http://chariot-session-integ:9002/',
+      NODE_ENV: 'integration',
+    });
+    await service.assertUserCoParticipant('Bearer jwt', 'CODE', 'user-2');
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://chariot-session-integ:9002/sessions/CODE/validate-co-participant',
+      expect.anything(),
+    );
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('failure: logs an error when the URL is missing in a deployed environment', () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    build({ NODE_ENV: 'integration' });
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('CHARIOT_SESSION_API_URL is not set'),
+    );
+  });
+
+  it('edge: stays silent when the URL is missing in development or test', () => {
+    const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    build({ NODE_ENV: 'development' });
+    build({ NODE_ENV: 'test' });
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('regression: every adventure and media compose file injects CHARIOT_SESSION_API_URL', () => {
+    const servicesDir = join(__dirname, '../../../../..');
+    const files = ['dev', 'integ', 'prod'].flatMap((env) => [
+      join(servicesDir, 'adventure', `compose.${env}.yml`),
+      join(servicesDir, 'media', `compose.${env}.yml`),
+    ]);
+    const present = files.filter((f) => existsSync(f));
+    expect(present.length).toBeGreaterThan(0);
+    for (const file of present) {
+      expect({
+        file,
+        injected: readFileSync(file, 'utf8').includes(
+          'CHARIOT_SESSION_API_URL:',
+        ),
+      }).toEqual({ file, injected: true });
+    }
   });
 });
