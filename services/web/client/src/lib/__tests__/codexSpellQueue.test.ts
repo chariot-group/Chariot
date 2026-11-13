@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSpellQueued, queuedSpellKeys, toggleSpellInQueue } from "@/lib/codexSpellQueue";
+import { isSpellQueued, queuedSpellKeys, spellQueueNewestFirst, toggleSpellInQueue } from "@/lib/codexSpellQueue";
 
 const fireball = { name: "Fireball", level: 3 };
 const magicMissile = { name: "Magic Missile", level: 1 };
@@ -32,5 +32,23 @@ describe("codexSpellQueue", () => {
 
     expect(second).toHaveLength(2);
     expect(isSpellQueued(second, "spell-2:en")).toBe(true);
+  });
+
+  it("nominal: display lists the last added spell first and the first added last", () => {
+    const queued = toggleSpellInQueue(toggleSpellInQueue([], "spell-1:en", fireball), "spell-2:en", magicMissile);
+
+    expect(spellQueueNewestFirst(queued).map((entry) => entry.key)).toEqual(["spell-2:en", "spell-1:en"]);
+  });
+
+  it("edge: display order does not mutate the queue used for batch import", () => {
+    const queued = toggleSpellInQueue(toggleSpellInQueue([], "spell-1:en", fireball), "spell-2:en", magicMissile);
+
+    spellQueueNewestFirst(queued);
+
+    expect(queued.map((entry) => entry.key)).toEqual(["spell-1:en", "spell-2:en"]);
+  });
+
+  it("failure guard: empty queue displays nothing", () => {
+    expect(spellQueueNewestFirst([])).toEqual([]);
   });
 });

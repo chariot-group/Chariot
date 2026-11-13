@@ -5,7 +5,7 @@ import {
   type CodexCharacterCreateContext,
 } from "@/lib/prepareCodexCharacterCreateData";
 import { createNpcSchema, createPlayerSchema } from "@/schemas/character";
-import CharacterService from "@/services/CharacterService";
+import CharacterService, { type CharacterWriteData } from "@/services/CharacterService";
 import type { NPC, Player } from "@/types/character";
 
 type Translate = (key: string, values?: Record<string, string | number | Date>) => string;
@@ -23,11 +23,12 @@ export async function createCharactersFromCodexSelections(
   for (const selection of selections) {
     const prepared = prepareCodexCharacterCreateData(selection, context);
     if (selection.kind === "player") {
-      const parsed = await playerSchema.parseAsync(prepared);
+      // Zod output types conditions/stats more loosely than the domain types; same cast as useCharacterForm.
+      const parsed = (await playerSchema.parseAsync(prepared)) as CharacterWriteData;
       const character = await CharacterService.createCharacter("players", parsed);
       created.push(character);
     } else {
-      const parsed = await npcSchema.parseAsync(prepared);
+      const parsed = (await npcSchema.parseAsync(prepared)) as CharacterWriteData;
       const character = await CharacterService.createCharacter("npcs", parsed);
       created.push(character);
     }

@@ -3029,15 +3029,19 @@ Each initiative tracker row carries:
 **Behavior**:
 
 - The preview MUST offer **« Sélectionner ce sort »** to add or remove the currently previewed spell in a selection queue (key `${spellId}:${lang}`).
-- When the queue is non-empty, the footer MUST show the queue count, a collapsible list with per-entry removal, and **« Ajouter la sélection ({count}) »** which calls `onSpellSelected` once per queued spell then closes the dialog.
+- When the queue is non-empty, the footer MUST show the queue count, a queue list with per-entry removal, and **« Ajouter la sélection ({count}) »** which calls `onSpellSelected` once per queued spell then closes the dialog.
+- The queue list MUST open as a floating panel above the footer count trigger, closed by default, so the footer height does not grow with the queue. Entries are separated by a divider and removed with the shared trash button.
+- The queue list MUST show the most recently added spell first (last added on top, first added at the bottom). This is display order only: batch import keeps the order in which spells were added.
 - When the queue is empty, **« Utiliser ce sort »** / **« Ajouter ce sort »** MUST import only the previewed spell (unchanged single-spell flow).
 - Queued rows in the results list MUST show a visible queued indicator (not color alone).
+- Results MUST use the same keyboard-selectable result row as the Codex character search (`CodexResultRow`), so selected and queued states look identical in both dialogs.
 - `browseOnly` mode MUST NOT expose queue or import actions.
 
 **Tests**:
 
 - Nominal: queue two spells, batch add invokes `onSpellSelected` twice and closes.
 - Edge: removing the last queued entry leaves single-spell footer actions only.
+- Edge: queueing A then B lists B above A in the queue panel, while batch import still calls `onSpellSelected` for A then B.
 - Guard: session browse (`browseOnly`) renders no selection controls.
 
 **References**:

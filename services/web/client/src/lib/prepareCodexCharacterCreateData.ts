@@ -1,7 +1,7 @@
 import { DEFAULT_GAME_SYSTEM } from "@/constants/gameSystems";
 import { buildCodexImportedCombatStats } from "@/lib/codexImportedCombatStats";
 import type { CodexCreateSelection } from "@/lib/codexCharacterCreate";
-import type { NPC, Player } from "@/types/character";
+import type { Class, ClassName, NPC, Player, PlayerStats, Stats } from "@/types/character";
 
 const DEFAULT_NPC_SKILLS = {
   athletics: 0,
@@ -53,17 +53,33 @@ function resolveGroups(draftGroups: unknown, groupId?: string | null): string[] 
   if (groupId?.trim()) return [groupId.trim()];
   if (Array.isArray(draftGroups) && draftGroups.length > 0) {
     return draftGroups.map((group) =>
-      typeof group === "object" && group !== null && "_id" in group ? String((group as { _id: string })._id) : String(group),
+      typeof group === "object" && group !== null && "_id" in group
+        ? String((group as { _id: string })._id)
+        : String(group),
     );
   }
   return [];
 }
 
+/**
+ * Pre-validation payloads: same shape as the Codex-prefilled create form values, before the Zod create schema
+ * coerces them (group ids as strings, empty class name placeholder, partial stats).
+ */
+export type CodexPlayerCreatePayload = Omit<Partial<Player>, "groups" | "class" | "stats"> & {
+  groups: string[];
+  class: (Omit<Class, "name"> & { name: ClassName | "" })[];
+  stats: Partial<PlayerStats>;
+};
+export type CodexNpcCreatePayload = Omit<Partial<NPC>, "groups" | "stats"> & {
+  groups: string[];
+  stats: Partial<Stats>;
+};
+
 /** Maps a Codex draft to the same shape used by CharacterFormView before create. */
 export function prepareCodexCharacterCreateData(
   selection: CodexCreateSelection,
   context: CodexCharacterCreateContext,
-): Partial<NPC> | Partial<Player> {
+): CodexPlayerCreatePayload | CodexNpcCreatePayload {
   const combatStats = buildCodexImportedCombatStats(selection.draft);
   const groups = resolveGroups(selection.draft.groups, context.groupId);
 
@@ -130,7 +146,6 @@ export function prepareCodexCharacterCreateData(
         ...(draft.stats?.skills || {}),
       },
       senses: draft.stats?.senses ?? [],
-      proficiencyBonus: draft.stats?.proficiencyBonus ?? 2,
     },
   };
 }
