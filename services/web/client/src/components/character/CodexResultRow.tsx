@@ -36,9 +36,9 @@ export default function CodexResultRow({
   return (
     <div
       className={cn(
-        "relative flex items-start gap-2 rounded-[10px] px-3 py-2 transition-colors hover:bg-white/10 has-[>button:focus-visible]:ring-2 has-[>button:focus-visible]:ring-ring",
+        "relative flex items-start gap-2 rounded-[10px] px-3 py-2 transition-colors hover:bg-white/10 has-[>button:focus-visible]:ring-2 has-[>button:focus-visible]:ring-inset has-[>button:focus-visible]:ring-ring",
         isSelected && "bg-white/15 hover:bg-white/15",
-        isQueued && !isSelected && "bg-purple/5 ring-1 ring-purple/40",
+        isQueued && !isSelected && "bg-purple/5 ring-1 ring-inset ring-purple/40",
       )}>
       <button
         type="button"

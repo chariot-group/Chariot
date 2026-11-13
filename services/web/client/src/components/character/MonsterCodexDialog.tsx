@@ -16,7 +16,7 @@ import CodexService, {
   CodexSearchResultItem,
 } from "@/services/CodexService";
 import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft, Check, ChevronDown, Layers, ListMinus, ListPlus, X } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
@@ -320,7 +320,7 @@ export default function MonsterCodexDialog({
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
   const [preselectionError, setPreselectionError] = useState(false);
   const [characterQueue, setCharacterQueue] = useState<QueuedCharacterEntry[]>([]);
-  const [selectionDetailsOpen, setSelectionDetailsOpen] = useState(true);
+  const [selectionDetailsOpen, setSelectionDetailsOpen] = useState(false);
   const isLoadingRef = useRef(false);
   const validateButtonRef = useRef<HTMLButtonElement>(null);
   const focusValidateOnSelectRef = useRef(false);
@@ -774,6 +774,11 @@ export default function MonsterCodexDialog({
   const characterActionsDisabled = !selectedMonster || previewLangResolving || batchCreateInProgress;
   const canBatchImport = !browseOnly && Boolean(onCharactersBatchSelected);
 
+  // Close the selection panel once the queue is emptied so it does not reopen on the next selection.
+  useEffect(() => {
+    if (!isMultiSelectionMode) setSelectionDetailsOpen(false);
+  }, [isMultiSelectionMode]);
+
   const handleValidate = () => {
     if (characterQueue.length > 0) return;
     const selection = buildCurrentSelection();
@@ -985,7 +990,7 @@ export default function MonsterCodexDialog({
 
                   return (
                     <React.Fragment>
-                      <div className="flex flex-col gap-0.5">
+                      <div className="flex flex-col gap-1.5">
                         {searchResults.flatMap((result) => {
                           if (result.kind === "monster") {
                             const monsterItem = result.item;
@@ -1155,18 +1160,16 @@ export default function MonsterCodexDialog({
       {!embedded ? (
         <DialogFooter
           className={cn(
-            "shrink-0 gap-2 border-t border-frame px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:gap-3 lg:px-6 lg:py-4",
+            "shrink-0 gap-2 border-t border-frame px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-center lg:gap-3 lg:px-6 lg:py-4",
             canBatchImport && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end",
           )}>
           {canBatchImport && isMultiSelectionMode ? (
-            <Collapsible
+            <Popover
               open={selectionDetailsOpen}
-              onOpenChange={setSelectionDetailsOpen}
-              className="min-w-0 w-full lg:max-w-md lg:flex-1">
-              <CollapsibleTrigger
+              onOpenChange={setSelectionDetailsOpen}>
+              <PopoverTrigger
                 type="button"
-                aria-expanded={selectionDetailsOpen}
-                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-primary-light transition-colors hover:text-primary-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
+                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-primary-light transition-colors hover:text-primary-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:w-auto lg:max-w-md">
                 <ChevronDown
                   className={cn("size-4 shrink-0 transition-transform", !selectionDetailsOpen && "rotate-180")}
                   aria-hidden="true"
@@ -1176,11 +1179,13 @@ export default function MonsterCodexDialog({
                   aria-live="polite">
                   {tDialog("selectionCount", { count: characterQueue.length })}
                 </span>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2">
-                <ul
-                  aria-label={tDialog("selectionDetailsList")}
-                  className="max-h-36 overflow-y-auto rounded-[15px] border border-purple/20 bg-purple/5 p-1.5 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-purple/30">
+              </PopoverTrigger>
+              <PopoverContent
+                side="top"
+                align="start"
+                aria-label={tDialog("selectionDetailsList")}
+                className="w-[min(28rem,calc(100vw-2rem))] max-w-none p-1.5">
+                <ul className="flex max-h-60 flex-col gap-0.5 overflow-y-auto pr-1 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover [&::-webkit-scrollbar-track]:bg-scrollbar-track">
                   {characterQueue.map(({ key, selection }) => {
                     const displayName = characterDisplayName(selection) || tDialog("unknownEntry");
                     const kindLabel =
@@ -1211,8 +1216,8 @@ export default function MonsterCodexDialog({
                     );
                   })}
                 </ul>
-              </CollapsibleContent>
-            </Collapsible>
+              </PopoverContent>
+            </Popover>
           ) : null}
           <div className="flex w-full min-w-0 items-center justify-end gap-1.5 sm:gap-2 lg:w-auto">
             <Button
