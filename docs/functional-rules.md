@@ -2763,6 +2763,13 @@ Each initiative tracker row carries:
 - Error indicators must remain compatible with keyboard navigation and screen readers.
 - Validation behavior and messages must be internationalized for supported locales.
 
+### Group and campaign names
+
+- A group name and a campaign name MUST be 1 to 50 characters long after trimming, on creation and on rename. The API (adventure) MUST enforce the same limit on create and update endpoints; the web client MUST use one shared constant for it.
+- The create and rename dialogs MUST show a character counter (`n/50`) under the name field, linked to the input with `aria-describedby`.
+- Above 50 characters the field MUST show a translated message stating the limit (e.g. "Le nom ne doit pas dépasser 50 caractères"), expose `aria-invalid="true"`, and the save action MUST stay disabled. A pasted name MUST NOT be truncated silently.
+- An API validation error on `label` (HTTP 400) MUST be shown on the name field with the same message, not as a generic creation/update failure toast. The generic toast is reserved for non-validation failures (network, 5xx).
+
 **Prohibitions**:
 
 - Showing only a generic toast such as "form cannot be submitted" when field-level errors exist.
@@ -2778,11 +2785,16 @@ Each initiative tracker row carries:
 - API validation errors with field paths are displayed on the corresponding fields.
 - Global errors are shown only for non-field-specific failures.
 - Keyboard and screen-reader accessibility expose invalid field and tab error states.
+- Group/campaign names — nominal: a 50-character name is accepted (client and API), counter shows `50/50`.
+- Group/campaign names — edge: a 51-character pasted name is kept as typed, shows the field error, marks the input invalid and disables save; a name padded with spaces is measured after trimming.
+- Group/campaign names — failure: an API 400 on `label` shows the field-level message; a network/5xx error keeps the generic toast. `UpdateCampaignDto` / `UpdateGroupDto` reject a 51-character `label`.
 
 **References**:
 
 - `services/web/client/src/`
 - `services/web/client/src/components/character/`
+- `services/web/client/src/components/dialogs/` (`CreateGroupDialog`, `EditGroupDialog`, `CreateCampaignDialog`, `EditCampaignDialog`)
+- `services/adventure/api/src/resources/group/dto/`, `services/adventure/api/src/resources/campaign/dto/`
 
 ---
 
@@ -3245,6 +3257,14 @@ Each initiative tracker row carries:
 - Tapping the row still performs primary navigation; the overflow control MUST NOT block navigation.
 - Desktop viewports (`lg` and above) MUST keep right-click context menu as the primary secondary-action entry point.
 
+**Truncated group names** (functional decision 2026-11-13):
+
+- A group name is always shown on one line in the sidebar header (`truncate`), on every screen size, in the active and archived sections.
+- The group header MUST NOT show the group name in a hover tooltip (decision 2026-11-13). No native `title` attribute on the header either: the "contains displayed sheet" indication (FR-sidebar-group-collapsed-active-indicator) is shown in the app tooltip (`TooltipContent`) on hover and keyboard focus, and only then.
+- Touch and desktop: the full name is read in the group menus. The group context menu and overflow menu (`⋮`) MUST start with the full group name as a non-interactive menu label (wrapping on several lines, never truncated), followed by a separator, then the actions. Tapping the header still only expands/collapses the group (no tap tooltip on the header).
+- This is the touch access to the full name required by FR-tooltip-accessibility; no extra `?` button on the header. When actions are disabled (active session), there is no menu and the full name stays available to screen readers only (truncation is visual).
+- Screen readers read the full name from the DOM (truncation is visual only).
+
 **Confirmation dialogs**:
 
 - **Enter** MUST confirm the primary/destructive action when focus is inside the dialog and no text input is focused.
@@ -3274,6 +3294,9 @@ Each initiative tracker row carries:
 - Confirmation: Enter confirms, Escape cancels on delete dialogs.
 - Edge: move character excludes current group; delete redirects when viewing deleted entity.
 - Failure: confirm dialog ignores Enter while `isDeleting` / async in progress.
+- Truncated group names — nominal: a cut group name is shown in full as the first label of the group menu.
+- Truncated group names — edge: hovering the header never shows the name; a collapsed group holding the displayed sheet shows the active indication in the app tooltip (no native `title`).
+- Truncated group names — failure/guard: tapping the header still toggles the group; the menu title is not a menu item (not selectable).
 
 **References**:
 
@@ -6098,7 +6121,7 @@ Each initiative tracker row carries:
 
 - **Scope**: read mode of `PlayerGeneralTabContent` and `NpcGeneralTabContent`. Card slot, heading (« Personnage », accent color), avatar placement and edit mode are unchanged (FR-character-general-bento-layout, FR-character-detail-view).
 - **Level 1 — Name**: first name + last name on one line, the most prominent text of the card (`text-lg sm:text-xl font-bold`). The nickname (`surname`), when present, sits right below in muted italic between « ». No visible « Prénom / Nom / Surnom » labels.
-- **Long names** (functional decision 2026-11-04, touch compromise): on devices with hover (`@media (hover: hover)`), the name line and the nickname are each truncated on one line with an ellipsis, and their full text is exposed in a native `title` shown on hover. On devices without hover (touch), they are **not** truncated and wrap (`wrap-break-word`), so the full name stays readable without a tooltip (FR-tooltip-accessibility). Truncation is visual only: the full text stays in the DOM for screen readers.
+- **Long names** (functional decision 2026-11-12, replaces the 2026-11-04 touch compromise): on every screen size, the name line and the nickname are each clamped to **two lines** with an ellipsis (`TruncatedText`, `lines={2}`). When — and only when — the text is actually cut, its full value is shown in the app tooltip (`TooltipContent`, `truncatedTextTooltipClassName`) on mouse hover, and toggled by a tap on touch devices (the name is not interactive, so the tap has no other effect; FR-tooltip-accessibility). Text that fits shows no tooltip and no `cursor-help`. Truncation is visual only: the full text stays in the DOM for screen readers. No native `title` attribute.
 - **Level 2 — Key facts**: a grid of fact cells, more prominent than the nickname and using the card width. Each cell uses the statistics card cell style (design.md §5.3.4: `bg-gray-middle-light/50`, `rounded-[10px]`, small uppercase muted label + bold value `text-base sm:text-lg`), with an optional muted secondary line:
   - PC: « Race » → race, subrace as secondary line · « Niveau » → global level, « X XP » as secondary line · « Alignement » → alignment · « Historique » → background. 2 × 2 cells; when an odd number of cells is shown (an empty value is not rendered), the last one spans the whole row so no empty slot suggests a missing fact.
   - NPC: « Type » → type, subtype as secondary line · « Alignement » → alignment. Two equal columns.
@@ -6120,21 +6143,24 @@ Each initiative tracker row carries:
 
 - Flat `Label : value` rows of identical weight for the identity.
 - Showing a class twice (classes line + subclass line).
-- Truncating the name on touch devices, or truncating it without a `title` carrying the full text.
+- Truncating the name or nickname without the app tooltip carrying the full text, or opening that tooltip when nothing is cut.
+- Clamping the name differently by screen size or pointer type.
 - Fixed heights or inner scroll on the card.
 
 **Tests**:
 
 - Nominal: PC with name, nickname, race/subrace, level/XP and two classes renders the full name, the nickname, two fact cells (race, level) and two class rows with their subclass.
 - Edge: no last name / no nickname / no subrace / class without subclass → the part is omitted (no empty secondary line, no empty parentheses); NPC renders name + one type cell and no classes block.
-- Edge: a long name and nickname carry their full text in `title` and are truncated only under the hover media variant (wrap otherwise).
+- Edge: a long name and nickname are clamped to two lines on every screen size (`line-clamp-2`, no hover-only variant) and carry no native `title`; the tooltip content is the full text.
+- Edge: a name that fits shows no `cursor-help` and its tooltip cannot open; a touch tap on a cut name toggles the tooltip (`TruncatedText` tests).
 - Failure / guard: PC with an empty class list renders no classes block; the `sr-only` labels are present for the identity fields.
 
 **References**:
 
 - `services/web/client/src/components/character/tabContents/general/view/PlayerGeneralTabContent.tsx`
 - `services/web/client/src/components/character/tabContents/general/view/NpcGeneralTabContent.tsx`
-- `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4
+- `services/web/client/src/components/ui/truncated-text.tsx`
+- `docs/design.md` — §4.1, §5.3, §5.3.1, §5.3.4, §6.4
 - `docs/functional-rules.md` — FR-character-general-bento-layout, FR-character-detail-view, FR-frontend-design
 
 ---

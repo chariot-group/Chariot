@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { TruncatedText } from "@/components/ui/truncated-text";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
@@ -31,13 +32,6 @@ interface CharacterIdentityCardProps {
   classes?: IdentityClassItem[];
 }
 
-/**
- * One line + ellipsis where hover can reveal the `title`; wraps on touch devices so the full
- * text stays readable without a tooltip (FR-tooltip-accessibility).
- * @see FR-character-identity-card
- */
-export const TRUNCATE_ON_HOVER_DEVICES_CLASS = "min-w-0 wrap-break-word [@media(hover:hover)]:truncate";
-
 /** Two columns; an odd last cell spans the row so no empty slot suggests a missing fact. */
 export const FACTS_TWO_COLUMNS_CLASS = "grid-cols-2 [&>div:last-child:nth-child(odd)]:col-span-2";
 
@@ -45,6 +39,7 @@ const isFilled = (value: ReactNode) => value !== null && value !== undefined && 
 
 /**
  * Read-mode « Personnage » card: name (next to the avatar) → key fact cells → classes, full width.
+ * Name and nickname are clamped to two lines on every screen; the app tooltip shows them in full when cut.
  * @see FR-character-identity-card, FR-character-general-bento-layout
  */
 export default function CharacterIdentityCard({
@@ -77,9 +72,11 @@ export default function CharacterIdentityCard({
                 {t("character")}
               </h2>
               <div className="flex min-w-0 flex-col gap-1">
-                <dl
-                  title={fullName}
-                  className={`text-lg font-bold sm:text-xl ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
+                <TruncatedText
+                  as="dl"
+                  lines={2}
+                  text={fullName}
+                  className="text-lg font-bold sm:text-xl">
                   <div className="inline">
                     <dt className="sr-only">{tEdit("firstname")}</dt>
                     <dd className="inline">{firstname}</dd>
@@ -90,16 +87,17 @@ export default function CharacterIdentityCard({
                       <dd className="inline">{lastname}</dd>
                     </div>
                   )}
-                </dl>
+                </TruncatedText>
                 {surname && (
                   <dl className="min-w-0">
                     <div>
                       <dt className="sr-only">{tEdit("surname")}</dt>
-                      <dd
-                        title={`« ${surname} »`}
-                        className={`text-sm italic text-muted-foreground sm:text-base ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
-                        « {surname} »
-                      </dd>
+                      <TruncatedText
+                        as="dd"
+                        lines={2}
+                        text={`« ${surname} »`}
+                        className="text-sm italic text-muted-foreground sm:text-base"
+                      />
                     </div>
                   </dl>
                 )}
