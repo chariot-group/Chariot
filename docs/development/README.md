@@ -6,7 +6,9 @@ Documentation of development processes and workflows.
 
 - [Branching policy](BRANCHING_POLICY.md) - Branch strategy and naming
 - [Release workflow](RELEASE_WORKFLOW.md) - Delivery process
+- [Dependency update policy](DEPENDENCY_POLICY.md) - Dependabot, Node requirements and deliberate pins
 - [Stripe dev flow](STRIPE_DEV_FLOW.md) - Checkout/webhook path and local test procedure
+- [E2E testing (Playwright)](E2E_TESTING.md) - Run, write and debug end-to-end scenarios, read reports and traces
 
 ## 🔗 Useful links
 

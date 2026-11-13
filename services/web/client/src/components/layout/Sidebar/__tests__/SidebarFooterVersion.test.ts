@@ -23,7 +23,7 @@ function readProfilePreferencesSectionSource() {
   return readFileSync(profilePreferencesSectionPath, "utf8");
 }
 
-describe("FR-app-version-display — app version display", () => {
+describe("FR-release-notes — app version display", () => {
   it("nominal: displays the app version in ProfilePreferencesSection alongside the release notes button", () => {
     const source = readProfilePreferencesSectionSource();
 

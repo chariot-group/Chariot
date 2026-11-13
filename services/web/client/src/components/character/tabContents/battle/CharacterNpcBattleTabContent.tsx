@@ -1,6 +1,6 @@
 import { NPC } from "@/types/character";
 import NPCBattleTabContent from "@/components/character/tabContents/battle/view/NPCBattleTabContent";
-import NPCBattleTabEdit from "@/components/character/tabContents/battle/form/NPCBattleTabEdit";
+import { LazyNPCBattleTabEdit as NPCBattleTabEdit } from "@/components/lazy/lazyCharacterEditForms";
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterNpcBattleTabContentProps {
@@ -10,10 +10,26 @@ interface CharacterNpcBattleTabContentProps {
   isEditing: boolean;
 }
 
-export default function CharacterNpcBattleTabContent({ character, accentColor, form, isEditing }: CharacterNpcBattleTabContentProps) {
+export default function CharacterNpcBattleTabContent({
+  character,
+  accentColor,
+  form,
+  isEditing,
+}: CharacterNpcBattleTabContentProps) {
   if (isEditing) {
-    return <NPCBattleTabEdit npc={character} accentColor={accentColor} form={form} />;
+    return (
+      <NPCBattleTabEdit
+        npc={character}
+        accentColor={accentColor}
+        form={form}
+      />
+    );
   }
 
-  return <NPCBattleTabContent npc={character} accentColor={accentColor} />;
+  return (
+    <NPCBattleTabContent
+      npc={character}
+      accentColor={accentColor}
+    />
+  );
 }

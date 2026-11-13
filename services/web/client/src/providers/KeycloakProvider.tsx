@@ -3,13 +3,13 @@
 import Keycloak, { KeycloakInitOptions } from "keycloak-js";
 import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { setKeycloakInstance } from "@/services/ApiService";
+import { setKeycloakInstance } from "@/lib/keycloakInstance";
 import { saveStoredLocale, buildKeycloakAuthOptions, resolveAuthLocale } from "@/hooks/useLocalePreference";
-import { purgePersistedState } from "@/store";
-import { stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
+import { isOidcCallbackUrl, stripOidcCallbackParams } from "@/lib/stripOidcCallbackParams";
+import { authenticatedShellLoader } from "@/components/layout/authenticatedShellLoader";
 import { clearPostLoginCompleted } from "@/lib/postLoginNavigation";
-import { useTranslations } from "next-intl";
 import { reportClientIssue } from "@/logger/reportClientIssue";
+import AppShellSkeleton from "@/components/layout/AppShellSkeleton";
 
 interface KeycloakContextType {
   keycloak: Keycloak | null;
@@ -47,7 +47,6 @@ function buildWelcomeRedirectUri(locale: string): string {
 
 export function KeycloakProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const t = useTranslations("auth");
 
   const [keycloak, setKeycloak] = useState<Keycloak | null>(sharedKeycloak);
   const [authenticated, setAuthenticated] = useState(Boolean(sharedKeycloak?.authenticated));
@@ -104,6 +103,12 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
       };
 
       if (!sharedInitPromise) {
+        // Return from Keycloak: fetch the app shell while the code is exchanged, not after
+        // (FR-web-first-load-performance, slow-network round trip). A plain visit redirects
+        // to Keycloak right away and must not spend bandwidth on it.
+        if (isOidcCallbackUrl(window.location.href)) {
+          authenticatedShellLoader.preload();
+        }
         sharedKeycloak = new Keycloak(keycloakConfig);
         const initOptions: KeycloakInitOptions = {
           onLoad: "login-required",
@@ -216,6 +221,8 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
     const redirectUri = buildWelcomeRedirectUri(locale);
 
     try {
+      // Loaded on demand: the store is part of the authenticated shell, not of the auth gate.
+      const { purgePersistedState } = await import("@/store");
       await purgePersistedState();
       localStorage.removeItem("chariot_user_id");
       clearPostLoginCompleted();
@@ -263,27 +270,7 @@ export function KeycloakProvider({ children }: { children: ReactNode }) {
         register,
       }}>
       {loading || userTransitioning ? (
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="flex flex-col items-center gap-6">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-3 border-b-3 border-primary"></div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <div className="h-8 w-8 rounded-full bg-primary/20"></div>
-              </div>
-            </div>
-            <div className="text-center space-y-2">
-              <p className="text-white text-lg font-medium">{t("loading")}</p>
-              <p className="text-white/70 text-sm">{t("pleaseWait")}</p>
-            </div>
-            {/* Escape hatch: loading overlay used to hide Profile/logout entirely. */}
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="mt-2 rounded-md border border-white/40 px-4 py-2 text-sm text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
-              {t("logoutEscape")}
-            </button>
-          </div>
-        </div>
+        <AppShellSkeleton onLogout={() => void logout()} />
       ) : (
         children
       )}

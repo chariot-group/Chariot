@@ -1,5 +1,5 @@
 /**
- * FR-tracker-initiative-modifier-display — flush pending initiative field text
+ * FR-combat-initiative-tracker — flush pending initiative field text
  * before locking inputs (e.g. Start combat) so unblurred values are not lost.
  */
 

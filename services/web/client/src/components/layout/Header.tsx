@@ -9,10 +9,15 @@ import { useTranslations } from "next-intl";
 import Logo from "@public/logo.svg";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import React from "react";
+import { useStore } from "react-redux";
+import NavigationService from "@/services/NavigationService";
+import type { RootState } from "@/store";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { openSessionLobby, selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import { selectSelectedCampaignId } from "@/store/slices/campaignContextSlice";
+import { openSessionLobby, selectIsInSession, selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { resolveHeaderLogoClickIntent, resolveSessionLiveTone } from "@/lib/sessionPresenceUi";
+import { resolveHeaderLogoClickIntent, resolveHeaderSessionIndicatorTone } from "@/lib/sessionPresenceUi";
 import { useSessionRemainingSeconds } from "@/hooks/useSessionRemainingSeconds";
 import { cn } from "@/lib/utils";
 
@@ -20,18 +25,24 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const store = useStore<RootState>();
+  const contextMode = useAppSelector(selectContextMode);
+  const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
   const locale = pathname.split("/")[1] || "fr";
   const appVersion = process.env.NEXT_PUBLIC_APP_VERSION;
   const t = useTranslations("header");
   const tSessionTime = useTranslations("sessionTime");
   const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const remainingSeconds = useSessionRemainingSeconds();
   const logoIntent = resolveHeaderLogoClickIntent(isInSession);
-  const liveTone = resolveSessionLiveTone(remainingSeconds);
+  const liveTone = resolveHeaderSessionIndicatorTone(isSessionLaunched, remainingSeconds);
 
   const logoAriaLabel =
     logoIntent === "openSessionLobby"
-      ? liveTone === "critical"
+      ? liveTone === "preparing"
+        ? t("logoAriaLabelInSessionPreparing")
+        : liveTone === "critical"
         ? t("logoAriaLabelInSessionCritical")
         : liveTone === "warning"
           ? t("logoAriaLabelInSessionWarning")
@@ -44,7 +55,11 @@ export default function Header() {
       return;
     }
 
-    router.push(`/${locale}/welcome`);
+    // FR-welcome-onboarding-fallbacks: resolve the destination first, never flash /welcome.
+    void NavigationService.determineLogoDestination(locale, dispatch, store.getState, {
+      contextMode,
+      campaignId: selectedCampaignId,
+    }).then((destination) => router.push(destination.path));
   };
 
   const logoButton = (
@@ -67,6 +82,7 @@ export default function Header() {
           aria-hidden
           className={cn(
             "pointer-events-none absolute top-[14%] right-[18%] size-2 rounded-full ring-1 ring-background motion-reduce:animate-none",
+            liveTone === "preparing" && "bg-muted-foreground",
             liveTone === "warning" && "bg-yellow motion-safe:animate-session-warning",
             liveTone === "critical" && "bg-red motion-safe:animate-session-critical",
             liveTone === "live" && "bg-red motion-safe:animate-session-live",
@@ -89,7 +105,7 @@ export default function Header() {
           <Tooltip>
             <TooltipTrigger asChild>{logoButton}</TooltipTrigger>
             <TooltipContent className="max-w-xs sm:max-w-sm">
-              {tSessionTime("tooltip")}
+              {liveTone === "preparing" ? tSessionTime("tooltipPreparing") : tSessionTime("tooltip")}
               {liveTone === "warning" ? ` ${tSessionTime("tooltipWarning")}` : null}
               {liveTone === "critical" ? ` ${tSessionTime("tooltipCritical")}` : null}
             </TooltipContent>

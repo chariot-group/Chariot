@@ -104,7 +104,7 @@ export function ExportCharacterSheetPdfDialog({
         </fieldset>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isExporting}>
+          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={isExporting}>
             {t("cancel")}
           </Button>
           <Button

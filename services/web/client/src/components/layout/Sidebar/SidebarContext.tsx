@@ -1,5 +1,7 @@
 "use client";
 
+import { SidebarLoadMoreButton } from "@/components/layout/Sidebar/SidebarLoadMoreButton";
+import { buttonVariants } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { selectContextMode } from "@/store/slices/environmentSlice";
@@ -18,8 +20,9 @@ import GmSessionPlayersSidebarSection from "@/components/layout/Sidebar/GmSessio
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
-import { selectIsInSession, selectSessionStatus } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { cn } from "@/lib/utils";
+import { TruncatedText } from "@/components/ui/truncated-text";
 
 export default function SidebarContext() {
   const t = useTranslations("sidebar");
@@ -29,9 +32,7 @@ export default function SidebarContext() {
   const openArchived = useAppSelector(selectOpenArchivedGroups);
   const groupToOpen = useAppSelector(selectGroupToOpen);
   const archivedGroupsTotal = useAppSelector(selectArchivedGroupsTotal);
-  const isInSession = useAppSelector(selectIsInSession);
-  const sessionStatus = useAppSelector(selectSessionStatus);
-  const actionsDisabled = isInSession && sessionStatus === "launched";
+  const actionsDisabled = useAppSelector(selectIsSessionLaunched);
   const [isDeleteAllArchivedPending, setIsDeleteAllArchivedPending] = useState(false);
   const [isDeletingAllArchived, setIsDeletingAllArchived] = useState(false);
   const {
@@ -98,9 +99,16 @@ export default function SidebarContext() {
 
   return (
     <nav
-      className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-4 pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full"
+      className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 py-4 pr-2 scroll-smooth scrollbar-none"
       aria-label={t("gmNavigation")}>
-      {selectedCampaign && <h2 className="shrink-0 text-lg text-white">{selectedCampaign.label}</h2>}
+      {selectedCampaign && (
+        <TruncatedText
+          as="h2"
+          lines={2}
+          text={selectedCampaign.label}
+          className="shrink-0 text-lg text-white"
+        />
+      )}
 
       {/* ── Active groups — shown directly, no collapsible wrapper ── */}
       <CreateGroupDialog
@@ -109,12 +117,9 @@ export default function SidebarContext() {
         <button
           type="button"
           aria-label={t("createGroup")}
-          className="sidebar-btn-white flex w-full cursor-pointer items-center justify-between rounded-[12px] border bg-white px-3 py-1.5 text-left text-sm text-black transition-all duration-100 hover:bg-white/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-2">
+          className={cn(buttonVariants({ variant: "primary", align: "start" }), "w-full")}>
+          <LayersPlus aria-hidden="true" />
           {t("createGroup")}
-          <LayersPlus
-            className="h-4 w-4 shrink-0"
-            aria-hidden="true"
-          />
         </button>
       </CreateGroupDialog>
 
@@ -144,22 +149,13 @@ export default function SidebarContext() {
             />
 
             {hasMoreActive && (
-              <button
-                type="button"
-                onClick={() => void loadMoreActiveGroups()}
-                disabled={loadingMoreActive}
-                aria-busy={loadingMoreActive}
-                aria-label={t("loadMoreGroupsAria")}
-                className="w-full shrink-0 cursor-pointer rounded-[12px] border border-white/25 px-3 py-1.5 text-center text-xs text-white/90 transition-all duration-100 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border">
-                {loadingMoreActive ? (
-                  <Loader2
-                    className="mx-auto h-4 w-4 animate-spin"
-                    aria-hidden
-                  />
-                ) : (
-                  t("loadMoreGroups")
-                )}
-              </button>
+              <SidebarLoadMoreButton
+                loading={loadingMoreActive}
+                onLoadMore={loadMoreActiveGroups}
+                label={t("loadMoreGroups")}
+                ariaLabel={t("loadMoreGroupsAria")}
+                className="w-full shrink-0 cursor-pointer rounded-[12px] border border-white/25 px-3 py-1.5 text-center text-xs text-white/90 transition-all duration-100 hover:bg-white/10 hover:text-white focus-visible:border"
+              />
             )}
           </div>
 
@@ -215,22 +211,13 @@ export default function SidebarContext() {
                   />
 
                   {hasMoreArchived && (
-                    <button
-                      type="button"
-                      onClick={() => void loadMoreArchivedGroups()}
-                      disabled={loadingMoreArchived}
-                      aria-busy={loadingMoreArchived}
-                      aria-label={t("loadMoreGroupsAria")}
-                      className="w-full shrink-0 cursor-pointer rounded-[12px] border border-white/25 px-3 py-1.5 text-center text-xs text-white/90 transition-all duration-100 hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none">
-                      {loadingMoreArchived ? (
-                        <Loader2
-                          className="mx-auto h-4 w-4 animate-spin"
-                          aria-hidden
-                        />
-                      ) : (
-                        t("loadMoreGroups")
-                      )}
-                    </button>
+                    <SidebarLoadMoreButton
+                      loading={loadingMoreArchived}
+                      onLoadMore={loadMoreArchivedGroups}
+                      label={t("loadMoreGroups")}
+                      ariaLabel={t("loadMoreGroupsAria")}
+                      className="w-full shrink-0 cursor-pointer rounded-[12px] border border-white/25 px-3 py-1.5 text-center text-xs text-white/90 transition-all duration-100 hover:bg-white/10 hover:text-white focus-visible:outline-none"
+                    />
                   )}
                 </>
               )}

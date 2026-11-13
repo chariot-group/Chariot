@@ -6,8 +6,6 @@ services:
     container_name: chariot-gateway-prod
     restart: unless-stopped
     working_dir: /app
-    ports:
-      - "127.0.0.1:8082:8082"
     environment:
       NODE_ENV: production
       GATEWAY_PORT: ${GATEWAY_PORT:-8082}
@@ -39,6 +37,18 @@ services:
       - "traefik.http.routers.chariot-gateway-prod.tls.certresolver=letsencrypt"
       - "traefik.http.services.chariot-gateway-prod.loadbalancer.server.port=8082"
       - "traefik.http.routers.chariot-gateway-prod.service=chariot-gateway-prod"
+      # Same-origin API for the web client: https://${FRONTEND_HOST}/gateway/* → gateway (prefix stripped).
+      # No CORS preflight and no extra TLS connection on slow networks. Cookies are dropped both ways:
+      # the API authenticates with the bearer token only. @see FR-web-first-load-performance (req. 18)
+      - "traefik.http.routers.chariot-gateway-prod-app.rule=Host(`${FRONTEND_HOST}`) && PathPrefix(`/gateway/`)"
+      - "traefik.http.routers.chariot-gateway-prod-app.priority=1000"
+      - "traefik.http.routers.chariot-gateway-prod-app.entrypoints=websecure"
+      - "traefik.http.routers.chariot-gateway-prod-app.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.chariot-gateway-prod-app.service=chariot-gateway-prod"
+      - "traefik.http.routers.chariot-gateway-prod-app.middlewares=chariot-gateway-prod-app-strip,chariot-gateway-prod-app-no-cookies"
+      - "traefik.http.middlewares.chariot-gateway-prod-app-strip.stripprefix.prefixes=/gateway"
+      - "traefik.http.middlewares.chariot-gateway-prod-app-no-cookies.headers.customrequestheaders.Cookie="
+      - "traefik.http.middlewares.chariot-gateway-prod-app-no-cookies.headers.customresponseheaders.Set-Cookie="
       - "traefik.docker.network=traefik-public"
       - "com.centurylinklabs.watchtower.enable=true"
     healthcheck:

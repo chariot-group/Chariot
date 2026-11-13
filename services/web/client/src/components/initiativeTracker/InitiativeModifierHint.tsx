@@ -7,15 +7,18 @@ import { cn } from "@/lib/utils";
 type InitiativeModifierHintProps = {
   modifierText: string;
   ariaLabel: string;
+  /** FR-combat-initiative-tracker — replaces the bonus by the live calculation once a roll is entered. */
+  displayText?: string | null;
   className?: string;
 };
 
 /**
- * FR-tracker-initiative-modifier-display — bonus fiche (icône dés + valeur signée + tooltip).
+ * FR-combat-initiative-tracker — bonus fiche (icône dés + valeur signée + tooltip).
  */
 export function InitiativeModifierHint({
   modifierText,
   ariaLabel,
+  displayText,
   className,
 }: InitiativeModifierHintProps) {
   return (
@@ -25,14 +28,16 @@ export function InitiativeModifierHint({
           type="button"
           aria-label={ariaLabel}
           className={cn(
-            "mb-0.5 inline-flex max-w-full items-center justify-center gap-0.5 rounded-sm text-[10px] font-medium leading-none tabular-nums text-white/55 hover:text-white/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
+            "mt-1 inline-flex max-w-full items-center justify-center gap-1 whitespace-nowrap rounded-sm text-xs font-medium leading-none tabular-nums text-white/70 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
             className,
           )}>
-          <Dices
-            className="size-2.5 shrink-0"
-            aria-hidden="true"
-          />
-          <span aria-hidden="true">{modifierText}</span>
+          {displayText ? null : (
+            <Dices
+              className="size-3 shrink-0"
+              aria-hidden="true"
+            />
+          )}
+          <span aria-hidden="true">{displayText ?? modifierText}</span>
         </button>
       </TooltipTrigger>
       <TooltipContent

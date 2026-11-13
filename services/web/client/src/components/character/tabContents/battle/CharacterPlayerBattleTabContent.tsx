@@ -1,6 +1,6 @@
 import { Player } from "@/types/character";
 import PlayerBattleTabContent from "@/components/character/tabContents/battle/view/PlayerBattleTabContent";
-import PlayerBattleTabEdit from "@/components/character/tabContents/battle/form/PlayerBattleTabEdit";
+import { LazyPlayerBattleTabEdit as PlayerBattleTabEdit } from "@/components/lazy/lazyCharacterEditForms";
 import { UseFormReturn, FieldValues } from "react-hook-form";
 
 interface CharacterBattleTabContentProps {
@@ -10,10 +10,26 @@ interface CharacterBattleTabContentProps {
   isEditing: boolean;
 }
 
-export default function CharacterBattleTabContent({ character, accentColor, form, isEditing }: CharacterBattleTabContentProps) {
+export default function CharacterBattleTabContent({
+  character,
+  accentColor,
+  form,
+  isEditing,
+}: CharacterBattleTabContentProps) {
   if (isEditing) {
-    return <PlayerBattleTabEdit player={character} accentColor={accentColor} form={form} />;
+    return (
+      <PlayerBattleTabEdit
+        player={character}
+        accentColor={accentColor}
+        form={form}
+      />
+    );
   }
 
-  return <PlayerBattleTabContent player={character} accentColor={accentColor} />;
+  return (
+    <PlayerBattleTabContent
+      player={character}
+      accentColor={accentColor}
+    />
+  );
 }

@@ -312,7 +312,7 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     const player = {
       ...basePlayer,
       profile: { ...basePlayer.profile, race: "Elf", subrace: "Wood Elf" },
-      class: [{ name: "Ranger", subclass: "Hunter", level: 3, hitDice: 10 }],
+      class: [{ name: "Ranger", subclass: "Hunter", level: 3, hitDice: 10 }] as Player["class"],
     };
     const data = mapCharacterToPdfData(player, mapOptions);
     expect(data.race).toBe("Elf");
@@ -359,7 +359,7 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
       class: [
         { name: "Fighter", subclass: "Champion", level: 5, hitDice: 10, hitDiceRemaining: 3 },
         { name: "Wizard", subclass: "Evocation", level: 3, hitDice: 6, hitDiceRemaining: 2 },
-      ],
+      ] as Player["class"],
     };
     const data = mapCharacterToPdfData(player, mapOptions);
 
@@ -421,5 +421,29 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     expect(data.avatarDataUrl).toBe("data:image/png;base64,abc");
     expect(data.qrCodeDataUrl).toBe("data:image/png;base64,qr");
     expect(data.characterPageUrl).toBe("https://chariot.tools/fr/characters/p1");
+  });
+
+  it("nominal: joins several spell damage entries for PDF export", () => {
+    const player = {
+      ...basePlayer,
+      spellcasting: [
+        {
+          ...basePlayer.spellcasting[0],
+          spells: [
+            {
+              ...basePlayer.spellcasting[0].spells[0],
+              damage: undefined,
+              damageDetails: [
+                { diceCount: 8, diceType: "d6", bonus: 0, damageType: "fire" },
+                { diceCount: 1, diceType: "d8", bonus: 0, damageType: "radiant" },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const data = mapCharacterToPdfData(player, mapOptions);
+    expect(data.spellcastingBlocks[0]?.spellsByLevel[1]?.[0]?.damage).toBe("8d6 fire + 1d8 radiant");
   });
 });

@@ -23,6 +23,33 @@
     "noGroups": "Aucun groupe",
     "noCharacters": "Aucun personnage",
     "unnamedCharacter": "Personnage sans nom",
+    "npcKind": "PNJ",
+    "playerKind": "PJ",
+    "linkedToPlayer": "Lié à {name}",
+    "companionsListLabel": "Compagnons de {name}",
+    "collapseCompanionsAria": "Replier les compagnons de {name}",
+    "expandCompanionsAria": "Déplier les compagnons de {name}",
+    "companionActiveTooltip": "Fiche affichée : {name}",
+    "groupActiveCharacterTooltip": "Personnage affiché : {name}",
+    "linkNpc": "Lier à un personnage",
+    "unlinkNpc": "Retirer du personnage",
+    "unlinkNpcFrom": "Retirer de {name}",
+    "reassignNpc": "Lier à un autre personnage",
+    "linkNpcDialogTitle": "Lier le PNJ",
+    "linkNpcDialogDescription": "Choisissez un personnage joueur de Mes personnages pour {name}.",
+    "linkNpcNoPlayers": "Aucun personnage joueur disponible.",
+    "linkNpcToPlayerAria": "Lier {npc} à {player}",
+    "linkNpcPersisting": "Enregistrement de la liaison",
+    "reassignNpcDialogTitle": "Changer de personnage lié",
+    "reassignNpcDialogDescription": "Ce PNJ est déjà lié. Voulez-vous le lier à {name} à la place ?",
+    "reassignNpcConfirm": "Lier",
+    "linkNpcSuccess": "PNJ lié avec succès.",
+    "unlinkNpcSuccess": "{name} retiré avec succès.",
+    "linkNpcError": "Impossible de lier le PNJ.",
+    "unlinkNpcError": "Impossible de retirer le PNJ.",
+    "unlinkNpcDialogTitle": "Retirer le PNJ",
+    "unlinkNpcDialogDescription": "Voulez-vous retirer {npc} des compagnons de {player} ? Le PNJ restera dans vos personnages.",
+    "unlinkNpcConfirm": "Retirer",
     "archive": "Archiver",
     "unarchive": "Restaurer",
     "delete": "Supprimer",
@@ -40,6 +67,14 @@
     "deleteGroupDialogDescription": "Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible.",
     "deleteCharacterDialogTitle": "Supprimer le personnage",
     "deleteCharacterDialogDescription": "Êtes-vous sûr de vouloir supprimer ce personnage ? Cette action est irréversible.",
+    "deletePlayerSuccess": "{name} supprimé avec succès.",
+    "deletePlayerWithCompanionsTitle": "Supprimer ce personnage",
+    "deletePlayerWithCompanionsDescription": "Des compagnons sont liés à ce personnage. Les compagnons restent dans votre bibliothèque s’ils ne sont pas supprimés avec lui.",
+    "deletePlayerWithCompanionsListLabel": "Compagnons liés",
+    "deletePlayerKeepCompanions": "Supprimer le personnage",
+    "deletePlayerAndCompanions": "Supprimer tout ({count})",
+    "deletePlayerKeepCompanionsAria": "Supprimer le personnage et conserver les compagnons liés",
+    "deletePlayerAndCompanionsAria": "Supprimer le personnage et {count, plural, one {# compagnon lié} other {# compagnons liés}}",
     "deleteCampaignDialogTitle": "Supprimer la campagne",
     "deleteCampaignDialogDescription": "Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible.",
     "editGroupDialogTitle": "Modifier le groupe",
@@ -75,14 +110,17 @@
     "joinSessionDialogTitle": "Rejoindre une session",
     "joinSessionErrorNotFound": "Aucune session trouvée pour ce code.",
     "joinSessionErrorClosed": "Cette session est clôturée.",
+    "joinSessionErrorLaunched": "Cette session est déjà lancée : seuls ses participants peuvent la rejoindre.",
     "joinSessionSelectCharacterPlaceholder": "Sélectionner un personnage",
+    "joinSessionCompanionCount": "{count, plural, one {# compagnon} other {# compagnons}}",
+    "joinSessionCompanionCountShort": "+{count}",
     "comingSoon": "Bientôt disponible",
     "alreadyInSession": "Action impossible, vous êtes déjà dans une session",
     "returnToSheet": "Personnage",
     "sessionCharacter": "Personnage joué en session",
     "noLastSheet": "Aucune fiche consultée pour le moment",
     "noPlayerCharacter": "Aucun personnage sélectionné en session",
-    "returnToSession": "Retourner à la session",
+    "returnToSession": "Retour en session",
     "selectCampaign": "Sélectionner la campagne",
     "loadMoreCampaigns": "Charger plus",
     "loadMoreCampaignsAria": "Charger plus de campagnes",
@@ -90,6 +128,7 @@
     "loadMoreGroupsAria": "Charger plus de groupes",
     "loadMoreCharacters": "Charger plus",
     "loadMoreCharactersAria": "Charger plus de personnages",
+    "loadingMore": "Chargement des éléments suivants…",
     "addToSession": "Rejoindre la session",
     "removeFromSession": "Quitter la session",
     "gmGuestCharacter": "Invité MJ",
@@ -104,6 +143,19 @@
     "duplicateCharacterCreateAndMove": "Créer dans un autre groupe",
     "duplicateCharacterSuccess": "Personnage dupliqué avec succès.",
     "duplicateCharacterError": "Échec de la duplication du personnage.",
+    "duplicatePlayerWithCompanionsDescription": "Des compagnons sont liés à ce personnage. Choisissez ce qu'il advient des compagnons après la duplication.",
+    "duplicatePlayerWithCompanionsListLabel": "Compagnons liés",
+    "duplicatePlayerWithCompanionsChoiceLegend": "Que faire des compagnons ?",
+    "duplicatePlayerOnly": "Dupliquer le personnage seulement",
+    "duplicatePlayerOnlyHint": "Crée une copie du personnage. Les compagnons restent liés à l'original.",
+    "duplicatePlayerAndCompanions": "Dupliquer le personnage et ses compagnons",
+    "duplicatePlayerAndCompanionsHint": "Crée une copie du personnage et une copie de chaque compagnon, liée au nouveau personnage.",
+    "duplicatePlayerMoveCompanions": "Dupliquer le personnage et déplacer ses compagnons vers le nouveau personnage",
+    "duplicatePlayerMoveCompanionsHint": "Crée une copie du personnage et rattache les compagnons existants au nouveau personnage.",
+    "duplicatePlayerMoveCompanionsDisabledHint": "Indisponible lorsque plusieurs copies du personnage sont créées.",
+    "duplicatePlayerOnlyAria": "Dupliquer le personnage seulement, sans modifier les compagnons",
+    "duplicatePlayerAndCompanionsAria": "Dupliquer le personnage et copier ses compagnons vers le nouveau personnage",
+    "duplicatePlayerMoveCompanionsAria": "Dupliquer le personnage et déplacer les compagnons vers le nouveau personnage",
     "duplicateGroupDialogTitle": "Dupliquer le groupe",
     "duplicateGroupDialogDescription": "Choisissez un nom et le nombre de copies à créer.",
     "duplicateGroupLabelLabel": "Nom du groupe",
@@ -163,8 +215,27 @@
       "editLinkSave": "Modifier",
       "editError": "Échec de la modification du lien.",
       "collapseAriaLabel": "Replier les liens rapides",
-      "expandAriaLabel": "Déplier les liens rapides"
-    }
+      "expandAriaLabel": "Déplier les liens rapides",
+      "visibilityLegend": "Visibilité",
+      "visibleInAllCampaigns": "Accessible depuis toutes mes campagnes",
+      "visibleInPlayerSpace": "Accessible depuis l'espace joueur",
+      "ownLinksCampaign": "Liens de cette campagne",
+      "ownLinksPlayer": "Liens de l'espace joueur",
+      "sharedLinks": "Liens communs",
+      "deleteSharedLinkDialogDescription": "Ce lien est partagé : il disparaîtra de tous les espaces où il est visible. Cette action est irréversible.",
+      "sharedLinksHint": "Partagés avec d'autres espaces"
+    },
+    "sessionCharacterSection": "Personnage de session",
+    "outOfSessionToggle": "Hors session ({count})",
+    "outOfSessionExpandAria": "Afficher les {count} personnages hors session",
+    "outOfSessionCollapseAria": "Masquer les {count} personnages hors session",
+    "outOfSessionActiveTooltip": "Fiche affichée : {name}",
+    "longRestGroup": "Repos long du groupe",
+    "longRestGroupDialogTitle": "Repos long : {group}",
+    "longRestGroupDialogDescription": "{players, plural, =0 {Aucun PJ} one {1 PJ} other {# PJ}} et {npcs, plural, =0 {aucun PNJ} one {1 PNJ} other {# PNJ}} récupèrent leurs PV, capacités et emplacements de sort. Les personnages que vous ne pouvez pas modifier sont ignorés.",
+    "longRestGroupConfirm": "Faire le repos long",
+    "longRestGroupSuccess": "{count, plural, =0 {Aucun personnage reposé} one {1 personnage reposé} other {# personnages reposés}}",
+    "longRestGroupSkipped": "{count, plural, one {1 ignoré} other {# ignorés}}"
   },
   "initTracker": {
     "noCharacters": "Aucun personnage",
@@ -190,10 +261,12 @@
     "initBattleCollapseGroup": "Masquer les membres du groupe",
     "initBattleRemoveGroup": "Retirer le groupe de la sélection",
     "initBattleInInitiative": "Dans l'initiative",
+    "initBattleLinkedTo": "Lié à {name}",
+    "initBattleLinkedCompanion": "PNJ lié",
     "initBattleParticipantsCannotBeExcluded": "Les participants ne peuvent pas être exclus de l'initiative",
     "initBattleValidateSelection": "Valider la configuration",
     "addCombatants": "Ajouter au combat",
-    "removeCombatantGroups": "Retirer des groupes",
+    "removeCombatantGroups": "Retirer un groupe",
     "tracker": {
       "addCombatantsDialogTitle": "Ajouter au combat",
       "addCombatantsConfirm": "Ajouter la sélection",
@@ -206,13 +279,13 @@
       "addCombatantsInitiativeFor": "Initiative de {name}",
       "addCombatantsGroupInitiative": "Initiative du groupe",
       "addCombatantsGroupsInCombatHint": "Les groupes déjà en initiative sont présélectionnés.",
-      "removeCombatantGroupsDialogTitle": "Retirer des groupes",
-      "removeCombatantGroupsDescription": "Choisissez les groupes à retirer de l'initiative. Le groupe des participants de session ne peut pas être retiré en bloc.",
+      "removeCombatantGroupsDialogTitle": "Retirer un groupe",
+      "removeCombatantGroupsDescription": "Choisissez le groupe à retirer de l'initiative. Le groupe des participants de session ne peut pas être retiré en bloc.",
       "removeCombatantGroupsEmpty": "Aucun groupe retirable dans l'initiative.",
-      "removeCombatantGroupsPlaceholder": "Rechercher un groupe…",
+      "removeCombatantGroupsPlaceholder": "Choisir un groupe",
       "removeCombatantGroupsNoSearchResult": "Aucun groupe trouvé.",
       "removeCombatantGroupsSelectAll": "Tout sélectionner",
-      "removeCombatantGroupsConfirm": "Retirer la sélection",
+      "removeCombatantGroupsConfirm": "Retirer le groupe",
       "removeCombatantGroupsOption": "{label} ({count})",
       "initiative": "Initiative",
       "character": "Personnage",
@@ -226,12 +299,15 @@
       "viewSheet": "Voir la fiche",
       "viewSheetFor": "Voir la fiche de {name}",
       "initiativeFor": "Initiative de {name}",
-      "initiativeModifierFor": "Bonus d'initiative {bonus}",
-      "selectRowFor": "Sélectionner {name} pour l'initiative groupée",
+      "initiativeModifierFor": "Bonus d'initiative {bonus}, ajouté automatiquement au jet",
+      "initiativeRollPlaceholder": "d20",
+      "initiativeShort": "Init.",
+      "initiativeTotalPreview": "Total d'initiative :",
+      "selectRowFor": "Sélectionner {name}",
       "selectRowForVisibility": "Sélectionner {name} pour l'affichage groupé",
       "selectAllRows": "Sélectionner tous les personnages",
       "selectAllRowsShort": "Tous",
-      "groupedInitiativeEnable": "Saisir une initiative groupée",
+      "groupedInitiativeEnable": "Initiative groupée",
       "groupedInitiativeDisable": "Quitter le mode initiative groupée",
       "groupedInitiativeEnableShort": "Initiative",
       "groupedInitiativeDisableShort": "Fermer",
@@ -390,6 +466,15 @@
         "hours": "{amount} h",
         "rounds": "{amount, plural, one {# tour} other {# tours}}"
       },
+      "customEffectCreate": "Créer un effet personnalisé",
+      "customEffectCreateFromSearch": "Créer « {name} »",
+      "customEffectName": "Nom de l'effet",
+      "customEffectNamePlaceholder": "Ex. Béni, Hex, Enflammé",
+      "customEffectDescription": "Description (optionnel)",
+      "customEffectDescriptionPlaceholder": "Rappel pour la table",
+      "customEffectAddConfirm": "Ajouter l'effet",
+      "customEffectNameRequired": "Le nom est obligatoire.",
+      "customEffectSection": "Effets personnalisés",
       "statusLabels": {
         "alive": "{name} est en vie",
         "unconscious": "{name} est inconscient",
@@ -427,7 +512,16 @@
         "invisible": "Une créature invisible ne peut être vue sans l'aide de la magie ou un sens particulier. En ce qui concerne le fait de se cacher, la créature est considérée dans une zone à visibilité nulle. L'emplacement de la créature peut être détecté par un bruit qu'elle fait ou par les traces qu'elle laisse.\nLes jets d'attaque contre la créature ont un désavantage, et les jets d'attaque de la créature ont un avantage.",
         "paralyzed": "Une créature paralysée est incapable d'agir et ne peut plus bouger ni parler.\nLa créature rate automatiquement ses jets de sauvegarde de Force et de Dextérité.\nLes jets d'attaque contre la créature ont un avantage.\nToute attaque qui touche la créature est un coup critique si l'attaquant est à 1,50 mètre ou moins de la créature.",
         "petrified": "Une créature pétrifiée est transformée, ainsi que tout objet non magique qu'elle porte, en une substance inanimée solide (généralement en pierre). Son poids est multiplié par dix et son vieillissement cesse.\nLa créature est incapable d'agir, ne peut plus bouger ni parler, et n'est plus consciente de ce qui se passe autour d'elle.\nLes jets d'attaque contre la créature ont un avantage.\nLa créature rate automatiquement ses jets de sauvegarde de Force et de Dextérité.\nLa créature obtient la résistance contre tous les types de dégâts.\nLa créature est immunisée contre le poison et la maladie, mais un poison ou une maladie déjà dans son organisme est seulement suspendu, pas neutralisé."
-      }
+      },
+      "selectionToolbar": "Actions sur la sélection",
+      "missingInitiativeRow": "initiative à saisir",
+      "prepInitiativeHint": "Saisissez le résultat du d20 de chaque personnage (le bonus d'initiative de la fiche est ajouté automatiquement), puis lancez le combat.",
+      "missingInitiativesCount": "{count, plural, one {# initiative à saisir} other {# initiatives à saisir}}",
+      "allInitiativesEntered": "Toutes les initiatives sont saisies.",
+      "startMissingConfirmTitle": "Initiatives manquantes",
+      "startMissingConfirmDescription": "{count, plural, one {# personnage n'a pas encore d'initiative} other {# personnages n'ont pas encore d'initiative}}. Lancer le combat quand même ?",
+      "startMissingConfirmAction": "Lancer quand même",
+      "startMissingCancelAction": "Revenir à la saisie"
     }
   },
   "multiSelect": {
@@ -440,12 +534,19 @@
     "save": "Sauvegarder",
     "delete": "Supprimer",
     "cancel": "Annuler",
-    "challengeRatingTooltip": "Indice de dangerosité",
+    "challengeRatingTooltip": "Facteur de puissance",
     "errors": {
       "campaignNameRequired": "Le nom de la campagne est requis",
       "campaignCreationFailed": "Échec de la création de la campagne",
       "groupNameRequired": "Le nom du groupe est requis",
       "groupCreationFailed": "Échec de la création du groupe"
+    },
+    "lazyLoading": "Chargement…",
+    "lazyLoadError": "Impossible de charger cette partie de l'application. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer",
+    "nameLabel": {
+      "tooLong": "Le nom ne doit pas dépasser {max} caractères",
+      "counterUnit": "caractères"
     }
   },
   "error": {
@@ -465,7 +566,6 @@
   },
   "auth": {
     "loading": "Chargement...",
-    "pleaseWait": "Veuillez patienter pendant la vérification de votre session",
     "logoutEscape": "Se déconnecter"
   },
   "notFound": {
@@ -483,7 +583,8 @@
     "uploadLabel": "Choisir une image de profil",
     "invalidType": "Format non pris en charge. Utilisez JPEG (.jpg), PNG (.png), WebP (.webp) ou HEIC (.heic).",
     "tooLarge": "L'image dépasse la taille maximale de {maxMb} Mo.",
-    "requirementsHint": "JPEG, PNG, WebP ou HEIC · max. {maxMb} Mo · {width}×{height} px recommandé (ratio 4:5)",
+    "requirementsHint": "JPEG · PNG · WebP · HEIC — {maxMb} Mo max\n{width}×{height} px (4:5) conseillé",
+    "requirementsHintRound": "JPEG · PNG · WebP · HEIC — {maxMb} Mo max\n{width}×{height} px conseillé (recadrée en cercle)",
     "uploadSuccess": "Image mise à jour.",
     "uploadError": "Impossible de mettre à jour l'image.",
     "removeSuccess": "Image supprimée.",
@@ -647,8 +748,6 @@
     "referral": {
       "yourCode": "Lien de parrainage",
       "tiersProgressAriaLabel": "Progression des paliers de parrainage",
-      "maxDiscountLabel": "Max",
-      "maxDiscountAriaLabel": "Réduction maximale possible : {discount} %",
       "noApplicableDiscount": "0 %",
       "tierSegmentAriaLabel": "{count, plural, one {# filleul} other {# filleuls}} : {discount} % de réduction",
       "copyCode": "Copier le code",
@@ -664,6 +763,8 @@
       "pendingFirstPurchase": "{count, plural, zero {0 filleul en attente du 1er achat} one {# filleul en attente du 1er achat} other {# filleuls en attente du 1er achat}}",
       "tiersTitle": "Paliers de parrainage",
       "tiersSubtitle": "Plus vous parrainez, plus vous économisez",
+      "compactCurrentLabel": "Réduction disponible",
+      "compactPendingPotential": "Jusqu'à {discount} % quand vos filleuls en attente auront acheté",
       "tierReferral": "filleul",
       "tierReferrals": "filleuls",
       "currentDiscount": "Réduction disponible : {discount} %",
@@ -713,7 +814,8 @@
     "campaign": {
       "title": "Créer votre première <br /> campagne",
       "button": "Créer une campagne",
-      "button-aria": "Naviguer vers la création de campagne"
+      "button-aria": "Naviguer vers la création de campagne",
+      "description": "Devenez Maître du jeu : créez un univers, invitez vos joueurs et préparez vos parties."
     },
     "session": {
       "title": "Rejoindre <br /> une session",
@@ -725,7 +827,8 @@
     "character": {
       "title": "Créer votre premier <br /> personnage",
       "button": "Créer un personnage",
-      "button-aria": "Naviguer vers la création de personnage"
+      "button-aria": "Naviguer vers la création de personnage",
+      "description": "Créez un héros dans votre espace joueur, pour jouer seul ou rejoindre la campagne d'un MJ."
     },
     "imageCredits": {
       "title": "Crédits des images",
@@ -735,9 +838,6 @@
     }
   },
   "characterCreate": {
-    "titlePlayer": "Créer un personnage joueur",
-    "titleNpc": "Créer un PNJ",
-    "description": "Remplissez la fiche complète du personnage. Vous pourrez modifier ces informations plus tard depuis la fiche.",
     "cancel": "Annuler",
     "create": "Créer",
     "saving": "Création..."
@@ -785,9 +885,11 @@
     "abilityCounterOrder": "L'utilisation actuelle ne peut pas dépasser le plafond.",
     "classLevelTotalsVsGlobalHitDice": "Le total des niveaux de classe ({total}) dépasse le niveau global ({global}). Corrigez les niveaux de classe ou le niveau global — l’erreur est indiquée sur les dés restants.",
     "singleDamageType": "Un seul type de dégâts est autorisé par ligne de dégâts.",
-    "uniqueActionDamageType": "Chaque type de dégâts doit être unique dans une même action."
+    "uniqueActionDamageType": "Chaque type de dégâts doit être unique dans une même action.",
+    "uniqueSpellDamageType": "Chaque type de dégâts doit être unique dans un même sort."
   },
   "characterDetail": {
+    "loadingSheet": "Chargement de la fiche…",
     "editCharacter": "Modifier le personnage",
     "exportPdf": "Exporter en PDF",
     "pdfExport": {
@@ -847,14 +949,12 @@
       "success": "Fiche exportée en PDF.",
       "error": "Impossible d'exporter la fiche en PDF."
     },
-    "playedBy": "Joué par {name}",
     "classLevelShort": "{className} Niv. {level}",
     "saveChanges": "Sauvegarder",
     "saving": "Sauvegarde...",
     "cancel": "Annuler",
     "longRest": {
       "ariaLabel": "Repos long",
-      "disabledTooltip": "Repos long : uniquement en session",
       "confirmTitle": "Confirmer le repos long ?",
       "confirmIntro": "Un repos long applique les effets suivants :",
       "effectSpellSlots": "Tous les emplacements de sorts dépensés sont récupérés (utilisations remises à zéro).",
@@ -904,7 +1004,7 @@
       "race": "Race",
       "alignment": "Alignement",
       "challenge": "Difficulté",
-      "challengeRating": "Indice de Dangerosité",
+      "challengeRating": "Facteur de puissance",
       "experiencePoints": "Points d'Expérience",
       "type": "Type",
       "combatStats": "Statistiques de Combat",
@@ -921,7 +1021,6 @@
         "maxBelowCurrent": "La valeur des PV max a été ajustée automatiquement pour rester supérieure ou égale aux PV actuels.",
         "hitDiceRemainingClamped": "Les dés de vie restants ont été plafonnés au niveau de cette classe."
       },
-      "defense": "Défense",
       "initiative": "Initiative",
       "size": "Taille",
       "selectSize": "Sélectionner une taille",
@@ -936,9 +1035,12 @@
       "spellEffectType": "Type d'effet",
       "spellDamage": "Dégâts",
       "spellHealing": "Soins",
-      "diceCount": "Nombre de dés",
-      "diceType": "Type de dé",
       "bonus": "Bonus",
+      "diceHelpLabel": "Aide sur la notation des dés",
+      "diceHelp": "3d8 = 3 dés à 8 faces · +2 = bonus fixe ajouté au résultat",
+      "diceSuggestionsLabel": "Suggestions de dés",
+      "diceFormula": "Dés",
+      "invalidDiceFormula": "Formule de dés invalide (ex. 8d6+2, dés d4 à d20 ou d100).",
       "damageType": "Type de dégâts",
       "damageTypePlaceholder": "Perforant, feu, force",
       "quickNumberPlaceholder": "Saisir un nombre",
@@ -947,10 +1049,9 @@
       "zeroPlaceholder": "0",
       "proficiencyBonusPlaceholder": "+2",
       "challengeRatingPlaceholder": "0, 1/8, 1/4, 1/2",
-      "damageDiceCountPlaceholder": "8",
-      "damageDiceTypePlaceholder": "d6",
-      "healingDiceCountPlaceholder": "4",
-      "healingDiceTypePlaceholder": "d8",
+      "spellDamageEntry": "Dégât {index}",
+      "addDamageToSpell": "Ajouter une ligne de dégâts à ce sort",
+      "removeSpellDamage": "Supprimer la ligne de dégâts {index}",
       "slotsUsed": "Utilisés",
       "slotsTotal": "Total",
       "copperPieces": "Pièces de Cuivre",
@@ -968,12 +1069,41 @@
       "add": "Ajouter"
     },
     "tabs": {
+      "listLabel": "Onglets de la fiche personnage",
       "general": "Général",
       "battle": "Combat",
       "magic": "Magie",
       "inventory": "Inventaire",
       "history": "Histoire",
+      "companions": "Compagnons",
       "containsErrors": "Cet onglet contient des champs en erreur"
+    },
+    "companions": {
+      "title": "Compagnons",
+      "emptyTitle": "Aucun compagnon pour l'instant",
+      "emptyDescription": "Les compagnons sont d'autres personnages rattachés à celui-ci. Chacun a sa propre fiche (vie, capacités, équipement…) que vous pouvez remplir et mettre à jour comme pour ce personnage. En session, le maître du jeu peut aussi les inclure dans les combats avec vous, sans qu'une autre personne doive se connecter.",
+      "emptyExamplesTitle": "Quelques exemples",
+      "emptyExampleFamiliar": "Un animal qui vous accompagne et que vous faites agir (loup, faucon, chat…)",
+      "emptyExampleWildShape": "Un animal dont vous pouvez prendre la forme (forme sauvage du druide)",
+      "emptyExampleSecondaryNpc": "Un personnage que vous jouez en plus de celui-ci (serviteur, garde du corps, apprenti…)",
+      "loading": "Chargement des compagnons",
+      "loadError": "Impossible de charger les compagnons.",
+      "saveError": "Impossible d'enregistrer la liaison.",
+      "linkExisting": "Lier un PNJ",
+      "createLinked": "Créer un PNJ lié",
+      "linkDialogTitle": "Lier un PNJ",
+      "linkDialogDescription": "Choisissez un PNJ de l'espace joueur (non lié, hors groupe).",
+      "noUnlinkedNpcs": "Aucun PNJ disponible dans l'espace joueur.",
+      "unlinkAria": "Retirer {name} des compagnons",
+      "unlink": "Retirer",
+      "unnamedNpc": "PNJ sans nom",
+      "searchLabel": "Rechercher un compagnon",
+      "searchPlaceholder": "Rechercher un compagnon…",
+      "searchClear": "Effacer la recherche",
+      "searchNoResults": "Aucun compagnon ne correspond à « {query} ».",
+      "searchResultCount": "{count, plural, =0 {Aucun compagnon trouvé} one {# compagnon trouvé} other {# compagnons trouvés}}",
+      "openSheetAria": "Ouvrir la fiche de {name}",
+      "cancel": "Annuler"
     },
     "battle": {
       "stats": "Statistiques",
@@ -990,6 +1120,7 @@
       "failures": "Échecs :",
       "deathSavesSessionOnlyNote": "Les jets de sauvegarde contre la mort ne peuvent être modifiés qu'en session.",
       "restSessionOnlyNote": "Les repos ne sont disponibles qu'en session.",
+      "shortRestSessionOnlyNote": "Le repos court n'est disponible qu'en session.",
       "performedThrow": "Jet effectué",
       "unperformedThrow": "Jet non effectué",
       "abilityHasCounter": "Compteur d'utilisations",
@@ -1103,7 +1234,26 @@
       "vulnerabilities": "Vulnérabilités",
       "vulnerabilitiesPlaceholder": "Feu, Froid...",
       "immunities": "Immunités",
-      "immunitiesPlaceholder": "Feu, Froid..."
+      "noAffinities": "Aucune résistance, vulnérabilité ni immunité",
+      "noActions": "Aucune action",
+      "noAbilities": "Aucune capacité ni trait",
+      "statLabels": {
+        "armorClass": "CA",
+        "initiative": "Init.",
+        "size": "Taille",
+        "speeds": "Vitesses",
+        "passivePerception": "Perc. passive"
+      },
+      "attackSuggestions": "Suggestions",
+      "formSections": {
+        "general": "Général",
+        "attack": "Attaque",
+        "damage": "Dégâts",
+        "description": "Description",
+        "counter": "Utilisations"
+      },
+      "immunitiesPlaceholder": "Feu, Froid...",
+      "passivePerception": "Perception passive"
     },
     "history": {
       "appearance": "Apparence",
@@ -1119,7 +1269,8 @@
       "personalityTraits": "Traits de personnalité",
       "ideals": "Idéaux",
       "flaws": "Défauts",
-      "backstory": "Histoire"
+      "backstory": "Histoire",
+      "notSpecified": "Non renseigné"
     },
     "player": {
       "level": "Niveau",
@@ -1134,6 +1285,7 @@
         "levelLabel": "Niveau",
         "globalLevel": "Niveau global",
         "classes": "Classe(s)",
+        "removeClass": "Retirer la classe {index}",
         "subclassOf": "Sous classe de",
         "proficiencies": "Maîtrises",
         "languages": "Langue(s)",
@@ -1145,7 +1297,8 @@
         "inspirationInactive": "Inactive",
         "inspirationState": "État d'inspiration",
         "inspirationAddButton": "Ajouter un point d'inspi",
-        "inspirationUseButton": "Utiliser le point d'inspi",
+        "inspirationUseButton": "Utiliser",
+        "inspirationUseButtonLabel": "Utiliser le point d'inspiration",
         "inspirationSessionOnlyNote": "L'inspiration ne peut être modifiée qu'en session.",
         "inspirationUseError": "Impossible d'utiliser le point d'inspiration.",
         "exhaustion": "Épuisement",
@@ -1207,7 +1360,10 @@
         "masteryLevelIcon": "Niveau de maîtrise {level}",
         "enableHalfProficiency": "Demi-maîtrises",
         "enableExpertise": "Expertise",
-        "noLanguages": "Aucune",
+        "noLanguages": "Aucune langue renseignée",
+        "noTools": "Aucun outil renseigné",
+        "noWeapons": "Aucune arme renseignée",
+        "noArmors": "Aucune armure renseignée",
         "skillNames": {
           "acrobatics": "Acrobaties",
           "arcana": "Arcanes",
@@ -1359,7 +1515,9 @@
         "classLevelExceeds": "Total supérieur au niveau global",
         "classLevelExceedsGlobal": "Total des niveaux de classe ({total}) dépasse le niveau global ({global})",
         "classLevelInfo": "Niveau de cette classe : {classLevel} | Total : {totalLevel}/{globalLevel}",
-        "addSecondClass": "Ajouter une multiclasse"
+        "addSecondClass": "Ajouter une multiclasse",
+        "classSelector": "Choix de la classe à modifier",
+        "classContainsErrors": "Cette classe contient des erreurs"
       }
     },
     "npc": {
@@ -1367,8 +1525,9 @@
       "typeLabel": "Type",
       "subtype": "Sous-type",
       "subtypeLabel": "Sous-type",
-      "challengeRating": "Indice de dangerosité",
-      "challengeRatingAbbr": "ID",
+      "challengeRating": "Facteur de puissance",
+      "challengeRatingAbbr": "FP",
+      "linkedTo": "Lié à {name}",
       "alignment": "Alignement",
       "general": {
         "title": "Onglet Général",
@@ -1410,10 +1569,7 @@
       "setCoins": "Fixer",
       "sessionInventoryUpdateError": "Impossible de mettre à jour l'inventaire en session.",
       "noEquipment": "Aucun équipement pour le moment.",
-      "noTreasure": "Aucun trésor pour le moment.",
-      "coinsRegion": "Section des pièces de monnaie",
-      "equipmentRegion": "Section de l'équipement",
-      "treasureRegion": "Section du trésor"
+      "noTreasure": "Aucun trésor pour le moment."
     },
     "magic": {
       "noMagicAbilities": "Ce personnage n'a pas de capacités magiques.",
@@ -1631,9 +1787,20 @@
         "searching": "Recherche en cours...",
         "selectEntry": "Sélectionnez une entrée pour voir les détails",
         "validate": "Utiliser ce personnage",
+        "selectThisEntry": "Sélectionner ce personnage",
+        "removeFromSelection": "Retirer de la sélection",
+        "queuedInSelection": "Dans la sélection",
+        "addSelection": "Ajouter la sélection ({count})",
+        "selectionCount": "{count, plural, one {# personnage sélectionné} other {# personnages sélectionnés}}",
+        "selectionDetailsList": "Personnages sélectionnés",
+        "removeEntryFromSelection": "Retirer {name} de la sélection",
+        "unknownEntry": "Personnage sans nom",
+        "batchCreateSuccess": "{count, plural, one {# personnage créé} other {# personnages créés}}",
+        "batchCreateError": "Impossible de créer tous les personnages sélectionnés",
         "cancel": "Annuler",
         "loadMore": "Charger plus",
         "error": "Erreur lors de la recherche",
+        "preselectionError": "Ce personnage n'a pas pu être chargé depuis le lien. Vous pouvez le chercher dans la bibliothèque ci-dessous.",
         "validatedByChariot": "Validé par Chariot",
         "srdContent": "Contenu SRD (System Reference Document)",
         "entityTypeFilter": {
@@ -1657,7 +1824,7 @@
         "resultsCount": "{count} résultat{plural}{more}",
         "resultsPlural": "s",
         "resultsMore": "+",
-        "crLabel": "ID",
+        "crLabel": "FP",
         "monsterInfo": "{cr} • {type}",
         "playerInfo": "Niv. {level} • {detail}",
         "preview": {
@@ -1672,6 +1839,19 @@
           "previousLanguageButton": "Retour",
           "loadTranslationError": "Impossible de charger cette langue. Réessayez ou choisissez une autre langue."
         }
+      },
+      "spellcastingTitle": "Incantation",
+      "abilityShort": "Carac.",
+      "concentration": "Concentration",
+      "noSpells": "Aucun sort",
+      "addCodexSpellShort": "Codex",
+      "spellRowLabel": "{name} — {group}",
+      "slotsRemainingAria": "Emplacements de niveau {level} : {current} restants sur {total}",
+      "formSections": {
+        "general": "Général",
+        "casting": "Incantation",
+        "effects": "Effets",
+        "description": "Description"
       }
     }
   },
@@ -1742,6 +1922,8 @@
       },
       "noCharacter": "Aucun personnage",
       "selectCharacterPlaceholder": "Changer de personnage",
+      "companionCount": "{count, plural, one {# compagnon} other {# compagnons}}",
+      "companionCountShort": "+{count}",
       "loadingCharacters": "Chargement..."
     },
     "sessionCode": {
@@ -1793,6 +1975,16 @@
       },
       "confirm": "Retourner à l'accueil"
     },
+    "sessionExit": {
+      "groupAria": "Actions de fin de session",
+      "moreAria": "Autres actions de fin de session"
+    },
+    "sessionLeave": {
+      "title": "Quitter la session ?",
+      "descriptionPlayer": "Vous serez déconnecté de la session et devrez la rejoindre à nouveau pour continuer à jouer. Votre personnage sera retiré des groupes de la campagne.",
+      "descriptionGm": "Vous serez déconnecté de la session et devrez la rejoindre à nouveau pour continuer à jouer. La session ne sera pas clôturée pour les autres participants.",
+      "confirm": "Quitter la session"
+    },
     "sessionCancel": {
       "title": "Clôturer la session",
       "description": "Vous vous apprêterez à clôturer la session. Tous les participants seront déconnectés et devront rejoindre une nouvelle session pour continuer à jouer ensemble.",
@@ -1800,8 +1992,11 @@
     }
   },
   "header": {
+    "sidebarOpenAriaLabel": "Ouvrir le menu",
+    "sidebarCloseAriaLabel": "Fermer le menu",
     "logoAriaLabelHome": "Retour à l'accueil",
     "logoAriaLabelInSession": "Ouvrir le lobby de session",
+    "logoAriaLabelInSessionPreparing": "Ouvrir le lobby de session (session en préparation)",
     "logoAriaLabelInSessionWarning": "Ouvrir le lobby de session, moins de 30 minutes restantes",
     "logoAriaLabelInSessionCritical": "Ouvrir le lobby de session, moins de 5 minutes restantes",
     "communityLibraryTooltip": "Accéder à la librairie communautaire",
@@ -1816,6 +2011,7 @@
   },
   "sessionTime": {
     "tooltip": "Une session est actuellement en cours. Elle à une validité de 8 heures. Elle se clôt automatiquement à l'expiration de ce délai ou après 5 minutes si tous les participants l'ont quittée.",
+    "tooltipPreparing": "Session en préparation, en attente du lancement par le MJ.",
     "tooltipWarning": "Il reste moins de 30 minutes.",
     "tooltipCritical": "Il reste moins de 5 minutes.",
     "remainingAriaLabel": "Temps restant de la session : {time}",
@@ -1828,6 +2024,19 @@
     "close": "Fermer",
     "versionLabel": "v{version}",
     "versionSelectAriaLabel": "Naviguer vers une version précédente",
+    "versionsNavLabel": "Versions",
     "latest": "Actuelle"
+  },
+  "playerSpaceFallback": {
+    "title": "Votre espace joueur est vide",
+    "description": "Vous n'avez pas encore de personnage joueur. Créez-en un pour jouer et rejoindre des sessions.",
+    "createCharacter": "Créer un personnage",
+    "campaigns": "Ou retrouvez vos campagnes depuis la barre latérale."
+  },
+  "campaignFallback": {
+    "title": "Aucun personnage dans cette campagne",
+    "description": "Cette campagne ne contient encore aucun personnage. Créez un groupe, puis ajoutez-y vos personnages.",
+    "createGroup": "Créer un groupe",
+    "createCharacter": "Créer un personnage"
   }
 }

@@ -1,5 +1,29 @@
-import { Character, Class, Player, Spell, Spellcasting } from "@/types/character";
+import { AbilityScores, Character, Class, Player, Spell, Spellcasting } from "@/types/character";
 import { calculateAbilityBonus, isPlayer } from "@/utils/global.utils";
+
+const ABILITY_KEY_BY_ALIAS: Record<string, keyof AbilityScores> = {
+    str: "strength",
+    strength: "strength",
+    dex: "dexterity",
+    dexterity: "dexterity",
+    con: "constitution",
+    constitution: "constitution",
+    int: "intelligence",
+    intelligence: "intelligence",
+    wis: "wisdom",
+    wisdom: "wisdom",
+    cha: "charisma",
+    charisma: "charisma",
+};
+
+/**
+ * Ability key of a spellcasting block. Codex monsters store abbreviations (`WIS`), sheets store
+ * keys (`wisdom`); anything else returns null.
+ */
+export function toSpellcastingAbilityKey(raw: unknown): keyof AbilityScores | null {
+    if (typeof raw !== "string") return null;
+    return ABILITY_KEY_BY_ALIAS[raw.trim().toLowerCase()] ?? null;
+}
 
 /** Classes that use the prepared-spells mechanic */
 export const CLASSES_WITH_SPELL_PREPARED = ["artificer", "cleric", "druid", "paladin", "wizard"] as const;

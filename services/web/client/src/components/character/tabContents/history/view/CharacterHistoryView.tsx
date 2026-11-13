@@ -1,219 +1,226 @@
-import { Card } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { ReactNode } from "react";
 import { Character } from "@/types/character";
 import { Cake, Eye, PersonStanding, Ruler, Scissors, Weight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
+import { BENTO_BOUNDED_LIST_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
+import {
+  APPEARANCE_DESCRIPTION_FIELD,
+  HISTORY_BENTO_GRID_CLASS,
+  HISTORY_SUBHEADING_CLASS,
+  HISTORY_SLOTS,
+  HISTORY_TEXT_FIELDS,
+  historyHeadingId,
+} from "@/components/character/tabContents/history/shared/historyBentoLayout";
+import { cn } from "@/lib/utils";
+import { FACT_CELL_CLASS, FACT_CELLS_FRAME_CLASS } from "@/components/character/tabContents/shared/factCell";
 
 interface CharacterHistoryViewProps {
   character: Character;
   accentColor: string;
 }
 
+/**
+ * One appearance field: icon + muted label on top, value below (wraps, never truncated).
+ * @see FR-character-history-bento-layout
+ */
+function AppearanceCell({
+  label,
+  icon: Icon,
+  value,
+  accessibleValue,
+  emptyLabel,
+}: {
+  label: string;
+  icon: typeof Eye;
+  value: ReactNode;
+  accessibleValue: string;
+  emptyLabel: string;
+}) {
+  const isEmpty = accessibleValue === "";
+
+  return (
+    <div
+      className={FACT_CELL_CLASS}
+      role="group"
+      aria-label={`${label} : ${isEmpty ? emptyLabel : accessibleValue}`}>
+      <span
+        className="flex min-w-0 items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground"
+        aria-hidden="true">
+        <Icon className="size-3.5 shrink-0" />
+        <span className="wrap-break-word">{label}</span>
+      </span>
+      <span
+        className={cn(
+          "min-w-0 text-sm sm:text-base wrap-break-word",
+          isEmpty ? "text-muted-foreground" : "font-semibold",
+        )}
+        aria-hidden="true">
+        {isEmpty ? "—" : value}
+      </span>
+    </div>
+  );
+}
+
+/** Height or weight in the preferred unit, with the secondary unit when enabled. */
+function measure(
+  raw: number | null | undefined,
+  display: (value: number) => string | number,
+  unit: string,
+  secondary: ((value: number) => string | number) | null | undefined,
+  secondaryUnit: string | null | undefined,
+) {
+  if (raw == null) return { node: null, text: "" };
+  const primary = `${display(Number(raw))}${unit}`;
+  const extra = secondary ? `${secondary(Number(raw))}${secondaryUnit ?? ""}` : null;
+  return {
+    node: (
+      <>
+        {primary}
+        {extra && <span className="ml-1 text-xs font-normal text-muted-foreground">({extra})</span>}
+      </>
+    ),
+    text: extra ? `${primary} (${extra})` : primary,
+  };
+}
+
+const text = (value: string | number | null | undefined) => (value == null ? "" : String(value));
+
+/** Free text of a card: bounded (scrolls past a max height) or a muted empty-state line. */
+function HistoryText({
+  value,
+  labelledBy,
+  emptyLabel,
+}: {
+  value?: string | null;
+  labelledBy: string;
+  emptyLabel: string;
+}) {
+  if (!value) return <p className="text-sm md:text-base text-muted-foreground">{emptyLabel}</p>;
+  return (
+    <div
+      className={BENTO_BOUNDED_LIST_CLASS}
+      role="group"
+      aria-labelledby={labelledBy}
+      tabIndex={0}>
+      <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{value}</p>
+    </div>
+  );
+}
+
+/**
+ * History tab, read mode: appearance cells and free-text cards in one bento grid.
+ * @see FR-character-history-bento-layout
+ */
 export default function CharacterHistoryView({ character, accentColor }: CharacterHistoryViewProps) {
   const t = useTranslations("characterDetail.history");
   const tBattle = useTranslations("characterDetail.battle");
   const {
-    displayHeight, heightLabel, secondaryHeight, secondaryHeightLabel,
-    displayWeight, weightLabel, secondaryWeight, secondaryWeightLabel,
+    displayHeight,
+    heightLabel,
+    secondaryHeight,
+    secondaryHeightLabel,
+    displayWeight,
+    weightLabel,
+    secondaryWeight,
+    secondaryWeightLabel,
   } = useDistanceUnit();
+  const appearance = character?.appearance ?? {};
+  const background = character?.background ?? {};
+  const size = character?.stats?.size;
+  const sizeName = size ? tBattle(`sizes.${size}` as Parameters<typeof tBattle>[0]) : "";
+
+  const height = measure(appearance.height, displayHeight, heightLabel, secondaryHeight, secondaryHeightLabel);
+  const weight = measure(appearance.weight, displayWeight, weightLabel, secondaryWeight, secondaryWeightLabel);
+  const heightText = [height.text, sizeName].filter(Boolean).join(" · ");
+
+  const cells = [
+    { key: "eyes", icon: Eye, value: text(appearance.eyes) },
+    { key: "age", icon: Cake, value: text(appearance.age) },
+    { key: "skin", icon: PersonStanding, value: text(appearance.skin) },
+    {
+      key: "height",
+      icon: Ruler,
+      value: heightText,
+      node: (
+        <>
+          {height.node}
+          {sizeName && (
+            <span className="font-normal text-muted-foreground">
+              {height.node ? " · " : ""}
+              {sizeName}
+            </span>
+          )}
+        </>
+      ),
+    },
+    { key: "weight", icon: Weight, value: weight.text, node: weight.node },
+    { key: "hair", icon: Scissors, value: text(appearance.hair) },
+  ] as const;
+
+  const textValues: Record<(typeof HISTORY_TEXT_FIELDS)[number]["key"], string | null | undefined> = {
+    personalityTraits: background.personalityTraits,
+    ideals: background.ideals,
+    bonds: background.bonds,
+    flaws: background.flaws,
+    alliesAndOrgs: background.alliesAndOrgs,
+    backstory: background.backstory,
+  };
 
   return (
-    <div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-4">
-      {/* Col 1: Apparence (spans 2 rows on xl, sizes to content — FR-character-history-appearance-fit) */}
-      <div className="xl:row-span-2 self-start min-w-0 w-full">
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 h-fit min-w-0 w-full"
-          role="region"
-          aria-labelledby="appearance-title">
-          <h2
-            id="appearance-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("appearance")}
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 items-start gap-3 md:gap-4 w-full min-w-0 [&>div]:min-w-0 [&>div]:h-fit">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Eye
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("eyes")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.eyes}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Cake
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("age")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.age}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <PersonStanding
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("skin")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.skin}</span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Ruler
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("height")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0 flex flex-row items-center gap-1">
-                {character?.appearance?.height != null ? (
-                  <span className="flex items-baseline gap-1">
-                    <span>{displayHeight(Number(character.appearance.height))}{heightLabel}</span>
-                    {secondaryHeight && (
-                      <span className="text-[0.75em] text-muted-foreground/60">({secondaryHeight(Number(character.appearance.height))}{secondaryHeightLabel})</span>
-                    )}
-                  </span>
-                ) : null}
-                <Tooltip>
-                  <TooltipTrigger>
-                    ({tBattle(`sizesAbbr.${character?.stats?.size}` as Parameters<typeof t>[0])})
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {tBattle(`sizes.${character?.stats?.size}` as Parameters<typeof t>[0])}
-                  </TooltipContent>
-                </Tooltip>
-              </span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Weight
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("weight")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0 flex items-baseline gap-1">
-                {character?.appearance?.weight != null ? (
-                  <>
-                    <span>{displayWeight(Number(character.appearance.weight))}{weightLabel}</span>
-                    {secondaryWeight && (
-                      <span className="text-[0.75em] text-muted-foreground/60">({secondaryWeight(Number(character.appearance.weight))}{secondaryWeightLabel})</span>
-                    )}
-                  </>
-                ) : null}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Scissors
-                  className="shrink-0 w-4 h-4"
-                  aria-hidden="true"
-                />
-                <span className="text-xs font-medium">{t("hair")}</span>
-              </div>
-              <span className="text-sm pl-6 wrap-break-words min-w-0">{character?.appearance?.hair}</span>
-            </div>
+    <div className={HISTORY_BENTO_GRID_CLASS}>
+      <GeneralSectionCard
+        headingId={historyHeadingId("appearance")}
+        title={t("appearance")}
+        accentColor={accentColor}
+        className={HISTORY_SLOTS.appearance}>
+        <div className={FACT_CELLS_FRAME_CLASS}>
+          <div
+            className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 @sm:grid-cols-3 @3xl:grid-cols-6">
+            {cells.map((cell) => (
+              <AppearanceCell
+                key={cell.key}
+                label={t(cell.key)}
+                icon={cell.icon}
+                value={"node" in cell ? cell.node : cell.value}
+                accessibleValue={cell.value}
+                emptyLabel={t("notSpecified")}
+              />
+            ))}
           </div>
-        </Card>
-      </div>
-
-      {/* Cols 2–4 row 1: Traits | Alliés | Liens */}
-      <Card
-        className="gap-3 py-4 px-4 md:px-6 break-all"
-        role="region"
-        aria-labelledby="traits-title">
-        <h2
-          id="traits-title"
-          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-          {t("personalityTraits")}
-        </h2>
-        <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
-          {character?.background?.personalityTraits}
-        </p>
-      </Card>
-      <Card
-        className="gap-3 py-4 px-4 md:px-6 break-all"
-        role="region"
-        aria-labelledby="allies-title">
-        <h2
-          id="allies-title"
-          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-          {t("alliesAndOrgs")}
-        </h2>
-        <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
-          {character?.background?.alliesAndOrgs}
-        </p>
-      </Card>
-      <Card
-        className="gap-3 py-4 px-4 md:px-6 break-all"
-        role="region"
-        aria-labelledby="bonds-title">
-        <h2
-          id="bonds-title"
-          className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-          {t("bonds")}
-        </h2>
-        <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.bonds}</p>
-      </Card>
-
-      {/* Cols 2–4 row 2: Idéaux | Défauts (equal width) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 xl:col-start-2 xl:col-span-3">
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
-          role="region"
-          aria-labelledby="ideals-title">
-          <h2
-            id="ideals-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("ideals")}
-          </h2>
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.ideals}</p>
-        </Card>
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
-          role="region"
-          aria-labelledby="flaws-title">
-          <h2
-            id="flaws-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("flaws")}
-          </h2>
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.flaws}</p>
-        </Card>
-      </div>
-
-      {/* Ligne 2: Histoire | Description */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 col-span-1 lg:col-span-2 xl:col-span-4">
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
-          role="region"
-          aria-labelledby="backstory-title">
-          <h2
-            id="backstory-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("backstory")}
-          </h2>
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{character?.background?.backstory}</p>
-        </Card>
-        <Card
-          className="gap-3 py-4 px-4 md:px-6 break-all"
-          role="region"
-          aria-labelledby="description-title">
-          <h2
-            id="description-title"
-            className={`${accentColor} text-xl md:text-2xl font-semibold`}>
-            {t("description")}
-          </h2>
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
-            {character?.appearance?.description}
-          </p>
-        </Card>
-      </div>
+        </div>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <h3
+            id={historyHeadingId(APPEARANCE_DESCRIPTION_FIELD.key)}
+            className={HISTORY_SUBHEADING_CLASS}>
+            {t(APPEARANCE_DESCRIPTION_FIELD.key)}
+          </h3>
+          <HistoryText
+            value={appearance.description}
+            labelledBy={historyHeadingId(APPEARANCE_DESCRIPTION_FIELD.key)}
+            emptyLabel={t("notSpecified")}
+          />
+        </div>
+      </GeneralSectionCard>
+      {HISTORY_TEXT_FIELDS.map(({ key, slot }) => {
+        const headingId = historyHeadingId(key);
+        const value = textValues[key];
+        return (
+          <GeneralSectionCard
+            key={key}
+            headingId={headingId}
+            title={t(key)}
+            accentColor={accentColor}
+            className={slot}>
+            <HistoryText
+              value={value}
+              labelledBy={headingId}
+              emptyLabel={t("notSpecified")}
+            />
+          </GeneralSectionCard>
+        );
+      })}
     </div>
   );
 }

@@ -1,8 +1,10 @@
 /** @see FR-character-sheet-pdf-export */
 
+import type { DocumentProps } from "@react-pdf/renderer";
 import React from "react";
 import { buildCharacterSheetPdfFilename } from "@/lib/characterSheetPdf/buildFilename";
-import type { CharacterSheetPdfData, CharacterSheetPdfLabels, CharacterSheetPdfTheme } from "@/lib/characterSheetPdf/types";
+import type { CharacterSheetPdfData, CharacterSheetPdfLabels } from "@/lib/characterSheetPdf/types";
+import type { CharacterSheetPdfTheme } from "@/lib/characterSheetPdf/themes";
 
 export interface ExportCharacterSheetPdfParams {
   data: CharacterSheetPdfData;
@@ -24,9 +26,9 @@ export async function exportCharacterSheetPdf({
     import("@/lib/characterSheetPdf/CharacterSheetPdfDocument"),
   ]);
 
-  const blob = await pdf(
-    React.createElement(CharacterSheetPdfDocument, { data, labels, theme }),
-  ).toBlob();
+  // `pdf()` is typed for a bare `<Document>` element; our component renders one.
+  const doc = React.createElement(CharacterSheetPdfDocument, { data, labels, theme }) as unknown as React.ReactElement<DocumentProps>;
+  const blob = await pdf(doc).toBlob();
 
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");

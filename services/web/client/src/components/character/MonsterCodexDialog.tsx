@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { NPC } from "@/types/character";
+import { NPC, Player } from "@/types/character";
 import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/request";
 import CodexService, {
@@ -16,11 +15,15 @@ import CodexService, {
   CodexPlayerTranslation,
   CodexSearchResultItem,
 } from "@/services/CodexService";
-import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft } from "lucide-react";
+import { Search, Loader2, BadgeCheck, FileBadge, ArrowLeft, Check, ChevronDown, Layers, ListMinus, ListPlus } from "lucide-react";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import MonsterPreview from "@/components/character/MonsterPreview";
 import CodexPreviewLanguageBar from "@/components/character/CodexPreviewLanguageBar";
 import CodexIconLegend from "@/components/character/CodexIconLegend";
+import CodexResultRow from "@/components/character/CodexResultRow";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import {
   codexDeclaredPreviewLangs,
@@ -35,6 +38,22 @@ import {
   createPortaledFilterOpenTracker,
   shouldPreventDialogDismissForPortaledFilter,
 } from "@/lib/portaledFilterOpenTracker";
+import {
+  resolveCodexCreateSelection,
+  parseCodexSelectionKey,
+  resolvePreselectionLang,
+  type CodexCreateSelection,
+  type CodexPreselection,
+} from "@/lib/codexCharacterCreate";
+import { createStackedDialogGate } from "@/lib/stackedDialogGate";
+import {
+  characterDisplayName,
+  isCharacterQueued as isCharacterQueuedInQueue,
+  queuedCharacterKeys as buildQueuedCharacterKeys,
+  queueEntriesNewestFirst,
+  toggleCharacterInQueue,
+  type QueuedCharacterEntry,
+} from "@/lib/codexCharacterQueue";
 import React from "react";
 
 type CodexEntityTypeFilter = "both" | "monsters" | "players";
@@ -42,6 +61,13 @@ type CodexEntityTypeFilter = "both" | "monsters" | "players";
 interface MonsterCodexDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Kind-preserving create: monster → NPC, premade player → Player. */
+  onCharacterSelected?: (selection: CodexCreateSelection) => void;
+  /** Batch create (selection queue); skips per-character create forms. */
+  onCharactersBatchSelected?: (selections: CodexCreateSelection[]) => void | Promise<void>;
+  /** Disables import actions while a batch create is in progress. */
+  batchCreateInProgress?: boolean;
+  /** @deprecated Prefer onCharacterSelected. Called only for monster → NPC drafts. */
   onMonsterSelected?: (monster: Partial<NPC>) => void;
   /** Read-only browse: preview only, no NPC draft creation. */
   browseOnly?: boolean;
@@ -49,6 +75,14 @@ interface MonsterCodexDialogProps {
   embedded?: boolean;
   /** Locks entity search to monsters or players and hides the entity-type filter. */
   lockedEntityTypeFilter?: "monsters" | "players";
+  /** Entry to load and preview on open (share link). @see FR-codex-share-link-preselection */
+  initialSelection?: CodexPreselection | null;
+  /** Fired when the previewed entry changes (null when none), e.g. to mirror it in the URL. */
+  onPreviewedEntryChange?: (entry: { kind: "player" | "monster"; id: string; lang: string | null } | null) => void;
+  /** The link carried a Codex ID but its params were invalid: show the fallback error. */
+  initialSelectionInvalid?: boolean;
+  /** The parent navigates on close: skip the default `router.back()`. */
+  skipBackOnClose?: boolean;
   /** Shared portaled filter tracker when embedded in a parent dialog. */
   sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
 }
@@ -71,11 +105,36 @@ function formatPlayerListDetail(
   return classes.length > 0 ? classes.join(", ") : "—";
 }
 
+function PinnedLangFlag({
+  lang,
+  tDialog,
+}: {
+  lang?: string | null;
+  tDialog: (key: string, values?: Record<string, unknown>) => string;
+}) {
+  if (!lang || !codexLocaleFlagEmoji(lang)) return null;
+
+  return (
+    <InfoTooltip
+      content={tDialog(`languageFilter.${lang}`)}
+      side="top"
+      moreInfoLabel={tDialog(`languageFilter.${lang}`)}
+      className="relative z-10 shrink-0">
+      <span
+        className="text-[1.35rem] leading-none select-none cursor-help"
+        aria-label={tDialog(`languageFilter.${lang}`)}>
+        {codexLocaleFlagEmoji(lang)}
+      </span>
+    </InfoTooltip>
+  );
+}
+
 function MonsterResultItem({
   monsterItem,
   selectedLang,
   pinnedLang,
   isSelected,
+  isQueued,
   onMonsterClick,
   tDialog,
 }: {
@@ -83,7 +142,8 @@ function MonsterResultItem({
   selectedLang: string | null;
   pinnedLang?: string | null;
   isSelected: boolean;
-  onMonsterClick: (monster: CodexMonsterItem, lang: string) => void | Promise<void>;
+  isQueued?: boolean;
+  onMonsterClick: (monster: CodexMonsterItem, lang: string) => unknown;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
 }) {
   const tCommon = useTranslations("common");
@@ -95,45 +155,45 @@ function MonsterResultItem({
   const translation = monsterItem.translations[displayLang];
   if (!translation) return null;
 
+  const hasBadges = monsterItem.tag === 1 || translation.srd;
+
   return (
-    <Card
-      onClick={() => onMonsterClick(monsterItem, displayLang)}
-      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
-        isSelected ? "border-purple border-2 bg-purple/10" : ""
-      }`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-1 min-w-0 gap-2 items-start">
-            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
-              <InfoTooltip
-                content={tDialog(`languageFilter.${pinnedLang}`)}
-                side="top"
-                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
-                <span
-                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
-                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
-                  {codexLocaleFlagEmoji(pinnedLang)}
-                </span>
-              </InfoTooltip>
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-              <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1">
-                <InfoTooltip
-                  content={tCommon("challengeRatingTooltip")}
-                  side="top"
-                  moreInfoLabel={tCommon("challengeRatingTooltip")}>
-                  <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
-                </InfoTooltip>
-                {tDialog("monsterInfo", {
-                  cr: formatChallengeRating(translation.challenge?.challengeRating),
-                  type: translation.profile?.type,
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <div className="flex gap-1.5">
+    <CodexResultRow
+      name={translation.firstname}
+      isSelected={isSelected}
+      isQueued={isQueued}
+      onSelect={() => onMonsterClick(monsterItem, displayLang)}
+      leading={
+        <PinnedLangFlag
+          lang={pinnedLang}
+          tDialog={tDialog}
+        />
+      }
+      meta={
+        <>
+          <InfoTooltip
+            content={tCommon("challengeRatingTooltip")}
+            side="top"
+            moreInfoLabel={tCommon("challengeRatingTooltip")}
+            className="relative z-10">
+            <abbr className="no-underline cursor-help">{tDialog("crLabel")}</abbr>
+          </InfoTooltip>
+          {tDialog("monsterInfo", {
+            cr: formatChallengeRating(translation.challenge?.challengeRating),
+            type: translation.profile?.type,
+          })}
+        </>
+      }
+      badges={
+        <>
+          {isQueued ? (
+            <Check
+              className="size-5 text-primary-light"
+              aria-label={tDialog("queuedInSelection")}
+            />
+          ) : null}
+          {hasBadges ? (
+            <>
               {monsterItem.tag === 1 && (
                 <BadgeCheck
                   className="size-5 text-green-600"
@@ -146,11 +206,11 @@ function MonsterResultItem({
                   aria-label={tDialog("srdContent")}
                 />
               )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
+            </>
+          ) : null}
+        </>
+      }
+    />
   );
 }
 
@@ -159,6 +219,7 @@ function PlayerResultItem({
   selectedLang,
   pinnedLang,
   isSelected,
+  isQueued,
   onPlayerClick,
   tDialog,
   tClasses,
@@ -167,7 +228,8 @@ function PlayerResultItem({
   selectedLang: string | null;
   pinnedLang?: string | null;
   isSelected: boolean;
-  onPlayerClick: (player: CodexPlayerItem, lang: string) => void | Promise<void>;
+  isQueued?: boolean;
+  onPlayerClick: (player: CodexPlayerItem, lang: string) => unknown;
   tDialog: (key: string, values?: Record<string, unknown>) => string;
   tClasses: (key: string) => string;
 }) {
@@ -179,57 +241,55 @@ function PlayerResultItem({
   if (!translation) return null;
 
   return (
-    <Card
-      onClick={() => onPlayerClick(playerItem, displayLang)}
-      className={`cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40 ${
-        isSelected ? "border-purple border-2 bg-purple/10" : ""
-      }`}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-1 min-w-0 gap-2 items-start">
-            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
-              <InfoTooltip
-                content={tDialog(`languageFilter.${pinnedLang}`)}
-                side="top"
-                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
-                <span
-                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
-                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
-                  {codexLocaleFlagEmoji(pinnedLang)}
-                </span>
-              </InfoTooltip>
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold text-sm md:text-base">{translation.firstname}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {tDialog("playerInfo", {
-                  level: translation.progression?.level ?? 1,
-                  detail: formatPlayerListDetail(translation, tClasses),
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            {playerItem.tag === 1 ? (
-              <BadgeCheck
-                className="size-5 text-green-600"
-                aria-label={tDialog("validatedByChariot")}
-              />
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </Card>
+    <CodexResultRow
+      name={translation.firstname}
+      isSelected={isSelected}
+      isQueued={isQueued}
+      onSelect={() => onPlayerClick(playerItem, displayLang)}
+      leading={
+        <PinnedLangFlag
+          lang={pinnedLang}
+          tDialog={tDialog}
+        />
+      }
+      meta={tDialog("playerInfo", {
+        level: translation.progression?.level ?? 1,
+        detail: formatPlayerListDetail(translation, tClasses),
+      })}
+      badges={
+        <>
+          {isQueued ? (
+            <Check
+              className="size-5 text-primary-light"
+              aria-label={tDialog("queuedInSelection")}
+            />
+          ) : null}
+          {playerItem.tag === 1 ? (
+            <BadgeCheck
+              className="size-5 text-green-600"
+              aria-label={tDialog("validatedByChariot")}
+            />
+          ) : null}
+        </>
+      }
+    />
   );
 }
 
 export default function MonsterCodexDialog({
   open,
   onOpenChange,
+  onCharacterSelected,
+  onCharactersBatchSelected,
+  batchCreateInProgress = false,
   onMonsterSelected,
   browseOnly = false,
   embedded = false,
+  skipBackOnClose = false,
   lockedEntityTypeFilter,
+  initialSelection,
+  initialSelectionInvalid = false,
+  onPreviewedEntryChange,
   sharedPortaledFilterOpenTracker,
 }: MonsterCodexDialogProps) {
   const router = useRouter();
@@ -260,7 +320,12 @@ export default function MonsterCodexDialog({
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [previewLangResolving, setPreviewLangResolving] = useState(false);
   const [previewTranslationError, setPreviewTranslationError] = useState<string | null>(null);
+  const [preselectionError, setPreselectionError] = useState(false);
+  const [characterQueue, setCharacterQueue] = useState<QueuedCharacterEntry[]>([]);
+  const [selectionDetailsOpen, setSelectionDetailsOpen] = useState(false);
   const isLoadingRef = useRef(false);
+  const validateButtonRef = useRef<HTMLButtonElement>(null);
+  const focusValidateOnSelectRef = useRef(false);
   const internalPortaledFilterOpenTrackerRef = useRef(createPortaledFilterOpenTracker());
   const portaledFilterOpenTracker =
     sharedPortaledFilterOpenTracker ?? internalPortaledFilterOpenTrackerRef.current;
@@ -272,9 +337,26 @@ export default function MonsterCodexDialog({
     [portaledFilterOpenTracker],
   );
 
+  // Another dialog stacked on top (e.g. release notes) must close alone, not take this one with it.
+  const stackedDialogGateRef = useRef<ReturnType<typeof createStackedDialogGate> | null>(null);
+  useEffect(() => {
+    const gate = createStackedDialogGate(document);
+    stackedDialogGateRef.current = gate;
+    window.addEventListener("keydown", gate.snapshot, true);
+    window.addEventListener("pointerdown", gate.snapshot, true);
+    return () => {
+      window.removeEventListener("keydown", gate.snapshot, true);
+      window.removeEventListener("pointerdown", gate.snapshot, true);
+      stackedDialogGateRef.current = null;
+    };
+  }, []);
+
   const shouldPreventDialogOutsideDismiss = useCallback(
     (target: EventTarget | null) => {
-      return shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target);
+      return (
+        stackedDialogGateRef.current?.shouldIgnoreDismiss() === true ||
+        shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTracker, target)
+      );
     },
     [portaledFilterOpenTracker],
   );
@@ -400,6 +482,9 @@ export default function MonsterCodexDialog({
       setPreviewLangResolving(false);
       setPreviewTranslationError(null);
       setError(null);
+      setPreselectionError(initialSelectionInvalid);
+      setCharacterQueue([]);
+      setSelectionDetailsOpen(true);
       setCurrentPage(1);
       setHasMore(false);
       isLoadingRef.current = false;
@@ -422,7 +507,7 @@ export default function MonsterCodexDialog({
     codexMonsterItem: CodexMonsterItem,
     lang: string,
     options?: { fromPreviewLangBar?: boolean },
-  ) => {
+  ): Promise<boolean> => {
     const fromPreview = options?.fromPreviewLangBar ?? false;
     const prevKey = selectedItemKey;
     let currentLangForSameId: string | undefined;
@@ -469,13 +554,13 @@ export default function MonsterCodexDialog({
         }
         if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
         const populated = await CodexService.populateMonstersList([item]);
         item = populated[0];
         if (!codexMonsterTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
       } finally {
         setPreviewLangResolving(false);
@@ -490,8 +575,10 @@ export default function MonsterCodexDialog({
       setSelectedMonster(convertedMonster);
       setSelectedItemKey(`monster:${item._id}:${lang}`);
       setShowMobileDetails(true);
+      return true;
     } catch {
       setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+      return false;
     }
   };
 
@@ -499,7 +586,7 @@ export default function MonsterCodexDialog({
     codexPlayerItem: CodexPlayerItem,
     lang: string,
     options?: { fromPreviewLangBar?: boolean },
-  ) => {
+  ): Promise<boolean> => {
     const fromPreview = options?.fromPreviewLangBar ?? false;
     const prevKey = selectedItemKey;
     let currentLangForSameId: string | undefined;
@@ -546,13 +633,13 @@ export default function MonsterCodexDialog({
         }
         if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
         const populated = await CodexService.populatePlayersList([item]);
         item = populated[0];
         if (!codexPlayerTranslationLooksUsable(item.translations[lang])) {
           setPreviewTranslationError(tDialog("preview.loadTranslationError"));
-          return;
+          return false;
         }
       } finally {
         setPreviewLangResolving(false);
@@ -567,8 +654,10 @@ export default function MonsterCodexDialog({
       setSelectedMonster(convertedMonster);
       setSelectedItemKey(`player:${item._id}:${lang}`);
       setShowMobileDetails(true);
+      return true;
     } catch {
       setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+      return false;
     }
   };
 
@@ -592,15 +681,140 @@ export default function MonsterCodexDialog({
     setPreviewLangStack((s) => s.slice(0, -1));
   };
 
+  const preselectionKind = initialSelection?.kind;
+  const preselectionId = initialSelection?.id;
+  const preselectionLang = initialSelection?.lang ?? null;
+
+  useEffect(() => {
+    if (!open || !preselectionKind || !preselectionId) return;
+    let cancelled = false;
+
+    const applyPreselection = async () => {
+      const fetchLang = preselectionLang ?? userLocale;
+      const item =
+        preselectionKind === "player"
+          ? await CodexService.getPlayerById(preselectionId, fetchLang)
+          : await CodexService.getMonsterById(preselectionId, fetchLang);
+      if (cancelled) return;
+
+      const lang = item
+        ? resolvePreselectionLang({
+            requested: preselectionLang,
+            userLocale,
+            available: item.languages ?? [],
+          })
+        : null;
+      if (!item || !lang) {
+        setPreselectionError(true);
+        return;
+      }
+
+      setSelectedLang(lang);
+      focusValidateOnSelectRef.current = true;
+      const selected =
+        preselectionKind === "player"
+          ? await handlePlayerClick(item as CodexPlayerItem, lang)
+          : await handleMonsterClick(item as CodexMonsterItem, lang);
+      if (cancelled) return;
+      if (!selected) {
+        focusValidateOnSelectRef.current = false;
+        setPreselectionError(true);
+      }
+    };
+
+    void applyPreselection();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, preselectionKind, preselectionId, preselectionLang]);
+
+  const lastEmittedEntryKeyRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!onPreviewedEntryChange) return;
+    // Skip the initial « nothing selected » so a deep link isn't reset before it loads.
+    if (lastEmittedEntryKeyRef.current === undefined && selectedItemKey === null) {
+      lastEmittedEntryKeyRef.current = null;
+      return;
+    }
+    if (lastEmittedEntryKeyRef.current === selectedItemKey) return;
+    lastEmittedEntryKeyRef.current = selectedItemKey;
+    onPreviewedEntryChange(parseCodexSelectionKey(selectedItemKey));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItemKey]);
+
+  useEffect(() => {
+    if (selectedItemKey && focusValidateOnSelectRef.current) {
+      focusValidateOnSelectRef.current = false;
+      validateButtonRef.current?.focus();
+    }
+  }, [selectedItemKey]);
+
+  const buildCurrentSelection = useCallback((): CodexCreateSelection | null => {
+    if (!selectedItemKey || !selectedEntryKind) return null;
+    const previewLang = selectedItemKey.split(":").at(-1) ?? "en";
+
+    let playerDraft: Partial<Player> | null = null;
+    if (selectedEntryKind === "player" && selectedCodexPlayer) {
+      try {
+        playerDraft = CodexService.convertCodexPlayerToChariotPlayer(selectedCodexPlayer, previewLang);
+      } catch {
+        return null;
+      }
+    }
+
+    return resolveCodexCreateSelection({
+      entryKind: selectedEntryKind,
+      npcDraft: selectedEntryKind === "monster" ? selectedMonster : null,
+      playerDraft,
+    });
+  }, [selectedCodexPlayer, selectedEntryKind, selectedItemKey, selectedMonster]);
+
+  const queuedCharacterKeysSet = useMemo(() => buildQueuedCharacterKeys(characterQueue), [characterQueue]);
+  const queueDisplayEntries = useMemo(() => queueEntriesNewestFirst(characterQueue), [characterQueue]);
+  const isCurrentCharacterQueued = selectedItemKey ? isCharacterQueuedInQueue(characterQueue, selectedItemKey) : false;
+  const isMultiSelectionMode = characterQueue.length > 0;
+  const characterActionsDisabled = !selectedMonster || previewLangResolving || batchCreateInProgress;
+  const canBatchImport = !browseOnly && Boolean(onCharactersBatchSelected);
+
+  // Close the selection panel once the queue is emptied so it does not reopen on the next selection.
+  useEffect(() => {
+    if (!isMultiSelectionMode) setSelectionDetailsOpen(false);
+  }, [isMultiSelectionMode]);
+
   const handleValidate = () => {
-    if (selectedMonster && onMonsterSelected) {
-      onMonsterSelected(selectedMonster);
+    if (characterQueue.length > 0) return;
+    const selection = buildCurrentSelection();
+    if (!selection) {
+      setPreviewTranslationError(tDialog("preview.loadTranslationError"));
+      return;
+    }
+
+    onCharacterSelected?.(selection);
+    if (selection.kind === "npc") {
+      onMonsterSelected?.(selection.draft);
     }
   };
 
+  const handleToggleQueueSelection = () => {
+    if (!selectedItemKey) return;
+    const selection = buildCurrentSelection();
+    if (!selection) return;
+    setCharacterQueue((prev) => toggleCharacterInQueue(prev, selectedItemKey, selection));
+  };
+
+  const handleAddSelection = () => {
+    if (characterQueue.length === 0 || !onCharactersBatchSelected) return;
+    void onCharactersBatchSelected(characterQueue.map((entry) => entry.selection));
+  };
+
+  const handleRemoveFromQueue = useCallback((key: string) => {
+    setCharacterQueue((prev) => prev.filter((entry) => entry.key !== key));
+  }, []);
+
   const handleClose = () => {
     onOpenChange(false);
-    if (!browseOnly && !embedded) {
+    if (!browseOnly && !embedded && !skipBackOnClose) {
       router.back();
     }
   };
@@ -640,15 +854,16 @@ export default function MonsterCodexDialog({
   const dialogBody = (
     <>
       {!embedded ? (
-        <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
-          <DialogTitle className="text-2xl">{tDialog("title")}</DialogTitle>
+        <DialogHeader className="min-h-14 shrink-0 justify-center border-b border-frame py-3 pl-6 pr-12">
+          <DialogTitle className="text-xl leading-tight sm:text-2xl sm:leading-none">{tDialog("title")}</DialogTitle>
         </DialogHeader>
       ) : null}
 
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-4 p-4 md:p-6 min-h-0">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
           <div
-            className={`flex flex-col gap-4 w-full lg:w-1/4 min-h-0 lg:min-h-full ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
-            <div className="flex shrink-0 flex-col gap-1.5 w-full overflow-visible">
+            className={`flex min-h-0 w-full flex-col gap-3 p-4 lg:w-1/4 lg:border-r lg:border-frame ${showMobileDetails ? "hidden lg:flex" : "flex"}`}>
+            <div className="flex w-full shrink-0 flex-col gap-3 overflow-visible">
+              <CodexIconLegend showSelection={canBatchImport} />
               <div className="flex w-full min-w-0 items-center gap-2">
                 <div className="relative min-w-0 flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -693,7 +908,6 @@ export default function MonsterCodexDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <CodexIconLegend />
               <div className="flex w-full min-w-0 gap-2">
                 {!lockedEntityTypeFilter ? (
                   <Select
@@ -749,7 +963,15 @@ export default function MonsterCodexDialog({
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-thumb]:rounded-full">
+            {preselectionError ? (
+              <p
+                role="alert"
+                className="shrink-0 rounded-md border border-red-500/60 px-3 py-2 text-sm text-red-500">
+                {tDialog("preselectionError")}
+              </p>
+            ) : null}
+
+            <div className="scrollbar-none flex-1 overflow-y-auto scroll-smooth">
               {isSearching ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -771,7 +993,7 @@ export default function MonsterCodexDialog({
 
                   return (
                     <React.Fragment>
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-1.5">
                         {searchResults.flatMap((result) => {
                           if (result.kind === "monster") {
                             const monsterItem = result.item;
@@ -786,6 +1008,7 @@ export default function MonsterCodexDialog({
                                   monsterItem={monsterItem}
                                   selectedLang={selectedLang}
                                   isSelected={selectedItemKey === `monster:${monsterItem._id}:${selectedLang}`}
+                                  isQueued={queuedCharacterKeysSet.has(`monster:${monsterItem._id}:${selectedLang}`)}
                                   onMonsterClick={handleMonsterClick}
                                   tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
                                 />,
@@ -800,6 +1023,7 @@ export default function MonsterCodexDialog({
                                   selectedLang={selectedLang}
                                   pinnedLang={lang}
                                   isSelected={selectedItemKey === `monster:${monsterItem._id}:${lang}`}
+                                  isQueued={queuedCharacterKeysSet.has(`monster:${monsterItem._id}:${lang}`)}
                                   onMonsterClick={handleMonsterClick}
                                   tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
                                 />
@@ -819,6 +1043,7 @@ export default function MonsterCodexDialog({
                                 playerItem={playerItem}
                                 selectedLang={selectedLang}
                                 isSelected={selectedItemKey === `player:${playerItem._id}:${selectedLang}`}
+                                isQueued={queuedCharacterKeysSet.has(`player:${playerItem._id}:${selectedLang}`)}
                                 onPlayerClick={handlePlayerClick}
                                 tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
                                 tClasses={tClasses}
@@ -834,6 +1059,7 @@ export default function MonsterCodexDialog({
                                 selectedLang={selectedLang}
                                 pinnedLang={lang}
                                 isSelected={selectedItemKey === `player:${playerItem._id}:${lang}`}
+                                isQueued={queuedCharacterKeysSet.has(`player:${playerItem._id}:${lang}`)}
                                 onPlayerClick={handlePlayerClick}
                                 tDialog={tDialog as (key: string, values?: Record<string, unknown>) => string}
                                 tClasses={tClasses}
@@ -846,7 +1072,7 @@ export default function MonsterCodexDialog({
                         <div className="flex justify-center pt-4 pb-2">
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             onClick={loadMore}
                             disabled={isLoadingMore}
                             className="w-full">
@@ -878,7 +1104,7 @@ export default function MonsterCodexDialog({
           </div>
 
           <div
-            className={`flex flex-col flex-1 min-h-0 w-full lg:w-3/4 overflow-hidden min-h-[45vh] lg:min-h-0 border-t lg:border-t-0 lg:border-l pt-4 lg:pt-0 lg:pl-4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
+            className={`min-h-[45vh] w-full flex-1 flex-col overflow-hidden p-4 md:p-6 lg:min-h-0 lg:w-3/4 ${showMobileDetails ? "flex" : "hidden lg:flex"}`}>
             <Button
               type="button"
               variant="ghost"
@@ -935,22 +1161,161 @@ export default function MonsterCodexDialog({
         </div>
 
       {!embedded ? (
-        <DialogFooter className="px-6 pb-6 pt-4 border-t shrink-0">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}>
-            {tDialog("cancel")}
-          </Button>
-          {!browseOnly ? (
+        <DialogFooter
+          className={cn(
+            "shrink-0 gap-2 border-t border-frame px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-center lg:gap-3 lg:px-6 lg:py-4",
+            canBatchImport && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end",
+          )}>
+          {canBatchImport && isMultiSelectionMode ? (
+            <Popover
+              open={selectionDetailsOpen}
+              onOpenChange={setSelectionDetailsOpen}>
+              <PopoverTrigger
+                type="button"
+                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-primary-light transition-colors hover:text-primary-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:w-auto lg:max-w-md">
+                <ChevronDown
+                  className={cn("size-4 shrink-0 transition-transform", !selectionDetailsOpen && "rotate-180")}
+                  aria-hidden="true"
+                />
+                <span
+                  className="min-w-0 truncate"
+                  aria-live="polite">
+                  {tDialog("selectionCount", { count: characterQueue.length })}
+                </span>
+              </PopoverTrigger>
+              <PopoverContent
+                side="top"
+                align="start"
+                aria-label={tDialog("selectionDetailsList")}
+                className="w-[min(28rem,calc(100vw-2rem))] max-w-none p-1.5">
+                <ul className="flex max-h-60 flex-col divide-y divide-border overflow-y-auto pr-1 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover [&::-webkit-scrollbar-track]:bg-scrollbar-track">
+                  {queueDisplayEntries.map(({ key, selection }) => {
+                    const displayName = characterDisplayName(selection) || tDialog("unknownEntry");
+                    const kindLabel =
+                      selection.kind === "player"
+                        ? tDialog("entityTypeFilter.players")
+                        : tDialog("entityTypeFilter.monsters");
+                    return (
+                      <li
+                        key={key}
+                        className="flex items-center gap-2 px-2 py-2 transition-colors hover:bg-white/5">
+                        <div className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">{displayName}</span>
+                          <span className="block truncate text-xs text-muted-foreground">{kindLabel}</span>
+                        </div>
+                        <DeleteIconButton
+                          onClick={() => handleRemoveFromQueue(key)}
+                          aria-label={tDialog("removeEntryFromSelection", { name: displayName })}
+                          className="size-7 shrink-0"
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </PopoverContent>
+            </Popover>
+          ) : null}
+          <div className="flex w-full min-w-0 items-center justify-end gap-1.5 sm:gap-2 lg:w-auto">
             <Button
               type="button"
-              onClick={handleValidate}
-              disabled={!selectedMonster}
-              className="bg-purple hover:bg-purple/90 text-white">
-              {tDialog("validate")}
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              disabled={batchCreateInProgress}
+              className="shrink-0">
+              {tDialog("cancel")}
             </Button>
-          ) : null}
+            {!browseOnly ? (
+              canBatchImport && (isMultiSelectionMode || selectedMonster) ? (
+                <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 sm:border-l sm:border-border sm:pl-3">
+                  {isMultiSelectionMode ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon-sm"
+                        onClick={handleToggleQueueSelection}
+                        disabled={characterActionsDisabled}
+                        aria-pressed={isCurrentCharacterQueued}
+                        aria-label={
+                          isCurrentCharacterQueued ? tDialog("removeFromSelection") : tDialog("selectThisEntry")
+                        }
+                        className={cn(
+                          "shrink-0 sm:size-auto sm:h-8 sm:px-3",
+                          isCurrentCharacterQueued && "border-destructive/50 text-destructive hover:bg-destructive/5",
+                        )}>
+                        {isCurrentCharacterQueued ? (
+                          <ListMinus
+                            className="size-4"
+                            aria-hidden="true"
+                          />
+                        ) : (
+                          <ListPlus
+                            className="size-4"
+                            aria-hidden="true"
+                          />
+                        )}
+                        <span className="hidden sm:inline">
+                          {isCurrentCharacterQueued ? tDialog("removeFromSelection") : tDialog("selectThisEntry")}
+                        </span>
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleAddSelection}
+                        disabled={batchCreateInProgress}
+                        aria-busy={batchCreateInProgress}
+                        aria-label={tDialog("addSelection", { count: characterQueue.length })}
+                        className="shrink-0 gap-1 px-2 sm:px-3">
+                        <Layers
+                          className="size-4 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="text-sm font-semibold tabular-nums sm:hidden">{characterQueue.length}</span>
+                        <span className="hidden truncate sm:inline">
+                          {tDialog("addSelection", { count: characterQueue.length })}
+                        </span>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon-sm"
+                        onClick={handleToggleQueueSelection}
+                        disabled={characterActionsDisabled}
+                        aria-pressed={isCurrentCharacterQueued}
+                        aria-label={tDialog("selectThisEntry")}
+                        className="shrink-0 sm:size-auto sm:h-8 sm:px-3">
+                        <ListPlus
+                          className="size-4"
+                          aria-hidden="true"
+                        />
+                        <span className="hidden sm:inline">{tDialog("selectThisEntry")}</span>
+                      </Button>
+                      <Button
+                        ref={validateButtonRef}
+                        type="button"
+                        size="sm"
+                        onClick={handleValidate}
+                        disabled={characterActionsDisabled}>
+                        {tDialog("validate")}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  ref={validateButtonRef}
+                  type="button"
+                  onClick={handleValidate}
+                  disabled={!selectedMonster || batchCreateInProgress}>
+                  {tDialog("validate")}
+                </Button>
+              )
+            ) : null}
+          </div>
         </DialogFooter>
       ) : null}
     </>
@@ -975,7 +1340,13 @@ export default function MonsterCodexDialog({
         onOpenChange(nextOpen);
       }}>
       <DialogContent
-        className="sm:w-4/5 h-[90vh] flex flex-col p-0"
+        className="flex h-[90vh] flex-col gap-0 p-0 sm:w-4/5 [&>[data-slot=dialog-close]]:top-5"
+        data-own-dialog=""
+        onEscapeKeyDown={(event) => {
+          if (stackedDialogGateRef.current?.shouldIgnoreDismiss()) {
+            event.preventDefault();
+          }
+        }}
         onPointerDownOutside={(event) => {
           const target = event.detail.originalEvent?.target ?? event.target;
           if (shouldPreventDialogOutsideDismiss(target)) {

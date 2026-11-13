@@ -38,7 +38,7 @@ export default function CodexPreviewLanguageBar({
   }
 
   return (
-    <div className="shrink-0 flex flex-wrap items-center gap-x-2 gap-y-2 my-3 pb-3 border-b border-border/70">
+    <div className="shrink-0 flex flex-wrap items-center gap-x-2 gap-y-2 my-3 pb-3 border-b border-border">
       <span className="text-xs font-medium text-muted-foreground w-full sm:w-auto sm:shrink-0">{label}</span>
       <div
         className={cn(
@@ -54,12 +54,8 @@ export default function CodexPreviewLanguageBar({
                 <Button
                   type="button"
                   size="sm"
-                  variant={active ? "secondary" : "outline"}
-                  className={cn(
-                    "h-8 px-2.5 gap-1.5 rounded-full text-xs font-medium",
-                    active && "ring-2 ring-purple/45 bg-purple/10 border-purple/35 hover:bg-purple/10",
-                    !active && "hover:bg-purple/5 hover:border-purple/35",
-                  )}
+                  variant={active ? "primary" : "secondary"}
+                  className="px-2.5 text-xs"
                   disabled={disabled}
                   onClick={() => {
                     if (!active && !disabled) void onSelectLang(lang);
@@ -82,9 +78,9 @@ export default function CodexPreviewLanguageBar({
           <TooltipTrigger asChild>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
-              className="h-8 shrink-0 gap-1.5 px-2 sm:px-2.5 text-muted-foreground border-border/80 hover:text-foreground hover:bg-muted/50"
+              className="shrink-0 px-2 sm:px-2.5"
               disabled={disabled}
               onClick={onUndo}
               aria-label={undoLabel}>

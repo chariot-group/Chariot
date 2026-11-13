@@ -1,6 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, copySuccessButtonClassName } from "@/components/ui/button";
+import { StableLabel } from "@/components/ui/stable-label";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,11 @@ import { Check, CircleHelp, Link, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 const TIERS_ASCENDING = [...REFERRAL_TIERS].reverse();
-const BAR_HEIGHT = "h-9 sm:h-10";
+// Leading 0 % step: a parrain with no validated filleul already sits on the progress bar
+const BAR_STEPS = [{ minReferees: 0, discount: 0 }, ...TIERS_ASCENDING];
+const BAR_HEIGHT = "h-10";
+
+const toMaxPercent = (discount: number) => `${Math.min(100, (discount / REFERRER_MAX_DISCOUNT_PERCENT) * 100)}%`;
 
 type CopyState = "idle" | "loading" | "success";
 
@@ -41,11 +46,11 @@ export default function ProfileReferralSection({
 
   return (
     <Card
-      className="flex flex-col gap-3 p-4 sm:p-5"
+      className="flex flex-col gap-5 lg:gap-3"
       role="region"
       aria-labelledby="referral-tiers-heading">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex flex-col gap-1 min-w-0 flex-1">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-1.5 lg:gap-1 min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3
               id="referral-tiers-heading"
@@ -74,11 +79,11 @@ export default function ProfileReferralSection({
               />
             </InfoTooltip>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">{t("tiersSubtitle")}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed lg:leading-normal">{t("tiersSubtitle")}</p>
         </div>
 
         <div
-          className="flex flex-col gap-1.5 shrink-0 lg:items-end"
+          className="flex flex-col gap-2 lg:gap-1.5 shrink-0 lg:items-end"
           aria-labelledby="referral-code-heading">
           <h4
             id="referral-code-heading"
@@ -87,25 +92,61 @@ export default function ProfileReferralSection({
           </h4>
           <div className="flex flex-row items-center gap-2 flex-wrap">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               aria-label={t("copyLinkAriaLabel")}
               className={cn(
                 "transition-colors whitespace-nowrap",
-                linkCopyState === "success" && "bg-green-500 hover:bg-green-500 border-green-500 text-white",
+                linkCopyState === "success" && copySuccessButtonClassName,
               )}
               disabled={linkCopyState !== "idle"}
               onClick={onCopyLink}>
               {linkCopyState === "loading" && <Loader2 className="animate-spin" />}
               {linkCopyState === "success" && <Check />}
               {linkCopyState === "idle" && <Link />}
-              {linkCopyState === "success" ? t("linkCopied") : t("copyLink")}
+              <StableLabel
+                label={linkCopyState === "success" ? t("linkCopied") : t("copyLink")}
+                alternates={[t("copyLink"), t("linkCopied")]}
+              />
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 min-w-0">
+      {/* Below lg: compact view — 9 segments are unreadable on narrow cards (FR-stripe-checkout, Profile Tiers Display) */}
+      <div
+        className="flex flex-col gap-3 lg:hidden"
+        data-testid="referral-tiers-compact">
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="text-sm text-muted-foreground">{t("compactCurrentLabel")}</span>
+          <span className="text-3xl font-bold tabular-nums leading-tight text-foreground">{currentDiscount}%</span>
+        </div>
+        <div
+          className="relative h-3 w-full overflow-hidden rounded-full bg-gray-middle-light"
+          role="progressbar"
+          aria-label={t("tiersProgressAriaLabel")}
+          aria-valuemin={0}
+          aria-valuemax={REFERRER_MAX_DISCOUNT_PERCENT}
+          aria-valuenow={currentDiscount}>
+          {pendingDiscount > currentDiscount && (
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-yellow/70 transition-[width] duration-300"
+              style={{ width: toMaxPercent(pendingDiscount) }}
+              data-fill="pending"
+            />
+          )}
+          <div
+            className="absolute inset-y-0 left-0 min-w-3 rounded-full bg-primary transition-[width] duration-300"
+            style={{ width: toMaxPercent(currentDiscount) }}
+            data-fill="current"
+          />
+        </div>
+        {pendingDiscount > currentDiscount && (
+          <p className="text-sm leading-relaxed text-amber-400">{t("compactPendingPotential", { discount: pendingDiscount })}</p>
+        )}
+      </div>
+
+      <div className="hidden lg:flex lg:flex-row lg:items-center lg:gap-3 min-w-0">
         <div
           className="min-w-0 flex-1"
           role="progressbar"
@@ -120,7 +161,7 @@ export default function ProfileReferralSection({
             )}
             role="list"
             aria-label={t("tiersTitle")}>
-            {TIERS_ASCENDING.map((tier) => {
+            {BAR_STEPS.map((tier) => {
               const isReached = validatedCount >= tier.minReferees;
               const isPendingReachable = !isReached && totalCount >= tier.minReferees;
               const isCurrentTier = isReached && tier.discount === currentDiscount;
@@ -163,7 +204,7 @@ export default function ProfileReferralSection({
                             ? "bg-yellow/60 text-black"
                             : "bg-gray-middle-light text-muted-foreground",
                   )}>
-                  <span className="text-[8px] font-bold tabular-nums leading-none sm:text-[10px] md:text-xs">
+                  <span className="text-xs font-bold tabular-nums leading-none">
                     {tier.discount}%
                   </span>
                 </div>
@@ -171,26 +212,15 @@ export default function ProfileReferralSection({
             })}
           </div>
         </div>
-
-        <div
-          className="flex shrink-0 flex-row items-baseline justify-between gap-2 sm:flex-col sm:items-end sm:justify-center sm:gap-0 sm:text-right"
-          aria-label={t("maxDiscountAriaLabel", { discount: REFERRER_MAX_DISCOUNT_PERCENT })}>
-          <span className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground">
-            {t("maxDiscountLabel")}
-          </span>
-          <span className="text-lg sm:text-xl font-bold tabular-nums text-foreground">
-            {REFERRER_MAX_DISCOUNT_PERCENT}%
-          </span>
-        </div>
       </div>
 
-      <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between text-xs">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <div className="flex flex-col gap-2 text-sm leading-relaxed lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-1 lg:text-xs lg:leading-normal">
+        <div className="flex flex-col gap-1 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-2 lg:gap-y-1">
           <span className="text-green-400">
             {t("validatedReferees", { count: validatedCount })}
           </span>
           <span
-            className="text-muted-foreground hidden sm:inline"
+            className="text-muted-foreground hidden lg:inline"
             aria-hidden="true">
             •
           </span>

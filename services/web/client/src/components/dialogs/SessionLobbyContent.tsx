@@ -1,6 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, copySuccessButtonClassName } from "@/components/ui/button";
+import { StableLabel } from "@/components/ui/stable-label";
 import { Card } from "@/components/ui/card";
 import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
@@ -23,10 +24,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SessionEndedDialog } from "@/components/dialogs/SessionEndedDialog";
 import { SessionWheelDepositBar } from "@/components/dialogs/SessionWheelDepositBar";
-import { selectSessionStatus, selectSessionTokensByUser } from "@/store/slices/sessionSlice";
-import { ConfirmCancelSessionDialog } from "@/components/dialogs/ConfirmCancelSessionDialog";
+import {
+  selectSessionStatus,
+  selectSessionTokensByUser,
+  selectSessionCompanionNpcs,
+} from "@/store/slices/sessionSlice";
+import { SessionExitActions } from "@/components/dialogs/SessionExitActions";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import { companionNamesLine, companionsGroupedByPlayerId } from "@/lib/sessionPlayerCompanions";
 import {
   buildSessionLobbyAvatarBatchItems,
   getSessionLobbyParticipantAvatarUrl,
@@ -34,8 +40,11 @@ import {
   type SessionLobbyParticipantAvatarDescriptor,
 } from "@/lib/sessionLobbyAvatarBatch";
 import { shouldShowSessionLobbyInvitePanel } from "@/lib/sessionInAppNavigation";
+import { resolveSessionLobbyCardLabels } from "@/lib/sessionLobbyCardLabels";
+import { sortSessionLobbyParticipants } from "@/lib/sortSessionLobbyParticipants";
 import { computeMaxAddableWheels, isWheelQuotaMetForLaunch, sumDepositedWheels } from "@/lib/sessionWheelDeposit";
 import { cn } from "@/lib/utils";
+import { TruncatedText } from "@/components/ui/truncated-text";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
 import SessionTimer from "@/components/layout/SessionTimer";
@@ -46,7 +55,7 @@ const SESSION_LOBBY_CARD_CLASS = "gap-3 rounded-[15px] p-3 shadow-sm sm:p-4";
 
 function getSessionLobbyParticipantListClassName(participantCount: number): string {
   const base =
-    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scroll-smooth focus-visible:outline-none sm:gap-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-50 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-400/60 [&::-webkit-scrollbar]:w-2";
+    "flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto scroll-smooth focus-visible:outline-none sm:gap-3 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar]:w-2";
 
   if (participantCount < 5) {
     return base;
@@ -79,6 +88,8 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
   const [codeCopyState, setCodeCopyState] = useState<SessionLobbyCopyState>("idle");
   const [linkCopyState, setLinkCopyState] = useState<SessionLobbyCopyState>("idle");
   const reduxTokensByUser = useAppSelector(selectSessionTokensByUser);
+  const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
+  const companionsByPlayerId = useMemo(() => companionsGroupedByPlayerId(sessionCompanionNpcs), [sessionCompanionNpcs]);
 
   const {
     campaignLabel,
@@ -88,10 +99,12 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
     participantAvatars,
     characterDetails,
     myCharacters,
+    companionCountByCharacterId,
     fetchCharacterDetails,
     getCharacterLabel,
     isLoading,
   } = useSessionData({ code, idCampaign, campaign }) as ReturnType<typeof useSessionData>;
+  const lobbyCampaignName = campaign?.label || campaignLabel || undefined;
 
   const avatarBatchItems = useMemo(
     () =>
@@ -102,6 +115,8 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
       }),
     [participants, participantAvatars, characterDetails],
   );
+
+  const sortedParticipants = useMemo(() => sortSessionLobbyParticipants(participants), [participants]);
 
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(avatarBatchItems, code, !isLoading && participants.length > 0);
 
@@ -189,19 +204,21 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
       />
       <div
         className="flex h-full min-h-0 flex-col"
-        aria-label={t("mainAriaLabel", { label: campaign?.label ?? campaignLabel ?? t("campaignFallback") })}>
+        aria-label={t("mainAriaLabel", { label: lobbyCampaignName ?? t("campaignFallback") })}>
         <div
           className={cn(
             "flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 px-4 pt-4 sm:px-6 sm:pt-6",
             "pr-12 sm:pr-14",
           )}>
-          <h2
+          <TruncatedText
+            as="h2"
             id="session-lobby-players-heading"
-            className="min-w-0 break-words text-xl font-bold sm:text-xl lg:text-lg">
+            text={lobbyCampaignName ? `${t("title")} - ${lobbyCampaignName}` : t("title")}
+            className="flex-1 text-xl font-bold sm:text-xl lg:text-lg">
             {t("title")}
-            <span className="font-normal text-muted-foreground"> {campaign?.label ?? `- ${campaignLabel}`}</span>
+            {lobbyCampaignName && <span className="font-normal text-muted-foreground"> - {lobbyCampaignName}</span>}
             <span className="sr-only"> ({participants.length})</span>
-          </h2>
+          </TruncatedText>
           <SessionTimer />
         </div>
         <div
@@ -209,7 +226,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
             "flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 pt-2.5 sm:gap-4 sm:px-6 sm:pt-3",
             sessionIsActive && "lg:grid lg:grid-cols-4 lg:items-stretch",
           )}>
-          {/* Session code + QR — only while join is open (activated lobby). @see FR-session-join-qr-code */}
+          {/* Session code + QR — only while join is open (activated lobby). @see FR-session-lobby-modal */}
           {sessionIsActive ? (
             <aside
               aria-labelledby="session-lobby-code-heading"
@@ -259,7 +276,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               className={getSessionLobbyParticipantListClassName(participants.length)}
               tabIndex={0}>
               {participants.length > 0 &&
-                participants.map((participant: SessionParticipant) => {
+                sortedParticipants.map((participant: SessionParticipant) => {
                   const avatarDescriptor = resolveSessionLobbyParticipantAvatar(
                     participant,
                     participantAvatars,
@@ -277,6 +294,13 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
                       isPlayer={participant.status === "connected"}
                       sessionIsActive={sessionIsActive}
                       myCharacters={myCharacters}
+                      companionCountByCharacterId={companionCountByCharacterId}
+                      companionNames={
+                        isMJ && participant.characterId
+                          ? companionNamesLine(companionsByPlayerId[participant.characterId] ?? [])
+                          : ""
+                      }
+                      showCompanionNames={isMJ}
                       isChangingCharacter={isChangingCharacter}
                       onCharacterChange={handleCharacterChange}
                       sessionCode={code}
@@ -301,7 +325,6 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               isLaunching={isLaunching}
               isLeaving={isLeaving}
               quotaFull={quotaFull}
-              leaveLabel={t("players.leaveButton")}
               onAddOne={handleAddToken}
               onRemoveOne={handleRemoveToken}
               onRemoveAll={() => handleRemoveTokenAmount(myDeposited)}
@@ -312,23 +335,12 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
           </div>
         ) : (
           <div className="flex shrink-0 flex-wrap justify-end gap-2 px-4 pb-4 sm:px-6 sm:pb-6">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLeave}
-              disabled={isLeaving}>
-              {t("players.leaveButton")}
-            </Button>
-            {isMJ && (
-              <ConfirmCancelSessionDialog onConfirm={handleCloseSession}>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm">
-                  Clôturer la session
-                </Button>
-              </ConfirmCancelSessionDialog>
-            )}
+            <SessionExitActions
+              isMJ={Boolean(isMJ)}
+              isLeaving={isLeaving}
+              onLeave={handleLeave}
+              onCloseSession={handleCloseSession}
+            />
           </div>
         )}
       </div>
@@ -354,17 +366,18 @@ function SessionLobbyCopyActions({
   fullWidth = false,
 }: SessionLobbyCopyActionsProps) {
   const t = useTranslations("sessionPage");
-  const copyLabel = codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton");
+  const copyLabels = [t("sessionCode.copyButton"), t("sessionCode.copySuccess")];
+  const copyLabel = codeCopyState === "success" ? copyLabels[1] : copyLabels[0];
 
   if (fullWidth) {
     return (
       <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           className={cn(
             "h-8 w-full min-w-0 px-3 transition-colors sm:h-9",
-            codeCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+            codeCopyState === "success" && copySuccessButtonClassName,
           )}
           aria-label={t("sessionCode.copyAriaLabel")}
           disabled={codeCopyState !== "idle"}
@@ -372,17 +385,17 @@ function SessionLobbyCopyActions({
           {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />}
           {codeCopyState === "success" && <Check className="h-3.5 w-3.5 shrink-0" />}
           {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5 shrink-0" />}
-          <span className="truncate">{copyLabel}</span>
+          <StableLabel label={copyLabel} alternates={copyLabels} />
         </Button>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant="outline"
+              variant="secondary"
               size="icon"
               aria-label={t("sessionCode.copyLinkAriaLabel")}
               className={cn(
                 "h-8 w-8 shrink-0 transition-colors sm:h-9 sm:w-9",
-                linkCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+                linkCopyState === "success" && copySuccessButtonClassName,
               )}
               disabled={linkCopyState !== "idle"}
               onClick={onCopyLink}>
@@ -400,11 +413,11 @@ function SessionLobbyCopyActions({
   return (
     <div className={cn("flex w-full items-center gap-2", align === "center" ? "justify-center" : "justify-start")}>
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         className={cn(
           "h-8 w-auto shrink-0 px-3 transition-colors",
-          codeCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
+          codeCopyState === "success" && copySuccessButtonClassName,
         )}
         aria-label={t("sessionCode.copyAriaLabel")}
         disabled={codeCopyState !== "idle"}
@@ -412,18 +425,15 @@ function SessionLobbyCopyActions({
         {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         {codeCopyState === "success" && <Check className="h-3.5 w-3.5" />}
         {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5" />}
-        <span className="hidden sm:inline">{copyLabel}</span>
+        <StableLabel label={copyLabel} alternates={copyLabels} className="hidden sm:grid" />
       </Button>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="outline"
+            variant="secondary"
             size="icon-sm"
             aria-label={t("sessionCode.copyLinkAriaLabel")}
-            className={cn(
-              "shrink-0 transition-colors",
-              linkCopyState === "success" && "border-green-500 bg-green-500 text-white hover:bg-green-500",
-            )}
+            className={cn("shrink-0 transition-colors", linkCopyState === "success" && copySuccessButtonClassName)}
             disabled={linkCopyState !== "idle"}
             onClick={onCopyLink}>
             {linkCopyState === "success" ? <Check className="h-3.5 w-3.5" /> : <Link className="h-3.5 w-3.5" />}
@@ -487,7 +497,7 @@ function SessionLobbyCodeSection({
               <CollapsibleTrigger asChild>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="shrink-0 gap-1.5"
                   aria-expanded={inviteDetailsOpen}
@@ -595,6 +605,9 @@ interface SessionLobbyParticipantCardProps {
   isPlayer: boolean;
   sessionIsActive: boolean;
   myCharacters: Character[];
+  companionCountByCharacterId: Record<string, number>;
+  companionNames: string;
+  showCompanionNames: boolean;
   isChangingCharacter: boolean;
   onCharacterChange: (characterId: string) => void;
   sessionCode: string;
@@ -611,6 +624,9 @@ function SessionLobbyParticipantCard({
   isPlayer,
   sessionIsActive,
   myCharacters,
+  companionCountByCharacterId,
+  companionNames,
+  showCompanionNames,
   isChangingCharacter,
   onCharacterChange,
   sessionCode,
@@ -619,7 +635,11 @@ function SessionLobbyParticipantCard({
 }: SessionLobbyParticipantCardProps) {
   const t = useTranslations("sessionPage");
   const isGameMaster = participant.status === "gameMaster";
-  const avatarAlt = isGameMaster ? participantName : characterLabel?.trim() || participantName;
+  const { primary: primaryLabel, secondary: secondaryLabel } = resolveSessionLobbyCardLabels({
+    isGameMaster,
+    participantName,
+    characterLabel,
+  });
 
   return (
     <Card
@@ -633,14 +653,14 @@ function SessionLobbyParticipantCard({
             storedValue={avatarDescriptor?.storedValue}
             size="thumb"
             sessionCode={sessionCode}
-            alt={avatarAlt}
+            alt={primaryLabel}
             enabled={Boolean(avatarDescriptor?.storedValue?.trim())}
             avatarImageUrl={avatarImageUrl}
             className="self-center"
           />
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
             <div className="flex min-w-0 items-center gap-2">
-              <p className="min-w-0 flex-1 truncate text-base font-semibold text-white">{participantName}</p>
+              <p className="min-w-0 flex-1 truncate text-base font-semibold text-white">{primaryLabel}</p>
               <div className="flex shrink-0 items-center gap-1.5">
                 {participantDeposits > 0 ? (
                   <span
@@ -667,8 +687,9 @@ function SessionLobbyParticipantCard({
                 ) : null}
               </div>
             </div>
-            {!(isMe && isPlayer && sessionIsActive) ? (
-              <p className="truncate text-sm text-muted-foreground">{characterLabel ?? " "}</p>
+            {secondaryLabel ? <p className="truncate text-sm text-muted-foreground">{secondaryLabel}</p> : null}
+            {showCompanionNames && !isGameMaster && companionNames ? (
+              <p className="truncate text-xs text-white/55">{companionNames}</p>
             ) : null}
           </div>
         </div>
@@ -681,7 +702,10 @@ function SessionLobbyParticipantCard({
             placeholder={t("players.selectCharacterPlaceholder")}
             disabled={isChangingCharacter}
             selectedLabel={characterLabel || undefined}
-            triggerClassName="h-10 w-full text-sm"
+            triggerClassName="w-full text-sm"
+            companionCountByCharacterId={companionCountByCharacterId}
+            formatCompanionCount={(count) => t("players.companionCount", { count })}
+            formatCompanionCountShort={(count) => t("players.companionCountShort", { count })}
           />
         ) : null}
       </div>

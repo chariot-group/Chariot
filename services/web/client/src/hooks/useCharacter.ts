@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef, type Dispatch, type SetStateAction } from 'react';
+import { createInFlightGuard } from '@/lib/inFlightGuard';
 import CharacterService from '@/services/CharacterService';
 import {
     isCharacterAccessDeniedError,
@@ -19,8 +20,13 @@ import {
     selectCharactersWithoutGroupHasMore,
     selectCharactersWithoutGroupCurrentPage,
     selectCharactersWithoutGroupLastFetch,
+    selectLinkedNpcs,
+    selectUnlinkedNpcsWithoutGroup,
+    setLinkedNpcs,
+    setUnlinkedNpcsWithoutGroup,
     clearCharacters,
 } from '@/store/slices/characterSlice';
+import type { NPC } from '@/types/character';
 
 /**
  * True when refetching an already-loaded sheet (WS sync / local echo) — no full-screen loader.
@@ -32,6 +38,15 @@ export function isCharacterSheetBackgroundRefresh(
     const loaded = loadedCharacterId?.trim();
     const requested = requestedCharacterId.trim();
     return Boolean(loaded && requested && loaded === requested);
+}
+
+/**
+ * Whether a failed sheet fetch must surface as an error state (page skeleton / redirect).
+ * A failed background refresh keeps the displayed sheet, except on access denial (redirect).
+ * @see FR-character-sheet-skeleton, FR-user-cache-isolation
+ */
+export function shouldReportCharacterFetchError(isBackgroundRefresh: boolean, accessDenied: boolean): boolean {
+    return !isBackgroundRefresh || accessDenied;
 }
 
 interface UseCharacterReturn {
@@ -46,6 +61,8 @@ interface UseCharacterReturn {
 
 interface UsePlayersWithoutGroupReturn {
     characters: Character[];
+    linkedNpcs: NPC[];
+    unlinkedNpcs: NPC[];
     loading: boolean;
     loadingMore: boolean;
     error: string | null;
@@ -78,31 +95,46 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
         setAccessDenied(false);
     }, [characterId]);
 
+    /** Access denial always surfaces (redirect); other failures only outside a background refresh. */
+    const handleFetchError = useCallback((err: unknown, isBackgroundRefresh: boolean) => {
+        const denied = isCharacterAccessDeniedError(err);
+        if (denied) {
+            accessDeniedRef.current = true;
+            setAccessDenied(true);
+        }
+        if (shouldReportCharacterFetchError(isBackgroundRefresh, denied)) {
+            setError(err instanceof Error ? err.message : 'Failed to fetch character');
+        }
+        console.error('Error fetching character:', err);
+    }, []);
+
     const fetchCharacter = useCallback(async () => {
         if (!characterId) {
             setLoading(false);
             return;
         }
 
+        // Refetching the displayed sheet (e.g. after saving) must not unmount it behind the skeleton:
+        // tab state such as the selected spell is kept (FR-character-sheet-skeleton).
+        const isBackgroundRefresh = isCharacterSheetBackgroundRefresh(loadedCharacterIdRef.current, characterId);
         try {
-            setLoading(true);
+            if (!isBackgroundRefresh) {
+                setLoading(true);
+            }
             setError(null);
             const data = await CharacterService.getCharacterById(characterId, { sessionCode });
             accessDeniedRef.current = false;
             setAccessDenied(false);
             setCharacter(data);
+            loadedCharacterIdRef.current = characterId;
         } catch (err) {
-            if (isCharacterAccessDeniedError(err)) {
-                accessDeniedRef.current = true;
-                setAccessDenied(true);
-            }
-            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch character';
-            setError(errorMessage);
-            console.error('Error fetching character:', err);
+            handleFetchError(err, isBackgroundRefresh);
         } finally {
-            setLoading(false);
+            if (!isBackgroundRefresh) {
+                setLoading(false);
+            }
         }
-    }, [characterId, sessionCode]);
+    }, [characterId, sessionCode, handleFetchError]);
 
     /**
      * Chargement initial + rechargement sur synchro WS (`characterSheetRemoteVersions`).
@@ -146,13 +178,7 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
                 }
             } catch (err) {
                 if (!cancelled) {
-                    if (isCharacterAccessDeniedError(err)) {
-                        accessDeniedRef.current = true;
-                        setAccessDenied(true);
-                    }
-                    const errorMessage = err instanceof Error ? err.message : 'Failed to fetch character';
-                    setError(errorMessage);
-                    console.error('Error fetching character:', err);
+                    handleFetchError(err, isBackgroundRefresh);
                 }
             } finally {
                 if (!cancelled && !isBackgroundRefresh) {
@@ -164,7 +190,7 @@ export function useCharacter(characterId: string | null, sessionCode?: string | 
         return () => {
             cancelled = true;
         };
-    }, [characterId, sessionCode, remoteVersion]);
+    }, [characterId, sessionCode, remoteVersion, handleFetchError]);
 
     return {
         character,
@@ -197,11 +223,26 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
         return cleaned.length === rawCharacters.length ? rawCharacters : cleaned;
     }, [rawCharacters]);
     const loading = useAppSelector(selectCharactersWithoutGroupLoading);
-    const loadingMore = useAppSelector(selectCharactersWithoutGroupLoadingMore);
+    const loadingMorePlayers = useAppSelector(selectCharactersWithoutGroupLoadingMore);
+    const [loadMoreInFlight, setLoadMoreInFlight] = useState(false);
+    const loadingMore = loadingMorePlayers || loadMoreInFlight;
+    const loadMoreGuardRef = useRef(createInFlightGuard());
     const error = useAppSelector(selectCharactersWithoutGroupError);
     const hasMore = useAppSelector(selectCharactersWithoutGroupHasMore);
     const currentPage = useAppSelector(selectCharactersWithoutGroupCurrentPage);
     const lastFetchWithoutGroup = useAppSelector(selectCharactersWithoutGroupLastFetch);
+    const linkedNpcs = useAppSelector(selectLinkedNpcs) ?? [];
+    const unlinkedNpcs = useAppSelector(selectUnlinkedNpcsWithoutGroup) ?? [];
+
+    const loadPlayerSpaceNpcs = useCallback(async (players: Character[]) => {
+        const playerIds = players.map((player) => player._id).filter(Boolean);
+        const [unlinkedResponse, linked] = await Promise.all([
+            CharacterService.getUnlinkedNpcsWithoutGroup(1, 50),
+            CharacterService.getNpcsByLinkedPlayers(playerIds),
+        ]);
+        dispatch(setUnlinkedNpcsWithoutGroup((unlinkedResponse.data ?? []) as NPC[]));
+        dispatch(setLinkedNpcs(linked));
+    }, [dispatch]);
 
     /**
      * Récupère la première page des joueurs sans groupe
@@ -214,11 +255,12 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
                 characters: response.data,
                 total: response.pagination.totalItems
             }));
+            await loadPlayerSpaceNpcs(response.data);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch characters without group';
             dispatch(fetchCharactersWithoutGroupFailure(errorMessage));
         }
-    }, [dispatch, pageSize]);
+    }, [dispatch, pageSize, loadPlayerSpaceNpcs]);
 
     /**
      * Charge la page suivante des joueurs sans groupe
@@ -226,19 +268,27 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
     const loadMoreCharacters = useCallback(async () => {
         if (loadingMore || !hasMore) return;
 
-        try {
-            dispatch(loadMoreCharactersWithoutGroupStart());
-            const nextPage = currentPage + 1;
-            const response = await CharacterService.getPlayersWithoutGroup(nextPage, pageSize);
-            dispatch(loadMoreCharactersWithoutGroupSuccess({
-                characters: response.data,
-                total: response.pagination.totalItems
-            }));
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to load more characters';
-            dispatch(fetchCharactersWithoutGroupFailure(errorMessage));
-        }
-    }, [dispatch, currentPage, pageSize, loadingMore, hasMore]);
+        // Busy until the linked NPCs are loaded too, not only the players page (FR-sidebar-navigation)
+        await loadMoreGuardRef.current.run(async () => {
+            setLoadMoreInFlight(true);
+            try {
+                dispatch(loadMoreCharactersWithoutGroupStart());
+                const nextPage = currentPage + 1;
+                const response = await CharacterService.getPlayersWithoutGroup(nextPage, pageSize);
+                dispatch(loadMoreCharactersWithoutGroupSuccess({
+                    characters: response.data,
+                    total: response.pagination.totalItems
+                }));
+                const allPlayers = [...characters, ...response.data];
+                await loadPlayerSpaceNpcs(allPlayers);
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Failed to load more characters';
+                dispatch(fetchCharactersWithoutGroupFailure(errorMessage));
+            } finally {
+                setLoadMoreInFlight(false);
+            }
+        });
+    }, [dispatch, currentPage, pageSize, loadingMore, hasMore, characters, loadPlayerSpaceNpcs]);
 
     /**
      * Rafraîchit les données en invalidant le cache
@@ -269,6 +319,8 @@ export function usePlayersWithoutGroup(pageSize: number = 10, options: { autoFet
 
     return {
         characters,
+        linkedNpcs,
+        unlinkedNpcs,
         loading,
         loadingMore,
         error,

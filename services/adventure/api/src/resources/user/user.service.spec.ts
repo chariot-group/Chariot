@@ -5,7 +5,10 @@ jest.mock('@keycloak/keycloak-admin-client', () => ({
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { InternalServerErrorException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   TOKEN_PURCHASE_CAMPAIGN_NAME,
   UserService,
@@ -157,5 +160,90 @@ describe('UserService - updateUser preferredLocale', () => {
 
     expect(save).not.toHaveBeenCalled();
     expect(response.data.preferredLocale).toBe('fr');
+  });
+});
+
+// @see FR-user-public-profile-read-access: User Profile Read Access by ID
+describe('UserService - findPublicProfile', () => {
+  let service: UserService;
+  let userModel: Record<string, jest.Mock>;
+  let keycloakService: {
+    getUserById: jest.Mock;
+  };
+
+  const targetId = '22222222-2222-4222-8222-222222222222';
+
+  beforeEach(async () => {
+    userModel = {};
+    keycloakService = {
+      getUserById: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UserService,
+        { provide: getModelToken(User.name), useValue: userModel },
+        { provide: KeycloakService, useValue: keycloakService },
+      ],
+    }).compile();
+
+    service = module.get<UserService>(UserService);
+  });
+
+  it('nominal: returns only public display fields, never email/balance/history', async () => {
+    keycloakService.getUserById.mockResolvedValue({
+      id: targetId,
+      email: 'victim@example.com',
+      username: 'victim',
+      firstName: 'Victim',
+      lastName: 'User',
+      attributes: { avatar: ['https://example.com/avatar.png'] },
+    });
+
+    const response = await service.findPublicProfile(targetId);
+
+    expect(response.data).toEqual({
+      keycloakId: targetId,
+      username: 'victim',
+      firstName: 'Victim',
+      lastName: 'User',
+      avatar: 'https://example.com/avatar.png',
+    });
+    expect(response.data).not.toHaveProperty('email');
+    expect(response.data).not.toHaveProperty('balance');
+    expect(response.data).not.toHaveProperty('history');
+    // No DB lookup needed for a public profile — only Keycloak fields are exposed
+    expect(userModel.findOne).toBeUndefined();
+  });
+
+  it('edge: missing avatar attribute resolves to null, not an error', async () => {
+    keycloakService.getUserById.mockResolvedValue({
+      id: targetId,
+      email: 'victim@example.com',
+      username: 'victim',
+      firstName: 'Victim',
+      lastName: 'User',
+      attributes: {},
+    });
+
+    const response = await service.findPublicProfile(targetId);
+
+    expect(response.data.avatar).toBeNull();
+  });
+
+  it('failure: throws NotFoundException when the user does not exist in Keycloak', async () => {
+    keycloakService.getUserById.mockResolvedValue(null);
+
+    await expect(service.findPublicProfile(targetId)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('failure: wraps unexpected errors as InternalServerErrorException', async () => {
+    keycloakService.getUserById.mockRejectedValue(new Error('Keycloak down'));
+
+    await expect(service.findPublicProfile(targetId)).rejects.toBeInstanceOf(
+      InternalServerErrorException,
+    );
   });
 });

@@ -5,14 +5,15 @@ import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useMemo } from "react";
-import { Loader2 } from "lucide-react";
 import { Player, NPC } from "@/types/character";
 import CharacterDetailView from "@/components/character/CharacterDetailView";
+import CharacterSheetSkeleton from "@/components/character/skeleton/CharacterSheetSkeleton";
+import { resolveCharacterSheetSkeletonVariant } from "@/components/character/skeleton/characterSheetSkeletonLayout";
 import { useAppSelector } from "@/store/hooks";
 import { selectActiveGroups, selectArchivedGroups } from "@/store/slices/groupSlice";
 import { selectContextMode } from "@/store/slices/environmentSlice";
 import {
-  selectIsInSession,
+  selectIsSessionLaunched,
   selectSessionCode,
   selectSessionParticipants,
 } from "@/store/slices/sessionSlice";
@@ -27,12 +28,11 @@ export default function Character() {
   const campaignId = params.idCampaign as string;
   const groupId = params.idGroup as string;
   const characterId = params.idCharacter as string;
-  const sessionCodeQs = searchParams.get("sessionCode");
   const sessionCode = useActiveSessionCode();
   const activeGroups = useAppSelector(selectActiveGroups);
   const archivedGroups = useAppSelector(selectArchivedGroups);
   const contextMode = useAppSelector(selectContextMode);
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const reduxSessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const currentUser = useAppSelector(selectUser);
@@ -44,7 +44,7 @@ export default function Character() {
   );
 
   const sessionGmBypassGroup = useMemo(() => {
-    if (contextMode !== "gm" || !isInSession || !sessionCodeQs || sessionCodeQs !== reduxSessionCode) {
+    if (contextMode !== "gm" || !isSessionLaunched || !sessionCode || sessionCode !== reduxSessionCode) {
       return false;
     }
     const isGm = participants.some(
@@ -56,10 +56,10 @@ export default function Character() {
     characterId,
     contextMode,
     currentUser?.keycloakId,
-    isInSession,
+    isSessionLaunched,
     participants,
     reduxSessionCode,
-    sessionCodeQs,
+    sessionCode,
   ]);
 
   const getFallbackRoute = useCallback((): string => {
@@ -82,8 +82,8 @@ export default function Character() {
       return `/campaigns/${campaignId}/groups/${remainingArchived[0]._id}/characters/new/players`;
     }
 
-    // Avoid locale root — it re-triggers post-login (FR-post-auth-navigation).
-    return `/welcome`;
+    // FR-welcome-onboarding-fallbacks: campaign fallback, never welcome (and never the locale root).
+    return `/campaigns/${campaignId}`;
   }, [activeGroups, archivedGroups, campaignId, groupId]);
 
   useEffect(() => {
@@ -140,9 +140,7 @@ export default function Character() {
 
   if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <CharacterSheetSkeleton {...resolveCharacterSheetSkeletonVariant("campaign", searchParams.get("tab"))} />
     );
   }
 

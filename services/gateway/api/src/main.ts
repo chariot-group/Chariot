@@ -61,6 +61,9 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "Accept", "traceparent", "tracestate", "baggage"],
     exposedHeaders: ["Authorization"],
+    // Browsers cache the preflight (Chrome caps at 7200 s): no OPTIONS round trip before each
+    // authenticated call on slow networks (FR-web-first-load-performance, requirement 10).
+    maxAge: 7200,
   });
 
   // Buffer multipart uploads so the proxy can forward exact bytes (stream piping via axios is unreliable).

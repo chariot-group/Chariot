@@ -118,3 +118,72 @@ describe("FR-combat-initiative-tracker — cancel combat before start", () => {
     expect(html).toContain('data-confirm-title="Leave combat?"');
   });
 });
+
+describe("FR-combat-initiative-tracker — pre-combat initiative guidance", () => {
+  const guidanceLabels = {
+    ...baseLabels,
+    prepHint: "Enter initiatives first.",
+    getMissingInitiativesLabel: (count: number) => `${count} to enter`,
+    allInitiativesEntered: "All entered",
+    startMissingConfirmTitle: "Missing initiatives",
+    getStartMissingConfirmDescription: (count: number) => `${count} missing`,
+    startMissingConfirmAction: "Start anyway",
+    startMissingCancelAction: "Back",
+  };
+
+  const render = (missingInitiativeCount: number, onStartCombat = vi.fn()) => {
+    confirmHandlers.length = 0;
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerTurnControls
+        battleStarted={false}
+        canGoPrevious={false}
+        previousTurnState="noPreviousTurn"
+        missingInitiativeCount={missingInitiativeCount}
+        labels={guidanceLabels}
+        onStartCombat={onStartCombat}
+        onCancelCombat={() => undefined}
+        onEndCombat={() => undefined}
+        onPrevious={() => undefined}
+        onNext={() => undefined}
+      />,
+    );
+    return { html, onStartCombat };
+  };
+
+  it("nominal: all initiatives entered starts directly, without confirmation", () => {
+    const { html } = render(0);
+    expect(html).toContain("All entered");
+    expect(html).not.toContain('data-confirm-title="Missing initiatives"');
+  });
+
+  it("edge: missing initiatives show the counter and require a confirmation naming the count", () => {
+    const { html, onStartCombat } = render(3);
+    expect(html).toContain("3 to enter");
+    expect(html).toContain("Enter initiatives first.");
+    expect(html).toContain('data-confirm-title="Missing initiatives"');
+    // cancel dialog first, then start-with-missing dialog
+    expect(confirmHandlers).toHaveLength(2);
+    confirmHandlers[1]?.();
+    expect(onStartCombat).toHaveBeenCalledTimes(1);
+  });
+
+  it("failure: guidance is hidden once combat has started", () => {
+    confirmHandlers.length = 0;
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerTurnControls
+        battleStarted
+        canGoPrevious={false}
+        previousTurnState="noPreviousTurn"
+        missingInitiativeCount={2}
+        labels={guidanceLabels}
+        onStartCombat={() => undefined}
+        onCancelCombat={() => undefined}
+        onEndCombat={() => undefined}
+        onPrevious={() => undefined}
+        onNext={() => undefined}
+      />,
+    );
+    expect(html).not.toContain("2 to enter");
+    expect(html).not.toContain("Enter initiatives first.");
+  });
+});

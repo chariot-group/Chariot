@@ -30,6 +30,8 @@ interface AuthenticatedSocket extends Socket {
     };
     /** Rooms session (id session) encore jointes ; à la coupure Socket.IO, `rooms` peut déjà être vide. */
     sessionRoomIds?: Set<string>;
+    /** Résolu à la fin de l'authentification JWT (`true` si le client est authentifié). */
+    authReady?: Promise<boolean>;
 }
 
 @WebSocketGateway({
@@ -103,6 +105,19 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
 
     async handleConnection(client: AuthenticatedSocket) {
+        client.authReady = this.authenticateClient(client);
+        // Le client émet `session:join` dès `connect`, avant la fin de la vérification JWT (asynchrone) :
+        // sans cette barrière le handler tourne avec `client.user` indéfini et le MJ n'entre jamais dans la room.
+        // `use` est posé de façon synchrone, avant que Nest ne lie les handlers de messages.
+        client.use((_packet, next) => {
+            void client.authReady!.then((authenticated) => {
+                next(authenticated ? undefined : new Error('Unauthorized'));
+            });
+        });
+        await client.authReady;
+    }
+
+    private async authenticateClient(client: AuthenticatedSocket): Promise<boolean> {
         try {
             let start: number = Date.now();
             const token = client.handshake.auth?.token
@@ -126,12 +141,14 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
             this.logger.debug(`Client connected: ${client.user.username} (${client.id}) in ${duration.toFixed(3)}s`, this.SERVICE_NAME);
             this.liveMetrics.recordWs('connect');
+            return true;
         } catch (error: any) {
             let message: string = `Connection rejected: ${error.message}`;
             this.logger.warn(message, this.SERVICE_NAME);
             this.liveMetrics.recordWs('reject');
             client.emit('error', { message });
             client.disconnect();
+            return false;
         }
     }
 
@@ -297,7 +314,7 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 characterId: leavingCharacterId,
             });
 
-            /* FR-session-lobby-wheel-leave-refund: synchroniser le pool de wheels après libération. */
+            /* FR-session-lobby-wheel-deposit: synchroniser le pool de wheels après libération. */
             if (leaveResult.tokensByUser) {
                 this.server.to(roomId).emit('session:token-updated', {
                     tokensByUser: leaveResult.tokensByUser,
@@ -377,24 +394,23 @@ export class SessionGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @SubscribeMessage('session:character-sheet-updated')
     async handleCharacterSheetUpdated(
         @ConnectedSocket() client: AuthenticatedSocket,
-        @MessageBody() data: { sessionId: string; characterId: string },
+        @MessageBody() data: { sessionId: string; characterId: string; linkedPlayerId?: string },
     ) {
         try {
             const session: SessionWithParticipants = this.extractSession(await this.sessionService.findOne(data.sessionId));
-            const me = session.participants.find((p) => p.userId === client.user.keycloakId);
-            if (!me) {
-                client.emit('session:error', { message: 'Not a session participant' });
-                return;
-            }
             const cid = (data.characterId ?? '').trim();
             if (!cid) {
                 client.emit('session:error', { message: 'Missing characterId' });
                 return;
             }
-            const isGm = me.status === 'gameMaster';
-            const onRoster = isGm || session.participants.some((p) => p.characterId === cid);
-            if (!onRoster) {
-                client.emit('session:error', { message: 'Character is not on this session roster' });
+            const decision = this.sessionService.canBroadcastCharacterSheetUpdate(
+                session,
+                client.user.keycloakId,
+                cid,
+                data.linkedPlayerId,
+            );
+            if (decision.ok === false) {
+                client.emit('session:error', { message: decision.reason });
                 return;
             }
             client.to(session.id).emit('session:character-sheet-updated', { characterId: cid });

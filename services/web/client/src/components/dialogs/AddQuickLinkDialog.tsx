@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { QUICK_LINK_ICONS } from "@/lib/quickLinkIcons";
@@ -53,6 +54,8 @@ export function AddQuickLinkDialog({
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
   const [selectedIcon, setSelectedIcon] = useState(QUICK_LINK_ICONS[0].name);
+  const [visibleInAllCampaigns, setVisibleInAllCampaigns] = useState(false);
+  const [visibleInPlayerSpace, setVisibleInPlayerSpace] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -61,13 +64,21 @@ export function AddQuickLinkDialog({
         setLabel(editLink.label);
         setUrl(editLink.url);
         setSelectedIcon(editLink.icon);
+        setVisibleInAllCampaigns(editLink.visibleInAllCampaigns ?? false);
+        setVisibleInPlayerSpace(editLink.visibleInPlayerSpace ?? false);
       } else {
         setLabel("");
         setUrl("");
         setSelectedIcon(QUICK_LINK_ICONS[0].name);
+        setVisibleInAllCampaigns(false);
+        setVisibleInPlayerSpace(false);
       }
     }
   }, [open, editLink]);
+
+  // The player space option only makes sense for links created from a campaign.
+  const originCampaignId = isEditMode ? editLink.campaignId : (campaignId ?? null);
+  const canShareWithPlayerSpace = originCampaignId !== null;
 
   const isValid = label.trim().length > 0 && label.trim().length <= 60 && URL_REGEX.test(url.trim());
 
@@ -91,6 +102,8 @@ export function AddQuickLinkDialog({
         icon: selectedIcon,
         url: url.trim(),
         label: label.trim(),
+        visibleInAllCampaigns,
+        visibleInPlayerSpace: canShareWithPlayerSpace && visibleInPlayerSpace,
       });
     } else if (!isEditMode && onAdd) {
       success = await onAdd({
@@ -98,6 +111,8 @@ export function AddQuickLinkDialog({
         url: url.trim(),
         label: label.trim(),
         campaignId: campaignId ?? null,
+        visibleInAllCampaigns,
+        visibleInPlayerSpace: canShareWithPlayerSpace && visibleInPlayerSpace,
       });
     }
 
@@ -190,11 +205,44 @@ export function AddQuickLinkDialog({
               {t("urlHint")}
             </p>
           </div>
+
+          {/* Visibility — FR-sidebar-quick-links */}
+          <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+            <legend className="mb-2 text-sm font-medium">{t("visibilityLegend")}</legend>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="ql-visible-all-campaigns"
+                checked={visibleInAllCampaigns}
+                onCheckedChange={(checked) => setVisibleInAllCampaigns(checked === true)}
+                disabled={isSaving}
+              />
+              <Label
+                htmlFor="ql-visible-all-campaigns"
+                className="cursor-pointer text-sm font-normal">
+                {t("visibleInAllCampaigns")}
+              </Label>
+            </div>
+            {canShareWithPlayerSpace && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="ql-visible-player-space"
+                  checked={visibleInPlayerSpace}
+                  onCheckedChange={(checked) => setVisibleInPlayerSpace(checked === true)}
+                  disabled={isSaving}
+                />
+                <Label
+                  htmlFor="ql-visible-player-space"
+                  className="cursor-pointer text-sm font-normal">
+                  {t("visibleInPlayerSpace")}
+                </Label>
+              </div>
+            )}
+          </fieldset>
         </div>
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" disabled={isSaving}>
+            <Button variant="secondary" disabled={isSaving}>
               {tCommon("cancel")}
             </Button>
           </DialogClose>

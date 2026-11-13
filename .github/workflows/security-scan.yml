@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/dependency-scan.yml
     secrets: inherit
     with:
-      node-version: '20'
+      node-version: '24'
 
   secret-scan:
     name: Détection de secrets

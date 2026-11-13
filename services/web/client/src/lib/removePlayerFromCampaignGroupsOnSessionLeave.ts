@@ -37,7 +37,7 @@ export async function removePlayerFromCampaignGroupsOnSessionLeave(
     await CharacterService.updateCharacter(
         'players',
         trimmedChar,
-        { groups: remainingIds } as Partial<Player>,
+        { groups: remainingIds },
         null,
     );
 }

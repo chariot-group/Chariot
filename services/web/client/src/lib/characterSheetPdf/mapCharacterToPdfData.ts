@@ -1,7 +1,7 @@
 /** @see FR-character-sheet-pdf-export */
 
-import type { Action, NPC, Player, Spell, Spellcasting } from "@/types/character";
-import { formatDamageFormula } from "@/utils/spell-damage.utils";
+import type { Action, NPC, Player, PlayerStats, Spell, Spellcasting, Stats } from "@/types/character";
+import { formatDamageFormula, formatSpellDamageList } from "@/utils/spell-damage.utils";
 import { formatChallengeRating } from "@/utils/challengeRating.utils";
 import { calculateSkillBonus, isPlayer } from "@/utils/global.utils";
 import { formatAbilityModifier, formatSignedBonus } from "@/lib/characterSheetPdf/formatBonus";
@@ -82,15 +82,7 @@ function mapNpcAttacks(npc: NPC): PdfAttackRow[] {
 }
 
 function formatSpellDamageOrHealing(spell: Spell): { damage: string | null; healing: string | null } {
-  const damage =
-    spell.damageDetails
-      ? formatDamageFormula(
-          spell.damageDetails.diceCount,
-          spell.damageDetails.diceType,
-          spell.damageDetails.bonus,
-          spell.damageDetails.damageType,
-        )
-      : spell.damage?.trim() || null;
+  const damage = formatSpellDamageList(spell.damageDetails, spell.damage);
   const healing =
     spell.healingDetails
       ? formatDamageFormula(
@@ -182,7 +174,8 @@ export function mapCharacterToPdfData(
   options: MapCharacterToPdfDataOptions,
 ): CharacterSheetPdfData {
   const { labels, playerName = "", translateClass, formatClassLevel, translateAlignment, avatarDataUrl = null, qrCodeDataUrl = null, characterPageUrl = "" } = options;
-  const stats = character.stats;
+  // Player-only fields (proficiency bonus, armors, weapons, tools) are optional for NPCs.
+  const stats: Stats & Partial<PlayerStats> = character.stats;
   const abilityScores = stats.abilityScores;
 
   const abilities = ABILITY_KEYS.map((key) => ({

@@ -6,25 +6,59 @@ import CharacterHistoryTabContent from "@/components/character/tabContents/histo
 import CharacterBattleTabContent from "@/components/character/tabContents/battle/CharacterBattleTabContent";
 import CharacterGeneralTabContent from "@/components/character/tabContents/general/CharacterGeneralTabContent";
 import CharacterMagicTabContent from "@/components/character/tabContents/magic/CharacterMagicTabContent";
-import { CHARACTER_TABS, TAB_COLORS } from "@/components/character/CharacterTabs";
+import CharacterCompanionsTabContent from "@/components/character/tabContents/companions/CharacterCompanionsTabContent";
+import { tabsForCharacterSheet, TAB_COLORS, type CharacterTab } from "@/components/character/CharacterTabs";
 import { UseCharacterFormReturn } from "@/hooks/useCharacterForm";
 import { NPC, Player } from "@/types/character";
-
+import { isPlayer } from "@/utils/global.utils";
+import { cn } from "@/lib/utils";
+import {
+    MAGIC_TAB_BODY_CLASS,
+    MAGIC_TAB_PANEL_CLASS,
+} from "@/components/character/tabContents/magic/shared/spellList";
+import { INVENTORY_EDIT_PANEL_CLASS } from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
+import { useAppSelector } from "@/store/hooks";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import type { ReactNode } from "react";
 interface CharacterTabPanelsProps {
     character: Player | NPC;
     form: UseCharacterFormReturn["form"];
     isEditing: boolean;
     onCharacterUpdate?: (updated?: Player | NPC) => void;
+    /** @see FR-session-player-companion-combatants */
+    showSessionGmCompanionsTab?: boolean;
+    liaisonActionsEnabled?: boolean;
+    /** Avatar shown in the General tab « Personnage » card. @see FR-character-detail-view */
+    generalAvatar?: ReactNode;
 }
 
-export default function CharacterTabPanels({ character, form, isEditing, onCharacterUpdate }: CharacterTabPanelsProps) {
+export default function CharacterTabPanels({
+    character,
+    form,
+    isEditing,
+    onCharacterUpdate,
+    showSessionGmCompanionsTab = false,
+    liaisonActionsEnabled = true,
+    generalAvatar,
+}: CharacterTabPanelsProps) {
+    const contextMode = useAppSelector(selectContextMode);
+    const tabs: readonly CharacterTab[] = tabsForCharacterSheet(
+        isPlayer(character),
+        contextMode === "player",
+        showSessionGmCompanionsTab,
+    );
+
     return (
         <>
-            {CHARACTER_TABS.map((tab) => (
+            {tabs.map((tab) => (
                 <TabsContent
                     key={tab}
                     value={tab}
-                    className="mt-0 flex-none focus:outline-none"
+                    className={cn(
+                        "mt-0 flex-none focus:outline-none",
+                        tab === "magic" && MAGIC_TAB_PANEL_CLASS,
+                        tab === "inventory" && isEditing && INVENTORY_EDIT_PANEL_CLASS,
+                    )}
                     role="tabpanel"
                     id={`${tab}-content`}
                     aria-labelledby={tab}
@@ -39,6 +73,7 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                                         form={form}
                                         isEditing={isEditing}
                                         onCharacterUpdate={onCharacterUpdate}
+                                        avatar={generalAvatar}
                                     />
                                 );
                             case "battle":
@@ -53,7 +88,7 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                                 );
                             case "magic":
                                 return (
-                                    <div className="flex flex-col min-h-0 max-xl:max-h-none xl:h-[calc(100dvh-9.5rem)] 2xl:h-[calc(100dvh-8.75rem)] min-[1920px]:h-[calc(100dvh-8rem)] min-[2560px]:h-[calc(100dvh-7.5rem)]">
+                                    <div className={MAGIC_TAB_BODY_CLASS}>
                                         <CharacterMagicTabContent
                                             character={character}
                                             accentColor={TAB_COLORS[tab]}
@@ -82,6 +117,14 @@ export default function CharacterTabPanels({ character, form, isEditing, onChara
                                         isEditing={isEditing}
                                     />
                                 );
+                            case "companions":
+                                return isPlayer(character) &&
+                                    (contextMode === "player" || showSessionGmCompanionsTab) ? (
+                                    <CharacterCompanionsTabContent
+                                        player={character}
+                                        liaisonActionsEnabled={liaisonActionsEnabled}
+                                    />
+                                ) : null;
                             default:
                                 return null;
                         }

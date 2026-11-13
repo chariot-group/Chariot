@@ -80,6 +80,7 @@ describe("FR-session-gm-guest-character — GM guest character", () => {
         lifeStatus: false,
         armorClass: false,
         conditions: false,
+        concentration: false,
         groupLabel: false,
       };
 

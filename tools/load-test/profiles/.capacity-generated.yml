@@ -1,0 +1,31 @@
+# Généré par run-capacity-artillery.mjs — ne pas committer
+config:
+  target: "https://integ-api.chariot.tools"
+  processor: "../capacity-processor.cjs"
+  http:
+    timeout: 30
+    defaults:
+      headers:
+        accept-encoding: "gzip, deflate, br"
+  plugins:
+    expect: {}
+  variables:
+    gatewayUrl: "https://integ-api.chariot.tools"
+    sessionWsUrl: "https://integ-session.chariot.tools"
+    holdSeconds: 150
+    pollSeconds: 20
+  phases:
+    - name: ramp
+      duration: 120
+      arrivalRate: 1
+      maxVusers: 120
+    - name: hold
+      duration: 150
+      arrivalRate: 0
+      maxVusers: 120
+scenarios:
+  - name: Table — join WS, /api/user/me, leave
+    flow:
+      - function: "syncEnvVars"
+      - function: "assignCapacityAccount"
+      - function: "capacityHeldTableSession"

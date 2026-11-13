@@ -2,18 +2,22 @@ name: chariot-adventure-integ
 
 services:
   chariot-mongo:
-    image: mongo:latest
+    image: mongo:8.2
     platform: linux/amd64
     container_name: chariot-mongodb-integ
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - chariot_mongodb_data_integ:/data/db
-      - chariot_mongodb_logs_integ:/var/log/mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${CHARIOT_MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${CHARIOT_MONGO_INITDB_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${CHARIOT_MONGO_INITDB_DATABASE}
-    command: ["mongod", "--logpath", "/var/log/mongodb/mongod.log", "--logappend"]
+    command: ["mongod"]
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
       interval: 10s
@@ -25,14 +29,13 @@ services:
       - chariot-group-network-integ
 
   chariot-adventure:
-    ports:
-      - "127.0.0.1:9000:9000"
     image: ghcr.io/chariot-group/chariot-adventure-integration:latest
     container_name: chariot-adventure-integ
     restart: unless-stopped
     working_dir: /app
     environment:
       NODE_ENV: integration
+      CHARIOT_SESSION_API_URL: ${CHARIOT_SESSION_API_URL:-http://chariot-session-integ:9002}
       CHARIOT_MONGO_URL: ${CHARIOT_MONGO_URL}
       ADVENTURE_URL: ${ADVENTURE_URL}
       ADVENTURE_VERSION: ${ADVENTURE_VERSION}
@@ -70,7 +73,6 @@ services:
 
 volumes:
   chariot_mongodb_data_integ:
-  chariot_mongodb_logs_integ:
   chariot_adventure_logs_integ:
 
 networks:

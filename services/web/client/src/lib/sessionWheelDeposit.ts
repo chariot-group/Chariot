@@ -38,7 +38,7 @@ export function sumDepositedWheels(tokensByUser: Record<string, number>): number
     return Object.values(tokensByUser).reduce((sum, count) => sum + count, 0);
 }
 
-/** @see FR-session-lobby-wheel-quota-invariant */
+/** @see FR-session-lobby-wheel-deposit */
 export function isWheelQuotaMetForLaunch(totalDeposited: number, maxSlots: number): boolean {
     return maxSlots > 0 && totalDeposited === maxSlots;
 }

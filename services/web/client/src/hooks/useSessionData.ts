@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { registerRemoteCharacterSheetUpdatedListener } from "@/lib/sessionCharacterSyncBridge";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
@@ -9,7 +9,11 @@ import characterService from "@/services/CharacterService";
 import sessionService, { type SessionParticipant } from "@/services/SessionService";
 import UserService from "@/services/UserService";
 import { resolveSessionCharacterLabel } from "@/lib/formatSessionCharacterLabel";
-import { formatSessionParticipantUserLabel, SESSION_PARTICIPANT_NAME_LOADING } from "@/lib/formatSessionParticipantUserLabel";
+import {
+    fetchParticipantProfiles,
+    PROFILE_MAX_ATTEMPTS,
+    PROFILE_RETRY_DELAY_MS,
+} from "@/lib/sessionParticipantProfiles";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useStore } from "react-redux";
 import type { RootState } from "@/store";
@@ -28,6 +32,8 @@ import { isSessionUnavailableMessage } from "@/lib/sessionUnavailableError";
 import { useToast } from "@/hooks/useToast";
 import type { Character } from "@/types/character";
 import type { Campaign } from "@/types/campaign";
+import { loadCompanionCountsForPlayers, orderSessionCharactersLikeSidebar } from "@/lib/sessionJoinCompanionVisibility";
+import { selectCharactersWithoutGroup } from "@/store/slices/characterSlice";
 
 const CHARACTER_FETCH_RETRY_DELAY_MS = 350;
 
@@ -62,6 +68,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
     participantAvatars: Record<string, string | null | undefined>;
     characterDetails: Record<string, Character>;
     myCharacters: Character[];
+    companionCountByCharacterId: Record<string, number>;
     fetchCharacterDetails: (ids: string[]) => Promise<void>;
     getCharacterLabel: (characterId: string | null) => string;
     isLoading: boolean;
@@ -77,12 +84,20 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 
     const participantNames = useAppSelector(selectSessionParticipantDisplayNames);
     const isAlreadyInSession = useAppSelector(selectIsInSession);
+    const sidebarPlayers = useAppSelector(selectCharactersWithoutGroup);
 
     const [campaignLabel, setCampaignLabel] = useState<string | null>(null);
     const [participants, setParticipants] = useState<SessionParticipant[]>([]);
     const [participantAvatars, setParticipantAvatars] = useState<Record<string, string | null | undefined>>({});
     const [characterDetails, setCharacterDetails] = useState<Record<string, Character>>({});
-    const [myCharacters, setMyCharacters] = useState<Character[]>([]);
+    const [fetchedMyCharacters, setFetchedMyCharacters] = useState<Character[]>([]);
+    const myCharacters = useMemo(
+        () => orderSessionCharactersLikeSidebar(fetchedMyCharacters, sidebarPlayers),
+        [fetchedMyCharacters, sidebarPlayers],
+    );
+    const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>(
+        {},
+    );
     const [isLoading, setIsLoading] = useState(true);
 
     /** Toujours à jour : les handlers WebSocket gardent une ref stable (voir `useSessionSocket` deps `[token]`). */
@@ -105,6 +120,72 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
             return next;
         });
     }, [code]);
+
+    /** @see FR-session-participant-labels — profil (nom + PP) de chaque participant, y compris ceux arrivés après l'ouverture du lobby. */
+    const resolvedProfileIdsRef = useRef<Set<string>>(new Set());
+    const pendingProfileIdsRef = useRef<Set<string>>(new Set());
+    const profileAttemptsRef = useRef<Map<string, number>>(new Map());
+    const profileRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [profileRetryTick, setProfileRetryTick] = useState(0);
+
+    const loadParticipantProfiles = useCallback(
+        async (userIds: string[]) => {
+            const targets = Array.from(new Set(userIds)).filter(
+                (id) =>
+                    Boolean(id?.trim()) &&
+                    !resolvedProfileIdsRef.current.has(id) &&
+                    !pendingProfileIdsRef.current.has(id),
+            );
+            if (targets.length === 0) return;
+            targets.forEach((id) => pendingProfileIdsRef.current.add(id));
+
+            const { resolved, failed } = await fetchParticipantProfiles(targets, code, (id, sessionCode) =>
+                UserService.getUserById(id, sessionCode),
+            );
+            targets.forEach((id) => pendingProfileIdsRef.current.delete(id));
+
+            if (resolved.length > 0) {
+                resolved.forEach(({ userId }) => resolvedProfileIdsRef.current.add(userId));
+                setParticipantAvatars((prev) => ({
+                    ...prev,
+                    ...Object.fromEntries(resolved.map(({ userId, avatar }) => [userId, avatar])),
+                }));
+                const names = Object.fromEntries(
+                    resolved.flatMap(({ userId, label }) => (label ? [[userId, label] as const] : [])),
+                );
+                if (Object.keys(names).length > 0) {
+                    dispatch(mergeSessionParticipantDisplayNames(names));
+                }
+            }
+
+            const retryable = failed.filter((id) => {
+                const attempts = (profileAttemptsRef.current.get(id) ?? 0) + 1;
+                profileAttemptsRef.current.set(id, attempts);
+                return attempts < PROFILE_MAX_ATTEMPTS;
+            });
+            if (retryable.length > 0 && profileRetryTimerRef.current === null) {
+                profileRetryTimerRef.current = setTimeout(() => {
+                    profileRetryTimerRef.current = null;
+                    setProfileRetryTick((tick) => tick + 1);
+                }, PROFILE_RETRY_DELAY_MS);
+            }
+        },
+        [code, dispatch],
+    );
+
+    useEffect(() => {
+        void loadParticipantProfiles(participants.map((p) => p.userId));
+    }, [participants, profileRetryTick, loadParticipantProfiles]);
+
+    useEffect(
+        () => () => {
+            if (profileRetryTimerRef.current !== null) {
+                clearTimeout(profileRetryTimerRef.current);
+                profileRetryTimerRef.current = null;
+            }
+        },
+        [],
+    );
 
     useEffect(() => {
         registerRemoteCharacterSheetUpdatedListener((characterId) => {
@@ -130,6 +211,10 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         };
 
         const init = async () => {
+            setCompanionCountByCharacterId({});
+            resolvedProfileIdsRef.current.clear();
+            pendingProfileIdsRef.current.clear();
+            profileAttemptsRef.current.clear();
             try {
                 const session = await sessionService.getSession(code);
                 if (cancelled) return;
@@ -174,35 +259,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
                 setParticipants(data.participants);
 
                 dispatch(pruneSessionParticipantDisplayNames());
-                const profileEntries = await Promise.all(
-                    data.participants.map(async (p) => {
-                        try {
-                            const user = await UserService.getUserById(p.userId);
-                            return {
-                                userId: p.userId,
-                                label: formatSessionParticipantUserLabel(user) ?? SESSION_PARTICIPANT_NAME_LOADING,
-                                avatar: user.avatar ?? null,
-                            };
-                        } catch {
-                            return {
-                                userId: p.userId,
-                                label: SESSION_PARTICIPANT_NAME_LOADING,
-                                avatar: null,
-                            };
-                        }
-                    }),
-                );
-                setParticipantAvatars(
-                    Object.fromEntries(profileEntries.map(({ userId, avatar }) => [userId, avatar])),
-                );
-                const resolvedNames = Object.fromEntries(
-                    profileEntries
-                        .filter(({ label }) => label !== SESSION_PARTICIPANT_NAME_LOADING)
-                        .map(({ userId, label }) => [userId, label] as const),
-                );
-                if (Object.keys(resolvedNames).length > 0) {
-                    dispatch(mergeSessionParticipantDisplayNames(resolvedNames));
-                }
+                await loadParticipantProfiles(data.participants.map((p) => p.userId));
 
                 const characterIds = data.participants.map((p) => p.characterId).filter(Boolean) as string[];
                 await fetchCharacterDetails(characterIds);
@@ -212,7 +269,13 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
 
             try {
                 const res = await characterService.getPlayersWithoutGroup(1, 100);
-                setMyCharacters(res.data);
+                setFetchedMyCharacters(res.data);
+                void loadCompanionCountsForPlayers(
+                    res.data.map((character) => character._id),
+                    (ids) => characterService.getNpcsByLinkedPlayers(ids),
+                ).then((counts) => {
+                    if (!cancelled) setCompanionCountByCharacterId(counts);
+                });
             } catch {
                 // silently fail
             }
@@ -241,6 +304,7 @@ export function useSessionData({ code, idCampaign, campaign }: UseSessionDataOpt
         participantAvatars,
         characterDetails,
         myCharacters,
+        companionCountByCharacterId,
         fetchCharacterDetails,
         getCharacterLabel,
         isLoading,

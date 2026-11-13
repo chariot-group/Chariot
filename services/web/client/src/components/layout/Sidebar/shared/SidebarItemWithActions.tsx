@@ -2,15 +2,25 @@
 
 import * as React from "react";
 import { MoreVertical } from "lucide-react";
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
+import { SIDEBAR_ACTION_ICONS } from "@/components/layout/Sidebar/shared/sidebarActionIcons";
 import { useIsTabletOrMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -24,13 +34,53 @@ export interface SidebarItemWithActionsProps {
   menuContentClassName?: string;
   /** Rendered before the trailing overflow control (e.g. primary row actions). */
   trailingBeforeOverflow?: React.ReactNode;
+  /** Full item name shown as the first, non-interactive label of the menus (never truncated). */
+  menuTitle?: string;
 }
 
-const defaultOverflowTriggerClassName =
-  "text-white/40 hover:bg-white/20 hover:text-white focus-visible:ring-white/50";
+/** Long names wrap instead of being cut: the menu title is the touch access to the full name. */
+const menuTitleClassName = "text-sm font-bold text-white break-words text-pretty";
 
-const defaultMenuContentClassName =
-  "z-[100] w-56 rounded-[12px] bg-card px-1.5 py-1.5 shadow focus-visible:outline-none";
+function SidebarMenuTitle({ title, variant }: { title: string; variant: "context" | "dropdown" }) {
+  if (variant === "context") {
+    return (
+      <>
+        <ContextMenuLabel className={menuTitleClassName}>{title}</ContextMenuLabel>
+        <ContextMenuSeparator />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <DropdownMenuLabel className={menuTitleClassName}>{title}</DropdownMenuLabel>
+      <DropdownMenuSeparator />
+    </>
+  );
+}
+
+const defaultOverflowTriggerClassName = "text-white/40 hover:bg-white/20 hover:text-white focus-visible:ring-white/50";
+
+/** Above the sidebar and the GM space dropdown (campaign rows open their own menu inside it). */
+const defaultMenuContentClassName = "z-[100] w-56 focus-visible:outline-none";
+
+export function SidebarActionLabel({ action }: { action: SidebarActionItem }) {
+  const DefaultIcon = SIDEBAR_ACTION_ICONS[action.id];
+  const icon = action.icon ?? (DefaultIcon ? <DefaultIcon /> : null);
+
+  return (
+    <>
+      {icon ? (
+        <span
+          className="flex shrink-0 items-center"
+          aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
+      <span className="min-w-0 flex-1 truncate">{action.label}</span>
+    </>
+  );
+}
 
 function SidebarActionMenuItems({
   actions,
@@ -45,19 +95,16 @@ function SidebarActionMenuItems({
         <ContextMenuItem
           disabled={action.disabled}
           variant={action.variant === "destructive" ? "destructive" : "default"}
-          className={cn(
-            "cursor-pointer rounded-[8px] px-2 py-1.5 text-sm focus-visible:border",
-            action.variant === "destructive" && "text-red-500 hover:text-red-600 focus:text-red-600",
-            action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto",
-          )}
+          className={cn(action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto")}
           onSelect={(event) => {
             if (action.disabled) {
               event.preventDefault();
               return;
             }
             action.onSelect();
-          }}>
-          {action.label}
+          }}
+          title={action.labelTitle ?? action.label}>
+          <SidebarActionLabel action={action} />
         </ContextMenuItem>
       );
 
@@ -81,19 +128,16 @@ function SidebarActionMenuItems({
       <DropdownMenuItem
         disabled={action.disabled}
         variant={action.variant === "destructive" ? "destructive" : "default"}
-        className={cn(
-          "cursor-pointer rounded-[8px] px-2 py-1.5 text-sm focus-visible:border",
-          action.variant === "destructive" && "text-red-500 hover:text-red-600 focus:text-red-600",
-          action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto",
-        )}
+        className={cn(action.disabled && action.disabledTooltip && "data-[disabled]:pointer-events-auto")}
         onSelect={(event) => {
           if (action.disabled) {
             event.preventDefault();
             return;
           }
           action.onSelect();
-        }}>
-        {action.label}
+        }}
+        title={action.labelTitle ?? action.label}>
+        <SidebarActionLabel action={action} />
       </DropdownMenuItem>
     );
 
@@ -117,11 +161,13 @@ function SidebarOverflowDropdown({
   contextMenuLabel,
   overflowTriggerClassName,
   menuContentClassName,
+  menuTitle,
 }: {
   actions: SidebarActionItem[];
   contextMenuLabel: string;
   overflowTriggerClassName?: string;
   menuContentClassName?: string;
+  menuTitle?: string;
 }) {
   return (
     <DropdownMenu>
@@ -147,6 +193,12 @@ function SidebarOverflowDropdown({
         sideOffset={4}
         className={menuContentClassName ?? defaultMenuContentClassName}
         aria-label={contextMenuLabel}>
+        {menuTitle ? (
+          <SidebarMenuTitle
+            title={menuTitle}
+            variant="dropdown"
+          />
+        ) : null}
         <SidebarActionMenuItems
           actions={actions}
           variant="dropdown"
@@ -165,6 +217,7 @@ export function SidebarItemWithActions({
   overflowTriggerClassName,
   menuContentClassName,
   trailingBeforeOverflow,
+  menuTitle,
 }: SidebarItemWithActionsProps) {
   const showOverflowMenu = useIsTabletOrMobile();
   const hasActions = !disabled && actions.length > 0;
@@ -193,6 +246,7 @@ export function SidebarItemWithActions({
             contextMenuLabel={contextMenuLabel}
             overflowTriggerClassName={overflowTriggerClassName}
             menuContentClassName={menuContentClassName}
+            menuTitle={menuTitle}
           />
         </div>
       </div>
@@ -209,6 +263,12 @@ export function SidebarItemWithActions({
           <ContextMenuContent
             className={menuContentClassName ?? defaultMenuContentClassName}
             aria-label={contextMenuLabel}>
+            {menuTitle ? (
+              <SidebarMenuTitle
+                title={menuTitle}
+                variant="context"
+              />
+            ) : null}
             <SidebarActionMenuItems
               actions={actions}
               variant="context"
@@ -228,6 +288,12 @@ export function SidebarItemWithActions({
       <ContextMenuContent
         className={menuContentClassName ?? defaultMenuContentClassName}
         aria-label={contextMenuLabel}>
+        {menuTitle ? (
+          <SidebarMenuTitle
+            title={menuTitle}
+            variant="context"
+          />
+        ) : null}
         <SidebarActionMenuItems
           actions={actions}
           variant="context"

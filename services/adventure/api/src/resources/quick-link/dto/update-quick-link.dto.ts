@@ -4,6 +4,7 @@ import {
   MaxLength,
   IsUrl,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -25,4 +26,14 @@ export class UpdateQuickLinkDto {
   @IsNotEmpty()
   @MaxLength(60)
   readonly label?: string;
+
+  @ApiProperty({ example: false, required: false })
+  @IsOptional()
+  @IsBoolean()
+  readonly visibleInAllCampaigns?: boolean;
+
+  @ApiProperty({ example: false, required: false })
+  @IsOptional()
+  @IsBoolean()
+  readonly visibleInPlayerSpace?: boolean;
 }

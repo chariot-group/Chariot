@@ -10,7 +10,7 @@ export const HAS_MULTIPLE_CODEX_GAME_SYSTEMS = GAME_SYSTEMS.length > 1;
 /**
  * Default game-system filter for Codex search dialogs.
  * When only one system exists, it is preselected; otherwise unset (all systems).
- * @see FR-codex-game-system-filter
+ * @see FR-codex-search-filters
  */
 export function getDefaultCodexGameSystemFilter(): CodexGameSystem | null {
   return HAS_MULTIPLE_CODEX_GAME_SYSTEMS ? null : GAME_SYSTEMS[0];

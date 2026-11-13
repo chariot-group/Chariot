@@ -84,6 +84,15 @@ const skillsConfig: SkillConfig[] = [
   { key: "deception", translationKey: "deception", abilityKey: "charisma", icon: <Drama aria-hidden="true" /> },
 ];
 
+/** Mastery levels already stored on the sheet that require the half-proficiency / expertise toggles. */
+export function deriveMasteryToggles(masteries?: Record<string, unknown> | null): {
+  halfProficiency: boolean;
+  expertise: boolean;
+} {
+  const levels = Object.values(masteries ?? {});
+  return { halfProficiency: levels.some((l) => l === 1), expertise: levels.some((l) => l === 3) };
+}
+
 export default function SkillsEdit({ form, accentColor, enableHalfProficiency, enableExpertise }: SkillsEditProps) {
   const t = useTranslations("characterDetail.player.general");
 
@@ -130,7 +139,7 @@ export default function SkillsEdit({ form, accentColor, enableHalfProficiency, e
   };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2">
+    <div className="grid flex-1 content-between grid-cols-1 @sm:grid-cols-2 @xl:grid-cols-3 gap-2">
       {skillsConfig.map(({ key, translationKey, abilityKey, icon }) => {
         const masteryLevel = form.watch(`stats.masteries.${key}`) || 0;
         const proficiencyBonus = form.watch("stats.proficiencyBonus") || 2;

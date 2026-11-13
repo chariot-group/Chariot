@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsMongoId } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsMongoId, IsOptional } from 'class-validator';
 
 export enum SessionCharacterAccessMode {
     RosterRead = 'roster-read',
@@ -14,4 +14,10 @@ export class ValidateCharacterAccessDto {
     @ApiProperty({ enum: SessionCharacterAccessMode })
     @IsEnum(SessionCharacterAccessMode)
     mode: SessionCharacterAccessMode;
+
+    /** @see FR-session-player-companion-combatants — NPC `linkedPlayerId` from Adventure, not the client. */
+    @ApiPropertyOptional({ description: 'Linked Player id when the character is a companion NPC' })
+    @IsOptional()
+    @IsMongoId()
+    linkedPlayerId?: string;
 }

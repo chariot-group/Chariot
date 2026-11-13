@@ -1,90 +1,50 @@
 import { Card } from "@/components/ui/card";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
-import Image from "next/image";
-import { Bird, Dices, Mountain, RulerIcon, Shovel, Waves } from "lucide-react";
-import ShieldIcon from "@public/assets/icons/shield-icon.svg";
-import RunningIcon from "@public/assets/icons/running-icon.svg";
-import { NPC } from "@/types/character";
+import StatsSummary from "@/components/character/tabContents/shared/StatsSummary";
+import { NPC, Player } from "@/types/character";
 import { useTranslations } from "next-intl";
-import { useDistanceUnit } from "@/hooks/useDistanceUnit";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
+import { LongRestButton } from "@/components/character/LongRestButton";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import { selectUser } from "@/store/slices/userSlice";
+import { canUseLongRest } from "@/utils/rest.utils";
 
 interface NpcStatisticsProps {
   npc: NPC;
   accentColor: string;
+  /** Layout classes; replaces the default `h-fit`. */
+  className?: string;
+  /** General tab: passive perception as a 4th key stat (FR-character-statistics-card). */
+  showPassivePerception?: boolean;
+  /** Enables the GM long rest control (FR-character-long-rest). */
+  onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
-export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) {
+export default function NpcStatistics({
+  npc,
+  accentColor,
+  className,
+  showPassivePerception,
+  onCharacterUpdate,
+}: NpcStatisticsProps) {
   const t = useTranslations("characterDetail.battle");
-  const { displayFt, unitLabel, secondaryFt, secondaryUnitLabel } = useDistanceUnit();
-  const speed = npc.stats.speed ?? { walk: 0, climb: 0, swim: 0, fly: 0, burrow: 0 };
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
+  const isPlayerSpace = useAppSelector(selectContextMode) === "player";
+  const currentUserId = useAppSelector(selectUser)?.keycloakId ?? null;
+  /** @see FR-character-long-rest */
+  const canLongRest =
+    Boolean(onCharacterUpdate) &&
+    canUseLongRest({
+      isPlayerCharacter: false,
+      isSessionLaunched,
+      isPlayerSpace,
+      isOwnCharacter: currentUserId != null && npc.createdBy === currentUserId,
+    });
 
-  const speedBadges = [
-    {
-      key: "walk",
-      value: speed.walk,
-      icon: (
-        <Image
-          src={RunningIcon}
-          alt=""
-          aria-hidden="true"
-          className="size-6"
-        />
-      ),
-      tooltipKey: "walkSpeedTooltip",
-    },
-    {
-      key: "climb",
-      value: speed.climb,
-      icon: (
-        <Mountain
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "climbSpeedTooltip",
-    },
-    {
-      key: "swim",
-      value: speed.swim,
-      icon: (
-        <Waves
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "swimSpeedTooltip",
-    },
-    {
-      key: "fly",
-      value: speed.fly,
-      icon: (
-        <Bird
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "flySpeedTooltip",
-    },
-    {
-      key: "burrow",
-      value: speed.burrow,
-      icon: (
-        <Shovel
-          size={24}
-          className="text-black"
-          aria-hidden="true"
-        />
-      ),
-      tooltipKey: "burrowSpeedTooltip",
-    },
-  ];
   return (
     <Card
-      className="gap-3 p-4 md:px-6 h-fit"
+      className={`gap-3 p-4 md:px-6 ${className ?? "h-fit"}`}
       role="region"
       aria-labelledby="stats-heading-npc">
       <h2
@@ -92,88 +52,13 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
         className={`text-xl sm:text-2xl font-semibold ${accentColor}`}>
         {t("stats")}
       </h2>
-      <div className="flex flex-row justify-start gap-2 text-xl font-extrabold flex-wrap">
-        <InfoTooltip
-          content={t("armorClassTooltip")}
-          side="bottom">
-          <div
-            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-            tabIndex={0}
-            role="img"
-            aria-label={`${t("armorClass")} ${npc.stats.armorClass}`}>
-            <Image
-              src={ShieldIcon}
-              alt=""
-              aria-hidden="true"
-              width={20}
-              height={20}
-              className="size-5"
-            />
-            <span aria-hidden="true">{npc.stats.armorClass}</span>
-          </div>
-        </InfoTooltip>
-        <InfoTooltip
-          content={t("initiativeTooltip")}
-          side="bottom">
-          <div
-            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-            tabIndex={0}
-            role="img"
-            aria-label={`${t("initiativeTooltip")} ${npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}`}>
-            <Dices
-              size={30}
-              className="text-black shrink-0"
-              aria-hidden="true"
-            />
-            <span aria-hidden="true">
-              {npc.stats.initiative > 0 ? `+${npc.stats.initiative}` : npc.stats.initiative}
-            </span>
-          </div>
-        </InfoTooltip>
-        <InfoTooltip
-          content={t(`sizes.${npc.stats.size}` as Parameters<typeof t>[0])}
-          side="bottom">
-          <div
-            className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-            tabIndex={0}
-            role="img"
-            aria-label={`${t("sizeTooltip")} ${t(`sizes.${npc.stats.size}` as Parameters<typeof t>[0])}`}>
-            <RulerIcon
-              size={24}
-              className="text-black"
-              aria-hidden="true"
-            />
-            <span aria-hidden="true">
-              {t(`sizesAbbr.${npc.stats.size}` as Parameters<typeof t>[0])}
-            </span>
-          </div>
-        </InfoTooltip>
-        {speedBadges.map(
-          (badge) =>
-            badge.value > 0 && (
-              <InfoTooltip
-                key={badge.key}
-                content={t(badge.tooltipKey as Parameters<typeof t>[0])}
-                side="bottom">
-                <div
-                  className="bg-white text-black flex flex-row justify-center gap-1 rounded-full p-2 items-center cursor-help focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  tabIndex={0}
-                  role="img"
-                  aria-label={`${t(badge.tooltipKey as Parameters<typeof t>[0])} ${displayFt(badge.value)} ${unitLabel}${secondaryFt ? ` (${secondaryFt(badge.value)} ${secondaryUnitLabel})` : ""}`}>
-                  {badge.icon}
-                  <span
-                    aria-hidden="true"
-                    className="flex items-baseline gap-0.5">
-                    <span>{displayFt(badge.value)}{unitLabel}</span>
-                    {secondaryFt && (
-                      <span className="text-[0.75em] text-muted-foreground/60 font-normal">({secondaryFt(badge.value)}{secondaryUnitLabel})</span>
-                    )}
-                  </span>
-                </div>
-              </InfoTooltip>
-            ),
-        )}
-      </div>
+      <StatsSummary
+        armorClass={npc.stats.armorClass}
+        initiative={npc.stats.initiative}
+        size={npc.stats.size}
+        speed={npc.stats.speed}
+        passivePerception={showPassivePerception ? npc.stats.passivePerception : undefined}
+      />
       <CharacterHealthBar
         currentHP={npc.stats.currentHitPoints}
         maxHP={npc.stats.maxHitPoints}
@@ -183,6 +68,15 @@ export default function NpcStatistics({ npc, accentColor }: NpcStatisticsProps) 
         <span>{t("hitPointsRoll")}</span>
         {npc.hitPointsRoll && <span className="font-bold"> {npc.hitPointsRoll}</span>}
       </div>
+      {canLongRest && onCharacterUpdate && (
+        <div className="mt-1 flex w-full min-w-0 justify-end border-t border-border px-2 pt-3">
+          <LongRestButton
+            character={npc}
+            onApplied={(updated) => onCharacterUpdate(updated)}
+            showLabel
+          />
+        </div>
+      )}
     </Card>
   );
 }

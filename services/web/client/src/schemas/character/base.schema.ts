@@ -225,18 +225,38 @@ export function AbilitySchema(zm: ZodMessages) {
 }
 
 // ===== Spellcasting =====
-const DamageDetailsSchema = z.object({
-    diceCount: z.coerce.number().nullable().optional(),
-    diceType: z.string().nullable().optional(),
-    bonus: z.coerce.number().nullable().optional(),
-    damageType: z.string().nullable().optional(),
-}).nullish();
-
 const HealingDetailsSchema = z.object({
     diceCount: z.coerce.number().nullable().optional(),
     diceType: z.string().nullable().optional(),
     bonus: z.coerce.number().nullable().optional(),
 }).nullish();
+
+function coerceSpellDamageDetailsInput(value: unknown): unknown {
+    if (value == null) return [];
+    if (Array.isArray(value)) {
+        return value.filter((item) => item != null && typeof item === 'object' && !Array.isArray(item));
+    }
+    if (typeof value === 'object') return [value];
+    return [];
+}
+
+function DamageDetailsEntrySchema(zm: ZodMessages) {
+    return z.object({
+        diceCount: z.coerce.number().nullable().optional(),
+        diceType: z.string().nullable().optional(),
+        bonus: z.coerce.number().nullable().optional(),
+        damageType: z.preprocess(
+            (value) => (typeof value === 'string' ? value.trim() : value),
+            z
+                .string()
+                .nullable()
+                .optional()
+                .refine((value) => !value || !/\s/.test(value), {
+                    message: zm.singleDamageType(),
+                }),
+        ),
+    });
+}
 
 const EFFECT_TYPE_VALUES = ['attack', 'heal', 'utility'] as const;
 
@@ -261,27 +281,50 @@ function normalizeSpellEffectType(value: unknown): unknown {
 }
 
 export function SpellSchema(zm: ZodMessages) {
-    return z.object({
-        name: z.string().optional(),
-        level: numericInput(true),
-        school: z.string().optional(),
-        description: z.string().optional(),
-        components: z.array(z.string()).optional(),
-        castingTime: z.string().optional(),
-        duration: z.string().optional(),
-        range: z.string().optional(),
-        effectType: z.preprocess(
-            normalizeSpellEffectType,
-            z.enum(EFFECT_TYPE_VALUES, { message: zm.invalidOption() }).optional(),
-        ),
-        damage: z.string().optional(),
-        healing: z.string().optional(),
-        damageDetails: DamageDetailsSchema,
-        healingDetails: HealingDetailsSchema,
-        usesPerDay: z.number().nullable().optional(),
-        used: numericInput(true),
-        prepared: z.boolean().optional(),
-    });
+    return z
+        .object({
+            name: z.string().optional(),
+            level: numericInput(true),
+            school: z.string().optional(),
+            description: z.string().optional(),
+            components: z.array(z.string()).optional(),
+            castingTime: z.string().optional(),
+            duration: z.string().optional(),
+            range: z.string().optional(),
+            effectType: z.preprocess(
+                normalizeSpellEffectType,
+                z.enum(EFFECT_TYPE_VALUES, { message: zm.invalidOption() }).optional(),
+            ),
+            damage: z.string().optional(),
+            healing: z.string().optional(),
+            damageDetails: z.preprocess(
+                coerceSpellDamageDetailsInput,
+                z.array(DamageDetailsEntrySchema(zm)).optional(),
+            ),
+            healingDetails: HealingDetailsSchema,
+            usesPerDay: z.number().nullable().optional(),
+            used: numericInput(true),
+            prepared: z.boolean().optional(),
+        })
+        .superRefine((spell, ctx) => {
+            const seenTypes = new Set<string>();
+
+            (spell.damageDetails ?? []).forEach((damage, damageIndex) => {
+                const normalizedType = (damage.damageType ?? '').trim().toLowerCase();
+                if (!normalizedType) return;
+
+                if (seenTypes.has(normalizedType)) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: zm.uniqueSpellDamageType(),
+                        path: ['damageDetails', damageIndex, 'damageType'],
+                    });
+                    return;
+                }
+
+                seenTypes.add(normalizedType);
+            });
+        });
 }
 
 export const SpellSlotSchema = z.object({

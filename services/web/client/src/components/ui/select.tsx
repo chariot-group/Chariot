@@ -5,6 +5,13 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { Select as SelectPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
+import {
+  menuItemClassName,
+  menuItemIconClassName,
+  menuLabelClassName,
+  menuSeparatorClassName,
+  menuSurfaceClassName,
+} from "@/components/ui/menu-styles";
 import { useDialogPortalContainer } from "@/components/ui/dialog-portal-container";
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
@@ -59,24 +66,78 @@ function SelectTrigger({
   );
 }
 
+/** Tracks whether a scroll container has content hidden above or below its visible area. */
+function useScrollOverflow(element: HTMLElement | null) {
+  const [overflow, setOverflow] = React.useState({ above: false, below: false });
+
+  const update = React.useCallback(() => {
+    if (!element) return;
+    const above = element.scrollTop > 1;
+    const below = element.scrollTop + element.clientHeight < element.scrollHeight - 1;
+    setOverflow((prev) => (prev.above === above && prev.below === below ? prev : { above, below }));
+  }, [element]);
+
+  React.useEffect(() => {
+    if (!element) return;
+    update();
+    element.addEventListener("scroll", update, { passive: true });
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
+    observer?.observe(element);
+    return () => {
+      element.removeEventListener("scroll", update);
+      observer?.disconnect();
+    };
+  }, [element, update]);
+
+  return overflow;
+}
+
+function SelectOverlayScrollHint({ direction, visible }: { direction: "up" | "down"; visible: boolean }) {
+  const Icon = direction === "up" ? ChevronUpIcon : ChevronDownIcon;
+  return (
+    <div
+      aria-hidden="true"
+      data-slot={`select-scroll-${direction}-hint`}
+      className={cn(
+        "pointer-events-none absolute inset-x-0 z-10 flex justify-center transition-opacity duration-150",
+        direction === "up"
+          ? "top-0 rounded-t-[14px] bg-gradient-to-b from-popover from-60% to-transparent pt-1 pb-3"
+          : "bottom-0 rounded-b-[14px] bg-gradient-to-t from-popover from-60% to-transparent pt-3 pb-1",
+        visible ? "opacity-100" : "opacity-0",
+      )}>
+      <Icon className="size-4" />
+    </div>
+  );
+}
+
 function SelectContent({
   className,
   children,
   position = "item-aligned",
   align = "center",
   portalled = true,
+  scrollButtons = "inline",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content> & {
   portalled?: boolean;
+  /**
+   * "overlay" replaces the Radix scroll buttons with always-mounted, non-interactive hints faded in over the list.
+   * Radix buttons shift the items when they mount and, on mount, scroll the focused (selected) item back into view,
+   * which makes the list jump while scrolling.
+   */
+  scrollButtons?: "inline" | "overlay";
 }) {
   const dialogPortalContainer = useDialogPortalContainer();
   const resolvedPosition = portalled ? position : "popper";
+  const [viewportElement, setViewportElement] = React.useState<HTMLDivElement | null>(null);
+  const overflow = useScrollOverflow(scrollButtons === "overlay" ? viewportElement : null);
 
   const content = (
     <SelectPrimitive.Content
       data-slot="select-content"
       className={cn(
-        "bg-gray-middle-light data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-[15px] border shadow-md",
+        menuSurfaceClassName,
+        "p-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto",
         resolvedPosition === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         !portalled && "absolute",
@@ -85,16 +146,31 @@ function SelectContent({
       position={resolvedPosition}
       align={align}
       {...props}>
-      <SelectScrollUpButton />
+      {scrollButtons === "overlay" ? (
+        <SelectOverlayScrollHint
+          direction="up"
+          visible={overflow.above}
+        />
+      ) : (
+        <SelectScrollUpButton />
+      )}
       <SelectPrimitive.Viewport
+        ref={setViewportElement}
         className={cn(
-          "p-1",
+          "p-1.5",
           resolvedPosition === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1",
         )}>
         {children}
       </SelectPrimitive.Viewport>
-      <SelectScrollDownButton />
+      {scrollButtons === "overlay" ? (
+        <SelectOverlayScrollHint
+          direction="down"
+          visible={overflow.below}
+        />
+      ) : (
+        <SelectScrollDownButton />
+      )}
     </SelectPrimitive.Content>
   );
 
@@ -111,7 +187,7 @@ function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn("text-muted-foreground px-2 py-1.5 text-xs", className)}
+      className={cn(menuLabelClassName, className)}
       {...props}
     />
   );
@@ -122,13 +198,15 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "hover:bg-white/10 hover:text-white data-highlighted:bg-white/10 data-highlighted:text-white data-[state=checked]:bg-white/15 data-[state=checked]:text-white [&_svg:not([class*='text-'])]:text-muted-foreground relative my-0.5 flex w-full cursor-pointer items-center gap-2 rounded-[15px] py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        menuItemClassName,
+        menuItemIconClassName,
+        "pr-8 data-[state=checked]:bg-white/15 data-[state=checked]:font-medium *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className,
       )}
       {...props}>
       <span
         data-slot="select-item-indicator"
-        className="absolute right-2 flex size-3.5 items-center justify-center">
+        className="absolute right-3 flex size-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
           <CheckIcon className="size-4 text-white" />
         </SelectPrimitive.ItemIndicator>
@@ -142,7 +220,7 @@ function SelectSeparator({ className, ...props }: React.ComponentProps<typeof Se
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn("bg-border pointer-events-none -mx-1 my-1 h-px", className)}
+      className={cn(menuSeparatorClassName, "pointer-events-none", className)}
       {...props}
     />
   );

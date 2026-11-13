@@ -27,6 +27,20 @@
             <link href="${url.resourcesPath}/${style}?v=${themeVersion}" rel="stylesheet" />
         </#list>
     </#if>
+    <#-- Theme CSS inlined: first paint does not wait for a stylesheet round trip on slow networks.
+         @see FR-web-first-load-performance (Slow-network authentication round trip, requirement 15) -->
+    <#if properties.inlineStyles?has_content>
+        <style>
+        <#list properties.inlineStyles?split(' ') as style>
+<#include "resources/" + style parse=false>
+        </#list>
+        </style>
+        <#-- url() inside inlined CSS resolves against the page URL: re-point theme assets. -->
+        <style>
+            body { background-image: url("${url.resourcesPath}/img/background.svg") !important; }
+            @font-face { font-family: FontAwesome; src: url("${url.resourcesPath}/fonts/fontawesome-webfont.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: block; }
+        </style>
+    </#if>
     <#if properties.scripts?has_content>
         <#list properties.scripts?split(' ') as script>
             <script src="${url.resourcesPath}/${script}?v=${themeVersion}" type="text/javascript"></script>
@@ -41,6 +55,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const toggleBtns = document.querySelectorAll('.toggle-password');
             toggleBtns.forEach(function(toggleBtn) {
+                toggleBtn.setAttribute('aria-pressed', 'false');
                 toggleBtn.addEventListener('click', function() {
                     const passwordWrapper = this.closest('.password-wrapper');
                     const passwordInput = passwordWrapper.querySelector('input');
@@ -51,12 +66,12 @@
                         passwordInput.type = 'text';
                         eyeOpen.style.display = 'none';
                         eyeClosed.style.display = 'block';
-                        this.setAttribute('aria-label', 'Masquer le mot de passe');
+                        this.setAttribute('aria-pressed', 'true');
                     } else {
                         passwordInput.type = 'password';
                         eyeOpen.style.display = 'block';
                         eyeClosed.style.display = 'none';
-                        this.setAttribute('aria-label', 'Afficher le mot de passe');
+                        this.setAttribute('aria-pressed', 'false');
                     }
                 });
             });

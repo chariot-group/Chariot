@@ -1,17 +1,11 @@
 import { NPC, Player } from "@/types/character";
-import GP from "@public/assets/pieces/golden-piece.svg";
-import SP from "@public/assets/pieces/silver-piece.svg";
-import EP from "@public/assets/pieces/electrum-piece.svg";
-import PP from "@public/assets/pieces/platinum-piece.svg";
-import CP from "@public/assets/pieces/copper-piece.svg";
 import Image from "next/image";
-import { Card } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { formatCompactNumber, formatNumberWithSpaces } from "@/utils/inventory.utils";
 import { isPlayer } from "@/utils/global.utils";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsInSession } from "@/store/slices/sessionSlice";
+import { selectIsSessionLaunched } from "@/store/slices/sessionSlice";
 import { useActiveSessionCode } from "@/hooks/useActiveSessionCode";
 import { useMemo, useState } from "react";
 import CharacterService from "@/services/CharacterService";
@@ -20,13 +14,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Pencil } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
+import { BENTO_BOUNDED_LIST_CLASS } from "@/components/character/tabContents/general/shared/generalBentoLayout";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  INVENTORY_BENTO_GRID_CLASS,
+  INVENTORY_SLOTS,
+} from "@/components/character/tabContents/inventory/shared/inventoryBentoLayout";
+import {
+  COIN_CONFIG,
+  nextCoinValue,
+  type CoinKey,
+  type CoinOperation,
+} from "@/components/character/tabContents/inventory/shared/coins";
 
 interface CharacterInventoryViewProps {
   accentColor: string;
@@ -34,18 +35,202 @@ interface CharacterInventoryViewProps {
   onCharacterUpdate?: (updated: Player | NPC) => void;
 }
 
-type CoinKey = "pp" | "gp" | "ep" | "sp" | "cp";
-type CoinOperation = "add" | "subtract" | "set";
 type TextFieldKey = "equipment" | "treasure";
 
-const COIN_CONFIG: Array<{ key: CoinKey; labelKey: string; shortKey: string; icon: typeof PP }> = [
-  { key: "pp", labelKey: "platinumPieces", shortKey: "pp", icon: PP },
-  { key: "gp", labelKey: "goldPieces", shortKey: "gp", icon: GP },
-  { key: "ep", labelKey: "electrumPieces", shortKey: "ep", icon: EP },
-  { key: "sp", labelKey: "silverPieces", shortKey: "sp", icon: SP },
-  { key: "cp", labelKey: "copperPieces", shortKey: "cp", icon: CP },
-];
+const EMPTY_LABEL_KEYS = { equipment: "noEquipment", treasure: "noTreasure" } as const;
 
+/** Coins always sit on one row: fact cells without delimiter (FR-character-statistics-card). */
+const COIN_CELL_CLASS = "flex min-w-0 flex-col gap-0.5";
+
+/**
+ * One coin of the coins strip: icon + short label, then the (abbreviated) value.
+ * In session it is a button opening the coin dialog; otherwise it is a static, non-focusable cell.
+ * @see FR-character-inventory-bento-layout
+ */
+function CoinCell({
+  coin,
+  value,
+  onSelect,
+}: {
+  coin: (typeof COIN_CONFIG)[number];
+  value: number;
+  onSelect?: () => void;
+}) {
+  const t = useTranslations("characterDetail.inventory");
+  const fullLabel = `${formatNumberWithSpaces(value)} ${t(coin.labelKey)}`;
+  const content = (
+    <>
+      <span
+        className="flex min-w-0 items-center gap-1 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground"
+        aria-hidden="true">
+        <Image
+          src={coin.icon}
+          alt=""
+          className="size-4 shrink-0 sm:size-5"
+        />
+        <span className="truncate">{t(coin.shortKey)}</span>
+      </span>
+      <span
+        className="max-w-full truncate text-base font-bold tabular-nums sm:text-lg"
+        aria-hidden="true">
+        {formatCompactNumber(value)}
+      </span>
+    </>
+  );
+
+  if (onSelect) {
+    return (
+      <button
+        type="button"
+        className={cn(
+          COIN_CELL_CLASS,
+          "rounded-[10px] p-1.5 text-left transition-colors hover:bg-gray-middle-light/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        )}
+        aria-label={`${fullLabel}. ${t("editCoinAmountAria", { coin: t(coin.labelKey) })}`}
+        aria-haspopup="dialog"
+        onClick={onSelect}>
+        {content}
+      </button>
+    );
+  }
+
+  const cell = (
+    <div
+      className={COIN_CELL_CLASS}
+      role="group"
+      aria-label={fullLabel}>
+      {content}
+    </div>
+  );
+
+  // The full value is only hidden when abbreviated (≥ 1 000).
+  return value >= 1000 ? (
+    <InfoTooltip
+      content={<p>{fullLabel}</p>}
+      moreInfoLabel={fullLabel}
+      helpPlacement="corner"
+      className="min-w-0 [&>[role=group]]:w-full [&>[role=group]]:cursor-help">
+      {cell}
+    </InfoTooltip>
+  ) : (
+    cell
+  );
+}
+
+/**
+ * Free-text card (equipment, treasure): bounded text, with the in-session inline editor.
+ * @see FR-character-inventory-bento-layout
+ */
+function InventoryTextCard({
+  field,
+  value,
+  accentColor,
+  className,
+  canEdit,
+  isEditing,
+  draft,
+  busy,
+  onEdit,
+  onDraftChange,
+  onCancel,
+  onSave,
+}: {
+  field: TextFieldKey;
+  value: string | undefined;
+  accentColor: string;
+  className: string;
+  canEdit: boolean;
+  isEditing: boolean;
+  draft: string;
+  busy: "coin" | "text" | null;
+  onEdit: () => void;
+  onDraftChange: (value: string) => void;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  const t = useTranslations("characterDetail.inventory");
+  const headingId = `${field}-heading`;
+  const editorId = `inventory-session-${field}`;
+
+  return (
+    <GeneralSectionCard
+      headingId={headingId}
+      title={t(field)}
+      accentColor={accentColor}
+      className={className}
+      headerAction={
+        canEdit ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="shrink-0"
+            aria-label={`${t("editField")} : ${t(field)}`}
+            onClick={onEdit}>
+            <Pencil
+              className="size-4"
+              aria-hidden
+            />
+            {t("editField")}
+          </Button>
+        ) : null
+      }>
+      {isEditing ? (
+        <div className="flex flex-1 flex-col gap-3">
+          <label
+            htmlFor={editorId}
+            className="sr-only">
+            {t(field)}
+          </label>
+          <Textarea
+            id={editorId}
+            value={draft}
+            onChange={(event) => onDraftChange(event.target.value)}
+            placeholder={t(field)}
+            disabled={busy !== null}
+            className="min-h-36 flex-1 resize-none"
+          />
+          <div className="flex flex-row justify-end gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={busy !== null}
+              onClick={onCancel}>
+              {t("cancelEdit")}
+            </Button>
+            <Button
+              type="button"
+              disabled={busy !== null}
+              onClick={onSave}>
+              {busy === "text" ? (
+                <Loader2
+                  className="size-4 animate-spin"
+                  aria-hidden
+                />
+              ) : null}
+              {t("saveField")}
+            </Button>
+          </div>
+        </div>
+      ) : value ? (
+        <div
+          className={BENTO_BOUNDED_LIST_CLASS}
+          role="group"
+          aria-labelledby={headingId}
+          tabIndex={0}>
+          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">{value}</p>
+        </div>
+      ) : (
+        <p className="text-sm md:text-base text-muted-foreground">{t(EMPTY_LABEL_KEYS[field])}</p>
+      )}
+    </GeneralSectionCard>
+  );
+}
+
+/**
+ * Inventory tab, read mode: coins strip, then equipment and treasure side by side.
+ * @see FR-character-inventory-bento-layout
+ */
 export default function CharacterInventoryView({
   accentColor,
   character,
@@ -53,7 +238,7 @@ export default function CharacterInventoryView({
 }: CharacterInventoryViewProps) {
   const t = useTranslations("characterDetail.inventory");
   const toast = useToast();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const sessionCode = useActiveSessionCode();
   const [selectedCoin, setSelectedCoin] = useState<CoinKey | null>(null);
   const [coinAmount, setCoinAmount] = useState("");
@@ -61,18 +246,12 @@ export default function CharacterInventoryView({
   const [textDraft, setTextDraft] = useState("");
   const [busyState, setBusyState] = useState<"coin" | "text" | null>(null);
 
-  const canEditInSession = isInSession && Boolean(onCharacterUpdate);
+  const canEditInSession = isSessionLaunched && Boolean(onCharacterUpdate);
   const isEditingTextField = editingField !== null;
   const selectedCoinConfig = useMemo(
     () => COIN_CONFIG.find((coin) => coin.key === selectedCoin) ?? null,
     [selectedCoin],
   );
-
-  function normalizeAmount(rawValue: string): number {
-    const parsed = Number(rawValue);
-    if (!Number.isFinite(parsed)) return 0;
-    return Math.max(0, Math.floor(parsed));
-  }
 
   async function updateTreasure(nextTreasure: Player["treasure"] | NPC["treasure"]) {
     if (!onCharacterUpdate) {
@@ -93,21 +272,7 @@ export default function CharacterInventoryView({
       return;
     }
 
-    const amount = normalizeAmount(coinAmount);
-    const currentValue = Math.max(0, character.treasure[selectedCoinConfig.key] ?? 0);
-    let nextValue = currentValue;
-
-    if (operation === "add") {
-      nextValue = currentValue + amount;
-    }
-
-    if (operation === "subtract") {
-      nextValue = Math.max(0, currentValue - amount);
-    }
-
-    if (operation === "set") {
-      nextValue = amount;
-    }
+    const nextValue = nextCoinValue(character.treasure[selectedCoinConfig.key] ?? 0, coinAmount, operation);
 
     setBusyState("coin");
     try {
@@ -130,6 +295,11 @@ export default function CharacterInventoryView({
     setTextDraft(character.treasure[field] ?? "");
   }
 
+  function closeTextEditor() {
+    setEditingField(null);
+    setTextDraft("");
+  }
+
   async function handleTextSave() {
     if (!editingField || !onCharacterUpdate || busyState) {
       return;
@@ -141,8 +311,7 @@ export default function CharacterInventoryView({
         ...character.treasure,
         [editingField]: textDraft,
       });
-      setEditingField(null);
-      setTextDraft("");
+      closeTextEditor();
     } catch (error) {
       console.error(error);
       toast.error(t("sessionInventoryUpdateError"));
@@ -151,173 +320,41 @@ export default function CharacterInventoryView({
     }
   }
 
-  return (
-    <div className="w-full flex flex-col lg:flex-row gap-2 md:gap-4 items-start">
-      <div className="flex flex-col gap-2 md:gap-4 w-full lg:w-2/5">
-        <Card className="gap-3 py-4 px-4 md:px-6">
-          <h2
-            id="coins-heading"
-            className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
-            {t("coins")}
-          </h2>
-          <div className="grid w-full grid-cols-2 gap-3 md:max-lg:grid-cols-3 lg:grid-cols-2 2xl:grid-cols-5">
-            {COIN_CONFIG.map((coin) => {
-              const value = character?.treasure[coin.key] ?? 0;
-              const tooltipLabel = `${formatNumberWithSpaces(value)} ${t(coin.labelKey as Parameters<typeof t>[0])}`;
-              const content = (
-                <>
-                  <Image
-                    src={coin.icon}
-                    alt=""
-                    aria-hidden="true"
-                    className="size-4 shrink-0 sm:size-5"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="whitespace-nowrap">
-                    {formatCompactNumber(value)} {t(coin.shortKey as Parameters<typeof t>[0])}
-                  </span>
-                </>
-              );
+  const textCardProps = (field: TextFieldKey) => ({
+    field,
+    value: character?.treasure[field],
+    accentColor,
+    className: INVENTORY_SLOTS[field],
+    canEdit: canEditInSession && !isEditingTextField,
+    isEditing: editingField === field,
+    draft: textDraft,
+    busy: busyState,
+    onEdit: () => openTextEditor(field),
+    onDraftChange: setTextDraft,
+    onCancel: closeTextEditor,
+    onSave: () => void handleTextSave(),
+  });
 
-              return (
-                <InfoTooltip
-                  key={coin.key}
-                  content={<p>{tooltipLabel}</p>}
-                  moreInfoLabel={tooltipLabel}
-                  className="w-full">
-                  {canEditInSession ? (
-                    <button
-                      type="button"
-                      className="flex flex-1 min-w-0 flex-row items-center justify-center gap-1 rounded-[15px] border border-border/60 bg-background/60 px-3 py-2 text-center text-sm font-medium transition-colors hover:bg-accent focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary sm:text-base 2xl:gap-2"
-                      aria-label={`${tooltipLabel}. ${t("editCoinAmountAria", { coin: t(coin.labelKey as Parameters<typeof t>[0]) })}`}
-                      aria-haspopup="dialog"
-                      onClick={() => setSelectedCoin(coin.key)}>
-                      {content}
-                    </button>
-                  ) : (
-                    <span
-                      className="flex flex-1 min-w-0 flex-row gap-1 font-medium text-sm sm:text-base items-center cursor-help focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-primary rounded"
-                      role="text"
-                      tabIndex={0}
-                      aria-label={tooltipLabel}>
-                      {content}
-                    </span>
-                  )}
-                </InfoTooltip>
-              );
-            })}
-          </div>
-        </Card>
-        <Card className="gap-3 py-4 px-4 md:px-6">
-          <div className="flex items-start justify-between gap-3">
-            <h2
-              id="equipment-heading"
-              className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
-              {t("equipment")}
-            </h2>
-            {canEditInSession && !isEditingTextField ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="shrink-0"
-                onClick={() => openTextEditor("equipment")}>
-                <Pencil className="size-4" aria-hidden />
-                {t("editField")}
-              </Button>
-            ) : null}
-          </div>
-          {editingField === "equipment" ? (
-            <div className="flex flex-col gap-3">
-              <Textarea
-                value={textDraft}
-                onChange={(event) => setTextDraft(event.target.value)}
-                placeholder={t("equipment")}
-                disabled={busyState !== null}
-                className="min-h-28"
-              />
-              <div className="flex flex-row justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={busyState !== null}
-                  onClick={() => {
-                    setEditingField(null);
-                    setTextDraft("");
-                  }}>
-                  {t("cancelEdit")}
-                </Button>
-                <Button
-                  type="button"
-                  disabled={busyState !== null}
-                  onClick={() => void handleTextSave()}>
-                  {busyState === "text" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-                  {t("saveField")}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
-              {character?.treasure.equipment || t("noEquipment")}
-            </p>
-          )}
-        </Card>
-      </div>
-      <Card className="w-full lg:min-w-3/5 lg:max-w-3/5 gap-3 py-4 px-4 md:px-6">
-        <div className="flex items-start justify-between gap-3">
-            <h2
-              id="treasure-heading"
-              className={`text-xl md:text-2xl font-semibold ${accentColor}`}>
-              {t("treasure")}
-            </h2>
-          {canEditInSession && !isEditingTextField ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="shrink-0"
-              onClick={() => openTextEditor("treasure")}>
-              <Pencil className="size-4" aria-hidden />
-              {t("editField")}
-            </Button>
-          ) : null}
-        </div>
-        {editingField === "treasure" ? (
-          <div className="flex flex-col gap-3">
-            <Textarea
-              value={textDraft}
-              onChange={(event) => setTextDraft(event.target.value)}
-              placeholder={t("treasure")}
-              disabled={busyState !== null}
-              className="min-h-36"
+  return (
+    <div className={INVENTORY_BENTO_GRID_CLASS}>
+      <GeneralSectionCard
+        headingId="coins-heading"
+        title={t("coins")}
+        accentColor={accentColor}
+        className={cn(INVENTORY_SLOTS.coins, "justify-between")}>
+        <div className="grid min-w-0 grid-cols-3 gap-x-2 gap-y-3 @sm:grid-cols-5 @sm:gap-x-1.5 @sm:gap-y-0">
+          {COIN_CONFIG.map((coin) => (
+            <CoinCell
+              key={coin.key}
+              coin={coin}
+              value={character?.treasure[coin.key] ?? 0}
+              onSelect={canEditInSession ? () => setSelectedCoin(coin.key) : undefined}
             />
-            <div className="flex flex-row justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busyState !== null}
-                onClick={() => {
-                  setEditingField(null);
-                  setTextDraft("");
-                }}>
-                {t("cancelEdit")}
-              </Button>
-              <Button
-                type="button"
-                disabled={busyState !== null}
-                onClick={() => void handleTextSave()}>
-                {busyState === "text" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-                {t("saveField")}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm md:text-base whitespace-pre-wrap wrap-break-word">
-            {character?.treasure.treasure || t("noTreasure")}
-          </p>
-        )}
-      </Card>
+          ))}
+        </div>
+      </GeneralSectionCard>
+      <InventoryTextCard {...textCardProps("equipment")} />
+      <InventoryTextCard {...textCardProps("treasure")} />
 
       <Dialog
         open={selectedCoin !== null}
@@ -334,7 +371,7 @@ export default function CharacterInventoryView({
           className="max-w-md p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
-              {selectedCoinConfig ? t("editCoinDialogTitle", { coin: t(selectedCoinConfig.labelKey as Parameters<typeof t>[0]) }) : ""}
+              {selectedCoinConfig ? t("editCoinDialogTitle", { coin: t(selectedCoinConfig.labelKey) }) : ""}
             </DialogTitle>
             <DialogDescription>
               {selectedCoinConfig
@@ -357,39 +394,31 @@ export default function CharacterInventoryView({
               disabled={busyState !== null}
               className="h-9 min-w-0 flex-1"
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="min-w-9 px-2 text-lg font-semibold"
-              disabled={coinAmount.trim() === "" || busyState !== null}
-              aria-label={t("subtractCoins")}
-              onClick={() => void handleCoinAction("subtract")}>
-              {busyState === "coin" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-              -
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="min-w-9 px-2 text-lg font-semibold"
-              disabled={coinAmount.trim() === "" || busyState !== null}
-              aria-label={t("addCoins")}
-              onClick={() => void handleCoinAction("add")}>
-              {busyState === "coin" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-              +
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="min-w-9 px-2 text-lg font-semibold"
-              disabled={coinAmount.trim() === "" || busyState !== null}
-              aria-label={t("setCoins")}
-              onClick={() => void handleCoinAction("set")}>
-              {busyState === "coin" ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
-              =
-            </Button>
+            {(
+              [
+                { operation: "subtract", labelKey: "subtractCoins", symbol: "−" },
+                { operation: "add", labelKey: "addCoins", symbol: "+" },
+                { operation: "set", labelKey: "setCoins", symbol: "=" },
+              ] as const
+            ).map(({ operation, labelKey, symbol }) => (
+              <Button
+                key={operation}
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="min-w-9 px-2 text-lg font-semibold"
+                disabled={coinAmount.trim() === "" || busyState !== null}
+                aria-label={t(labelKey)}
+                onClick={() => void handleCoinAction(operation)}>
+                {busyState === "coin" ? (
+                  <Loader2
+                    className="size-4 animate-spin"
+                    aria-hidden
+                  />
+                ) : null}
+                {symbol}
+              </Button>
+            ))}
           </div>
         </DialogContent>
       </Dialog>

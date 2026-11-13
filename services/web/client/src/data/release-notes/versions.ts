@@ -2,6 +2,60 @@ import type { ReleaseNote } from '@/data/release-notes/types';
 
 export const ALL_RELEASE_NOTES: ReleaseNote[] = [
   {
+    version: '2.11.3',
+    date: '2026-11-13',
+    translations: {
+      fr: {
+        title: 'Chargement plus rapide, fiches repensées, PNJ compagnons & effets de combat',
+        highlights: [
+          { text: 'Chariot se charge nettement plus vite, y compris la page de connexion, surtout sur une connexion lente.' },
+          { text: 'Les fiches de personnage adoptent une mise en page en tuiles et des formulaires plus clairs : multiclasse, dés de vie par classe, dégâts des sorts saisis comme « 8d6+2 ».' },
+          { text: 'Vos PNJ rejoignent l\'espace joueur : liez un PNJ à un personnage pour le retrouver dans la barre latérale et dans l\'onglet compagnons, désormais avec recherche et sélection multiple.' },
+          { text: 'En combat, ajoutez des effets personnalisés et plusieurs dégâts d\'un coup depuis le tracker d\'initiative ; le bonus ajouté automatiquement est affiché pendant la saisie, Tab passe à l\'initiative suivante et la vue mobile est plus lisible.' },
+          { text: 'Repos long pour les PNJ, pour vos PJ hors session et pour tout un groupe d\'un clic depuis la barre latérale.' },
+          { text: 'Vos liens rapides peuvent être visibles depuis toutes vos campagnes ou depuis l\'espace joueur, regroupés sous « Liens communs ».' },
+          { text: 'Partagez une page de la librairie communautaire avec un lien ou un QR code : la personne arrive directement sur le bon contenu.' },
+          { text: 'Un nouvel écran d\'accueil vous guide quand votre espace est vide, et l\'interface gagne en lisibilité : couleurs unifiées, textes plus contrastés.' },
+          { text: 'Barre latérale et lobby : votre personnage en session est séparé des autres, groupes et compagnons se replient, et chaque participant apparaît sous le nom de son personnage, dans le même ordre pour tout le monde.' },
+          { text: 'Meilleur affichage sur mobile et tablette : boutique, notes de version, profil et parrainage.' },
+          { text: 'Corrections : rouvrir l\'édition d\'une fiche juste après l\'avoir enregistrée ne la sauvegarde plus une seconde fois, le MJ ne repasse plus par l\'accueil à la fin d\'un combat, et les noms de groupes et campagnes sont limités à 50 caractères avec un compteur.' },
+        ],
+      },
+      en: {
+        title: 'Faster loading, redesigned sheets, NPC companions & combat effects',
+        highlights: [
+          { text: 'Chariot loads noticeably faster, including the login page, especially on slow connections.' },
+          { text: 'Character sheets get a tile layout and clearer forms: multiclass, hit dice per class, spell damage typed as "8d6+2".' },
+          { text: 'Your NPCs join the player space: link an NPC to a character to find it in the sidebar and in the companions tab, now with search and multiple selection.' },
+          { text: 'In combat, add custom effects and several damage entries at once from the initiative tracker; the automatically added bonus is shown while you type, Tab moves to the next initiative, and the mobile view is easier to read.' },
+          { text: 'Long rest for NPCs, for your player characters outside a session, and for a whole group in one click from the sidebar.' },
+          { text: 'Your quick links can be visible from all your campaigns or from the player space, grouped under "Common links".' },
+          { text: 'Share a community library page with a link or QR code: the recipient lands directly on the right content.' },
+          { text: 'A new welcome screen guides you when your space is empty, and the interface is easier to read: unified colors, higher text contrast.' },
+          { text: 'Sidebar and lobby: your session character is separated from the others, groups and companions can be collapsed, and each participant appears under their character name, in the same order for everyone.' },
+          { text: 'Better display on mobile and tablet: shop, release notes, profile and referral.' },
+          { text: 'Fixes: reopening a sheet\'s edit mode right after saving no longer saves it a second time, the GM no longer goes through the welcome page at the end of a combat, and group and campaign names are limited to 50 characters with a counter.' },
+        ],
+      },
+      es: {
+        title: 'Carga más rápida, fichas rediseñadas, PNJ compañeros y efectos de combate',
+        highlights: [
+          { text: 'Chariot carga mucho más rápido, incluida la página de inicio de sesión, sobre todo con conexiones lentas.' },
+          { text: 'Las fichas de personaje adoptan un diseño en mosaicos y formularios más claros: multiclase, dados de golpe por clase, daño de conjuros escrito como «8d6+2».' },
+          { text: 'Tus PNJ llegan al espacio de jugador: vincula un PNJ a un personaje para encontrarlo en la barra lateral y en la pestaña de compañeros, ahora con búsqueda y selección múltiple.' },
+          { text: 'En combate, añade efectos personalizados y varios daños a la vez desde el rastreador de iniciativa; el bonificador añadido automáticamente se muestra mientras escribes, Tab pasa a la siguiente iniciativa y la vista móvil es más legible.' },
+          { text: 'Descanso largo para los PNJ, para tus personajes jugadores fuera de sesión y para todo un grupo con un clic desde la barra lateral.' },
+          { text: 'Tus enlaces rápidos pueden verse desde todas tus campañas o desde el espacio de jugador, agrupados en «Enlaces comunes».' },
+          { text: 'Comparte una página de la biblioteca comunitaria con un enlace o un código QR: la persona llega directamente al contenido correcto.' },
+          { text: 'Una nueva pantalla de bienvenida te guía cuando tu espacio está vacío, y la interfaz es más legible: colores unificados, textos con más contraste.' },
+          { text: 'Barra lateral y lobby: tu personaje en sesión se separa de los demás, los grupos y compañeros se pliegan, y cada participante aparece con el nombre de su personaje, en el mismo orden para todos.' },
+          { text: 'Mejor visualización en móvil y tableta: tienda, notas de versión, perfil y referidos.' },
+          { text: 'Correcciones: reabrir la edición de una ficha justo después de guardarla ya no la guarda una segunda vez, el DJ ya no pasa por la página de bienvenida al final de un combate, y los nombres de grupos y campañas se limitan a 50 caracteres con un contador.' },
+        ],
+      },
+    },
+  },
+  {
     version: '2.9.0',
     date: '2026-09-06',
     translations: {
@@ -315,7 +369,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'Raccourcis clavier dans tous les formulaires : Entrée pour valider, Échap pour annuler.' },
           { text: 'Support des actions bonus : créez des actions de type "Bonus Action" et retrouvez-les filtrées dans la fiche de combat.' },
           { text: 'Dégâts multiples par action : ajoutez plusieurs types de dégâts/soins sur une même action (ex : 1d6 perforant + 1d4 poison).' },
-          { text: 'Indice de dangerosité (ID) affiché en fractions pour les valeurs inférieures à 1 (1/2, 1/4, 1/8).' },
+          { text: 'Facteur de puissance (FP) affiché en fractions pour les valeurs inférieures à 1 (1/2, 1/4, 1/8).' },
         ],
       },
       en: {

@@ -40,7 +40,7 @@ jobs:
       - name: Setup Node.js for web
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false
 
       - name: Install dependencies for web
@@ -72,7 +72,7 @@ jobs:
       - name: Setup Node.js for adventure
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false
 
       - name: Install dependencies for adventure
@@ -108,7 +108,7 @@ jobs:
       - name: Setup Node.js for gateway
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false
 
       - name: Install dependencies for gateway
@@ -144,7 +144,7 @@ jobs:
       - name: Setup Node.js for payment
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false
 
       - name: Install dependencies for payment
@@ -180,7 +180,7 @@ jobs:
       - name: Setup Node.js for admin
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false
 
       - name: Install dependencies for admin
@@ -348,7 +348,7 @@ jobs:
       - name: Setup Node.js for session
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false
 
       - name: Install dependencies for session
@@ -541,7 +541,7 @@ jobs:
       - name: Setup Node.js for media
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false
 
       - name: Install dependencies for media

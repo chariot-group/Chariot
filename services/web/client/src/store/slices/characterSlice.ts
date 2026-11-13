@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/store';
-import { Character } from '@/types/character';
+import { Character, NPC } from '@/types/character';
+import { hasGroups, linkedPlayerIdOf } from '@/lib/npcPlayerLink';
 
 interface CharacterState {
     // Characters without group
@@ -12,6 +13,10 @@ interface CharacterState {
     currentPageWithoutGroup: number;
     hasMoreWithoutGroup: boolean;
     totalWithoutGroup: number;
+
+    /** @see FR-npc-player-link */
+    linkedNpcs: NPC[];
+    unlinkedNpcsWithoutGroup: NPC[];
 
     // All characters
     allCharacters: Character[];
@@ -42,6 +47,9 @@ const initialState: CharacterState = {
     currentPageWithoutGroup: 1,
     hasMoreWithoutGroup: true,
     totalWithoutGroup: 0,
+
+    linkedNpcs: [],
+    unlinkedNpcsWithoutGroup: [],
 
     allCharacters: [],
     loadingAll: false,
@@ -92,10 +100,20 @@ const characterSlice = createSlice({
 
         upsertCharacterWithoutGroup: (state, action: PayloadAction<Character>) => {
             const character = action.payload;
-            const hasGroups = Array.isArray(character.groups) && character.groups.length > 0;
             const existingIndex = state.charactersWithoutGroup.findIndex((item) => item._id === character._id);
+            const isPlayerCharacter = 'progression' in character;
 
-            if (hasGroups) {
+            if (!isPlayerCharacter) {
+                if (existingIndex !== -1) {
+                    state.charactersWithoutGroup.splice(existingIndex, 1);
+                    state.totalWithoutGroup = Math.max(0, state.totalWithoutGroup - 1);
+                    state.hasMoreWithoutGroup = state.charactersWithoutGroup.length < state.totalWithoutGroup;
+                }
+                return;
+            }
+
+            const hasGroupsValue = hasGroups(character);
+            if (hasGroupsValue) {
                 if (existingIndex !== -1) {
                     state.charactersWithoutGroup.splice(existingIndex, 1);
                     state.totalWithoutGroup = Math.max(0, state.totalWithoutGroup - 1);
@@ -118,6 +136,40 @@ const characterSlice = createSlice({
             state.charactersWithoutGroup.splice(existingIndex, 1);
             state.totalWithoutGroup = Math.max(0, state.totalWithoutGroup - 1);
             state.hasMoreWithoutGroup = state.charactersWithoutGroup.length < state.totalWithoutGroup;
+        },
+
+        setLinkedNpcs: (state, action: PayloadAction<NPC[]>) => {
+            state.linkedNpcs ??= [];
+            state.linkedNpcs = dedupeCharactersById(action.payload) as NPC[];
+        },
+        setUnlinkedNpcsWithoutGroup: (state, action: PayloadAction<NPC[]>) => {
+            state.unlinkedNpcsWithoutGroup ??= [];
+            state.linkedNpcs ??= [];
+            state.unlinkedNpcsWithoutGroup = dedupeCharactersById(action.payload) as NPC[];
+        },
+        upsertPlayerSpaceNpc: (state, action: PayloadAction<NPC>) => {
+            state.linkedNpcs ??= [];
+            state.unlinkedNpcsWithoutGroup ??= [];
+            const npc = action.payload;
+            if (!npc?._id) return;
+            state.linkedNpcs = state.linkedNpcs.filter((item) => item._id !== npc._id);
+            state.unlinkedNpcsWithoutGroup = state.unlinkedNpcsWithoutGroup.filter((item) => item._id !== npc._id);
+
+            const linkedId = linkedPlayerIdOf(npc);
+            if (linkedId) {
+                state.linkedNpcs.unshift(npc);
+                return;
+            }
+            if (!hasGroups(npc)) {
+                state.unlinkedNpcsWithoutGroup.unshift(npc);
+            }
+        },
+        removePlayerSpaceNpc: (state, action: PayloadAction<string>) => {
+            state.linkedNpcs ??= [];
+            state.unlinkedNpcsWithoutGroup ??= [];
+            const npcId = action.payload;
+            state.linkedNpcs = state.linkedNpcs.filter((item) => item._id !== npcId);
+            state.unlinkedNpcsWithoutGroup = state.unlinkedNpcsWithoutGroup.filter((item) => item._id !== npcId);
         },
 
         // All characters
@@ -144,6 +196,8 @@ const characterSlice = createSlice({
             state.currentPageWithoutGroup = 1;
             state.hasMoreWithoutGroup = true;
             state.totalWithoutGroup = 0;
+            state.linkedNpcs = [];
+            state.unlinkedNpcsWithoutGroup = [];
 
             state.allCharacters = [];
             state.lastFetchAll = null;
@@ -167,6 +221,10 @@ export const {
     fetchAllCharactersFailure,
     upsertCharacterWithoutGroup,
     removeCharacterWithoutGroup,
+    setLinkedNpcs,
+    setUnlinkedNpcsWithoutGroup,
+    upsertPlayerSpaceNpc,
+    removePlayerSpaceNpc,
     clearCharacters,
     invalidateCharacterCache,
 } = characterSlice.actions;
@@ -180,6 +238,8 @@ export const selectCharactersWithoutGroupHasMore = (state: RootState) => state.c
 export const selectCharactersWithoutGroupTotal = (state: RootState) => state.character.totalWithoutGroup;
 export const selectCharactersWithoutGroupCurrentPage = (state: RootState) => state.character.currentPageWithoutGroup;
 export const selectCharactersWithoutGroupLastFetch = (state: RootState) => state.character.lastFetchWithoutGroup;
+export const selectLinkedNpcs = (state: RootState) => state.character.linkedNpcs;
+export const selectUnlinkedNpcsWithoutGroup = (state: RootState) => state.character.unlinkedNpcsWithoutGroup;
 
 // Selectors - All characters
 export const selectAllCharacters = (state: RootState) => state.character.allCharacters;

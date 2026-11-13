@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  isInitiativeInputTarget,
+  orderRowsByFrozenIds,
+  findAdjacentInitiativeInput,
+  canRemoveTrackerGroup,
+  countMissingInitiatives,
+  getRemovableTrackerGroups,
+  hasAddableCombatants,
+  isInitiativeMissing,
   DEATH_SAVES_FAILURE_THRESHOLD,
   defaultPlayerDisplayNameForRow,
   filterRowsForPlayerView,
@@ -283,6 +291,7 @@ describe("FR-session-combat-navigation — resolvePlayerTrackerDisplayName", () 
       lifeStatus: false,
       armorClass: false,
       conditions: false,
+      concentration: false,
       groupLabel: false,
     },
   };
@@ -334,6 +343,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     tempHitPoints: 3,
     armorClass: 17,
     conditions: [{ condition: "poisoned" }],
+    customEffects: [{ effectId: "fx-1", name: "Béni", description: "Avantage" }],
     groupId: "g1",
     groupLabel: "Hidden lair",
     visible: true,
@@ -365,6 +375,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     expect(sanitized.deathSavesFailures).toBe(0);
     expect(sanitized.armorClass).toBe(0);
     expect(sanitized.conditions).toEqual([]);
+    expect(sanitized.customEffects).toEqual([]);
     expect(sanitized.concentration).toBeNull();
     expect(sanitized.pendingConcentrationCheck).toBeNull();
     expect(sanitized.groupLabel).toBe("");
@@ -389,6 +400,7 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
     expect(sanitized.initiative).toBe(18);
     expect(sanitized.hitPoints).toBe(44);
     expect(sanitized.conditions).toHaveLength(1);
+    expect(sanitized.customEffects).toEqual([{ effectId: "fx-1", name: "Béni", description: "Avantage" }]);
     expect(sanitized.concentration?.spellName).toBe("Bless");
     expect(sanitized.groupLabel).toBe("Hidden lair");
   });
@@ -427,5 +439,99 @@ describe("FR-session-combat-navigation / FR-session-combat-sync — player-safe 
 
     expect(sanitized.initiativeTrackerRows.map((row) => row.id)).toEqual(["fast", "slow"]);
     expect(sanitized.initiativeTrackerRows.map((row) => row.initiative)).toEqual([0, 0]);
+  });
+});
+
+describe("FR-combat-initiative-tracker — roster action availability and pre-combat guidance", () => {
+  const groupRow = (groupId: string, groupLabel = groupId) => ({ groupId, groupLabel });
+
+  it("nominal: remove-group lists only non-participant groups, sorted, with member counts", () => {
+    const groups = getRemovableTrackerGroups([
+      groupRow("g2", "Orcs"),
+      groupRow(SESSION_PARTICIPANTS_GROUP_ID, "Players"),
+      groupRow("g1", "Gobelins"),
+      groupRow("g2", "Orcs"),
+    ]);
+    expect(groups).toEqual([
+      { value: "g1", label: "Gobelins", memberCount: 1 },
+      { value: "g2", label: "Orcs", memberCount: 2 },
+    ]);
+  });
+
+  it("edge: remove-group is offered only with at least 2 opposing groups", () => {
+    expect(canRemoveTrackerGroup([groupRow(SESSION_PARTICIPANTS_GROUP_ID), groupRow("g1")])).toBe(false);
+    expect(canRemoveTrackerGroup([groupRow(SESSION_PARTICIPANTS_GROUP_ID), groupRow("g1"), groupRow("g2")])).toBe(true);
+  });
+
+  it("edge: add-combatants is hidden when every candidate is already in the roster", () => {
+    const roster = [{ characterId: "a" }, { characterId: "b" }];
+    expect(hasAddableCombatants(["a", "b"], roster)).toBe(false);
+    expect(hasAddableCombatants(["a", "c"], roster)).toBe(true);
+    expect(hasAddableCombatants([""], roster)).toBe(false);
+  });
+
+  it("nominal: an initiative equal to the modifier (roll 0) counts as not entered", () => {
+    expect(isInitiativeMissing({ initiative: 3, initiativeModifier: 3 })).toBe(true);
+    expect(isInitiativeMissing({ initiative: 15, initiativeModifier: 3 })).toBe(false);
+    expect(
+      countMissingInitiatives([
+        { initiative: 0, initiativeModifier: 0 },
+        { initiative: 12, initiativeModifier: 2 },
+        { initiative: -1, initiativeModifier: -1 },
+      ]),
+    ).toBe(2);
+  });
+
+  it("failure: a non-finite modifier falls back to 0", () => {
+    expect(isInitiativeMissing({ initiative: 0, initiativeModifier: Number.NaN })).toBe(true);
+  });
+});
+
+describe("orderRowsByFrozenIds", () => {
+  const rows = [{ id: "b" }, { id: "a" }, { id: "c" }];
+
+  it("nominal: keeps the frozen order even when the live order changed", () => {
+    expect(orderRowsByFrozenIds(rows, ["a", "b", "c"]).map((r) => r.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("edge: appends rows added meanwhile", () => {
+    expect(orderRowsByFrozenIds(rows, ["a", "b"]).map((r) => r.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("edge: drops rows removed meanwhile", () => {
+    expect(orderRowsByFrozenIds([{ id: "a" }], ["z", "a"]).map((r) => r.id)).toEqual(["a"]);
+  });
+});
+
+describe("isInitiativeInputTarget", () => {
+  const target = (marked: boolean) =>
+    ({ hasAttribute: (name: string) => marked && name === "data-initiative-input" }) as unknown as EventTarget;
+
+  it("nominal: recognises the marked initiative input", () => {
+    expect(isInitiativeInputTarget(target(true))).toBe(true);
+  });
+
+  it("failure: rejects null and non-marked targets", () => {
+    expect(isInitiativeInputTarget(null)).toBe(false);
+    expect(isInitiativeInputTarget(target(false))).toBe(false);
+  });
+});
+
+describe("findAdjacentInitiativeInput (FR-combat-initiative-tracker keyboard entry)", () => {
+  const inputs = ["a", "b", "c"];
+
+  it("nominal: Tab goes to the next field, Shift+Tab to the previous one", () => {
+    expect(findAdjacentInitiativeInput(inputs, "a", false)).toBe("b");
+    expect(findAdjacentInitiativeInput(inputs, "c", true)).toBe("b");
+  });
+
+  it("edge: last field on Tab and first field on Shift+Tab keep native focus order", () => {
+    expect(findAdjacentInitiativeInput(inputs, "c", false)).toBeNull();
+    expect(findAdjacentInitiativeInput(inputs, "a", true)).toBeNull();
+  });
+
+  it("guard: unknown field (e.g. hidden duplicate) keeps native focus order", () => {
+    expect(findAdjacentInitiativeInput(inputs, "z", false)).toBeNull();
+    expect(findAdjacentInitiativeInput([], "a", false)).toBeNull();
   });
 });

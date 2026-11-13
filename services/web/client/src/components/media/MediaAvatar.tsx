@@ -36,7 +36,7 @@ export type MediaAvatarProps = {
 /**
  * Optimized avatar display: presigned URL cache, thumb variant for small sizes,
  * native img (not next/image) for expiring URLs, lazy loading by default.
- * @see FR-media-private-storage
+ * @see FR-media-avatars
  */
 export function MediaAvatar({
   scope,

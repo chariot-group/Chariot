@@ -14,13 +14,51 @@ It first describes the current state (observable facts), then defines governance
 
 ## 2.1 Global Theme
 
-The project relies on a dark theme with a global background image:
+The project relies on a dark theme with a plain background color (no background image):
 
-- Global background: `--background: #0c0c0c`
-- Main text: `--foreground: #b2b2b2`
-- Card/popover surface: `--card: #19191c`
+- Global background: `--background: #0c0c0f`
+- Main text: `--foreground: #b7b7bb`
+- Card/popover surface: `--card` / `--popover: #17171a`
 - Primary color: `--primary: #4e00de`
+- Primary light: `--primary-light: #a98bff` (same violet, lightened; `text-primary-light`)
 - Secondary/accent color: `--secondary` / `--accent: #aa00ff`
+
+Violet usage rule:
+
+- `primary` (`#4e00de`) is for **fills** only: button backgrounds, badges, selection highlight.
+- Violet **text and icons** (links, loaders, accent icons, "your turn" labels, selected-row bar) MUST use `primary-light`: `#4e00de` is unreadable on dark surfaces, while `#a98bff` reaches >= 5:1 on every surface level (background up to hover).
+
+## 2.1.1 Neutral Scale (Grays)
+
+All neutral colors share one hue/chroma (oklch, hue 285, chroma ~0.006: a subtle cool tint matching the violet primary). Pure grays and differently tinted grays must not be mixed.
+
+Surface ladder (dark to light, small regular steps):
+
+| Level | Token | Value | Usage |
+| --- | --- | --- | --- |
+| 0 | `--background` | `#0c0c0f` | App background, dialogs, sheets |
+| 1 | `--card` / `--popover` | `#17171a` | Cards, menus (dropdown, select, popover, combobox), toasts, inactive character tabs. `--popover` aliases `--card`. |
+| 2 | `--gray-middle-light` | `#1f1f22` | Raised element inside a card (inputs, selects, rows) |
+| 3 | `--gray` | `#27272b` | Hover / selected / highlighted |
+
+Borders (two levels):
+
+- Structural borders (layout sidebar, dialogs, sheets, menus and dropdowns): `--frame: #e5e5e5`, used through the `border-frame` utility.
+  This includes region dividers that split a page or a modal into zones: page footer action bars (character sheet, combat banner), modal header/footer/side-panel dividers, list/detail split of the magic tab.
+- Minor separators and default `border`: `--border: #353538`, used through `border-border` (no opacity variants). Applies to dividers between items inside a panel (form sections, tracker sub-bars, summaries). Form controls / outline buttons: `--input: #353538`. Sidebar separators: `--sidebar-border`.
+
+Lines and text:
+
+- Focus ring: `--ring`, `--sidebar-ring`: `#a4a4a8`
+- Secondary text: `--muted-foreground: #98989c` (>= 4.5:1 on every surface level)
+- Surface tokens (`gray`, `gray-middle-light`) are fills only: never use them as text color (`text-gray-middle-light` is invisible on cards); gray text uses `text-muted-foreground`
+- Light gray text: `--gray-light: #d7d7db`
+
+Scrollbars: `--scrollbar-track`, `--scrollbar-thumb`, `--scrollbar-thumb-hover`, used through `[&::-webkit-scrollbar-track]:bg-scrollbar-track`, `[&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb` and `[&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover`.
+
+Tailwind `gray-50` ... `gray-950` utilities are redefined in `globals.css` on the same tinted scale.
+
+Rule: never hardcode a neutral color in a component; use these tokens so a palette change is a one-file edit in `globals.css`.
 
 ## 2.2 Recurring Custom Palette
 
@@ -32,9 +70,9 @@ Palette defined and reused through custom utilities:
 - `--pink: #ffadff`
 - `--yellow: #ffc400`
 - `--white: #f7f7f7`
-- `--gray: #2b2b2b`
-- `--gray-middle-light: #27272e`
-- `--gray-light: #d6d6d6`
+- `--gray: #27272b`
+- `--gray-middle-light: #1f1f22`
+- `--gray-light: #d7d7db`
 - `--purple: #4e00de`
 
 Dedicated utility classes exist for these colors: `bg-*`, `text-*` (for example `.blue`, `.pink`), and `border-*`.
@@ -58,7 +96,7 @@ Dedicated utility classes exist for these colors: `bg-*`, `text-*` (for example 
 The design system is strongly rounded:
 
 - Root variable: `--radius: 36px`
-- Standard button: `rounded-[15px]`
+- Buttons, owned by `buttonVariants` (FR-frontend-button-system): `rounded-[13px]` for `default` / `sm` (Player / GM selector included), `rounded-[15px]` for `lg`
 - Tabs trigger: `rounded-[13px]`
 - Business cards and badges: `rounded-[15px]` to `rounded-[30px]`
 - Pill-shaped controls: `rounded-full`
@@ -85,8 +123,10 @@ A compact Tailwind scale is used most frequently:
 - Scrollable regions:
   - `overflow-y-auto` with custom scrollbar styling (`::-webkit-scrollbar`)
   - recurring `pr-2` to prevent content from sitting under the scrollbar
+  - Exception: navigation lists and bars hide their scrollbar with the `scrollbar-none` utility (`globals.css`); wheel, touch and keyboard scrolling still work. Applies to the layout sidebar, the character sheet tab bar and the community library result list.
 - Grids:
   - Welcome/Profile: `grid-cols-1`, then `xl:grid-cols-2` or `xl:grid-cols-3`
+  - Character General tab: bento grid 2 / 4 / 12 columns (section 5.3.1)
 
 ## 3.3 Vertical Rhythm
 
@@ -118,20 +158,38 @@ Frequent pattern:
 
 ## 5.1 Button
 
-Base (`components/ui/button.tsx`):
+All buttons go through `components/ui/button.tsx` (`Button`, or `buttonVariants` for links and custom triggers such as the Player / GM selector). Rule: FR-frontend-button-system. Consumers set layout (`w-full`, `flex-1`, `min-w-0`, padding tweaks) but never the fill, text color, hover, height or radius.
 
-- Standard height: `h-9` (`default`)
-- Standard padding: `px-4 py-2`
-- Radius: `rounded-[15px]`
-- Icon + text spacing: `gap-2`
+Main types:
 
-Commonly used variants:
+| Type | Props | Rest | Hover | Usage |
+| --- | --- | --- | --- | --- |
+| Primary white | `variant="primary"` | `bg-white` + `border-frame`, `text-black` | `bg-gray-300` (slightly darker) | Main action of a screen, sheet footer « Modifier le personnage » / « Sauvegarder », sidebar create buttons, active segmented option |
+| Primary colored | `variant="accent"` + `tone` | domain color, `text-black` | `bg-{tone}-hover` (lighter) | Color-coded context: sheet creation submit (tab tone), sidebar session action, combat turn controls |
+| Primary violet | default (`accent` + `tone="violet"`) | `bg-primary`, `text-primary-foreground` | `bg-primary-hover` (lighter) | Dialog validations, welcome / shop calls to action. Only colored tone with light text |
+| Secondary | `variant="secondary"` | `bg-gray-middle-light` + `border-input`, `text-white` | `bg-gray` (lighter) | Alternative actions: cancel, export, back, inactive segmented option |
 
-- `default` (primary)
-- `outline` (secondary actions)
-- `ghost` (UI triggers)
-- `link` (text-style navigation)
-- `destructive` (critical action)
+Hover tokens (`--{tone}-hover`, `--primary-hover`) live in `globals.css` (`color-mix` with white), so a palette change stays a one-file edit. Every hover has a `disabled:hover:` reset.
+
+Utility types (minority): `ghost` (transparent, `hover:bg-white/10`), `link`, `destructive`, icon-only sizes.
+
+Sizes:
+
+- `lg`: `h-12`, `rounded-[15px]`, `text-lg`, icons `size-6` (sidebar session action)
+- `default`: `h-9`, `rounded-[13px]`, `text-sm` (create character, dialog and sheet footers)
+- `sm`: `h-8`, `rounded-[13px]` (dense toolbars and rows)
+- `icon` / `icon-sm` / `icon-lg`: `size-9` / `size-8` / `size-12` (radius of the matching text size)
+
+Content and alignment:
+
+- Centered by default; `align="start"` left-aligns (sidebar create buttons)
+- Optional icon on the **left** of the label only (`gap-2`, `gap-3` in `lg`); the only trailing glyphs allowed are a menu disclosure chevron and the forward arrow of a "next" action
+- Focus: `focus-visible:ring-2 ring-ring ring-offset-2 ring-offset-background` on every type
+
+Toggles (`aria-pressed`), never a violet fill:
+
+- Segmented selector (one option among a few: Player / GM, attack ability suggestion, codex preview language): active = `primary`, inactive = `secondary`
+- On/off filter toggle (Action / Bonus action / Reaction priority, prepared spells edit mode, tracker selection modes): `secondary` + `toggleButtonPressedClassName` when pressed (`border-frame bg-white/15 font-semibold text-white`)
 
 ## 5.2 Tabs
 
@@ -141,12 +199,153 @@ Tabs rely on Radix plus design overrides:
 - Active tab is color-coded by domain (blue/red/pink/yellow/green)
 - Inactive tab uses gray styling
 
+## 5.2.1 Character Sheet Tabs (Button Group)
+
+The character sheet tab bar (General, Battle, Magic, Inventory, History) is one joined button group, not separate pills:
+
+- Frame: `rounded-[13px] border-[0.5px] border-frame bg-card overflow-hidden` (hairline structural border, kept thin so it does not stand out), no gap between triggers
+- Triggers: square inner corners, `border-l-[0.5px] border-frame` dividers (none on the first), `py-1.5`
+- Active trigger: domain color fill (section 2.3) with dark text `text-black` on every tab, Battle included (black on red: 5.7:1), except Companions (violet `purple` fill: white text); inactive: transparent, white text, `hover:bg-white/10`
+- Focus: keyboard only (`focus-visible`), drawn inside the trigger (`ring-2 ring-inset ring-ring`); no outline on mouse click
+- Error state (FR-form-field-validation): inset `ring-red/80` plus the alert icon (never color alone)
+- Mobile: the group scrolls horizontally inside a `scrollbar-none` wrapper; the rounded frame (`w-max`) scrolls with the tabs, so the rounded ends stay on the first (General) and last (History) tabs. Never put `overflow-x-auto` on the frame itself. Because the scrollbar is hidden, `useHorizontalWheelScroll` maps the vertical mouse wheel to horizontal scrolling; touch, trackpad and keyboard focus scroll natively.
+
 ## 5.3 Cards and Panels
 
 - Business cards mainly use `bg-card` or `bg-gray-middle-light`
 - Internal padding typically ranges from `p-3` to `p-6`
 - Pronounced radius (`rounded-[15px]` or higher)
 - Shadow is used selectively to reinforce visual focus (`shadow-lg`, `shadow-xl`)
+- A section card holds its heading **and** its content (e.g. saving throws, skills), for PCs and NPCs alike; rows inside a card are plain rows (`rounded-[10px]`, `hover:bg-gray-middle-light/50`), never nested cards
+- No tinted box inside a card (« poupée russe », decision 2026-11-13): label/value cells are **fact cells**, one style everywhere — `FACT_CELL_CLASS` (`tabContents/shared/factCell.ts`): no background, no vertical rule, no delimiter between cells (spacing only). Exception: the statistics card speeds line sits under a thin top rule (`border-t border-border`). A tint inside a card is reserved for interaction states (hover, open or selected row), pills/badges and the sticky spell group header
+- Free text (history, descriptions) wraps between words: `whitespace-pre-wrap wrap-break-word`; `break-all` is forbidden on text containers
+
+## 5.3.1 Character General Tab Bento Grid
+
+The General tab (PC and NPC, read and edit) is one bento grid (FR-character-general-bento-layout), defined in `tabContents/general/shared/generalBentoLayout.ts`:
+
+- Grid: `grid-cols-2` → `sm:grid-cols-4` → `xl:grid-cols-12`, one gap `gap-3 md:gap-4` on both axes
+- Very large screens (`3xl` = `120rem`, declared in `globals.css`): same 12 columns, wide placement instead of a page width cap. PC: Character 3 (2 rows) · Statistics 5 (2 rows) · the 4 tiles 2 × 2 (NPC has no wide override)
+- PC and NPC (GM constraint, same band): tall Skills card (2 rows) with Ability scores and Saving throws right next to it — Skills as far left as possible: `xl`: Skills (8, both rows, 3-column list) then Ability scores and Saving throws stacked on its right (4), then Proficiencies full width (sections in columns); alignment / background are fact cells of the « Personnage » card and NPC passive perception a 4th statistics cell (no side tiles); tablet: half-width Skills on the left, Ability scores / Saving throws stacked on its right
+- Every card is a direct grid child with a slot class (`col-span-*` / `row-span-*`); no flex columns, no duplicated mobile/desktop markup, no `order-*` or dense packing
+- Grid children never use `h-fit`: they stretch to their track so a row has no visual hole
+- A stretched card must not show a blank bottom: every card spreads its content over its height. Value grids (ability scores, saving throws) use `flex-1 content-evenly`; lists and label/value stacks (character, statistics, skills, proficiencies) use `flex-1 justify-between` / `flex-1 content-between`; tiles push their value / session note to the bottom (`justify-between`, `mt-auto`). Placement keeps bands balanced so the added spacing stays small
+- No inner scroll on General cards, except the abilities list (read and edit) (`AbilitiesSection boundedList`: `max-h-[28rem] overflow-y-auto`, focusable `role="group"` labelled by the card heading, project scrollbar tokens)
+- Read mode short values use `GeneralTile` (label on top, value pushed to the bottom); sections use `GeneralSectionCard` (region + own heading)
+- `GeneralSectionCard` is a size container (`@container`): long inner lists (skills) use container variants (`@sm:grid-cols-2 @xl:grid-cols-3`) so they follow the card width, not the viewport
+- Skills keep the same column steps in read and edit modes (`@sm:grid-cols-2 @xl:grid-cols-3`)
+- The sheet avatar block (`MediaAvatarUpload size="sheet"`) is as wide as the avatar (`w-min`): its requirements hint wraps under the avatar instead of widening the « Personnage » card
+- « Personnage » read card (`shared/CharacterIdentityCard`, FR-character-identity-card): bold name (`text-lg sm:text-xl`), muted italic nickname (only the name block sits next to the avatar), then full-width key fact cells (PC race + subrace, level + XP; NPC type + subtype; **one column below `@md` card width**, two from `@md`), secondary info muted under the value below `@md` and inline from `@md`, then PC classes as plain rows (level badge, muted subclass) pushed to the bottom; field labels are `sr-only`
+- « Personnage » edit card: the name fields (`CharacterNameFields`, shared PC/NPC) sit next to the avatar under the heading, like the read-mode identity list; they stack in a narrow column and go side by side from `@sm`
+- A new card MUST get a slot in every layout of `generalBentoLayout.ts` and keep the placement test (no empty cell at 2 / 4 / 12 columns) green
+
+## 5.3.2 Character Combat Tab Bento Grid
+
+The Combat tab reuses the General tab grid and card primitives (FR-character-battle-bento-layout), with its slots in `tabContents/battle/shared/battleBentoLayout.ts`:
+
+- Fixed-size cards (statistics, saving throws, death saves, affinities) share the first band; unbounded lists (each action section, abilities and traits) get their own full-width band
+- Action items wrap (`flex-wrap`, `grow basis-72`; edit `basis-[28rem]`): as many per row as the card width allows, and the items of the last row grow to complete it (no hole). Items are top-aligned so an expanded item grows alone
+- Empty affinities show an explicit "none" line (`characterDetail.battle.noAffinities`)
+- Read and edit modes: each action section's item list uses `BENTO_BOUNDED_LIST_CLASS` (shared with the abilities list): max height + inner scroll, header controls outside the scroll area, focusable `role="group"` labelled by the section heading
+- List cards are paired side by side from `xl` (6 + 6); affinity values start on the label line
+
+## 5.3.3 List Card (Actions, Abilities and Traits)
+
+Every character list uses `tabContents/shared/listCard/ListCard` + `ListRow` (FR-character-list-card), in read and edit modes:
+
+- One card: header (accent title, muted item count, Add in edit, expand/collapse all; optional toolbar line such as the usage-type filter or rest legend) then plain rows (`border-b`, `rounded-[10px]` hover) — never a card per item or per field
+- Collapsed row: name + one muted summary line joined with `·` (action: usage · attack/DC · damage · range; ability: rest icons · remaining uses)
+- Header count: small rounded badge (`bg-gray-middle-light`, `text-xs`) vertically centered on the title
+- Expanded row: the open row is tinted (`bg-gray-middle-light/30`); read → description + inline definition list; edit → `ListFormSection` groups (uppercase muted `h3` + divider): actions General / Attack / Damage / Description, abilities General / Uses; damage entries one line each with labels on the first entry only
+- Rows are bounded in read and edit modes (`BENTO_BOUNDED_LIST_CLASS`; edit adds `max-h-[min(40rem,70dvh)]`), header outside the scroll area; form dropdowns are portalled; invalid rows get `ring-2 ring-destructive`
+
+## 5.3.4 Statistics Card
+
+`tabContents/shared/StatsSummary` (FR-character-statistics-card), used by the PC and NPC statistics cards:
+
+- Armor class, initiative and size: one `grid-cols-3` row of equal fact cells (`FACT_CELL_CLASS`, no background; a line between rows when the NPC 4-cell row wraps to 2 × 2), small uppercase muted label + bold value with a Lucide icon (`currentColor`, readable on dark surfaces)
+- Speeds: spaced from the key stats row (`gap-4`), a single wrapping text line `Vitesses : icon value · icon value`, only non-zero speeds, secondary unit in muted small text
+- No white pills, no "?" tooltip buttons: the visible label carries the meaning, accessible names keep the full wording
+
+## 5.3.5 Character Inventory Tab Bento Grid
+
+The Inventory tab reuses the General tab grid and `GeneralSectionCard` (FR-character-inventory-bento-layout), with its slots in `tabContents/inventory/shared/inventoryBentoLayout.ts`:
+
+- Coins: full-width strip; read mode shows five equal fact cells on one row (`grid-cols-5`, no delimiter, no background): icon + short uppercase muted label, then the bold value (abbreviated ≥ 1 000, full value in the accessible name and an `InfoTooltip` outside session). In session, cells are buttons (background on hover only, `rounded-[10px]`, focus ring) opening the coin dialog
+- Coins edit: one labelled input per line in a narrow card, one row of five from `@2xl` (card width)
+- Equipment and Treasure: paired half width from `sm` (6 + 6 at `xl`); read text uses `BENTO_BOUNDED_LIST_CLASS`, empty state is a muted line; edit textareas fill the card (label `sr-only`, the heading names the field)
+- In-session edit button sits at the end of the heading line (`GeneralSectionCard headerAction`)
+
+## 5.3.6 Character History Tab Bento Grid
+
+The History tab reuses the General tab grid and `GeneralSectionCard` (FR-character-history-bento-layout), with its slots in `tabContents/history/shared/historyBentoLayout.ts`:
+
+- Bands at `xl`: Appearance (12, cells + description); Personality traits, Ideals, Bonds, Flaws (3 each); Allies and organizations (4) · Backstory (8). From `sm` the personality cards go two by two, the others full width
+- Appearance: label/value stacked fact cells (line between rows, no background), 2 columns, 3 from `@sm`, 6 from `@3xl`; empty values show a muted `—`; the size category shows its full name next to the height (no raw tooltip). The description follows under an uppercase muted `h3` sub-heading, full card width (bounded text in read mode, textarea with visible label in edit mode)
+- Text cards: `BENTO_BOUNDED_LIST_CLASS` in read mode, muted `notSpecified` line when empty; edit textareas fill the card with an `sr-only` label
+- No positive `tabIndex`: tab order follows the DOM
+
+## 5.3.7 Character Magic Tab
+
+The Magic tab (FR-character-magic-list-card) uses the bento grid with full-width slots in `tabContents/magic/shared/spellList.ts`:
+
+- Block selector (`SpellcastingSelector`, segmented toggle, primary white / secondary): its own grid row above the Spellcasting card, only with several blocks (edit: also when a class can be added, « Add » at the end)
+- Spellcasting: compact band — key stat cells (`KeyStat`: ability, attack, DC, prepared) on one line when the width allows; edit: class, ability, DC, attack on one row (`@3xl:grid-cols-4`) with their sync hints. No slot list here
+- Spells: one `ListCard` (bounded below `xl`; from `xl` `fill`: the panel (`MAGIC_TAB_PANEL_CLASS`, `flex-1`, min `28rem`) fills the sheet scroll area through the flex chain, no `dvh` calc; the grid takes the panel height with rows `auto … minmax(0,1fr)` from `magicBentoGridClass`, and the rows area fills the card and scrolls). Each level (or uses-per-day) group starts with `SpellGroupHeader`: tinted bar (`bg-gray-middle-light`), sticky at the top of the scroll area, level name in the accent color, slots on the right — read `SpellSlotsBadge` (pips + `remaining/total`, cantrips `∞`), edit the slot `total` input
+- Collapsed row: name + pills `casting time` `range` `effect dice` (`ListRow` / `ListSelectRow` `metaStyle="pills"`: `rounded-full bg-gray-middle-light px-2 py-0.5 text-xs text-card-foreground/80`, wrapping); trailing concentration tag, prepared pill (`SpellPreparedPill`), delete (edit)
+- Wide mode (`xl`, read and edit): Spellcasting and Spells list stacked on `xl:col-span-5` + spell detail panel `xl:col-span-7` spanning both rows (explicit `col-start` / `row-start`, selector stays full width) (`GeneralSectionCard`, spell name heading, `SpellDetails` or `SpellEditForm` scrolling inside); rows are `ListSelectRow` (`aria-pressed` buttons, trailing prepared pill / delete, error ring), selected row tinted like an open row; first spell selected by default
+- Expanded row: read → `SpellDetails` (traits as a `dl` of stacked fact cells (line between rows, no background, label `text-xs` muted above a `font-semibold` value) in a `flex flex-wrap gap-2`: two `dl` lists: (1) damage first on a full line (`basis-full`, entries side by side wrapping, formula `text-sm font-semibold` + muted type pill `bg-card`) then short traits `flex-1 basis-[8.5rem]` (lines fill, no holes); (2) duration, components and healing `flex-1 basis-[8.5rem]` starting their own line, classes `basis-full` last; then a `border-t` Description section with an uppercase muted label; then in-session cast controls); edit → `SpellEditForm` (`ListFormSection`: General / Casting / Effects / Description; Effects damage lines use the action damage grid: `SpellDiceField` (`DiceInput` free text `8d6+2` with dice suggestions, error linked on blur) · damage type · delete always on one line (`grid-cols-[minmax(0,2fr)_minmax(0,3fr)_auto]`, from `@2xl` `[minmax(0,10rem)_minmax(0,1fr)_auto]`), visible `text-xs` labels; healing = the same dice field alone (`max-w-40`))
+- Edit keeps the list order inside a group (no re-sorting while typing); group headers and rows are siblings of one `Accordion`, so a level change moves the row without remounting it
+- Add a spell (`primary`, `sm`) and Codex (`secondary`, `sm`) are both visible in the card header
+
+## 5.3.8 Character Sheet Skeleton
+
+The sheet loading state (FR-character-sheet-skeleton) is `character/skeleton/CharacterSheetSkeleton`, never a centered spinner:
+
+- Same frame as `CharacterDetailView` (tab bar, scroll area, footer); tab and PC/NPC guessed from `?tab=` and the route (`characterSheetSkeletonLayout.ts`)
+- Cards placed with the tab's own bento slots: a new card in a bento layout file needs its placeholder there too
+- Placeholders: `Skeleton` in `bg-gray` on `bg-card`, cells as fact cells (no background, line between rows), headings tinted with the tab domain color (`/25`), active tab filled with its domain color
+- `role="status"` + `aria-busy` + translated `sr-only` label; shapes `aria-hidden`, nothing focusable; `motion-reduce:animate-none` on every pulse
+- Authentication loading (FR-auth-loading-skeleton): `layout/AppShellSkeleton` draws the shell (sidebar `w-64` from `md`, header box, content) and embeds `CharacterSheetSkeletonFrame` on sheet routes, so the auth and sheet skeletons are the same; the log out escape hatch sits in the profile slot
+
+## 5.3.9 Character Companions Tab Bento Grid
+
+The Companions tab (Player space, FR-npc-player-link) reuses the viewport bento grid, with its slots in `tabContents/companions/shared/companionsBentoLayout.ts`:
+
+- `CharacterIdentityCard` (PJ/PNJ): name + reserved nickname band beside avatar; `IdentityFactCells` **full width below** with `denseColumns` (2-col grid). `CompanionNpcCard`: same 2-col facts **in the narrow column** beside the avatar. Both use `h-full` where the bento grid stretches rows
+- With companions: liaison toolbar on its own full-width row, then one `CompanionNpcCard` per grid cell (full width below `xl`, two per row from `xl`); the list is `ul.contents` + `role="list"` so each item is a grid child
+- Empty: `CompanionsEmptyState`, two `GeneralSectionCard` on one band (8 + 4 at `xl`, 2 + 2 at `sm`): explanation with the link / create-linked buttons pushed to the bottom right (none for the session GM), and examples separated by a thin line (`divide-y`, decorative icon) filling the card
+- Headings use the tab violet as text: `text-primary-light` (the `purple` token is not readable as text on `bg-card`); « Créer un PNJ lié » is a `primary` (white) button like the sheet Edit button, « Lier un PNJ » stays `secondary`
+
+## 5.4 Menus (Dropdown, Context Menu, Select, Combobox)
+
+Every floating menu shares one style, defined once in `components/ui/menu-styles.ts` and applied by the primitives (`dropdown-menu`, `context-menu`, `select`, `searchable-select`, `multi-select`, `combobox-input`, `tag-input`). The GM space menu of the sidebar is the visual reference.
+
+- Surface: `bg-popover border-frame rounded-[14px] p-1.5`
+- Row: `rounded-[10px] px-3 py-2 text-sm text-white`, hover and keyboard highlight `bg-white/10`
+- Selected/checked row: `bg-white/15 font-medium`; check icon in white only for checkbox/radio items of the primitives. Selection rows of the GM space menu (campaigns) use the background alone, no check icon, and expose `aria-current="true"`; the selected and hover backgrounds are on the whole row (wrapper), including the touch overflow (⋮), and the campaign name always stays on one line (`truncate`, tooltip when cut)
+- Leading icons: `size-4`, `text-white/60`; destructive rows: `text-destructive`, hover `bg-destructive/10`
+- Separator: `mx-1 my-1 h-px bg-white/10`
+
+Consumers must not restyle menu rows or surfaces locally (sizing such as `w-*`, `max-h-*`, `z-*` is fine).
+
+Sidebar context menus and touch overflow menus show an icon per action (FR-sidebar-context-actions). Default icons are mapped by action id in `components/layout/Sidebar/shared/sidebarActionIcons.ts`.
+
+## 5.5 Sidebar Rows
+
+- Selected character row: `bg-white/15` (same gray as selected menu rows), white bold text, no left bar and no label shift; hover `bg-white/10`
+- Group header: no resting background (hover `bg-white/10`), label always bold, one line (`truncate`), no name tooltip on hover; the full name is the first label of the group menu (`⋮` / right-click) (FR-sidebar-context-actions). The label lines up with its characters: header `pl-1` + `size-4` chevron + `gap-2` = characters `ml-4` + `px-3` (28px)
+- Create buttons (character, group): `buttonVariants({ variant: "primary", align: "start" })`, full width, icon on the **left** of the label
+
+## 5.6 Numeric Inputs
+
+All numeric fields use `components/ui/number-input.tsx` (`Input type="number"` delegates to it):
+
+- `startAdornment` (icon) and `endAdornment` (unit) render inside the field
+- The frame (`inputFrameClassName`) owns background, radius, focus and invalid state, so the focus frame wraps the whole field (icon + input + unit + stepper), not only the native input
+- `className` styles the frame (width, height, radius, background); typography is inherited by the input
+- Custom stepper without border or divider, flush against the right edge, out of the tab order (keyboard uses arrow keys)
+- `StoredUnitNumberInput` and `StoredUnitFeetRangeInput` build on the same frame
 
 ## 6. Responsive Baseline
 
@@ -283,3 +482,7 @@ Use this checklist as a completion gate for every frontend ticket.
 Recommended final note format in ticket completion:
 
 `Frontend DoD passed: design baseline, accessibility checks, and responsive validation completed.`
+
+## Welcome and Empty-Space Fallback Pages
+
+The Player space fallback (`/characters`) and the Campaign fallback (`/campaigns/{id}`) share `components/layout/Welcome/FallbackLayout.tsx`: the Welcome option illustration on top (decorative, `alt=""`), then a plain text block (no card) below it, with an optional eyebrow (`text-primary-light`), one `h1`, a `text-muted-foreground` description, CTAs and an optional hint. Width is capped at `max-w-xl`; CTAs stack on mobile and sit side by side from `sm`. Primary CTA = violet accent, second CTA = `secondary`.

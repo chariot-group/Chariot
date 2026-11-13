@@ -2,13 +2,13 @@ import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from "ax
 import Keycloak from "keycloak-js";
 import { buildKeycloakAuthOptions } from "@/hooks/useLocalePreference";
 import { reportClientIssue } from "@/logger/reportClientIssue";
+import { getKeycloakInstance } from "@/lib/keycloakInstance";
+import { createDedupeInFlightGetAdapter } from "@/lib/http/dedupeInFlightGetAdapter";
 
-let keycloakInstance: Keycloak | null = null;
 let loginRedirectInFlight = false;
 
-export const setKeycloakInstance = (instance: Keycloak) => {
-  keycloakInstance = instance;
-};
+/** @deprecated Import from `@/lib/keycloakInstance`; kept for existing callers. */
+export { setKeycloakInstance } from "@/lib/keycloakInstance";
 
 /** Debounce forced re-login — parallel 401s after SSO restart must not spam Keycloak. */
 function redirectToLogin(kc: Keycloak): void {
@@ -40,17 +40,20 @@ const createApiClient = (): AxiosInstance => {
     withCredentials: true,
   });
 
+  // Concurrent identical GETs share one request (FR-web-first-load-performance, requirement 14).
+  instance.defaults.adapter = createDedupeInFlightGetAdapter(axios.getAdapter(instance.defaults.adapter));
+
   // Request interceptor - fetches token for each request
   instance.interceptors.request.use(
     async (config) => {
       // Wait for Keycloak to be initialized
-      if (typeof window !== 'undefined' && !keycloakInstance) {
+      if (typeof window !== 'undefined' && !getKeycloakInstance()) {
         // Wait briefly for Keycloak to initialize
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       // Get token directly from Keycloak instance
-      const token = keycloakInstance?.token;
+      const token = getKeycloakInstance()?.token;
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -59,7 +62,7 @@ const createApiClient = (): AxiosInstance => {
         console.warn('⚠️ No token available yet, waiting for Keycloak initialization...');
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        const retryToken = keycloakInstance?.token;
+        const retryToken = getKeycloakInstance()?.token;
         if (retryToken) {
           config.headers.Authorization = `Bearer ${retryToken}`;
         }
@@ -77,6 +80,7 @@ const createApiClient = (): AxiosInstance => {
     (response) => response,
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+      const keycloakInstance = getKeycloakInstance();
 
       if (error.response?.status === 401 && !originalRequest._retry && keycloakInstance) {
         originalRequest._retry = true;
@@ -153,7 +157,7 @@ export const createPaymentApiClient = (): AxiosInstance => {
 
   instance.interceptors.request.use(
     async (config) => {
-      const token = keycloakInstance?.token;
+      const token = getKeycloakInstance()?.token;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }

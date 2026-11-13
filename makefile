@@ -1,5 +1,5 @@
 # Makefile principal pour gérer tous les microservices
-.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-media lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-media lint-fix-web lint-fix-admin
+.PHONY: help up down restart logs ps clean build test test-watch test-cov test-e2e e2e e2e-install e2e-perf web-prod-local web-dev-local e2e-ui e2e-report deploy pull deploy-prod deploy-integ stripe-login stripe-listen stripe-trigger-checkout lint lint-status lint-adventure lint-gateway lint-session lint-payment lint-media lint-web lint-admin lint-fix lint-fix-adventure lint-fix-gateway lint-fix-session lint-fix-payment lint-fix-media lint-fix-web lint-fix-admin
 
 # Configuration
 SERVICES_DIR := services
@@ -433,3 +433,40 @@ seed-clean: ## Lance le seeder avec nettoyage pour adventure
 	@echo "$(YELLOW)Nettoyage et exécution du seeder pour adventure...$(NC)"
 	@cd $(SERVICES_DIR)/adventure && docker compose -f compose.$(ENV).yml exec chariot-adventure npm run seed:clean
 	@echo "$(GREEN)✓ Base de données nettoyée et seeder exécuté$(NC)"
+# --- Scénarios E2E navigateur (Playwright, tools/e2e) ---
+E2E_DIR := tools/e2e
+
+e2e-install: ## Installe Playwright + Chromium pour les scénarios E2E
+	@cd $(E2E_DIR) && npm ci && npx playwright install chromium
+
+e2e: ## Lance les scénarios E2E (FILTER=texte pour filtrer, ex. FILTER=session)
+	@cd $(E2E_DIR) && npx playwright test $(if $(FILTER),--grep "$(FILTER)",)
+
+e2e-perf: ## Mesure l'aller-retour SSO en 3G simulée (PERF_RUNS, PERF_LABEL, PERF_LATENCY_MS, PERF_DOWN_KBPS)
+	@cd $(E2E_DIR) && E2E_PERF=1 npx playwright test --project=perf
+
+web-prod-local: ## Remplace le web de dev par un build de prod local (port 3000) pour tester les temps de chargement
+	@docker stop chariot-web >/dev/null 2>&1 || true
+	@cd $(SERVICES_DIR)/web && docker compose -f compose.dev.yml --profile prod-local up -d --build chariot-web-prod
+	@echo "$(YELLOW)Build de prod en cours (1 à 3 min) — suivi : docker logs -f chariot-web-prod$(NC)"
+	@for i in $$(seq 1 120); do \
+		if curl -s -o /dev/null http://localhost:3000/api/health; then \
+			echo "$(GREEN)✓ Build de prod prêt sur http://localhost:3000 (retour au dev : make web-dev-local)$(NC)"; exit 0; \
+		fi; \
+		if [ "$$(docker inspect -f '{{.State.Running}}' chariot-web-prod 2>/dev/null)" != "true" ]; then \
+			echo "$(RED)Le build a échoué — voir : docker logs chariot-web-prod$(NC)"; exit 1; \
+		fi; \
+		sleep 3; \
+	done; \
+	echo "$(RED)Toujours pas prêt après 6 min — voir : docker logs -f chariot-web-prod$(NC)"; exit 1
+
+web-dev-local: ## Revient au web de dev (next dev) après make web-prod-local
+	@docker stop chariot-web-prod >/dev/null 2>&1 || true
+	@cd $(SERVICES_DIR)/web && docker compose -f compose.dev.yml up -d chariot-web
+	@echo "$(GREEN)✓ Web de dev relancé sur http://localhost:3000$(NC)"
+
+e2e-ui: ## Ouvre le mode interactif Playwright (liste, lancement, replay pas à pas)
+	@cd $(E2E_DIR) && npx playwright test --ui
+
+e2e-report: ## Ouvre le dernier rapport HTML (vidéos, captures, traces)
+	@cd $(E2E_DIR) && npx playwright show-report reports/html

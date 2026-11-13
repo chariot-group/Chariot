@@ -38,6 +38,10 @@ export function createNpcSchema(zm: ZodMessages) {
         challenge: ChallengeSchema.optional(),
         profile: NPCProfileSchema.optional(),
         hitPointsRoll: z.string().optional(),
+        linkedPlayerId: z.preprocess(
+            (value) => (value === "" || value === undefined ? null : value),
+            z.string().nullable().optional(),
+        ),
     });
 }
 

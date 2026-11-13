@@ -68,10 +68,10 @@ export function ensureConditionEntryRemainingSeconds(
   };
 }
 
-export function tickConditionEntries(
-  conditions: InitiativeTrackerConditionEntry[],
+export function tickConditionEntries<T extends { remainingSeconds?: number }>(
+  conditions: T[],
   deltaSeconds: number,
-): InitiativeTrackerConditionEntry[] {
+): T[] {
   return conditions
     .map((entry) => {
       if (entry.remainingSeconds == null) {
@@ -83,9 +83,9 @@ export function tickConditionEntries(
     .filter((entry) => entry.remainingSeconds == null || entry.remainingSeconds > 0);
 }
 
-export function removeUntilCombatEndConditions(
-  conditions: InitiativeTrackerConditionEntry[],
-): InitiativeTrackerConditionEntry[] {
+export function removeUntilCombatEndConditions<T extends { duration?: InitiativeTrackerConditionDuration }>(
+  conditions: T[],
+): T[] {
   return conditions.filter((entry) => entry.duration?.unit !== "untilCombatEnd");
 }
 

@@ -27,6 +27,14 @@ export class QuickLink extends BaseSchema {
   @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
   campaignId: Types.ObjectId | null;
 
+  @ApiProperty({ example: false })
+  @Prop({ default: false })
+  visibleInAllCampaigns: boolean;
+
+  @ApiProperty({ example: false })
+  @Prop({ default: false })
+  visibleInPlayerSpace: boolean;
+
   @ApiProperty({ example: null })
   @Prop({ default: null })
   deletedAt?: Date;

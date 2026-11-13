@@ -76,7 +76,7 @@ describe("sessionWheelDeposit", () => {
         expect(sumDepositedWheels({})).toBe(0);
     });
 
-    describe("FR-session-lobby-wheel-quota-invariant — isWheelQuotaMetForLaunch", () => {
+    describe("FR-session-lobby-wheel-deposit — isWheelQuotaMetForLaunch", () => {
         it("nominal: exact equality enables launch", () => {
             expect(isWheelQuotaMetForLaunch(3, 3)).toBe(true);
         });

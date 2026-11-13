@@ -1,15 +1,27 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
 
-const { getPlayersWithoutGroup, getCharacterById, getCampaigns, getCampaignById, getAllGroupsByCampaign } = vi.hoisted(() => ({
+const {
+    getPlayersWithoutGroup,
+    getCharacterById,
+    getUnlinkedNpcsWithoutGroup,
+    getNpcsByLinkedPlayers,
+    getCampaigns,
+    getCampaignById,
+    getAllGroupsByCampaign,
+} = vi.hoisted(() => ({
     getPlayersWithoutGroup: vi.fn(),
     getCharacterById: vi.fn(),
+    getUnlinkedNpcsWithoutGroup: vi.fn(),
+    getNpcsByLinkedPlayers: vi.fn(),
     getCampaigns: vi.fn(),
     getCampaignById: vi.fn(),
     getAllGroupsByCampaign: vi.fn(),
 }));
 
-vi.mock("@/services/CharacterService", () => ({ default: { getPlayersWithoutGroup, getCharacterById } }));
+vi.mock("@/services/CharacterService", () => ({
+    default: { getPlayersWithoutGroup, getCharacterById, getUnlinkedNpcsWithoutGroup, getNpcsByLinkedPlayers },
+}));
 vi.mock("@/services/CampaignService", () => ({ default: { getCampaigns, getCampaignById } }));
 vi.mock("@/services/GroupService", () => ({ default: { getAllGroupsByCampaign } }));
 vi.mock("@/logger/reportClientIssue", () => ({ reportClientIssue: vi.fn() }));
@@ -66,5 +78,211 @@ describe("NavigationService destinations (FR-session-end-navigation)", () => {
         const destination = await NavigationService.determinePostLoginDestination("fr", dispatch, getState);
 
         expect(destination).toEqual({ path: "/fr/welcome", reason: "no-characters" });
+    });
+
+    it("nominal: campagne sans personnage → fallback de la campagne (FR-welcome-onboarding-fallbacks)", async () => {
+        getPlayersWithoutGroup.mockResolvedValue({ data: [], pagination: { totalItems: 0 } });
+        getCampaigns.mockResolvedValue({ data: [{ _id: "camp-1", groups: { active: ["g1"] } }], totalItems: 1 });
+        getCampaignById.mockResolvedValue({
+            _id: "camp-1",
+            groups: { active: [{ _id: "g1", characters: [] }] },
+        });
+        const { dispatch, getState } = makeStore();
+
+        const destination = await NavigationService.determinePostLoginDestination("fr", dispatch, getState);
+
+        expect(destination).toEqual({ path: "/fr/campaigns/camp-1", reason: "no-characters-campaign" });
+    });
+
+    it("edge: espace de campagne vide → fallback de cette campagne, pas welcome", async () => {
+        getAllGroupsByCampaign.mockResolvedValue([{ _id: "g1", characters: [] }]);
+        getCampaignById.mockResolvedValue({ _id: "camp-1", groups: { active: ["g1"] } });
+
+        const destination = await NavigationService.determineSpaceDestination("camp-1", "fr");
+
+        expect(destination).toEqual({ path: "/fr/campaigns/camp-1", reason: "no-characters-campaign" });
+    });
+
+    it("edge: espace joueur vide (avec ou sans campagne) → fallback espace joueur", async () => {
+        getPlayersWithoutGroup.mockResolvedValue({ data: [], pagination: { totalItems: 0 } });
+        const { dispatch, getState } = makeStore();
+
+        const destination = await NavigationService.determinePlayerSpaceDestination("fr", dispatch, getState);
+
+        expect(destination).toEqual({ path: "/fr/characters", reason: "no-characters-player-space" });
+    });
+
+    it("failure: erreur de résolution de l'espace → welcome", async () => {
+        getAllGroupsByCampaign.mockRejectedValue(new Error("boom"));
+
+        const destination = await NavigationService.determineSpaceDestination("camp-1", "fr");
+
+        expect(destination).toEqual({ path: "/fr/welcome", reason: "no-characters" });
+    });
+
+    it("logo nominal: espace joueur prioritaire avec personnage → sa fiche", async () => {
+        getPlayersWithoutGroup.mockResolvedValue({ data: [{ _id: "p1" }], pagination: { totalItems: 1 } });
+        getCharacterById.mockResolvedValue({});
+        getCampaigns.mockResolvedValue({ data: [], totalItems: 0 });
+        const { dispatch, getState } = makeStore();
+
+        const destination = await NavigationService.determineLogoDestination("fr", dispatch, getState, {
+            contextMode: "player",
+            campaignId: null,
+        });
+
+        expect(destination.path).toBe("/fr/characters/p1");
+    });
+
+    it("logo edge: campagne courante vide mais personnage joueur → fiche joueur, pas welcome", async () => {
+        getAllGroupsByCampaign.mockResolvedValue([{ _id: "g1", characters: [] }]);
+        getCampaignById.mockResolvedValue({ _id: "camp-1", groups: { active: ["g1"] } });
+        getPlayersWithoutGroup.mockResolvedValue({ data: [{ _id: "p1" }], pagination: { totalItems: 1 } });
+        getCharacterById.mockResolvedValue({});
+        getCampaigns.mockResolvedValue({ data: [], totalItems: 0 });
+        const { dispatch, getState } = makeStore();
+
+        const destination = await NavigationService.determineLogoDestination("fr", dispatch, getState, {
+            contextMode: "gm",
+            campaignId: "camp-1",
+        });
+
+        expect(destination.path).toBe("/fr/characters/p1");
+    });
+
+    it("logo edge: campagne courante avec personnage → prioritaire sur l'espace joueur", async () => {
+        getAllGroupsByCampaign.mockResolvedValue([{ _id: "g1", characters: [{ _id: "c1" }] }]);
+        getCampaignById.mockResolvedValue({ _id: "camp-1", groups: { active: ["g1"] } });
+        const { dispatch, getState } = makeStore();
+
+        const destination = await NavigationService.determineLogoDestination("fr", dispatch, getState, {
+            contextMode: "gm",
+            campaignId: "camp-1",
+        });
+
+        expect(destination.path).toBe("/fr/campaigns/camp-1/groups/g1/characters/c1");
+    });
+
+    it("logo edge: campagne vide et espace joueur vide → fallback campagne, jamais welcome", async () => {
+        getAllGroupsByCampaign.mockResolvedValue([{ _id: "g1", characters: [] }]);
+        getCampaignById.mockResolvedValue({ _id: "camp-1", groups: { active: ["g1"] } });
+        getPlayersWithoutGroup.mockResolvedValue({ data: [], pagination: { totalItems: 0 } });
+        getCampaigns.mockResolvedValue({ data: [{ _id: "camp-1", groups: { active: ["g1"] } }], totalItems: 1 });
+        const { dispatch, getState } = makeStore();
+
+        const destination = await NavigationService.determineLogoDestination("fr", dispatch, getState, {
+            contextMode: "gm",
+            campaignId: "camp-1",
+        });
+
+        expect(destination).toEqual({ path: "/fr/campaigns/camp-1", reason: "no-characters-campaign" });
+    });
+
+    it("logo failure/guard: aucune campagne ni personnage, ou erreur → welcome", async () => {
+        getPlayersWithoutGroup.mockResolvedValue({ data: [], pagination: { totalItems: 0 } });
+        getCampaigns.mockResolvedValue({ data: [], totalItems: 0 });
+        const { dispatch, getState } = makeStore();
+
+        const empty = await NavigationService.determineLogoDestination("fr", dispatch, getState, {
+            contextMode: "player",
+            campaignId: null,
+        });
+        expect(empty).toEqual({ path: "/fr/welcome", reason: "no-characters" });
+
+        getAllGroupsByCampaign.mockRejectedValue(new Error("boom"));
+        getPlayersWithoutGroup.mockRejectedValue(new Error("boom"));
+        const failed = await NavigationService.determineLogoDestination("fr", dispatch, getState, {
+            contextMode: "gm",
+            campaignId: "camp-1",
+        });
+        expect(failed.path).toBe("/fr/welcome");
+    });
+
+    describe("slow-network round trip (FR-post-auth-navigation, FR-web-first-load-performance)", () => {
+        const never = () => new Promise<never>(() => {});
+
+        it("nominal: campaigns are requested without waiting for the characters-without-group response", async () => {
+            let releaseWithoutGroup!: (value: unknown) => void;
+            getPlayersWithoutGroup.mockReturnValue(new Promise((resolve) => (releaseWithoutGroup = resolve)));
+            getCampaigns.mockResolvedValue({ data: [], totalItems: 0 });
+            const { dispatch, getState } = makeStore();
+
+            const pending = NavigationService.determinePostLoginDestination("fr", dispatch, getState);
+            await Promise.resolve();
+
+            expect(getCampaigns).toHaveBeenCalledTimes(1);
+            releaseWithoutGroup({ data: [], pagination: { totalItems: 0 } });
+            await expect(pending).resolves.toEqual({ path: "/fr/welcome", reason: "no-characters" });
+        });
+
+        it("edge: priority unchanged — a character without group wins even when campaigns answer first", async () => {
+            getCampaigns.mockResolvedValue({ data: [{ _id: "camp-1", groups: { active: ["g1"] } }], totalItems: 1 });
+            getCampaignById.mockResolvedValue({ _id: "camp-1", groups: { active: [{ _id: "g1", characters: [{ _id: "c1" }] }] } });
+            getPlayersWithoutGroup.mockImplementation(
+                () => new Promise((resolve) => setTimeout(() => resolve({ data: [{ _id: "p1" }], pagination: { totalItems: 1 } }), 5)),
+            );
+            getCharacterById.mockResolvedValue({});
+            getUnlinkedNpcsWithoutGroup.mockImplementation(never);
+            getNpcsByLinkedPlayers.mockImplementation(never);
+            const { dispatch, getState } = makeStore();
+
+            // Sidebar NPC lists never answer: the destination must not wait for them.
+            const destination = await NavigationService.determinePostLoginDestination("fr", dispatch, getState);
+
+            expect(destination).toEqual({ path: "/fr/characters/p1", reason: "character-without-group", characterId: "p1" });
+            expect(getUnlinkedNpcsWithoutGroup).toHaveBeenCalled();
+        });
+
+        it("edge: campaign details load in parallel but the first campaign in list order keeps priority", async () => {
+            getPlayersWithoutGroup.mockResolvedValue({ data: [], pagination: { totalItems: 0 } });
+            getCampaigns.mockResolvedValue({
+                data: [
+                    { _id: "camp-1", groups: { active: ["g1"] } },
+                    { _id: "camp-2", groups: { active: ["g2"] } },
+                ],
+                totalItems: 2,
+            });
+            getCampaignById.mockImplementation((id: string) =>
+                id === "camp-1"
+                    ? new Promise((resolve) =>
+                          setTimeout(() => resolve({ _id: "camp-1", groups: { active: [{ _id: "g1", characters: [{ _id: "c1" }] }] } }), 5),
+                      )
+                    : Promise.resolve({ _id: "camp-2", groups: { active: [{ _id: "g2", characters: [{ _id: "c2" }] }] } }),
+            );
+            const { dispatch, getState } = makeStore();
+
+            const destination = await NavigationService.determinePostLoginDestination("fr", dispatch, getState);
+
+            expect(getCampaignById).toHaveBeenCalledTimes(2);
+            expect(destination.path).toBe("/fr/campaigns/camp-1/groups/g1/characters/c1");
+        });
+
+        it("failure: a failing campaign detail falls back to welcome, an unread failure is not unhandled", async () => {
+            getPlayersWithoutGroup.mockResolvedValue({ data: [], pagination: { totalItems: 0 } });
+            getCampaigns.mockResolvedValue({
+                data: [
+                    { _id: "camp-1", groups: { active: ["g1"] } },
+                    { _id: "camp-2", groups: { active: ["g2"] } },
+                ],
+                totalItems: 2,
+            });
+            getCampaignById.mockImplementation((id: string) =>
+                id === "camp-1"
+                    ? Promise.resolve({ _id: "camp-1", groups: { active: [{ _id: "g1", characters: [{ _id: "c1" }] }] } })
+                    : Promise.reject(new Error("boom")),
+            );
+            const { dispatch, getState } = makeStore();
+
+            // camp-2 fails but is never read (camp-1 decides): no unhandled rejection.
+            await expect(NavigationService.determinePostLoginDestination("fr", dispatch, getState)).resolves.toMatchObject({
+                reason: "character-in-campaign",
+            });
+
+            getCampaignById.mockRejectedValue(new Error("boom"));
+            await expect(NavigationService.determinePostLoginDestination("fr", dispatch, getState)).resolves.toEqual({
+                path: "/fr/welcome",
+                reason: "no-characters",
+            });
+        });
     });
 });

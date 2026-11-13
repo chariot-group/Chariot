@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import QuickLinkService from "@/services/QuickLinkService";
 import { QuickLink, CreateQuickLinkDto, UpdateQuickLinkDto } from "@/types/quickLink";
+import { isQuickLinkVisibleIn } from "@/lib/quickLinkVisibility";
 
 export function useQuickLinks(campaignId?: string | null) {
   const [links, setLinks] = useState<QuickLink[]>([]);
@@ -43,13 +44,18 @@ export function useQuickLinks(campaignId?: string | null) {
     async (id: string, dto: UpdateQuickLinkDto): Promise<boolean> => {
       try {
         const updated = await QuickLinkService.updateQuickLink(id, dto);
-        setLinks((prev) => prev.map((l) => (l._id === id ? updated : l)));
+        // A visibility change can take the link out of the current space.
+        setLinks((prev) =>
+          isQuickLinkVisibleIn(updated, campaignId)
+            ? prev.map((l) => (l._id === id ? updated : l))
+            : prev.filter((l) => l._id !== id),
+        );
         return true;
       } catch {
         return false;
       }
     },
-    [],
+    [campaignId],
   );
 
   const removeLink = useCallback(async (id: string): Promise<boolean> => {

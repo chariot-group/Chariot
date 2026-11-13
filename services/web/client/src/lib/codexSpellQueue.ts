@@ -2,11 +2,7 @@ import type { Spell } from "@/types/character";
 
 export type QueuedSpellEntry = { key: string; spell: Partial<Spell> };
 
-export function toggleSpellInQueue(
-  queue: QueuedSpellEntry[],
-  key: string,
-  spell: Partial<Spell>,
-): QueuedSpellEntry[] {
+export function toggleSpellInQueue(queue: QueuedSpellEntry[], key: string, spell: Partial<Spell>): QueuedSpellEntry[] {
   const existingIndex = queue.findIndex((entry) => entry.key === key);
   if (existingIndex >= 0) {
     return queue.filter((_, index) => index !== existingIndex);
@@ -16,6 +12,11 @@ export function toggleSpellInQueue(
 
 export function isSpellQueued(queue: QueuedSpellEntry[], key: string): boolean {
   return queue.some((entry) => entry.key === key);
+}
+
+/** Queue entries for display: most recently added first. Does not change the batch import order. */
+export function spellQueueNewestFirst(queue: QueuedSpellEntry[]): QueuedSpellEntry[] {
+  return [...queue].reverse();
 }
 
 export function queuedSpellKeys(queue: QueuedSpellEntry[]): Set<string> {

@@ -77,6 +77,68 @@ describe('QuickLinkService', () => {
     });
   });
 
+  describe('create — FR-sidebar-quick-links visibility', () => {
+    it('should persist both visibility flags for a campaign link', async () => {
+      quickLinkModel.create.mockResolvedValue({});
+
+      await service.create(
+        {
+          icon: 'Link',
+          url: 'https://example.com',
+          label: 'Commun',
+          campaignId: CAMPAIGN_ID,
+          visibleInAllCampaigns: true,
+          visibleInPlayerSpace: true,
+        },
+        USER_ID,
+      );
+
+      expect(quickLinkModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          visibleInAllCampaigns: true,
+          visibleInPlayerSpace: true,
+        }),
+      );
+    });
+
+    it('should default visibility flags to false', async () => {
+      quickLinkModel.create.mockResolvedValue({});
+
+      await service.create(
+        { icon: 'Link', url: 'https://example.com', label: 'Propre' },
+        USER_ID,
+      );
+
+      expect(quickLinkModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          visibleInAllCampaigns: false,
+          visibleInPlayerSpace: false,
+        }),
+      );
+    });
+
+    it('should ignore visibleInPlayerSpace for a player space link', async () => {
+      quickLinkModel.create.mockResolvedValue({});
+
+      await service.create(
+        {
+          icon: 'Link',
+          url: 'https://example.com',
+          label: 'Joueur',
+          visibleInPlayerSpace: true,
+        },
+        USER_ID,
+      );
+
+      expect(quickLinkModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          campaignId: null,
+          visibleInPlayerSpace: false,
+        }),
+      );
+    });
+  });
+
   // ── findAllForUser ───────────────────────────────────────────────────────────
 
   describe('findAllForUser', () => {
@@ -104,7 +166,10 @@ describe('QuickLinkService', () => {
 
       expect(quickLinkModel.find).toHaveBeenCalledWith(
         expect.objectContaining({
-          campaignId: new Types.ObjectId(CAMPAIGN_ID),
+          $or: [
+            { campaignId: new Types.ObjectId(CAMPAIGN_ID) },
+            { visibleInAllCampaigns: true },
+          ],
         }),
       );
     });
@@ -117,7 +182,12 @@ describe('QuickLinkService', () => {
       await service.findAllForUser(USER_ID, 'null');
 
       expect(quickLinkModel.find).toHaveBeenCalledWith(
-        expect.objectContaining({ campaignId: null }),
+        expect.objectContaining({
+          $or: [
+            { campaignId: null },
+            { campaignId: { $ne: null }, visibleInPlayerSpace: true },
+          ],
+        }),
       );
     });
   });
@@ -152,6 +222,48 @@ describe('QuickLinkService', () => {
       expect(link.icon).toBe('Link');
       expect(link.save).toHaveBeenCalled();
       expect(result.data).toEqual(link);
+    });
+
+    it('should update visibility flags of a campaign link', async () => {
+      const link = {
+        _id: linkId,
+        createdBy: USER_ID,
+        deletedAt: null,
+        campaignId: new Types.ObjectId(CAMPAIGN_ID),
+        visibleInAllCampaigns: true,
+        visibleInPlayerSpace: false,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      quickLinkModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(link),
+      });
+
+      await service.update(
+        linkId,
+        { visibleInAllCampaigns: false, visibleInPlayerSpace: true },
+        USER_ID,
+      );
+
+      expect(link.visibleInAllCampaigns).toBe(false);
+      expect(link.visibleInPlayerSpace).toBe(true);
+    });
+
+    it('should keep visibleInPlayerSpace false on a player space link', async () => {
+      const link = {
+        _id: linkId,
+        createdBy: USER_ID,
+        deletedAt: null,
+        campaignId: null,
+        visibleInPlayerSpace: false,
+        save: jest.fn().mockResolvedValue(undefined),
+      };
+      quickLinkModel.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(link),
+      });
+
+      await service.update(linkId, { visibleInPlayerSpace: true }, USER_ID);
+
+      expect(link.visibleInPlayerSpace).toBe(false);
     });
 
     it('should throw NotFoundException when link does not exist', async () => {

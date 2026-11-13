@@ -5,13 +5,24 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, UseFormReturn, useFormState } from "react-hook-form";
 import { ProfileFormData } from "@/hooks/useProfileForm";
-import { Field, FieldError, FieldGroup } from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { isEnterWithModifiers, isEnterWithoutModifiers, isTypingInInputElement } from "@/utils/keyboard.utils";
-import { MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
+import { MediaAvatarRequirementsHint, MediaAvatarUpload } from "@/components/media/MediaAvatarUpload";
 import MediaService from "@/services/MediaService";
 import { invalidateMediaAvatarCache } from "@/lib/mediaAvatarCache";
 import { useToast } from "@/hooks/useToast";
+import {
+  profileActionButtonClassName,
+  profileActionsClassName,
+  profileAvatarColumnClassName,
+  profileCardClassName,
+  profileFieldLabelClassName,
+  profileHeaderClassName,
+  profileIdentityClassName,
+  profileNameFieldsClassName,
+  profileUsernameClassName,
+} from "@/components/profile/profileCardLayout";
 
 interface Props {
   user: User | null;
@@ -169,7 +180,7 @@ export default function UpdateProfile({
 
   return (
     <Card
-      className="flex flex-row overflow-hidden"
+      className={profileCardClassName}
       role="region"
       aria-labelledby="profile-info-heading">
       <h2
@@ -177,29 +188,44 @@ export default function UpdateProfile({
         className="sr-only">
         {t("pageTitle")}
       </h2>
-      <div
-        className="shrink-0"
-        role="img"
-        aria-label={user?.username ? `${user.username} profile picture` : "Default profile picture"}>
-        {user?.keycloakId ? (
-          <MediaAvatarUpload
-            scope="user"
-            entityId={user.keycloakId}
-            storedValue={editingAvatarStoredValue}
-            size="profile"
-            alt={user.username ? `${user.username} profile picture` : "Profile picture"}
-            deferUpload
-            previewUrl={avatarPreviewUrl}
-            onPendingFile={handlePendingAvatarFile}
-            onPendingRemove={handlePendingAvatarRemove}
-            disabled={isBusy}
-          />
-        ) : null}
+      <div className={profileHeaderClassName}>
+        {/* No role="img" here: the upload control holds buttons; the avatar image carries its own alt */}
+        <div className={profileAvatarColumnClassName}>
+          {user?.keycloakId ? (
+            <MediaAvatarUpload
+              scope="user"
+              entityId={user.keycloakId}
+              storedValue={editingAvatarStoredValue}
+              size="profile"
+              alt={user.username ? `${user.username} profile picture` : "Profile picture"}
+              deferUpload
+              previewUrl={avatarPreviewUrl}
+              onPendingFile={handlePendingAvatarFile}
+              onPendingRemove={handlePendingAvatarRemove}
+              disabled={isBusy}
+              renderRequirementsHint={false}
+            />
+          ) : null}
+        </div>
+        <div className={profileIdentityClassName}>
+          <p
+            className={profileUsernameClassName}
+            aria-label="Username">
+            {user?.username}
+          </p>
+          {user?.keycloakId ? (
+            <MediaAvatarRequirementsHint
+              scope="user"
+              entityId={user.keycloakId}
+              size="profile"
+              className="text-xs"
+            />
+          ) : null}
+        </div>
       </div>
-      <div className="flex-1 min-w-0 h-full">
+      <div className="min-w-0">
         <form
           id="form-update-profile"
-          className="h-full"
           onSubmit={form.handleSubmit(handleSave)}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
@@ -213,14 +239,9 @@ export default function UpdateProfile({
             }
           }}
           aria-label={tEdit("formLabel")}>
-          <FieldGroup className="h-full flex flex-col justify-between">
-            <div className="flex flex-col gap-2">
-              <p
-                className="text-2xl sm:text-3xl lg:text-4xl font-bold wrap-break-word"
-                aria-label="Username">
-                {user?.username}
-              </p>
-              <div className="flex flex-row gap-2">
+          <FieldGroup className="gap-4">
+            <div className="flex flex-col gap-4">
+              <div className={profileNameFieldsClassName}>
                 <Controller
                   name="firstName"
                   control={form.control}
@@ -228,18 +249,17 @@ export default function UpdateProfile({
                     <Field
                       data-invalid={fieldState.invalid}
                       orientation={"vertical"}>
-                      <label
+                      <FieldLabel
                         htmlFor="firstName"
-                        className="sr-only">
+                        className={profileFieldLabelClassName}>
                         {tEdit("firstName")}
-                      </label>
+                      </FieldLabel>
                       <Input
                         {...field}
                         id="firstName"
                         aria-invalid={fieldState.invalid}
                         aria-describedby={fieldState.error ? "firstName-error" : undefined}
                         aria-required="true"
-                        placeholder={tEdit("firstName")}
                         autoComplete="given-name"
                         type="text"
                         disabled={isBusy}
@@ -260,18 +280,17 @@ export default function UpdateProfile({
                     <Field
                       data-invalid={fieldState.invalid}
                       orientation={"vertical"}>
-                      <label
+                      <FieldLabel
                         htmlFor="lastName"
-                        className="sr-only">
+                        className={profileFieldLabelClassName}>
                         {tEdit("lastName")}
-                      </label>
+                      </FieldLabel>
                       <Input
                         {...field}
                         id="lastName"
                         aria-invalid={fieldState.invalid}
                         aria-describedby={fieldState.error ? "lastName-error" : undefined}
                         aria-required="true"
-                        placeholder={tEdit("lastName")}
                         autoComplete="family-name"
                         type="text"
                         disabled={isBusy}
@@ -287,7 +306,7 @@ export default function UpdateProfile({
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex flex-col gap-4">
               <Controller
                 name="email"
                 control={form.control}
@@ -295,18 +314,17 @@ export default function UpdateProfile({
                   <Field
                     data-invalid={fieldState.invalid}
                     orientation={"vertical"}>
-                    <label
+                    <FieldLabel
                       htmlFor="email"
-                      className="sr-only">
+                      className={profileFieldLabelClassName}>
                       {tEdit("email")}
-                    </label>
+                    </FieldLabel>
                     <Input
                       {...field}
                       id="email"
                       aria-invalid={fieldState.invalid}
                       aria-describedby={fieldState.error ? "email-error" : undefined}
                       aria-required="true"
-                      placeholder={tEdit("email")}
                       autoComplete="email"
                       type="email"
                       disabled={isBusy}
@@ -320,10 +338,11 @@ export default function UpdateProfile({
                   </Field>
                 )}
               />
-              <div className="flex justify-end gap-2">
+              <div className={profileActionsClassName}>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
+                  className={profileActionButtonClassName}
                   onClick={handleCancel}
                   disabled={isBusy}
                   aria-label={tEdit("cancelUpdate")}>
@@ -331,6 +350,7 @@ export default function UpdateProfile({
                 </Button>
                 <Button
                   type="submit"
+                  className={profileActionButtonClassName}
                   disabled={isBusy || !hasPendingChanges}
                   aria-label={tEdit("updateProfile")}
                   aria-busy={isBusy}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarLoadMoreButton } from "@/components/layout/Sidebar/SidebarLoadMoreButton";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setContextMode, selectIsGmMode } from "@/store/slices/environmentSlice";
 import {
@@ -16,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BookOpen, Check, ChevronDown, Loader2, PlusCircleIcon, User } from "lucide-react";
+import { BookOpen, ChevronDown, Loader2, PlusCircleIcon, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateCampaignDialog } from "@/components/dialogs/CreateCampaignDialog";
 import { EditCampaignDialog } from "@/components/dialogs/EditCampaignDialog";
@@ -25,12 +26,65 @@ import { useRouter, usePathname } from "next/navigation";
 import { useStore } from "react-redux";
 import { RootState } from "@/store";
 import NavigationService from "@/services/NavigationService";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { menuItemClassName, menuItemSelectedClassName } from "@/components/ui/menu-styles";
 import * as React from "react";
 import { Campaign } from "@/types/campaign";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
 import type { SidebarActionItem } from "@/components/layout/Sidebar/shared/sidebarActions.types";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { truncatedTextTooltipClassName, useIsTextTruncated } from "@/components/ui/truncated-text";
+
+interface CampaignMenuButtonProps {
+  label: string;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+/**
+ * Campaign row of the GM space menu: name always on one line, full name in a tooltip (hover and keyboard focus)
+ * only when truncated. The selected background is drawn by the row wrapper so it also covers the touch overflow (⋮).
+ */
+function CampaignMenuButton({ label, isSelected, onSelect }: CampaignMenuButtonProps) {
+  const { ref, truncated } = useIsTextTruncated<HTMLSpanElement>(label);
+  const [tooltipOpen, setTooltipOpen] = React.useState(false);
+
+  return (
+    <Tooltip
+      open={truncated && tooltipOpen}
+      onOpenChange={setTooltipOpen}>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={onSelect}
+          aria-current={isSelected ? "true" : undefined}
+          className={cn(
+            menuItemClassName,
+            // hover and selected backgrounds belong to the row wrapper (also covers the touch ⋮)
+            "focus-visible:ring-1 focus-visible:ring-white/50 hover:bg-transparent",
+            isSelected && "font-medium focus:bg-transparent",
+          )}>
+          <BookOpen
+            className="h-4 w-4 shrink-0 text-white/60"
+            aria-hidden="true"
+          />
+          <span
+            ref={ref}
+            className="min-w-0 flex-1 truncate text-left">
+            {label}
+          </span>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="right"
+        className={truncatedTextTooltipClassName}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export default function SidebarEnvironment() {
   const t = useTranslations("sidebar");
@@ -41,15 +95,8 @@ export default function SidebarEnvironment() {
   const store = useStore<RootState>();
   const isGmMode = useAppSelector(selectIsGmMode);
   const selectedCampaignId = useAppSelector(selectSelectedCampaignId);
-  const {
-    campaigns,
-    loading,
-    hasMore,
-    loadingMore,
-    loadMoreCampaigns,
-    deleteCampaign,
-    refreshCampaigns,
-  } = useCampaigns({ autoFetch: false, pageSize: 5 });
+  const { campaigns, loading, hasMore, loadingMore, loadMoreCampaigns, deleteCampaign, refreshCampaigns } =
+    useCampaigns({ autoFetch: false, pageSize: 5 });
 
   const [campaignToEdit, setCampaignToEdit] = React.useState<Campaign | null>(null);
   const [campaignPendingDelete, setCampaignPendingDelete] = React.useState<Campaign | null>(null);
@@ -164,17 +211,8 @@ export default function SidebarEnvironment() {
         onClick={switchToPlayer}
         aria-pressed={joueurActive}
         aria-label={t("playerSpace")}
-        className={cn(
-          "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[13px] border py-2 px-3 text-sm transition-all duration-150",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
-          joueurActive
-            ? "border-white bg-white font-semibold text-black"
-            : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
-        )}>
-        <User
-          className="h-4 w-4 shrink-0"
-          aria-hidden="true"
-        />
+        className={cn(buttonVariants({ variant: joueurActive ? "primary" : "secondary" }), "min-w-0 flex-1")}>
+        <User aria-hidden="true" />
         <span className="truncate">{t("playerSpaceShort")}</span>
       </button>
 
@@ -184,20 +222,11 @@ export default function SidebarEnvironment() {
             type="button"
             aria-pressed={isGmMode}
             aria-label={t("gmSpace")}
-            className={cn(
-              "flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[13px] border py-2 px-3 text-sm transition-all duration-150",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50",
-              isGmMode
-                ? "border-white bg-white font-semibold text-black"
-                : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
-            )}>
-            <BookOpen
-              className="h-4 w-4 shrink-0"
-              aria-hidden="true"
-            />
+            className={cn(buttonVariants({ variant: isGmMode ? "primary" : "secondary" }), "min-w-0 flex-1")}>
+            <BookOpen aria-hidden="true" />
             <span className="truncate">{t("gmSpaceAbbr")}</span>
             <ChevronDown
-              className="ml-auto h-3 w-3 shrink-0 transition-transform duration-150 [[data-state=open]_&]:rotate-180"
+              className="ml-auto size-3 transition-transform duration-150 [[data-state=open]_&]:rotate-180"
               aria-hidden="true"
             />
           </button>
@@ -206,7 +235,7 @@ export default function SidebarEnvironment() {
         <DropdownMenuContent
           align="start"
           sideOffset={8}
-          className="w-[--radix-dropdown-menu-trigger-width] max-h-[min(24rem,70vh)] overflow-y-auto rounded-[14px] border-white/12 bg-[#1f1f24] p-1.5">
+          className="w-(--radix-dropdown-menu-trigger-width) min-w-56 max-h-[min(24rem,70vh)] overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-3">
               <Loader2
@@ -217,7 +246,7 @@ export default function SidebarEnvironment() {
           ) : campaigns.length === 0 ? (
             <div className="px-3 py-2 text-xs text-white/40">{t("noCampaigns")}</div>
           ) : (
-            <>
+            <div className="flex flex-col gap-1">
               {campaigns.map((campaign) => {
                 const isSelected = selectedCampaignId === campaign._id && isGmMode;
                 const campaignActions = buildCampaignActions(campaign);
@@ -227,60 +256,37 @@ export default function SidebarEnvironment() {
                     key={campaign._id}
                     actions={campaignActions}
                     contextMenuLabel={t("campaignActions")}
-                    className="rounded-[10px]"
-                    menuContentClassName="z-[100] w-56 rounded-[10px] border-white/12 bg-[#1f1f24] px-1.5 py-1.5 text-white shadow focus-visible:outline-none">
-                    <button
-                      type="button"
-                      onClick={() => void handleCampaignSelect(campaign._id)}
-                      className={cn(
-                        "flex w-full cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-sm text-white",
-                        "hover:bg-white/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50",
-                        isSelected && "font-medium",
-                      )}>
-                      <BookOpen
-                        className="h-4 w-4 shrink-0 text-white/40"
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0 flex-1 truncate text-left">{campaign.label}</span>
-                      {isSelected && (
-                        <Check
-                          className="h-4 w-4 shrink-0 text-primary"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </button>
+                    className={cn(
+                      "rounded-[10px] transition-colors",
+                      isSelected ? menuItemSelectedClassName : "hover:bg-white/10",
+                    )}>
+                    <CampaignMenuButton
+                      label={campaign.label}
+                      isSelected={isSelected}
+                      onSelect={() => void handleCampaignSelect(campaign._id)}
+                    />
                   </SidebarItemWithActions>
                 );
               })}
               {hasMore && (
-                <button
-                  type="button"
-                  onClick={() => void loadMoreCampaigns()}
-                  disabled={loadingMore}
-                  className="flex w-full cursor-pointer items-center justify-center rounded-[10px] px-3 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50">
-                  {loadingMore ? (
-                    <Loader2
-                      className="h-3.5 w-3.5 animate-spin"
-                      aria-hidden
-                    />
-                  ) : (
-                    t("loadMoreCampaigns")
-                  )}
-                </button>
+                <SidebarLoadMoreButton
+                  loading={loadingMore}
+                  onLoadMore={() => loadMoreCampaigns()}
+                  label={t("loadMoreCampaigns")}
+                  ariaLabel={t("loadMoreCampaignsAria")}
+                  className="flex w-full cursor-pointer items-center justify-center rounded-[10px] px-3 py-2 text-xs text-white/50 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
+                />
               )}
-            </>
+            </div>
           )}
 
-          <DropdownMenuSeparator className="mx-1 bg-white/10" />
+          <DropdownMenuSeparator />
 
           <CreateCampaignDialog>
             <DropdownMenuItem
               asChild
-              onSelect={(event) => event.preventDefault()}
-              className="cursor-pointer rounded-[10px] px-3 py-2 text-sm text-white hover:bg-white/10 focus:bg-white/10">
-              <button
-                type="button"
-                className="flex w-full items-center gap-2">
+              onSelect={(event) => event.preventDefault()}>
+              <button type="button">
                 <PlusCircleIcon
                   className="h-4 w-4 shrink-0"
                   aria-hidden="true"
@@ -298,7 +304,9 @@ export default function SidebarEnvironment() {
         onOpenChange={(open) => {
           if (!open) setCampaignToEdit(null);
         }}
-        onUpdated={refreshCampaigns}
+        onUpdated={async () => {
+          await refreshCampaigns();
+        }}
       />
 
       <ConfirmDialog

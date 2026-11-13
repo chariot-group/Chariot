@@ -1,4 +1,5 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { createInFlightGuard } from '@/lib/inFlightGuard';
 import { useTranslations } from 'next-intl';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
@@ -29,7 +30,7 @@ import {
 import { selectSelectedCampaignId } from '@/store/slices/campaignContextSlice';
 import GroupService from '@/services/GroupService';
 import CampaignService from '@/services/CampaignService';
-import NavigationService from '@/services/NavigationService';
+import { localeFromPathname, resolveCampaignDeleteDestination } from '@/lib/campaignDeleteNavigation';
 import { Group } from '@/types/campaign';
 import { useToast } from '@/hooks/useToast';
 import { usePathname, useRouter } from 'next/navigation';
@@ -52,6 +53,8 @@ export function useGroups() {
     const archivedGroups = useAppSelector(selectArchivedGroups);
     const loading = useAppSelector(selectGroupsLoading);
     const loadingMoreActive = useAppSelector(selectGroupsLoadingMoreActive);
+    const loadMoreActiveGuardRef = useRef(createInFlightGuard());
+    const loadMoreArchivedGuardRef = useRef(createInFlightGuard());
     const loadingMoreArchived = useAppSelector(selectGroupsLoadingMoreArchived);
     const error = useAppSelector(selectGroupsError);
     const openGroupId = useAppSelector(selectOpenGroupId);
@@ -116,25 +119,27 @@ export function useGroups() {
             return;
         }
 
-        try {
-            dispatch(loadMoreActiveGroupsStart());
-            const result = await GroupService.getGroupsByCampaign(selectedCampaignId, {
-                page: activePage + 1,
-                offset: GROUPS_PAGE_SIZE,
-                type: 'active',
-            });
-            dispatch(
-                loadMoreActiveGroupsSuccess({
-                    groups: result.data,
-                    total: result.totalItems,
-                    pageSize: GROUPS_PAGE_SIZE,
-                }),
-            );
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to load more groups';
-            dispatch(fetchGroupsFailure(errorMessage));
-            throw err;
-        }
+        await loadMoreActiveGuardRef.current.run(async () => {
+            try {
+                dispatch(loadMoreActiveGroupsStart());
+                const result = await GroupService.getGroupsByCampaign(selectedCampaignId, {
+                    page: activePage + 1,
+                    offset: GROUPS_PAGE_SIZE,
+                    type: 'active',
+                });
+                dispatch(
+                    loadMoreActiveGroupsSuccess({
+                        groups: result.data,
+                        total: result.totalItems,
+                        pageSize: GROUPS_PAGE_SIZE,
+                    }),
+                );
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Failed to load more groups';
+                dispatch(fetchGroupsFailure(errorMessage));
+                throw err;
+            }
+        });
     }, [dispatch, selectedCampaignId, hasMoreActive, loadingMoreActive, activePage]);
 
     const loadMoreArchivedGroups = useCallback(async () => {
@@ -142,25 +147,27 @@ export function useGroups() {
             return;
         }
 
-        try {
-            dispatch(loadMoreArchivedGroupsStart());
-            const result = await GroupService.getGroupsByCampaign(selectedCampaignId, {
-                page: archivedPage + 1,
-                offset: GROUPS_PAGE_SIZE,
-                type: 'archived',
-            });
-            dispatch(
-                loadMoreArchivedGroupsSuccess({
-                    groups: result.data,
-                    total: result.totalItems,
-                    pageSize: GROUPS_PAGE_SIZE,
-                }),
-            );
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to load more archives';
-            dispatch(fetchGroupsFailure(errorMessage));
-            throw err;
-        }
+        await loadMoreArchivedGuardRef.current.run(async () => {
+            try {
+                dispatch(loadMoreArchivedGroupsStart());
+                const result = await GroupService.getGroupsByCampaign(selectedCampaignId, {
+                    page: archivedPage + 1,
+                    offset: GROUPS_PAGE_SIZE,
+                    type: 'archived',
+                });
+                dispatch(
+                    loadMoreArchivedGroupsSuccess({
+                        groups: result.data,
+                        total: result.totalItems,
+                        pageSize: GROUPS_PAGE_SIZE,
+                    }),
+                );
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Failed to load more archives';
+                dispatch(fetchGroupsFailure(errorMessage));
+                throw err;
+            }
+        });
     }, [dispatch, selectedCampaignId, hasMoreArchived, loadingMoreArchived, archivedPage]);
 
     /**
@@ -298,29 +305,22 @@ export function useGroups() {
 
     const redirectAfterDeletedGroups = useCallback(
         async (deletedGroupIds: string[]) => {
-            const localeFromPath = pathname?.split('/')[1] || 'fr';
             const viewingDeletedGroup = deletedGroupIds.some((groupId) => pathname?.includes(`/groups/${groupId}`));
 
             if (!viewingDeletedGroup) {
                 return;
             }
 
-            try {
-                const destination = await NavigationService.determinePostLoginDestination(
-                    localeFromPath,
-                    dispatch,
-                    store.getState.bind(store),
-                );
+            const locale = localeFromPathname(pathname);
+            // Stay in the campaign (FR-welcome-onboarding-fallbacks §3): never the Player space.
+            const path = selectedCampaignId
+                ? await resolveCampaignDeleteDestination(selectedCampaignId, locale)
+                : `/${locale}/welcome`;
 
-                dispatch(setOpenGroup(null));
-                router.replace(destination.path);
-            } catch (navigationError) {
-                console.error('Failed to determine destination after group deletion:', navigationError);
-                dispatch(setOpenGroup(null));
-                router.replace(`/${localeFromPath}/welcome`);
-            }
+            dispatch(setOpenGroup(null));
+            router.replace(path);
         },
-        [dispatch, pathname, router, store],
+        [dispatch, pathname, router, selectedCampaignId],
     );
 
     /**

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  selectIsInSession,
+  selectIsSessionLaunched,
   selectSessionCode,
   selectSessionParticipants,
   setLastConsultedSheetPath,
@@ -26,13 +26,13 @@ function isCharacterDetailPath(pathname: string): boolean {
 export function useLastConsultedSheetTracking() {
   const pathname = usePathname() ?? "";
   const dispatch = useAppDispatch();
-  const isInSession = useAppSelector(selectIsInSession);
+  const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
   const sessionCode = useAppSelector(selectSessionCode);
   const participants = useAppSelector(selectSessionParticipants);
   const user = useAppSelector(selectUser);
 
   useEffect(() => {
-    if (!isInSession || !isCharacterDetailPath(pathname)) return;
+    if (!isSessionLaunched || !isCharacterDetailPath(pathname)) return;
 
     const userId = user?.keycloakId;
     if (!userId) return;
@@ -41,5 +41,5 @@ export function useLastConsultedSheetTracking() {
     if (!isGm) return;
 
     dispatch(setLastConsultedSheetPath(withSessionCodeQuery(pathname, sessionCode)));
-  }, [dispatch, isInSession, participants, pathname, sessionCode, user?.keycloakId]);
+  }, [dispatch, isSessionLaunched, participants, pathname, sessionCode, user?.keycloakId]);
 }

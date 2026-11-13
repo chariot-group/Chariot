@@ -79,9 +79,20 @@ class UserService {
         }
     }
 
-    async getUserById(id: string): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username' | 'avatar'>> {
+    /**
+     * Récupère le profil public (nom, avatar) d'un autre utilisateur.
+     * `sessionCode` est requis sauf lorsque `id` est l'utilisateur courant : le serveur
+     * vérifie que l'appelant et la cible sont tous deux participants de cette session.
+     * @see FR-user-public-profile-read-access
+     */
+    async getUserById(
+        id: string,
+        sessionCode?: string | null,
+    ): Promise<Pick<User, 'keycloakId' | 'firstName' | 'lastName' | 'username' | 'avatar'>> {
         try {
-            const response = await apiClient().get<IResponse<User>>(`${this.BASE_PATH}/${id}`);
+            const response = await apiClient().get<IResponse<User>>(`${this.BASE_PATH}/${id}`, {
+                params: sessionCode ? { sessionCode } : undefined,
+            });
             return response.data.data;
         } catch (error) {
             console.error(`Error fetching user ${id}:`, error);
