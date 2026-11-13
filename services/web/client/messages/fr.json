@@ -283,6 +283,7 @@
       "initiativeFor": "Initiative de {name}",
       "initiativeModifierFor": "Bonus d'initiative {bonus}, ajouté automatiquement au jet",
       "initiativeRollPlaceholder": "d20",
+      "initiativeShort": "Init.",
       "initiativeTotalPreview": "Total d'initiative :",
       "selectRowFor": "Sélectionner {name}",
       "selectRowForVisibility": "Sélectionner {name} pour l'affichage groupé",

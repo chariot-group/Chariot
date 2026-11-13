@@ -283,6 +283,7 @@
       "initiativeFor": "Initiative for {name}",
       "initiativeModifierFor": "Initiative bonus {bonus}, added automatically to the roll",
       "initiativeRollPlaceholder": "d20",
+      "initiativeShort": "Init.",
       "initiativeTotalPreview": "Initiative total:",
       "selectRowFor": "Select {name}",
       "selectRowForVisibility": "Select {name} for grouped display",

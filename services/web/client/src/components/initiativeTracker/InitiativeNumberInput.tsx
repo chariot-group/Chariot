@@ -90,15 +90,6 @@ export function InitiativeNumberInput({
           inputRef.current?.focus();
         }
       }}>
-      {showModifier ? (
-        <div className="flex justify-center">
-          <InitiativeModifierHint
-            modifierText={modifierText}
-            ariaLabel={hintAriaLabel}
-            displayText={totalPreview}
-          />
-        </div>
-      ) : null}
       <Input
         ref={inputRef}
         type="number"
@@ -114,6 +105,16 @@ export function InitiativeNumberInput({
         onKeyDown={initiativeInput.onKeyDown}
         className={cn(className, INITIATIVE_PLACEHOLDER_CLASS)}
       />
+      {/* Below the field so inputs stay aligned with the other values of the row. */}
+      {showModifier ? (
+        <div className="flex justify-center">
+          <InitiativeModifierHint
+            modifierText={modifierText}
+            ariaLabel={hintAriaLabel}
+            displayText={totalPreview}
+          />
+        </div>
+      ) : null}
       {showModifier ? (
         <span
           id={previewId}

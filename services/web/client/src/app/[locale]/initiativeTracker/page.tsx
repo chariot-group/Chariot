@@ -514,6 +514,11 @@ export default function InitiativeTrackerPage() {
       initiativeFor: t("initiativeFor", { name }),
       initiativeModifierFor: (bonus: string) => t("initiativeModifierFor", { bonus }),
       initiativeRollPlaceholder: t("initiativeRollPlaceholder"),
+      shortStatLabels: {
+        initiative: t("initiativeShort"),
+        hitPoints: t("hitPoints"),
+        armorClass: t("armorClass"),
+      },
       initiativeTotalPreview: t("initiativeTotalPreview"),
       viewSheetFor: t("viewSheetFor", { name }),
       viewSheet: t("viewSheet"),

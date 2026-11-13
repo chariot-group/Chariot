@@ -28,7 +28,7 @@ export function InitiativeModifierHint({
           type="button"
           aria-label={ariaLabel}
           className={cn(
-            "mb-1 inline-flex max-w-full items-center justify-center gap-1 whitespace-nowrap rounded-sm text-xs font-medium leading-none tabular-nums text-white/70 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
+            "mt-1 inline-flex max-w-full items-center justify-center gap-1 whitespace-nowrap rounded-sm text-xs font-medium leading-none tabular-nums text-white/70 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
             className,
           )}>
           {displayText ? null : (

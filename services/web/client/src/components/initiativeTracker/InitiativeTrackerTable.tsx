@@ -83,6 +83,7 @@ export type InitiativeTrackerTableProps = {
     initiativeFor: string;
     initiativeModifierFor: (bonus: string) => string;
     initiativeRollPlaceholder?: string;
+    shortStatLabels?: { initiative: string; hitPoints: string; armorClass: string };
     initiativeTotalPreview?: string;
     viewSheetFor: string;
     viewSheet: string;
@@ -565,7 +566,7 @@ export function InitiativeTrackerTable({
       ) : null}
 
       <div
-        className="mt-3 flex w-full min-w-0 flex-col gap-2.5"
+        className="mt-3 flex w-full min-w-0 flex-col gap-3 md:gap-2.5"
         onFocusCapture={(event) => {
           if (isInitiativeInputTarget(event.target)) setFrozenOrder(rows.map((row) => row.id));
         }}

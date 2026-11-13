@@ -89,7 +89,7 @@ export function InitiativeTrackerTurnControls({
                 disabled={!battleStarted || !canGoPrevious}
                 aria-label={labels.previous}
                 onClick={onPrevious}
-                className="px-3 sm:min-w-0">
+                className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-3">
                 <ChevronLeft className="size-4" />
                 <span className="sr-only sm:not-sr-only">{labels.previous}</span>
               </Button>
@@ -109,7 +109,7 @@ export function InitiativeTrackerTurnControls({
               type="button"
               variant="destructive"
               aria-label={labels.endCombat}
-              className="px-3 sm:px-4">
+              className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-4">
               <OctagonX
                 className="size-4 sm:hidden"
                 aria-hidden="true"
@@ -129,7 +129,7 @@ export function InitiativeTrackerTurnControls({
                 type="button"
                 variant="secondary"
                 aria-label={labels.cancelCombat}
-                className="border-red/50 bg-transparent px-3 text-red hover:bg-red/15 sm:px-4">
+                className="min-w-[4.5rem] border-red/50 bg-transparent px-5 text-red hover:bg-red/15 sm:min-w-0 sm:px-4">
                 <XCircle
                   className="size-4 sm:hidden"
                   aria-hidden="true"
@@ -151,7 +151,7 @@ export function InitiativeTrackerTurnControls({
               variant="accent"
               tone="green"
               aria-label={labels.startCombat}
-              className="px-3 sm:px-4">
+              className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-4">
               <Play
                 className="size-4 sm:hidden"
                 aria-hidden="true"
@@ -166,7 +166,7 @@ export function InitiativeTrackerTurnControls({
               variant="accent"
               tone="green"
               aria-label={labels.startCombat}
-              className="px-3 sm:px-4">
+              className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-4">
               <Play
                 className="size-4 sm:hidden"
                 aria-hidden="true"
@@ -183,7 +183,7 @@ export function InitiativeTrackerTurnControls({
           disabled={!battleStarted}
           aria-label={labels.next}
           onClick={onNext}
-          className="px-3">
+          className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-3">
           <span className="sr-only sm:not-sr-only">{labels.next}</span>
           <ChevronRight className="size-4" />
         </Button>

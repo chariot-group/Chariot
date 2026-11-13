@@ -127,6 +127,8 @@ describe("FR-combat-initiative-tracker — InitiativeNumberInput", () => {
     expect(html).toContain('placeholder="d20"');
     expect(html).toContain("lucide-dices");
     expect(html).toContain(">+2<");
+    // Bonus line sits below the field so inputs stay aligned with the other cells.
+    expect(html.indexOf("<input")).toBeLessThan(html.indexOf("lucide-dices"));
     expect(html).not.toContain(" = ");
     // Placeholder disappears as soon as the field is focused to type a value.
     expect(html).toContain("[&amp;_input:focus::placeholder]:text-transparent");

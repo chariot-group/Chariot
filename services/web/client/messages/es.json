@@ -283,6 +283,7 @@
       "initiativeFor": "Iniciativa de {name}",
       "initiativeModifierFor": "Bonificación de iniciativa {bonus}, añadida automáticamente a la tirada",
       "initiativeRollPlaceholder": "d20",
+      "initiativeShort": "Inic.",
       "initiativeTotalPreview": "Total de iniciativa:",
       "selectRowFor": "Seleccionar a {name}",
       "selectRowForVisibility": "Seleccionar {name} para visualización agrupada",

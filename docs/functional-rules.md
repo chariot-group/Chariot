@@ -1619,12 +1619,13 @@ When adding a rule:
 - **Flush before lock**: starting combat (and any action that locks initiative inputs) MUST flush pending uncommitted initiative field text into Redux first, then apply the roll+modifier formula, so values are not lost when the GM clicks **Start combat** without blurring each field.
 - Locked / started combat display shows the **total** (`initiative`), not the raw roll alone.
 - Placement: adjacent to the initiative input (including locked total display), visually secondary to the score, without breaking the compact tracker grid on mobile.
+- Mobile card layout: single-line header (selection, character, visibility, expand), three equal stat cells (short visible labels `Init.` / `PV` / `CA`, full names kept for assistive tech) with plain read-only values and no nested card backgrounds; interactive controls (initiative input, GM hit points button) keep their field frame so they read as clickable.
 - The modifier MUST be paired with the same initiative dice icon used on the character sheet, and MUST expose a tooltip (hover/focus) using the accessible modifier label (e.g. “bonus d'initiative +2”).
 - Accessibility: the modifier MUST be exposed to assistive tech (input `aria-label` and a keyboard-focusable tooltip trigger). The signed numeric modifier remains visible; the icon MUST NOT replace the number.
 - GM sees the modifier for every editable row. A player sees the modifier only on their own editable row (other combatants’ modifiers MUST NOT be shown to players).
 - **Automatic bonus made explicit**: the UI MUST make clear that the field expects the raw d20 roll and that the sheet bonus is added automatically:
   - the editable field shows a short, muted placeholder naming the roll (`d20`), hidden as soon as the field is focused;
-  - one secondary line above the field, readable size (not smaller than `text-xs`): while no roll is entered it shows the dice icon and the signed bonus (`+5`); once a roll is entered it is replaced by the live calculation (`roll + modifier = total`, e.g. `15 + 5 = 20`), announced to assistive tech; locked fields show the bonus only;
+  - one secondary line below the field (so editable and locked values stay aligned with the other cells of the row), readable size (not smaller than `text-xs`): while no roll is entered it shows the dice icon and the signed bonus (`+5`); once a roll is entered it is replaced by the live calculation (`roll + modifier = total`, e.g. `15 + 5 = 20`), announced to assistive tech; locked fields show the bonus only;
   - a roll still to enter is marked by a neutral 1px dashed frame whose width does not change on focus, turning solid and brighter while focused (no yellow warning border);
   - the modifier tooltip / accessible label states that the bonus is added automatically to the roll;
   - the GM pre-combat guidance states once that the d20 result is to be entered and the sheet initiative bonus is added automatically;

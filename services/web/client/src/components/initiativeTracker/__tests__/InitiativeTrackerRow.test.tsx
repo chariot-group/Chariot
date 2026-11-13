@@ -300,3 +300,82 @@ describe("InitiativeTrackerRow responsive name truncation", () => {
     expect(html).toContain("md:grid");
   });
 });
+
+describe("InitiativeTrackerRow mobile card layout (FR-combat-initiative-tracker)", () => {
+  const mobileHeader = (html: string) => {
+    const start = html.indexOf('data-slot="tracker-mobile-header"');
+    return html.slice(start, html.indexOf("<dl", start));
+  };
+
+  it("nominal: selection checkbox sits in the single-line header with short stat labels", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        selectionEnabled
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={{ ...labels, shortStatLabels: { initiative: "Init.", hitPoints: "PV", armorClass: "CA" } }}
+      />,
+    );
+
+    const header = mobileHeader(html);
+    expect(header).toContain('role="checkbox"');
+    expect(header).toContain(`aria-label="${labels.expandDetails}"`);
+    expect(html).toContain('<span aria-hidden="true">Init.</span>');
+    expect(html).toContain('<span aria-hidden="true">CA</span>');
+    // Full names stay available to assistive tech.
+    expect(html).toContain(`<span class="sr-only">${labels.visibilityDialog.fields.armorClass}</span>`);
+  });
+
+  it("edge: without short labels the cells fall back to the full field names", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain(`<span aria-hidden="true">${labels.visibilityDialog.fields.initiative}</span>`);
+    expect(mobileHeader(html)).not.toContain('role="checkbox"');
+  });
+
+  it("guard: player view keeps the expand toggle but no visibility editor in the header", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        battleStarted
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    const header = mobileHeader(html);
+    expect(header).toContain(`aria-label="${labels.expandDetails}"`);
+    expect(header).not.toContain(`aria-label="${labels.visibleFor}"`);
+  });
+
+  it("nominal: GM hit points stay framed as a clickable button on mobile", () => {
+    const gmHtml = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        onHitPointsClick={() => {}}
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+    const hpButtons = (gmHtml.match(/<button[^>]*>/g) ?? []).filter((tag) =>
+      tag.includes(`aria-label="${labels.hitPointsFor}"`),
+    );
+    // Desktop grid + mobile card.
+    expect(hpButtons).toHaveLength(2);
+    for (const tag of hpButtons) {
+      expect(tag).toContain(" bg-gray-middle-light ");
+      expect(tag).not.toContain("bg-transparent");
+    }
+  });
+});
+
