@@ -313,7 +313,7 @@ The sheet loading state (FR-character-sheet-skeleton) is `character/skeleton/Cha
 The Companions tab (Player space, FR-npc-player-link) reuses the viewport bento grid, with its slots in `tabContents/companions/shared/companionsBentoLayout.ts`:
 
 - `CompanionNpcCard` reuses the « Personnage » read card: name as `h2` (`text-primary-light`, bold, truncated on hover devices with a `title`) + muted italic nickname and group line next to the 4:5 avatar, then `IdentityFactCells` fed by `useNpcIdentityFacts` (Type · Alignement · Facteur de puissance + XP), the same source as the NPC « Personnage » card
-- With companions: liaison toolbar on its own full-width row, then one `CompanionNpcCard` per grid cell (full width on mobile, half from `sm`, a third from `xl`); the list is `ul.contents` + `role="list"` so each item is a grid child
+- With companions: liaison toolbar on its own full-width row, then one `CompanionNpcCard` per grid cell (full width below `xl`, two per row from `xl`); the list is `ul.contents` + `role="list"` so each item is a grid child
 - Empty: `CompanionsEmptyState`, two `GeneralSectionCard` on one band (8 + 4 at `xl`, 2 + 2 at `sm`): explanation with the link / create-linked buttons pushed to the bottom right (none for the session GM), and examples separated by a thin line (`divide-y`, decorative icon) filling the card
 - Headings use the tab violet as text: `text-primary-light` (the `purple` token is not readable as text on `bg-card`); « Créer un PNJ lié » is a `primary` (white) button like the sheet Edit button, « Lier un PNJ » stays `secondary`
 

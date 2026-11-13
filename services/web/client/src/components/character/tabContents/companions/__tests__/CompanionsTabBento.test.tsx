@@ -24,11 +24,14 @@ describe("Companions tab bento layout", () => {
     });
   }
 
-  it("nominal: toolbar on its own row, companions 1 / 2 / 3 per row", () => {
+  it("nominal: toolbar on its own row, companions full width below xl then two per row", () => {
     const three = [COMPANIONS_SLOTS.companion, COMPANIONS_SLOTS.companion, COMPANIONS_SLOTS.companion];
+    expect(spanAt(COMPANIONS_SLOTS.companion, "col", BREAKPOINTS.mobile)).toBe(2);
+    expect(spanAt(COMPANIONS_SLOTS.companion, "col", BREAKPOINTS.tablet)).toBe(4);
+    expect(spanAt(COMPANIONS_SLOTS.companion, "col", BREAKPOINTS.desktop)).toBe(6);
     expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.mobile)).toHaveLength(4);
-    expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.tablet)).toHaveLength(3);
-    expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.desktop)).toHaveLength(2);
+    expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.tablet)).toHaveLength(4);
+    expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.desktop)).toHaveLength(3);
     expect(spanAt(COMPANIONS_SLOTS.toolbar, "col", BREAKPOINTS.desktop)).toBe(12);
   });
 
