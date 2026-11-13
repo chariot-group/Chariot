@@ -424,6 +424,8 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                                   character: t("character"),
                                   initiativeFor: t("addCombatantsInitiativeFor"),
                                   initiativeModifierFor: t("initiativeModifierFor"),
+                                  initiativeRollPlaceholder: t("initiativeRollPlaceholder"),
+                                  initiativeTotalPreview: t("initiativeTotalPreview"),
                                   groupedSelectedCount: t("groupedInitiativeSelectedCount", {
                                     count: availableMembers.filter((m) => !excluded.has(m._id)).length,
                                   }),

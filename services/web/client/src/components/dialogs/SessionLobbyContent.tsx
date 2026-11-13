@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, copySuccessButtonClassName } from "@/components/ui/button";
+import { StableLabel } from "@/components/ui/stable-label";
 import { Card } from "@/components/ui/card";
 import { CharacterSelect } from "@/components/character/CharacterSelect";
 import { useToast } from "@/hooks/useToast";
@@ -39,6 +40,8 @@ import {
   type SessionLobbyParticipantAvatarDescriptor,
 } from "@/lib/sessionLobbyAvatarBatch";
 import { shouldShowSessionLobbyInvitePanel } from "@/lib/sessionInAppNavigation";
+import { resolveSessionLobbyCardLabels } from "@/lib/sessionLobbyCardLabels";
+import { sortSessionLobbyParticipants } from "@/lib/sortSessionLobbyParticipants";
 import { computeMaxAddableWheels, isWheelQuotaMetForLaunch, sumDepositedWheels } from "@/lib/sessionWheelDeposit";
 import { cn } from "@/lib/utils";
 import { TruncatedText } from "@/components/ui/truncated-text";
@@ -112,6 +115,8 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
       }),
     [participants, participantAvatars, characterDetails],
   );
+
+  const sortedParticipants = useMemo(() => sortSessionLobbyParticipants(participants), [participants]);
 
   const { getUrl: getAvatarUrl } = useMediaAvatarBatch(avatarBatchItems, code, !isLoading && participants.length > 0);
 
@@ -271,7 +276,7 @@ export function SessionLobbyContent({ code, idCampaign }: SessionLobbyContentPro
               className={getSessionLobbyParticipantListClassName(participants.length)}
               tabIndex={0}>
               {participants.length > 0 &&
-                participants.map((participant: SessionParticipant) => {
+                sortedParticipants.map((participant: SessionParticipant) => {
                   const avatarDescriptor = resolveSessionLobbyParticipantAvatar(
                     participant,
                     participantAvatars,
@@ -361,7 +366,8 @@ function SessionLobbyCopyActions({
   fullWidth = false,
 }: SessionLobbyCopyActionsProps) {
   const t = useTranslations("sessionPage");
-  const copyLabel = codeCopyState === "success" ? t("sessionCode.copySuccess") : t("sessionCode.copyButton");
+  const copyLabels = [t("sessionCode.copyButton"), t("sessionCode.copySuccess")];
+  const copyLabel = codeCopyState === "success" ? copyLabels[1] : copyLabels[0];
 
   if (fullWidth) {
     return (
@@ -379,7 +385,7 @@ function SessionLobbyCopyActions({
           {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />}
           {codeCopyState === "success" && <Check className="h-3.5 w-3.5 shrink-0" />}
           {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5 shrink-0" />}
-          <span className="truncate">{copyLabel}</span>
+          <StableLabel label={copyLabel} alternates={copyLabels} />
         </Button>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -419,7 +425,7 @@ function SessionLobbyCopyActions({
         {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         {codeCopyState === "success" && <Check className="h-3.5 w-3.5" />}
         {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5" />}
-        <span className="hidden sm:inline">{copyLabel}</span>
+        <StableLabel label={copyLabel} alternates={copyLabels} className="hidden sm:grid" />
       </Button>
       <Tooltip>
         <TooltipTrigger asChild>
@@ -629,7 +635,11 @@ function SessionLobbyParticipantCard({
 }: SessionLobbyParticipantCardProps) {
   const t = useTranslations("sessionPage");
   const isGameMaster = participant.status === "gameMaster";
-  const avatarAlt = isGameMaster ? participantName : characterLabel?.trim() || participantName;
+  const { primary: primaryLabel, secondary: secondaryLabel } = resolveSessionLobbyCardLabels({
+    isGameMaster,
+    participantName,
+    characterLabel,
+  });
 
   return (
     <Card
@@ -643,14 +653,14 @@ function SessionLobbyParticipantCard({
             storedValue={avatarDescriptor?.storedValue}
             size="thumb"
             sessionCode={sessionCode}
-            alt={avatarAlt}
+            alt={primaryLabel}
             enabled={Boolean(avatarDescriptor?.storedValue?.trim())}
             avatarImageUrl={avatarImageUrl}
             className="self-center"
           />
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
             <div className="flex min-w-0 items-center gap-2">
-              <p className="min-w-0 flex-1 truncate text-base font-semibold text-white">{participantName}</p>
+              <p className="min-w-0 flex-1 truncate text-base font-semibold text-white">{primaryLabel}</p>
               <div className="flex shrink-0 items-center gap-1.5">
                 {participantDeposits > 0 ? (
                   <span
@@ -677,9 +687,7 @@ function SessionLobbyParticipantCard({
                 ) : null}
               </div>
             </div>
-            {!(isMe && isPlayer && sessionIsActive) ? (
-              <p className="truncate text-sm text-muted-foreground">{characterLabel ?? " "}</p>
-            ) : null}
+            {secondaryLabel ? <p className="truncate text-sm text-muted-foreground">{secondaryLabel}</p> : null}
             {showCompanionNames && !isGameMaster && companionNames ? (
               <p className="truncate text-xs text-white/55">{companionNames}</p>
             ) : null}

@@ -71,6 +71,7 @@ export default function NpcGeneralTabContent({
           accentColor={accentColor}
           className={`${SLOTS.statistics} justify-between`}
           showPassivePerception
+          onCharacterUpdate={onCharacterUpdate}
         />
 
         <GeneralSectionCard

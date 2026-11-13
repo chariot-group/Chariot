@@ -51,6 +51,7 @@ import { captureSessionEndContext, navigateAfterSessionEnd } from "@/lib/session
 import { useStore } from "react-redux";
 import type { RootState } from "@/store";
 import { computeDepositRemainingAmount, computeMaxAddableWheels } from "@/lib/sessionWheelDeposit";
+import { resolveLastLeftSessionCode } from "@/lib/findActiveCampaignSession";
 
 type SessionErrorPayload = { code?: string; message?: string };
 
@@ -494,6 +495,8 @@ export function useSessionSocket({
         const socket = socketRef.current;
         const userId = currentUser?.keycloakId;
         const myParticipant = participantsRef.current.find((p) => p.userId === userId);
+        // FR-session-lobby-modal — statut capturé avant clearCurrentSession (qui le remet à null).
+        const wasLaunched = appStore.getState().session.status === "launched";
         const shouldStripGroups =
             Boolean(campaignId?.trim()) &&
             Boolean(myParticipant?.characterId) &&
@@ -509,7 +512,7 @@ export function useSessionSocket({
                 }
             }
             dispatch(clearCurrentSession());
-            dispatch(setLastLeftSessionCode(code));
+            dispatch(setLastLeftSessionCode(resolveLastLeftSessionCode(code, wasLaunched)));
             dispatch(closeSessionLobby());
             toast.info(t("toast.leaveSuccess"));
         };

@@ -64,7 +64,8 @@ export default function ListSelectRow({
           style={metaStyle}
         />
       </button>
-      {trailing && <div className="shrink-0 pr-1">{trailing}</div>}
+      {/* No chevron after the trailing control here: pad it like the row's left inset. */}
+      {trailing && <div className="shrink-0 pr-3">{trailing}</div>}
     </div>
   );
 }

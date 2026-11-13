@@ -1447,7 +1447,8 @@ When adding a rule:
 - Tracker list is always displayed sorted by:
   1. initiative descending
   2. group label ascending (tie-breaker)
-- While an initiative field is being edited (focused) before combat start, the displayed order MUST stay frozen so the row under the pointer does not move between consecutive arrow/spinner clicks. The value is still stored on every change; the list re-sorts when the field loses focus (blur or Enter), and always once initiatives lock at combat start.
+- While an initiative field is being edited (focused) before combat start, the displayed order MUST stay frozen so the row under the pointer does not move between consecutive arrow/spinner clicks. The value is still stored on every change; the list re-sorts when focus leaves the initiative fields (blur to anything else, or Enter), and always once initiatives lock at combat start. Moving focus from one initiative field to another keeps the order frozen.
+- **Keyboard entry**: in an editable initiative field, `Tab` moves focus to the next row's initiative field in displayed order, skipping the other controls of the row; `Shift+Tab` moves to the previous one. On the last (resp. first) field, `Tab` (resp. `Shift+Tab`) keeps the native focus order. Each field commits its value when left, as on blur.
 - Before combat start:
   - initiatives are editable
   - grouped initiative edit mode is available (bulk apply to selected rows)
@@ -1618,10 +1619,19 @@ When adding a rule:
 - **Input semantics**: while editable, the field shows/edits the **roll** (`initiative - initiativeModifier` when reopening a committed value). On commit, Redux `initiative` MUST become `roll + initiativeModifier`.
 - **Flush before lock**: starting combat (and any action that locks initiative inputs) MUST flush pending uncommitted initiative field text into Redux first, then apply the roll+modifier formula, so values are not lost when the GM clicks **Start combat** without blurring each field.
 - Locked / started combat display shows the **total** (`initiative`), not the raw roll alone.
-- Placement: adjacent to the initiative input (including locked total display), visually secondary to the score, without breaking the compact tracker grid on mobile.
+- **Hidden once combat has started**: after combat start, the initiative cell shows the total only — no dice icon, no bonus, no tooltip, and the accessible name of the cell does not mention the bonus (GM and player alike). Before start, a locked field (e.g. player not yet allowed to enter their initiative) still shows the bonus.
+- Placement: adjacent to the initiative input (including locked total display before combat start), visually secondary to the score, without breaking the compact tracker grid on mobile.
+- Mobile card layout: single-line header (selection, character, visibility, expand), three equal stat cells (short visible labels `Init.` / `PV` / `CA`, full names kept for assistive tech) with plain read-only values and no nested card backgrounds; interactive controls (initiative input, GM hit points button) keep their field frame so they read as clickable.
 - The modifier MUST be paired with the same initiative dice icon used on the character sheet, and MUST expose a tooltip (hover/focus) using the accessible modifier label (e.g. “bonus d'initiative +2”).
 - Accessibility: the modifier MUST be exposed to assistive tech (input `aria-label` and a keyboard-focusable tooltip trigger). The signed numeric modifier remains visible; the icon MUST NOT replace the number.
 - GM sees the modifier for every editable row. A player sees the modifier only on their own editable row (other combatants’ modifiers MUST NOT be shown to players).
+- **Automatic bonus made explicit**: the UI MUST make clear that the field expects the raw d20 roll and that the sheet bonus is added automatically:
+  - the editable field shows a short, muted placeholder naming the roll (`d20`), hidden as soon as the field is focused;
+  - one secondary line below the field (so editable and locked values stay aligned with the other cells of the row), readable size (not smaller than `text-xs`): while no roll is entered it shows the dice icon and the signed bonus (`+5`); once a roll is entered it is replaced by the live calculation (`roll + modifier = total`, e.g. `15 + 5 = 20`), announced to assistive tech; locked fields before combat start show the bonus only;
+  - a roll still to enter is marked by a neutral 1px dashed frame whose width does not change on focus, turning solid and brighter while focused (no yellow warning border);
+  - the modifier tooltip / accessible label states that the bonus is added automatically to the roll;
+  - the GM pre-combat guidance states once that the d20 result is to be entered and the sheet initiative bonus is added automatically;
+  - the same placeholder, preview and tooltip apply to **Add combatants** member inputs.
 
 **Prohibitions**:
 
@@ -1633,10 +1643,16 @@ When adding a rule:
 
 - Nominal: modifier hint shows dice icon, signed bonus (`+2`), and tooltip/accessible name “bonus d'initiative +2”.
 - Nominal: GM types `15` with modifier `+2`, blurs or starts combat → stored/displayed total `17`; sort uses `17`.
+- Nominal: `Tab` in an initiative field focuses the next row's initiative field; `Shift+Tab` the previous one; order stays frozen while tabbing between fields.
+- Edge: `Tab` on the last initiative field keeps native focus order; hidden duplicate fields (mobile / desktop layouts) are skipped.
 - Nominal: Start combat while focus is still in an initiative field → pending text is flushed; totals are not left at `0`.
 - Edge: player preparatory input shows modifier only on own row; missing legacy `initiativeModifier` displays/adds as `0`.
 - Edge: re-focus after commit of `17` with mod `+2` shows roll `15` in the input; second commit still yields `17`.
 - Failure: add-combatants excluded member shows no initiative input/modifier; included member uses loaded character modifier in the total.
+- Nominal: `d20` placeholder and `+2` bonus shown while empty; with roll `15` the same line shows `15 + 2 = 17` instead of the bonus; tooltip says the bonus is added automatically.
+- Edge: negative or missing modifier shows `8 − 1 = 7` / `8 + 0 = 8`.
+- Guard: empty field or locked initiative before combat start shows the bonus, never a calculation.
+- Nominal: once combat has started, the initiative cell shows the total only (no dice icon, no bonus, no bonus in the accessible name).
 
 **References**:
 
@@ -1880,6 +1896,7 @@ When adding a rule:
 
 - `lastConsultedSheetPath` is stored in the `session` Redux slice (persisted per user).
 - Updated when the GM navigates to any character detail route during an active session.
+- The stored path MUST be locale-agnostic (no leading `/{locale}` segment), because locale-aware navigation adds the locale itself; legacy persisted values carrying a locale MUST be normalized on read (otherwise `/{locale}/{locale}/…` falls through not-found to welcome).
 - When the session is active, the stored path MUST include the `sessionCode` query parameter so that sheets not owned by the GM (player roster / guest characters) remain readable after navigation back from the initiative tracker (including after cancel/end combat).
 - Cleared when the session ends (`clearCurrentSession`).
 - Navigation consumers (sidebar **Return to Character Sheet**, post-combat redirect) MUST ensure `sessionCode` is present on the target URL while the session is still active.
@@ -2216,6 +2233,13 @@ Each initiative tracker row carries:
 - Both surfaces MUST show the character avatar when an avatar stored value is available, resolving the presigned URL with `sessionCode` (FR-media-avatars).
 - Session roster rows in the GM sidebar MUST follow **FR-sidebar-character-avatars** (same avatar rules as campaign and Player-space lists).
 
+**Lobby Card Hierarchy & Ordering**:
+
+- On a session lobby participant card, when a player has an assigned character, the primary (prominent) line MUST be the character display name and the secondary line MUST be the participant label (resolved per the priority above), so name and avatar describe the same identity.
+- When no character is assigned (Game Master, or player who has not picked one yet), the primary line MUST be the participant label and the character line MUST stay empty.
+- The secondary participant label MUST remain visible for the current user too, including while the character selector is shown.
+- Lobby participants MUST be displayed in a deterministic order identical for every client of the same session: Game Master first, then players by server `joinedAt` ascending, ties broken by `userId`. Order MUST NOT depend on WebSocket event arrival order or on which client loaded first.
+
 **Prohibitions**:
 
 - Displaying a participant email as their session label
@@ -2229,6 +2253,10 @@ Each initiative tracker row carries:
 - Nominal: user with `username` shows that username in lobby, GM sidebar, and initiative tracker when character sheet is unavailable
 - Nominal: assigned character shows `firstname` (+ `lastname`) and avatar in lobby card and GM sidebar (never Mongo id)
 - Edge: user without `username` but with `firstName` + `lastName` shows the full name
+- Nominal: lobby card of a player with a character shows the character name as primary line and the username as secondary line; GM card shows the username as primary line
+- Nominal: lobby participants sorted GM first, then by `joinedAt` ascending
+- Edge: a participant appended by `session:participant-joined` before HTTP sync is placed by `joinedAt`, not at the end by arrival; same order on two clients with different arrival orders
+- Edge: tie on `joinedAt` is broken by `userId`; character still loading shows `...` as primary line with username as secondary
 - Edge: WebSocket join provides a valid `username` before API fetch completes; label is shown without flashing UUID
 - Edge: initial API failure followed by WebSocket username still updates the displayed label
 - Edge: character sheet still loading shows `...` for the character name (not character id)
@@ -3238,7 +3266,7 @@ Each initiative tracker row carries:
 | --- | --- |
 | Character in group (player or NPC) | Move to another group, Edit, Delete |
 | Character in **Mes personnages** | Edit, Delete (plus Duplicate / PDF per later rules; NPC link/unlink per FR-sidebar-npc-link) |
-| Group | Edit (rename), Archive or Unarchive (section-dependent), Delete |
+| Group | Edit (rename), Archive or Unarchive (section-dependent), Delete; active groups also expose **Repos long du groupe** (FR-character-long-rest) |
 | Archives section header | Delete all archived groups (only when at least one archived group exists) |
 | Campaign | Edit (rename), Delete |
 
@@ -3280,6 +3308,7 @@ Each initiative tracker row carries:
 **Session constraints**:
 
 - When sidebar actions are disabled during an active session (existing `disabledInSession` behavior), context menus and overflow controls MUST be disabled consistently.
+- Exception (decision 2026-11-13, FR-character-long-rest): during an active session the group context menu and overflow control stay available for the GM with **only** the « Repos long du groupe » entry enabled; every other group and character action stays disabled.
 
 **Prohibitions**:
 
@@ -3668,9 +3697,13 @@ Each initiative tracker row carries:
 - The dialog MUST offer **Annuler** (outline) and a **destructive** confirm button; Cancel, Escape and overlay click MUST close without leaving; the confirm button MUST be disabled while leaving
 - Trigger layout: **player** → one solid destructive « Quitter la session » button; **GM** (where closing is available) → split button whose main part is « Clôturer la session » (solid destructive) and whose arrow opens a menu with « Quitter la session »; each action opens its own confirmation dialog. Where the GM cannot close (pre-launch wheel bar), the GM gets the same solid destructive leave button as a player
 - **Rejoining after leaving**: while the session is still valid (not closed, not expired — 8 h after launch), a user who left MUST be able to come back:
-  - **GM**: when the GM is no longer in a session client-side but an active session exists for the selected campaign (GM is its creator), the sidebar action MUST read « Retourner à la session » (not « Lancer une session ») and bring the GM back into that session. « Lancer une session » is shown only when no active session exists for the campaign.
+  - **GM**: when an active session exists for the selected campaign (GM is its creator) and it is either **launched** (non-expired) or **joined by at least one player** (participant other than the GM), the sidebar action MUST read « Retour en session » (not « Lancer une session ») and bring the GM back into that session — whether the GM merely closed the lobby dialog or left it. An **empty lobby that was never launched** MUST show « Lancer une session »; the action reopens/reuses the existing lobby (server-side reuse, no duplicate session). A player who leaves is removed from the roster and no longer counts.
   - **Player, before launch**: rejoining with the session code follows the normal join flow (wheel deposit rules apply, FR-session-lobby-wheel-deposit).
-  - **Player, after launch**: a former participant who explicitly left a launched session MUST be allowed to rejoin it with its code, without spending wheels again (the launch debit is not replayed). Users who never participated in that session MUST still be refused once it is launched (no new player mid-session). The join dialog MUST show a specific error for this refusal and SHOULD prefill the code of the last session the user left. While that last-left session is still active, the player's sidebar action MUST read « Retourner à la session » (opening the prefilled join dialog) instead of « Rejoindre la session ».
+  - **Player, after launch**: a former participant who explicitly left a launched session MUST be allowed to rejoin it with its code, without spending wheels again (the launch debit is not replayed). Users who never participated in that session MUST still be refused once it is launched (no new player mid-session). The join dialog MUST show a specific error for this refusal and SHOULD prefill the code of the last session the user left. While that last-left session is still active, the player's sidebar action MUST read « Retour en session » (opening the prefilled join dialog) instead of « Rejoindre la session ».
+  - **Player leaving a lobby that was never launched**: the left session code MUST NOT be remembered (reset); the sidebar action reads « Rejoindre la session » with no prefilled code. A player who only closed the lobby dialog without leaving is still in the lobby and keeps « Retour en session ».
+  - **Label**: the return action is worded « Retour en session » (EN « Back to Session ») so it fits the sidebar button without truncation.
+  - **Color**: for a player, « Retour en session » uses the same green tone as « Rejoindre la session »; for the GM it keeps the yellow tone of « Lancer une session ».
+  - **Lobby open**: while the lobby dialog is open (user in session), the sidebar action MUST show an indicative « in progress » state — label « Retour en session », role color, active ring distinct from keyboard focus, `aria-current="true"`. The regular label (e.g. « Lancer une session » for an empty lobby) comes back when the dialog closes.
 - Accessibility: titled/described dialog, focus trapped and restored to the trigger, fully keyboard operable, red text contrast OK in light and dark themes
 
 **Tests**:
@@ -3678,7 +3711,12 @@ Each initiative tracker row carries:
 - Nominal: `openSessionLobby` sets `sessionLobbyOpen` to `true`; `closeSessionLobby` resets it to `false`
 - Nominal: player gets a single leave button; GM gets the close split button with leave in its menu; leave description mentions group removal only for a player
 - Failure: leave confirm is blocked while a leave is in progress
-- Nominal: GM out of session with an active session on the selected campaign sees « Retourner à la session »; without one, « Lancer une session »
+- Nominal: GM out of session with a launched active session on the selected campaign sees « Retour en session »; without one, « Lancer une session »
+- Edge: GM whose campaign session is an empty lobby (never launched, no player joined) sees « Lancer une session », after closing the dialog or leaving
+- Edge: GM whose lobby (not launched) was joined by a player sees « Retour en session »
+- Nominal: player « Retour en session » is green, GM's is yellow
+- Nominal: lobby dialog open in session → « Retour en session » in active state; Guard: stale open flag out of session shows no indicator
+- Edge: player leaving a never-launched lobby → left session code reset, « Rejoindre la session »
 - Edge (reconnect): player leaves a launched session and rejoins it with its code → accepted, no wheel debit
 - Failure: user who never participated cannot join a launched session (specific error shown)
 - Edge: calling `openSessionLobby` twice remains idempotent (`true`)
@@ -5225,6 +5263,7 @@ Each initiative tracker row carries:
 **Utility types** (minority, kept): `ghost` (transparent, `hover:bg-white/10`), `link` (text), `destructive` (critical action), icon-only triggers, and toggles (`aria-pressed`), which never use a violet fill:
   - Segmented selector (exactly one option active among a few, e.g. Player / GM, attack ability suggestion): active option = **primary white**, inactive options = **secondary**.
   - Filter toggle (independent on/off chip, e.g. Action / Bonus action / Reaction priority): `secondary`, pressed state = documented selection gray (`docs/design.md` section 5.1).
+- **Copy confirmation** (copy code / copy link buttons, e.g. session lobby invite, profile referral link): after a successful copy the button keeps its **secondary** look (dark fill, minor border, light text); only the content changes — the icon becomes a check mark in the button's own text color (white) and the label becomes the "copied" text. The button width MUST NOT change between states: the label slot reserves the width of the longest of the two labels. While the confirmation is shown the button is disabled but stays at full opacity with no hover change. A green fill or green icon MUST NOT be used. Shared class: `copySuccessButtonClassName`.
 
 **Sizes**:
 
@@ -5263,6 +5302,7 @@ Each initiative tracker row carries:
 - Nominal: `buttonVariants` returns the documented classes for each type (`primary`, `accent` per tone, `secondary`) and each size; the default is `accent` + `violet`
 - Edge: `accent` with `tone="red"` renders dark text; `align="start"` left-aligns content; `lg` uses the 15px radius, the other sizes 13px
 - Failure/guard: disabled buttons expose no hover style change; an inactive segmented option renders the secondary style
+- Copy confirmation: keeps the secondary fill and text color (nominal); both labels are rendered in the same slot so the width is constant, and the button stays at full opacity while disabled and hovered (edge); never renders a green fill or icon (guard)
 
 **References**:
 
@@ -5813,7 +5853,9 @@ Each initiative tracker row carries:
 - **Speeds line**: one label/value line `Vitesses : 🏃 9 m · ⛰ 4,5 m · 🌊 9 m` listing only non-zero speeds, each with its icon and an accessible name (e.g. "Vitesse d'escalade 4,5 m"); it wraps like text, never as boxes. Units follow FR-distance-unit-conversion (secondary unit kept when the user enabled both units). When every speed is 0 the line is omitted.
 - **Visual weight**: cells use the card surface tint (`bg-gray-middle-light/50`, `rounded-[10px]`), not white pills; values `text-base`/`sm:text-lg`; no "?" tooltip buttons — the visible label replaces them (tooltip texts stay available as accessible names).
 - **NPC passive perception** (General tab only, decision 2026-11-04): a 4th key stat cell « Perc. passive » (Eye icon) next to CA / Init. / Taille; the row shows 2 × 2 cells below `sm` and one row of 4 from `sm`. In edit mode the passive perception override field and its mismatch warning sit at the bottom of the NPC statistics edit card. The Combat tab keeps 3 cells.
-- **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC).
+- **Rest of the card unchanged**: health bar (session HP dialog), hit dice (PC) or hit points roll (NPC), rest controls / session note (PC). Long rest availability and effects for PC and NPC are owned by FR-character-long-rest.
+- **Short rest dialog — healing line** (decision 2026-11-12): when the PC has hit dice left to spend, the « Hit points recovered: +N » line is always shown below the hit dice section, from the dialog opening, so the layout does not shift. N is the sum of the dice values already entered (empty or invalid entries count as 0), so it reads `+0` before any die is added or filled. Without hit dice to spend the line is not shown. The line is announced politely to assistive technologies (`aria-live="polite"`) when N changes.
+- **Edit mode — hit points fields** (PC and NPC edit forms, decision 2026-11-13): the fields read **current HP, max HP, temporary HP**, in this visual and tab order. Current HP is never above max HP and max HP never below current HP (existing clamp and info toast). When max HP changes to a number while current HP is **empty or equal to the previous max HP** (character at full health, e.g. the 10 / 10 creation defaults), current HP takes the new max value; in that case the max field does not clamp to current HP, so a lower max can be typed digit by digit. Otherwise current HP is left untouched.
 - **Fill** (FR-character-general-bento-layout, FR-character-battle-bento-layout): when the card is stretched, its blocks spread from top to bottom (`justify-between`); the key stats row never leaves a hole on mobile.
 
 **Accessibility (FR-frontend-design)**:
@@ -5831,10 +5873,12 @@ Each initiative tracker row carries:
 - Nominal: PC and NPC cards render exactly three key stat cells (CA, initiative, size) with visible labels, and one speeds line listing non-zero speeds; the NPC General-tab card renders a 4th passive perception cell.
 - Edge: all speeds 0 → no speeds line; dual units → secondary unit shown in the speed line.
 - Failure: no "?" tooltip buttons and no white pill (`bg-white`) in the card.
+- HP edit fields: PC and NPC forms render current, max, temp in this order; max 10 → 45 with current 10 sets current to 45; current empty takes the new max; current 7 with max 10 stays 7 when max becomes 45, and max cannot go below 7.
+- Short rest: opening the dialog with hit dice left shows « +0 »; filling one die updates N; an empty or invalid die counts as 0; no hit dice left → no healing line.
 
 **References**:
 
-- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`, `StatisticsUpdate.tsx`, `NpcStatisticsUpdate.tsx`
 - `docs/functional-rules.md` — FR-distance-unit-conversion, FR-character-general-bento-layout, FR-character-battle-bento-layout, FR-frontend-design
 
 ---
@@ -6380,3 +6424,62 @@ The path app → Keycloak login page → back in the app MUST use as few sequent
 - Failure: shell chunk fetch failure shows an accessible error with a retry inside the auth skeleton frame, not a blank page.
 
 **References** (sub-section): `services/web/client/src/providers/KeycloakProvider.tsx`, `services/web/client/src/components/layout/AppShellSkeleton.tsx`, `services/web/client/src/components/PostLoginNavigator.tsx`, `services/web/client/src/services/NavigationService.ts`, `services/gateway/api/src/main.ts`, `services/sso/keycloak/themes/chariot/login/**`, `services/sso/compose.dev.yml` — FR-auth-loading-skeleton, FR-post-auth-navigation, FR-user-cache-isolation, FR-session-websocket-lifecycle
+
+---
+
+## FR-character-long-rest: Long Rest (PC and NPC, single and group)
+
+**Rule**: A long rest restores a character's hit points, ability counters and spell resources. The GM MUST be able to apply it to a single NPC or PC sheet in and out of session, and to every character of a group at once from the sidebar group menu.
+
+**Scope**: Owns long rest availability and effects. Complements FR-character-statistics-card (where the rest controls sit), FR-sidebar-context-actions (group menu entry), FR-session-combat-sync (live propagation in session) and FR-session-lobby-navigation (lobby gating). Short rest is not changed: it stays session-only and PC-only.
+
+**Requirements**:
+
+### Effects
+- **Common (PC and NPC)**: current HP set to max HP; temporary HP set to 0; every ability counter flagged « réinitialisation au repos long » set back to full; every spell slot (by level and by uses) and every per-day spell use set back to full.
+- **PC only**: exhaustion level decreased by 1 (minimum 0); hit dice remaining set to the class level, per class.
+- Conditions, death saves, inventory, concentration and initiative tracker effects are NOT changed.
+- The confirmation dialog lists only the effects that actually change something for that character; when nothing changes it says so and the action can still be confirmed.
+
+### Ability counter flags (edit form, PC and NPC)
+- Checking « Réinitialisation au repos court » MUST automatically check « Réinitialisation au repos long » (a short-rest recharge also recharges on a long rest); unchecking it does not uncheck the long rest flag.
+- Checking or unchecking « Réinitialisation au repos long » does not change the short rest flag.
+- Existing data is not migrated.
+
+### Single character (sheet, Statistics card)
+- **NPC sheet**: a « Repos long » button is shown to the GM (sheet editor) **in and out of session**.
+- **PC sheet, GM space**: the « Repos long » button is shown to the GM **in and out of session** for the GM's own PCs.
+- **PC sheet, player space**: unchanged — a PC owned by a player space MUST NEVER get any rest (short or long) out of session, from any surface; the existing « session only » note stays.
+- Being in the lobby only (not launched) counts as out of session (FR-session-lobby-navigation); the GM-space long rest is allowed there as an out-of-session action.
+
+### Group (sidebar)
+- Right-click (desktop) / overflow menu (touch) on an **active** group exposes « Repos long du groupe », in and out of session (exception recorded in FR-sidebar-context-actions). Disabled when the group has no character. Not offered on archived groups.
+- It opens a confirmation dialog stating the group name and the number of PCs and NPCs concerned; Enter confirms, Escape cancels (blocked while running).
+- On confirm, the long rest is applied to every PC and NPC of the group **owned by the GM** (GM-space characters). Characters owned by a player space are never rested out of session; in session they are rested only when the session authorizes the GM to edit them.
+- Characters that cannot be edited or whose update fails are skipped; the others are still rested.
+- At the end, one toast summarizes the result: « N personnages reposés » plus, when applicable, « M ignorés ». The sidebar and any open sheet of a rested character reflect the new values without reload.
+- In session, each rested character is propagated to connected clients through the existing sheet / combat sync (FR-session-combat-sync); a PC's player sees the update on their sheet.
+
+**Prohibitions**:
+- Offering the long rest to a player on their own sheet out of session.
+- Aborting the whole group rest because one character fails.
+- Changing anything else than the listed effects.
+
+**Tests**:
+- Nominal: NPC payload restores HP, clears temp HP, resets long-rest counters and spell slots/uses; PC payload also lowers exhaustion and restores hit dice.
+- Nominal: GM sees the NPC long rest button out of session; GM sees the PC long rest button out of session in GM space.
+- Nominal: group rest on a group of 2 PCs + 1 NPC rests all 3 and shows « 3 personnages reposés ».
+- Edge: character with nothing to recover → dialog shows the « no effect » text; exhaustion 0 stays 0; ability without counter untouched.
+- Edge: in session, group menu shows only « Repos long du groupe » enabled; empty group → entry disabled.
+- Edge (race): a rested character updated in session is broadcast once; a reconnecting client gets the rested values.
+- Failure: one character update rejected (403 / network) → others are rested, toast reports « 1 ignoré »; dialog cannot be closed by Escape while running.
+- Failure: player space out of session → no long rest button; group rest out of session skips a player-space PC (counted as ignored).
+- Nominal: checking the short rest flag checks the long rest flag; Edge: checking the long rest flag leaves the short rest flag unchanged.
+
+**References**:
+- `services/web/client/src/utils/rest.utils.ts`
+- `services/web/client/src/components/character/tabContents/shared/AbilitiesUpdateSection.tsx`
+- `services/web/client/src/components/character/LongRestButton.tsx`
+- `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
+- `services/web/client/src/components/layout/Sidebar/GroupList.tsx`, `shared/SidebarItemWithActions.tsx`, `shared/sidebarActionIcons.ts`
+- `services/web/client/src/services/CharacterService.ts`

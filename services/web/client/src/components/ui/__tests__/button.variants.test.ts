@@ -108,19 +108,27 @@ describe("Button variants — guards", () => {
     expect(pressed).not.toContain("hover:bg-gray");
   });
 
-  it("nominal: a confirmed copy button is a green fill with dark text", () => {
+  it("nominal: a confirmed copy button keeps the secondary look and white content", () => {
     const copied = classes(cn(buttonVariants({ variant: "secondary" }), copySuccessButtonClassName));
 
-    expect(copied).toEqual(expect.arrayContaining(["bg-green", "border-green", "text-black", "hover:bg-green"]));
-    expect(copied).not.toContain("bg-gray-middle-light");
-    expect(copied).not.toContain("border-input");
+    expect(copied).toEqual(
+      expect.arrayContaining(["bg-gray-middle-light", "border-input", "text-white"]),
+    );
   });
 
-  it("edge: a confirmed copy button stays fully green while disabled and hovered", () => {
+  it("edge: a confirmed copy button stays at full opacity with no hover change while disabled", () => {
     const copied = classes(cn(buttonVariants({ variant: "secondary", size: "icon-sm" }), copySuccessButtonClassName));
 
-    expect(copied).toEqual(expect.arrayContaining(["disabled:opacity-100", "disabled:hover:bg-green"]));
+    expect(copied).toEqual(expect.arrayContaining(["disabled:opacity-100", "disabled:hover:bg-gray-middle-light"]));
     expect(copied).not.toContain("disabled:opacity-50");
-    expect(copied).not.toContain("disabled:hover:bg-gray-middle-light");
+  });
+
+  it("failure guard: a confirmed copy button never uses a green fill or icon", () => {
+    const copied = classes(cn(buttonVariants({ variant: "secondary" }), copySuccessButtonClassName));
+
+    expect(copied).not.toContain("bg-green");
+    expect(copied).not.toContain("border-green");
+    expect(copied).not.toContain("text-black");
+    expect(copied).not.toContain("[&_svg]:text-green");
   });
 });

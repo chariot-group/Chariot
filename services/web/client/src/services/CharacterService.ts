@@ -5,7 +5,7 @@ import { Character, PaginatedCharactersResponse, Player, NPC } from '@/types/cha
 import type { GroupRef } from '@/utils/group.utils';
 import { linkedPlayerIdOf } from '@/lib/npcPlayerLink';
 
-type CharacterType = 'players' | 'npcs';
+export type CharacterType = 'players' | 'npcs';
 
 /** Write payload: `groups` may be sent as ids, the API stores references. */
 export type CharacterWriteData = (Omit<Partial<Player>, 'groups'> | Omit<Partial<NPC>, 'groups'>) & {

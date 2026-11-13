@@ -3,8 +3,12 @@
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { InitiativeModifierHint } from "@/components/initiativeTracker/InitiativeModifierHint";
-import { useInitiativeTextInput } from "@/components/initiativeTracker/useInitiativeTextInput";
 import {
+  parseInitiativeRollText,
+  useInitiativeTextInput,
+} from "@/components/initiativeTracker/useInitiativeTextInput";
+import {
+  formatInitiativeTotalPreview,
   INITIATIVE_INPUT_ATTRIBUTE,
   initiativeRollFromTotal,
   initiativeTotalFromRoll,
@@ -14,6 +18,9 @@ import { cn } from "@/lib/utils";
 import { formatSignedBonus } from "@/utils/attack.utils";
 
 const INITIATIVE_CONTAINER_CLASS = "mx-auto w-full max-w-[88px]";
+/** Muted roll placeholder, hidden as soon as the field is focused to type a value. */
+const INITIATIVE_PLACEHOLDER_CLASS =
+  "[&_input::placeholder]:text-white/40 [&_input:focus::placeholder]:text-transparent";
 const INITIATIVE_INPUT_CLASS =
   "h-9 w-full rounded-[15px] bg-gray-middle-light px-3 text-center text-sm font-normal tabular-nums text-white";
 
@@ -30,6 +37,10 @@ type InitiativeNumberInputProps = {
   modifier?: number | null;
   modifierAriaLabel?: string;
   showModifier?: boolean;
+  /** FR-combat-initiative-tracker — placeholder naming the expected d20 roll. */
+  rollPlaceholder?: string;
+  /** Screen-reader prefix of the live total preview (e.g. "Total d'initiative :"). */
+  totalPreviewLabel?: string;
 };
 
 export function InitiativeNumberInput({
@@ -42,6 +53,8 @@ export function InitiativeNumberInput({
   modifier = null,
   modifierAriaLabel,
   showModifier = false,
+  rollPlaceholder,
+  totalPreviewLabel,
 }: InitiativeNumberInputProps) {
   const resolvedModifier = resolveInitiativeModifier(modifier);
   const rollValue = initiativeRollFromTotal(value, resolvedModifier);
@@ -55,6 +68,13 @@ export function InitiativeNumberInput({
   );
 
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const previewId = React.useId();
+
+  // A `0` roll is the "missing initiative" sentinel: show the roll placeholder instead.
+  const displayValue = initiativeInput.value.trim() === "0" ? "" : initiativeInput.value;
+  const totalPreview = showModifier
+    ? formatInitiativeTotalPreview(parseInitiativeRollText(displayValue), resolvedModifier)
+    : null;
 
   const modifierText = formatSignedBonus(resolvedModifier);
   const hintAriaLabel = modifierAriaLabel ?? modifierText;
@@ -70,27 +90,39 @@ export function InitiativeNumberInput({
           inputRef.current?.focus();
         }
       }}>
-      {showModifier ? (
-        <div className="flex justify-center">
-          <InitiativeModifierHint
-            modifierText={modifierText}
-            ariaLabel={hintAriaLabel}
-          />
-        </div>
-      ) : null}
       <Input
         ref={inputRef}
         type="number"
         {...{ [INITIATIVE_INPUT_ATTRIBUTE]: "" }}
         step={1}
-        value={initiativeInput.value}
+        value={displayValue}
+        placeholder={rollPlaceholder}
         aria-label={combinedAriaLabel}
+        aria-describedby={showModifier ? previewId : undefined}
         onChange={initiativeInput.onChange}
         onFocus={initiativeInput.onFocus}
         onBlur={initiativeInput.onBlur}
         onKeyDown={initiativeInput.onKeyDown}
-        className={className}
+        className={cn(className, INITIATIVE_PLACEHOLDER_CLASS)}
       />
+      {/* Below the field so inputs stay aligned with the other values of the row. */}
+      {showModifier ? (
+        <div className="flex justify-center">
+          <InitiativeModifierHint
+            modifierText={modifierText}
+            ariaLabel={hintAriaLabel}
+            displayText={totalPreview}
+          />
+        </div>
+      ) : null}
+      {showModifier ? (
+        <span
+          id={previewId}
+          aria-live="polite"
+          className="sr-only">
+          {totalPreview ? `${totalPreviewLabel ? `${totalPreviewLabel} ` : ""}${totalPreview}` : ""}
+        </span>
+      ) : null}
     </div>
   );
 }

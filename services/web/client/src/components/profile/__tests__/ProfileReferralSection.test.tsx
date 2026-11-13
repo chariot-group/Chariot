@@ -167,7 +167,7 @@ describe("ProfileReferralSection", () => {
     expect(html).toContain('data-tier-state="pending-current"');
   });
 
-  it("keeps the copied link button fully green while it is locked", () => {
+  it("keeps the copied link button secondary, white and the same width while it is locked", () => {
     const html = renderToStaticMarkup(
       <ProfileReferralSection
         referralInfo={baseReferralInfo}
@@ -178,8 +178,10 @@ describe("ProfileReferralSection", () => {
 
     expect(html).toContain("linkCopied");
     expect(html).toContain("disabled:opacity-100");
-    expect(html).toContain("disabled:hover:bg-green");
-    expect(html).not.toContain("disabled:hover:bg-gray-middle-light");
+    expect(html).not.toContain("[&amp;_svg]:text-green");
+    expect(html).toContain("data-stable-label-ghost");
+    expect(html).toContain("bg-gray-middle-light");
+    expect(html).not.toContain("bg-green");
   });
 
   it("locks the copy button without the green state while copying", () => {
@@ -192,7 +194,7 @@ describe("ProfileReferralSection", () => {
     );
 
     expect(html).toContain('aria-label="copyLinkAriaLabel" disabled=""');
-    expect(html).not.toContain("bg-green");
+    expect(html).not.toContain("[&amp;_svg]:text-green");
   });
 });
 

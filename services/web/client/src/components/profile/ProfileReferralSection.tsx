@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, copySuccessButtonClassName } from "@/components/ui/button";
+import { StableLabel } from "@/components/ui/stable-label";
 import { Card } from "@/components/ui/card";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { cn } from "@/lib/utils";
@@ -103,7 +104,10 @@ export default function ProfileReferralSection({
               {linkCopyState === "loading" && <Loader2 className="animate-spin" />}
               {linkCopyState === "success" && <Check />}
               {linkCopyState === "idle" && <Link />}
-              {linkCopyState === "success" ? t("linkCopied") : t("copyLink")}
+              <StableLabel
+                label={linkCopyState === "success" ? t("linkCopied") : t("copyLink")}
+                alternates={[t("copyLink"), t("linkCopied")]}
+              />
             </Button>
           </div>
         </div>

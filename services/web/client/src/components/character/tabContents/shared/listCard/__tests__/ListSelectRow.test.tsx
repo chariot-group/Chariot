@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import ListSelectRow from "@/components/character/tabContents/shared/listCard/ListSelectRow";
 
-const renderRow = (props: { isSelected: boolean; hasError?: boolean }) =>
+const renderRow = (props: { isSelected: boolean; hasError?: boolean; trailing?: ReactNode }) =>
   renderToStaticMarkup(
     <ListSelectRow
       id="row"
@@ -37,5 +38,15 @@ describe("ListSelectRow", () => {
     const classes = rowClasses(renderRow({ isSelected: true, hasError: true }));
 
     expect(classes).toEqual(expect.arrayContaining(["ring-2", "ring-inset", "ring-destructive"]));
+  });
+
+  it("edge: the trailing control (prepared dot) is inset from the right border like the row's left padding", () => {
+    const html = renderRow({ isSelected: false, trailing: <span data-testid="dot" /> });
+
+    expect(html).toContain('<div class="shrink-0 pr-3"><span data-testid="dot"></span></div>');
+  });
+
+  it("edge: no trailing wrapper is rendered without a trailing control", () => {
+    expect(renderRow({ isSelected: false })).not.toContain("shrink-0 pr-3");
   });
 });

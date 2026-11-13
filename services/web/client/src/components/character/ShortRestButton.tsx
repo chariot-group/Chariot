@@ -19,6 +19,7 @@ import {
     buildShortRestUpdatePayload,
     getHitDiceRemainingForClass,
     hitDieSide,
+    sumShortRestHitDicePreview,
     type ShortRestHitDiceRoll,
 } from "@/utils/rest.utils";
 import { BicepsFlexed, Clock, Dice5, Loader2, Minus, Plus, WandSparkles } from "lucide-react";
@@ -145,15 +146,10 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
         setRollRows((prev) => prev.map((r) => (r.id === id ? { ...r, value: next } : r)));
     };
 
-    const parsedRolls = useMemo(
-        () => parseShortRestHitDiceRolls(rollRows, classes),
+    const healingPreview = useMemo(
+        () => sumShortRestHitDicePreview(rollRows, classes),
         [rollRows, classes],
     );
-
-    const healingPreview = useMemo(() => {
-        if (!parsedRolls) return null;
-        return parsedRolls.reduce((s, r) => s + r.value, 0);
-    }, [parsedRolls]);
 
     const runShortRest = async () => {
         if (pending || !isInSession) return;
@@ -399,8 +395,12 @@ export function ShortRestButton({ player, isInSession, onApplied, showLabel = fa
                             <p className="text-sm text-muted-foreground sm:text-base">{t("noMechanicalEffect")}</p>
                         )}
 
-                        {healingPreview != null && rollRows.length > 0 && (
-                            <p className="text-sm font-medium shrink-0">{t("totalHealing", { n: healingPreview })}</p>
+                        {hasAnyHitDice && (
+                            <p
+                                className="text-sm font-medium shrink-0"
+                                aria-live="polite">
+                                {t("totalHealing", { n: healingPreview })}
+                            </p>
                         )}
                     </div>
                     <DialogFooter className="flex-row justify-end gap-2 shrink-0 border-t border-border pt-2">

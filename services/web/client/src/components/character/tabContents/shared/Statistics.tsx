@@ -3,7 +3,9 @@ import StatsSummary from "@/components/character/tabContents/shared/StatsSummary
 import { NPC, Player } from "@/types/character";
 import { useTranslations } from "next-intl";
 import CharacterHealthBar from "@/components/character/CharacterHealthBar";
-import { getHitDiceRemainingForClass } from "@/utils/rest.utils";
+import { canUseLongRest, getHitDiceRemainingForClass } from "@/utils/rest.utils";
+import { selectContextMode } from "@/store/slices/environmentSlice";
+import { selectUser } from "@/store/slices/userSlice";
 import { ShortRestButton } from "@/components/character/ShortRestButton";
 import { LongRestButton } from "@/components/character/LongRestButton";
 import { useAppSelector } from "@/store/hooks";
@@ -28,6 +30,15 @@ export default function Statistics({ player, accentColor, onCharacterUpdate, cla
   const sessionCode = useActiveSessionCode();
   const [healthDialogOpen, setHealthDialogOpen] = useState(false);
   const canEditHealthInSession = isSessionLaunched && Boolean(onCharacterUpdate);
+  const isPlayerSpace = useAppSelector(selectContextMode) === "player";
+  const currentUserId = useAppSelector(selectUser)?.keycloakId ?? null;
+  /** @see FR-character-long-rest */
+  const canLongRest = canUseLongRest({
+    isPlayerCharacter: true,
+    isSessionLaunched,
+    isPlayerSpace,
+    isOwnCharacter: currentUserId != null && player.createdBy === currentUserId,
+  });
 
   return (
     <Card
@@ -71,22 +82,27 @@ export default function Statistics({ player, accentColor, onCharacterUpdate, cla
       {onCharacterUpdate && (
         <div className="mt-1 border-t border-border px-2 pt-3 flex flex-col items-end gap-1.5 w-full min-w-0">
           {!isSessionLaunched && (
-            <p className="text-xs text-muted-foreground italic text-right w-full">{t("restSessionOnlyNote")}</p>
+            <p className="text-xs text-muted-foreground italic text-right w-full">
+              {canLongRest ? t("shortRestSessionOnlyNote") : t("restSessionOnlyNote")}
+            </p>
           )}
-          {isSessionLaunched && (
+          {(isSessionLaunched || canLongRest) && (
             <div className="flex flex-row flex-wrap justify-end gap-2 w-full min-w-0">
-              <ShortRestButton
-                player={player}
-                isInSession={isSessionLaunched}
-                onApplied={(updated) => onCharacterUpdate(updated)}
-                showLabel
-              />
-              <LongRestButton
-                player={player}
-                isInSession={isSessionLaunched}
-                onApplied={(updated) => onCharacterUpdate(updated)}
-                showLabel
-              />
+              {isSessionLaunched && (
+                <ShortRestButton
+                  player={player}
+                  isInSession={isSessionLaunched}
+                  onApplied={(updated) => onCharacterUpdate(updated)}
+                  showLabel
+                />
+              )}
+              {canLongRest && (
+                <LongRestButton
+                  character={player}
+                  onApplied={(updated) => onCharacterUpdate(updated)}
+                  showLabel
+                />
+              )}
             </div>
           )}
         </div>

@@ -35,7 +35,7 @@ import {
   syncReduxAfterCompanionNpcCreate,
   type PlayerDuplicateCompanionMode,
 } from "@/lib/playerDuplicateCompanions";
-import type { NPC } from "@/types/character";
+import type { NPC, Player } from "@/types/character";
 import { EditGroupDialog } from "@/components/dialogs/EditGroupDialog";
 import { MoveCharacterDialog } from "@/components/dialogs/MoveCharacterDialog";
 import { DuplicateGroupDialog } from "@/components/dialogs/DuplicateGroupDialog";
@@ -62,6 +62,7 @@ import {
   removeInitiativeTrackerRow,
   selectBattleInitialized,
   createInitiativeTrackerRow,
+  touchRemoteCharacterSheet,
 } from "@/store/slices/sessionSlice";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import { SESSION_PARTICIPANTS_GROUP_LABEL } from "@/lib/buildSessionParticipantsGroup";
@@ -74,6 +75,8 @@ import {
 import { SidebarCharacterAvatar } from "@/components/layout/Sidebar/shared/SidebarCharacterAvatar";
 import { collapsedActiveGroupCharacterId } from "@/components/layout/Sidebar/shared/sidebarCollapsedActive";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
+import { applyGroupLongRest } from "@/lib/groupLongRest";
+import { selectUser } from "@/store/slices/userSlice";
 
 interface GroupListProps {
   groups: Group[];
@@ -157,6 +160,7 @@ export default function GroupList({
   const gmGuestCharacterIds = useAppSelector(selectGmGuestCharacterIds);
   const battleInitialized = useAppSelector(selectBattleInitialized);
   const actionsDisabled = isSessionLaunched;
+  const currentUserId = useAppSelector(selectUser)?.keycloakId ?? null;
 
   const avatarBatchItems = React.useMemo(
     () => buildSidebarCharacterAvatarBatchItems(groups.flatMap((group) => group.characters ?? [])),
@@ -193,6 +197,9 @@ export default function GroupList({
   } | null>(null);
 
   const [isDeletingGroup, setIsDeletingGroup] = React.useState(false);
+  /** @see FR-character-long-rest */
+  const [groupPendingLongRest, setGroupPendingLongRest] = React.useState<Group | null>(null);
+  const [isRestingGroup, setIsRestingGroup] = React.useState(false);
   const [isDeletingCharacter, setIsDeletingCharacter] = React.useState(false);
   const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
@@ -494,9 +501,59 @@ export default function GroupList({
     [dispatch, isMobile, router, selectedCampaignId, setOpenMobile, t],
   );
 
+  const handleConfirmGroupLongRest = React.useCallback(async () => {
+    if (!groupPendingLongRest || isRestingGroup) return;
+    const group = groupPendingLongRest;
+    setIsRestingGroup(true);
+    try {
+      const { rested, skipped } = await applyGroupLongRest(
+        {
+          characterIds: (group.characters ?? []).map((character) => character._id),
+          currentUserId,
+          sessionCode: isSessionLaunched ? sessionCode : null,
+        },
+        {
+          fetchCharacter: (id, code) =>
+            CharacterService.getCharacterById(id, { sessionCode: code }) as Promise<Player | NPC>,
+          updateCharacter: (type, id, data, code) => CharacterService.updateCharacter(type, id, data, code),
+        },
+      );
+      // In session the sheet sync bridge already bumps the open sheets (FR-session-combat-sync).
+      if (!isSessionLaunched) {
+        for (const character of rested) dispatch(touchRemoteCharacterSheet(character._id));
+      }
+      const message =
+        skipped > 0
+          ? `${t("longRestGroupSuccess", { count: rested.length })} · ${t("longRestGroupSkipped", { count: skipped })}`
+          : t("longRestGroupSuccess", { count: rested.length });
+      showToast(message, rested.length === 0 ? "error" : "success");
+      setGroupPendingLongRest(null);
+    } finally {
+      setIsRestingGroup(false);
+    }
+  }, [currentUserId, dispatch, groupPendingLongRest, isRestingGroup, isSessionLaunched, sessionCode, t]);
+
   const buildGroupActions = React.useCallback(
     (group: Group): SidebarActionItem[] => {
-      if (actionsDisabled) return [];
+      const hasCharacters = (group.characters ?? []).length > 0;
+      const longRestAction: SidebarActionItem = {
+        id: "longRest",
+        label: t("longRestGroup"),
+        disabled: !hasCharacters,
+        onSelect: () => setGroupPendingLongRest(group),
+      };
+
+      // FR-sidebar-context-actions exception: in session only the group long rest stays enabled.
+      if (actionsDisabled) {
+        if (isArchivedSection) return [];
+        return [
+          longRestAction,
+          { id: "edit", label: t("edit"), disabled: true, onSelect: () => undefined },
+          { id: "duplicate", label: t("duplicate"), disabled: true, onSelect: () => undefined },
+          { id: "archive", label: t("archive"), disabled: true, onSelect: () => undefined },
+          { id: "delete", label: t("delete"), variant: "destructive", disabled: true, onSelect: () => undefined },
+        ];
+      }
 
       const items: SidebarActionItem[] = [
         {
@@ -507,6 +564,7 @@ export default function GroupList({
       ];
 
       if (!isArchivedSection) {
+        items.push(longRestAction);
         items.push({
           id: "duplicate",
           label: t("duplicate"),
@@ -701,7 +759,7 @@ export default function GroupList({
               )}>
               <SidebarItemWithActions
                 actions={groupActions}
-                disabled={actionsDisabled}
+                disabled={groupActions.length === 0}
                 contextMenuLabel={t("groupActions")}
                 menuTitle={group.label}
                 className="min-w-0 flex-1"
@@ -796,6 +854,23 @@ export default function GroupList({
         cancelLabel={t("cancel")}
         onConfirm={handleConfirmDeleteGroup}
         isLoading={isDeletingGroup}
+      />
+
+      <ConfirmDialog
+        open={!!groupPendingLongRest}
+        onOpenChange={(open) => {
+          if (!open && !isRestingGroup) setGroupPendingLongRest(null);
+        }}
+        title={t("longRestGroupDialogTitle", { group: groupPendingLongRest?.label ?? "" })}
+        description={t("longRestGroupDialogDescription", {
+          players: (groupPendingLongRest?.characters ?? []).filter((c) => !isNpcGroupCharacter(c)).length,
+          npcs: (groupPendingLongRest?.characters ?? []).filter((c) => isNpcGroupCharacter(c)).length,
+        })}
+        confirmLabel={t("longRestGroupConfirm")}
+        cancelLabel={t("cancel")}
+        onConfirm={handleConfirmGroupLongRest}
+        isLoading={isRestingGroup}
+        destructive={false}
       />
 
       <ConfirmDialog
