@@ -15,7 +15,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import CharacterService from "@/services/CharacterService";
+import { UnlinkNpcConfirmDialog } from "@/components/layout/Sidebar/shared/UnlinkNpcConfirmDialog";
 import { characterDisplayName } from "@/lib/duplicateName";
+import { truncateForToast } from "@/lib/truncateForSidebarMenuLabel";
 import { companionsOfPlayer, sortCompanionsByDisplayName } from "@/lib/sessionPlayerCompanions";
 import {
   applyCompanionLinkChange,
@@ -77,6 +79,7 @@ export default function CharacterCompanionsTabContent({
   const [unlinkedNpcs, setUnlinkedNpcs] = useState<NPC[]>([]);
   const [loadingUnlinked, setLoadingUnlinked] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
+  const [npcPendingUnlink, setNpcPendingUnlink] = useState<NPC | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const companionsRef = useRef<NPC[]>([]);
   companionsRef.current = companions;
@@ -167,10 +170,19 @@ export default function CharacterCompanionsTabContent({
         );
         dispatch(upsertPlayerSpaceNpc(updated));
         setCompanions((current) => applyCompanionLinkChange(current, updated, playerId));
-        showToast(linkedPlayerId ? tSidebar("linkNpcSuccess") : tSidebar("unlinkNpcSuccess"), "success");
+        showToast(
+          linkedPlayerId
+            ? tSidebar("linkNpcSuccess")
+            : tSidebar("unlinkNpcSuccess", {
+                name: truncateForToast(characterDisplayName(npc) || tSidebar("unnamedCharacter")),
+              }),
+          "success",
+        );
         if (linkedPlayerId) {
           setUnlinkedNpcs((current) => current.filter((item) => item._id !== npc._id));
           setLinkOpen(false);
+        } else {
+          setNpcPendingUnlink(null);
         }
       } catch {
         showToast(linkedPlayerId ? tSidebar("linkNpcError") : tSidebar("unlinkNpcError"), "error");
@@ -219,13 +231,14 @@ export default function CharacterCompanionsTabContent({
       <Button
         type="button"
         variant="secondary"
+        aria-label={t("linkExisting")}
         onClick={() => void openLinkDialog()}
         disabled={isLinking}>
         <Link2
           className="size-4"
           aria-hidden="true"
         />
-        {t("linkExisting")}
+        <span className="sr-only min-[375px]:not-sr-only">{t("linkExisting")}</span>
       </Button>
       <CreateCharacterDialog
         npcOnly
@@ -233,12 +246,13 @@ export default function CharacterCompanionsTabContent({
         <Button
           type="button"
           variant="primary"
+          aria-label={t("createLinked")}
           disabled={isLinking}>
           <UserPlus
             className="size-4"
             aria-hidden="true"
           />
-          {t("createLinked")}
+          <span className="sr-only min-[375px]:not-sr-only">{t("createLinked")}</span>
         </Button>
       </CreateCharacterDialog>
     </>
@@ -279,7 +293,7 @@ export default function CharacterCompanionsTabContent({
                     isEditing={showLiaisonActions}
                     isPersisting={isLinking}
                     sessionCode={sessionCodeForLookup}
-                    onUnlink={(companion) => void persistNpcLink(companion, null)}
+                    onUnlink={setNpcPendingUnlink}
                   />
                 </li>
               ))}
@@ -333,6 +347,17 @@ export default function CharacterCompanionsTabContent({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <UnlinkNpcConfirmDialog
+        npcName={npcPendingUnlink ? characterDisplayName(npcPendingUnlink) : null}
+        playerName={characterDisplayName(player)}
+        onCancel={() => setNpcPendingUnlink(null)}
+        onConfirm={() => {
+          if (!npcPendingUnlink) return;
+          void persistNpcLink(npcPendingUnlink, null);
+        }}
+        isLoading={isLinking}
+      />
     </section>
   );
 }

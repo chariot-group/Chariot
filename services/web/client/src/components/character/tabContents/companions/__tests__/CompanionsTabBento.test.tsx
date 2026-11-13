@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
 import { BREAKPOINTS, emptyCells, place, spanAt } from "@/components/character/tabContents/__tests__/bentoPlacement";
@@ -26,15 +28,31 @@ describe("Companions tab bento layout", () => {
     });
   }
 
-  it("nominal: toolbar on its own row, companions full width below xl then two per row", () => {
+  it("nominal: toolbar on its own row, companions full width below lg, two per row at lg, three from xl", () => {
     const three = [COMPANIONS_SLOTS.companion, COMPANIONS_SLOTS.companion, COMPANIONS_SLOTS.companion];
     expect(spanAt(COMPANIONS_SLOTS.companion, "col", BREAKPOINTS.mobile)).toBe(2);
     expect(spanAt(COMPANIONS_SLOTS.companion, "col", BREAKPOINTS.tablet)).toBe(4);
-    expect(spanAt(COMPANIONS_SLOTS.companion, "col", BREAKPOINTS.desktop)).toBe(6);
+    expect(spanAt(COMPANIONS_SLOTS.companion, "col", BREAKPOINTS.laptop)).toBe(2);
+    expect(spanAt(COMPANIONS_SLOTS.companion, "col", BREAKPOINTS.desktop)).toBe(4);
     expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.mobile)).toHaveLength(4);
     expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.tablet)).toHaveLength(4);
-    expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.desktop)).toHaveLength(3);
+    expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.laptop)).toHaveLength(3);
+    expect(place([COMPANIONS_SLOTS.toolbar, ...three], BREAKPOINTS.desktop)).toHaveLength(2);
     expect(spanAt(COMPANIONS_SLOTS.toolbar, "col", BREAKPOINTS.desktop)).toBe(12);
+  });
+
+  it("nominal: empty-state cards stack below lg (no sm-level split), then split 2+2 at lg", () => {
+    expect(spanAt(COMPANIONS_SLOTS.emptyIntro, "col", BREAKPOINTS.mobile)).toBe(2);
+    expect(spanAt(COMPANIONS_SLOTS.emptyIntro, "col", BREAKPOINTS.tablet)).toBe(4);
+    expect(spanAt(COMPANIONS_SLOTS.emptyIntro, "col", BREAKPOINTS.laptop)).toBe(2);
+    expect(spanAt(COMPANIONS_SLOTS.emptyIntro, "col", BREAKPOINTS.desktop)).toBe(8);
+    expect(spanAt(COMPANIONS_SLOTS.emptyExamples, "col", BREAKPOINTS.mobile)).toBe(2);
+    expect(spanAt(COMPANIONS_SLOTS.emptyExamples, "col", BREAKPOINTS.tablet)).toBe(4);
+    expect(spanAt(COMPANIONS_SLOTS.emptyExamples, "col", BREAKPOINTS.laptop)).toBe(2);
+    expect(spanAt(COMPANIONS_SLOTS.emptyExamples, "col", BREAKPOINTS.desktop)).toBe(4);
+    // Below lg, both empty-state cards are full width of their own grid (stacked, one per row).
+    expect(place([COMPANIONS_SLOTS.emptyIntro, COMPANIONS_SLOTS.emptyExamples], BREAKPOINTS.tablet)).toHaveLength(2);
+    expect(place([COMPANIONS_SLOTS.emptyIntro, COMPANIONS_SLOTS.emptyExamples], BREAKPOINTS.laptop)).toHaveLength(1);
   });
 
   it("nominal: empty state renders the two cards as direct grid children, buttons inside the first", () => {
@@ -44,10 +62,24 @@ describe("Companions tab bento layout", () => {
     expect(children[0]).toContain(COMPANIONS_SLOTS.emptyIntro);
     expect(children[1]).toContain(COMPANIONS_SLOTS.emptyExamples);
     expect(html.indexOf("link-action")).toBeLessThan(html.indexOf("companions-examples-title"));
-    expect(html).toMatch(/class="mt-auto flex flex-wrap justify-end[^"]*"><button[^>]*>link-action/);
+    expect(html).toMatch(/class="mt-auto flex flex-nowrap justify-end[^"]*"><button[^>]*>link-action/);
+    expect(html).not.toContain("flex-wrap");
     expect(html).not.toContain("emptyActionHint");
     // Headings in the tab violet, readable on the card (design.md violet usage rule).
     expect(html.match(/<h2[^>]*text-primary-light/g)).toHaveLength(2);
+  });
+
+  it("edge: empty-state CTA row never wraps and the buttons stay accessible icon-only below 375px", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "src/components/character/tabContents/companions/CharacterCompanionsTabContent.tsx"),
+      "utf8",
+    );
+    expect(source).toMatch(/aria-label=\{t\("linkExisting"\)\}/);
+    expect(source).toMatch(/aria-label=\{t\("createLinked"\)\}/);
+    // Custom breakpoint (not `sm`): 375px, below the measured minimum (420px) for the longest
+    // (ES) translation — the ES label can clip on narrow ES phones (decision 2026-11-13 amended).
+    expect(source).toContain('<span className="sr-only min-[375px]:not-sr-only">{t("linkExisting")}</span>');
+    expect(source).toContain('<span className="sr-only min-[375px]:not-sr-only">{t("createLinked")}</span>');
   });
 
   it("edge: headings are unique and every aria-labelledby resolves", () => {

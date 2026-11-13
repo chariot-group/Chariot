@@ -36,6 +36,7 @@ import { Character, NPC } from "@/types/character";
 import { isPlayer } from "@/utils/global.utils";
 import { SidebarItemWithActions } from "@/components/layout/Sidebar/shared/SidebarItemWithActions";
 import { ConfirmDialog } from "@/components/layout/Sidebar/shared/ConfirmDialog";
+import { UnlinkNpcConfirmDialog } from "@/components/layout/Sidebar/shared/UnlinkNpcConfirmDialog";
 import {
   deletePlayerCharacterWithCompanionChoice,
   linkedCompanionsForPlayer,
@@ -78,7 +79,7 @@ import {
   sidebarCharacterAvatarImageUrl,
 } from "@/lib/buildSidebarCharacterAvatarBatch";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
-import { truncateForSidebarMenuLabel } from "@/lib/truncateForSidebarMenuLabel";
+import { truncateForSidebarMenuLabel, truncateForToast } from "@/lib/truncateForSidebarMenuLabel";
 
 /**
  * Liste des joueurs sans groupe : la zone défilante occupe toute la hauteur restante de la sidebar (sous le titre et « Créer »).
@@ -102,11 +103,8 @@ export default function CharactersWithoutGroupList() {
   const isInSession = useAppSelector(selectIsInSession);
   const sessionCode = useAppSelector(selectSessionCode);
   const isSessionLaunched = useAppSelector(selectIsSessionLaunched);
-  const currentParticipant = useAppSelector((state) =>
-    selectCurrentUserParticipant(state, user?.keycloakId ?? ""),
-  );
-  const sessionCharacterId =
-    isSessionLaunched ? (currentParticipant?.characterId ?? null) : null;
+  const currentParticipant = useAppSelector((state) => selectCurrentUserParticipant(state, user?.keycloakId ?? ""));
+  const sessionCharacterId = isSessionLaunched ? (currentParticipant?.characterId ?? null) : null;
   const actionsDisabled = isSessionLaunched;
   // Expanded only for the session code it was opened in: collapsed by default in every new session.
   const [outOfSessionOpenCode, setOutOfSessionOpenCode] = useState<string | null>(null);
@@ -116,6 +114,7 @@ export default function CharactersWithoutGroupList() {
   const [characterToDuplicate, setCharacterToDuplicate] = useState<Character | null>(null);
   const [npcPendingLink, setNpcPendingLink] = useState<NPC | null>(null);
   const [npcPendingReassign, setNpcPendingReassign] = useState<{ npc: NPC; player: Character } | null>(null);
+  const [npcPendingUnlink, setNpcPendingUnlink] = useState<NPC | null>(null);
   const [isLinkingNpc, setIsLinkingNpc] = useState(false);
   const { characterToExport, requestCharacterPdfExport, closeExportDialog } = useSidebarCharacterPdfExport();
 
@@ -164,6 +163,12 @@ export default function CharactersWithoutGroupList() {
           deleteLinkedCompanions,
           companions: pendingDeleteCompanions,
         });
+        showToast(
+          t("deletePlayerSuccess", {
+            name: truncateForToast(characterDisplayName(characterPendingDelete) || t("unnamedCharacter")),
+          }),
+          "success",
+        );
       } else {
         await CharacterService.deleteCharacter(deletingCharacterId);
         dispatch(removeCharacterWithoutGroup(deletingCharacterId));
@@ -301,9 +306,15 @@ export default function CharactersWithoutGroupList() {
         (id, payload) => CharacterService.updateCharacter("npcs", id, payload) as Promise<NPC>,
       );
       dispatch(upsertPlayerSpaceNpc(updated));
-      showToast(linkedPlayerId ? t("linkNpcSuccess") : t("unlinkNpcSuccess"), "success");
+      showToast(
+        linkedPlayerId
+          ? t("linkNpcSuccess")
+          : t("unlinkNpcSuccess", { name: truncateForToast(characterDisplayName(npc) || t("unnamedCharacter")) }),
+        "success",
+      );
       setNpcPendingLink(null);
       setNpcPendingReassign(null);
+      setNpcPendingUnlink(null);
     } catch {
       showToast(linkedPlayerId ? t("linkNpcError") : t("unlinkNpcError"), "error");
     } finally {
@@ -321,10 +332,14 @@ export default function CharactersWithoutGroupList() {
     void persistNpcLink(npcPendingLink, player._id);
   };
 
-  const unlinkNpcMenuLabels = (npc: Character): { label: string; labelTitle?: string } => {
+  const linkedPlayerNameOf = (npc: Character): string => {
     const linkedPlayerId = isPlayer(npc) ? null : linkedPlayerIdOf(npc as NPC);
     const linkedPlayer = linkedPlayerId ? characters.find((c) => c._id === linkedPlayerId) : undefined;
-    const linkedPlayerName = linkedPlayer ? characterDisplayName(linkedPlayer) : "";
+    return linkedPlayer ? characterDisplayName(linkedPlayer) : "";
+  };
+
+  const unlinkNpcMenuLabels = (npc: Character): { label: string; labelTitle?: string } => {
+    const linkedPlayerName = linkedPlayerNameOf(npc);
     if (!linkedPlayerName) {
       return { label: t("unlinkNpc") };
     }
@@ -359,7 +374,7 @@ export default function CharactersWithoutGroupList() {
         id: "unlink",
         ...unlinkNpcMenuLabels(character),
         onSelect: () => {
-          void persistNpcLink(character as NPC, null);
+          setNpcPendingUnlink(character as NPC);
         },
       },
       reassign: {
@@ -725,6 +740,17 @@ export default function CharactersWithoutGroupList() {
         }}
         isLoading={isLinkingNpc}
         destructive={false}
+      />
+
+      <UnlinkNpcConfirmDialog
+        npcName={npcPendingUnlink ? characterDisplayName(npcPendingUnlink) : null}
+        playerName={npcPendingUnlink ? linkedPlayerNameOf(npcPendingUnlink) : ""}
+        onCancel={() => setNpcPendingUnlink(null)}
+        onConfirm={() => {
+          if (!npcPendingUnlink) return;
+          void persistNpcLink(npcPendingUnlink, null);
+        }}
+        isLoading={isLinkingNpc}
       />
     </nav>
   );

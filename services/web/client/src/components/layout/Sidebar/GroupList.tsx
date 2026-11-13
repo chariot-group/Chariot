@@ -51,6 +51,7 @@ import { moveCharacterToGroup } from "@/lib/moveCharacterToGroup";
 import { showToast } from "@/lib/toast";
 import { canMoveCharacterToAnotherGroup } from "@/lib/canMoveCharacterToAnotherGroup";
 import { buildSequentialCopyNames, characterDisplayName } from "@/lib/duplicateName";
+import { truncateForToast } from "@/lib/truncateForSidebarMenuLabel";
 import {
   selectIsInSession,
   selectSessionCode,
@@ -319,6 +320,12 @@ export default function GroupList({
             companions: deleteCompanionsPreview,
             campaignGroupId: groupId,
           });
+          showToast(
+            t("deletePlayerSuccess", {
+              name: truncateForToast(characterDisplayName(character) || t("unnamedCharacter")),
+            }),
+            "success",
+          );
         } else {
           await CharacterService.deleteCharacter(deletingCharacterId);
           dispatch(removeCharacterFromGroup({ groupId, characterId: deletingCharacterId }));
@@ -343,6 +350,7 @@ export default function GroupList({
       isDeletingCharacter,
       navigateAfterGroupCharacterDelete,
       selectedCampaignId,
+      t,
     ],
   );
 

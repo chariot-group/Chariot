@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonVariant } from "@/components/ui/button";
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -21,6 +21,8 @@ export interface ConfirmDialogProps {
   onConfirm: () => void | Promise<void>;
   isLoading?: boolean;
   destructive?: boolean;
+  /** Overrides the non-destructive confirm button's variant (defaults to `accent`). */
+  confirmVariant?: ButtonVariant;
 }
 
 export function ConfirmDialog({
@@ -33,6 +35,7 @@ export function ConfirmDialog({
   onConfirm,
   isLoading = false,
   destructive = true,
+  confirmVariant,
 }: ConfirmDialogProps) {
   const handleConfirm = React.useCallback(() => {
     void onConfirm();
@@ -79,7 +82,7 @@ export function ConfirmDialog({
           </Button>
           <Button
             type="button"
-            variant={destructive ? "destructive" : "accent"}
+            variant={destructive ? "destructive" : (confirmVariant ?? "accent")}
             disabled={isLoading}
             onClick={handleConfirm}>
             {confirmLabel}

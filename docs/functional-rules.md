@@ -4647,18 +4647,19 @@ Each initiative tracker row carries:
 - Tab is visible in read and edit modes on Player sheets in Player space only (typically standalone `/characters/[id]` while `contextMode === "player"`). Campaign character routes while `contextMode === "gm"` MUST NOT show it.
 - Read mode: list linked NPCs as **Cards** (existing `Card` primitive, `bg-card` / `bg-gray-middle-light`) in the Companions tab bento grid (full width below `xl`, two per row from `xl`; see layout section below). Each card MUST reuse the read-mode « Personnage » card presentation (FR-character-identity-card): the NPC name is the card heading (bold, tab violet `text-primary-light`) with the nickname in muted italic « » below, in the column beside the avatar (4:5, User placeholder when missing); the same NPC fact cells as the « Personnage » card (Type + subtype, Alignement, Facteur de puissance + XP) MUST render **in that column under the name block**, using the vertical space next to the avatar (they MUST NOT sit on a separate full-width band below the header row). **Type** and **Alignement** MUST appear **side by side** (two columns) on typical viewports; an odd third cell (FP / XP) spans the row below. When the NPC belongs to a group, the first group label MAY appear as a muted line under the name block. The fact cells MUST come from the same source as the « Personnage » card so both surfaces stay identical. Cards in the same bento row MUST stretch to equal height (`h-full` on the card, grid default align-stretch). A **reserved min-height band** for the nickname line MUST keep cards without a nickname the same header height as cards with one (bento row alignment). Cards MUST NOT show a PNJ kind badge (the tab is NPC-only) and MUST NOT show « Lié à {Player} » (already on the Player sheet). The **full card surface** MUST navigate to the NPC sheet (not only the avatar or the name). Empty state is explicit. Names truncate (`truncate` / `min-w-0`).
 - Read and edit mode (Player space, liaison actions enabled): the same list plus actions to **link** an owned **Player-space** unlinked NPC (no group — the same set as root NPC rows in Mes personnages), **unlink**, and **create** a new NPC already linked to this Player. Managing liaisons MUST NOT require entering full-sheet edit mode for the other tabs. **Create** MUST open the existing create-character dialog limited to **manual NPC** and **community library (Codex)** (no Player choice). Manual NPC and Codex MUST preserve `linkedPlayerId` through to the NPC create form. Codex in this flow MUST search monsters only (kind-preserving: a premade Codex player is not an NPC). The link picker MUST NOT list NPCs that belong to a campaign group. Reassignment of an NPC already linked to another owned Player MUST ask for confirmation.
-- Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST NOT open a confirmation dialog. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
+- Link and unlink from this tab MUST persist `linkedPlayerId` **immediately** via the NPC update API (same persistence semantics as FR-sidebar-npc-link: Redux Player-space NPC lists update on success, success/error toasts). Clicking unlink MUST open the unlink confirmation dialog defined in FR-sidebar-npc-link; the API call runs only after confirmation. Unlink MUST be a footer action below the card identity (not beside the avatar) and MUST remain outside the navigation hit target. The Companions tab MUST NOT use draft-only liaisons or a dedicated Save control for link/unlink.
 - Keyboard, `tablist` / `tab` / `tabpanel` ARIA, visible focus, and error-tab indicators follow FR-character-detail-view and FR-frontend-design. Sidebar NPC rows still require a text kind badge (color MUST NOT be the only channel). Companions-tab cards MUST NOT repeat that badge.
 
 **Companions tab — bento layout** (aligned with FR-character-history-bento-layout / FR-character-inventory-bento-layout):
 
 - The tab MUST use the shared viewport bento grid (`BENTO_GRID_CLASS`: 2 / 4 / 12 columns, one gap) with its slots in a dedicated layout file; every card is a direct grid child (the companion list uses `display: contents` with `role="list"`), no `h-fit`. Fixed bands (toolbar, empty state) leave no empty cell at 2 / 4 / 12 columns; only the last row of the companion list MAY be partial (variable count).
-- **With companions** (decision 2026-11-13 amended): liaison actions (when enabled) form a full-width toolbar row (link `secondary`, create-linked `primary`); each companion card is a direct grid child: **full width below `xl`** (`col-span-2` / `sm:col-span-4`), **half width from `xl`** (`col-span-6`, two cards per row) so identity facts and names have more room.
-- **Empty state**: no free-floating bordered box. Two `GeneralSectionCard` on one band: **« Aucun compagnon pour l'instant »** (description; when liaison actions are enabled the link / create-linked buttons sit inside this card, at its bottom right, the separate toolbar is not rendered and the « boutons ci-dessus » hint is removed) and **« Quelques exemples »** (the two examples separated by a thin line, FR-character-statistics-card, decision 2026-11-13: no background, with a decorative icon). Full width each below `sm`, 2 + 2 at `sm`, 8 + 4 at `xl`. Session GM (no liaison actions): same two cards, no buttons.
+- **With companions** (decision 2026-11-13 amended twice): liaison actions (when enabled) form a full-width toolbar row (link `secondary`, create-linked `primary`); each companion card is a direct grid child: **full width below `lg`** (`col-span-2` / `sm:col-span-4`, mobile and tablet unchanged), **half width from `lg`** (`lg:col-span-2`, two cards per row — laptop), **a third from `xl`** (`xl:col-span-4`, three cards per row) so cards stop growing past tablet width on larger screens. `CharacterIdentityCard`'s fact-cell columns are driven by the card's own `@container` width, not the viewport, so they keep reflowing correctly at three per row.
+- **Empty state**: no free-floating bordered box. Two `GeneralSectionCard` on one band: **« Aucun compagnon pour l'instant »** (description; when liaison actions are enabled the link / create-linked buttons sit inside this card, at its bottom right, the separate toolbar is not rendered and the « boutons ci-dessus » hint is removed) and **« Quelques exemples »** (the examples separated by a thin line, FR-character-statistics-card, decision 2026-11-13: no background, with a decorative icon; three from 2026-11-13 — familiar, druid Wild Shape, secondary NPC). Full width each below `lg` (decision 2026-11-13 amended: raised from `sm` — two side-by-side cards were too cramped on tablet and narrow laptop widths), 2 + 2 at `lg`, 8 + 4 at `xl`. Session GM (no liaison actions): same two cards, no buttons.
+- **Empty-state CTA row** (decision 2026-11-13, amended twice same day): the link / create-linked buttons in the « Aucun compagnon pour l'instant » card MUST stay on a single row at every screen width (no wrap, no horizontal scroll). Below a **375px** viewport width (custom breakpoint, `min-[375px]:`, not the `sm` token), each button is **icon-only** (label `sr-only`, `aria-label` set to the button's full text, same pattern as `InitiativeTrackerTurnControls`); from 375px, the label becomes visible again (`sr-only min-[375px]:not-sr-only`) alongside the icon, matching the design.md §6.1 "icon-only responsive buttons" convention. The breakpoint is a deliberate accepted trade-off (decision 2026-11-13, product call): with the real `Inter Tight` font and page/card padding, 375px fits the FR and EN labels (measured minimum ~350px / ~380px) but **not** the longest ES translation (measured minimum 420px) — on an ES phone narrower than ~420px, the ES label can be clipped at the right edge of the card between 375px and 420px. If this is reported as a real-world issue, lower the breakpoint is not the fix (it would only move the same trade-off); shorten the ES strings or switch to per-locale breakpoints instead.
 - Card headings use the tab violet as text (`text-primary-light`, `docs/design.md` violet usage rule: `purple` / `#4e00de` is unreadable as text on `bg-card`).
 - Create-linked is a `primary` button (white fill, dark text, like the sheet Edit button); link stays `secondary`.
 - The Companions skeleton (FR-character-sheet-skeleton) MUST use the same grid and slots (toolbar row + companion card placeholders).
-- Tests: nominal — with companions, one grid whose direct children are the toolbar and the cards with their slot classes; edge — empty state renders the two cards with unique headings resolving `aria-labelledby`, buttons inside the first card when actions are enabled; guard — session GM empty state renders no link / create button.
+- Tests: nominal — with companions, one grid whose direct children are the toolbar and the cards with their slot classes, companion slot carries `lg:col-span-2 xl:col-span-4`; edge — empty state cards carry `lg:col-span-2` / `xl:col-span-8` and `xl:col-span-4` (no `sm`-level split) and render with unique headings resolving `aria-labelledby`, buttons inside the first card when actions are enabled; guard — session GM empty state renders no link / create button; edge — empty-state CTA buttons have `aria-label`, an `sr-only sm:not-sr-only` label span, and their row wrapper has no `flex-wrap`.
 
 **Companions tab — search** (decision 2026-11-13):
 
@@ -4697,7 +4698,7 @@ Each initiative tracker row carries:
 
 - Nested sidebar lists MUST use a list structure with accessible names (Player name + companion list; each NPC name includes a PNJ kind label). Root unlinked NPCs MUST also include the PNJ kind label in their accessible name.
 - Link / unlink / create controls MUST be keyboard-operable with visible focus.
-- Reassignment confirmation dialogs follow FR-sidebar-context-actions (Enter confirm, Escape cancel). Unlink from the Companions tab MUST NOT use a confirmation dialog.
+- Reassignment and unlink confirmation dialogs follow FR-sidebar-context-actions (Enter confirm, Escape cancel).
 
 **Prohibitions**:
 
@@ -4721,7 +4722,7 @@ Each initiative tracker row carries:
 
 - Nominal: in Player space, link an owned NPC to an owned Player **and save the Player form** → NPC has `linkedPlayerId`; Player Companions tab lists it; Player sidebar nests it under that Player.
 - Nominal: selecting an NPC in the Companions picker while editing does not persist until Save.
-- Nominal: unlinking a companion in edit mode removes it from the draft list immediately, without a confirmation dialog, and persists only on Save.
+- Nominal: unlinking a companion from the Companions tab opens the unlink confirmation dialog; on confirm `linkedPlayerId: null` is persisted immediately and the card leaves the list; Cancel/Escape keeps it linked.
 - Nominal: Companions « create linked » opens the create-character dialog limited to NPC + Codex; a Codex monster pre-fills the NPC form with `linkedPlayerId`.
 - Nominal: Player with several linked NPCs shows all of them nested in the Player sidebar and listed on the tab as a responsive Card grid with avatar, name, and CR/XP (no kind badge).
 - Edge: unlinked without-group NPC appears as a root row in the Player sidebar; NPC sheet has no Companions tab and no « Lié à » metadata.
@@ -4831,14 +4832,22 @@ Each initiative tracker row carries:
 **NPC menu actions**:
 
 - **Unlinked root NPC**: menu item **Link to a character** (i18n: FR « Lier à un personnage », EN « Link to a character », ES « Vincular a un personaje »). MUST open a Player picker dialog listing owned Players currently visible in Mes personnages (without-group Players). Confirming a Player MUST persist `linkedPlayerId` immediately and nest the NPC under that Player. Empty state MUST be explicit when no Player is available. The picker MUST NOT list NPCs, GM-only characters, or Players the requester does not own.
-- **Linked nested NPC**: menu item **Unlink** (i18n: FR « Délier », EN « Unlink », ES « Desvincular »). MUST persist `linkedPlayerId: null` immediately. MUST NOT open a confirmation dialog (same as Companions-tab unlink). After success, the NPC MUST leave the nested list: without-group NPCs become a root row; NPCs that still belong to a campaign group MUST disappear from Mes personnages (they remain in the GM group list).
+- **Linked nested NPC**: menu item **Unlink** (i18n: FR « Délier », EN « Unlink », ES « Desvincular »). MUST open an unlink confirmation dialog (same as Companions-tab unlink); confirming MUST persist `linkedPlayerId: null` immediately, Cancel/Escape MUST abort with no change. After success, the NPC MUST leave the nested list: without-group NPCs become a root row; NPCs that still belong to a campaign group MUST disappear from Mes personnages (they remain in the GM group list).
 - **Linked nested NPC**: menu item **Link to another character** (i18n: FR « Lier à un autre personnage », EN « Link to another character », ES « Vincular a otro personaje »). MUST open the same Player picker, excluding the currently linked Player. Confirming a different Player is a **reassignment** and MUST ask for confirmation (FR-npc-player-link). On confirm, persist the new `linkedPlayerId` immediately and nest under the new Player.
 
 **Persistence**:
 
 - Sidebar and Companions-tab link/unlink/reassign MUST call the NPC update API immediately. They MUST NOT wait for a Player sheet Save.
 - On success, Redux Player-space NPC lists MUST update so the sidebar re-nests without a full page reload (toast success).
+- The unlink success toast (sidebar and Companions tab) MUST name the NPC: FR « {name} retiré avec succès. », EN « {name} removed successfully. », ES « {name} quitado con éxito. ». `{name}` is the NPC display name, truncated to `TOAST_EMBEDDED_NAME_MAX_LENGTH` (32 chars, ellipsis), like group/campaign success toasts.
 - On API failure, the sidebar MUST keep the previous nesting and show an error toast.
+
+### Unlink confirmation
+
+- Every unlink entry point (sidebar context/overflow menu, Companions-tab card action) MUST open the same confirmation dialog before calling the API.
+- Wording follows the existing « Retirer » vocabulary of the unlink menu item and toast. Title: FR « Retirer le PNJ », EN « Remove NPC », ES « Quitar PNJ ». Description: FR « Voulez-vous retirer {npc} des compagnons de {player} ? Le PNJ restera dans vos personnages. », EN « Remove {npc} from {player}'s companions? The NPC will stay in your characters. », ES « ¿Quitar a {npc} de los compañeros de {player}? El PNJ seguirá en tus personajes. ». Confirm: FR « Retirer », EN « Remove », ES « Quitar ». Cancel: shared « Annuler ».
+- `{npc}` and `{player}` are display names truncated to `TOAST_EMBEDDED_NAME_MAX_LENGTH` (32 chars).
+- The confirm action is non-destructive styling (the NPC is not deleted): `primary` button variant (white fill, dark text), not `accent` or `destructive`. Enter confirms, Escape/Cancel closes without change; controls are disabled while the request is pending and the dialog stays open on API failure.
 
 **Session and GM**:
 
@@ -4860,18 +4869,21 @@ Each initiative tracker row carries:
 - Draft-only sidebar linking (Companions-tab Save gating MUST NOT apply here).
 - Linking to a Player not visible in Mes personnages (the NPC would vanish from both root and nested lists).
 - Silent reassignment without confirmation.
-- Confirmation dialog on simple unlink.
+- Unlinking without the confirmation dialog.
 - Hardcoded labels bypassing i18n.
 
 **Tests**:
 
 - Nominal: right-click (or overflow) on an unlinked root NPC → pick a visible Player → NPC nests under that Player; `linkedPlayerId` persisted.
-- Nominal: unlink a nested without-group NPC → NPC becomes a root row; `linkedPlayerId` is null.
+- Nominal: Unlink opens the confirmation dialog naming the NPC and the Player; confirming persists `linkedPlayerId: null` and the NPC becomes a root row.
+- Edge: Cancel or Escape in the unlink dialog → no API call, nesting unchanged.
 - Nominal: overflow menu on tablet/mobile exposes the same items and handlers as the context menu.
 - Edge: unlink a nested NPC that still has a campaign group → it leaves Mes personnages and stays in the GM group list.
 - Edge: reassign from Player A to Player B → confirmation required; after confirm, nested only under B.
 - Edge: picker empty when Mes personnages has no Player; Link remains available but cannot persist.
 - Edge: launched session disables link/unlink like Edit/Delete.
+- Nominal: unlink success toast reads « {NPC name} retiré avec succès. ».
+- Edge: NPC name longer than 32 characters → truncated with « … » in the toast.
 - Failure: API error → toast error, previous sidebar nesting unchanged.
 - Failure: GM group NPC rows MUST NOT show link/unlink.
 
@@ -5403,6 +5415,7 @@ Each initiative tracker row carries:
 - Primary destructive action MUST be **delete Player and companions**; secondary confirm MUST be **delete Player only / keep companions**; **Cancel** MUST abort with no deletion.
 - Enter MUST NOT auto-trigger destructive delete when multiple outcomes exist (explicit button activation only).
 - Escape and Cancel MUST close without deleting.
+- After a successful Player deletion (from either dialog, whatever the companion outcome), a success toast MUST name the Player: FR « {name} supprimé avec succès. », EN « {name} deleted successfully. », ES « {name} eliminado con éxito. ». `{name}` is the Player display name truncated to `TOAST_EMBEDDED_NAME_MAX_LENGTH` (32 chars). On API failure, no success toast is shown.
 
 **API**:
 
@@ -5421,6 +5434,8 @@ Each initiative tracker row carries:
 - Edge: Player with zero companions → existing single confirm only.
 - Edge: NPC delete → no companion dialog; no cascade param effect.
 - Failure: invalid cascade on non-Player → ignore flag, normal delete.
+- Nominal: Player deletion success → toast « {Player name} supprimé avec succès. » (truncated beyond 32 chars).
+- Failure: Player delete API error → no success toast.
 
 **References**:
 

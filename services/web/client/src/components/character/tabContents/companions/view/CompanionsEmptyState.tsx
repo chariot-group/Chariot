@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { PawPrint, Users } from "lucide-react";
+import { PawPrint, RefreshCw, Users } from "lucide-react";
 import GeneralSectionCard from "@/components/character/tabContents/general/shared/GeneralSectionCard";
 import { COMPANIONS_SLOTS } from "@/components/character/tabContents/companions/shared/companionsBentoLayout";
 
@@ -20,6 +20,7 @@ export function CompanionsEmptyState({ actions }: CompanionsEmptyStateProps) {
   const t = useTranslations("characterDetail.companions");
   const examples = [
     { key: "familiar", icon: PawPrint, label: t("emptyExampleFamiliar") },
+    { key: "wildShape", icon: RefreshCw, label: t("emptyExampleWildShape") },
     { key: "secondaryNpc", icon: Users, label: t("emptyExampleSecondaryNpc") },
   ];
 
@@ -31,7 +32,7 @@ export function CompanionsEmptyState({ actions }: CompanionsEmptyStateProps) {
         accentColor="text-primary-light"
         className={COMPANIONS_SLOTS.emptyIntro}>
         <p className="text-sm md:text-base text-white/80">{t("emptyDescription")}</p>
-        {actions ? <div className="mt-auto flex flex-wrap justify-end gap-2 pt-1">{actions}</div> : null}
+        {actions ? <div className="mt-auto flex flex-nowrap justify-end gap-2 pt-1">{actions}</div> : null}
       </GeneralSectionCard>
 
       <GeneralSectionCard
