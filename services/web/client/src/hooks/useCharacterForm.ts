@@ -16,6 +16,40 @@ import { withNormalizedLinkedPlayerId } from '@/lib/sessionPlayerCompanions';
 import { upsertCharacterInGroups } from '@/store/slices/groupSlice';
 import { pruneOrphanSpellSlotsByLevel } from '@/utils/magic.utils';
 
+// Normalise les clés numériques de spellSlotsByUses en "k{n}" pour éviter
+// que react-hook-form les interprète comme des indices de tableau.
+export const normalizeSpellSlots = (data: unknown): unknown => {
+    if (typeof data !== 'object' || data === null || !('spellcasting' in data)) {
+        return data;
+    }
+
+    const source = data as { spellcasting?: unknown };
+    if (!Array.isArray(source.spellcasting)) {
+        return data;
+    }
+
+    return {
+        ...(data as Record<string, unknown>),
+        spellcasting: source.spellcasting.map((sc) => {
+            if (typeof sc !== 'object' || sc === null || !('spellSlotsByUses' in sc)) {
+                return sc;
+            }
+
+            const slots = (sc as { spellSlotsByUses?: unknown }).spellSlotsByUses;
+            if (typeof slots !== 'object' || slots === null || Array.isArray(slots)) {
+                return sc;
+            }
+
+            const normalized: Record<string, unknown> = {};
+            for (const [k, v] of Object.entries(slots as Record<string, unknown>)) {
+                normalized[/^\d+$/.test(k) ? `k${k}` : k] = v;
+            }
+
+            return { ...(sc as Record<string, unknown>), spellSlotsByUses: normalized };
+        }),
+    };
+};
+
 /**
  * Type de personnage supporté
  */
@@ -171,40 +205,6 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
 
     const { isDirty } = useFormState({ control: form.control });
 
-    // Normalise les clés numériques de spellSlotsByUses en "k{n}" pour éviter
-    // que react-hook-form les interprète comme des indices de tableau.
-    const normalizeSpellSlots = (data: unknown): unknown => {
-        if (typeof data !== 'object' || data === null || !('spellcasting' in data)) {
-            return data;
-        }
-
-        const source = data as { spellcasting?: unknown };
-        if (!Array.isArray(source.spellcasting)) {
-            return data;
-        }
-
-        return {
-            ...(data as Record<string, unknown>),
-            spellcasting: source.spellcasting.map((sc) => {
-                if (typeof sc !== 'object' || sc === null || !('spellSlotsByUses' in sc)) {
-                    return sc;
-                }
-
-                const slots = (sc as { spellSlotsByUses?: unknown }).spellSlotsByUses;
-                if (typeof slots !== 'object' || slots === null || Array.isArray(slots)) {
-                    return sc;
-                }
-
-                const normalized: Record<string, unknown> = {};
-                for (const [k, v] of Object.entries(slots as Record<string, unknown>)) {
-                    normalized[/^\d+$/.test(k) ? `k${k}` : k] = v;
-                }
-
-                return { ...(sc as Record<string, unknown>), spellSlotsByUses: normalized };
-            }),
-        };
-    };
-
     // Chargement / resync depuis le serveur (ne pas écraser des changements locaux non sauvegardés)
     useEffect(() => {
         if (!character || !characterId) return;
@@ -329,7 +329,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
             }
 
             // Réinitialiser le formulaire avec les données créées
-            form.reset(createdCharacter as unknown as TFormValues);
+            form.reset(normalizeSpellSlots(createdCharacter) as TFormValues);
         } catch (err) {
             console.error('Error creating character:', err);
             const errorMessage = err instanceof Error ? err.message : t('createError');
@@ -407,6 +407,10 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
                 avatar: updatedCharacter.avatar,
             }));
 
+            // Re-baseline the form on the saved character: no pending change after save,
+            // and server resyncs (blocked while dirty) apply again. @see FR-character-detail-view
+            form.reset(normalizeSpellSlots(updatedCharacter) as TFormValues);
+
             toast.success(t('updateSuccess'));
             setSuccess(true);
             setIsEditing(false);
@@ -432,7 +436,7 @@ export function useCharacterForm<TFormValues extends FieldValues = FieldValues>(
      */
     const onCancel = (): void => {
         if (character && characterId) {
-            form.reset(character as unknown as TFormValues);
+            form.reset(normalizeSpellSlots(character) as TFormValues);
             toast.info(t('changesCancelled'));
         } else {
             form.reset(defaultValues as TFormValues);
