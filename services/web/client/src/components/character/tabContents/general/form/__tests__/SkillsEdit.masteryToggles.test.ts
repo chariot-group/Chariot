@@ -4,10 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { deriveMasteryToggles } from "@/components/character/tabContents/general/form/SkillsEdit";
 
-const sensesPath = resolve(
-  fileURLToPath(new URL("../../shared/", import.meta.url)),
-  "SensesUpdateSection.tsx",
-);
+const sensesPath = resolve(fileURLToPath(new URL("../../shared/", import.meta.url)), "SensesUpdateSection.tsx");
 const abilitiesPath = resolve(
   fileURLToPath(new URL("../../../shared/", import.meta.url)),
   "AbilitiesUpdateSection.tsx",

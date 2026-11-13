@@ -53,6 +53,21 @@ describe("CodexResultRow", () => {
     expect(nameId).toBeTruthy();
     expect(buttonOf(html)).toContain(`aria-labelledby="${nameId}"`);
     expect(rowOf(html)).toContain("has-[&gt;button:focus-visible]:ring-2");
+    expect(rowOf(html)).toContain("has-[&gt;button:focus-visible]:ring-inset");
+  });
+
+  it("edge: queued row draws its outline inside so the scroll container cannot crop it", () => {
+    const row = rowOf(renderRow(false, { isQueued: true }));
+
+    expect(row).toContain("ring-purple/40");
+    expect(row).toContain("ring-inset");
+  });
+
+  it("edge: selected queued row keeps the selection gray without the queued outline", () => {
+    const row = rowOf(renderRow(true, { isQueued: true }));
+
+    expect(row).toMatch(/(^|\s)bg-white\/15/);
+    expect(row).not.toContain("ring-purple/40");
   });
 
   it("failure guard: no badges container is rendered when there is no badge", () => {

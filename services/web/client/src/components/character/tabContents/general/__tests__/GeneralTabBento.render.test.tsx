@@ -317,7 +317,7 @@ describe("General tab — single bento grid", () => {
       const html = CASES[name]();
       const after = (headingId: string) => html.slice(html.indexOf(`id="${headingId}"`));
 
-      expect(html).toMatch(/aria-labelledby="character-heading"[^>]*><div class="flex flex-1 flex-col justify-between/);
+      expect(html).toMatch(/aria-labelledby="character-heading"[^>]*><div class="[^"]*\bflex-1 flex-col justify-between/);
       expect(after("proficiencies-heading")).toMatch(
         /^[^]*?<dl class="grid flex-1 content-start gap-x-6 gap-y-3 @lg:grid-cols-2/,
       );

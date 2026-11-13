@@ -11,3 +11,8 @@ export function truncateForSidebarMenuLabel(value: string, maxLength = SIDEBAR_M
   }
   return `${trimmed.slice(0, Math.max(1, maxLength - 1)).trimEnd()}…`;
 }
+
+/** Name embedded in a success toast (« {name} … avec succès »). @see FR-sidebar-npc-link, FR-player-companion-choice */
+export function truncateForToast(value: string): string {
+  return truncateForSidebarMenuLabel(value, TOAST_EMBEDDED_NAME_MAX_LENGTH);
+}

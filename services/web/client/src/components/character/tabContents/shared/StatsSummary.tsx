@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Bird, Dices, Eye, Footprints, Mountain, RulerIcon, Shield, Shovel, Waves } from "lucide-react";
 import { useDistanceUnit } from "@/hooks/useDistanceUnit";
+import { FACT_CELL_CLASS, FACT_CELLS_FRAME_CLASS } from "@/components/character/tabContents/shared/factCell";
+import { cn } from "@/lib/utils";
 
 type SpeedKey = "walk" | "climb" | "swim" | "fly" | "burrow";
 
@@ -38,7 +40,7 @@ export function KeyStat({
 }) {
   return (
     <div
-      className="flex min-w-0 flex-col gap-0.5 rounded-[10px] bg-gray-middle-light/50 px-2.5 py-2"
+      className={FACT_CELL_CLASS}
       role="group"
       aria-label={accessibleLabel}>
       <span
@@ -73,38 +75,43 @@ export default function StatsSummary({ armorClass, initiative, size, speed, pass
   });
 
   return (
-    <div className="flex min-w-0 flex-col gap-2">
-      <div
-        className={`grid min-w-0 gap-2 ${passivePerception === undefined ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}>
-        <KeyStat
-          label={t("statLabels.armorClass")}
-          accessibleLabel={`${t("armorClass")} ${armorClass}`}
-          icon={<Shield className={ICON_CLASS} />}
-          value={armorClass}
-        />
-        <KeyStat
-          label={t("statLabels.initiative")}
-          accessibleLabel={`${t("initiativeTooltip")} ${initiativeText}`}
-          icon={<Dices className={ICON_CLASS} />}
-          value={initiativeText}
-        />
-        <KeyStat
-          label={t("statLabels.size")}
-          accessibleLabel={`${t("sizeTooltip")} ${sizeName}`}
-          icon={<RulerIcon className={ICON_CLASS} />}
-          value={sizeName}
-        />
-        {passivePerception !== undefined && (
+    <div className="flex min-w-0 flex-col gap-4">
+      <div className={FACT_CELLS_FRAME_CLASS}>
+        <div
+          className={cn(
+            "grid min-w-0 gap-x-4 gap-y-2",
+            passivePerception === undefined ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4",
+          )}>
           <KeyStat
-            label={t("statLabels.passivePerception")}
-            accessibleLabel={`${t("passivePerception")} ${passivePerception}`}
-            icon={<Eye className={ICON_CLASS} />}
-            value={passivePerception}
+            label={t("statLabels.armorClass")}
+            accessibleLabel={`${t("armorClass")} ${armorClass}`}
+            icon={<Shield className={ICON_CLASS} />}
+            value={armorClass}
           />
-        )}
+          <KeyStat
+            label={t("statLabels.initiative")}
+            accessibleLabel={`${t("initiativeTooltip")} ${initiativeText}`}
+            icon={<Dices className={ICON_CLASS} />}
+            value={initiativeText}
+          />
+          <KeyStat
+            label={t("statLabels.size")}
+            accessibleLabel={`${t("sizeTooltip")} ${sizeName}`}
+            icon={<RulerIcon className={ICON_CLASS} />}
+            value={sizeName}
+          />
+          {passivePerception !== undefined && (
+            <KeyStat
+              label={t("statLabels.passivePerception")}
+              accessibleLabel={`${t("passivePerception")} ${passivePerception}`}
+              icon={<Eye className={ICON_CLASS} />}
+              value={passivePerception}
+            />
+          )}
+        </div>
       </div>
       {speeds.length > 0 && (
-        <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm sm:text-base">
+        <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 border-t border-border pt-3 text-sm sm:text-base">
           <span className="font-semibold">{t("statLabels.speeds")} :</span>
           {speeds.map(({ key, tooltipKey, Icon, primary, secondary }, index) => (
             <span

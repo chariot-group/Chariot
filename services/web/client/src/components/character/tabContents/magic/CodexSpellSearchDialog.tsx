@@ -4,7 +4,9 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import CodexResultRow from "@/components/character/CodexResultRow";
+import { DeleteIconButton } from "@/components/ui/delete-icon-button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spell } from "@/types/character";
 import { useLocale, useTranslations } from "next-intl";
@@ -25,7 +27,6 @@ import {
   ListMinus,
   Layers,
   FilterX,
-  X,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -78,6 +79,7 @@ interface CodexSpellSearchDialogProps {
 import {
   isSpellQueued as isSpellQueuedInQueue,
   queuedSpellKeys as buildQueuedSpellKeys,
+  spellQueueNewestFirst,
   toggleSpellInQueue,
   type QueuedSpellEntry,
 } from "@/lib/codexSpellQueue";
@@ -115,76 +117,68 @@ function SpellResultItem({
 
   const schoolLabel = resolveCodexSpellSchoolLabel(translation.school);
 
-  const handleCardClick = () => {
+  const handleSelect = () => {
     onSpellClick(spellItem, displayLang);
   };
 
-  const resultKey = `${spellItem._id}:${displayLang}`;
-
   return (
-    <Card
-      onClick={handleCardClick}
-      className={cn(
-        "cursor-pointer p-3 border border-transparent transition-colors duration-200 hover:bg-purple/5 hover:border-purple/40",
-        isSelected && "border-purple border-2 bg-purple/10",
-        isQueued && !isSelected && "border-purple/60 bg-purple/5",
-      )}
-      aria-current={isSelected ? "true" : undefined}
-      data-spell-key={resultKey}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex flex-1 min-w-0 gap-2 items-start">
-            {pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
-              <InfoTooltip
-                content={tDialog(`languageFilter.${pinnedLang}`)}
-                side="top"
-                moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}>
-                <span
-                  className="text-[1.35rem] leading-none shrink-0 pt-0.5 select-none cursor-help"
-                  aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
-                  {codexLocaleFlagEmoji(pinnedLang)}
-                </span>
-              </InfoTooltip>
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold text-sm md:text-base">{translation.name}</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {tMagic("spellLevel", { level: translation.level })}
-                {schoolLabel ? ` • ${schoolLabel}` : ""}
-              </div>
-              {spellItem.classes && spellItem.classes.length > 0 && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  <strong>{tGeneral("general.classes")}:</strong>{" "}
-                  {spellItem.classes.map((c) => t(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <div className="flex gap-1.5">
-              {isQueued && (
-                <Check
-                  className="size-5 text-primary-light"
-                  aria-label={tDialog("queuedInSelection")}
-                />
-              )}
-              {spellItem.tag === 1 && (
-                <BadgeCheck
-                  className="size-5 text-green-600"
-                  aria-label={tDialog("validatedByChariot")}
-                />
-              )}
-              {translation.srd && (
-                <FileBadge
-                  className="size-5"
-                  aria-label={tDialog("srdContent")}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <CodexResultRow
+      name={translation.name}
+      isSelected={isSelected}
+      isQueued={isQueued}
+      onSelect={handleSelect}
+      leading={
+        pinnedLang && codexLocaleFlagEmoji(pinnedLang) ? (
+          <InfoTooltip
+            content={tDialog(`languageFilter.${pinnedLang}`)}
+            side="top"
+            moreInfoLabel={tDialog(`languageFilter.${pinnedLang}`)}
+            className="relative z-10 shrink-0">
+            <span
+              className="text-[1.35rem] leading-none select-none cursor-help"
+              aria-label={tDialog(`languageFilter.${pinnedLang}`)}>
+              {codexLocaleFlagEmoji(pinnedLang)}
+            </span>
+          </InfoTooltip>
+        ) : null
+      }
+      meta={
+        <>
+          <span>
+            {tMagic("spellLevel", { level: translation.level })}
+            {schoolLabel ? ` • ${schoolLabel}` : ""}
+          </span>
+          {spellItem.classes && spellItem.classes.length > 0 ? (
+            <span className="mt-0.5 w-full">
+              <strong>{tGeneral("general.classes")}:</strong>{" "}
+              {spellItem.classes.map((c) => t(c.charAt(0).toUpperCase() + c.slice(1))).join(", ")}
+            </span>
+          ) : null}
+        </>
+      }
+      badges={
+        <>
+          {isQueued ? (
+            <Check
+              className="size-5 text-primary-light"
+              aria-label={tDialog("queuedInSelection")}
+            />
+          ) : null}
+          {spellItem.tag === 1 ? (
+            <BadgeCheck
+              className="size-5 text-green-600"
+              aria-label={tDialog("validatedByChariot")}
+            />
+          ) : null}
+          {translation.srd ? (
+            <FileBadge
+              className="size-5"
+              aria-label={tDialog("srdContent")}
+            />
+          ) : null}
+        </>
+      }
+    />
   );
 }
 
@@ -304,6 +298,7 @@ export default function CodexSpellSearchDialog({
   }, []);
 
   const queuedSpellKeys = useMemo(() => buildQueuedSpellKeys(spellQueue), [spellQueue]);
+  const queueDisplayEntries = useMemo(() => spellQueueNewestFirst(spellQueue), [spellQueue]);
 
   const isCurrentSpellQueued = selectedSpellKey ? isSpellQueuedInQueue(spellQueue, selectedSpellKey) : false;
 
@@ -551,6 +546,11 @@ export default function CodexSpellSearchDialog({
   }, []);
 
   const isMultiSelectionMode = spellQueue.length > 0;
+
+  // Close the selection panel once the queue is emptied so it does not reopen on the next selection.
+  useEffect(() => {
+    if (!isMultiSelectionMode) setSelectionDetailsOpen(false);
+  }, [isMultiSelectionMode]);
   const spellActionsDisabled = !selectedSpell || previewLangResolving;
 
   const dialogBody = (
@@ -856,7 +856,7 @@ export default function CodexSpellSearchDialog({
 
                 return (
                   <React.Fragment>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-1.5">
                       {searchResults.flatMap((spellItem) => {
                         if (selectedLang && !spellItem.languages.includes(selectedLang)) {
                           return [];
@@ -994,16 +994,14 @@ export default function CodexSpellSearchDialog({
 
       {!embedded ? (
         <DialogFooter
-          className={`shrink-0 gap-2 border-t border-frame px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:px-6 lg:py-4 ${!browseOnly && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
+          className={`shrink-0 gap-2 border-t border-frame px-4 py-3 sm:flex-col sm:justify-start md:flex-col lg:flex-row lg:items-center lg:gap-3 lg:px-6 lg:py-4 ${!browseOnly && isMultiSelectionMode ? "lg:justify-between" : "lg:justify-end"}`}>
           {!browseOnly && isMultiSelectionMode ? (
-            <Collapsible
+            <Popover
               open={selectionDetailsOpen}
-              onOpenChange={setSelectionDetailsOpen}
-              className="min-w-0 w-full lg:max-w-md lg:flex-1">
-              <CollapsibleTrigger
+              onOpenChange={setSelectionDetailsOpen}>
+              <PopoverTrigger
                 type="button"
-                aria-expanded={selectionDetailsOpen}
-                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-primary-light transition-colors hover:text-primary-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple/40">
+                className="flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-md py-1 text-left text-sm font-medium text-primary-light transition-colors hover:text-primary-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:w-auto lg:max-w-md">
                 <ChevronDown
                   className={cn("size-4 shrink-0 transition-transform", !selectionDetailsOpen && "rotate-180")}
                   aria-hidden="true"
@@ -1013,19 +1011,21 @@ export default function CodexSpellSearchDialog({
                   aria-live="polite">
                   {tDialog("selectionCount", { count: spellQueue.length })}
                 </span>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2">
-                <ul
-                  aria-label={tDialog("selectionDetailsList")}
-                  className="max-h-36 overflow-y-auto rounded-[15px] border border-purple/20 bg-purple/5 p-1.5 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-purple/30">
-                  {spellQueue.map(({ key, spell }) => {
+              </PopoverTrigger>
+              <PopoverContent
+                side="top"
+                align="start"
+                aria-label={tDialog("selectionDetailsList")}
+                className="w-[min(28rem,calc(100vw-2rem))] max-w-none p-1.5">
+                <ul className="flex max-h-60 flex-col divide-y divide-border overflow-y-auto pr-1 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover [&::-webkit-scrollbar-track]:bg-scrollbar-track">
+                  {queueDisplayEntries.map(({ key, spell }) => {
                     const spellName = spell.name ?? tDialog("unknownSpell");
                     const levelLabel =
                       spell.level === 0 ? tMagic("cantrips") : tMagic("spellLevel", { level: spell.level ?? 0 });
                     return (
                       <li
                         key={key}
-                        className="flex items-center gap-1 rounded-sm px-1.5 py-1 hover:bg-purple/10">
+                        className="flex items-center gap-2 px-2 py-2 transition-colors hover:bg-white/5">
                         <div className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">{spellName}</span>
                           <span className="block truncate text-xs text-muted-foreground">
@@ -1033,24 +1033,17 @@ export default function CodexSpellSearchDialog({
                             {spell.school ? ` · ${spell.school}` : ""}
                           </span>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
+                        <DeleteIconButton
                           onClick={() => handleRemoveFromQueue(key)}
                           aria-label={tDialog("removeSpellFromSelection", { name: spellName })}
-                          className="size-7 shrink-0 text-muted-foreground hover:text-destructive">
-                          <X
-                            className="size-3.5"
-                            aria-hidden="true"
-                          />
-                        </Button>
+                          className="size-7 shrink-0"
+                        />
                       </li>
                     );
                   })}
                 </ul>
-              </CollapsibleContent>
-            </Collapsible>
+              </PopoverContent>
+            </Popover>
           ) : null}
           <div className="flex w-full min-w-0 items-center justify-end gap-1.5 sm:gap-2 lg:w-auto">
             <Button

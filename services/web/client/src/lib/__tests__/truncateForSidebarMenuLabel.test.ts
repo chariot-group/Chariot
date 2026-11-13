@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { TOAST_EMBEDDED_NAME_MAX_LENGTH, truncateForSidebarMenuLabel } from "@/lib/truncateForSidebarMenuLabel";
+import {
+  TOAST_EMBEDDED_NAME_MAX_LENGTH,
+  truncateForSidebarMenuLabel,
+  truncateForToast,
+} from "@/lib/truncateForSidebarMenuLabel";
 
 /** @see FR-sidebar-npc-link */
 describe("truncateForSidebarMenuLabel", () => {
@@ -24,6 +28,19 @@ describe("truncateForSidebarMenuLabel", () => {
       "b".repeat(TOAST_EMBEDDED_NAME_MAX_LENGTH + 1),
       TOAST_EMBEDDED_NAME_MAX_LENGTH,
     );
+    expect(result).toHaveLength(TOAST_EMBEDDED_NAME_MAX_LENGTH);
+    expect(result.endsWith("…")).toBe(true);
+  });
+});
+
+/** @see FR-sidebar-npc-link, FR-player-companion-choice — character names in success toasts */
+describe("truncateForToast", () => {
+  it("nominal: keeps a short character name", () => {
+    expect(truncateForToast(" Gandalf ")).toBe("Gandalf");
+  });
+
+  it("edge: cuts a long character name to the toast limit with an ellipsis", () => {
+    const result = truncateForToast("Jean-Baptiste Emmanuel de la Rochefoucauld-Liancourt");
     expect(result).toHaveLength(TOAST_EMBEDDED_NAME_MAX_LENGTH);
     expect(result.endsWith("…")).toBe(true);
   });

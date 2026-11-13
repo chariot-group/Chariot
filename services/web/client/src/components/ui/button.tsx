@@ -105,6 +105,7 @@ const copySuccessButtonClassName = "disabled:cursor-default disabled:opacity-100
 
 type ButtonVariantProps = VariantProps<typeof buttonVariantsBase>;
 type ButtonTone = NonNullable<ButtonVariantProps["tone"]>;
+type ButtonVariant = NonNullable<ButtonVariantProps["variant"]>;
 
 function Button({
   className,
@@ -132,4 +133,11 @@ function Button({
   );
 }
 
-export { Button, buttonVariants, copySuccessButtonClassName, toggleButtonPressedClassName, type ButtonTone };
+export {
+  Button,
+  buttonVariants,
+  copySuccessButtonClassName,
+  toggleButtonPressedClassName,
+  type ButtonTone,
+  type ButtonVariant,
+};

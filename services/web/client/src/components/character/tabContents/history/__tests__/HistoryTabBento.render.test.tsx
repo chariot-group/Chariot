@@ -89,8 +89,12 @@ describe("History tab — single bento grid", () => {
     expect(html).toContain('aria-label="hair : Black"');
     expect(html).toContain("sizes.Medium");
     expect(html).not.toContain("sizesAbbr");
-    expect(html).toMatch(/grid min-w-0 grid-cols-2 gap-2 @sm:grid-cols-3 @3xl:grid-cols-6/);
+    expect(html).toMatch(/grid min-w-0 grid-cols-2 gap-x-4 gap-y-2 @sm:grid-cols-3 @3xl:grid-cols-6/);
     expect(html).not.toContain("content-evenly");
+    // Stacked cells: lines between rows, never a left rule nor tinted boxes (decision 2026-11-13)
+    expect(html).not.toContain("border-t border-border pt-2");
+    expect(html).not.toContain("border-l border-border");
+    expect(html).not.toMatch(/(?<![:\w-])bg-gray-middle-light\/\d+/);
   });
 
   it("edge: a long appearance value wraps without truncation; empty values show a dash", () => {

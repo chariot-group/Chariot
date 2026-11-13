@@ -363,7 +363,7 @@ export const ALL_RELEASE_NOTES: ReleaseNote[] = [
           { text: 'Raccourcis clavier dans tous les formulaires : Entrée pour valider, Échap pour annuler.' },
           { text: 'Support des actions bonus : créez des actions de type "Bonus Action" et retrouvez-les filtrées dans la fiche de combat.' },
           { text: 'Dégâts multiples par action : ajoutez plusieurs types de dégâts/soins sur une même action (ex : 1d6 perforant + 1d4 poison).' },
-          { text: 'Indice de dangerosité (ID) affiché en fractions pour les valeurs inférieures à 1 (1/2, 1/4, 1/8).' },
+          { text: 'Facteur de puissance (FP) affiché en fractions pour les valeurs inférieures à 1 (1/2, 1/4, 1/8).' },
         ],
       },
       en: {

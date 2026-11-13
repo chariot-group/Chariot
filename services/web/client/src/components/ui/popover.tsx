@@ -4,6 +4,7 @@ import * as React from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
+import { useDialogPortalContainer } from "@/components/ui/dialog-portal-container";
 
 const Popover = PopoverPrimitive.Root;
 const PopoverTrigger = PopoverPrimitive.Trigger;
@@ -15,8 +16,11 @@ function PopoverContent({
   sideOffset = 6,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+  // Inside a dialog, portal into its content so the dialog scroll lock does not swallow wheel/touch scroll.
+  const dialogPortalContainer = useDialogPortalContainer();
+
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={dialogPortalContainer ?? undefined}>
       <PopoverPrimitive.Content
         align={align}
         sideOffset={sideOffset}

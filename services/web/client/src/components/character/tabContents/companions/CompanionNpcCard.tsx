@@ -5,8 +5,12 @@ import { useTranslations } from "next-intl";
 import { Link2Off } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
+import {
+  IdentityFactCells,
+  TRUNCATE_ON_HOVER_DEVICES_CLASS,
+} from "@/components/character/tabContents/general/shared/CharacterIdentityCard";
+import { useNpcIdentityFacts } from "@/components/character/tabContents/general/shared/npcIdentityFacts";
 import { npcSheetHeaderIdentity } from "@/lib/npcPlayerLink";
 import { buildSessionCharacterHref } from "@/lib/sessionInAppNavigation";
 import type { NPC } from "@/types/character";
@@ -21,10 +25,11 @@ interface CompanionNpcCardProps {
 }
 
 /**
- * Linked NPC card mirroring the NPC sheet header identity.
- * The whole card surface navigates; unlink sits in a footer above the overlay.
+ * Linked NPC card reusing the read-mode « Personnage » layout: facts in the column beside the avatar.
+ * The whole card surface navigates; unlink sits in a
+ * footer above the overlay.
  * @see FR-npc-player-link
- * @see FR-character-detail-view
+ * @see FR-character-identity-card
  */
 export function CompanionNpcCard({
   npc,
@@ -35,57 +40,62 @@ export function CompanionNpcCard({
   onUnlink,
 }: CompanionNpcCardProps) {
   const t = useTranslations("characterDetail.companions");
-  const tNpc = useTranslations("characterDetail.npc");
-  const tCommon = useTranslations("common");
   const identity = npcSheetHeaderIdentity(npc, unnamedFallback);
-  const openSheetLabel = t("openSheetAria", { name: identity.fullName });
+  const facts = useNpcIdentityFacts(npc);
+  const headingId = `companion-${npc._id}-name`;
 
   return (
-    <Card className="relative min-w-0 h-full w-full gap-3 overflow-hidden p-4 md:px-6">
+    <Card
+      className="relative h-full min-w-0 w-full gap-2 overflow-hidden p-4 md:px-6"
+      role="region"
+      aria-labelledby={headingId}>
       <Link
         href={buildSessionCharacterHref(npc._id, sessionCode)}
-        aria-label={openSheetLabel}
+        aria-label={t("openSheetAria", { name: identity.fullName })}
         className="absolute inset-0 z-0 rounded-[24px] focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-white/50"
       />
 
-      <div className="pointer-events-none relative z-10 grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
-        <div className="col-start-1 row-start-1 min-w-0">
-          <p className="w-full min-w-0 truncate text-left text-lg font-bold text-white sm:text-xl">
-            {identity.fullName}
-          </p>
-          {identity.surname ? (
-            <p className="mt-0.5 w-full min-w-0 truncate text-left text-sm italic text-gray-light">
-              ({identity.surname})
-            </p>
-          ) : null}
-        </div>
-
-        <div className="col-start-2 row-start-1 row-span-2 w-16 shrink-0 aspect-[4/5] sm:w-20 md:w-24">
-          <MediaAvatar
-            scope="character"
-            entityId={npc._id}
-            storedValue={npc.avatar}
-            sessionCode={sessionCode}
-            size="sheet"
-            fillContainer
-            alt=""
-          />
-        </div>
-
-        <div className="col-start-1 row-start-2 flex min-w-0 flex-col gap-1 text-left text-sm font-semibold text-white">
-          <div className="min-w-0 truncate">
-            <InfoTooltip
-              className="pointer-events-auto"
-              content={tCommon("challengeRatingTooltip")}
-              side="bottom"
-              moreInfoLabel={tCommon("challengeRatingTooltip")}>
-              <abbr className="cursor-help no-underline">{tNpc("challengeRatingAbbr")}</abbr>
-            </InfoTooltip>{" "}
-            {identity.formattedChallengeRating} ({identity.experiencePoints} XP)
+      <div className="pointer-events-none relative z-10 flex h-full min-h-0 flex-col gap-2">
+        <div className="flex flex-1 items-start gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <h2
+              id={headingId}
+              title={identity.fullName}
+              className={`text-lg font-bold text-primary-light sm:text-xl ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
+              {identity.fullName}
+            </h2>
+            <div className="min-h-[1.375rem] sm:min-h-[1.5rem]">
+              {identity.surname ? (
+                <p
+                  title={`« ${identity.surname} »`}
+                  className={`text-sm italic text-muted-foreground sm:text-base ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
+                  « {identity.surname} »
+                </p>
+              ) : null}
+            </div>
+            {identity.groupLabel ? (
+              <p className={`text-xs text-muted-foreground sm:text-sm ${TRUNCATE_ON_HOVER_DEVICES_CLASS}`}>
+                {identity.groupLabel}
+              </p>
+            ) : null}
+            <div className="mt-0.5 min-w-0">
+              <IdentityFactCells
+                facts={facts}
+                denseColumns
+              />
+            </div>
           </div>
-          {identity.groupLabel ? (
-            <p className="min-w-0 truncate text-xs font-normal text-gray-light">{identity.groupLabel}</p>
-          ) : null}
+          <div className="w-16 shrink-0 self-start aspect-[4/5] sm:w-20 md:w-24">
+            <MediaAvatar
+              scope="character"
+              entityId={npc._id}
+              storedValue={npc.avatar}
+              sessionCode={sessionCode}
+              size="sheet"
+              fillContainer
+              alt=""
+            />
+          </div>
         </div>
       </div>
 
