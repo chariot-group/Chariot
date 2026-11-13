@@ -50,6 +50,7 @@ import {
   characterDisplayName,
   isCharacterQueued as isCharacterQueuedInQueue,
   queuedCharacterKeys as buildQueuedCharacterKeys,
+  queueEntriesNewestFirst,
   toggleCharacterInQueue,
   type QueuedCharacterEntry,
 } from "@/lib/codexCharacterQueue";
@@ -770,6 +771,7 @@ export default function MonsterCodexDialog({
   }, [selectedCodexPlayer, selectedEntryKind, selectedItemKey, selectedMonster]);
 
   const queuedCharacterKeysSet = useMemo(() => buildQueuedCharacterKeys(characterQueue), [characterQueue]);
+  const queueDisplayEntries = useMemo(() => queueEntriesNewestFirst(characterQueue), [characterQueue]);
   const isCurrentCharacterQueued = selectedItemKey ? isCharacterQueuedInQueue(characterQueue, selectedItemKey) : false;
   const isMultiSelectionMode = characterQueue.length > 0;
   const characterActionsDisabled = !selectedMonster || previewLangResolving || batchCreateInProgress;
@@ -1186,8 +1188,8 @@ export default function MonsterCodexDialog({
                 align="start"
                 aria-label={tDialog("selectionDetailsList")}
                 className="w-[min(28rem,calc(100vw-2rem))] max-w-none p-1.5">
-                <ul className="flex max-h-60 flex-col gap-0.5 overflow-y-auto pr-1 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover [&::-webkit-scrollbar-track]:bg-scrollbar-track">
-                  {characterQueue.map(({ key, selection }) => {
+                <ul className="flex max-h-60 flex-col divide-y divide-border overflow-y-auto pr-1 scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover [&::-webkit-scrollbar-track]:bg-scrollbar-track">
+                  {queueDisplayEntries.map(({ key, selection }) => {
                     const displayName = characterDisplayName(selection) || tDialog("unknownEntry");
                     const kindLabel =
                       selection.kind === "player"
@@ -1196,7 +1198,7 @@ export default function MonsterCodexDialog({
                     return (
                       <li
                         key={key}
-                        className="flex items-center gap-1 rounded-sm px-1.5 py-1 hover:bg-purple/10">
+                        className="flex items-center gap-2 px-2 py-2 transition-colors hover:bg-white/5">
                         <div className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">{displayName}</span>
                           <span className="block truncate text-xs text-muted-foreground">{kindLabel}</span>

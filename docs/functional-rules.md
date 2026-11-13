@@ -3051,7 +3051,9 @@ Each initiative tracker row carries:
 
 **Behavior**:
 
-- Same interaction pattern as the Codex spell multi-selection queue: **« Sélectionner ce personnage »**, collapsible queue, **« Ajouter la sélection ({count}) »**, queued row affordance.
+- Same interaction pattern as the Codex spell multi-selection queue: **« Sélectionner ce personnage »**, queue list, **« Ajouter la sélection ({count}) »**, queued row affordance.
+- The queue list MUST open as a floating panel above the footer count trigger, closed by default, so the footer height does not grow with the queue.
+- The queue list MUST show the most recently added entry first (last added on top, first added at the bottom). This is display order only: batch creation keeps the order in which entries were added.
 - Queue keys MUST use the existing `kind:id:lang` selection key; each entry MUST resolve to a kind-preserving `CodexCreateSelection` (monster → NPC, premade player → Player).
 - **Single entry, empty queue**: **« Utiliser ce personnage »** MUST keep the current flow (draft in store → create form).
 - **Non-empty queue**: **« Ajouter la sélection »** MUST create every queued character **directly via the character create API** with the same default mapping as the Codex-prefilled create form (`groups` for the current campaign group when applicable, `[]` in Player space, `linkedPlayerId` when in the Companions create-linked flow), then close the dialog **without** opening intermediate create forms.
@@ -3067,6 +3069,7 @@ Each initiative tracker row carries:
 - Nominal: queue two entries (NPC + PJ), batch creates two characters and navigates away from the codex route without opening create forms.
 - Nominal: Companions create-linked batch sets `linkedPlayerId` on every created NPC.
 - Edge: campaign group batch assigns `groups` to the active group id.
+- Edge: queueing A then B lists B above A in the queue panel, while batch creation still creates A then B.
 - Guard: `browseOnly` shows validate disabled / no queue controls.
 
 **References**:

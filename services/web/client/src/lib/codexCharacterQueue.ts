@@ -22,6 +22,11 @@ export function queuedCharacterKeys(queue: QueuedCharacterEntry[]): Set<string> 
   return new Set(queue.map((entry) => entry.key));
 }
 
+/** Queue entries for display: most recently added first. Does not change the batch creation order. */
+export function queueEntriesNewestFirst(queue: QueuedCharacterEntry[]): QueuedCharacterEntry[] {
+  return [...queue].reverse();
+}
+
 export function characterDisplayName(selection: CodexCreateSelection): string {
   const name = selection.draft.firstname?.trim();
   return name || "";
