@@ -444,8 +444,10 @@ export default function CharacterDetailView({
 
   const characterFooterActions = showEditControls ? (
     <div className="flex w-full min-w-0 flex-row-reverse gap-2 sm:w-auto">
+      {/* Distinct keys: Edit and Save must never share a DOM node, otherwise the click
+          on Edit lands on a button already switched to type="submit". @see FR-character-detail-view */}
       {isEditing ? (
-        <React.Fragment>
+        <React.Fragment key="edit-actions">
           <Button
             type="submit"
             form="character-update-form"
@@ -477,7 +479,7 @@ export default function CharacterDetailView({
           </Button>
         </React.Fragment>
       ) : (
-        <React.Fragment>
+        <React.Fragment key="view-actions">
           <Button
             type="button"
             onClick={() => setIsEditing(true)}

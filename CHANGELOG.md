@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.11.3] - 13-11-2026
+
+### Fixed
+- Fixed the character sheet being saved again when reopening edit mode right after a save: the form is reset to the saved character (no pending change, Save disabled), and the Edit and Save buttons no longer share a DOM node, so a click on Edit can no longer submit the form
+
+### Versions
+- Web client 2.11.3; session 1.7.2; adventure 2.11.0; gateway 2.6.3; media 1.2.2; payment 1.2.2; admin 1.3.2
+
 ## [2.11.2] - 13-11-2026
 
 ### Added
