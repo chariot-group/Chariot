@@ -18,6 +18,7 @@ export { BENTO_GRID_CLASS as COMPANIONS_BENTO_GRID_CLASS } from "@/components/ch
 export const COMPANIONS_SLOTS = {
   toolbar: `${FULL} xl:col-span-12`,
   companion: `${FULL} xl:col-span-6`,
+  noResults: `${FULL} xl:col-span-12`,
   emptyIntro: `${HALF} xl:col-span-8`,
   emptyExamples: `${HALF} xl:col-span-4`,
 } as const;

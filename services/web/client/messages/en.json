@@ -1079,6 +1079,11 @@
       "unlinkAria": "Remove {name} from companions",
       "unlink": "Remove",
       "unnamedNpc": "Unnamed NPC",
+      "searchLabel": "Search companions",
+      "searchPlaceholder": "Search companions…",
+      "searchClear": "Clear search",
+      "searchNoResults": "No companion matches “{query}”.",
+      "searchResultCount": "{count, plural, =0 {No companion found} one {# companion found} other {# companions found}}",
       "openSheetAria": "Open the sheet for {name}",
       "cancel": "Cancel"
     },

@@ -4637,6 +4637,15 @@ Each initiative tracker row carries:
 - The Companions skeleton (FR-character-sheet-skeleton) MUST use the same grid and slots (toolbar row + companion card placeholders).
 - Tests: nominal — with companions, one grid whose direct children are the toolbar and the cards with their slot classes; edge — empty state renders the two cards with unique headings resolving `aria-labelledby`, buttons inside the first card when actions are enabled; guard — session GM empty state renders no link / create button.
 
+**Companions tab — search** (decision 2026-11-13):
+
+- With at least one companion, the toolbar row MUST always render (also for the session GM, without liaison buttons) and start with a search field; liaison buttons (when enabled) follow it on the same row. The empty state (no companion) is unchanged: no search field.
+- Filtering is client-side and live (no API call): a companion matches when its display name (first + last name) or its nickname (`surname`) contains the query, ignoring case and diacritics; a blank query shows every companion. Matches keep the alphabetical order.
+- No match: a full-width message « Aucun compagnon ne correspond à « {query} » » without any button (decision 2026-11-13: clearing stays on the search field's clear control and Escape).
+- Accessibility: the field has an accessible label (`type="search"`), a keyboard-operable clear button when non-empty, Escape clears the field, and the result count is announced in a polite live region.
+- The Companions skeleton keeps the toolbar row (search placeholder) so the layout does not shift.
+- Tests: nominal — name and nickname match, diacritics and case ignored; edge — no match, then clearing restores the full list; guard — empty state renders no search field, and the session GM (no liaison actions) still gets the search field.
+
 **NPC character sheet — linked Player footer shortcut**:
 
 - Complements FR-character-detail-view: the NPC header MUST stay limited to name and CR/XP (and group label when present). The linked Player MUST NOT appear in the NPC header (keeps the fixed header compact on mobile).

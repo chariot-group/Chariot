@@ -1080,6 +1080,11 @@
       "unlinkAria": "Retirer {name} des compagnons",
       "unlink": "Retirer",
       "unnamedNpc": "PNJ sans nom",
+      "searchLabel": "Rechercher un compagnon",
+      "searchPlaceholder": "Rechercher un compagnon…",
+      "searchClear": "Effacer la recherche",
+      "searchNoResults": "Aucun compagnon ne correspond à « {query} ».",
+      "searchResultCount": "{count, plural, =0 {Aucun compagnon trouvé} one {# compagnon trouvé} other {# compagnons trouvés}}",
       "openSheetAria": "Ouvrir la fiche de {name}",
       "cancel": "Annuler"
     },

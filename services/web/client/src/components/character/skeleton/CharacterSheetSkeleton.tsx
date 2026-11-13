@@ -157,12 +157,16 @@ function SkeletonCardShell({ card, tab }: { card: SkeletonCard; tab: CharacterTa
 function SkeletonCompanions({ showActions = true }: { showActions?: boolean }) {
   return (
     <div className={COMPANIONS_BENTO_GRID_CLASS}>
-      {showActions ? (
-        <div className={cn(COMPANIONS_SLOTS.toolbar, "flex flex-wrap gap-2")}>
-          <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 w-36 rounded-[13px]")} />
-          <Skeleton className="h-9 w-40 rounded-[13px] bg-white/30 motion-reduce:animate-none" />
-        </div>
-      ) : null}
+      {/* Toolbar row: search field, then liaison buttons when enabled (FR-npc-player-link search) */}
+      <div className={cn(COMPANIONS_SLOTS.toolbar, "flex flex-wrap items-center gap-2")}>
+        <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 w-full rounded-[15px] sm:w-72")} />
+        {showActions ? (
+          <div className="flex flex-wrap gap-2 sm:ml-auto">
+            <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 w-36 rounded-[13px]")} />
+            <Skeleton className="h-9 w-40 rounded-[13px] bg-white/30 motion-reduce:animate-none" />
+          </div>
+        ) : null}
+      </div>
       {Array.from({ length: 3 }, (_, index) => (
         <div
           key={index}

@@ -8,6 +8,8 @@ import {
   COMPANIONS_SLOTS,
 } from "@/components/character/tabContents/companions/shared/companionsBentoLayout";
 import { CompanionsEmptyState } from "@/components/character/tabContents/companions/view/CompanionsEmptyState";
+import { CompanionsNoSearchResult } from "@/components/character/tabContents/companions/view/CompanionsNoSearchResult";
+import { CompanionsSearchField } from "@/components/character/tabContents/companions/view/CompanionsSearchField";
 
 const renderEmpty = (actions?: ReactNode) =>
   render(
@@ -67,5 +69,52 @@ describe("Companions tab bento layout", () => {
       expect(classes).not.toMatch(/h-fit|order-/);
       expect(classes.split(" ")).toContain("min-w-0");
     }
+  });
+
+  it("nominal: search field has an accessible label, a polite live region and a clear button when filled", () => {
+    const html = render(
+      <CompanionsSearchField
+        value="loup"
+        onChange={() => {}}
+        resultCount={2}
+      />,
+    );
+    const inputId = html.match(/<input[^>]*id="([^"]+)"/)?.[1];
+    expect(inputId).toBeTruthy();
+    expect(html).toContain(`for="${inputId}"`);
+    expect(html).toContain('type="search"');
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain("searchResultCount");
+    expect(html).toMatch(/<button[^>]*aria-label="searchClear"/);
+  });
+
+  it("edge: empty search field renders no clear button and announces nothing", () => {
+    const html = render(
+      <CompanionsSearchField
+        value=""
+        onChange={() => {}}
+        resultCount={3}
+      />,
+    );
+    expect(html).not.toContain("<button");
+    expect(html).not.toContain("searchResultCount");
+  });
+
+  it("edge: no-result band spans the full row and renders no button", () => {
+    const html = render(
+      <div className={COMPANIONS_BENTO_GRID_CLASS}>
+        <CompanionsNoSearchResult query="dragon" />
+      </div>,
+    );
+    const children = directChildren(html, COMPANIONS_BENTO_GRID_CLASS);
+    expect(children).toHaveLength(1);
+    expect(children[0]).toContain(COMPANIONS_SLOTS.noResults);
+    expect(html).toContain("searchNoResults");
+    expect(html).not.toContain("<button");
+    for (const bp of Object.values(BREAKPOINTS)) expect(emptyCells([COMPANIONS_SLOTS.noResults], bp)).toEqual([]);
+  });
+
+  it("failure / guard: empty state renders no search field", () => {
+    expect(renderEmpty(<button type="button">link-action</button>)).not.toContain('type="search"');
   });
 });
