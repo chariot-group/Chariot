@@ -537,6 +537,22 @@ When adding a rule:
 - `services/web/client/src/types/character.ts` - TypeScript types
 - `services/web/client/messages/{en|es|fr}.json` - Internationalization files
 
+### Edit / Save Lifecycle
+
+**Rule**: Entering edit mode MUST NEVER submit the form. A successful save MUST leave the sheet in a clean state: the form is re-baselined on the saved character, so reopening edit mode starts with no pending change.
+
+**Requirements**:
+
+- After a successful update, the form MUST be reset to the saved character (no pending change, **Save** disabled until the user edits a field again), and server resyncs MUST apply again.
+- Clicking or pressing Enter/Space on **Edit** MUST only switch to edit mode, even right after a save; the **Edit** and **Save** controls MUST be distinct elements so a click on one can never trigger the other.
+- A failed save MUST keep the user's unsaved values and stay in edit mode.
+
+**Tests**:
+
+- Nominal: edit a field → save → form is no longer dirty and holds the saved values.
+- Edge: save → click **Edit** immediately → edit mode opens, no update request is sent, **Save** is disabled.
+- Failure: update request fails → values kept, form still dirty, edit mode kept.
+
 ### Ability Counter Remaining Uses Display (formerly FR-character-ability-counter-display)
 
 **Rule**: Abilities and traits with a counter (`hasCounter: true`, `counterMax` defined) MUST display **remaining uses** as `remaining / max`, where `remaining = counterMax - counterCurrent`, matching spell-slot visual semantics.
