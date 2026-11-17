@@ -13,6 +13,8 @@ cp tools/e2e/env.example tools/e2e/.env
 make e2e-install         # once
 make e2e                 # all scenarios
 make e2e FILTER=session  # only those whose title contains "session"
+make e2e DEVICE=mobile   # only on phone (Pixel 7, iPhone 14); DEVICE=desktop for computer only
+make e2e BROWSER=safari  # only one browser: chrome, firefox or safari (WebKit)
 ```
 
 ## Viewing runs
@@ -28,7 +30,7 @@ make e2e FILTER=session  # only those whose title contains "session"
 
 ```
 tools/e2e/
-├── playwright.config.ts      # setup → scenarios projects, trace/video/screenshots always on
+├── playwright.config.ts      # setup → <device>-<browser> projects, trace/video/screenshots always on
 ├── scenarios/
 │   ├── auth.setup.ts         # creates test accounts + stores their SSO session (.auth/)
 │   ├── auth/                 # login, post-auth navigation
@@ -62,6 +64,8 @@ Conventions:
 - **Unique, cleaned-up data**: `uniqueLabel()` adds an `[e2e]` prefix; delete in a `finally`.
 - **`test.step()`** to split the scenario: steps structure the report and the replay.
 - Imports through the `@/` alias only (no relative paths).
+- **Every device and browser**: each scenario runs on desktop Chrome / Firefox / Safari and mobile Chrome / Safari. Below 768 px the sidebar sits behind a
+  "Ouvrir le menu" button: go through `openSidebarIfMobile()` (`@/flows`) before clicking in it.
 
 ## Test accounts
 

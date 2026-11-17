@@ -19,10 +19,31 @@ const perfProjects = process.env.E2E_PERF === "1"
   : [];
 
 /**
+ * Appareils × navigateurs couverts par les scénarios (nom du projet = `<appareil>-<navigateur>`).
+ * « safari » = WebKit, le moteur de Safari (macOS et iOS) ; « chrome » = Chromium.
+ * Sous 768 px, la sidebar passe dans un menu (`openSidebarIfMobile`).
+ */
+const SCENARIO_TARGETS = [
+  { name: "desktop-chrome", device: "Desktop Chrome" },
+  { name: "desktop-firefox", device: "Desktop Firefox" },
+  { name: "desktop-safari", device: "Desktop Safari" },
+  { name: "mobile-chrome", device: "Pixel 7" },
+  { name: "mobile-safari", device: "iPhone 14" },
+] as const;
+
+const scenarioProjects = SCENARIO_TARGETS.map(({ name, device }) => ({
+  name,
+  testMatch: /.*\.spec\.ts/,
+  dependencies: ["setup"],
+  use: { ...devices[device] },
+}));
+
+/**
  * Scénarios E2E Chariot.
  *
  * - `setup` : provisionne les comptes de test et enregistre leur session SSO (`.auth/`).
- * - `scenarios` : tous les `*.spec.ts`, rangés par domaine fonctionnel dans `scenarios/`.
+ * - `<appareil>-<navigateur>` : tous les `*.spec.ts` (rangés par domaine dans `scenarios/`),
+ *   joués sur chaque combinaison de `SCENARIO_TARGETS`. Filtrer avec `make e2e DEVICE=mobile BROWSER=safari`.
  *
  * Chaque exécution produit trace + vidéo + captures, consultables avec `npm run report`
  * ou en direct avec `npm run ui`.
@@ -52,12 +73,7 @@ export default defineConfig({
       name: "setup",
       testMatch: /.*\.setup\.ts/,
     },
-    {
-      name: "scenarios",
-      testMatch: /.*\.spec\.ts/,
-      dependencies: ["setup"],
-      use: { ...devices["Desktop Chrome"] },
-    },
+    ...scenarioProjects,
     ...perfProjects,
   ],
 });

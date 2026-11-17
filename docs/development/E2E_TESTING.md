@@ -122,6 +122,16 @@ make e2e FILTER=session
 `FILTER` selects tests whose title (or file name) contains the given text.
 
 ```bash
+make e2e DEVICE=mobile
+```
+
+```bash
+make e2e BROWSER=firefox
+```
+
+`DEVICE` (`desktop` or `mobile`) and `BROWSER` (`chrome`, `firefox` or `safari`) narrow the run; they can be combined (`DEVICE=mobile BROWSER=safari`). Without them, every scenario runs on all five targets listed under [Execution order](#execution-order).
+
+```bash
 make e2e-ui
 ```
 
@@ -163,16 +173,25 @@ npx playwright test --repeat-each=5 -g "rejoint"
 | `--debug` | Opens the Playwright Inspector, step-by-step execution |
 | `--last-failed` | Re-runs only the tests that failed last time |
 | `--repeat-each=5` | Repeats each test 5 times, to detect a flaky test |
-| `--project=scenarios` | Skips other projects (setup still runs, it is a dependency) |
+| `--project="mobile-*"` | Runs only the matching projects (`desktop-chrome`, `mobile-safari`…); setup still runs, it is a dependency |
 
 > ⚠️ Do not pass `--reporter=...` on the command line if you want the HTML report: this option **replaces** the reporters from the config, and `reports/html` is not regenerated.
 
 ### Execution order
 
-The config declares two projects:
+The config declares a `setup` project (`auth.setup.ts`: accounts + SSO sessions), then one project per device × browser, each running every `*.spec.ts` after `setup`:
 
-1. **`setup`**: `auth.setup.ts` (accounts + SSO sessions);
-2. **`scenarios`**: every `*.spec.ts`, which depend on `setup`.
+| Project | Playwright profile | Engine | Screen |
+| --- | --- | --- | --- |
+| `desktop-chrome` | Desktop Chrome | Chromium | 1280×720 |
+| `desktop-firefox` | Desktop Firefox | Firefox | 1280×720 |
+| `desktop-safari` | Desktop Safari | WebKit | 1280×720 |
+| `mobile-chrome` | Pixel 7 | Chromium | 412×839, touch |
+| `mobile-safari` | iPhone 14 | WebKit | 390×664, touch |
+
+"Safari" means WebKit, Safari's engine: close to real Safari, but not the Apple app itself. There is no mobile Firefox: Playwright does not support mobile emulation in Firefox.
+
+Each test therefore appears five times in the report, prefixed with its project. The `gm` and `player` actors take the screen, touch and user agent of the project they run in.
 
 Tests run **one at a time** (`workers: 1`): they share the same accounts, and two simultaneous WebSocket sessions for the same user would skew the results.
 
@@ -612,6 +631,9 @@ A trace contains **every browser** in the test. GM and player actions are interl
 | **`--reporter` on the command line** | Replaces the config's reporters: no HTML report. | Use `make e2e`, or do not pass `--reporter`. |
 | **Shared WebSocket sessions** | Two parallel tests on the same accounts interfere (roster, toasts). | `workers: 1`. |
 | **Session left open** | A test failing before its cleanup can leave an active session. | `leaveSession()` in the `finally`. `[e2e]` data is easy to find for manual cleanup. |
+| **Sidebar on mobile** | Below 768 px the sidebar is a drawer behind "Ouvrir le menu": its buttons ("Lancer une session"…) are not in the page until it is opened. | Call `openSidebarIfMobile(page)` from `@/flows` before clicking in the sidebar. |
+| **Safari (WebKit) on `http://localhost`** | Keycloak sets its SSO cookies as `Secure; SameSite=None`. WebKit does not send them over HTTP, so every page falls back to the login form. | The `gm` / `player` fixtures drop `Secure` from the saved cookies for WebKit when Keycloak is on HTTP. Nothing changes on an HTTPS environment. |
+| **`next dev` killed for lack of memory** | With the full stack, Docker can run out of memory while `next dev` compiles a page: `ERR_EMPTY_RESPONSE`, endless "Chargement…", failures in any browser. Check with `docker inspect chariot-web --format '{{.RestartCount}}'`. | Give Docker Desktop **at least 12 GB** (Settings → Resources → Memory): the full stack uses ~6 GB and `next dev` can reach ~1.5 GB while compiling. 8 GB is not enough. Otherwise, run against a production build (`make web-prod-local`, back with `make web-dev-local`). |
 | **Automatic screenshots** | `screenshot: "on"` only captures the default page, not the actors' pages. | Use the GM and player videos, or the trace. |
 
 ---
@@ -620,9 +642,11 @@ A trace contains **every browser** in the test. GM and player actions are interl
 
 | From the root | Equivalent in `tools/e2e/` | Effect |
 | --- | --- | --- |
-| `make e2e-install` | `npm ci && npx playwright install chromium` | Setup |
+| `make e2e-install` | `npm ci && npx playwright install chromium firefox webkit` | Setup |
 | `make e2e` | `npx playwright test` | All scenarios + HTML report |
 | `make e2e FILTER=x` | `npx playwright test --grep "x"` | Filtered scenarios |
+| `make e2e DEVICE=mobile` | `npx playwright test --project="mobile-*"` | One device only (`desktop` or `mobile`) |
+| `make e2e BROWSER=safari` | `npx playwright test --project="*-safari"` | One browser only (`chrome`, `firefox`, `safari`) |
 | `make e2e-ui` | `npx playwright test --ui` | UI mode |
 | `make e2e-report` | `npx playwright show-report reports/html` | Opens the report |
 | — | `npx playwright test --headed` | Visible browser |

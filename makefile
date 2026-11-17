@@ -436,11 +436,11 @@ seed-clean: ## Lance le seeder avec nettoyage pour adventure
 # --- Scénarios E2E navigateur (Playwright, tools/e2e) ---
 E2E_DIR := tools/e2e
 
-e2e-install: ## Installe Playwright + Chromium pour les scénarios E2E
-	@cd $(E2E_DIR) && npm ci && npx playwright install chromium
+e2e-install: ## Installe Playwright + Chromium, Firefox et WebKit pour les scénarios E2E
+	@cd $(E2E_DIR) && npm ci && npx playwright install chromium firefox webkit
 
-e2e: ## Lance les scénarios E2E (FILTER=texte pour filtrer, ex. FILTER=session)
-	@cd $(E2E_DIR) && npx playwright test $(if $(FILTER),--grep "$(FILTER)",)
+e2e: ## Lance les scénarios E2E sur ordinateur/mobile × Chrome/Firefox/Safari (FILTER=texte, DEVICE=desktop|mobile, BROWSER=chrome|firefox|safari)
+	@cd $(E2E_DIR) && npx playwright test $(if $(DEVICE)$(BROWSER),--project="$(or $(DEVICE),*)-$(or $(BROWSER),*)",) $(if $(FILTER),--grep "$(FILTER)",)
 
 e2e-perf: ## Mesure l'aller-retour SSO en 3G simulée (PERF_RUNS, PERF_LABEL, PERF_LATENCY_MS, PERF_DOWN_KBPS)
 	@cd $(E2E_DIR) && E2E_PERF=1 npx playwright test --project=perf

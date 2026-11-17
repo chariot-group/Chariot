@@ -21,11 +21,27 @@ export async function createCampaignFromWelcome(page: Page, label: string): Prom
   await expect(dialog).toBeHidden();
 }
 
+/**
+ * Sous 768 px (projet `mobile`), la sidebar est repliée dans un menu « Ouvrir le menu » :
+ * l'ouvre si besoin pour que ses boutons soient accessibles. Sans effet sur ordinateur.
+ */
+export async function openSidebarIfMobile(page: Page): Promise<void> {
+  const width = page.viewportSize()?.width ?? Number.POSITIVE_INFINITY;
+  if (width >= MOBILE_BREAKPOINT) return;
+  // Pas d'attente sur « Fermer le menu » : le tiroir est modal et masque le reste de la page
+  // (header compris) aux technologies d'assistance. L'appelant attend le bouton qu'il vise.
+  await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+}
+
+/** Même seuil que `MOBILE_BREAKPOINT` du client web (`hooks/use-mobile.ts`). */
+const MOBILE_BREAKPOINT = 768;
+
 /** Lance une session depuis la sidebar MJ et renvoie son code OTP (lu sur la réponse API). */
 export async function launchSessionFromSidebar(page: Page): Promise<string> {
   const created = page.waitForResponse(
     (res) => res.request().method() === "POST" && /\/session\/sessions\/?$/.test(new URL(res.url()).pathname),
   );
+  await openSidebarIfMobile(page);
   await page.getByRole("button", { name: "Lancer une session" }).click();
   const response = await created;
   expect(response.ok(), "création de session").toBeTruthy();
