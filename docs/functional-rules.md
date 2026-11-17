@@ -326,6 +326,7 @@ When adding a rule:
 - Authenticated user already on a valid page does not get redirected
 - Locale is preserved in all redirect URLs
 - Navigation logic executes only once per authentication
+- E2E (`tools/e2e/scenarios/profil/inscription.spec.ts`): an account created through the Keycloak registration page lands on the welcome page; registering with a taken username keeps the user on Keycloak with a field error
 
 **References**:
 
@@ -1049,6 +1050,12 @@ When adding a rule:
   - Integration: Form submission with valid data updates user in Redux
   - Integration: Form submission with invalid email shows validation error
   - Integration: Network error displays translated error message
+- **E2E (Playwright, `tools/e2e/scenarios/profil/profil.spec.ts`)**:
+  - Nominal: the profile page shows username, full name and email of the signed-in account
+  - Nominal: editing first name, last name and email shows the success toast, and the new values persist after reload
+  - Edge: Cancel restores the last loaded values without saving
+  - Failure: a one-character first name or an invalid email shows a field error and saves nothing
+  - Failure: an email already used by another account shows the `emailAlreadyInUse` field error
 
 **References**:
 
@@ -2608,6 +2615,7 @@ Each initiative tracker row carries:
 - Unit: mailto builders encode subject/body correctly
 - Component: GDPR card renders three actions with expected accessible labels
 - Component: delete dialog renders warning text
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): the delete dialog shows its warning; Cancel closes it without any request; Confirm opens a `mailto:` to the privacy contact without internal auth identifiers, and the account stays usable
 
 **References**:
 

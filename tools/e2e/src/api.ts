@@ -17,8 +17,9 @@ export class ChariotApi {
     readonly role: Role,
   ) {}
 
-  static async as(role: Role): Promise<ChariotApi> {
-    return new ChariotApi(await getUserAccessToken(role), role);
+  /** Client authentifié comme le compte `role` du worker `slot` (cf. `accountSlot`). */
+  static async as(role: Role, slot: number): Promise<ChariotApi> {
+    return new ChariotApi(await getUserAccessToken(role, slot), role);
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {

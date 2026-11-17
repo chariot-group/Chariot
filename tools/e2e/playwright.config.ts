@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { env } from "@/env";
+import { env, workerCount } from "@/env";
 
 const isCI = !!process.env.CI;
 
@@ -7,16 +7,22 @@ const isCI = !!process.env.CI;
  * Mesures sur réseau lent (FR-web-first-load-performance), uniquement à la demande :
  * `make e2e-perf` (E2E_PERF=1). Exclues de `make e2e`.
  */
-const perfProjects = process.env.E2E_PERF === "1"
-  ? [
-      {
-        name: "perf",
-        testDir: "./perf",
-        testMatch: /.*\.perf\.ts/,
-        use: { ...devices["Desktop Chrome"], trace: "off" as const, video: "off" as const, screenshot: "off" as const },
-      },
-    ]
-  : [];
+const perfProjects =
+  process.env.E2E_PERF === "1"
+    ? [
+        {
+          name: "perf",
+          testDir: "./perf",
+          testMatch: /.*\.perf\.ts/,
+          use: {
+            ...devices["Desktop Chrome"],
+            trace: "off" as const,
+            video: "off" as const,
+            screenshot: "off" as const,
+          },
+        },
+      ]
+    : [];
 
 /**
  * Appareils × navigateurs couverts par les scénarios (nom du projet = `<appareil>-<navigateur>`).
@@ -45,15 +51,19 @@ const scenarioProjects = SCENARIO_TARGETS.map(({ name, device }) => ({
  * - `<appareil>-<navigateur>` : tous les `*.spec.ts` (rangés par domaine dans `scenarios/`),
  *   joués sur chaque combinaison de `SCENARIO_TARGETS`. Filtrer avec `make e2e DEVICE=mobile BROWSER=safari`.
  *
- * Chaque exécution produit trace + vidéo + captures, consultables avec `npm run report`
- * ou en direct avec `npm run ui`.
+ * Parallélisme : `E2E_WORKERS` workers (4 par défaut), chacun avec sa paire de comptes MJ / joueur
+ * (cf. `testUser` dans `src/env.ts`). Sans `KEYCLOAK_ADMIN_*`, exécution séquentielle (1 worker).
+ *
+ * Artefacts : trace et capture conservées pour les tests en échec. `E2E_ARTIFACTS=all` garde
+ * trace + vidéo + captures pour chaque test. Consultables avec `npm run report` ou `npm run ui`.
  */
+const allArtifacts = env.artifacts === "all";
+
 export default defineConfig({
   testDir: "./scenarios",
   outputDir: "./test-results",
-  fullyParallel: false,
-  // Les scénarios partagent les mêmes comptes de test (sessions WS, roster) : exécution séquentielle.
-  workers: 1,
+  fullyParallel: true,
+  workers: workerCount,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   timeout: 90_000,
@@ -62,9 +72,9 @@ export default defineConfig({
   use: {
     baseURL: env.webUrl,
     locale: env.locale,
-    trace: "on",
-    video: "on",
-    screenshot: "on",
+    trace: allArtifacts ? "on" : "retain-on-failure",
+    video: allArtifacts ? "on" : "off",
+    screenshot: allArtifacts ? "on" : "only-on-failure",
     actionTimeout: 15_000,
     navigationTimeout: 30_000,
   },

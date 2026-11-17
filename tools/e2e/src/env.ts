@@ -35,19 +35,71 @@ export const env = {
     player: { username: read("E2E_PLAYER_USERNAME", "e2e-player"), firstName: "E2E", lastName: "Joueur" },
   } satisfies Record<Role, { username: string; firstName: string; lastName: string }>,
   password: read("E2E_USER_PASSWORD", "e2e-Chariot-dev-1!"),
+  /** `all` : trace, vidéo et captures pour chaque test. Par défaut, uniquement en cas d'échec. */
+  artifacts: process.env.E2E_ARTIFACTS?.trim() === "all" ? ("all" as const) : ("failures" as const),
 };
+
+/** Identifiants admin Keycloak fournis : provisioning et comptes jetables possibles (stack locale). */
+export function hasKeycloakAdmin(): boolean {
+  return !!env.keycloakAdminUser && !!env.keycloakAdminPassword;
+}
+
+/**
+ * Nombre de workers Playwright (`E2E_WORKERS`, 4 par défaut).
+ * Chaque worker a sa propre paire de comptes MJ / joueur (cf. `testUser`) : deux tests simultanés
+ * ne partagent jamais un compte (sessions WS, roster, page d'atterrissage).
+ * Sans admin Keycloak, impossible de créer ces comptes : exécution séquentielle sur les comptes de base.
+ */
+export const workerCount: number = (() => {
+  if (!hasKeycloakAdmin()) return 1;
+  const raw = process.env.E2E_WORKERS?.trim();
+  const value = raw ? Number(raw) : 4;
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error(`E2E_WORKERS invalide : « ${raw} » (entier ≥ 1 attendu)`);
+  }
+  return value;
+})();
+
+/** Indices de comptes provisionnés : un par worker. */
+export const accountSlots: readonly number[] = Array.from({ length: workerCount }, (_, slot) => slot);
+
+/**
+ * Indice du compte d'un test = `testInfo.parallelIndex` (0 … workers-1, stable par worker).
+ * Garde-fou si `--workers` est passé en CLI au-delà des comptes provisionnés.
+ */
+export function accountSlot(parallelIndex: number): number {
+  if (parallelIndex >= workerCount) {
+    throw new Error(
+      `Worker ${parallelIndex} sans compte de test (${workerCount} provisionnés) : utiliser E2E_WORKERS plutôt que --workers`,
+    );
+  }
+  return parallelIndex;
+}
+
+export type TestUser = { username: string; email: string; firstName: string; lastName: string };
+
+/**
+ * Compte de test d'un rôle pour un worker. Avec un seul worker, les comptes de base
+ * (`e2e-gm`, `e2e-player`) ; sinon suffixés par worker (`e2e-gm-0`, `e2e-gm-1`…).
+ */
+export function testUser(role: Role, slot: number): TestUser {
+  const base = env.users[role];
+  const username = workerCount === 1 ? base.username : `${base.username}-${slot}`;
+  return { username, email: `${username}@e2e.chariot.test`, firstName: base.firstName, lastName: base.lastName };
+}
 
 /** Base Keycloak (avec préfixe `/auth` en dev Docker local). */
 export const keycloakBase = `${env.keycloakUrl}${env.keycloakAuthPrefix}`;
 
-/** Fichier storageState (cookies SSO + localStorage) d'un rôle authentifié. */
-export function storageStatePath(role: Role): string {
-  return path.join(rootDir, ".auth", `${role}.json`);
+/** Fichier storageState (cookies SSO + localStorage) d'un compte de test authentifié. */
+export function storageStatePath(role: Role, slot: number): string {
+  return path.join(rootDir, ".auth", `${role}-${slot}.json`);
 }
 
 /** Préfixe des données créées par les scénarios, pour les repérer et les nettoyer. */
 export const E2E_PREFIX = "[e2e]";
 
 export function uniqueLabel(label: string): string {
-  return `${E2E_PREFIX} ${label} ${Date.now().toString(36)}`;
+  // Suffixe aléatoire : deux workers peuvent appeler `Date.now()` dans la même milliseconde.
+  return `${E2E_PREFIX} ${label} ${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 }

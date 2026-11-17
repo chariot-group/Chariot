@@ -97,11 +97,24 @@ If everything is green, setup is complete.
 
 At the start of every run, `scenarios/auth.setup.ts`:
 
-1. creates `e2e-gm` and `e2e-player` in Keycloak if they do not exist, and resets their password;
+1. creates one GM / player pair **per worker** in Keycloak (`e2e-gm-0`, `e2e-player-0`, `e2e-gm-1`…) if they do not exist, and resets their password;
 2. logs in with each account through the real Keycloak form;
-3. saves the browser session (SSO cookies + `localStorage`) to `tools/e2e/.auth/<role>.json`.
+3. saves the browser session (SSO cookies + `localStorage`) to `tools/e2e/.auth/<role>-<slot>.json`.
+
+With a single worker (or without `KEYCLOAK_ADMIN_*`), the base accounts `e2e-gm` / `e2e-player` are used, unsuffixed.
+`testUser(role, slot)` (`@/env`) returns the account of a worker; in a test, the slot is `accountSlot(testInfo.parallelIndex)`.
 
 Scenarios then reuse these sessions: they start **already logged in**, without going through the login screen again.
+
+#### Temporary accounts
+
+Scenarios that change the account itself (profile edit, sign-up) never touch the shared `e2e-gm*` / `e2e-player*` accounts: they use a **temporary account** named `e2e-tmp-<tag>-<suffix>`.
+
+- `createTemporaryAccount(tag)` (`@/keycloak`) creates it through the Keycloak admin API; `deleteKeycloakAccount(username)` removes it in a `finally`.
+- `temporaryAccountData(tag)` only builds unique values (used by the sign-up scenario, which creates the account through the UI).
+- Log in with `loginWithCredentials(page, username, password)` and call `muteReleaseNotes(context)` first, so the "What's new" dialog does not cover a brand-new account.
+- These scenarios are **skipped** when `KEYCLOAK_ADMIN_*` is empty.
+- Only the Keycloak account is deleted: the adventure user record created on first visit stays (local data only).
 
 > On a hosted environment (integ), leave `KEYCLOAK_ADMIN_*` empty and provide dedicated test accounts created beforehand. Never use real user accounts.
 
@@ -193,7 +206,13 @@ The config declares a `setup` project (`auth.setup.ts`: accounts + SSO sessions)
 
 Each test therefore appears five times in the report, prefixed with its project. The `gm` and `player` actors take the screen, touch and user agent of the project they run in.
 
-Tests run **one at a time** (`workers: 1`): they share the same accounts, and two simultaneous WebSocket sessions for the same user would skew the results.
+Tests run **in parallel** (`fullyParallel: true`) on `E2E_WORKERS` workers (4 by default, `make e2e WORKERS=…`).
+Each worker logs in with **its own GM / player pair** (`e2e-gm-<slot>`, `e2e-player-<slot>`, slot = `testInfo.parallelIndex`):
+two simultaneous tests never share an account, so WebSocket sessions, roster and post-login landing do not interfere.
+
+- Set the number of workers with `E2E_WORKERS`, **not** `--workers`: accounts are provisioned for `E2E_WORKERS` slots only, and a test on an extra worker fails with an explicit error.
+- Without `KEYCLOAK_ADMIN_*` (hosted environment), accounts cannot be created: the run falls back to 1 worker on the base accounts.
+- 4 workers is a good fit for the local Docker stack; beyond that, the stack (not the machine) becomes the bottleneck and timeouts appear.
 
 ---
 
@@ -207,12 +226,14 @@ tools/e2e/
 │   ├── auth.setup.ts           # setup: test accounts + SSO sessions
 │   ├── auth/connexion.spec.ts
 │   ├── campagne/creation-campagne.spec.ts
+│   ├── profil/inscription.spec.ts   # sign-up through the Keycloak registration page
+│   ├── profil/profil.spec.ts        # profile read / edit, account deletion request
 │   └── session/rejoindre-session.spec.ts
 ├── src/                        # shared tooling (imported via @/…)
 │   ├── env.ts                  # .env loading, uniqueLabel(), .auth/ paths
-│   ├── keycloak.ts             # account provisioning, tokens
+│   ├── keycloak.ts             # account provisioning, tokens, temporary accounts
 │   ├── api.ts                  # ChariotApi: gateway calls (setup / cleanup)
-│   ├── auth.ts                 # loginThroughKeycloak(): login through the SSO form
+│   ├── auth.ts                 # login through the SSO form, release-notes mute
 │   ├── fixtures.ts             # `gm` and `player` actors
 │   └── flows.ts                # reusable UI journeys
 ├── .auth/                      # saved sessions (generated, git-ignored)
@@ -235,7 +256,7 @@ Each actor provides:
 | `gm.page` | A page in an **isolated browser**, already logged in as the GM |
 | `gm.api` | An HTTP client authenticated as the same account (`ChariotApi`) |
 
-The GM and the player each have their own cookies, `localStorage` and WebSocket: the equivalent of two people on two computers. At the end of the test, each actor's video is attached to the report ("vidéo MJ", "vidéo Joueur").
+The GM and the player each have their own cookies, `localStorage` and WebSocket: the equivalent of two people on two computers. With `E2E_ARTIFACTS=all`, each actor's video is attached to the report at the end of the test ("vidéo MJ", "vidéo Joueur").
 
 Only request the actors you need: a test that only asks for `gm` does not open a player browser.
 
@@ -348,7 +369,7 @@ cd tools/e2e && npx tsc --noEmit
 The easiest way to find the right selectors: open an **already logged-in** browser and click around. Playwright writes the matching code.
 
 ```bash
-cd tools/e2e && npx playwright codegen --load-storage=.auth/gm.json http://localhost:3000/fr/welcome
+cd tools/e2e && npx playwright codegen --load-storage=.auth/gm-0.json http://localhost:3000/fr/welcome
 ```
 
 - Replace `gm.json` with `player.json` for the other role (the files are created on the first `make e2e`).
@@ -528,7 +549,7 @@ Clicking a test opens its page:
 2. **Errors** (on failure): message, expected / received, code excerpt with the offending line.
 3. **Test Steps**: the scenario's `test.step` blocks, each expandable down to individual actions, with its duration. An orange bar shows where the time goes. This is where you see **where** a slow test spends its time.
 4. **Screenshots**: end-of-test screenshot (and the failure screenshot, if any).
-5. **Videos**: one video per browser. For a multi-actor test: "vidéo MJ" and "vidéo Joueur".
+5. **Videos** (only with `make e2e ARTIFACTS=all`): one video per browser. For a multi-actor test: "vidéo MJ" and "vidéo Joueur".
 6. **Traces**: link to the full trace (§ 11).
 7. **Attachments**: attached files, including `error-context.md` on failure.
 
@@ -545,7 +566,7 @@ Clicking a test opens its page:
 
 ## 11. The Trace Viewer: replaying a run step by step
 
-A trace is the full recording of a test: every action, the DOM before and after, the network, the console. Traces are recorded for **every** test (`trace: "on"`).
+A trace is the full recording of a test: every action, the DOM before and after, the network, the console. By default, traces and screenshots are kept **for failed tests only** (`retain-on-failure`) and videos are off: recording everything slows every test down. To keep trace + video + screenshots for every test, run `make e2e ARTIFACTS=all` (`E2E_ARTIFACTS=all`).
 
 ### Opening a trace
 
@@ -629,12 +650,12 @@ A trace contains **every browser** in the test. GM and player actions are interl
 | **`?join=CODE` and redirects** | If the player has a character without a group, the root redirects to that character's sheet and drops the parameter. | Open the invite link on a page that does not redirect (a character sheet). |
 | **Accessible name ≠ text** | `aria-label` takes precedence over the displayed text. | Use the name from the snapshot or "Pick locator". |
 | **`--reporter` on the command line** | Replaces the config's reporters: no HTML report. | Use `make e2e`, or do not pass `--reporter`. |
-| **Shared WebSocket sessions** | Two parallel tests on the same accounts interfere (roster, toasts). | `workers: 1`. |
+| **Shared WebSocket sessions** | Two parallel tests on the same accounts interfere (roster, toasts, post-login landing). | One GM / player pair per worker (`testUser`, `accountSlot`). Never hard-code `e2e-gm` / `e2e-player` in a test. |
 | **Session left open** | A test failing before its cleanup can leave an active session. | `leaveSession()` in the `finally`. `[e2e]` data is easy to find for manual cleanup. |
 | **Sidebar on mobile** | Below 768 px the sidebar is a drawer behind "Ouvrir le menu": its buttons ("Lancer une session"…) are not in the page until it is opened. | Call `openSidebarIfMobile(page)` from `@/flows` before clicking in the sidebar. |
 | **Safari (WebKit) on `http://localhost`** | Keycloak sets its SSO cookies as `Secure; SameSite=None`. WebKit does not send them over HTTP, so every page falls back to the login form. | The `gm` / `player` fixtures drop `Secure` from the saved cookies for WebKit when Keycloak is on HTTP. Nothing changes on an HTTPS environment. |
 | **`next dev` killed for lack of memory** | With the full stack, Docker can run out of memory while `next dev` compiles a page: `ERR_EMPTY_RESPONSE`, endless "Chargement…", failures in any browser. Check with `docker inspect chariot-web --format '{{.RestartCount}}'`. | Give Docker Desktop **at least 12 GB** (Settings → Resources → Memory): the full stack uses ~6 GB and `next dev` can reach ~1.5 GB while compiling. 8 GB is not enough. Otherwise, run against a production build (`make web-prod-local`, back with `make web-dev-local`). |
-| **Automatic screenshots** | `screenshot: "on"` only captures the default page, not the actors' pages. | Use the GM and player videos, or the trace. |
+| **Automatic screenshots** | Playwright's screenshot only captures the default page, not the actors' pages. | Use the trace (kept on failure), or the GM and player videos with `ARTIFACTS=all`. |
 
 ---
 
@@ -653,7 +674,7 @@ A trace contains **every browser** in the test. GM and player actions are interl
 | — | `npx playwright test --debug` | Step-by-step inspector |
 | — | `npx playwright test --last-failed` | Re-runs failures |
 | — | `npx playwright show-trace <trace.zip>` | Opens a trace |
-| — | `npx playwright codegen --load-storage=.auth/gm.json <url>` | Generates code from clicks |
+| — | `npx playwright codegen --load-storage=.auth/gm-0.json <url>` | Generates code from clicks |
 | — | `npx tsc --noEmit` | Type check |
 
 ### Resources

@@ -9,7 +9,7 @@ import {
   type ViewportSize,
 } from "@playwright/test";
 import { ChariotApi } from "@/api";
-import { env, storageStatePath, type Role } from "@/env";
+import { accountSlot, env, storageStatePath, type Role } from "@/env";
 
 type Actor = {
   /** Page navigateur déjà authentifiée (session SSO restaurée depuis `.auth/<role>.json`). */
@@ -41,8 +41,8 @@ type StorageState = Exclude<BrowserContextOptions["storageState"], string | unde
  * En HTTP uniquement, on les rend non-`Secure` (et `Lax`, `None` exigeant `Secure`) pour WebKit.
  * Sur un environnement HTTPS, la session enregistrée est utilisée telle quelle.
  */
-function storageStateFor(role: Role, browserName: string): string | StorageState {
-  const file = storageStatePath(role);
+function storageStateFor(role: Role, slot: number, browserName: string): string | StorageState {
+  const file = storageStatePath(role, slot);
   if (browserName !== "webkit" || !env.keycloakUrl.startsWith("http:")) return file;
 
   const state = JSON.parse(readFileSync(file, "utf8")) as StorageState;
@@ -57,11 +57,13 @@ function storageStateFor(role: Role, browserName: string): string | StorageState
 }
 
 /**
- * Chaque acteur a son propre contexte navigateur isolé (cookies, localStorage, WebSocket).
+ * Chaque acteur a son propre contexte navigateur isolé (cookies, localStorage, WebSocket),
+ * connecté avec le compte du worker courant (`accountSlot`) : aucun autre test ne l'utilise en même temps.
  * Un même test peut donc faire jouer un MJ et un joueur en même temps, comme deux vrais clients.
  * Le contexte reprend l'appareil du projet (écran, tactile, user-agent) : sans cela,
  * un contexte créé à la main resterait en 1280×720 même sur mobile.
- * La trace couvre tous les contextes ; la vidéo de chaque acteur est jointe au rapport.
+ * La trace couvre tous les contextes. Vidéo de chaque acteur jointe au rapport avec `E2E_ARTIFACTS=all`
+ * (l'encodage vidéo ralentit nettement les tests, surtout sous WebKit).
  */
 function actorFixture(role: Role) {
   return async (
@@ -77,13 +79,15 @@ function actorFixture(role: Role) {
     use: (actor: Actor) => Promise<void>,
     testInfo: TestInfo,
   ) => {
-    const videoDir = testInfo.outputPath(`video-${role}`);
+    const slot = accountSlot(testInfo.parallelIndex);
     const screen = viewport ?? DEFAULT_VIEWPORT;
+    const recordVideo =
+      env.artifacts === "all" ? { dir: testInfo.outputPath(`video-${role}`), size: screen } : undefined;
     const context = await browser.newContext({
       baseURL: env.webUrl,
       locale: env.locale,
-      storageState: storageStateFor(role, browserName),
-      recordVideo: { dir: videoDir, size: screen },
+      storageState: storageStateFor(role, slot, browserName),
+      recordVideo,
       viewport: screen,
       isMobile,
       hasTouch,
@@ -91,7 +95,7 @@ function actorFixture(role: Role) {
       deviceScaleFactor,
     });
     const page = await context.newPage();
-    const api = await ChariotApi.as(role);
+    const api = await ChariotApi.as(role, slot);
 
     await use({ page, api });
 

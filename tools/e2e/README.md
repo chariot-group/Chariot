@@ -1,7 +1,7 @@
 # Chariot E2E Scenarios (Playwright)
 
 End-to-end tests in a real browser: web client, Keycloak, gateway, adventure and session (WebSocket).
-Every scenario is recorded (video, screenshots, trace) and can be replayed step by step.
+Scenarios run in parallel (4 workers by default, one GM / player account pair per worker). Failed scenarios keep their trace and screenshot for step-by-step replay; `ARTIFACTS=all` records everything, videos included.
 
 📖 **Full guide**: [docs/development/E2E_TESTING.md](../../docs/development/E2E_TESTING.md) (writing and editing tests, reading reports and traces, diagnosing failures).
 
@@ -15,6 +15,8 @@ make e2e                 # all scenarios
 make e2e FILTER=session  # only those whose title contains "session"
 make e2e DEVICE=mobile   # only on phone (Pixel 7, iPhone 14); DEVICE=desktop for computer only
 make e2e BROWSER=safari  # only one browser: chrome, firefox or safari (WebKit)
+make e2e WORKERS=2       # number of parallel workers (default 4; not --workers, see "Test accounts")
+make e2e ARTIFACTS=all   # trace + video + screenshots for every test (default: trace + screenshot on failure only)
 ```
 
 ## Viewing runs
@@ -22,7 +24,7 @@ make e2e BROWSER=safari  # only one browser: chrome, firefox or safari (WebKit)
 | Command | Usage |
 | --- | --- |
 | `make e2e-ui` | UI mode: scenario list, on-demand runs, timeline, DOM/network/console at each step, watch mode |
-| `make e2e-report` | HTML report of the last run: videos (one per GM / player actor), screenshots, trace |
+| `make e2e-report` | HTML report of the last run: traces and screenshots of failures (videos per GM / player actor with `ARTIFACTS=all`) |
 | `npx playwright show-trace test-results/<test>/trace.zip` | Replay a specific trace |
 | `npm run headed` (in `tools/e2e`) | Watch the browser while tests run |
 
@@ -30,11 +32,12 @@ make e2e BROWSER=safari  # only one browser: chrome, firefox or safari (WebKit)
 
 ```
 tools/e2e/
-├── playwright.config.ts      # setup → <device>-<browser> projects, trace/video/screenshots always on
+├── playwright.config.ts      # setup → <device>-<browser> projects, workers, artifacts
 ├── scenarios/
 │   ├── auth.setup.ts         # creates test accounts + stores their SSO session (.auth/)
 │   ├── auth/                 # login, post-auth navigation
 │   ├── campagne/             # campaign creation
+│   ├── profil/               # sign-up (Keycloak), profile read / edit, account deletion request
 │   └── session/              # GM + player in real time (WebSocket)
 └── src/
     ├── env.ts                # configuration (.env)
@@ -69,7 +72,11 @@ Conventions:
 
 ## Test accounts
 
-Locally, `auth.setup.ts` creates (or resets) `e2e-gm` and `e2e-player` through the Keycloak admin API.
+Locally, `auth.setup.ts` creates (or resets) one pair per worker (`e2e-gm-<n>`, `e2e-player-<n>`) through the Keycloak admin API,
+so parallel tests never share an account. In a test, get the current worker's account with `testUser(role, accountSlot(testInfo.parallelIndex))`;
+the `gm` / `player` fixtures already do it. Without `KEYCLOAK_ADMIN_*`, the run uses `e2e-gm` / `e2e-player` on a single worker.
+Scenarios that modify the account (`profil/`) use temporary `e2e-tmp-*` accounts created and deleted through the same admin API
+(`createTemporaryAccount`, `deleteKeycloakAccount`); they are skipped without `KEYCLOAK_ADMIN_*`.
 On a hosted environment, leave `KEYCLOAK_ADMIN_*` empty and provide existing dedicated test accounts.
 Never use real user accounts.
 
