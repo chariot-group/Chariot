@@ -175,7 +175,7 @@ npx playwright test --last-failed
 ```
 
 ```bash
-npx playwright test --repeat-each=5 -g "rejoint"
+npx playwright test --repeat-each=5 --no-deps -g "rejoint"   # after one normal run (sessions in .auth/)
 ```
 
 | Option | Effect |
@@ -185,7 +185,8 @@ npx playwright test --repeat-each=5 -g "rejoint"
 | `--headed` | Shows the browser while running |
 | `--debug` | Opens the Playwright Inspector, step-by-step execution |
 | `--last-failed` | Re-runs only the tests that failed last time |
-| `--repeat-each=5` | Repeats each test 5 times, to detect a flaky test |
+| `--repeat-each=5` | Repeats each test 5 times, to detect a flaky test. Add `--no-deps`: otherwise the `setup` tests are repeated too and log in to the same accounts at the same time |
+| `--no-deps` | Skips the `setup` project and reuses the sessions saved in `.auth/` by the last run |
 | `--project="mobile-*"` | Runs only the matching projects (`desktop-chrome`, `mobile-safari`…); setup still runs, it is a dependency |
 
 > ⚠️ Do not pass `--reporter=...` on the command line if you want the HTML report: this option **replaces** the reporters from the config, and `reports/html` is not regenerated.
@@ -636,7 +637,7 @@ A trace contains **every browser** in the test. GM and player actions are interl
 ### Fails in CI but not locally
 
 - Download the HTML report published as an artifact, then open the trace.
-- Run locally with `--repeat-each=10`: an intermittent failure reveals a race condition.
+- Run locally with `--repeat-each=10 --no-deps`: an intermittent failure reveals a race condition. Run it with the default workers, since parallel load is often what exposes the race.
 - Do not "fix" it by adding `waitForTimeout`: find the event to wait for (text, network request, URL).
 
 ---

@@ -2615,6 +2615,7 @@ Each initiative tracker row carries:
 - Unit: mailto builders encode subject/body correctly
 - Component: GDPR card renders three actions with expected accessible labels
 - Component: delete dialog renders warning text
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): export downloads `chariot-profile-YYYY-MM-DD.json` from a fresh `GET /user/me` (account profile fields, no internal auth identifiers at any depth) with a success toast; a failing `GET /user/me` shows `aria-busy` then the error toast, downloads nothing and re-enables the button; "Request all my data" opens a `mailto:` to the privacy contact with the account email and no internal auth identifiers
 - E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): the delete dialog shows its warning; Cancel closes it without any request; Confirm opens a `mailto:` to the privacy contact without internal auth identifiers, and the account stays usable
 
 **References**:
