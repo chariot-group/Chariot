@@ -57,8 +57,14 @@ export const CARDS = {
 
 /** Profil → « Recharger vos tokens » → boutique ouverte, offres chargées. */
 export async function openShop(page: Page): Promise<Locator> {
-  await page.goto(`/${env.locale}/profile`);
-  await page.getByRole("button", { name: "Recharger vos tokens" }).click();
+  const reload = page.getByRole("button", { name: "Recharger vos tokens" });
+  // Juste après la connexion, FR-post-auth-navigation peut encore rediriger (ex. vers /welcome)
+  // et interrompre la navigation vers le profil : on la relance jusqu'à ce que le profil tienne.
+  await expect(async () => {
+    await page.goto(`/${env.locale}/profile`);
+    await expect(reload).toBeVisible({ timeout: 5_000 });
+  }).toPass({ timeout: 30_000 });
+  await reload.click();
   const shop = page.getByRole("dialog", { name: "Boutique" });
   await expect(shop.getByRole("button", { name: "Acheter" }).first()).toBeVisible();
   return shop;
