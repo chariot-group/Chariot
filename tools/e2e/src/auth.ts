@@ -11,9 +11,17 @@ export async function loginThroughKeycloak(page: Page, role: Role, slot: number)
   await loginWithCredentials(page, testUser(role, slot).username, env.password);
 }
 
-/** Même parcours que `loginThroughKeycloak`, pour un compte quelconque (ex. compte jetable). */
-export async function loginWithCredentials(page: Page, username: string, password: string): Promise<void> {
-  await page.goto(`/${env.locale}`);
+/**
+ * Même parcours que `loginThroughKeycloak`, pour un compte quelconque (ex. compte jetable).
+ * `landingPath` : page ouverte avant le SSO (ex. `/fr?ref=CODE`, lien de parrainage).
+ */
+export async function loginWithCredentials(
+  page: Page,
+  username: string,
+  password: string,
+  landingPath = `/${env.locale}`,
+): Promise<void> {
+  await page.goto(landingPath);
   await page.waitForURL((url) => url.href.startsWith(env.keycloakUrl), { timeout: 30_000 });
 
   await page.locator("#username").fill(username);

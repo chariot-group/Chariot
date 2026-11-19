@@ -1235,6 +1235,43 @@ When adding a rule:
 
 ---
 
+### Checkout Outcomes (Success, Failure, Cancel)
+
+**Rule**: Every checkout ends in exactly one of three outcomes. Only a confirmed payment (Stripe `payment_intent.succeeded` webhook, or a free order) credits tokens and consumes discounts.
+
+**Requirements**:
+
+- **Success**: the return page shows the success state; the balance is credited with `token_number × quantity` of the pack; the token history gains one purchase entry for that amount
+- **Failure** (card declined, insufficient funds, 3-D Secure authentication failed): the error is shown on the checkout page (`role="alert"`), the user stays on the checkout and can retry; no tokens are credited
+- **Cancel** (the user leaves the checkout with « Retour » before paying): no tokens are credited
+- The return page MUST show the failure state for any `redirect_status` other than `succeeded` or `processing`, and when no status can be determined
+- Promo code usage, affiliation usage and referral discounts (referee 15 %, referrer tier) are consumed only on a confirmed payment; after a failure or a cancel, the same code or referral discount MUST still be available on the next checkout
+- A referee is validated (counted toward the referrer's tier) only on a confirmed payment
+- When a referral discount applies, the manual code field is disabled and the « Non cumulable » notice is shown
+
+**Prohibitions**:
+
+- Crediting tokens, recording a promo/affiliation usage or consuming a referral discount when the payment failed or was cancelled
+- Showing an empty return page (neither success nor failure state)
+
+**Tests**:
+
+- Return page: `redirect_status=succeeded` → success; `redirect_status=failed` → failure; no parameter → failure
+- E2E coverage (`tools/e2e/scenarios/boutique/`):
+  - `packs.spec.ts`: success, failure (declined card) and cancel for each pack of the catalog (Explorateur, Aventurier, Légendaire, pay per unit); 3-D Secure accepted / failed / abandoned, insufficient funds, retry after a decline credited once, quantity 2; return page states
+  - `codes-promo.spec.ts`: percentage promo code success (then consumed) / failure / cancel (code still usable), 100 % code free order, « Cadeau » line below the Stripe minimum, unknown / inactive / first-order-only / minimum-order / exhausted codes, code removal
+  - `affiliation.spec.ts`: affiliation code success (one usage recorded) / failure / cancel (no usage recorded, code still usable), inactive code
+  - `parrainage.spec.ts`: referee 15 % success / failure / cancel (discount still available and referee not validated after failure or cancel), discount consumed after the first payment, referrer 10 % once the referee paid and tier reset after use, referrer discount kept after a declined card, not cumulative with a manual code (field disabled), own referral code refused
+
+**References**:
+
+- `services/web/client/src/app/[locale]/checkout/return/page.tsx`
+- `services/web/client/src/components/checkout/CheckoutForm.tsx`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `tools/e2e/scenarios/boutique/`
+
+---
+
 ## FR-admin-sidebar-links: Admin Sidebar External Navigation Links
 
 **Rule**: The admin client sidebar must expose configurable external links to third-party administration consoles (Keycloak, Stripe). URLs must be defined per environment via environment variables and must not be hardcoded.

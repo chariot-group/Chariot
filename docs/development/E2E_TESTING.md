@@ -118,6 +118,32 @@ Scenarios that change the account itself (profile edit, sign-up) never touch the
 
 > On a hosted environment (integ), leave `KEYCLOAK_ADMIN_*` empty and provide dedicated test accounts created beforehand. Never use real user accounts.
 
+### Shop scenarios (Stripe)
+
+`scenarios/boutique/` covers the sales funnel (FR-stripe-checkout, Checkout Outcomes): success, failure and cancel for each pack, promo codes, affiliation codes and referral.
+
+- **Stripe test mode only**: the payment service runs with an `sk_test_…` key; cards are Stripe's published test numbers (`CARDS` in `@/shop`).
+- **Webhook**: tokens are credited (and discounts consumed) only when Stripe's `payment_intent.succeeded` webhook reaches the gateway. Start the listener in a separate terminal, and make the payment service use **its** signing secret:
+
+  ```bash
+  make stripe-listen
+  ```
+
+  ```bash
+  stripe listen --print-secret
+  ```
+
+  Put that value in `STRIPE_WEBHOOK_SECRET` (`services/payment/.env`), restart the payment service, then run with the flag:
+
+  ```bash
+  make e2e FILTER=boutique STRIPE_WEBHOOK=1
+  ```
+
+  Without `STRIPE_WEBHOOK=1`, tests tagged `@webhook` are skipped; failure, cancel and refused-code tests still run.
+- **Accounts**: every test buys with its own temporary account (`buyer` fixture, `@/shop-fixtures`); a new account starts with welcome tokens, so assertions compare against `initialBalance`. Referral tests open a second account (`openBuyer`), the referee arriving through `/fr?ref=CODE`.
+- **Codes**: a temporary account with the realm role `admin` (one per worker) creates promo / affiliation codes through the payment API (`createPromo`, `createAffiliation`); they are deleted at the end of the test.
+- **Targets**: the full matrix runs on `desktop-chrome`; the other targets run the `@smoke` subset (one success, failure and cancel, one code of each kind, the return page). This bounds the calls to Stripe's test API.
+
 ---
 
 ## 3. Running tests
@@ -229,6 +255,10 @@ tools/e2e/
 │   ├── campagne/creation-campagne.spec.ts
 │   ├── profil/inscription.spec.ts   # sign-up through the Keycloak registration page
 │   ├── profil/profil.spec.ts        # profile read / edit, account deletion request
+│   ├── boutique/packs.spec.ts       # funnel per pack: success / failure / cancel, 3-D Secure, return page
+│   ├── boutique/codes-promo.spec.ts # promo codes, free order, « Cadeau » line, refused codes
+│   ├── boutique/affiliation.spec.ts # affiliation codes
+│   ├── boutique/parrainage.spec.ts  # referral: referee 15 %, referrer tier, own code
 │   └── session/rejoindre-session.spec.ts
 ├── src/                        # shared tooling (imported via @/…)
 │   ├── env.ts                  # .env loading, uniqueLabel(), .auth/ paths
@@ -236,6 +266,9 @@ tools/e2e/
 │   ├── api.ts                  # ChariotApi: gateway calls (setup / cleanup)
 │   ├── auth.ts                 # login through the SSO form, release-notes mute
 │   ├── fixtures.ts             # `gm` and `player` actors
+│   ├── payment.ts              # GatewayClient: catalog, balance, referral, admin promo / affiliation codes
+│   ├── shop.ts                 # shop journeys: packs, Stripe card entry, 3-D Secure, outcome assertions
+│   ├── shop-fixtures.ts        # `buyer`, `openBuyer`, `adminApi`, `createPromo`, `createAffiliation`
 │   └── flows.ts                # reusable UI journeys
 ├── .auth/                      # saved sessions (generated, git-ignored)
 ├── test-results/               # traces, videos, screenshots of the last run (generated)
@@ -656,6 +689,8 @@ A trace contains **every browser** in the test. GM and player actions are interl
 | **Sidebar on mobile** | Below 768 px the sidebar is a drawer behind "Ouvrir le menu": its buttons ("Lancer une session"…) are not in the page until it is opened. | Call `openSidebarIfMobile(page)` from `@/flows` before clicking in the sidebar. |
 | **Safari (WebKit) on `http://localhost`** | Keycloak sets its SSO cookies as `Secure; SameSite=None`. WebKit does not send them over HTTP, so every page falls back to the login form. | The `gm` / `player` fixtures drop `Secure` from the saved cookies for WebKit when Keycloak is on HTTP. Nothing changes on an HTTPS environment. |
 | **`next dev` killed for lack of memory** | With the full stack, Docker can run out of memory while `next dev` compiles a page: `ERR_EMPTY_RESPONSE`, endless "Chargement…", failures in any browser. Check with `docker inspect chariot-web --format '{{.RestartCount}}'`. | Give Docker Desktop **at least 12 GB** (Settings → Resources → Memory): the full stack uses ~6 GB and `next dev` can reach ~1.5 GB while compiling. 8 GB is not enough. Otherwise, run against a production build (`make web-prod-local`, back with `make web-dev-local`). |
+| **Stripe webhook not received** | The payment succeeds on the return page but the balance never moves (`expectBalance` times out). | `make stripe-listen` must be running and `STRIPE_WEBHOOK_SECRET` of the payment service must equal `stripe listen --print-secret` (otherwise the payment service rejects the signature). |
+| **Stripe card fields** | The card form lives in a cross-origin iframe; the 3-D Secure page is an iframe nested in another one. | Use `fillCard()` / `answerThreeDSecure()` from `@/shop`, which target the iframes by title and URL. |
 | **Automatic screenshots** | Playwright's screenshot only captures the default page, not the actors' pages. | Use the trace (kept on failure), or the GM and player videos with `ARTIFACTS=all`. |
 
 ---

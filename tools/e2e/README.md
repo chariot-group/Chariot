@@ -17,6 +17,7 @@ make e2e DEVICE=mobile   # only on phone (Pixel 7, iPhone 14); DEVICE=desktop fo
 make e2e BROWSER=safari  # only one browser: chrome, firefox or safari (WebKit)
 make e2e WORKERS=2       # number of parallel workers (default 4; not --workers, see "Test accounts")
 make e2e ARTIFACTS=all   # trace + video + screenshots for every test (default: trace + screenshot on failure only)
+make e2e FILTER=boutique STRIPE_WEBHOOK=1  # sales funnel, with `make stripe-listen` running (see the guide)
 ```
 
 ## Viewing runs
@@ -38,12 +39,16 @@ tools/e2e/
 │   ├── auth/                 # login, post-auth navigation
 │   ├── campagne/             # campaign creation
 │   ├── profil/               # sign-up (Keycloak), profile read / edit, account deletion request
+│   ├── boutique/             # sales funnel: packs, promo codes, affiliation, referral (Stripe test mode)
 │   └── session/              # GM + player in real time (WebSocket)
 └── src/
     ├── env.ts                # configuration (.env)
     ├── keycloak.ts           # account provisioning + tokens
     ├── api.ts                # gateway client to prepare / clean up data
     ├── fixtures.ts           # `gm` and `player` actors (browser + API)
+    ├── payment.ts            # payment / balance API client (catalog, referral, admin codes)
+    ├── shop.ts               # shop journeys and outcome assertions
+    ├── shop-fixtures.ts      # `buyer`, `openBuyer`, promo / affiliation code factories
     └── flows.ts              # reusable UI journeys
 ```
 

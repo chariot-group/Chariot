@@ -12,12 +12,16 @@ async function postForm(url: string, form: Record<string, string>): Promise<Resp
 
 /** Token d'un compte de test via password grant (client public `chariot-app`, direct access activé). */
 export async function getUserAccessToken(role: Role, slot: number): Promise<string> {
-  const { username } = testUser(role, slot);
+  return getAccessToken(testUser(role, slot).username, env.password);
+}
+
+/** Token d'un compte quelconque (ex. compte jetable) via password grant. */
+export async function getAccessToken(username: string, password: string): Promise<string> {
   const response = await postForm(`${keycloakBase}/realms/${env.keycloakRealm}/protocol/openid-connect/token`, {
     grant_type: "password",
     client_id: env.keycloakClientId,
     username,
-    password: env.password,
+    password,
   });
   if (!response.ok) {
     throw new Error(`Connexion Keycloak impossible pour ${username} (HTTP ${response.status})`);
@@ -162,6 +166,34 @@ export async function createTemporaryAccount(tag: string): Promise<TemporaryAcco
   const adminToken = await getAdminToken();
   const userId = await createUser(adminToken, account);
   await setPassword(adminToken, userId, account.username, account.password);
+  return account;
+}
+
+/** Attribue un rôle de realm (ex. `admin`) à un compte existant. */
+async function grantRealmRole(adminToken: string, userId: string, roleName: string): Promise<void> {
+  const roleResponse = await fetch(`${adminBase()}/roles/${encodeURIComponent(roleName)}`, {
+    headers: adminHeaders(adminToken),
+  });
+  if (!roleResponse.ok) throw new Error(`Rôle Keycloak « ${roleName} » introuvable (HTTP ${roleResponse.status})`);
+  const role = (await roleResponse.json()) as { id: string; name: string };
+  const granted = await fetch(`${adminBase()}/users/${userId}/role-mappings/realm`, {
+    method: "POST",
+    headers: adminHeaders(adminToken),
+    body: JSON.stringify([{ id: role.id, name: role.name }]),
+  });
+  if (!granted.ok) throw new Error(`Attribution du rôle « ${roleName} » impossible (HTTP ${granted.status})`);
+}
+
+/**
+ * Compte jetable avec le rôle de realm `admin` : sert uniquement à créer / supprimer
+ * les codes promo et d'affiliation via l'API paiement (`@IsAdmin`). À supprimer dans un `finally`.
+ */
+export async function createTemporaryAdminAccount(tag: string): Promise<TemporaryAccount> {
+  const account = temporaryAccountData(tag);
+  const adminToken = await getAdminToken();
+  const userId = await createUser(adminToken, account);
+  await setPassword(adminToken, userId, account.username, account.password);
+  await grantRealmRole(adminToken, userId, "admin");
   return account;
 }
 

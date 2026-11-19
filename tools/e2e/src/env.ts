@@ -37,6 +37,12 @@ export const env = {
   password: read("E2E_USER_PASSWORD", "e2e-Chariot-dev-1!"),
   /** `all` : trace, vidéo et captures pour chaque test. Par défaut, uniquement en cas d'échec. */
   artifacts: process.env.E2E_ARTIFACTS?.trim() === "all" ? ("all" as const) : ("failures" as const),
+  /**
+   * `1` : un `stripe listen` relaie les webhooks Stripe vers la gateway (`make stripe-listen`).
+   * Sans lui, aucun paiement n'est confirmé côté Chariot : les scénarios boutique qui attendent
+   * un crédit de tokens ou la consommation d'une réduction sont sautés.
+   */
+  stripeWebhook: process.env.E2E_STRIPE_WEBHOOK?.trim() === "1",
 };
 
 /** Identifiants admin Keycloak fournis : provisioning et comptes jetables possibles (stack locale). */

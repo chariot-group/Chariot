@@ -439,8 +439,8 @@ E2E_DIR := tools/e2e
 e2e-install: ## Installe Playwright + Chromium, Firefox et WebKit pour les scénarios E2E
 	@cd $(E2E_DIR) && npm ci && npx playwright install chromium firefox webkit
 
-e2e: ## Lance les scénarios E2E sur ordinateur/mobile × Chrome/Firefox/Safari (FILTER=texte, DEVICE=desktop|mobile, BROWSER=chrome|firefox|safari, WORKERS=4, ARTIFACTS=all)
-	@cd $(E2E_DIR) && $(if $(WORKERS),E2E_WORKERS=$(WORKERS) ,)$(if $(ARTIFACTS),E2E_ARTIFACTS=$(ARTIFACTS) ,)npx playwright test $(if $(DEVICE)$(BROWSER),--project="$(or $(DEVICE),*)-$(or $(BROWSER),*)",) $(if $(FILTER),--grep "$(FILTER)",)
+e2e: ## Lance les scénarios E2E sur ordinateur/mobile × Chrome/Firefox/Safari (FILTER=texte, DEVICE=desktop|mobile, BROWSER=chrome|firefox|safari, WORKERS=4, ARTIFACTS=all, STRIPE_WEBHOOK=1)
+	@cd $(E2E_DIR) && $(if $(WORKERS),E2E_WORKERS=$(WORKERS) ,)$(if $(ARTIFACTS),E2E_ARTIFACTS=$(ARTIFACTS) ,)$(if $(STRIPE_WEBHOOK),E2E_STRIPE_WEBHOOK=$(STRIPE_WEBHOOK) ,)npx playwright test $(if $(DEVICE)$(BROWSER),--project="$(or $(DEVICE),*)-$(or $(BROWSER),*)",) $(if $(FILTER),--grep "$(FILTER)",)
 
 e2e-perf: ## Mesure l'aller-retour SSO en 3G simulée (PERF_RUNS, PERF_LABEL, PERF_LATENCY_MS, PERF_DOWN_KBPS)
 	@cd $(E2E_DIR) && E2E_PERF=1 npx playwright test --project=perf
