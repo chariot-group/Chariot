@@ -26,6 +26,26 @@ export async function getUserAccessToken(role: Role, slot: number): Promise<stri
   return body.access_token;
 }
 
+/**
+ * Indique si Keycloak accepte ce couple identifiant / mot de passe (password grant, client public).
+ * Sert à vérifier un changement de mot de passe sans dépendre de l'app.
+ */
+export async function acceptsPassword(username: string, password: string): Promise<boolean> {
+  const response = await postForm(`${keycloakBase}/realms/${env.keycloakRealm}/protocol/openid-connect/token`, {
+    grant_type: "password",
+    client_id: env.keycloakClientId,
+    username,
+    password,
+  });
+  if (response.ok) return true;
+  // Keycloak répond 400 ou 401 `invalid_grant` selon la version pour des identifiants refusés.
+  const body = (await response.json().catch(() => ({}))) as { error?: string; error_description?: string };
+  if (body.error === "invalid_grant" && body.error_description === "Invalid user credentials") return false;
+  throw new Error(
+    `Vérification du mot de passe de ${username} impossible (HTTP ${response.status} ${body.error ?? ""} ${body.error_description ?? ""})`,
+  );
+}
+
 /** Token admin mis en cache par worker, renouvelé 10 s avant expiration. */
 let cachedAdminToken: { value: string; expiresAt: number } | undefined;
 

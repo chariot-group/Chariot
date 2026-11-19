@@ -921,6 +921,14 @@ When adding a rule:
 - Hook displays specific error message on failure
 - Hook returns react-hook-form instance
 
+**E2E Tests (Playwright, `tools/e2e/scenarios/profil/profil.spec.ts`)**:
+
+- Nominal: changing the password shows the success toast, empties the three fields and keeps the user signed in; Keycloak then accepts the new password and refuses the old one, and a fresh SSO login with the new password succeeds; no password appears in `localStorage`, `sessionStorage`, cookies or the URL
+- Failure: a wrong current password shows `incorrectPassword` on the current-password field, sends exactly one `PUT /users/me/password` (a replayed 401 would trigger the Keycloak quick-login lockout) and leaves the password unchanged
+- Failure: empty fields, a new password shorter than 8 characters and a mismatched confirmation show field errors and send no request
+- Failure: a 403 policy response (simulated, no policy in the local realm) shows `complexityError` on the new-password field; the submit button is `aria-busy` and disabled while the request is pending
+- Edge: the show / hide buttons toggle `aria-pressed` and the input type of the new and confirmation fields
+
 **References**:
 
 - `services/adventure/api/src/resources/user/dto/change-password.dto.ts` - Backend DTO
@@ -2783,6 +2791,7 @@ Each initiative tracker row carries:
 - API: `preferredLocale` validation and persistence on `PUT /user/me`
 - Component: locale select renders with label and accessible name
 - Component: all supported locales appear as options
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): choosing English sends `PUT /user/me` `{ preferredLocale: "en" }`, moves to `/en/profile` in English, stores `user-preferred-locale` and survives a reload; a fresh SSO login applies the account locale and lands on the post-auth page under `/en`; the select opens with the keyboard, lists the three locales and closes on Escape; a failing `PUT` shows the error toast and keeps `/fr/profile`
 
 **References**:
 
@@ -3183,6 +3192,7 @@ Each initiative tracker row carries:
 
 - The profile page exposes a "Voir les nouveautés" button (localized) that opens the same `ReleaseNotesModal`.
 - When opened from the profile page, closing does NOT dispatch `markVersionSeen` (`readOnly={true}`).
+- A checkbox « Ne plus afficher les nouveautés automatiquement à la connexion » (own `aria-label`) mutes the auto-detection modal for the signed-in account: checked, `ReleaseNotesProvider` never opens the modal automatically, even for an unseen version; unchecked, the auto-detection applies again. The choice is stored per account in client storage (`chariot_release_notes_muted_<userId>`), not on the user record; the profile button keeps opening the notes either way.
 
 **Accessibility Requirements (FR-frontend-design)**:
 
@@ -3212,6 +3222,7 @@ Each initiative tracker row carries:
 - `ReleaseNotesModal`: switching Select updates displayed content without closing.
 - `ReleaseNotesModal`: mobile `Select` defaults to `CURRENT_APP_VERSION`; side navigation marks only the selected version with `aria-current`; an unknown selected version falls back to the latest note.
 - `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): the profile button opens the notes and closing does not write the seen version; on a first login the modal opens automatically; once « Ne plus afficher » is checked an unseen version does not reopen it, and unchecking it brings the automatic opening back; `Chariot vX.Y.Z` shows in the Preferences section when the version is exposed
 
 **References**:
 
@@ -3271,6 +3282,7 @@ Each initiative tracker row carries:
 - Change is saved immediately (same pattern as `preferredLocale`)
 - Exposed in all user DTOs (`UpdateUserProfileDto`, `UserInfoDto`) and the frontend `User` / `UpdateUserDto` types
 - The stored preference is available globally for any future display formatting of size/weight values
+- **Show both units** (`showBothUnits`, boolean, default `false`): a checkbox « Afficher les deux unités » in the same Preferences section, with an info tooltip, saved immediately via `PUT /user/me` (same pattern); when enabled, distances also show the secondary unit next to the preferred one (`useDistanceUnit`). The checkbox is disabled while saving; an API error shows the `editProfile.errorMessage` toast and leaves the stored value unchanged
 
 **Prohibitions**:
 
@@ -3281,6 +3293,7 @@ Each initiative tracker row carries:
 - Nominal: selecting `imperial` calls `updateCurrentUser` with `preferredMeasurementUnit: 'imperial'` and dispatches `updateUser`
 - Edge: selecting the already-active unit does nothing (no API call)
 - Failure: API error shows an error toast and does not change the stored preference
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): choosing `imperial` (keyboard-opened select) sends `{ preferredMeasurementUnit: "imperial" }` and survives a reload; choosing the active unit sends nothing; a failing `PUT` shows the error toast and keeps « Mètres »; checking then unchecking « Afficher les deux unités » sends `showBothUnits` `true` / `false`, each surviving a reload; a failing `PUT` shows the error toast and leaves the box unchecked
 
 **References**:
 
