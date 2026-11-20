@@ -1,4 +1,4 @@
-import { test as base, type BrowserContext, type Page, type TestInfo } from "@playwright/test";
+import { test as base, type BrowserContext, type Page } from "@playwright/test";
 import { loginWithCredentials, muteReleaseNotes } from "@/auth";
 import { env, hasKeycloakAdmin } from "@/env";
 import {
@@ -21,7 +21,7 @@ export type Buyer = {
 };
 
 type ShopFixtures = {
-  /** Garde auto, évaluée avant tout compte créé : cible de la matrice, webhook Stripe, admin Keycloak. */
+  /** Garde auto, évaluée avant tout compte créé : admin Keycloak requis. */
   shopGate: void;
   buyer: Buyer;
   offers: Record<Pack["key"], PackOffer>;
@@ -58,34 +58,13 @@ async function signIn(
   return { page, context, account, api, initialBalance: await api.balance() };
 }
 
-/** Tag des tests qui attendent un paiement confirmé (crédit de tokens, consommation d'une réduction). */
-export const WEBHOOK = "@webhook";
-/** Tag du sous-ensemble joué sur toutes les cibles (sinon `desktop-chrome` seul). */
-export const SMOKE = "@smoke";
-
-/** Projet qui joue la matrice complète. */
-const FULL_MATRIX_PROJECT = "desktop-chrome";
-
-/**
- * Hors `desktop-chrome`, seuls les tests `@smoke` tournent :
- * la matrice complète × 5 cibles multiplierait les appels à l'API de test Stripe.
- */
-function skipOutsideFullMatrix(testInfo: TestInfo): void {
-  testInfo.skip(
-    testInfo.project.name !== FULL_MATRIX_PROJECT && !testInfo.tags.includes(SMOKE),
-    `matrice complète jouée sur ${FULL_MATRIX_PROJECT} uniquement`,
-  );
-}
+export { SMOKE, WEBHOOK } from "@/tags";
 
 export const test = base.extend<ShopFixtures, ShopWorkerFixtures>({
   shopGate: [
     async ({}, use, testInfo) => {
+      // Cibles et webhook : filtrés à la planification (`grepInvert`, playwright.config.ts).
       testInfo.skip(!hasKeycloakAdmin(), "KEYCLOAK_ADMIN_* requis pour créer les comptes jetables");
-      skipOutsideFullMatrix(testInfo);
-      testInfo.skip(
-        testInfo.tags.includes(WEBHOOK) && !env.stripeWebhook,
-        "E2E_STRIPE_WEBHOOK=1 et `make stripe-listen` requis (webhook Stripe)",
-      );
       await use();
     },
     { auto: true },

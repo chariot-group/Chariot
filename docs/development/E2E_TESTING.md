@@ -139,10 +139,10 @@ Scenarios that change the account itself (profile edit, sign-up) never touch the
   make e2e FILTER=boutique STRIPE_WEBHOOK=1
   ```
 
-  Without `STRIPE_WEBHOOK=1`, tests tagged `@webhook` are skipped; failure, cancel and refused-code tests still run.
+  Without `STRIPE_WEBHOOK=1`, tests tagged `@webhook` are not scheduled at all (`grepInvert` in `playwright.config.ts`); failure, cancel and refused-code tests still run.
 - **Accounts**: every test buys with its own temporary account (`buyer` fixture, `@/shop-fixtures`); a new account starts with welcome tokens, so assertions compare against `initialBalance`. Referral tests open a second account (`openBuyer`), the referee arriving through `/fr?ref=CODE`.
 - **Codes**: a temporary account with the realm role `admin` (one per worker) creates promo / affiliation codes through the payment API (`createPromo`, `createAffiliation`); they are deleted at the end of the test.
-- **Targets**: the full matrix runs on `desktop-chrome`; the other targets run the `@smoke` subset (one success, failure and cancel, one code of each kind, the return page). This bounds the calls to Stripe's test API.
+- **Targets**: the full matrix runs on `desktop-chrome`; the other targets only schedule the `@smoke` subset (one success, failure and cancel, one code of each kind, the return page), so they never show up as « skipped ». This bounds the calls to Stripe's test API. Tags and filters live in `@/tags`.
 
 ---
 
@@ -253,6 +253,7 @@ tools/e2e/
 │   ├── auth.setup.ts           # setup: test accounts + SSO sessions
 │   ├── auth/connexion.spec.ts
 │   ├── campagne/creation-campagne.spec.ts
+│   ├── groupe/groupes.spec.ts       # groups: create, name validation, rename, archive / restore, delete, delete all archived
 │   ├── profil/inscription.spec.ts   # sign-up through the Keycloak registration page
 │   ├── profil/profil.spec.ts        # profile read / edit, account deletion request
 │   ├── boutique/packs.spec.ts       # funnel per pack: success / failure / cancel, 3-D Secure, return page
@@ -269,6 +270,7 @@ tools/e2e/
 │   ├── payment.ts              # GatewayClient: catalog, balance, referral, admin promo / affiliation codes
 │   ├── shop.ts                 # shop journeys: packs, Stripe card entry, 3-D Secure, outcome assertions
 │   ├── shop-fixtures.ts        # `buyer`, `openBuyer`, `adminApi`, `createPromo`, `createAffiliation`
+│   ├── tags.ts                 # `@smoke` / `@webhook` tags and the per-project filters
 │   └── flows.ts                # reusable UI journeys
 ├── .auth/                      # saved sessions (generated, git-ignored)
 ├── test-results/               # traces, videos, screenshots of the last run (generated)
@@ -687,6 +689,8 @@ A trace contains **every browser** in the test. GM and player actions are interl
 | **Shared WebSocket sessions** | Two parallel tests on the same accounts interfere (roster, toasts, post-login landing). | One GM / player pair per worker (`testUser`, `accountSlot`). Never hard-code `e2e-gm` / `e2e-player` in a test. |
 | **Session left open** | A test failing before its cleanup can leave an active session. | `leaveSession()` in the `finally`. `[e2e]` data is easy to find for manual cleanup. |
 | **Sidebar on mobile** | Below 768 px the sidebar is a drawer behind "Ouvrir le menu": its buttons ("Lancer une session"…) are not in the page until it is opened. | Call `openSidebarIfMobile(page)` from `@/flows` before clicking in the sidebar. |
+| **Sidebar row actions** | From 1024 px, group / archive actions are a right-click context menu; below, a `⋮` button ("Actions sur le groupe", "Actions sur les archives"). | Use `openGroupActions()` / `openArchivesActions()` from `@/flows`: they pick the right entry point for the viewport. |
+| **GM space still in Player mode** | The displayed space is remembered per account: opening `/campaigns/<id>` can show the Player sidebar. The "Espace maître du jeu" menu stays open (modal) after picking a campaign. | Use `openCampaignSidebar(page, campaign)` from `@/flows`: it switches to the GM space and closes the menu. |
 | **Safari (WebKit) on `http://localhost`** | Keycloak sets its SSO cookies as `Secure; SameSite=None`. WebKit does not send them over HTTP, so every page falls back to the login form. | The `gm` / `player` fixtures drop `Secure` from the saved cookies for WebKit when Keycloak is on HTTP. Nothing changes on an HTTPS environment. |
 | **`next dev` killed for lack of memory** | With the full stack, Docker can run out of memory while `next dev` compiles a page: `ERR_EMPTY_RESPONSE`, endless "Chargement…", failures in any browser. Check with `docker inspect chariot-web --format '{{.RestartCount}}'`. | Give Docker Desktop **at least 12 GB** (Settings → Resources → Memory): the full stack uses ~6 GB and `next dev` can reach ~1.5 GB while compiling. 8 GB is not enough. Otherwise, run against a production build (`make web-prod-local`, back with `make web-dev-local`). |
 | **Stripe webhook not received** | The payment succeeds on the return page but the balance never moves (`expectBalance` times out). | `make stripe-listen` must be running and `STRIPE_WEBHOOK_SECRET` of the payment service must equal `stripe listen --print-secret` (otherwise the payment service rejects the signature). |

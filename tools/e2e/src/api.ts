@@ -5,6 +5,17 @@ type Envelope<T> = { data: T };
 
 export type CreatedCharacter = { _id: string; firstname: string };
 export type CreatedCampaign = { _id: string; label: string };
+export type CreatedGroup = { _id: string; label: string };
+export type GroupSection = "active" | "archived";
+
+type CampaignGroups = { active?: unknown[]; archived?: unknown[] };
+
+/** Les groupes d'une campagne arrivent en identifiants ou en objets peuplés selon l'endpoint. */
+function groupIds(list: unknown[] | undefined): string[] {
+  return (list ?? []).map((item) =>
+    typeof item === "string" ? item : String((item as { _id?: unknown })._id ?? ""),
+  );
+}
 
 /**
  * Client HTTP vers la gateway, authentifié comme un compte de test.
@@ -63,6 +74,52 @@ export class ChariotApi {
 
   async deleteCampaign(campaignId: string): Promise<void> {
     await this.request("DELETE", `/campaigns/${campaignId}`);
+  }
+
+  async createCampaign(label: string): Promise<CreatedCampaign> {
+    const res = await this.request<Envelope<CreatedCampaign>>("POST", "/campaigns", {
+      label,
+      groups: { active: [], archived: [] },
+    });
+    return res.data;
+  }
+
+  /** Crée un groupe actif dans la campagne (même payload que `GroupService.createGroup` côté web). */
+  async createGroup(campaignId: string, label: string): Promise<CreatedGroup> {
+    const res = await this.request<Envelope<CreatedGroup>>("POST", "/groups", {
+      label,
+      campaigns: [{ idCampaign: campaignId, type: "active" }],
+    });
+    return res.data;
+  }
+
+  async deleteGroup(groupId: string): Promise<void> {
+    await this.request("DELETE", `/groups/${groupId}`);
+  }
+
+  /** Première page (50) des groupes actifs ou archivés d'une campagne, comme la sidebar MJ. */
+  async listGroups(campaignId: string, type: GroupSection): Promise<CreatedGroup[]> {
+    const res = await this.request<{ data?: CreatedGroup[] }>(
+      "GET",
+      `/campaigns/${campaignId}/groups?type=${type}&page=1&offset=50`,
+    );
+    return Array.isArray(res?.data) ? res.data : [];
+  }
+
+  /**
+   * Archive des groupes comme la sidebar (`useGroups.archiveGroup`) : la campagne porte
+   * les listes `groups.active` / `groups.archived`, on y déplace les identifiants.
+   */
+  async archiveGroups(campaignId: string, ids: string[]): Promise<void> {
+    const res = await this.request<Envelope<{ groups?: CampaignGroups }>>("GET", `/campaigns/${campaignId}`);
+    const active = groupIds(res.data.groups?.active);
+    const archived = groupIds(res.data.groups?.archived);
+    await this.request("PATCH", `/campaigns/${campaignId}`, {
+      groups: {
+        active: active.filter((id) => !ids.includes(id)),
+        archived: [...archived, ...ids.filter((id) => !archived.includes(id))],
+      },
+    });
   }
 
   async leaveSession(code: string): Promise<void> {

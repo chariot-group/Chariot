@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import { env, workerCount } from "@/env";
+import { FULL_MATRIX_PROJECT, SHOP_FULL_MATRIX_ONLY, WEBHOOK_ONLY } from "@/tags";
 
 const isCI = !!process.env.CI;
 
@@ -37,9 +38,22 @@ const SCENARIO_TARGETS = [
   { name: "mobile-safari", device: "iPhone 14" },
 ] as const;
 
+/**
+ * Scénarios boutique non planifiés (absents de la liste et du rapport, plutôt que « skipped ») :
+ * - hors `desktop-chrome`, seuls les tests `@smoke` tournent ;
+ * - sans `E2E_STRIPE_WEBHOOK=1`, les tests `@webhook` sont exclus (aucun paiement ne serait confirmé).
+ */
+function excludedFor(project: string): RegExp[] {
+  const excluded: RegExp[] = [];
+  if (project !== FULL_MATRIX_PROJECT) excluded.push(SHOP_FULL_MATRIX_ONLY);
+  if (!env.stripeWebhook) excluded.push(WEBHOOK_ONLY);
+  return excluded;
+}
+
 const scenarioProjects = SCENARIO_TARGETS.map(({ name, device }) => ({
   name,
   testMatch: /.*\.spec\.ts/,
+  grepInvert: excludedFor(name),
   dependencies: ["setup"],
   use: { ...devices[device] },
 }));
