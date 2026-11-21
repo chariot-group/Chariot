@@ -43,6 +43,13 @@ export const env = {
    * un crédit de tokens ou la consommation d'une réduction sont sautés.
    */
   stripeWebhook: process.env.E2E_STRIPE_WEBHOOK?.trim() === "1",
+  /**
+   * Accès direct au service adventure (sans la gateway, qui retire les en-têtes internes) et son secret
+   * inter-services : servent uniquement à créditer des wheels aux comptes de test en local (`creditWheels`).
+   * Sans secret, les scénarios qui lancent une session sont sautés quand le solde manque.
+   */
+  adventureUrl: stripTrailingSlash(read("ADVENTURE_URL", "http://localhost:9000")),
+  internalServiceSecret: process.env.INTERNAL_SERVICE_SECRET?.trim() ?? "",
 };
 
 /** Identifiants admin Keycloak fournis : provisioning et comptes jetables possibles (stack locale). */

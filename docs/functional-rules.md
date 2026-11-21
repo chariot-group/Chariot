@@ -3407,6 +3407,8 @@ Each initiative tracker row carries:
 | Archives section header | Delete all archived groups (only when at least one archived group exists) |
 | Campaign | Edit (rename), Delete |
 
+- **Delete campaign** (decision 2026-11-20): when the deleted campaign is the one selected or displayed, the app MUST leave its URL and resolve the post-login destination (FR-post-auth-navigation) among the remaining campaigns. When it was the user's **last** campaign, the app MUST switch to the Player space (`contextMode = "player"`, no selected campaign), navigate to the Player space destination (FR-welcome-onboarding-fallbacks) with `router.replace`, and show the « space changed » info toast. Deleting another campaign MUST NOT change the current view.
+
 - **Delete all archived groups** (archives section header) MUST open a confirmation dialog stating the number of groups to delete; on confirm, MUST permanently delete every archived group in the current campaign (full campaign archived list, not only the currently loaded sidebar page); MUST refresh sidebar group data once after completion; MUST redirect navigation when the user is viewing a deleted archived group (same rules as single group delete).
 
 - **Edit character** MUST navigate to the character sheet with `?mode=edit` (existing CharacterDetailView behavior).
@@ -3459,6 +3461,7 @@ Each initiative tracker row carries:
 - Touch: overflow menu reveals actions and triggers the same handler as context menu.
 - Confirmation: Enter confirms, Escape cancels on delete dialogs.
 - Edge: move character excludes current group; delete redirects when viewing deleted entity.
+- Edge: deleting the selected campaign leaves its URL; deleting the last campaign switches to the Player space with the « space changed » toast; deleting another campaign keeps the current view.
 - Failure: confirm dialog ignores Enter while `isDeleting` / async in progress.
 - Truncated group names — nominal: a cut group name is shown in full as the first label of the group menu.
 - Truncated group names — edge: hovering the header never shows the name; a collapsed group holding the displayed sheet shows the active indication in the app tooltip (no native `title`).
@@ -6627,6 +6630,7 @@ The path app → Keycloak login page → back in the app MUST use as few sequent
 - **NPC sheet**: a « Repos long » button is shown to the GM (sheet editor) **in and out of session**.
 - **PC sheet, GM space**: the « Repos long » button is shown to the GM **in and out of session** for the GM's own PCs.
 - **PC sheet, player space**: unchanged — a PC owned by a player space MUST NEVER get any rest (short or long) out of session, from any surface; the existing « session only » note stays.
+- **NPC sheet, player space** (decision 2026-11-20): an NPC viewed in player space (`contextMode = "player"`, own NPCs and companions) MUST NEVER get any rest, in or out of session; the sheet shows no rest control. The session GM rests a player's companion from GM space (FR-session-player-companion-combatants).
 - Being in the lobby only (not launched) counts as out of session (FR-session-lobby-navigation); the GM-space long rest is allowed there as an out-of-session action.
 
 ### Group (sidebar)
@@ -6651,6 +6655,7 @@ The path app → Keycloak login page → back in the app MUST use as few sequent
 - Edge (race): a rested character updated in session is broadcast once; a reconnecting client gets the rested values.
 - Failure: one character update rejected (403 / network) → others are rested, toast reports « 1 ignoré »; dialog cannot be closed by Escape while running.
 - Failure: player space out of session → no long rest button; group rest out of session skips a player-space PC (counted as ignored).
+- Failure: NPC sheet in player space → no rest control (long or short), in or out of session.
 - Nominal: checking the short rest flag checks the long rest flag; Edge: checking the long rest flag leaves the short rest flag unchanged.
 
 **References**:

@@ -253,7 +253,15 @@ tools/e2e/
 │   ├── auth.setup.ts           # setup: test accounts + SSO sessions
 │   ├── auth/connexion.spec.ts
 │   ├── campagne/creation-campagne.spec.ts
+│   ├── campagne/campagnes.spec.ts   # campaigns from the GM space menu: create, name validation, rename, delete (other / displayed / last)
 │   ├── groupe/groupes.spec.ts       # groups: create, name validation, rename, archive / restore, delete, delete all archived
+│   ├── personnage/personnages.spec.ts            # player characters: create (player space / group), required fields, rename, delete
+│   ├── personnage/duplication-deplacement.spec.ts # duplicate (suggested name, copies, other group), move between groups
+│   ├── personnage/repos.spec.ts                  # long rest (sheet, group), no rest out of session in player space, short rest in a launched session
+│   ├── personnage/pnj.spec.ts                    # NPCs: create (player space / group), required name, rename, delete
+│   ├── personnage/pnj-duplication-deplacement.spec.ts # NPC duplicate (unlinked, linked companion, other group), move between groups
+│   ├── personnage/pnj-compagnons.spec.ts         # companions: link, Companions tab, « Lié à », unlink, reassign, delete / duplicate a PC with companions, none in GM space
+│   ├── personnage/pnj-repos.spec.ts              # NPC long rest (sheet, mixed group), none in player space; in session: companion, GM guest, GM rest
 │   ├── profil/inscription.spec.ts   # sign-up through the Keycloak registration page
 │   ├── profil/profil.spec.ts        # profile read / edit, account deletion request
 │   ├── boutique/packs.spec.ts       # funnel per pack: success / failure / cancel, 3-D Secure, return page
@@ -689,8 +697,8 @@ A trace contains **every browser** in the test. GM and player actions are interl
 | **Shared WebSocket sessions** | Two parallel tests on the same accounts interfere (roster, toasts, post-login landing). | One GM / player pair per worker (`testUser`, `accountSlot`). Never hard-code `e2e-gm` / `e2e-player` in a test. |
 | **Session left open** | A test failing before its cleanup can leave an active session. | `leaveSession()` in the `finally`. `[e2e]` data is easy to find for manual cleanup. |
 | **Sidebar on mobile** | Below 768 px the sidebar is a drawer behind "Ouvrir le menu": its buttons ("Lancer une session"…) are not in the page until it is opened. | Call `openSidebarIfMobile(page)` from `@/flows` before clicking in the sidebar. |
-| **Sidebar row actions** | From 1024 px, group / archive actions are a right-click context menu; below, a `⋮` button ("Actions sur le groupe", "Actions sur les archives"). | Use `openGroupActions()` / `openArchivesActions()` from `@/flows`: they pick the right entry point for the viewport. |
-| **GM space still in Player mode** | The displayed space is remembered per account: opening `/campaigns/<id>` can show the Player sidebar. The "Espace maître du jeu" menu stays open (modal) after picking a campaign. | Use `openCampaignSidebar(page, campaign)` from `@/flows`: it switches to the GM space and closes the menu. |
+| **Sidebar row actions** | From 1024 px, group / archive / campaign actions are a right-click context menu; below, a `⋮` button ("Actions sur le groupe", "Actions sur les archives", "Actions sur la campagne"). | Use `openGroupActions()` / `openArchivesActions()` / `openCampaignActions()` from `@/flows`: they pick the right entry point for the viewport. |
+| **GM space still in Player mode** | The displayed space is remembered per account: opening `/campaigns/<id>` can show the Player sidebar. The "Espace maître du jeu" menu stays open (modal) after picking, creating or deleting a campaign, sometimes with no visible content during the navigation. | Use `openCampaignSidebar(page, campaign)` and `closeSpaceMenu(page)` from `@/flows` (they wait on the trigger's `aria-expanded`), then `ensureSidebarOpen(page)` before using the mobile drawer again. |
 | **Safari (WebKit) on `http://localhost`** | Keycloak sets its SSO cookies as `Secure; SameSite=None`. WebKit does not send them over HTTP, so every page falls back to the login form. | The `gm` / `player` fixtures drop `Secure` from the saved cookies for WebKit when Keycloak is on HTTP. Nothing changes on an HTTPS environment. |
 | **`next dev` killed for lack of memory** | With the full stack, Docker can run out of memory while `next dev` compiles a page: `ERR_EMPTY_RESPONSE`, endless "Chargement…", failures in any browser. Check with `docker inspect chariot-web --format '{{.RestartCount}}'`. | Give Docker Desktop **at least 12 GB** (Settings → Resources → Memory): the full stack uses ~6 GB and `next dev` can reach ~1.5 GB while compiling. 8 GB is not enough. Otherwise, run against a production build (`make web-prod-local`, back with `make web-dev-local`). |
 | **Stripe webhook not received** | The payment succeeds on the return page but the balance never moves (`expectBalance` times out). | `make stripe-listen` must be running and `STRIPE_WEBHOOK_SECRET` of the payment service must equal `stripe listen --print-secret` (otherwise the payment service rejects the signature). |

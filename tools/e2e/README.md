@@ -37,8 +37,9 @@ tools/e2e/
 ├── scenarios/
 │   ├── auth.setup.ts         # creates test accounts + stores their SSO session (.auth/)
 │   ├── auth/                 # login, post-auth navigation
-│   ├── campagne/             # campaign creation
+│   ├── campagne/             # campaign creation (welcome) and management from the GM space menu: create, rename, delete
 │   ├── groupe/               # campaign groups CRUD in the GM sidebar, archives included
+│   ├── personnage/           # PCs and NPCs: CRUD, duplication, move, companions, long / short rest, session (GM guest, companions)
 │   ├── profil/               # sign-up (Keycloak), profile read / edit, account deletion request
 │   ├── boutique/             # sales funnel: packs, promo codes, affiliation, referral (Stripe test mode)
 │   └── session/              # GM + player in real time (WebSocket)
@@ -83,6 +84,9 @@ so parallel tests never share an account. In a test, get the current worker's ac
 the `gm` / `player` fixtures already do it. Without `KEYCLOAK_ADMIN_*`, the run uses `e2e-gm` / `e2e-player` on a single worker.
 Scenarios that modify the account (`profil/`) use temporary `e2e-tmp-*` accounts created and deleted through the same admin API
 (`createTemporaryAccount`, `deleteKeycloakAccount`); they are skipped without `KEYCLOAK_ADMIN_*`.
+Scenarios that **launch** a session (`personnage/repos.spec.ts`, `personnage/pnj-repos.spec.ts`) spend 1 wheel per participant on each run
+(FR-session-lobby-wheel-deposit). With `INTERNAL_SERVICE_SECRET` (local stack only, see `env.example`) the test accounts are topped up
+before the run (`ensureWheels`); without it they are skipped, not failed, when the GM or player account has no wheel left.
 On a hosted environment, leave `KEYCLOAK_ADMIN_*` empty and provide existing dedicated test accounts.
 Never use real user accounts.
 
