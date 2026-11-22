@@ -20,8 +20,8 @@
     "test:e2e": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1171.0",
-    "@aws-sdk/s3-request-presigner": "^3.1171.0",
+    "@aws-sdk/client-s3": "^3.1172.0",
+    "@aws-sdk/s3-request-presigner": "^3.1172.0",
     "@nestjs/common": "^12.5.1",
     "@nestjs/config": "^12.1.1",
     "@nestjs/core": "^12.5.1",
