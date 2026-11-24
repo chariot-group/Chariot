@@ -1,7 +1,7 @@
 /** @see FR-character-sheet-pdf-export */
 
 import { describe, expect, it } from "vitest";
-import { estimateTextLineCount, measureTextWidth } from "@/lib/characterSheetPdf/pdfTextMetrics";
+import { estimateTextLineCount, measureTextWidth, truncateText } from "@/lib/characterSheetPdf/pdfTextMetrics";
 
 describe("FR-character-sheet-pdf-export — measureTextWidth", () => {
   it("nominal: uses the Helvetica glyph widths, bold being wider", () => {
@@ -15,6 +15,22 @@ describe("FR-character-sheet-pdf-export — measureTextWidth", () => {
     expect(measureTextWidth("Ñ", 10, "bold")).toBeCloseTo(measureTextWidth("N", 10, "bold"));
     expect(measureTextWidth("’", 10)).toBeCloseTo(2.22);
     expect(measureTextWidth("中", 10)).toBeCloseTo(5.56);
+  });
+});
+
+describe("FR-character-sheet-pdf-export — truncateText", () => {
+  it("nominal: keeps a short text whole, with its whitespace collapsed", () => {
+    expect(truncateText("  alpha \n beta  ", 20)).toBe("alpha beta");
+  });
+
+  it("edge: cuts a long text with an ellipsis within the limit", () => {
+    const truncated = truncateText("alpha beta gamma delta", 12);
+    expect(truncated).toBe("alpha beta…");
+    expect(truncated.length).toBeLessThanOrEqual(12);
+  });
+
+  it("guard: empty or blank text stays empty", () => {
+    expect(truncateText("   ", 5)).toBe("");
   });
 });
 

@@ -895,7 +895,6 @@
       "appName": "Chariot",
       "pageOf": "Page {page} / {total}",
       "playerName": "Player name",
-      "classAndLevel": "Class & level",
       "speedShort": "Speed",
       "armorClass": "AC",
       "initiativeShort": "Init.",

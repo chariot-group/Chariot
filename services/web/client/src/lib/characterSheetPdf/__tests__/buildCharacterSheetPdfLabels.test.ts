@@ -1,10 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildCharacterSheetPdfLabels } from "@/lib/characterSheetPdf/buildCharacterSheetPdfLabels";
 
-const identityT =
-  (prefix: string) =>
-  (key: string, values?: Record<string, string | number>) =>
-    values ? `${prefix}.${key}:${JSON.stringify(values)}` : `${prefix}.${key}`;
+const identityT = (prefix: string) => (key: string, values?: Record<string, string | number>) =>
+  values ? `${prefix}.${key}:${JSON.stringify(values)}` : `${prefix}.${key}`;
 
 describe("buildCharacterSheetPdfLabels", () => {
   it("passes placeholder values for pageOf so next-intl does not throw at label build time", () => {

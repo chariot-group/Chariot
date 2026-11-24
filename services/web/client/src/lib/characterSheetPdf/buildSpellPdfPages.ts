@@ -6,11 +6,14 @@ import {
   PDF_PAGE_CONTENT_WIDTH,
   PDF_SECTION_GAP,
 } from "@/lib/characterSheetPdf/pdfPageGeometry";
-import { PDF_HELVETICA_AVG_CHAR_EM } from "@/lib/characterSheetPdf/pdfTextMetrics";
-import type { PdfSpellLevelGroup, PdfSpellRow, PdfSpellcastingBlock, SpellPdfPageDescriptor } from "@/lib/characterSheetPdf/types";
+import { measureTextWidth, PDF_HELVETICA_AVG_CHAR_EM, truncateText } from "@/lib/characterSheetPdf/pdfTextMetrics";
+import type {
+  PdfSpellLevelGroup,
+  PdfSpellRow,
+  PdfSpellcastingBlock,
+  SpellPdfPageDescriptor,
+} from "@/lib/characterSheetPdf/types";
 
-/** Vertical space usable by content on a spell detail page. */
-export const PDF_SPELL_DETAIL_PAGE_MAX_HEIGHT = PDF_PAGE_CONTENT_HEIGHT;
 /** Page heading (« Sorts ») above the first detail page of a block. */
 export const PDF_SPELL_DETAIL_PAGE_TITLE_HEIGHT = 26;
 /** Gap between detail cards, horizontally and vertically. */
@@ -21,7 +24,7 @@ export const PDF_SPELL_DETAIL_GAP = PDF_CARD_GAP;
  * description is cut with an ellipsis instead of spilling onto extra pages.
  */
 export const PDF_SPELL_DETAIL_CARD_MAX_HEIGHT = Math.floor(
-  (PDF_SPELL_DETAIL_PAGE_MAX_HEIGHT - PDF_SPELL_DETAIL_PAGE_TITLE_HEIGHT - PDF_SPELL_DETAIL_GAP) / 2,
+  (PDF_PAGE_CONTENT_HEIGHT - PDF_SPELL_DETAIL_PAGE_TITLE_HEIGHT - PDF_SPELL_DETAIL_GAP) / 2,
 );
 
 /** Spell detail card geometry: the document styles and the height estimate read the same values. */
@@ -51,16 +54,8 @@ export const PDF_SPELL_DETAIL_CARD = {
 export const PDF_SPELL_DETAIL_CARD_WIDTH = (PDF_PAGE_CONTENT_WIDTH - PDF_SPELL_DETAIL_GAP) / 2;
 const PDF_SPELL_DETAIL_CARD_INNER_WIDTH = PDF_SPELL_DETAIL_CARD_WIDTH - 2 * PDF_SPELL_DETAIL_CARD.paddingHorizontal;
 
-/** Pills are short facts with more capitals and digits than running text. */
-const PDF_HELVETICA_PILL_CHAR_EM = 0.55;
 /** Safety margin kept free at the bottom of a capped card. */
 const PDF_SPELL_DETAIL_CARD_SAFETY = 2;
-
-export function truncateSpellDescription(description: string, maxChars: number): string {
-  const normalized = description.replace(/\s+/g, " ").trim();
-  if (!normalized || normalized.length <= maxChars) return normalized;
-  return `${normalized.slice(0, Math.max(0, maxChars - 1)).trimEnd()}…`;
-}
 
 /** Short facts shown as pills on a spell detail card, each clamped to one pill line. */
 export function getSpellDetailMetaParts(spell: PdfSpellRow, attackBonus: string): string[] {
@@ -76,7 +71,7 @@ export function getSpellDetailMetaParts(spell: PdfSpellRow, attackBonus: string)
   ]
     .map((part) => (part ?? "").replace(/\s+/g, " ").trim())
     .filter(Boolean)
-    .map((part) => truncateSpellDescription(part, PDF_SPELL_DETAIL_CARD.pillMaxChars));
+    .map((part) => truncateText(part, PDF_SPELL_DETAIL_CARD.pillMaxChars));
 }
 
 function estimatePillRows(parts: string[]): number {
@@ -84,7 +79,7 @@ function estimatePillRows(parts: string[]): number {
   let rows = 0;
   let rowWidth = 0;
   for (const part of parts) {
-    const width = part.length * c.pillFontSize * PDF_HELVETICA_PILL_CHAR_EM + 2 * c.pillPaddingHorizontal;
+    const width = measureTextWidth(part, c.pillFontSize) + 2 * c.pillPaddingHorizontal;
     if (rows === 0 || rowWidth + c.pillGap + width > PDF_SPELL_DETAIL_CARD_INNER_WIDTH) {
       rows += 1;
       rowWidth = width;
@@ -128,7 +123,8 @@ export function getSpellDetailCardLayout(spell: PdfSpellRow, attackBonus: string
     c.descriptionLabelFontSize * c.descriptionLabelLineHeight +
     c.descriptionLabelMarginBottom;
   const lineHeight = c.descriptionFontSize * c.descriptionLineHeight;
-  const available = PDF_SPELL_DETAIL_CARD_MAX_HEIGHT - PDF_SPELL_DETAIL_CARD_SAFETY - baseHeight - descriptionHeaderHeight;
+  const available =
+    PDF_SPELL_DETAIL_CARD_MAX_HEIGHT - PDF_SPELL_DETAIL_CARD_SAFETY - baseHeight - descriptionHeaderHeight;
   const descriptionMaxLines = Math.max(1, Math.floor(available / lineHeight));
 
   const charsPerLine = Math.max(
@@ -136,7 +132,7 @@ export function getSpellDetailCardLayout(spell: PdfSpellRow, attackBonus: string
     Math.floor(PDF_SPELL_DETAIL_CARD_INNER_WIDTH / (c.descriptionFontSize * PDF_HELVETICA_AVG_CHAR_EM)),
   );
   // Keep more text than fits so the renderer always has enough to fill the last line before `…`.
-  const description = truncateSpellDescription(normalized, Math.ceil(descriptionMaxLines * charsPerLine * 1.5));
+  const description = truncateText(normalized, Math.ceil(descriptionMaxLines * charsPerLine * 1.5));
 
   return { metaParts, description, descriptionMaxLines };
 }
@@ -198,8 +194,7 @@ const PDF_SPELL_OVERVIEW_HEADER_HEIGHT =
   PDF_SPELL_OVERVIEW.statValueFontSize * PDF_SPELL_OVERVIEW.statValueLineHeight;
 
 /** Height of one column of level cards: the page content below the header card. */
-export const PDF_SPELL_OVERVIEW_COLUMN_HEIGHT =
-  PDF_PAGE_CONTENT_HEIGHT - PDF_SPELL_OVERVIEW_HEADER_HEIGHT - PDF_SECTION_GAP;
+const PDF_SPELL_OVERVIEW_COLUMN_HEIGHT = PDF_PAGE_CONTENT_HEIGHT - PDF_SPELL_OVERVIEW_HEADER_HEIGHT - PDF_SECTION_GAP;
 
 /** Height of a level card outside its lines (paddings and level header): the card flex basis. */
 export const PDF_SPELL_OVERVIEW_CARD_CHROME_HEIGHT =
@@ -225,9 +220,7 @@ function getSpellOverviewLinesHeight(cardCount: number): number {
 /** Splits items in order over `columnCount` columns (trailing columns may stay empty). */
 function distributeIntoColumns<T>(items: T[], columnCount: number): T[][] {
   const perColumn = Math.max(1, Math.ceil(items.length / columnCount));
-  return Array.from({ length: columnCount }, (_, column) =>
-    items.slice(column * perColumn, (column + 1) * perColumn),
-  );
+  return Array.from({ length: columnCount }, (_, column) => items.slice(column * perColumn, (column + 1) * perColumn));
 }
 
 function getSpellOverviewGroupColumns(block: PdfSpellcastingBlock): PdfSpellLevelGroup[][] {

@@ -9,7 +9,6 @@ export interface CharacterSheetPdfLabels {
   characterName: string;
   playerName: string;
   race: string;
-  classAndLevel: string;
   background: string;
   alignment: string;
   experience: string;
@@ -70,8 +69,6 @@ export interface CharacterSheetPdfLabels {
   cantrips: string;
   preparedSpells: string;
   spellSlots: string;
-  slotsUsed: string;
-  slotsTotal: string;
   // Spell detail pages
   spellsSection: string;
   spellSchool: string;

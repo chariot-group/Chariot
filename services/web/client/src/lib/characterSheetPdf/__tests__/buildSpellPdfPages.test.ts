@@ -10,7 +10,6 @@ import {
   getSpellOverviewRowHeight,
   PDF_SPELL_DETAIL_CARD_MAX_HEIGHT,
   PDF_SPELL_OVERVIEW,
-  truncateSpellDescription,
 } from "@/lib/characterSheetPdf/buildSpellPdfPages";
 import { PDF_PAGE_CONTENT_HEIGHT } from "@/lib/characterSheetPdf/pdfPageGeometry";
 import type { PdfSpellcastingBlock } from "@/lib/characterSheetPdf/types";
@@ -70,7 +69,11 @@ const denseBlock: PdfSpellcastingBlock = {
   spellsByLevel: Object.fromEntries(
     Array.from({ length: 9 }, (_, level) => [
       level + 1,
-      Array.from({ length: 12 }, (_, index) => ({ ...baseSpell, level: level + 1, name: `Spell ${level + 1}-${index}` })),
+      Array.from({ length: 12 }, (_, index) => ({
+        ...baseSpell,
+        level: level + 1,
+        name: `Spell ${level + 1}-${index}`,
+      })),
     ]),
   ),
   slotsByLevel: Object.fromEntries(Array.from({ length: 9 }, (_, level) => [level + 1, { used: 0, total: 4 }])),
@@ -166,12 +169,6 @@ describe("FR-character-sheet-pdf-export — spell detail card", () => {
     expect(parts).toEqual(["Evocation", "1 action", "120 ft", `${"x".repeat(39)}…`, "1d4+1 force", "+5"]);
     expect(getSpellDetailMetaParts({ ...baseSpell, effectType: "utility" }, "+5")).not.toContain("+5");
   });
-
-  it("truncateSpellDescription: cuts with an ellipsis within the limit", () => {
-    const truncated = truncateSpellDescription("alpha beta gamma delta", 12);
-    expect(truncated.endsWith("…")).toBe(true);
-    expect(truncated.length).toBeLessThanOrEqual(12);
-  });
 });
 
 describe("FR-character-sheet-pdf-export — spell overview sheet", () => {
@@ -243,7 +240,13 @@ describe("FR-character-sheet-pdf-export — spell overview sheet", () => {
 
   it("guard: a block without spells or slots still yields three columns with finite line heights", () => {
     for (const isInnate of [false, true]) {
-      const emptyBlock: PdfSpellcastingBlock = { ...baseBlock, isInnate, cantrips: [], spellsByLevel: {}, slotsByLevel: {} };
+      const emptyBlock: PdfSpellcastingBlock = {
+        ...baseBlock,
+        isInnate,
+        cantrips: [],
+        spellsByLevel: {},
+        slotsByLevel: {},
+      };
       const columns = buildSpellOverviewColumns(emptyBlock);
       expect(columns).toHaveLength(3);
       for (const column of columns) expect(Number.isFinite(getSpellOverviewRowHeight(column))).toBe(true);

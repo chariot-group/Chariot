@@ -3,11 +3,11 @@
  * @see FR-character-sheet-pdf-export
  */
 
-export const PDF_PAGE_WIDTH = 612;
+const PDF_PAGE_WIDTH = 612;
 export const PDF_PAGE_HEIGHT = 792;
 export const PDF_PAGE_PADDING = 24;
 /** Space kept free above the fixed footer, added to the bottom page padding. */
-export const PDF_FOOTER_RESERVE = 20;
+const PDF_FOOTER_RESERVE = 20;
 export const PDF_PAGE_PADDING_BOTTOM = PDF_PAGE_PADDING + PDF_FOOTER_RESERVE;
 /** Vertical space usable by flowing content on a page. */
 export const PDF_PAGE_CONTENT_HEIGHT = PDF_PAGE_HEIGHT - PDF_PAGE_PADDING - PDF_PAGE_PADDING_BOTTOM;

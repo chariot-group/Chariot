@@ -3,7 +3,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { PDF_SPELL_DETAIL_CARD_WIDTH, PDF_SPELL_DETAIL_GAP, PDF_SPELL_OVERVIEW } from "@/lib/characterSheetPdf/buildSpellPdfPages";
+import {
+  PDF_SPELL_DETAIL_CARD_WIDTH,
+  PDF_SPELL_DETAIL_GAP,
+  PDF_SPELL_OVERVIEW,
+} from "@/lib/characterSheetPdf/buildSpellPdfPages";
 import {
   PDF_ABILITY_COLUMN,
   PDF_COMBAT_TILE,
@@ -22,7 +26,8 @@ interface CharacterDetailMessages {
 }
 
 const localeMessages: CharacterDetailMessages[] = ["fr", "en", "es"].map(
-  (locale) => JSON.parse(fs.readFileSync(path.resolve(process.cwd(), `messages/${locale}.json`), "utf8")).characterDetail,
+  (locale) =>
+    JSON.parse(fs.readFileSync(path.resolve(process.cwd(), `messages/${locale}.json`), "utf8")).characterDetail,
 );
 const generalMessages = localeMessages.map((messages) => messages.player.general);
 
@@ -80,9 +85,10 @@ describe("FR-character-sheet-pdf-export — page 1 geometry", () => {
         (sum, label) => sum + measureTextWidth(label, PDF_SPELL_OVERVIEW.statLabelFontSize, "bold"),
         0,
       );
-      expect(labelsWidth + (labels.length - 1) * PDF_SPELL_OVERVIEW.headerMinGap, labels.join(" | ")).toBeLessThanOrEqual(
-        available,
-      );
+      expect(
+        labelsWidth + (labels.length - 1) * PDF_SPELL_OVERVIEW.headerMinGap,
+        labels.join(" | "),
+      ).toBeLessThanOrEqual(available);
     }
   });
 

@@ -69,7 +69,11 @@ describe("FR-character-sheet-pdf-export — page one features space", () => {
 
   it("edge: a taller header (multiclass) leaves less room", () => {
     const base = pageOneSpace();
-    const tall = getPageOneFeaturesMaxHeight({ headerHeight: 80, narrativeCards: shortCards, featuresTitle: "Features & traits" });
+    const tall = getPageOneFeaturesMaxHeight({
+      headerHeight: 80,
+      narrativeCards: shortCards,
+      featuresTitle: "Features & traits",
+    });
     expect(base - tall).toBeCloseTo(20);
   });
 

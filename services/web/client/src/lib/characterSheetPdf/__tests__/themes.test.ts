@@ -45,7 +45,9 @@ describe("FR-character-sheet-pdf-export — PDF themes", () => {
     it(`contrast: ${theme} text, titles and accents reach 4.5:1 on the card and raised surfaces`, () => {
       const tokens = CHARACTER_SHEET_PDF_THEMES[theme];
       for (const key of TEXT_TOKENS) {
-        expect(contrastRatio(tokens[key], tokens.cardBackground), `${theme}.${key} on card`).toBeGreaterThanOrEqual(4.5);
+        expect(contrastRatio(tokens[key], tokens.cardBackground), `${theme}.${key} on card`).toBeGreaterThanOrEqual(
+          4.5,
+        );
       }
       expect(contrastRatio(tokens.text, tokens.raisedBackground)).toBeGreaterThanOrEqual(4.5);
       expect(contrastRatio(tokens.footerText, tokens.pageBackground)).toBeGreaterThanOrEqual(4.5);

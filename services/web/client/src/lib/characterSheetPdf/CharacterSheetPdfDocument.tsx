@@ -8,14 +8,12 @@ import {
   splitFeaturesForPdfPages,
 } from "@/lib/characterSheetPdf/splitFeaturesForPdfPages";
 import type { PdfNarrativeCard } from "@/lib/characterSheetPdf/splitFeaturesForPdfPages";
-import {
-  PDF_EQUIPMENT_PAGE1_MAX_CHARS,
-  splitTextForPdfPages,
-} from "@/lib/characterSheetPdf/splitTextForPdfPages";
+import { PDF_EQUIPMENT_PAGE1_MAX_CHARS, splitTextForPdfPages } from "@/lib/characterSheetPdf/splitTextForPdfPages";
 import { buildLucideSvgDataUrl } from "@/lib/characterSheetPdf/buildLucideSvgString";
 import { PDF_SKILL_LUCIDE_NODES } from "@/lib/characterSheetPdf/lucidePdfIconNodes";
 import { getMasteryIconSvg } from "@/lib/characterSheetPdf/masteryIconSvg";
 import { svgDataUrl } from "@/lib/characterSheetPdf/svgDataUrl";
+import { truncateText } from "@/lib/characterSheetPdf/pdfTextMetrics";
 import {
   PDF_ABILITY_COLUMN,
   PDF_CARD,
@@ -341,7 +339,14 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
     dotsRow: { flexDirection: "row", alignItems: "center", gap: 5, flex: 1, justifyContent: "flex-end" },
     dot: { width: 10, height: 10, borderRadius: 999, borderWidth: 1, borderColor: t.textMuted },
 
-    attacksTableHeader: { flexDirection: "row", alignItems: "flex-end", paddingBottom: 2, marginBottom: 1, gap: 3, ...separator },
+    attacksTableHeader: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      paddingBottom: 2,
+      marginBottom: 1,
+      gap: 3,
+      ...separator,
+    },
     attackRow: { flexDirection: "row", paddingVertical: 2.5, gap: 3, ...separator },
     attackRowLast: { borderBottomWidth: 0 },
     attackName: { flex: 2, fontSize: 6.5, fontWeight: "bold", color: t.textMuted },
@@ -507,11 +512,9 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
 type PdfStyles = ReturnType<typeof createStyles>;
 type PdfStyleProp = React.ComponentProps<typeof View>["style"];
 
+/** Truncated text, or a blank so an empty field still takes its line. */
 function clampText(value: string, max: number): string {
-  if (!value) return " ";
-  const normalized = value.replace(/\s+/g, " ").trim();
-  if (normalized.length <= max) return normalized;
-  return `${normalized.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+  return truncateText(value, max) || " ";
 }
 
 const COIN_FILLS = { cp: "#A45918", sp: "#BDBDBD", ep: "#7F8F9E", gp: "#FFC400", pp: "#BEBAA3" } as const;
@@ -524,7 +527,9 @@ function coinSvg(fill: string, outline: string): string {
 
 function PageFooter({ labels, styles }: { labels: CharacterSheetPdfLabels; styles: PdfStyles }) {
   return (
-    <View style={styles.footer} fixed>
+    <View
+      style={styles.footer}
+      fixed>
       <Text style={styles.footerText}>{labels.appName}</Text>
       <Text
         style={styles.footerText}
@@ -558,11 +563,12 @@ function SectionCard({
 }) {
   const extra = Array.isArray(style) ? style : style ? [style] : [];
   return (
-    <View style={[styles.card, ...extra]} wrap={breakable}>
+    <View
+      style={[styles.card, ...extra]}
+      wrap={breakable}>
       <Text
         style={[styles.cardTitle, { color }]}
-        minPresenceAhead={breakable ? PDF_CARD.titleFontSize * 3 : undefined}
-      >
+        minPresenceAhead={breakable ? PDF_CARD.titleFontSize * 3 : undefined}>
         {title}
       </Text>
       {children}
@@ -588,7 +594,12 @@ function TextCard({
   breakable?: boolean;
 }) {
   return (
-    <SectionCard title={title} color={color} styles={styles} style={style} breakable={breakable}>
+    <SectionCard
+      title={title}
+      color={color}
+      styles={styles}
+      style={style}
+      breakable={breakable}>
       <Text style={styles.textBlock}>{clampText(text, maxChars)}</Text>
     </SectionCard>
   );
@@ -621,8 +632,7 @@ function HeaderClasses({
       {entries.map((entry, index) => (
         <Text
           key={`${entry.name}-${entry.level}-${index}`}
-          style={[styles.multiclassLine, index > 0 ? { marginTop: PDF_HEADER.multiclassLineGap } : {}]}
-        >
+          style={[styles.multiclassLine, index > 0 ? { marginTop: PDF_HEADER.multiclassLineGap } : {}]}>
           {entry.label.trim() || " "}
           {entry.subclass ? <Text style={styles.multiclassSubclass}> · {entry.subclass.trim()}</Text> : null}
         </Text>
@@ -680,7 +690,9 @@ function HitDiceRow({
       <Text style={styles.fieldLabel}>{label}</Text>
       <View style={styles.hitDiceChips}>
         {entries.map((entry, index) => (
-          <View key={`${entry.className}-${entry.notation}-${index}`} style={[styles.pill, styles.hitDiceChip]}>
+          <View
+            key={`${entry.className}-${entry.notation}-${index}`}
+            style={[styles.pill, styles.hitDiceChip]}>
             <Text style={styles.hitDiceChipClass}>{clampText(entry.className, 14)}</Text>
             <Text style={styles.hitDiceChipValue}>{entry.notation}</Text>
           </View>
@@ -724,8 +736,7 @@ function FeaturesList({ features, styles }: { features: PdfAbilityFeature[]; sty
         <View
           key={`${feature.name}-${index}`}
           wrap={false}
-          style={[styles.featureItem, index === features.length - 1 ? styles.lastRowNoMargin : {}]}
-        >
+          style={[styles.featureItem, index === features.length - 1 ? styles.lastRowNoMargin : {}]}>
           <Text style={styles.featureName}>{feature.name.trim() || " "}</Text>
           {feature.description.trim() ? (
             <Text style={styles.featureDescription}>{feature.description.trim()}</Text>
@@ -773,14 +784,27 @@ function SkillCell({
 
   return (
     <View style={styles.skillCell}>
-      {iconSrc ? <Image src={iconSrc} style={styles.skillIcon} /> : <View style={styles.skillIcon} />}
+      {iconSrc ? (
+        <Image
+          src={iconSrc}
+          style={styles.skillIcon}
+        />
+      ) : (
+        <View style={styles.skillIcon} />
+      )}
       <View style={styles.skillNameBlock}>
         <Text style={[styles.skillName, skill.proficient ? styles.proficient : {}]}>{clampText(skill.name, 18)}</Text>
         <Text style={styles.skillAbilityName}>{clampText(skill.abilityName, 16)}</Text>
       </View>
       <View style={styles.skillBonusGroup}>
         <Text style={styles.skillBonus}>{skill.bonus}</Text>
-        <MasteryIcon level={skill.masteryLevel} theme={theme} t={t} styles={styles} style={styles.skillIcon} />
+        <MasteryIcon
+          level={skill.masteryLevel}
+          theme={theme}
+          t={t}
+          styles={styles}
+          style={styles.skillIcon}
+        />
       </View>
     </View>
   );
@@ -822,7 +846,10 @@ function SpellSlotsIndicator({
       ) : (
         <View style={styles.spellSlotPips}>
           {Array.from({ length: total }).map((_, index) => (
-            <View key={`pip-${index}`} style={styles.spellSlotPip} />
+            <View
+              key={`pip-${index}`}
+              style={styles.spellSlotPip}
+            />
           ))}
         </View>
       )}
@@ -851,19 +878,31 @@ function SpellLevelCard({
   const showCheckbox = showPreparedMarks && group.level > 0;
 
   return (
-    <View style={[styles.spellLevelCard, { flexGrow: lineCount }]} wrap={false}>
+    <View
+      style={[styles.spellLevelCard, { flexGrow: lineCount }]}
+      wrap={false}>
       <View style={styles.spellLevelHeader}>
         <Text style={styles.spellLevelTitle}>{getSpellOverviewLevelTitle(group, labels)}</Text>
-        {showSlots && group.level > 0 ? <SpellSlotsIndicator slots={group.slots} labels={labels} styles={styles} /> : null}
+        {showSlots && group.level > 0 ? (
+          <SpellSlotsIndicator
+            slots={group.slots}
+            labels={labels}
+            styles={styles}
+          />
+        ) : null}
       </View>
 
       <View style={styles.spellLevelLines}>
         {Array.from({ length: lineCount }).map((_, index) => {
           const spell: PdfSpellRow | undefined = spells[index];
           return (
-            <View key={spell ? `${spell.name}-${index}` : `empty-${index}`} style={styles.spellOverviewLine}>
+            <View
+              key={spell ? `${spell.name}-${index}` : `empty-${index}`}
+              style={styles.spellOverviewLine}>
               {showCheckbox ? (
-                <View style={[styles.spellOverviewCheckbox, spell?.prepared ? styles.spellOverviewCheckboxFilled : {}]} />
+                <View
+                  style={[styles.spellOverviewCheckbox, spell?.prepared ? styles.spellOverviewCheckboxFilled : {}]}
+                />
               ) : null}
               {spell ? <Text style={styles.spellOverviewSpellName}>{spell.name.trim() || " "}</Text> : null}
             </View>
@@ -899,19 +938,43 @@ function SpellOverviewPage({
 
   return (
     <>
-      <View style={[styles.card, styles.spellOverviewHeader]} wrap={false}>
-        <SpellOverviewStat label={labels.spellcastingClass} value={block.className} styles={styles} />
-        <SpellOverviewStat label={labels.spellcastingAbility} value={block.ability} styles={styles} />
+      <View
+        style={[styles.card, styles.spellOverviewHeader]}
+        wrap={false}>
+        <SpellOverviewStat
+          label={labels.spellcastingClass}
+          value={block.className}
+          styles={styles}
+        />
+        <SpellOverviewStat
+          label={labels.spellcastingAbility}
+          value={block.ability}
+          styles={styles}
+        />
         {!block.isInnate ? (
-          <SpellOverviewStat label={labels.preparedSpells} value={countPreparedSpells(block)} styles={styles} />
+          <SpellOverviewStat
+            label={labels.preparedSpells}
+            value={countPreparedSpells(block)}
+            styles={styles}
+          />
         ) : null}
-        <SpellOverviewStat label={labels.spellSaveDc} value={block.saveDc} styles={styles} />
-        <SpellOverviewStat label={labels.spellAttackBonus} value={block.attackBonus} styles={styles} />
+        <SpellOverviewStat
+          label={labels.spellSaveDc}
+          value={block.saveDc}
+          styles={styles}
+        />
+        <SpellOverviewStat
+          label={labels.spellAttackBonus}
+          value={block.attackBonus}
+          styles={styles}
+        />
       </View>
 
       <View style={styles.spellOverviewColumns}>
         {columns.map((cards, columnIndex) => (
-          <View key={`spell-col-${columnIndex}`} style={styles.spellOverviewColumn}>
+          <View
+            key={`spell-col-${columnIndex}`}
+            style={styles.spellOverviewColumn}>
             {cards.map((card) => (
               <SpellLevelCard
                 key={`group-${card.group.level}-${card.group.usesPerDay ?? "none"}`}
@@ -945,7 +1008,9 @@ function SpellDetailCard({
   const levelLabel = spell.level === 0 ? labels.spellLevelCantrip : `${labels.spellLevel} ${spell.level}`;
 
   return (
-    <View style={styles.spellCard} wrap={false}>
+    <View
+      style={styles.spellCard}
+      wrap={false}>
       <View style={styles.spellCardTitleRow}>
         <Text style={styles.spellCardTitle}>{spell.name.trim() || " "}</Text>
         <Text style={styles.spellCardLevel}>{levelLabel}</Text>
@@ -953,7 +1018,9 @@ function SpellDetailCard({
       {layout.metaParts.length > 0 ? (
         <View style={styles.spellCardMeta}>
           {layout.metaParts.map((part, index) => (
-            <View key={`${part}-${index}`} style={[styles.pill, styles.spellCardPill]}>
+            <View
+              key={`${part}-${index}`}
+              style={[styles.pill, styles.spellCardPill]}>
               <Text style={styles.spellCardPillText}>{part}</Text>
             </View>
           ))}
@@ -986,9 +1053,18 @@ function SpellDetailPages({
     <>
       <Text style={styles.spellPageTitle}>{labels.spellsSection}</Text>
       {chunk(spells, 2).map((row, rowIndex) => (
-        <View key={`spell-row-${rowIndex}`} style={styles.spellDetailRow} wrap={false}>
+        <View
+          key={`spell-row-${rowIndex}`}
+          style={styles.spellDetailRow}
+          wrap={false}>
           {row.map((spell, index) => (
-            <SpellDetailCard key={`${spell.name}-${index}`} spell={spell} block={block} labels={labels} styles={styles} />
+            <SpellDetailCard
+              key={`${spell.name}-${index}`}
+              spell={spell}
+              block={block}
+              labels={labels}
+              styles={styles}
+            />
           ))}
         </View>
       ))}
@@ -1015,7 +1091,11 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
   ].map((card) => ({ ...card, text: clampText(card.text, PDF_PAGE_ONE_NARRATIVE_MAX_CHARS) }));
   const { pageOne: featuresPageOne, pageTwo: featuresPageTwo } = splitFeaturesForPdfPages(
     data.features,
-    getPageOneFeaturesMaxHeight({ headerHeight: headerRowHeight, narrativeCards, featuresTitle: labels.featuresAndTraits }),
+    getPageOneFeaturesMaxHeight({
+      headerHeight: headerRowHeight,
+      narrativeCards,
+      featuresTitle: labels.featuresAndTraits,
+    }),
   );
   const equipmentSource = data.equipment || data.treasureText;
   const equipmentSplit = splitTextForPdfPages(equipmentSource, PDF_EQUIPMENT_PAGE1_MAX_CHARS);
@@ -1036,11 +1116,17 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
   return (
     <Document>
       {/* Core sheet — may span multiple PDF pages when content overflows */}
-      <Page size="LETTER" style={styles.page} wrap>
+      <Page
+        size="LETTER"
+        style={styles.page}
+        wrap>
         <View style={styles.pageOneHeader}>
           <View style={[styles.headerRow, { height: headerRowHeight }]}>
             {data.avatarDataUrl ? (
-              <Image src={data.avatarDataUrl} style={[styles.headerAvatar, { height: headerRowHeight }]} />
+              <Image
+                src={data.avatarDataUrl}
+                style={[styles.headerAvatar, { height: headerRowHeight }]}
+              />
             ) : null}
             <View style={styles.headerColumns}>
               <View style={styles.headerColumn}>
@@ -1058,7 +1144,12 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               </View>
               <View style={styles.headerColumn}>
                 {data.isPlayer ? (
-                  <HeaderFact label={labels.experience} value={data.experience} maxChars={14} styles={styles} />
+                  <HeaderFact
+                    label={labels.experience}
+                    value={data.experience}
+                    maxChars={14}
+                    styles={styles}
+                  />
                 ) : null}
                 <HeaderFact
                   label={labels.race}
@@ -1069,7 +1160,12 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 />
               </View>
               <View style={styles.headerColumn}>
-                <HeaderFact label={labels.background} value={data.backgroundOrSubtype} maxChars={40} styles={styles} />
+                <HeaderFact
+                  label={labels.background}
+                  value={data.backgroundOrSubtype}
+                  maxChars={40}
+                  styles={styles}
+                />
                 <HeaderFact
                   label={labels.alignment}
                   value={data.alignment}
@@ -1079,7 +1175,12 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 />
               </View>
             </View>
-            {data.qrCodeDataUrl ? <Image src={data.qrCodeDataUrl} style={styles.qrCode} /> : null}
+            {data.qrCodeDataUrl ? (
+              <Image
+                src={data.qrCodeDataUrl}
+                style={styles.qrCode}
+              />
+            ) : null}
           </View>
         </View>
 
@@ -1088,7 +1189,9 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
             <View style={styles.leftTopRow}>
               <View style={styles.colAbilities}>
                 {data.abilities.map((ab) => (
-                  <View key={ab.abbr} style={[styles.tile, styles.scoreCard]}>
+                  <View
+                    key={ab.abbr}
+                    style={[styles.tile, styles.scoreCard]}>
                     <Text style={styles.scoreLabel}>{ab.name}</Text>
                     <Text style={styles.scoreMod}>{ab.modifier}</Text>
                     <Text style={styles.scoreValue}>{ab.score}</Text>
@@ -1116,25 +1219,49 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                   </View>
                 </View>
 
-                <SectionCard title={labels.savingThrows} color={t.blue} styles={styles}>
+                <SectionCard
+                  title={labels.savingThrows}
+                  color={t.blue}
+                  styles={styles}>
                   <View style={styles.savingThrowsGrid}>
                     {data.savingThrows.map((st) => (
-                      <View key={st.abbr} style={styles.savingThrowCell}>
+                      <View
+                        key={st.abbr}
+                        style={styles.savingThrowCell}>
                         <View style={styles.savingThrowTopRow}>
                           <Text style={styles.savingThrowAbbr}>{st.abbr}</Text>
-                          <MasteryIcon level={st.masteryLevel} theme={theme} t={t} styles={styles} />
+                          <MasteryIcon
+                            level={st.masteryLevel}
+                            theme={theme}
+                            t={t}
+                            styles={styles}
+                          />
                         </View>
-                        <Text style={[styles.savingThrowBonus, st.proficient ? styles.proficient : {}]}>{st.bonus}</Text>
+                        <Text style={[styles.savingThrowBonus, st.proficient ? styles.proficient : {}]}>
+                          {st.bonus}
+                        </Text>
                       </View>
                     ))}
                   </View>
                 </SectionCard>
 
-                <SectionCard title={labels.skills} color={t.blue} styles={styles} style={styles.lastRowNoMargin}>
+                <SectionCard
+                  title={labels.skills}
+                  color={t.blue}
+                  styles={styles}
+                  style={styles.lastRowNoMargin}>
                   {chunk(data.skills, 2).map((pair) => (
-                    <View key={pair.map((skill) => skill.key).join("-")} style={styles.skillsRow}>
+                    <View
+                      key={pair.map((skill) => skill.key).join("-")}
+                      style={styles.skillsRow}>
                       {pair.map((skill) => (
-                        <SkillCell key={skill.key} skill={skill} theme={theme} t={t} styles={styles} />
+                        <SkillCell
+                          key={skill.key}
+                          skill={skill}
+                          theme={theme}
+                          t={t}
+                          styles={styles}
+                        />
                       ))}
                       {pair.length === 1 ? <View style={styles.skillCell} /> : null}
                     </View>
@@ -1148,8 +1275,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               color={t.blue}
               styles={styles}
               style={styles.proficienciesCard}
-              breakable
-            >
+              breakable>
               {[
                 { label: labels.languages, value: data.languages },
                 { label: labels.senses, value: data.senses },
@@ -1157,7 +1283,9 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 { label: labels.weapons, value: data.weapons },
                 { label: labels.armors, value: data.armors },
               ].map((entry, index, arr) => (
-                <View key={entry.label} style={[styles.profRow, index === arr.length - 1 ? styles.lastRowNoMargin : {}]}>
+                <View
+                  key={entry.label}
+                  style={[styles.profRow, index === arr.length - 1 ? styles.lastRowNoMargin : {}]}>
                   <Text style={styles.profLabel}>{entry.label}</Text>
                   <Text style={styles.profValue}>{clampText(entry.value, 220)}</Text>
                 </View>
@@ -1172,20 +1300,27 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 { label: labels.initiativeShort, value: data.initiative },
                 { label: labels.speedShort, value: clampText(data.speed, 14) },
               ].map((stat) => (
-                <View key={stat.label} style={[styles.tile, styles.statTile]}>
+                <View
+                  key={stat.label}
+                  style={[styles.tile, styles.statTile]}>
                   <Text style={styles.statTileLabel}>{stat.label}</Text>
                   <Text style={styles.statTileValue}>{stat.value}</Text>
                 </View>
               ))}
             </View>
 
-            <SectionCard title={labels.hitPoints} color={t.red} styles={styles}>
+            <SectionCard
+              title={labels.hitPoints}
+              color={t.red}
+              styles={styles}>
               {[
                 { label: labels.maxHp, value: data.maxHp },
                 { label: labels.currentHp, value: data.currentHp },
                 { label: labels.tempHp, value: data.tempHp },
               ].map((field) => (
-                <View key={field.label} style={styles.fieldRow}>
+                <View
+                  key={field.label}
+                  style={styles.fieldRow}>
                   <Text style={styles.fieldLabel}>{field.label}</Text>
                   <Text style={styles.fieldValue}>{field.value}</Text>
                 </View>
@@ -1222,7 +1357,10 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               ) : null}
             </SectionCard>
 
-            <SectionCard title={labels.attacksAndSpellcasting} color={t.red} styles={styles}>
+            <SectionCard
+              title={labels.attacksAndSpellcasting}
+              color={t.red}
+              styles={styles}>
               <View style={styles.attacksTableHeader}>
                 <Text style={styles.attackName}>{labels.attackName}</Text>
                 <Text style={styles.attackBonus}>{labels.attackBonusHeader}</Text>
@@ -1235,8 +1373,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 return attacks.map((atk, i) => (
                   <View
                     key={`${atk.name}-${i}`}
-                    style={[styles.attackRow, i === attacks.length - 1 ? styles.attackRowLast : {}]}
-                  >
+                    style={[styles.attackRow, i === attacks.length - 1 ? styles.attackRowLast : {}]}>
                     <Text style={styles.attackCellName}>{clampText(atk.name, 20)}</Text>
                     <Text style={styles.attackCellBonus}>{atk.bonus}</Text>
                     <Text style={styles.attackCellDamage}>{clampText(atk.damage, 24)}</Text>
@@ -1245,10 +1382,19 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               })()}
             </SectionCard>
 
-            <SectionCard title={labels.equipment} color={t.yellow} styles={styles} style={styles.equipmentCard}>
+            <SectionCard
+              title={labels.equipment}
+              color={t.yellow}
+              styles={styles}
+              style={styles.equipmentCard}>
               {(Object.keys(COIN_FILLS) as CoinKey[]).map((key) => (
-                <View key={key} style={styles.coinRow}>
-                  <Image src={svgDataUrl(coinSvg(COIN_FILLS[key], t.cardBackground))} style={styles.coinIcon} />
+                <View
+                  key={key}
+                  style={styles.coinRow}>
+                  <Image
+                    src={svgDataUrl(coinSvg(COIN_FILLS[key], t.cardBackground))}
+                    style={styles.coinIcon}
+                  />
                   <Text style={styles.coinText}>
                     {key.toUpperCase()}: {data.currencies[key]}
                   </Text>
@@ -1260,30 +1406,61 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
 
           <View style={styles.colNarrative}>
             {narrativeCards.map((card) => (
-              <SectionCard key={card.title} title={card.title} color={t.green} styles={styles}>
+              <SectionCard
+                key={card.title}
+                title={card.title}
+                color={t.green}
+                styles={styles}>
                 <Text style={styles.textBlock}>{card.text}</Text>
               </SectionCard>
             ))}
-            <SectionCard title={labels.featuresAndTraits} color={t.blue} styles={styles} style={styles.featuresCard} breakable>
-              <FeaturesList features={featuresPageOne} styles={styles} />
+            <SectionCard
+              title={labels.featuresAndTraits}
+              color={t.blue}
+              styles={styles}
+              style={styles.featuresCard}
+              breakable>
+              <FeaturesList
+                features={featuresPageOne}
+                styles={styles}
+              />
             </SectionCard>
           </View>
         </View>
 
-        <PageFooter labels={labels} styles={styles} />
+        <PageFooter
+          labels={labels}
+          styles={styles}
+        />
       </Page>
 
       {featuresPageTwo.length > 0 ? (
-        <Page size="LETTER" style={styles.page} wrap>
-          <SectionCard title={labels.featuresAndTraits} color={t.blue} styles={styles} breakable>
-            <FeaturesList features={featuresPageTwo} styles={styles} />
+        <Page
+          size="LETTER"
+          style={styles.page}
+          wrap>
+          <SectionCard
+            title={labels.featuresAndTraits}
+            color={t.blue}
+            styles={styles}
+            breakable>
+            <FeaturesList
+              features={featuresPageTwo}
+              styles={styles}
+            />
           </SectionCard>
-          <PageFooter labels={labels} styles={styles} />
+          <PageFooter
+            labels={labels}
+            styles={styles}
+          />
         </Page>
       ) : null}
 
       {/* Biography — always its own page(s), never shared with features continuation */}
-      <Page size="LETTER" style={styles.page} wrap>
+      <Page
+        size="LETTER"
+        style={styles.page}
+        wrap>
         {equipmentSplit.pageTwo ? (
           <TextCard
             title={labels.equipmentContinuation}
@@ -1295,11 +1472,18 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
           />
         ) : null}
 
-        <SectionCard title={labels.appearance} color={t.green} styles={styles}>
+        <SectionCard
+          title={labels.appearance}
+          color={t.green}
+          styles={styles}>
           {appearanceRows.map((cells, rowIndex) => (
-            <View key={`appearance-${rowIndex}`} style={styles.factGrid}>
+            <View
+              key={`appearance-${rowIndex}`}
+              style={styles.factGrid}>
               {cells.map((cell) => (
-                <View key={cell.label} style={styles.col}>
+                <View
+                  key={cell.label}
+                  style={styles.col}>
                   <Text style={styles.label}>{cell.label}</Text>
                   <Text style={styles.value}>{cell.value || " "}</Text>
                 </View>
@@ -1311,19 +1495,71 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
         </SectionCard>
 
         <View style={styles.row}>
-          <TextCard title={labels.personalityTraits} color={t.green} text={data.personalityTraits} maxChars={320} styles={styles} style={styles.col} />
-          <TextCard title={labels.ideals} color={t.green} text={data.ideals} maxChars={320} styles={styles} style={styles.col} />
+          <TextCard
+            title={labels.personalityTraits}
+            color={t.green}
+            text={data.personalityTraits}
+            maxChars={320}
+            styles={styles}
+            style={styles.col}
+          />
+          <TextCard
+            title={labels.ideals}
+            color={t.green}
+            text={data.ideals}
+            maxChars={320}
+            styles={styles}
+            style={styles.col}
+          />
         </View>
         <View style={styles.row}>
-          <TextCard title={labels.bonds} color={t.green} text={data.bonds} maxChars={320} styles={styles} style={styles.col} />
-          <TextCard title={labels.flaws} color={t.green} text={data.flaws} maxChars={320} styles={styles} style={styles.col} />
+          <TextCard
+            title={labels.bonds}
+            color={t.green}
+            text={data.bonds}
+            maxChars={320}
+            styles={styles}
+            style={styles.col}
+          />
+          <TextCard
+            title={labels.flaws}
+            color={t.green}
+            text={data.flaws}
+            maxChars={320}
+            styles={styles}
+            style={styles.col}
+          />
         </View>
 
-        <TextCard title={labels.alliesAndOrganizations} color={t.green} text={data.alliesAndOrgs} maxChars={520} styles={styles} breakable />
-        <TextCard title={labels.backstory} color={t.green} text={data.backstory} maxChars={1400} styles={styles} breakable />
-        <TextCard title={labels.treasure} color={t.yellow} text={data.treasureText} maxChars={420} styles={styles} breakable />
+        <TextCard
+          title={labels.alliesAndOrganizations}
+          color={t.green}
+          text={data.alliesAndOrgs}
+          maxChars={520}
+          styles={styles}
+          breakable
+        />
+        <TextCard
+          title={labels.backstory}
+          color={t.green}
+          text={data.backstory}
+          maxChars={1400}
+          styles={styles}
+          breakable
+        />
+        <TextCard
+          title={labels.treasure}
+          color={t.yellow}
+          text={data.treasureText}
+          maxChars={420}
+          styles={styles}
+          breakable
+        />
 
-        <PageFooter labels={labels} styles={styles} />
+        <PageFooter
+          labels={labels}
+          styles={styles}
+        />
       </Page>
 
       {/* Spellcasting pages: overview sheet, then detail cards capped at half a page each */}
@@ -1333,14 +1569,21 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
 
         if (pageDescriptor.kind === "overview") {
           return (
-            <Page key={`spell-overview-${pageDescriptor.blockIndex}`} size="LETTER" style={[styles.page, styles.spellOverviewPage]} wrap={false}>
+            <Page
+              key={`spell-overview-${pageDescriptor.blockIndex}`}
+              size="LETTER"
+              style={[styles.page, styles.spellOverviewPage]}
+              wrap={false}>
               <SpellOverviewPage
                 block={block}
                 labels={labels}
                 styles={styles}
                 showPreparedMarks={data.isPlayer && !block.isInnate}
               />
-              <PageFooter labels={labels} styles={styles} />
+              <PageFooter
+                labels={labels}
+                styles={styles}
+              />
             </Page>
           );
         }
@@ -1351,10 +1594,17 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
             key={`spell-details-${pageDescriptor.blockIndex}`}
             size="LETTER"
             style={styles.page}
-            wrap
-          >
-            <SpellDetailPages spells={pageDescriptor.spells} block={block} labels={labels} styles={styles} />
-            <PageFooter labels={labels} styles={styles} />
+            wrap>
+            <SpellDetailPages
+              spells={pageDescriptor.spells}
+              block={block}
+              labels={labels}
+              styles={styles}
+            />
+            <PageFooter
+              labels={labels}
+              styles={styles}
+            />
           </Page>
         );
       })}
