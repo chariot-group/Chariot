@@ -1,7 +1,7 @@
 /** @see FR-character-sheet-pdf-export */
 
 import React from "react";
-import { Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
+import { Document, Page, View, Text, Image, Link, StyleSheet, Font } from "@react-pdf/renderer";
 import { CHARACTER_SHEET_PDF_THEMES } from "@/lib/characterSheetPdf/themes";
 import {
   getPageOneFeaturesMaxHeight,
@@ -13,7 +13,7 @@ import { buildLucideSvgDataUrl } from "@/lib/characterSheetPdf/buildLucideSvgStr
 import { PDF_SKILL_LUCIDE_NODES } from "@/lib/characterSheetPdf/lucidePdfIconNodes";
 import { getMasteryIconSvg } from "@/lib/characterSheetPdf/masteryIconSvg";
 import { svgDataUrl } from "@/lib/characterSheetPdf/svgDataUrl";
-import { truncateText } from "@/lib/characterSheetPdf/pdfTextMetrics";
+import { splitWordToFit, truncateText } from "@/lib/characterSheetPdf/pdfTextMetrics";
 import {
   PDF_ABILITY_COLUMN,
   PDF_CARD,
@@ -32,6 +32,16 @@ import {
   PDF_TILE_RADIUS,
 } from "@/lib/characterSheetPdf/pdfPageGeometry";
 import {
+  getPageOneAttackRowCount,
+  getPageOneBodyHeight,
+  PDF_ATTACK_NAME_WIDTH,
+  PDF_ATTACK_ROW_HEIGHT,
+  PDF_ATTACK_TABLE,
+  PDF_DEATH_SAVES,
+  PDF_HIT_DICE_PILL,
+  PDF_HP_FIELD,
+} from "@/lib/characterSheetPdf/pageOneCombatLayout";
+import {
   buildSpellOverviewColumns,
   buildSpellPdfPages,
   getSpellDetailCardLayout,
@@ -49,6 +59,7 @@ import type {
   CharacterSheetPdfData,
   CharacterSheetPdfLabels,
   PdfAbilityFeature,
+  PdfAttackRow,
   PdfClassEntry,
   PdfHitDiceEntry,
   PdfSkillRow,
@@ -64,6 +75,8 @@ const PDF_HEADER = {
   rowHeight: 60,
   avatarWidth: 48,
   qrSize: 42,
+  /** Added to the QR code right inset so it stays clear of the card's rounded corners. */
+  qrExtraRightInset: 4,
   /** Space between the three text columns, also kept before the QR code. */
   columnGap: 16,
   paddingLeft: 11,
@@ -78,8 +91,15 @@ const PDF_HEADER = {
   multiclassLineHeight: 1.25,
   multiclassLineGap: 1.5,
 } as const;
-/** Same inset on the right of the QR code as above and below it. */
+/** Inset of the QR code above and below it; its right inset is a little larger. */
 const PDF_HEADER_QR_INSET = (PDF_HEADER.rowHeight - PDF_HEADER.qrSize) / 2;
+
+/** Blank space kept at the bottom of the treasure card for items added by hand. */
+const PDF_TREASURE_WRITE_IN_MIN_HEIGHT = 110;
+
+/** Site address printed in the footer, linked in the PDF. */
+export const PDF_FOOTER_SITE_LABEL = "www.chariot.tools";
+export const PDF_FOOTER_SITE_URL = "https://www.chariot.tools";
 
 /** Narrative cards of page 1 keep their text short; the biography page shows it in full. */
 const PDF_PAGE_ONE_NARRATIVE_MAX_CHARS = 180;
@@ -114,6 +134,12 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
   const o = PDF_SPELL_OVERVIEW;
   const h = PDF_HEADER;
   const separator = { borderBottomWidth: 0.5, borderBottomColor: t.border };
+  // Line a hand-written value sits on: muted text color, so it stays visible once printed.
+  const writeInLine = { borderBottomWidth: 0.5, borderBottomColor: t.textMuted };
+  const f = PDF_HP_FIELD;
+  const pill = PDF_HIT_DICE_PILL;
+  const d = PDF_DEATH_SAVES;
+  const a = PDF_ATTACK_TABLE;
 
   return StyleSheet.create({
     page: {
@@ -140,7 +166,7 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
       paddingTop: 6,
     },
     footerText: { fontSize: 7, color: t.footerText },
-    footerLink: { fontSize: 7, color: t.link },
+    footerLink: { fontSize: 7, color: t.link, textDecoration: "none" },
 
     // Cards
     card: {
@@ -156,13 +182,6 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
       fontWeight: "bold",
       lineHeight: PDF_CARD.titleLineHeight,
       marginBottom: PDF_CARD.titleMarginBottom,
-    },
-    subHeading: {
-      fontSize: 6.6,
-      fontWeight: "bold",
-      color: t.textMuted,
-      textTransform: "uppercase",
-      marginBottom: 4,
     },
     tile: {
       backgroundColor: t.cardBackground,
@@ -184,9 +203,6 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
     label: { fontSize: 6.6, color: t.textMuted, marginBottom: 2 },
     value: { fontSize: 8.8, fontWeight: "bold", lineHeight: 1.25 },
     factGrid: { flexDirection: "row", gap: PDF_CARD_GAP, marginBottom: 6 },
-    fieldRow: { flexDirection: "row", marginBottom: 4, gap: 4 },
-    fieldLabel: { fontSize: 7.5, color: t.textMuted, width: 74 },
-    fieldValue: { fontSize: 8.8, flex: 1 },
     textBlock: { fontSize: PDF_TEXT_BLOCK.fontSize, lineHeight: PDF_TEXT_BLOCK.lineHeight },
     proficient: { fontStyle: "italic" },
 
@@ -217,13 +233,15 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
     },
     headerColumn: { flexGrow: 1, flexShrink: 1, flexBasis: "auto", minWidth: 0, justifyContent: "center" },
     headerFact: { marginTop: 5 },
-    qrCode: {
+    // The link box is the QR code square: the right inset sits outside it, so the clickable area
+    // does not spill past the code.
+    qrLink: {
       width: h.qrSize,
       height: h.qrSize,
-      marginRight: PDF_HEADER_QR_INSET,
+      marginRight: PDF_HEADER_QR_INSET + h.qrExtraRightInset,
       flexShrink: 0,
-      objectFit: "contain",
     },
+    qrCode: { width: h.qrSize, height: h.qrSize, objectFit: "contain" },
     charName: {
       fontSize: h.nameFontSize,
       fontWeight: "bold",
@@ -236,14 +254,15 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
     multiclassSubclass: { fontWeight: "normal", color: t.textMuted },
 
     // Page 1 body grid: ability scores + skills on the left half, combat + narrative on the right half.
-    bodyGrid: { flexDirection: "row", gap: PDF_CARD_GAP, alignItems: "flex-start" },
+    // Fixed height (set from the header): every column ends at the bottom of the page.
+    bodyGrid: { flexDirection: "row", gap: PDF_CARD_GAP, alignItems: "stretch" },
     colLeftRegion: { width: PDF_PAGE_ONE_HALF_WIDTH, flexDirection: "column" },
     // Stretch: the ability column takes the height of the skills column next to it.
     leftTopRow: { flexDirection: "row", gap: PDF_CARD_GAP, alignItems: "stretch", marginBottom: PDF_CARD_GAP },
     colAbilities: { width: PDF_ABILITY_COLUMN.width, flexDirection: "column", gap: PDF_CARD_GAP },
     colSkills: { flex: 1, minWidth: 0 },
-    colCombat: { width: PDF_PAGE_ONE_NARRATIVE_COLUMN_WIDTH },
-    colNarrative: { width: PDF_PAGE_ONE_NARRATIVE_COLUMN_WIDTH },
+    colCombat: { width: PDF_PAGE_ONE_NARRATIVE_COLUMN_WIDTH, flexDirection: "column" },
+    colNarrative: { width: PDF_PAGE_ONE_NARRATIVE_COLUMN_WIDTH, flexDirection: "column" },
 
     scoreCard: { flexGrow: 1, paddingVertical: 5, paddingHorizontal: PDF_ABILITY_COLUMN.tilePaddingHorizontal },
     scoreLabel: {
@@ -276,7 +295,6 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
       alignItems: "center",
       justifyContent: "center",
     },
-    checkboxInner: { width: 6, height: 6, borderRadius: 1, backgroundColor: t.text },
 
     savingThrowsGrid: { flexDirection: "row", flexWrap: "wrap" },
     savingThrowCell: { width: "33.33%", alignItems: "center", paddingVertical: 3 },
@@ -313,6 +331,7 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
 
     statTile: {
       flex: 1,
+      height: PDF_COMBAT_TILE.height,
       paddingHorizontal: PDF_COMBAT_TILE.paddingHorizontal,
       paddingVertical: 5,
       gap: 1,
@@ -327,41 +346,99 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
     statTileValue: { fontSize: 12, fontWeight: "bold", textAlign: "center" },
     combatStatsRow: { flexDirection: "row", gap: PDF_COMBAT_TILE.gap, marginBottom: PDF_CARD_GAP },
 
-    hitDiceBlock: { marginBottom: 4 },
-    hitDiceChips: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 3 },
-    hitDiceChip: { gap: 3, paddingHorizontal: 6, paddingVertical: 2 },
-    hitDiceChipClass: { fontSize: 6.6, color: t.textMuted },
-    hitDiceChipValue: { fontSize: 7.8, fontWeight: "bold" },
+    // Hit points card: fixed-height rows, so the attack rows below can be counted ahead.
+    fieldRow: { flexDirection: "row", alignItems: "flex-end", height: f.rowHeight, marginBottom: f.rowGap, gap: 4 },
+    fieldLabel: { fontSize: f.labelFontSize, color: t.textMuted, width: f.labelWidth, maxLines: 1 },
+    fieldValue: { fontSize: f.valueFontSize, flex: 1, maxLines: 1 },
+    writeIn: { flex: 1, height: f.rowHeight, ...writeInLine },
+    hitDiceBlock: { marginTop: pill.blockMarginTop, marginBottom: f.rowGap },
+    npcHitPointsRoll: { fontSize: f.valueFontSize, height: f.rowHeight, marginTop: pill.marginTop, maxLines: 1 },
+    hitDiceLabel: { fontSize: f.labelFontSize, color: t.textMuted, height: pill.labelHeight },
+    hitDiceChips: { flexDirection: "row", flexWrap: "wrap", gap: pill.gap, marginTop: pill.marginTop },
+    hitDiceChip: { height: pill.height, gap: pill.innerGap, paddingHorizontal: pill.paddingHorizontal },
+    hitDiceChipClass: { fontSize: pill.classFontSize, color: t.textMuted },
+    hitDiceChipValue: { fontSize: pill.notationFontSize, fontWeight: "bold" },
 
-    deathSavesSection: { marginTop: 6, paddingTop: 7, borderTopWidth: 0.5, borderTopColor: t.border },
-    deathSaveRow: { flexDirection: "row", alignItems: "center", marginBottom: 5, gap: 6 },
+    deathSavesSection: {
+      marginTop: d.marginTop,
+      paddingTop: d.paddingTop,
+      borderTopWidth: 0.5,
+      borderTopColor: t.border,
+    },
+    deathSavesHeading: {
+      fontSize: d.headingFontSize,
+      lineHeight: d.headingLineHeight,
+      marginBottom: d.headingMarginBottom,
+      fontWeight: "bold",
+      color: t.textMuted,
+      textTransform: "uppercase",
+    },
+    deathSaveRow: { flexDirection: "row", alignItems: "center", height: d.rowHeight, marginBottom: d.rowGap, gap: 6 },
     deathSaveLabel: { fontSize: 7.5, fontWeight: "bold", width: 44 },
     dotsRow: { flexDirection: "row", alignItems: "center", gap: 5, flex: 1, justifyContent: "flex-end" },
     dot: { width: 10, height: 10, borderRadius: 999, borderWidth: 1, borderColor: t.textMuted },
 
+    // Attacks and equipment share the combat column height left under the hit points card.
+    combatFillCard: { flexGrow: 1, flexShrink: 1, flexBasis: 0, overflow: "hidden" },
     attacksTableHeader: {
+      height: a.headerHeight,
       flexDirection: "row",
       alignItems: "flex-end",
       paddingBottom: 2,
-      marginBottom: 1,
-      gap: 3,
+      gap: a.columnGap,
       ...separator,
     },
-    attackRow: { flexDirection: "row", paddingVertical: 2.5, gap: 3, ...separator },
-    attackRowLast: { borderBottomWidth: 0 },
-    attackName: { flex: 2, fontSize: 6.5, fontWeight: "bold", color: t.textMuted },
-    attackBonus: { flex: 1, fontSize: 6.5, fontWeight: "bold", color: t.textMuted, textAlign: "center" },
-    attackDamage: { flex: 1.6, fontSize: 6.5, fontWeight: "bold", color: t.textMuted, textAlign: "right" },
-    attackCellName: { flex: 2, fontSize: 7.2 },
-    attackCellBonus: { flex: 1, fontSize: 7.2, textAlign: "center" },
-    attackCellDamage: { flex: 1.6, fontSize: 7.2, textAlign: "right" },
+    attackRows: { flex: 1 },
+    // Rows grow or shrink a little around their two-line height so they fill the card exactly.
+    attackRow: {
+      flexGrow: 1,
+      flexShrink: 1,
+      flexBasis: PDF_ATTACK_ROW_HEIGHT,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: a.rowPaddingVertical,
+      gap: a.columnGap,
+      ...separator,
+    },
+    attackName: { flex: 1, minWidth: 0, fontSize: 6.5, fontWeight: "bold", color: t.textMuted },
+    attackBonus: { width: a.bonusWidth, fontSize: 6.5, fontWeight: "bold", color: t.textMuted, textAlign: "center" },
+    attackDamage: { width: a.damageWidth, fontSize: 6.5, fontWeight: "bold", color: t.textMuted, textAlign: "right" },
+    // The name takes the rest of the row on up to two lines, then ends with an ellipsis.
+    attackCellName: {
+      flex: 1,
+      minWidth: 0,
+      fontSize: a.fontSize,
+      lineHeight: a.lineHeight,
+      maxLines: 2,
+      textOverflow: "ellipsis",
+    },
+    attackCellBonus: { width: a.bonusWidth, fontSize: a.fontSize, textAlign: "center" },
+    attackCellDamage: { width: a.damageWidth, alignItems: "flex-end" },
+    attackDamageDice: {
+      fontSize: a.fontSize,
+      lineHeight: a.lineHeight,
+      textAlign: "right",
+      maxLines: 1,
+      textOverflow: "ellipsis",
+    },
+    attackDamageType: {
+      fontSize: a.damageTypeFontSize,
+      lineHeight: a.lineHeight,
+      color: t.textMuted,
+      textAlign: "right",
+      maxLines: 1,
+      textOverflow: "ellipsis",
+    },
 
     coinRow: { flexDirection: "row", alignItems: "center", marginBottom: 2, gap: 4 },
     coinIcon: { width: 10, height: 9 },
     coinText: { fontSize: 7.3, fontWeight: "bold" },
-    equipmentCard: { minHeight: 120 },
-
-    featuresCard: { minHeight: 150 },
+    // Takes the height left under the narrative cards, down to the bottom of the page.
+    featuresCard: { flexGrow: 1, marginBottom: 0 },
+    // Last card of the biography page: blank space down to the bottom of the page, never less than
+    // a few lines, so the player can add items by hand. Unbreakable: it moves whole to the next page.
+    treasureCard: { flexGrow: 1, marginBottom: 0 },
+    treasureWriteInSpace: { flexGrow: 1, minHeight: PDF_TREASURE_WRITE_IN_MIN_HEIGHT },
     featureItem: { marginBottom: PDF_FEATURE_ITEM.marginBottom },
     featureName: {
       fontSize: PDF_FEATURE_ITEM.nameFontSize,
@@ -386,6 +463,7 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
       marginBottom: PDF_SECTION_GAP,
     },
     spellOverviewStatCell: { flexShrink: 1, minWidth: 0 },
+    spellOverviewWriteIn: { width: 28, height: o.statValueFontSize * o.statValueLineHeight, ...writeInLine },
     spellOverviewStatLabel: {
       fontSize: o.statLabelFontSize,
       lineHeight: o.statLabelLineHeight,
@@ -440,7 +518,6 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
       borderRadius: 1.5,
       flexShrink: 0,
     },
-    spellOverviewCheckboxFilled: { backgroundColor: t.pink, borderColor: t.pink },
     spellOverviewSpellName: {
       flex: 1,
       fontSize: o.spellNameFontSize,
@@ -537,7 +614,11 @@ function PageFooter({ labels, styles }: { labels: CharacterSheetPdfLabels; style
           labels.pageOf.replace("{page}", String(pageNumber)).replace("{total}", String(totalPages))
         }
       />
-      <Text style={styles.footerLink}>chariot.tools</Text>
+      <Link
+        src={PDF_FOOTER_SITE_URL}
+        style={styles.footerLink}>
+        {PDF_FOOTER_SITE_LABEL}
+      </Link>
     </View>
   );
 }
@@ -663,64 +744,107 @@ function HeaderFact({
   );
 }
 
-function HitDiceRow({
+/** A labelled row of the hit points card holding a printed value. */
+function FieldRow({ label, value, styles }: { label: string; value: string; styles: PdfStyles }) {
+  return (
+    <View style={styles.fieldRow}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldValue}>{value}</Text>
+    </View>
+  );
+}
+
+/** A labelled row left blank: the player writes the value on its line. */
+export function WriteInField({
   label,
-  entries,
-  fallback,
   styles,
   isLast = false,
 }: {
   label: string;
-  entries: PdfHitDiceEntry[];
-  fallback: string;
   styles: PdfStyles;
   isLast?: boolean;
 }) {
-  if (entries.length <= 1) {
+  return (
+    <View style={[styles.fieldRow, isLast ? styles.lastRowNoMargin : {}]}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <View style={styles.writeIn} />
+    </View>
+  );
+}
+
+/** Total hit dice of a class (class name + dice), one pill per class. */
+export function HitDicePill({ entry, styles }: { entry: PdfHitDiceEntry; styles: PdfStyles }) {
+  return (
+    <View style={[styles.pill, styles.hitDiceChip]}>
+      <Text style={styles.hitDiceChipClass}>{clampText(entry.className, PDF_HIT_DICE_PILL.classMaxChars)}</Text>
+      <Text style={styles.hitDiceChipValue}>{entry.notation}</Text>
+    </View>
+  );
+}
+
+/** Player hit dice, closing the hit points rows: one pill per class (a write-in line when there is none). */
+function HitDiceBlock({ label, entries, styles }: { label: string; entries: PdfHitDiceEntry[]; styles: PdfStyles }) {
+  if (entries.length === 0) {
     return (
-      <View style={[styles.fieldRow, isLast ? styles.lastRowNoMargin : {}]}>
-        <Text style={styles.fieldLabel}>{label}</Text>
-        <Text style={styles.fieldValue}>{clampText(fallback, 36)}</Text>
-      </View>
+      <WriteInField
+        label={label}
+        styles={styles}
+        isLast
+      />
     );
   }
 
   return (
-    <View style={[styles.hitDiceBlock, isLast ? styles.lastRowNoMargin : {}]}>
-      <Text style={styles.fieldLabel}>{label}</Text>
+    <View style={[styles.hitDiceBlock, styles.lastRowNoMargin]}>
+      <Text style={styles.hitDiceLabel}>{label}</Text>
       <View style={styles.hitDiceChips}>
         {entries.map((entry, index) => (
-          <View
+          <HitDicePill
             key={`${entry.className}-${entry.notation}-${index}`}
-            style={[styles.pill, styles.hitDiceChip]}>
-            <Text style={styles.hitDiceChipClass}>{clampText(entry.className, 14)}</Text>
-            <Text style={styles.hitDiceChipValue}>{entry.notation}</Text>
-          </View>
+            entry={entry}
+            styles={styles}
+          />
         ))}
       </View>
     </View>
   );
 }
 
-function Dots({
-  styles,
-  filled,
-  total,
-  fillColor,
-}: {
-  styles: PdfStyles;
-  filled: number;
-  total: number;
-  fillColor: string;
-}) {
+/** Empty circles the player fills by hand (death saves). */
+export function EmptyDots({ styles, total }: { styles: PdfStyles; total: number }) {
   return (
     <View style={styles.dotsRow}>
       {Array.from({ length: total }).map((_, i) => (
         <View
           key={`dot-${i}`}
-          style={[styles.dot, i < filled ? { backgroundColor: fillColor, borderColor: fillColor } : {}]}
+          style={styles.dot}
         />
       ))}
+    </View>
+  );
+}
+
+/** Breaks a word too long for the attack name column, so it never runs over the next columns. */
+const breakAttackNameWord = (word: string) => splitWordToFit(word, PDF_ATTACK_TABLE.fontSize, PDF_ATTACK_NAME_WIDTH);
+
+/** A ruled row of the attacks table: name, bonus, then the damage type under the dice. */
+export function AttackRow({ attack, styles }: { attack: PdfAttackRow | null; styles: PdfStyles }) {
+  return (
+    <View style={styles.attackRow}>
+      {attack ? (
+        <>
+          <Text
+            style={styles.attackCellName}
+            hyphenationCallback={breakAttackNameWord}>
+            {attack.name.trim() || " "}
+          </Text>
+          <Text style={styles.attackCellBonus}>{attack.bonus}</Text>
+          <View style={styles.attackCellDamage}>
+            <Text style={styles.attackDamageDice}>{clampText(attack.damage, 24)}</Text>
+            {attack.damageType ? <Text style={styles.attackDamageType}>{attack.damageType}</Text> : null}
+          </View>
+        </>
+      ) : null}
     </View>
   );
 }
@@ -810,12 +934,6 @@ function SkillCell({
   );
 }
 
-function countPreparedSpells(block: PdfSpellcastingBlock): number {
-  return Object.values(block.spellsByLevel)
-    .flat()
-    .filter((spell) => spell.prepared).length;
-}
-
 function getSpellOverviewLevelTitle(group: PdfSpellLevelGroup, labels: CharacterSheetPdfLabels): string {
   if (group.usesPerDay !== null && group.level < 0) {
     return labels.npcUsesPerDay.replace("{count}", String(group.usesPerDay));
@@ -859,7 +977,7 @@ function SpellSlotsIndicator({
 
 /**
  * A level card of the overview sheet. It grows with its line count so every line of a column has
- * the same height; levels 1-9 get a prepared checkbox on every line (ticked by hand when blank).
+ * the same height; levels 1-9 get an empty prepared checkbox on every line (ticked by hand).
  */
 function SpellLevelCard({
   card,
@@ -899,11 +1017,7 @@ function SpellLevelCard({
             <View
               key={spell ? `${spell.name}-${index}` : `empty-${index}`}
               style={styles.spellOverviewLine}>
-              {showCheckbox ? (
-                <View
-                  style={[styles.spellOverviewCheckbox, spell?.prepared ? styles.spellOverviewCheckboxFilled : {}]}
-                />
-              ) : null}
+              {showCheckbox ? <View style={styles.spellOverviewCheckbox} /> : null}
               {spell ? <Text style={styles.spellOverviewSpellName}>{spell.name.trim() || " "}</Text> : null}
             </View>
           );
@@ -913,11 +1027,16 @@ function SpellLevelCard({
   );
 }
 
-function SpellOverviewStat({ label, value, styles }: { label: string; value: string | number; styles: PdfStyles }) {
+/** A fact of the spell overview header; without a value it is a line the player writes on. */
+function SpellOverviewStat({ label, value, styles }: { label: string; value?: string; styles: PdfStyles }) {
   return (
     <View style={styles.spellOverviewStatCell}>
       <Text style={styles.spellOverviewStatLabel}>{label}</Text>
-      <Text style={styles.spellOverviewStatValue}>{value || " "}</Text>
+      {value === undefined ? (
+        <View style={styles.spellOverviewWriteIn} />
+      ) : (
+        <Text style={styles.spellOverviewStatValue}>{value || " "}</Text>
+      )}
     </View>
   );
 }
@@ -954,7 +1073,6 @@ function SpellOverviewPage({
         {!block.isInnate ? (
           <SpellOverviewStat
             label={labels.preparedSpells}
-            value={countPreparedSpells(block)}
             styles={styles}
           />
         ) : null}
@@ -1082,6 +1200,18 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
   const t = CHARACTER_SHEET_PDF_THEMES[theme];
   const styles = createStyles(t);
   const headerRowHeight = getHeaderRowHeight(data.isPlayer ? data.classEntries.length : 1);
+  const attackRowCount = getPageOneAttackRowCount({
+    headerHeight: headerRowHeight,
+    attacksTitle: labels.attacksAndSpellcasting,
+    isPlayer: data.isPlayer,
+    title: labels.hitPoints,
+    deathSavesTitle: labels.deathSaves,
+    hitDiceEntries: data.hitDiceEntries,
+  });
+  const attackRows: (PdfAttackRow | null)[] = Array.from(
+    { length: attackRowCount },
+    (_, index) => data.attacks[index] ?? null,
+  );
   // Rendered text of the narrative cards: the same values feed the features space estimate.
   const narrativeCards: PdfNarrativeCard[] = [
     { title: labels.personalityTraits, text: data.personalityTraits },
@@ -1176,15 +1306,20 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               </View>
             </View>
             {data.qrCodeDataUrl ? (
-              <Image
-                src={data.qrCodeDataUrl}
-                style={styles.qrCode}
-              />
+              // Clicking the QR code opens the same character page its scan leads to.
+              <Link
+                src={data.characterPageUrl}
+                style={styles.qrLink}>
+                <Image
+                  src={data.qrCodeDataUrl}
+                  style={styles.qrCode}
+                />
+              </Link>
             ) : null}
           </View>
         </View>
 
-        <View style={styles.bodyGrid}>
+        <View style={[styles.bodyGrid, { height: getPageOneBodyHeight(headerRowHeight) }]}>
           <View style={styles.colLeftRegion}>
             <View style={styles.leftTopRow}>
               <View style={styles.colAbilities}>
@@ -1207,9 +1342,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
                 <View style={styles.statPill}>
                   <View style={styles.inlineStatRow}>
                     <Text style={styles.statPillLabel}>{labels.inspiration}</Text>
-                    <View style={styles.checkbox}>
-                      {data.inspiration ? <View style={styles.checkboxInner} /> : null}
-                    </View>
+                    <View style={styles.checkbox} />
                   </View>
                 </View>
                 <View style={styles.statPill}>
@@ -1313,80 +1446,82 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               title={labels.hitPoints}
               color={t.red}
               styles={styles}>
-              {[
-                { label: labels.maxHp, value: data.maxHp },
-                { label: labels.currentHp, value: data.currentHp },
-                { label: labels.tempHp, value: data.tempHp },
-              ].map((field) => (
-                <View
-                  key={field.label}
-                  style={styles.fieldRow}>
-                  <Text style={styles.fieldLabel}>{field.label}</Text>
-                  <Text style={styles.fieldValue}>{field.value}</Text>
-                </View>
-              ))}
-              <HitDiceRow
-                label={data.isPlayer ? labels.hitDice : labels.hitPointsRoll}
-                entries={data.isPlayer ? data.hitDiceEntries : []}
-                fallback={data.hitDice}
+              <FieldRow
+                label={labels.maxHp}
+                value={data.maxHp}
                 styles={styles}
-                isLast={!data.isPlayer}
+              />
+              <WriteInField
+                label={labels.currentHp}
+                styles={styles}
+              />
+              <WriteInField
+                label={labels.tempHp}
+                styles={styles}
               />
               {data.isPlayer ? (
-                <View style={styles.deathSavesSection}>
-                  <Text style={styles.subHeading}>{labels.deathSaves}</Text>
-                  <View style={styles.deathSaveRow}>
-                    <Text style={styles.deathSaveLabel}>{labels.successes}</Text>
-                    <Dots
-                      styles={styles}
-                      filled={Math.max(0, Math.min(3, data.deathSaveSuccesses))}
-                      total={3}
-                      fillColor={t.green}
-                    />
+                <>
+                  <WriteInField
+                    label={labels.hitDiceRemaining}
+                    styles={styles}
+                  />
+                  <HitDiceBlock
+                    label={labels.hitDice}
+                    entries={data.hitDiceEntries}
+                    styles={styles}
+                  />
+                  <View style={styles.deathSavesSection}>
+                    <Text style={styles.deathSavesHeading}>{labels.deathSaves}</Text>
+                    <View style={styles.deathSaveRow}>
+                      <Text style={styles.deathSaveLabel}>{labels.successes}</Text>
+                      <EmptyDots
+                        styles={styles}
+                        total={3}
+                      />
+                    </View>
+                    <View style={[styles.deathSaveRow, styles.lastRowNoMargin]}>
+                      <Text style={styles.deathSaveLabel}>{labels.failures}</Text>
+                      <EmptyDots
+                        styles={styles}
+                        total={3}
+                      />
+                    </View>
                   </View>
-                  <View style={[styles.deathSaveRow, styles.lastRowNoMargin]}>
-                    <Text style={styles.deathSaveLabel}>{labels.failures}</Text>
-                    <Dots
-                      styles={styles}
-                      filled={Math.max(0, Math.min(3, data.deathSaveFailures))}
-                      total={3}
-                      fillColor={t.red}
-                    />
-                  </View>
+                </>
+              ) : (
+                <View style={[styles.hitDiceBlock, styles.lastRowNoMargin]}>
+                  <Text style={styles.hitDiceLabel}>{labels.hitPointsRoll}</Text>
+                  <Text style={styles.npcHitPointsRoll}>{clampText(data.hitDice, 36)}</Text>
                 </View>
-              ) : null}
+              )}
             </SectionCard>
 
             <SectionCard
               title={labels.attacksAndSpellcasting}
               color={t.red}
-              styles={styles}>
+              styles={styles}
+              style={styles.combatFillCard}>
               <View style={styles.attacksTableHeader}>
                 <Text style={styles.attackName}>{labels.attackName}</Text>
                 <Text style={styles.attackBonus}>{labels.attackBonusHeader}</Text>
                 <Text style={styles.attackDamage}>{labels.attackDamageHeader}</Text>
               </View>
-              {(() => {
-                const attacks = (
-                  data.attacks.length > 0 ? data.attacks : [{ name: " ", bonus: " ", damage: " ", range: " " }]
-                ).slice(0, 5);
-                return attacks.map((atk, i) => (
-                  <View
-                    key={`${atk.name}-${i}`}
-                    style={[styles.attackRow, i === attacks.length - 1 ? styles.attackRowLast : {}]}>
-                    <Text style={styles.attackCellName}>{clampText(atk.name, 20)}</Text>
-                    <Text style={styles.attackCellBonus}>{atk.bonus}</Text>
-                    <Text style={styles.attackCellDamage}>{clampText(atk.damage, 24)}</Text>
-                  </View>
-                ));
-              })()}
+              <View style={styles.attackRows}>
+                {attackRows.map((attack, index) => (
+                  <AttackRow
+                    key={attack ? `${attack.name}-${index}` : `empty-${index}`}
+                    attack={attack}
+                    styles={styles}
+                  />
+                ))}
+              </View>
             </SectionCard>
 
             <SectionCard
               title={labels.equipment}
               color={t.yellow}
               styles={styles}
-              style={styles.equipmentCard}>
+              style={[styles.combatFillCard, styles.lastRowNoMargin]}>
               {(Object.keys(COIN_FILLS) as CoinKey[]).map((key) => (
                 <View
                   key={key}
@@ -1547,14 +1682,14 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
           styles={styles}
           breakable
         />
-        <TextCard
+        <SectionCard
           title={labels.treasure}
           color={t.yellow}
-          text={data.treasureText}
-          maxChars={420}
           styles={styles}
-          breakable
-        />
+          style={styles.treasureCard}>
+          <Text style={styles.textBlock}>{clampText(data.treasureText, 420)}</Text>
+          <View style={styles.treasureWriteInSpace} />
+        </SectionCard>
 
         <PageFooter
           labels={labels}

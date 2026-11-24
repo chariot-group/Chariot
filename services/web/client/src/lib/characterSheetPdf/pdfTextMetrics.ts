@@ -124,3 +124,36 @@ export function estimateTextLineCount(
     return total + lines;
   }, 0);
 }
+
+/** Width the renderer adds for the hyphen it draws at a break inside a word. */
+const PDF_RENDERER_HYPHEN_WIDTH = 5;
+
+/**
+ * Hyphenation callback parts for a word: the word itself when it fits `maxWidth`, otherwise
+ * chunks that each fit with the hyphen the renderer adds at the break (the renderer never breaks
+ * a word on its own, so a long one would overflow). A chunk holds at least two letters and never
+ * ends on a hyphen of the word, so the break never shows two hyphens.
+ */
+export function splitWordToFit(
+  word: string,
+  fontSize: number,
+  maxWidth: number,
+  weight: PdfFontWeight = "normal",
+): string[] {
+  if (measureTextWidth(word, fontSize, weight) <= maxWidth) return [word];
+  const chunkWidth = maxWidth - PDF_RENDERER_HYPHEN_WIDTH;
+  const chars = Array.from(word);
+  const parts: string[] = [];
+  let chunk = "";
+  for (const char of chars) {
+    const fits = measureTextWidth(chunk + char, fontSize, weight) <= chunkWidth;
+    if (fits || chunk.length <= 1 || chunk.endsWith("-")) {
+      chunk += char;
+      continue;
+    }
+    parts.push(chunk);
+    chunk = char;
+  }
+  if (chunk) parts.push(chunk);
+  return parts;
+}

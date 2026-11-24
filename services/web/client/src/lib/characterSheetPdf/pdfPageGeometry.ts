@@ -84,6 +84,7 @@ export const PDF_SKILL_NAME_WIDTH =
 
 /** Page 1 AC / initiative / speed tiles: three per row across the combat column. */
 export const PDF_COMBAT_TILE = {
+  height: 34,
   gap: 5,
   paddingHorizontal: 4,
   labelFontSize: 6,

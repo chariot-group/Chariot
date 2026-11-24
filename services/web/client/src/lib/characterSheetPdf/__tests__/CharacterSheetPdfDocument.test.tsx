@@ -4,8 +4,17 @@ import fs from "node:fs";
 import path from "node:path";
 import React from "react";
 import { describe, expect, it } from "vitest";
-import { renderToBuffer } from "@react-pdf/renderer";
-import { CharacterSheetPdfDocument } from "@/lib/characterSheetPdf/CharacterSheetPdfDocument";
+import { Image, Link, renderToBuffer } from "@react-pdf/renderer";
+import {
+  AttackRow,
+  CharacterSheetPdfDocument,
+  EmptyDots,
+  HitDicePill,
+  PDF_FOOTER_SITE_LABEL,
+  PDF_FOOTER_SITE_URL,
+  WriteInField,
+} from "@/lib/characterSheetPdf/CharacterSheetPdfDocument";
+import { CHARACTER_SHEET_PDF_THEMES } from "@/lib/characterSheetPdf/themes";
 import { buildCharacterSheetPdfLabels } from "@/lib/characterSheetPdf/buildCharacterSheetPdfLabels";
 import type { CharacterSheetPdfTheme } from "@/lib/characterSheetPdf/themes";
 import type { CharacterSheetPdfData, PdfSpellRow } from "@/lib/characterSheetPdf/types";
@@ -64,7 +73,6 @@ const data: CharacterSheetPdfData = {
   backgroundOrSubtype: "Sage",
   alignment: "Chaotique bon",
   experience: "23000",
-  inspiration: true,
   proficiencyBonus: "+3",
   abilities: [
     ["FOR", "Force", 8, "-1"],
@@ -99,14 +107,10 @@ const data: CharacterSheetPdfData = {
   initiative: "+2",
   speed: "9 m",
   maxHp: "45",
-  currentHp: "38",
-  tempHp: "0",
   hitDice: "7d6",
-  deathSaveSuccesses: 1,
-  deathSaveFailures: 0,
   attacks: [
-    { name: "Dague", bonus: "+5", damage: "1d4+2 perforant", range: "6 m" },
-    { name: "Trait de feu", bonus: "+7", damage: "2d10 feu", range: "36 m" },
+    { name: "Dague", bonus: "+5", damage: "1d4+2", damageType: "perforant", range: "6 m" },
+    { name: "Trait de feu", bonus: "+7", damage: "2d10", damageType: "feu", range: "36 m" },
   ],
   equipment: "Bâton de sorcier, grimoire, sacoche à composantes, robe de voyage, 10 bougies.",
   treasureText: "Une gemme bleue.",
@@ -321,4 +325,179 @@ describe("FR-character-sheet-pdf-export — CharacterSheetPdfDocument rendering"
     const { count } = await renderPages({ ...data, avatarDataUrl: null }, "dark");
     expect(count).toBe(6);
   }, 30000);
+});
+
+interface DocumentNode {
+  type: unknown;
+  props: Record<string, unknown>;
+}
+
+/** Expands the document element tree (function components called in place) into a flat node list. */
+function collectNodes(node: React.ReactNode, out: DocumentNode[] = []): DocumentNode[] {
+  if (node == null || typeof node === "boolean") return out;
+  if (Array.isArray(node)) {
+    for (const child of node) collectNodes(child as React.ReactNode, out);
+    return out;
+  }
+  if (typeof node === "string" || typeof node === "number") {
+    out.push({ type: "#text", props: { value: String(node) } });
+    return out;
+  }
+  if (!React.isValidElement(node)) return out;
+  const props = node.props as Record<string, unknown> & { children?: React.ReactNode };
+  out.push({ type: node.type, props });
+  if (typeof node.type === "function") {
+    return collectNodes((node.type as (p: unknown) => React.ReactNode)(props), out);
+  }
+  return collectNodes(props.children, out);
+}
+
+function documentNodes(input: CharacterSheetPdfData, theme: CharacterSheetPdfTheme = "dark") {
+  return collectNodes(
+    <CharacterSheetPdfDocument
+      data={input}
+      labels={labels}
+      theme={theme}
+    />,
+  );
+}
+
+const nodesOf = (nodes: DocumentNode[], type: unknown) => nodes.filter((node) => node.type === type);
+const textsOf = (nodes: DocumentNode[]) => nodesOf(nodes, "#text").map((node) => String(node.props.value));
+const flattenStyle = (style: unknown): Record<string, unknown>[] =>
+  Array.isArray(style)
+    ? style.flatMap(flattenStyle)
+    : style && typeof style === "object"
+      ? [style as Record<string, unknown>]
+      : [];
+
+describe("FR-character-sheet-pdf-export — hand-filled values and page 1 columns", () => {
+  it("nominal: current HP, temp HP and remaining hit dice are blank lines to write on", () => {
+    const nodes = documentNodes(data);
+    const writeInLabels = nodesOf(nodes, WriteInField).map((node) => node.props.label);
+    expect(writeInLabels).toEqual(expect.arrayContaining([labels.currentHp, labels.tempHp, labels.hitDiceRemaining]));
+  });
+
+  it("nominal: death saves, prepared spells and slots print no state", () => {
+    const nodes = documentNodes(data);
+    // Two rows of three empty dots, whatever the character's saves.
+    expect(nodesOf(nodes, EmptyDots).map((node) => node.props.total)).toEqual([3, 3]);
+    // The prepared count of the spell overview is a write-in line, not a number.
+    const preparedStat = nodes.find((node) => node.props.label === labels.preparedSpells);
+    expect(preparedStat?.props).not.toHaveProperty("value");
+    // No prepared checkbox is filled (the overview fill used the Magic accent).
+    const pink = CHARACTER_SHEET_PDF_THEMES.dark.pink;
+    const filled = nodes.filter((node) =>
+      flattenStyle(node.props.style).some((style) => style.backgroundColor === pink),
+    );
+    expect(filled).toHaveLength(0);
+  });
+
+  it("nominal: the remaining hit dice line sits above the hit dice pills", () => {
+    const nodes = documentNodes(data);
+    const remainingIndex = nodes.findIndex(
+      (node) => node.type === WriteInField && node.props.label === labels.hitDiceRemaining,
+    );
+    const pillIndex = nodes.findIndex((node) => node.type === HitDicePill);
+    expect(remainingIndex).toBeGreaterThan(-1);
+    expect(remainingIndex).toBeLessThan(pillIndex);
+  });
+
+  it("nominal: a single class shows its hit dice in one pill", () => {
+    const pills = nodesOf(documentNodes(data), HitDicePill);
+    expect(pills.map((node) => (node.props.entry as { notation: string }).notation)).toEqual(["7d6"]);
+  });
+
+  it("edge: one pill per class for a multiclass character", () => {
+    const pills = nodesOf(
+      documentNodes({
+        ...data,
+        hitDiceEntries: [
+          { notation: "5d10", className: "Guerrier" },
+          { notation: "3d6", className: "Magicien" },
+        ],
+      }),
+      HitDicePill,
+    );
+    expect(pills).toHaveLength(2);
+  });
+
+  it("edge: without attacks the card still holds several empty ruled rows", () => {
+    const rows = nodesOf(documentNodes({ ...data, attacks: [] }), AttackRow);
+    expect(rows.length).toBeGreaterThanOrEqual(5);
+    expect(rows.every((row) => row.props.attack === null)).toBe(true);
+  });
+
+  it("nominal: attacks fill the first rows, the damage type sits under the dice", () => {
+    const nodes = documentNodes(data);
+    const rows = nodesOf(nodes, AttackRow);
+    expect(rows.length).toBeGreaterThan(data.attacks.length);
+    expect(rows.slice(0, 2).map((row) => (row.props.attack as { name: string }).name)).toEqual([
+      "Dague",
+      "Trait de feu",
+    ]);
+    const texts = textsOf(nodes);
+    expect(texts).toEqual(expect.arrayContaining(["1d4+2", "perforant"]));
+    expect(texts).not.toContain("1d4+2 perforant");
+  });
+
+  it("guard: attacks beyond the ruled rows are not drawn outside the card", () => {
+    const many = Array.from({ length: 40 }, (_, index) => ({
+      name: `Arme ${index}`,
+      bonus: "+1",
+      damage: "1d6",
+      damageType: "contondant",
+      range: "",
+    }));
+    const rows = nodesOf(documentNodes({ ...data, attacks: many }), AttackRow);
+    expect(rows.length).toBeLessThan(many.length);
+  });
+
+  it("edge: an attack name made of one long word is cut to fit its column", () => {
+    const nameText = documentNodes(data).find((node) => typeof node.props.hyphenationCallback === "function");
+    const breakWord = nameText?.props.hyphenationCallback as (word: string) => string[];
+    expect(breakWord("Arbalète-lourde-enchantée-des-profondeurs").length).toBeGreaterThan(1);
+    expect(breakWord("Dague")).toEqual(["Dague"]);
+    expect(nameText?.props.style).toMatchObject({ maxLines: 2, textOverflow: "ellipsis" });
+  });
+
+  it("nominal: the QR code links to the character page it encodes", () => {
+    const nodes = documentNodes({ ...data, qrCodeDataUrl: TINY_PNG_DATA_URL });
+    const qrLink = nodesOf(nodes, Link).find((node) => node.props.src === data.characterPageUrl);
+    expect(qrLink).toBeDefined();
+    const [qrImage] = nodesOf(collectNodes(qrLink?.props.children as React.ReactNode), Image);
+    expect(qrImage).toBeDefined();
+    // The clickable box is the QR code square: same size as the image, the right inset outside it.
+    const linkStyle = Object.assign({}, ...flattenStyle(qrLink?.props.style));
+    const imageStyle = Object.assign({}, ...flattenStyle(qrImage?.props.style));
+    expect(linkStyle.width).toBe(imageStyle.width);
+    expect(linkStyle.height).toBe(imageStyle.height);
+    expect(linkStyle.width).toBe(linkStyle.height);
+    expect(imageStyle.marginRight).toBeUndefined();
+  });
+
+  it("edge: without a QR code there is no character page link", () => {
+    const links = nodesOf(documentNodes({ ...data, qrCodeDataUrl: null }), Link);
+    expect(links.some((node) => node.props.src === data.characterPageUrl)).toBe(false);
+  });
+
+  it("nominal: the treasure card ends with unbreakable blank space to write in", () => {
+    const treasure = documentNodes(data).find((node) => node.props.title === labels.treasure);
+    expect(treasure?.props.breakable).toBeFalsy();
+    const blank = collectNodes(treasure?.props.children as React.ReactNode).find((node) =>
+      flattenStyle(node.props.style).some((style) => Number(style.minHeight) >= 100),
+    );
+    expect(blank).toBeDefined();
+  });
+
+  it("nominal: the footer links www.chariot.tools", () => {
+    const links = nodesOf(documentNodes(data), Link).filter((node) => node.props.src !== data.characterPageUrl);
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) {
+      expect(link.props.src).toBe(PDF_FOOTER_SITE_URL);
+      expect(link.props.children).toBe(PDF_FOOTER_SITE_LABEL);
+    }
+    expect(PDF_FOOTER_SITE_LABEL).toBe("www.chariot.tools");
+    expect(PDF_FOOTER_SITE_URL).toBe("https://www.chariot.tools");
+  });
 });

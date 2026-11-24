@@ -1,7 +1,12 @@
 /** @see FR-character-sheet-pdf-export */
 
 import { describe, expect, it } from "vitest";
-import { estimateTextLineCount, measureTextWidth, truncateText } from "@/lib/characterSheetPdf/pdfTextMetrics";
+import {
+  estimateTextLineCount,
+  measureTextWidth,
+  splitWordToFit,
+  truncateText,
+} from "@/lib/characterSheetPdf/pdfTextMetrics";
 
 describe("FR-character-sheet-pdf-export — measureTextWidth", () => {
   it("nominal: uses the Helvetica glyph widths, bold being wider", () => {
@@ -53,5 +58,31 @@ describe("FR-character-sheet-pdf-export — estimateTextLineCount", () => {
   it("guard: empty text or a zero width takes no line", () => {
     expect(count("   ")).toBe(0);
     expect(estimateTextLineCount("abc", 10, 0)).toBe(0);
+  });
+});
+
+describe("FR-character-sheet-pdf-export — splitWordToFit", () => {
+  it("nominal: a word that fits stays whole", () => {
+    expect(splitWordToFit("Dague", 7.2, 44)).toEqual(["Dague"]);
+  });
+
+  it("edge: a word wider than the column is cut into parts that fit with the added hyphen", () => {
+    const word = "Arbalète-lourde-enchantée-des-profondeurs";
+    const parts = splitWordToFit(word, 7.2, 44);
+    expect(parts.length).toBeGreaterThan(1);
+    expect(parts.join("")).toBe(word);
+    for (const part of parts) {
+      expect(measureTextWidth(part, 7.2), part).toBeLessThanOrEqual(44);
+    }
+  });
+
+  it("guard: no part ends on a hyphen of the word (the break would show two hyphens)", () => {
+    const parts = splitWordToFit("a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q-r-s-t", 7.2, 20);
+    expect(parts.length).toBeGreaterThan(1);
+    expect(parts.slice(0, -1).every((part) => !part.endsWith("-"))).toBe(true);
+  });
+
+  it("failure: a column narrower than one letter still makes progress, two letters per part", () => {
+    expect(splitWordToFit("Épée", 7.2, 1)).toEqual(["Ép", "ée"]);
   });
 });

@@ -26,6 +26,7 @@ export interface CharacterSheetPdfLabels {
   tempHp: string;
   hitPoints: string;
   hitDice: string;
+  hitDiceRemaining: string;
   hitPointsRoll: string;
   proficiencyBonus: string;
   inspiration: string;
@@ -136,7 +137,10 @@ export interface PdfSavingThrowRow {
 export interface PdfAttackRow {
   name: string;
   bonus: string;
+  /** Damage dice, e.g. `1d8+3` (several entries joined with ` + `). */
   damage: string;
+  /** Damage types in the same order as the dice, shown under them. */
+  damageType: string;
   range: string;
 }
 
@@ -216,7 +220,6 @@ export interface CharacterSheetPdfData {
   backgroundOrSubtype: string;
   alignment: string;
   experience: string;
-  inspiration: boolean;
   proficiencyBonus: string;
   abilities: PdfAbilityRow[];
   savingThrows: PdfSavingThrowRow[];
@@ -226,11 +229,8 @@ export interface CharacterSheetPdfData {
   initiative: string;
   speed: string;
   maxHp: string;
-  currentHp: string;
-  tempHp: string;
+  /** NPC: hit points roll notation. Player: total hit dice per class (`5d10 (Fighter)`). */
   hitDice: string;
-  deathSaveSuccesses: number;
-  deathSaveFailures: number;
   attacks: PdfAttackRow[];
   equipment: string;
   treasureText: string;

@@ -18,6 +18,7 @@ import {
   PDF_SKILL_NAME_WIDTH,
 } from "@/lib/characterSheetPdf/pdfPageGeometry";
 import { measureTextWidth } from "@/lib/characterSheetPdf/pdfTextMetrics";
+import { PDF_ATTACK_NAME_WIDTH, PDF_ATTACK_TABLE, PDF_HP_FIELD } from "@/lib/characterSheetPdf/pageOneCombatLayout";
 
 interface CharacterDetailMessages {
   player: { general: { abilities: Record<string, string>; skillNames: Record<string, string> } };
@@ -90,6 +91,37 @@ describe("FR-character-sheet-pdf-export — page 1 geometry", () => {
         labels.join(" | "),
       ).toBeLessThanOrEqual(available);
     }
+  });
+
+  it("edge: the hit points card labels of every locale fit their one-line row", () => {
+    for (const messages of localeMessages) {
+      for (const label of [
+        messages.edit.maxHP,
+        messages.edit.currentHP,
+        messages.edit.tempHP,
+        messages.pdfExport.hitDiceRemaining,
+      ]) {
+        expect(measureTextWidth(label!, PDF_HP_FIELD.labelFontSize), label).toBeLessThanOrEqual(
+          PDF_HP_FIELD.labelWidth,
+        );
+      }
+    }
+  });
+
+  it("edge: the attacks table headers of every locale fit their column; the name keeps most of the row", () => {
+    for (const messages of localeMessages) {
+      for (const [key, width] of [
+        ["attackBonusShort", PDF_ATTACK_TABLE.bonusWidth],
+        ["attackDamageType", PDF_ATTACK_TABLE.damageWidth],
+      ] as const) {
+        const label = messages.pdfExport[key]!;
+        expect(measureTextWidth(label, 6.5, "bold"), label).toBeLessThanOrEqual(width);
+      }
+    }
+    expect(measureTextWidth("1d8+3 + 1d6", PDF_ATTACK_TABLE.fontSize)).toBeLessThanOrEqual(
+      PDF_ATTACK_TABLE.damageWidth,
+    );
+    expect(PDF_ATTACK_NAME_WIDTH).toBeGreaterThan(PDF_ATTACK_TABLE.damageWidth);
   });
 
   it("layout: spell detail cards have one width, two per row across the page", () => {
