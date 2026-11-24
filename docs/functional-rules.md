@@ -4392,7 +4392,7 @@ Each initiative tracker row carries:
 
 - **Page 1 — Core sheet** (always):
   - Header identity block: avatar thumbnail (when resolvable via presigned read, variant `main`), QR code encoding the absolute character sheet URL (`{origin}/{locale}/characters/{characterId}`), character name, race/type, class & level (PJ) or CR & XP (PNJ), background or creature type, alignment, XP (PJ), player name when resolvable (PJ, optional). Header cards MUST size to content (no uniform min-height); header padding MUST stay compact so content starts near the top margin.
-    - Header layout (PJ): three text columns between the avatar and the QR code, separated by the same space: (1) character name with class & level under it (no label), vertically centered; (2) XP and race; (3) background and alignment. The QR code keeps the same inset on its right as above and below it. The header is separated from the body by a section gap larger than the gap between cards.
+    - Header layout (PJ): three text columns between the avatar and the QR code, separated by the same space: (1) character name with class & level under it (no label), vertically centered; (2) XP and race; (3) background and alignment. The QR code sits slightly further from the right edge than its inset above and below it, so it stays clear of the card's rounded corners. Clicking the QR code in the PDF opens the same character page as scanning it. The header is separated from the body by a section gap larger than the gap between cards.
   - Features & traits (`abilities`) MUST render as a structured list: each entry on its own block with the ability name emphasized and description on following line(s), not a single bullet-separated run-on paragraph.
   - Six ability scores with modifiers, inspiration (PJ), proficiency bonus, saving throws, skills (with computed bonuses), passive perception
     - Passive perception closes the ability scores column (last tile, label in the General accent color); that column matches the height of the skills column next to it
@@ -4400,14 +4400,18 @@ Each initiative tracker row carries:
     - The body is split in two equal halves: ability scores and skills columns on the left half, combat and narrative columns (same width) on the right half
   - Combat block: AC, initiative, speed, current/max/temp HP, hit dice (PJ) or HP roll notation (PNJ)
   - Death saves (PJ only), attacks & spell attacks, equipment & treasure currencies, proficiencies/languages, features & traits (`abilities`)
+  - Hit dice (PJ): a « remaining hit dice » line left blank, then one pill per class (class + total dice notation), a single class included
+  - Column heights: in the combat column, attacks & spellcasting and equipment share the height left under hit points equally (50/50) down to the bottom of the page; in the narrative column, features & traits always takes the height left under the narrative cards
+  - Attacks table: the rows fill the attacks card, empty rows included, each row two text lines high with a bottom separator and its text vertically centered; the damage type sits under the damage dice. An attack name takes up to two lines then ends with `…`; a single word too long for its column is cut so it never runs over the next columns
 - **Page 2 — Biography** (always):
   - Appearance (age, height, weight, eyes, skin, hair, description)
   - Personality traits, ideals, bonds, flaws, allies & organizations, backstory (PJ) or equivalent narrative fields
+  - Treasure card (last card of the biography page): its text, then blank space down to the bottom of the page (never less than a few lines) for items added by hand; the card is never split across pages
   - Continuation of features & traits when page 1 overflow occurs (same structured list format). Features MUST stay on page 1 as long as they fit in the space left at the bottom of the narrative column (measured from the actual page 1 layout: header height, narrative cards above); only the features that do not fit move to the continuation
 - **Page 3 — Spellcasting** (conditional):
   - Included only when `spellcasting` has at least one entry with spells or slots
   - Per class block: spellcasting ability, save DC, attack bonus, cantrips, prepared/known spells by level, slot usage grid (PJ) or innate/uses-per-day grid (PNJ innate)
-  - Spell overview sheet: header facts (class, ability, prepared count, save DC, attack bonus) share one neutral style (no accent color on the class), each label on a single line, the facts spread with the same horizontal space between them. Levels sit in three equal-width columns — cantrips, 1, 2 | 3, 4, 5 | 6, 7, 8, 9 — whose level cards fill the column height (no empty space at the bottom). Lines fill each card, every line including the last has a bottom separator, and every line of levels 1–9 has a prepared checkbox (PJ), filled for prepared spells
+  - Spell overview sheet: header facts (class, ability, prepared count, save DC, attack bonus) share one neutral style (no accent color on the class), each label on a single line, the facts spread with the same horizontal space between them. Levels sit in three equal-width columns — cantrips, 1, 2 | 3, 4, 5 | 6, 7, 8, 9 — whose level cards fill the column height (no empty space at the bottom). Lines fill each card, every line including the last has a bottom separator, and every line of levels 1–9 has a prepared checkbox (PJ), never filled (ticked by hand)
   - Spell detail cards (after the overview): two per row, a card MUST NOT exceed half of the page content height. A description longer than the card allows MUST be cut with an ellipsis (`…`); the rest MUST NOT be rendered anywhere (no continuation page, no card split across pages)
 
 **Visual treatment** (FR-frontend-design):
@@ -4419,7 +4423,12 @@ Each initiative tracker row carries:
 - Cards follow the app's sober card style (`docs/design.md` §5.3): no border, rounded corners and padding equivalent to the app `Card` scaled to PDF units, consistent gaps between cards; pills have no border (raised fill only); lines inside a card are limited to minor separators (table rows, sub-sections)
 - Each card holds its own title (no pill/badge above the card): title text in the section accent color, bold, a size step above the card body text
 - No tinted box nested in a card: label/value cells are fact cells (no background, no vertical rule)
-- Chariot wordmark or app name in PDF footer on each page
+- Chariot wordmark or app name in PDF footer on each page; the footer shows the site address as `www.chariot.tools`, a clickable link to `https://www.chariot.tools`
+
+**Hand-filled values** (play-time state the player writes on the printout or the PDF):
+
+- The PDF MUST NOT print the value of: current HP, temporary HP, death save successes and failures, inspiration, prepared spells (overview checkboxes and prepared count) and remaining spell slots; their labels, boxes, dots, checkboxes or pips stay, empty
+- A value left blank for the player to write in MUST show a bottom line to write on (current HP, temporary HP, remaining hit dice, prepared count)
 - Contrast MUST meet WCAG AA (4.5:1) for normal text in both themes
 
 **Data mapping**:
@@ -4455,6 +4464,13 @@ Each initiative tracker row carries:
 - Edge: Long text fields truncated or wrapped without layout overflow crash
 - Edge: Features that fit in the free space of the page 1 narrative column stay on page 1 (no continuation page); short narrative texts leave more room for features than long ones
 - Edge: Spell with a very long description → its card is capped at half the page height, the description ends with `…`, and no extra page is added for it
+- Nominal: character with current HP, temp HP, death saves, inspiration and prepared spells set → none of these values appear in the PDF; their write-in lines, dots and checkboxes are empty
+- Nominal: single-class character → hit dice shown in a pill, followed by an empty « remaining hit dice » write-in line
+- Edge: no attack → the attacks card still fills its half of the column with empty ruled rows; an attack with a damage type shows the type under the dice
+- Unit: footer link points to `https://www.chariot.tools` and reads `www.chariot.tools`
+- Unit: the QR code is a link to the character page URL it encodes; no QR code, no link
+- Edge: an attack name of one long word is cut to fit its column, on two lines at most
+- Nominal: the treasure card ends with blank space and moves whole to the next page when the biography page is full
 - Unit: cards have no border and render their title inside the card in the accent color; light-theme accent and muted text colors reach 4.5:1 on the card background
 - Unit: spell overview columns hold levels 0–2, 3–5 and 6–9; every card gets at least as many lines as listed spells, and a level with more spells than fit is capped so the sheet stays on one LETTER page
 - Failure: Avatar fetch failure → PDF still generated without image
