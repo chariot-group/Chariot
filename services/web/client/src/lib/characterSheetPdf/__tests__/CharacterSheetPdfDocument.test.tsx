@@ -73,8 +73,18 @@ const data: CharacterSheetPdfData = {
     ["INT", "Intelligence", 18, "+4"],
     ["SAG", "Sagesse", 12, "+1"],
     ["CHA", "Charisme", 10, "+0"],
-  ].map(([abbr, name, score, modifier]) => ({ abbr: String(abbr), name: String(name), score: Number(score), modifier: String(modifier) })),
-  savingThrows: ["FOR", "DEX", "CON", "INT", "SAG", "CHA"].map((abbr, i) => ({ abbr, bonus: `+${i}`, proficient: i === 3, masteryLevel: i === 3 ? 1 : 0 })),
+  ].map(([abbr, name, score, modifier]) => ({
+    abbr: String(abbr),
+    name: String(name),
+    score: Number(score),
+    modifier: String(modifier),
+  })),
+  savingThrows: ["FOR", "DEX", "CON", "INT", "SAG", "CHA"].map((abbr, i) => ({
+    abbr,
+    bonus: `+${i}`,
+    proficient: i === 3,
+    masteryLevel: i === 3 ? 1 : 0,
+  })),
   skills: Object.entries(labels.skillNames).map(([key, name], i) => ({
     key,
     name,
@@ -108,10 +118,21 @@ const data: CharacterSheetPdfData = {
   weapons: "Dagues, fléchettes, frondes, bâtons, arbalètes légères",
   armors: "Aucune",
   features: [
-    { name: "Restauration arcanique", description: "Une fois par jour, après un repos court, récupère des emplacements de sorts." },
+    {
+      name: "Restauration arcanique",
+      description: "Une fois par jour, après un repos court, récupère des emplacements de sorts.",
+    },
     { name: "Sculpter les sorts", description: "Protège des alliés des effets de vos sorts d'évocation." },
   ],
-  appearance: { age: "112", height: "1,75 m", weight: "60 kg", eyes: "Verts", skin: "Pâle", hair: "Argent", description: "Silhouette élancée, toujours couverte d'encre." },
+  appearance: {
+    age: "112",
+    height: "1,75 m",
+    weight: "60 kg",
+    eyes: "Verts",
+    skin: "Pâle",
+    hair: "Argent",
+    description: "Silhouette élancée, toujours couverte d'encre.",
+  },
   personalityTraits: "Curieuse et distraite.",
   ideals: "Le savoir avant tout.",
   bonds: "Mon grimoire est ma vie.",
@@ -131,7 +152,12 @@ const data: CharacterSheetPdfData = {
         3: [spell("Boule de feu", 3, 12), spell("Contresort", 3, 2)],
         4: [spell("Porte dimensionnelle", 4, 1)],
       },
-      slotsByLevel: { 1: { used: 1, total: 4 }, 2: { used: 0, total: 3 }, 3: { used: 2, total: 3 }, 4: { used: 0, total: 1 } },
+      slotsByLevel: {
+        1: { used: 1, total: 4 },
+        2: { used: 0, total: 3 },
+        3: { used: 2, total: 3 },
+        4: { used: 0, total: 1 },
+      },
       isInnate: false,
     },
   ],
@@ -143,7 +169,9 @@ const data: CharacterSheetPdfData = {
 
 async function renderPages(input: CharacterSheetPdfData, theme: CharacterSheetPdfTheme) {
   const buffer = await renderToBuffer(
-    React.createElement(CharacterSheetPdfDocument, { data: input, labels, theme }) as Parameters<typeof renderToBuffer>[0],
+    React.createElement(CharacterSheetPdfDocument, { data: input, labels, theme }) as Parameters<
+      typeof renderToBuffer
+    >[0],
   );
   const raw = buffer.toString("latin1");
   return {
@@ -153,6 +181,9 @@ async function renderPages(input: CharacterSheetPdfData, theme: CharacterSheetPd
 }
 
 const LETTER_MEDIA_BOX = "/MediaBox [0 0 612 792]";
+/** 1×1 transparent PNG, enough to exercise the avatar and QR code image slots. */
+const TINY_PNG_DATA_URL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 
 const denseData: CharacterSheetPdfData = {
   ...data,
@@ -190,5 +221,104 @@ describe("FR-character-sheet-pdf-export — CharacterSheetPdfDocument rendering"
     const { mediaBoxes } = await renderPages(denseData, "dark");
     expect(mediaBoxes.length).toBeGreaterThan(3);
     expect(mediaBoxes.every((box) => box === LETTER_MEDIA_BOX)).toBe(true);
+  }, 30000);
+
+  it("edge: avatar and QR code in the header keep the nominal page count", async () => {
+    const { count, mediaBoxes } = await renderPages(
+      { ...data, avatarDataUrl: TINY_PNG_DATA_URL, qrCodeDataUrl: TINY_PNG_DATA_URL },
+      "dark",
+    );
+    expect(count).toBe(6);
+    expect(mediaBoxes.every((box) => box === LETTER_MEDIA_BOX)).toBe(true);
+  }, 30000);
+
+  it("edge: four classes grow the header without adding a page", async () => {
+    const classEntries = ["Magicien", "Guerrier", "Clerc", "Roublard"].map((name, index) => ({
+      name,
+      subclass: index % 2 === 0 ? "Sous-classe" : "",
+      level: index + 1,
+      label: `${name} ${index + 1}`,
+    }));
+    const { count, mediaBoxes } = await renderPages({ ...data, classEntries }, "dark");
+    expect(count).toBe(6);
+    expect(mediaBoxes.every((box) => box === LETTER_MEDIA_BOX)).toBe(true);
+  }, 30000);
+
+  it("edge: long texts and many features overflow onto extra LETTER pages instead of breaking the layout", async () => {
+    const longText = (sentence: string, times: number) => Array.from({ length: times }, () => sentence).join(" ");
+    const { count, mediaBoxes } = await renderPages(
+      {
+        ...data,
+        equipment: longText("Corde de chanvre de 15 mètres, sac de couchage, outre d'eau, rations.", 40),
+        backstory: longText("Elle a quitté sa cité natale pour retrouver un grimoire perdu.", 120),
+        alliesAndOrgs: longText("La Tour d'Argent et ses archivistes.", 30),
+        languages: longText("Commun, elfique, draconique", 10),
+        features: Array.from({ length: 24 }, (_, index) => ({
+          name: `Capacité ${index + 1}`,
+          description: longText("Une fois par repos court, récupère un emplacement de sort.", (index % 3) + 1),
+        })),
+      },
+      "light",
+    );
+    expect(count).toBeGreaterThan(6);
+    expect(mediaBoxes.every((box) => box === LETTER_MEDIA_BOX)).toBe(true);
+  }, 30000);
+
+  it("edge: an empty sheet renders blank fields on the core and biography pages", async () => {
+    const empty: CharacterSheetPdfData = {
+      ...data,
+      displayName: "",
+      race: "",
+      subrace: "",
+      classPrimary: "",
+      subclassPrimary: "",
+      classEntries: [],
+      backgroundOrSubtype: "",
+      alignment: "",
+      experience: "",
+      attacks: [],
+      equipment: "",
+      treasureText: "",
+      features: [],
+      personalityTraits: "",
+      ideals: "",
+      bonds: "",
+      flaws: "",
+      alliesAndOrgs: "",
+      backstory: "",
+      hasSpellcasting: false,
+      spellcastingBlocks: [],
+    };
+    const { count, mediaBoxes } = await renderPages(empty, "dark");
+    expect(count).toBe(2);
+    expect(mediaBoxes.every((box) => box === LETTER_MEDIA_BOX)).toBe(true);
+  }, 30000);
+
+  it("edge: an NPC with innate spellcasting renders its overview on one LETTER page", async () => {
+    const innate = (name: string, usesPerDay: number | null) => ({ ...spell(name, 1, 1), usesPerDay });
+    const { count, mediaBoxes } = await renderPages(
+      {
+        ...data,
+        isPlayer: false,
+        classOrCr: "FP 5 (1800 XP)",
+        spellcastingBlocks: [
+          {
+            ...data.spellcastingBlocks[0]!,
+            isInnate: true,
+            cantrips: [innate("Lumière", null)],
+            spellsByLevel: { 1: [innate("Charme-personne", 3)], 2: [innate("Vol", 1), innate("Invisibilité", 1)] },
+            slotsByLevel: {},
+          },
+        ],
+      },
+      "dark",
+    );
+    expect(count).toBeGreaterThanOrEqual(4);
+    expect(mediaBoxes.every((box) => box === LETTER_MEDIA_BOX)).toBe(true);
+  }, 30000);
+
+  it("failure: an avatar that could not be fetched (null) still renders the full sheet", async () => {
+    const { count } = await renderPages({ ...data, avatarDataUrl: null }, "dark");
+    expect(count).toBe(6);
   }, 30000);
 });
