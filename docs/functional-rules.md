@@ -4392,25 +4392,33 @@ Each initiative tracker row carries:
 
 - **Page 1 — Core sheet** (always):
   - Header identity block: avatar thumbnail (when resolvable via presigned read, variant `main`), QR code encoding the absolute character sheet URL (`{origin}/{locale}/characters/{characterId}`), character name, race/type, class & level (PJ) or CR & XP (PNJ), background or creature type, alignment, XP (PJ), player name when resolvable (PJ, optional). Header cards MUST size to content (no uniform min-height); header padding MUST stay compact so content starts near the top margin.
+    - Header layout (PJ): three text columns between the avatar and the QR code, separated by the same space: (1) character name with class & level under it (no label), vertically centered; (2) XP and race; (3) background and alignment. The QR code keeps the same inset on its right as above and below it. The header is separated from the body by a section gap larger than the gap between cards.
   - Features & traits (`abilities`) MUST render as a structured list: each entry on its own block with the ability name emphasized and description on following line(s), not a single bullet-separated run-on paragraph.
   - Six ability scores with modifiers, inspiration (PJ), proficiency bonus, saving throws, skills (with computed bonuses), passive perception
+    - Passive perception closes the ability scores column (last tile, label in the General accent color); that column matches the height of the skills column next to it
+    - Inspiration, proficiency bonus and the cards below them use the same gap as every other card; the two skill columns are visibly separated
+    - The body is split in two equal halves: ability scores and skills columns on the left half, combat and narrative columns (same width) on the right half
   - Combat block: AC, initiative, speed, current/max/temp HP, hit dice (PJ) or HP roll notation (PNJ)
   - Death saves (PJ only), attacks & spell attacks, equipment & treasure currencies, proficiencies/languages, features & traits (`abilities`)
 - **Page 2 — Biography** (always):
   - Appearance (age, height, weight, eyes, skin, hair, description)
   - Personality traits, ideals, bonds, flaws, allies & organizations, backstory (PJ) or equivalent narrative fields
-  - Continuation of features & traits when page 1 overflow occurs (same structured list format)
+  - Continuation of features & traits when page 1 overflow occurs (same structured list format). Features MUST stay on page 1 as long as they fit in the space left at the bottom of the narrative column (measured from the actual page 1 layout: header height, narrative cards above); only the features that do not fit move to the continuation
 - **Page 3 — Spellcasting** (conditional):
   - Included only when `spellcasting` has at least one entry with spells or slots
   - Per class block: spellcasting ability, save DC, attack bonus, cantrips, prepared/known spells by level, slot usage grid (PJ) or innate/uses-per-day grid (PNJ innate)
+  - Spell overview sheet: header facts (class, ability, prepared count, save DC, attack bonus) share one neutral style (no accent color on the class). Levels sit in three equal-width columns — cantrips, 1, 2 | 3, 4, 5 | 6, 7, 8, 9 — whose level cards fill the column height (no empty space at the bottom). Lines fill each card, every line including the last has a bottom separator, and every line of levels 1–9 has a prepared checkbox (PJ), filled for prepared spells
+  - Spell detail cards (after the overview): two per row, a card MUST NOT exceed half of the page content height. A description longer than the card allows MUST be cut with an ellipsis (`…`); the rest MUST NOT be rendered anywhere (no continuation page, no card split across pages)
 
 **Visual treatment** (FR-frontend-design):
 
 - The user MUST choose between two export themes before download:
-  - **Dark** (Chariot app): background `--card` (`#19191c`) / `--background` (`#0c0c0c`), body text `--foreground` / `--gray-light`, borders `white/10` or `--gray`
-  - **Light** (print-friendly): background white (`#ffffff`), body text dark (`#1a1a1a`), borders `#d6d6d6`
-- Both themes share the same section accent colors: General `blue`, Combat `red`, Magic `pink`, Inventory `yellow`, History `green`
-- Rounded corners on field boxes (`rounded-[15px]` equivalent in PDF units)
+  - **Dark** (Chariot app): page `--background` (`#0c0c0f`), cards `--card` (`#17171a`), pills / raised rows `--gray-middle-light` (`#1f1f22`), text `--card-foreground` (`#f7f7f7`), secondary text `--muted-foreground` (`#98989c`), minor separators `--border` (`#353538`)
+  - **Light** (print-friendly): page white (`#ffffff`), cards and raised rows in the same cool-tinted neutral scale (no pure grays), dark text, secondary text and separators meeting the contrast rule below
+- Both themes share the same section accent colors: General `blue`, Combat `red`, Magic `pink`, Inventory `yellow`, History `green`; the light theme uses darker shades of the same hues so they stay readable as text
+- Cards follow the app's sober card style (`docs/design.md` §5.3): no border, rounded corners and padding equivalent to the app `Card` scaled to PDF units, consistent gaps between cards; pills have no border (raised fill only); lines inside a card are limited to minor separators (table rows, sub-sections)
+- Each card holds its own title (no pill/badge above the card): title text in the section accent color, bold, a size step above the card body text
+- No tinted box nested in a card: label/value cells are fact cells (no background, no vertical rule)
 - Chariot wordmark or app name in PDF footer on each page
 - Contrast MUST meet WCAG AA (4.5:1) for normal text in both themes
 
@@ -4445,6 +4453,10 @@ Each initiative tracker row carries:
 - Nominal: NPC sheet / sidebar row → export control disabled with coming-soon tooltip; no PDF generated
 - Edge: Character without spellcasting → 2 pages only (Player)
 - Edge: Long text fields truncated or wrapped without layout overflow crash
+- Edge: Features that fit in the free space of the page 1 narrative column stay on page 1 (no continuation page); short narrative texts leave more room for features than long ones
+- Edge: Spell with a very long description → its card is capped at half the page height, the description ends with `…`, and no extra page is added for it
+- Unit: cards have no border and render their title inside the card in the accent color; light-theme accent and muted text colors reach 4.5:1 on the card background
+- Unit: spell overview columns hold levels 0–2, 3–5 and 6–9; every card gets at least as many lines as listed spells, and a level with more spells than fit is capped so the sheet stays on one LETTER page
 - Failure: Avatar fetch failure → PDF still generated without image
 - Unit: export filename builder strips unsafe characters
 - Unit: skill bonus mapping matches `calculateSkillBonus` for sample stats
