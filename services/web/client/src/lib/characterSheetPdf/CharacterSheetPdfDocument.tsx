@@ -126,9 +126,9 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
       fontSize: 8.4,
       fontFamily: "Helvetica",
     },
-    // A non-wrapping page shrinks to its content (the Page node ignores `height`): its min height
-    // pins it to LETTER and lets the level columns stretch to the bottom.
-    spellOverviewPage: { minHeight: PDF_PAGE_HEIGHT },
+    // A non-wrapping page takes its content height (the Page node ignores `height`): min and max
+    // pin it to LETTER, so the level columns stretch to the bottom and float rounding cannot grow it.
+    spellOverviewPage: { minHeight: PDF_PAGE_HEIGHT, maxHeight: PDF_PAGE_HEIGHT },
     footer: {
       position: "absolute",
       bottom: 16,
@@ -369,15 +369,17 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
     },
 
     // Spell overview page
+    // Facts take their content width and spread evenly: the same space between each of them.
     spellOverviewHeader: {
       flexDirection: "row",
       alignItems: "flex-end",
-      gap: o.headerColumnGap,
+      justifyContent: "space-between",
+      gap: o.headerMinGap,
       paddingVertical: o.headerPaddingVertical,
       paddingHorizontal: o.headerPaddingHorizontal,
       marginBottom: PDF_SECTION_GAP,
     },
-    spellOverviewStatCell: { flex: 1, minWidth: 0 },
+    spellOverviewStatCell: { flexShrink: 1, minWidth: 0 },
     spellOverviewStatLabel: {
       fontSize: o.statLabelFontSize,
       lineHeight: o.statLabelLineHeight,
@@ -385,7 +387,7 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
       fontWeight: "bold",
       color: t.textMuted,
       textTransform: "uppercase",
-      maxLines: o.statLabelMaxLines,
+      maxLines: 1,
       textOverflow: "ellipsis",
     },
     spellOverviewStatValue: {

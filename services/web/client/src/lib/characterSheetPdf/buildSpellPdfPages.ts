@@ -164,11 +164,11 @@ function getLevelGroupForOverview(
 export const PDF_SPELL_OVERVIEW = {
   headerPaddingVertical: 9,
   headerPaddingHorizontal: 12,
-  headerColumnGap: 10,
+  /** Smallest space between two header facts; the facts spread evenly over the card width. */
+  headerMinGap: 12,
+  /** Labels stay on one line (see the label fit test for every locale). */
   statLabelFontSize: 5.8,
   statLabelLineHeight: 1.2,
-  /** Long translated labels may wrap to two lines. */
-  statLabelMaxLines: 2,
   statLabelMarginBottom: 2,
   statValueFontSize: 10,
   statValueLineHeight: 1.15,
@@ -193,7 +193,7 @@ const PDF_SPELL_OVERVIEW_COLUMN_COUNT = SPELL_OVERVIEW_COLUMN_LEVELS.length;
 
 const PDF_SPELL_OVERVIEW_HEADER_HEIGHT =
   2 * PDF_SPELL_OVERVIEW.headerPaddingVertical +
-  PDF_SPELL_OVERVIEW.statLabelMaxLines * PDF_SPELL_OVERVIEW.statLabelFontSize * PDF_SPELL_OVERVIEW.statLabelLineHeight +
+  PDF_SPELL_OVERVIEW.statLabelFontSize * PDF_SPELL_OVERVIEW.statLabelLineHeight +
   PDF_SPELL_OVERVIEW.statLabelMarginBottom +
   PDF_SPELL_OVERVIEW.statValueFontSize * PDF_SPELL_OVERVIEW.statValueLineHeight;
 

@@ -4407,7 +4407,7 @@ Each initiative tracker row carries:
 - **Page 3 — Spellcasting** (conditional):
   - Included only when `spellcasting` has at least one entry with spells or slots
   - Per class block: spellcasting ability, save DC, attack bonus, cantrips, prepared/known spells by level, slot usage grid (PJ) or innate/uses-per-day grid (PNJ innate)
-  - Spell overview sheet: header facts (class, ability, prepared count, save DC, attack bonus) share one neutral style (no accent color on the class). Levels sit in three equal-width columns — cantrips, 1, 2 | 3, 4, 5 | 6, 7, 8, 9 — whose level cards fill the column height (no empty space at the bottom). Lines fill each card, every line including the last has a bottom separator, and every line of levels 1–9 has a prepared checkbox (PJ), filled for prepared spells
+  - Spell overview sheet: header facts (class, ability, prepared count, save DC, attack bonus) share one neutral style (no accent color on the class), each label on a single line, the facts spread with the same horizontal space between them. Levels sit in three equal-width columns — cantrips, 1, 2 | 3, 4, 5 | 6, 7, 8, 9 — whose level cards fill the column height (no empty space at the bottom). Lines fill each card, every line including the last has a bottom separator, and every line of levels 1–9 has a prepared checkbox (PJ), filled for prepared spells
   - Spell detail cards (after the overview): two per row, a card MUST NOT exceed half of the page content height. A description longer than the card allows MUST be cut with an ellipsis (`…`); the rest MUST NOT be rendered anywhere (no continuation page, no card split across pages)
 
 **Visual treatment** (FR-frontend-design):
