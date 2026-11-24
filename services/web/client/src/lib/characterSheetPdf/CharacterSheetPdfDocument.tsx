@@ -21,6 +21,7 @@ import {
   PDF_CARD,
   PDF_CARD_GAP,
   PDF_CARD_RADIUS,
+  PDF_COMBAT_TILE,
   PDF_FEATURE_ITEM,
   PDF_PAGE_HEIGHT,
   PDF_PAGE_ONE_HALF_WIDTH,
@@ -311,10 +312,21 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
     profValue: { fontSize: 7.5, flex: 1, lineHeight: 1.35 },
     proficienciesCard: { minHeight: 90, marginBottom: 0 },
 
-    statTile: { flex: 1, paddingHorizontal: 4, paddingVertical: 5, gap: 1, minWidth: 0 },
-    statTileLabel: { fontSize: 6, color: t.textMuted, textTransform: "uppercase", textAlign: "center" },
+    statTile: {
+      flex: 1,
+      paddingHorizontal: PDF_COMBAT_TILE.paddingHorizontal,
+      paddingVertical: 5,
+      gap: 1,
+      minWidth: 0,
+    },
+    statTileLabel: {
+      fontSize: PDF_COMBAT_TILE.labelFontSize,
+      color: t.textMuted,
+      textTransform: "uppercase",
+      textAlign: "center",
+    },
     statTileValue: { fontSize: 12, fontWeight: "bold", textAlign: "center" },
-    combatStatsRow: { flexDirection: "row", gap: 5, marginBottom: PDF_CARD_GAP },
+    combatStatsRow: { flexDirection: "row", gap: PDF_COMBAT_TILE.gap, marginBottom: PDF_CARD_GAP },
 
     hitDiceBlock: { marginBottom: 4 },
     hitDiceChips: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginTop: 3 },
@@ -1157,7 +1169,7 @@ export function CharacterSheetPdfDocument({ data, labels, theme }: CharacterShee
               {[
                 { label: labels.armorClass, value: data.armorClass },
                 { label: labels.initiativeShort, value: data.initiative },
-                { label: labels.speed, value: clampText(data.speed, 14) },
+                { label: labels.speedShort, value: clampText(data.speed, 14) },
               ].map((stat) => (
                 <View key={stat.label} style={[styles.tile, styles.statTile]}>
                   <Text style={styles.statTileLabel}>{stat.label}</Text>

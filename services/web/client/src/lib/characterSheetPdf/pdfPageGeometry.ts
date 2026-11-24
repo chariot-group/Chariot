@@ -81,3 +81,14 @@ export const PDF_SKILL_NAME_WIDTH =
   2 * PDF_SKILL_CELL.gap -
   PDF_SKILL_CELL.bonusWidth -
   PDF_SKILL_CELL.bonusGap;
+
+/** Page 1 AC / initiative / speed tiles: three per row across the combat column. */
+export const PDF_COMBAT_TILE = {
+  gap: 5,
+  paddingHorizontal: 4,
+  labelFontSize: 6,
+} as const;
+
+/** Label width inside a combat tile (labels are uppercase). */
+export const PDF_COMBAT_TILE_LABEL_WIDTH =
+  (PDF_PAGE_ONE_NARRATIVE_COLUMN_WIDTH - 2 * PDF_COMBAT_TILE.gap) / 3 - 2 * PDF_COMBAT_TILE.paddingHorizontal;

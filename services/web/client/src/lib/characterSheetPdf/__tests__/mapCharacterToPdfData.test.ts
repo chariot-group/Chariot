@@ -22,7 +22,7 @@ const minimalLabels: CharacterSheetPdfLabels = {
   initiativeShort: "Init.",
   languages: "Languages",
   qrCodeHint: "Open sheet",
-  speed: "Speed",
+  speedShort: "Speed",
   maxHp: "Max HP",
   currentHp: "HP",
   tempHp: "Temp HP",

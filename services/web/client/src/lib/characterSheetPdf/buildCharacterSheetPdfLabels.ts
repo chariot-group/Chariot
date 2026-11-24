@@ -67,7 +67,7 @@ export function buildCharacterSheetPdfLabels(input: BuildCharacterSheetPdfLabels
     initiativeShort: tPdf("initiativeShort"),
     languages: tPdf("languages"),
     qrCodeHint: tPdf("qrCodeHint"),
-    speed: tPdf("speed"),
+    speedShort: tPdf("speedShort"),
     maxHp: tEdit("maxHP"),
     currentHp: tEdit("currentHP"),
     tempHp: tEdit("tempHP"),

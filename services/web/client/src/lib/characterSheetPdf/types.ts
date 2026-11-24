@@ -21,7 +21,7 @@ export interface CharacterSheetPdfLabels {
   initiativeShort: string;
   languages: string;
   qrCodeHint: string;
-  speed: string;
+  speedShort: string;
   maxHp: string;
   currentHp: string;
   tempHp: string;

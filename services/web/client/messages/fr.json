@@ -897,7 +897,7 @@
       "pageOf": "Page {page} / {total}",
       "playerName": "Nom du joueur",
       "classAndLevel": "Classe et niveau",
-      "speed": "Vitesse",
+      "speedShort": "Vitesse",
       "armorClass": "CA",
       "initiativeShort": "Init.",
       "languages": "Langues",
