@@ -84,7 +84,6 @@ export interface CharacterSheetPdfLabels {
   spellHealing: string;
   spellPreparedLabel: string;
   spellUnpreparedLabel: string;
-  spellDescriptionContinuation: string;
   npcAtWill: string;
   npcUsesPerDay: string;
   spellUsesTracker: string;
@@ -185,16 +184,13 @@ export interface PdfSpellLevelGroup {
   slots: { used: number; total: number } | null;
 }
 
-export type SpellPdfPageKind = "overview" | "detailBatch" | "detailContinuation";
+export type SpellPdfPageKind = "overview" | "details";
 
 export interface SpellPdfPageDescriptor {
   kind: SpellPdfPageKind;
   blockIndex: number;
-  /** Up to six spells rendered on one compact detail page. */
+  /** Details only: spells in display order, two cards per row, each capped at half a page. */
   spells?: PdfSpellRow[];
-  /** Single spell for description overflow pages. */
-  spell?: PdfSpellRow;
-  descriptionText?: string;
 }
 
 export interface PdfSpellcastingBlock {

@@ -127,7 +127,6 @@ export function buildCharacterSheetPdfLabels(input: BuildCharacterSheetPdfLabels
     spellHealing: tMagic("healing"),
     spellPreparedLabel: tMagic("spellPreparedLabel"),
     spellUnpreparedLabel: tMagic("spellUnpreparedBadge"),
-    spellDescriptionContinuation: tPdf("spellDescriptionContinuation"),
     npcAtWill: tMagic("npc.atWill"),
     npcUsesPerDay: tMagic("npc.usesPerDay", { count: "{count}" }),
     spellUsesTracker: tMagic("spellDetails.usesTracker"),

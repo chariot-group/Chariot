@@ -82,7 +82,6 @@ const minimalLabels: CharacterSheetPdfLabels = {
   spellHealing: "Healing",
   spellPreparedLabel: "Prepared",
   spellUnpreparedLabel: "Unprepared",
-  spellDescriptionContinuation: "Description (cont.)",
   npcAtWill: "At will",
   npcUsesPerDay: "{count}/day",
   spellUsesTracker: "Uses",
