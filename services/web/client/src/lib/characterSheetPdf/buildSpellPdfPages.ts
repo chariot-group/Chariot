@@ -47,9 +47,9 @@ export const PDF_SPELL_DETAIL_CARD = {
   descriptionLineHeight: 1.4,
 } as const;
 
-/** Inner width of a detail card: two cards per row across the page content width. */
-const PDF_SPELL_DETAIL_CARD_INNER_WIDTH =
-  (PDF_PAGE_CONTENT_WIDTH - PDF_SPELL_DETAIL_GAP) / 2 - 2 * PDF_SPELL_DETAIL_CARD.paddingHorizontal;
+/** Detail card width: two cards per row across the page content width, a lone card included. */
+export const PDF_SPELL_DETAIL_CARD_WIDTH = (PDF_PAGE_CONTENT_WIDTH - PDF_SPELL_DETAIL_GAP) / 2;
+const PDF_SPELL_DETAIL_CARD_INNER_WIDTH = PDF_SPELL_DETAIL_CARD_WIDTH - 2 * PDF_SPELL_DETAIL_CARD.paddingHorizontal;
 
 /** Pills are short facts with more capitals and digits than running text. */
 const PDF_HELVETICA_PILL_CHAR_EM = 0.55;

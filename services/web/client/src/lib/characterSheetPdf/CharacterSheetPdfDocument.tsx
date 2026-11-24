@@ -39,6 +39,7 @@ import {
   getSpellDetailCardLayout,
   PDF_SPELL_DETAIL_CARD,
   PDF_SPELL_DETAIL_CARD_MAX_HEIGHT,
+  PDF_SPELL_DETAIL_CARD_WIDTH,
   PDF_SPELL_DETAIL_GAP,
   PDF_SPELL_DETAIL_PAGE_TITLE_HEIGHT,
   PDF_SPELL_OVERVIEW,
@@ -452,10 +453,9 @@ function createStyles(t: CharacterSheetPdfThemeTokens) {
       marginBottom: PDF_SPELL_DETAIL_PAGE_TITLE_HEIGHT - 14 * 1.2,
     },
     spellDetailRow: { flexDirection: "row", gap: PDF_SPELL_DETAIL_GAP, marginBottom: PDF_SPELL_DETAIL_GAP },
-    spellDetailSpacer: { flex: 1 },
+    // Fixed width: a lone card on the last row keeps the width of the others.
     spellCard: {
-      flex: 1,
-      minWidth: 0,
+      width: PDF_SPELL_DETAIL_CARD_WIDTH,
       maxHeight: PDF_SPELL_DETAIL_CARD_MAX_HEIGHT,
       overflow: "hidden",
       backgroundColor: t.cardBackground,
@@ -990,7 +990,6 @@ function SpellDetailPages({
           {row.map((spell, index) => (
             <SpellDetailCard key={`${spell.name}-${index}`} spell={spell} block={block} labels={labels} styles={styles} />
           ))}
-          {row.length === 1 ? <View style={styles.spellDetailSpacer} /> : null}
         </View>
       ))}
     </>
