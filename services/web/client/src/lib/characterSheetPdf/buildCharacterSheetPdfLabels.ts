@@ -106,7 +106,7 @@ export function buildCharacterSheetPdfLabels(input: BuildCharacterSheetPdfLabels
     spellAttackBonus: tEdit("spellAttackBonus"),
     spellLevel: tEdit("spellLevelLabel"),
     spellName: tEdit("spellName"),
-    attackName: tCommon("name"),
+    attackName: tBattle("name"),
     attackBonusHeader: tPdf("attackBonusShort"),
     attackDamageHeader: tPdf("attackDamageType"),
     proficienciesContinuation: tPdf("proficienciesContinuation"),

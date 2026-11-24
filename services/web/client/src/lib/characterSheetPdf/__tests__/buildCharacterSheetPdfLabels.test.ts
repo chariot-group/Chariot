@@ -31,4 +31,21 @@ describe("buildCharacterSheetPdfLabels", () => {
     expect(labels.pageOf).toBe("Page {page} / {total}");
     expect(labels.pageOf.replace("{page}", "2").replace("{total}", "5")).toBe("Page 2 / 5");
   });
+
+  it("takes the attack name header from the battle namespace, not the yes/no common mapper", () => {
+    const labels = buildCharacterSheetPdfLabels({
+      tPdf: identityT("pdf"),
+      tGeneral: identityT("general"),
+      tBattle: identityT("battle"),
+      tEdit: identityT("edit"),
+      tNpc: identityT("npc"),
+      tClass: identityT("class"),
+      tAlignment: identityT("alignment"),
+      // Mirrors the export hook: only yes/no are mapped, anything else falls back to "no".
+      tCommon: (key) => (key === "yes" ? "pdf.yes" : "pdf.no"),
+      tMagic: identityT("magic"),
+    });
+
+    expect(labels.attackName).toBe("battle.name");
+  });
 });
