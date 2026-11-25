@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import { env } from "@/env";
+import { gotoSettled } from "@/flows";
 import type { GatewayClient } from "@/payment";
 
 /**
@@ -57,13 +58,13 @@ export const CARDS = {
 
 /** Profil → « Recharger vos tokens » → boutique ouverte, offres chargées. */
 export async function openShop(page: Page): Promise<Locator> {
+  // Juste après la connexion, FR-post-auth-navigation peut encore rediriger (ex. vers /welcome) :
+  // `gotoSettled` ne relance la navigation que si l'on a quitté le profil. Ne pas recharger tant que
+  // l'on y est : chaque chargement refait l'aller-retour SSO (Keycloak → code → token), qui dépasse
+  // plusieurs secondes sous WebKit avec `next dev`, et un rechargement l'interromprait à chaque fois.
+  await gotoSettled(page, `/${env.locale}/profile`, /\/profile/);
   const reload = page.getByRole("button", { name: "Recharger vos tokens" });
-  // Juste après la connexion, FR-post-auth-navigation peut encore rediriger (ex. vers /welcome)
-  // et interrompre la navigation vers le profil : on la relance jusqu'à ce que le profil tienne.
-  await expect(async () => {
-    await page.goto(`/${env.locale}/profile`);
-    await expect(reload).toBeVisible({ timeout: 5_000 });
-  }).toPass({ timeout: 30_000 });
+  await expect(reload).toBeVisible({ timeout: 30_000 });
   await reload.click();
   const shop = page.getByRole("dialog", { name: "Boutique" });
   await expect(shop.getByRole("button", { name: "Acheter" }).first()).toBeVisible();
