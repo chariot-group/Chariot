@@ -1540,6 +1540,23 @@ When adding a rule:
   - the start-combat control states what remains to be done.
 - Starting combat with missing initiatives is allowed but MUST require an explicit confirmation that names the number of missing initiatives.
 
+### Tracker Table Layout (GM and player)
+
+- The tracker is **one table card** (`bg-card`): a header, then the column headings, then the rows, then a footer. Rows are never separate cards.
+- **Header** (top bar of the card, constant height so the rows never move): selection tools on the left (FR-tracker-bulk-actions), GM roster actions (add combatants / remove a group) on the right. The round number is not shown in the header.
+- **Tones**: header and footer sit on the card surface; the rows area uses a distinct, lighter gray (raised level) so the content reads apart from the header and footer; fields inside rows use the next lighter gray so they stay visible.
+- **Rows**: square (no radius), separated by a very thin gray line (`border-border`). A colored row (active turn, dead, unconscious) changes its **background only**: no ring, border or outline on the row. The only exception is the temporary reveal halo of FR-tracker-combatant-reveal.
+- **Columns**: order is selection, show, initiative, character, armor class, hit points, conditions, group. Every value and heading is left-aligned, except the hit points value, centered inside its button; the selection, show and initiative columns are narrow; a single gap is used between all columns, with the spacing scale of the app (not cramped).
+- Every character row shows an avatar bubble before the name: the character image when it has one, otherwise a neutral profile placeholder (decorative, same size and shape). A hidden identity in the player view also gets the placeholder, never the image.
+- Character name and group label show at most **20 characters**, then `…`; the full value stays available as tooltip and accessible name.
+- A read-only initiative (locked, or another combatant's in the player view) is plain text without a field frame; only the editable initiative input keeps its frame.
+- Buttons inside a row (show, conditions, concentration, details) look like real buttons (secondary fill and border), icon only (accessible name kept), with their current icon colors.
+- **Leave initiative** (selection toolbar, per-row and grouped display configuration dialogs) is the standard danger button (`destructive`), at the size of its context.
+- **Condition badges** carry no help icon: the condition (or custom effect) help appears when the badge is hovered for about 0.5 s, focused with the keyboard, or clicked / tapped (click toggles it).
+- **Tracker dialogs** (add combatants, remove a group, per-row display, grouped display) follow the sectioned dialog style: header and footer separated from the body by the structural layout line. The header holds the title only; a description or hint is the first element of the body.
+- **Footer** (GM): before combat start, the preparation status on the left and **Cancel combat** / **Start combat** on the right; once started, one joined control `previous | Round N | next` centered in the footer and **End combat** on the right. The player footer shows the read-only round number once combat has started.
+- **Mobile** (below `md`): same single card, header and footer; each combatant is a stacked block (name line, `Init.` / `CA` / `PV` cells, expandable details) separated from the next by the same thin line.
+
 **Row Context Menu (GM)**:
 
 - Right-clicking a tracker row MUST open a context menu titled with the character name (to confirm the clicked row) and a single neutral-styled action: **leave initiative** for that row only. It MUST NOT select the row, alter the current multi-selection, or expose multi-selection actions (grouped initiative, display configuration, bulk leave); those stay in the selection bar.
@@ -1605,6 +1622,12 @@ When adding a rule:
 - Add-combatants hidden when no campaign group/member remains to add
 - Pre-combat: missing-initiative rows highlighted, counter accurate, start with missing initiatives requires confirmation
 - Context menu: only leave-initiative for the clicked row, no selection side effect, keyboard opening
+- Table layout — nominal: footer shows `previous | Round N | next` and End combat once started, Cancel / Start before; header has no round indicator
+- Table layout — edge: name and group longer than 20 characters are cut with `…` and keep the full value as tooltip / accessible name; exactly 20 characters is not cut
+- Table layout — guard: colored rows (active, dead, unconscious) carry no ring; locked initiative has no field frame
+- Table layout — nominal: armor class column before hit points; hit points value centered in its button; condition help opens on click without help icon
+- Table layout — guard: leave initiative uses the destructive button in toolbar and configuration dialogs
+- Table layout — edge: a character without image (or with a hidden identity for players) shows the profile placeholder bubble, never an empty slot
 - Initiative edit: order frozen while the field is focused, re-sorted on blur, and on combat start
 
 **References**:
@@ -1637,7 +1660,7 @@ When adding a rule:
 - Locked / started combat display shows the **total** (`initiative`), not the raw roll alone.
 - **Hidden once combat has started**: after combat start, the initiative cell shows the total only — no dice icon, no bonus, no tooltip, and the accessible name of the cell does not mention the bonus (GM and player alike). Before start, a locked field (e.g. player not yet allowed to enter their initiative) still shows the bonus.
 - Placement: adjacent to the initiative input (including locked total display before combat start), visually secondary to the score, without breaking the compact tracker grid on mobile.
-- Mobile card layout: single-line header (selection, character, visibility, expand), three equal stat cells (short visible labels `Init.` / `PV` / `CA`, full names kept for assistive tech) with plain read-only values and no nested card backgrounds; interactive controls (initiative input, GM hit points button) keep their field frame so they read as clickable.
+- Mobile row layout (stacked block inside the single tracker card, see Tracker Table Layout): single-line header (selection, character, visibility, expand), three equal stat cells (short visible labels `Init.` / `PV` / `CA`, full names kept for assistive tech) with plain read-only values and no nested card backgrounds; interactive controls (initiative input, GM hit points button) keep their field frame so they read as clickable.
 - The modifier MUST be paired with the same initiative dice icon used on the character sheet, and MUST expose a tooltip (hover/focus) using the accessible modifier label (e.g. “bonus d'initiative +2”).
 - Accessibility: the modifier MUST be exposed to assistive tech (input `aria-label` and a keyboard-focusable tooltip trigger). The signed numeric modifier remains visible; the icon MUST NOT replace the number.
 - GM sees the modifier for every editable row. A player sees the modifier only on their own editable row (other combatants’ modifiers MUST NOT be shown to players).
@@ -1751,13 +1774,13 @@ When adding a rule:
 **Visual Treatment (FR-frontend-design compliance)**:
 
 - Dead row:
-  - Background: explicit red surface using the project palette (`--red`, e.g. `bg-red/35` with `ring-2 ring-red/60` on the row container) preserving WCAG AA contrast against white text.
+  - Background: explicit red surface using the project palette (`--red`, e.g. `bg-red/35`, background only: no ring on the row, FR-combat-initiative-tracker table layout) preserving WCAG AA contrast against white text.
   - A `Skull` icon (lucide-react) is rendered immediately after the HP value inside the HP cell of the tracker row, with `aria-hidden="true"`. Status text is exposed at the row level for screen readers.
 - Unconscious row:
-  - Background: explicit yellow/amber surface using the project palette (`--yellow`, e.g. `bg-yellow/30` with `ring-2 ring-yellow/60`) preserving WCAG AA contrast against white text.
+  - Background: explicit yellow/amber surface using the project palette (`--yellow`, e.g. `bg-yellow/30`, background only) preserving WCAG AA contrast against white text.
   - A `HeartCrack` icon (lucide-react) is rendered immediately after the HP value inside the HP cell of the tracker row, with `aria-hidden="true"`. Status text is exposed at the row level.
 - Alive row keeps the current visual baseline (no extra icon).
-- Active turn highlight (current FR-combat-initiative-tracker styling) MUST remain visible on top of dead/unconscious states (combined ring/background, never replaced).
+- Active turn highlight (blue background, FR-combat-initiative-tracker styling) takes precedence over the dead/unconscious background; the vital status then stays perceivable through the HP cell icon and the row's accessible status text.
 - Status MUST never be conveyed by color alone: an icon (skull/heart-crack) and an accessible label are mandatory companion channels.
 
 **Turn Order Behavior**:
@@ -1965,7 +1988,7 @@ Each initiative tracker row carries:
 - Once combat has started, the player tracker remains read-only: no HP edit dialog, no condition edit, no initiative edit, no turn controls, no visibility column.
 - Before combat start, rows are limited to the player’s own row; after combat start, rows are filtered to `visible === true`, plus any row in the session participants group (always shown to connected players).
 - Field values masked when the corresponding `playerFieldVisibility` flag is `false` (display placeholder `—`; hidden name displays a generic hidden label).
-- Active turn highlight and round indicator reflect GM broadcast state.
+- Active turn highlight and round indicator (table footer, read-only) reflect GM broadcast state.
 - Player-visible row ordering MUST match the GM initiative order even when initiative values are hidden from players.
 - Vital status visuals (FR-tracker-vital-status) apply on visible HP when HP is shown.
 - The player’s own row MUST have a dedicated visual indicator and accessible label so the player can immediately identify their character within the initiative order.
@@ -2133,6 +2156,7 @@ Each initiative tracker row carries:
 - The GM can select multiple tracker rows and apply shared player-facing display parameters in one action.
 - Bulk display configuration must support the same player-facing visibility fields as the per-row display configuration defined in FR-session-combat-navigation.
 - Bulk display configuration must support assigning a shared player-facing name/alias to all selected rows.
+- The grouped display configuration dialog is validated with an **Accept** button (text only, no icon).
 - The shared name/alias input is empty by default and must be clearly identified as applying the same name to all selected characters.
 - If the shared name/alias input is left empty, existing row aliases must not be overwritten.
 - Bulk actions that remove rows from initiative must follow the "leave initiative" behavior from FR-combat-initiative-tracker and must not end the battle.
@@ -2176,7 +2200,9 @@ Each initiative tracker row carries:
 **Requirements**:
 
 - Every tracker row MUST display a permanently visible selection checkbox; a "select all" control MUST be available. There is no separate per-action selection mode.
-- As soon as at least one row is selected, a selection action bar MUST appear showing the selected count, a clear-selection control, and the actions applicable to the selection: grouped initiative edit (before combat start only), grouped display configuration, leave initiative.
+- As soon as at least one row is selected, the selection tools MUST appear showing the selected count, a clear-selection control, and the actions applicable to the selection: grouped initiative edit (before combat start only), grouped display configuration, leave initiative.
+- On mobile the selected count is shortened to the number alone (full label kept for assistive tech) so the header toolbar stays on one line.
+- The selection tools are placed in the top bar of the tracker card header, left-aligned (roster actions stay on the right); showing or hiding them MUST NOT shift the rows. The grouped display configuration action uses the same icon as the per-row show button.
 - Actions unavailable in the current state (e.g. initiative after start) are hidden or disabled with an explanation.
 - The pattern MUST be identical on desktop and mobile layouts.
 - When the GM reopens grouped display configuration for a current multi-selection:
@@ -2201,6 +2227,7 @@ Each initiative tracker row carries:
 - Reopening grouped display configuration for rows sharing the same display settings preloads those settings.
 - Reopening grouped display configuration for rows with different settings shows a mixed state and preserves untouched values on save.
 - Checkboxes always visible; selecting rows shows the action bar with count, clear, and state-aware actions on desktop and mobile.
+- Selecting a row shows the tools in the header top bar without moving the rows; configure uses the show icon.
 - Keyboard and screen-reader coverage includes active mode, selected count, and mixed-state announcements.
 
 **References**:
@@ -2866,7 +2893,7 @@ Each initiative tracker row carries:
 - Le halo utilise exclusivement le token `--green` du projet (FR-frontend-design). Aucune couleur hardcodée n'est autorisée.
 - La révélation ne doit pas être signalée par la couleur seule : une région `aria-live="polite"` doit annoncer le nom du combattant nouvellement révélé aux lecteurs d'écran.
 - La détection de transition est réalisée côté client par comparaison des IDs de lignes visibles entre les rendus successifs (hook dédié `useNewlyRevealedRows`).
-- Le halo s'applique au conteneur de la ligne dans le tracker, et au chip du carrousel dans la CombatBanner.
+- Le halo s'applique au conteneur de la ligne dans le tracker, et au chip du carrousel dans la CombatBanner. C'est la seule exception à la règle « fond seulement, sans anneau » des lignes du tracker (FR-combat-initiative-tracker, Tracker Table Layout).
 - Un combattant révélé plusieurs fois (masqué puis révélé à nouveau) doit déclencher le halo à chaque nouvelle révélation.
 
 **Prohibitions**:
@@ -5385,7 +5412,7 @@ Each initiative tracker row carries:
 
 **Shape and content**:
 
-- Corner radius: `rounded-[13px]` for `default`, `sm` and their icon sizes (same as the Player / GM selector and the character sheet tabs); `rounded-[15px]` for `lg` / `icon-lg` (the app's card radius, slightly rounder for taller buttons) (`docs/design.md` section 2.4). No button may be pill-shaped or use another radius, except the documented joined group of the character sheet tabs.
+- Corner radius: `rounded-[13px]` for `default`, `sm` and their icon sizes (same as the Player / GM selector and the character sheet tabs); `rounded-[15px]` for `lg` / `icon-lg` (the app's card radius, slightly rounder for taller buttons) (`docs/design.md` section 2.4). No button may be pill-shaped or use another radius, except the documented joined groups: the character sheet tabs and the initiative tracker `previous | round | next` control (square inner segments, `docs/design.md` section 5.7).
 - Content is centered by default; `align="start"` left-aligns it when the layout requires it (sidebar lists, full-width rows).
 - An icon is optional and MUST be placed on the **left** of the label. The only trailing glyphs allowed are the disclosure chevron of a menu trigger and the forward arrow of a "next" action (e.g. tracker « Suivant »).
 

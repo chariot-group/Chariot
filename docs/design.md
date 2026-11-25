@@ -347,6 +347,24 @@ All numeric fields use `components/ui/number-input.tsx` (`Input type="number"` d
 - Custom stepper without border or divider, flush against the right edge, out of the tab order (keyboard uses arrow keys)
 - `StoredUnitNumberInput` and `StoredUnitFeetRangeInput` build on the same frame
 
+## 5.7 Initiative Tracker Table
+
+The tracker (FR-combat-initiative-tracker, Tracker Table Layout) is one table card, not a list of row cards:
+
+- Card: `rounded-[24px] bg-card shadow-xl overflow-hidden`; zones split by `border-border` lines: header toolbar (fixed `min-h`, selection tools left, roster actions right), column headings, rows, footer. Header and footer stay on `bg-card` (level 1); the rows area is `bg-gray-middle-light` (level 2, raised rows) so the content reads apart; fields inside rows (initiative input, GM HP button) use `bg-gray` (level 3) to stay visible; row buttons keep the `secondary` type (its border outlines them)
+- Spacing: zones `px-3 sm:px-5`, rows `py-3`, toolbar / headings / footer `py-3`, one column gap `gap-x-4`
+- Rows: square, `border-b border-border` between rows; a state tints the background only (`bg-blue/35` active turn, which wins over `bg-red/35` dead and `bg-yellow/30` unconscious); no ring on rows except the temporary green reveal halo (FR-tracker-combatant-reveal)
+- Columns: selection · show · initiative · character · AC · HP · conditions · group; every value and heading left-aligned except the HP value, centered in its button; selection / show / initiative are narrow fixed tracks; name and group capped at 20 characters (`…`, full value in `title`)
+- Avatar: `size-9 sm:size-10` round bubble before the name; without image (or hidden identity) a decorative placeholder with the same shape: `bg-gray` + Lucide `User` `text-white/40` (same fallback as `MediaAvatar`)
+- Read-only initiative: plain `tabular-nums` text, no field frame; editable fields (initiative input, GM HP button) keep the field frame
+- Row buttons: `secondary` icon-only (`icon-sm`), icon colors unchanged (show: green when visible)
+- Footer: three zones (`grid-cols-[1fr_auto_1fr]`): preparation status left, joined control `previous | Round N | next` centered (secondary buttons, square inner corners, dividers, the round in the middle is plain text), End combat / Cancel / Start on the right
+- Leave initiative: `destructive` button, no local restyle
+- Condition badges: no help icon; the badge itself is the help trigger (tooltip after 0.5 s hover, on focus, or toggled by click)
+- Tracker dialogs: sectioned style shared with the codex / library dialogs (`DialogContent` `p-0 gap-0`, header `border-b border-frame`, body `px-6 py-4`, footer `border-t border-frame px-6 py-4`), from `components/ui/dialog-sections.ts`; the header holds the title only, descriptions and hints open the body
+- Mobile toolbar: one line; the selected count shows the number alone (`sr-only` full label), action labels hidden behind icons
+- Mobile: same card; rows become stacked blocks separated by the same line
+
 ## 6. Responsive Baseline
 
 ## 6.1 Breakpoints Actively Used
