@@ -1,5 +1,6 @@
-import { env, type Role } from "@/env";
-import { getUserAccessToken } from "@/keycloak";
+import { env, hasKeycloakAdmin, type Role } from "@/env";
+import { createTemporaryAdminAccount, deleteKeycloakAccount, getUserAccessToken } from "@/keycloak";
+import { GatewayClient, uniqueCode } from "@/payment";
 
 type Envelope<T> = { data: T };
 
@@ -95,8 +96,8 @@ export class ChariotApi {
   }
 
   private async send(method: string, path: string, body?: unknown): Promise<Response> {
-    // Adventure est exposé sous `/api`, le service session directement sous `/session` (cf. SessionService web).
-    const prefix = path.startsWith("/session/") ? "" : "/api";
+    // Adventure est exposé sous `/api`, les services session et paiement directement sous `/session` et `/payment`.
+    const prefix = path.startsWith("/session/") || path.startsWith("/payment/") ? "" : "/api";
     return fetch(`${env.gatewayUrl}${prefix}${path}`, {
       method,
       headers: {
@@ -213,22 +214,78 @@ export class ChariotApi {
   }
 
   /**
-   * Complète le solde de wheels jusqu'à `min` par la route interne d'adventure (`POST /user/internal/tokens`),
-   * appelée directement (la gateway retire l'en-tête interne). Réservé à la stack locale et aux comptes de test.
-   * Renvoie le solde final ; sans `INTERNAL_SERVICE_SECRET`, ne crédite rien.
+   * Complète le solde de wheels jusqu'à `min`, pour les scénarios qui lancent une session. Renvoie le solde final.
+   * - Avec `INTERNAL_SERVICE_SECRET` (stack locale) : route interne d'adventure (`POST /user/internal/tokens`),
+   *   appelée directement car la gateway retire l'en-tête interne.
+   * - Sinon, avec `KEYCLOAK_ADMIN_*` (ex. integ) : commande gratuite du pack le moins cher avec un code promo
+   *   à 100 % créé par un admin jetable (`creditWheelsWithFreeOrder`).
+   * - Sans l'un ni l'autre : ne crédite rien.
    */
   async ensureWheels(min: number): Promise<number> {
     const balance = await this.balance();
-    if (balance >= min || !env.internalServiceSecret) return balance;
+    if (balance >= min) return balance;
+    if (env.internalServiceSecret) {
+      await this.creditWheelsInternally(min - balance);
+    } else if (hasKeycloakAdmin()) {
+      await this.creditWheelsWithFreeOrder(min - balance);
+    } else {
+      return balance;
+    }
+    return this.balance();
+  }
+
+  private async creditWheelsInternally(amount: number): Promise<void> {
     const response = await fetch(`${env.adventureUrl}/user/internal/tokens`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-internal-service-secret": env.internalServiceSecret },
-      body: JSON.stringify({ userId: this.keycloakId, amount: min - balance }),
+      body: JSON.stringify({ userId: this.keycloakId, amount }),
     });
     if (!response.ok) {
       throw new Error(`crédit de wheels → HTTP ${response.status} ${(await response.text().catch(() => "")).slice(0, 300)}`);
     }
-    return this.balance();
+  }
+
+  /**
+   * Crédite au moins `amount` wheels par le parcours réel d'achat, sans carte ni webhook Stripe :
+   * un admin jetable crée un code promo à 100 % à usage unique, ce compte commande le pack le moins cher
+   * (`POST /payment/stripe/free-order`), puis le code et l'admin sont supprimés.
+   */
+  private async creditWheelsWithFreeOrder(amount: number): Promise<void> {
+    const admin = await createTemporaryAdminAccount("wheels");
+    try {
+      const adminApi = await GatewayClient.login(admin.username, admin.password);
+      const pack = (await adminApi.products())
+        .map((product) => ({
+          id: product.id,
+          tokens: Number(product.metadata.token_number ?? 0),
+          price: product.prices[0]?.unit_amount ?? Number.POSITIVE_INFINITY,
+        }))
+        .filter((product) => product.tokens > 0)
+        .sort((a, b) => a.price - b.price)[0];
+      if (!pack) throw new Error("crédit de wheels : aucun pack avec des tokens dans le catalogue Stripe");
+
+      const code = uniqueCode("WHEELS");
+      const promo = await adminApi.createPromoCode({
+        code,
+        name: `[e2e] ${code}`,
+        discountType: "PERCENTAGE",
+        discountValue: 100,
+        maxTotalUses: 1,
+      });
+      try {
+        const quantity = Math.ceil(amount / pack.tokens);
+        await this.request("POST", "/payment/stripe/free-order", {
+          packId: pack.id,
+          displayName: "[e2e] wheels de session",
+          promoCode: code,
+          ...(quantity > 1 && { quantity }),
+        });
+      } finally {
+        await adminApi.deletePromoCode(promo.id).catch(() => undefined);
+      }
+    } finally {
+      await deleteKeycloakAccount(admin.username);
+    }
   }
 
   /** Solde de wheels du compte (`/user/me`, créé à la première visite de l'app). */

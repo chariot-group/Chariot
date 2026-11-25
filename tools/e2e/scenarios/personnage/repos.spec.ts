@@ -166,7 +166,8 @@ test.describe("Repos des PJ en session", () => {
   /**
    * Lancer une session débite une wheel par participant (FR-session-lobby-wheel-deposit) :
    * chaque exécution consomme 1 wheel du MJ et 1 du joueur. Les comptes de test sont crédités au besoin
-   * (`ensureWheels`, stack locale avec `INTERNAL_SERVICE_SECRET`) ; sinon, sans solde, le test est ignoré (pas en échec).
+   * (`ensureWheels` : route interne avec `INTERNAL_SERVICE_SECRET`, sinon commande gratuite avec `KEYCLOAK_ADMIN_*`) ;
+   * sans l'un ni l'autre et sans solde, le test est ignoré (pas en échec).
    */
   test("en session lancée, le joueur fait un repos court ; le MJ n'a plus que le repos long de groupe", async ({
     gm,

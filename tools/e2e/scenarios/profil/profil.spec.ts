@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { expect, test as base, type Locator, type Page, type Request, type Response } from "@playwright/test";
 import { loginWithCredentials, muteReleaseNotes } from "@/auth";
 import { env, testUser } from "@/env";
+import { gotoSettled } from "@/flows";
 import {
   acceptsPassword,
   createTemporaryAccount,
@@ -77,7 +78,8 @@ async function openProfile(page: Page): Promise<void> {
   page.on("requestfinished", onRequestDone);
   page.on("requestfailed", onRequestDone);
   try {
-    await page.goto(`/${env.locale}/profile`);
+    // Juste après la connexion, FR-post-auth-navigation peut rediriger vers /welcome et couper la navigation.
+    await gotoSettled(page, `/${env.locale}/profile`, /\/profile/);
     await expect
       .poll(() => refreshedAfterSso && inFlight.size === 0 && Date.now() - lastActivity >= PROFILE_SETTLED_MS, {
         message: "profil rafraîchi après l'échange du code SSO, sans GET /user/me en vol",

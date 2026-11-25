@@ -64,7 +64,7 @@ make up ENV=dev
 ```
 
 ```bash
-cp tools/e2e/env.example tools/e2e/.env
+cp tools/e2e/.env.example tools/e2e/.env
 ```
 
 ```bash
@@ -89,7 +89,7 @@ If everything is green, setup is complete.
 | `KEYCLOAK_REALM` / `KEYCLOAK_CLIENT_ID` | OIDC realm and client | `chariot` / `chariot-app` |
 | `LOCALE` | UI language under test. Selectors use the FR labels | `fr` |
 | `KEYCLOAK_ADMIN_USER` / `KEYCLOAK_ADMIN_PASSWORD` | Admin account used **only** to create the test accounts | `admin` / `admin` |
-| `E2E_GM_USERNAME` / `E2E_PLAYER_USERNAME` / `E2E_USER_PASSWORD` | Test accounts | see `env.example` |
+| `E2E_GM_USERNAME` / `E2E_PLAYER_USERNAME` / `E2E_USER_PASSWORD` | Test accounts | see `.env.example` |
 
 `.env` is never committed (it is listed in `tools/e2e/.gitignore`).
 
@@ -248,7 +248,7 @@ two simultaneous tests never share an account, so WebSocket sessions, roster and
 ```
 tools/e2e/
 ├── playwright.config.ts        # config: projects, timeouts, reporters, trace/video/screenshots
-├── env.example                 # .env template
+├── .env.example                # .env template
 ├── scenarios/                  # the tests, one folder per functional domain
 │   ├── auth.setup.ts           # setup: test accounts + SSO sessions
 │   ├── auth/connexion.spec.ts

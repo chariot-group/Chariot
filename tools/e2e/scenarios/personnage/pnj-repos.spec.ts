@@ -140,7 +140,8 @@ test.describe("Repos des PNJ hors session", () => {
 test.describe("PNJ en session", () => {
   /**
    * Lancer une session débite une wheel par participant (FR-session-lobby-wheel-deposit) : les comptes de test
-   * sont crédités au besoin (`ensureWheels`, stack locale avec `INTERNAL_SERVICE_SECRET`) ; sinon le test est ignoré.
+   * sont crédités au besoin (`ensureWheels` : route interne avec `INTERNAL_SERVICE_SECRET`, sinon commande gratuite
+   * avec `KEYCLOAK_ADMIN_*`) ; sans l'un ni l'autre et sans solde, le test est ignoré.
    */
   test("compagnon du joueur et PNJ invité du MJ en session lancée, repos long du MJ", async ({ gm, player, campaign }) => {
     const [gmBalance, playerBalance] = await Promise.all([gm.api.ensureWheels(1), player.api.ensureWheels(1)]);

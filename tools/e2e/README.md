@@ -9,7 +9,7 @@ Scenarios run in parallel (4 workers by default, one GM / player account pair pe
 
 ```bash
 make up ENV=dev          # local Docker stack
-cp tools/e2e/env.example tools/e2e/.env
+cp tools/e2e/.env.example tools/e2e/.env
 make e2e-install         # once
 make e2e                 # all scenarios
 make e2e FILTER=session  # only those whose title contains "session"
@@ -86,8 +86,10 @@ the `gm` / `player` fixtures already do it. Without `KEYCLOAK_ADMIN_*`, the run 
 Scenarios that modify the account (`profil/`) use temporary `e2e-tmp-*` accounts created and deleted through the same admin API
 (`createTemporaryAccount`, `deleteKeycloakAccount`); they are skipped without `KEYCLOAK_ADMIN_*`.
 Scenarios that **launch** a session (`personnage/repos.spec.ts`, `personnage/pnj-repos.spec.ts`) spend 1 wheel per participant on each run
-(FR-session-lobby-wheel-deposit). With `INTERNAL_SERVICE_SECRET` (local stack only, see `env.example`) the test accounts are topped up
-before the run (`ensureWheels`); without it they are skipped, not failed, when the GM or player account has no wheel left.
+(FR-session-lobby-wheel-deposit). The test accounts are topped up before the run (`ensureWheels`): through adventure's internal
+route with `INTERNAL_SERVICE_SECRET` (local stack, see `.env.example`), otherwise, with `KEYCLOAK_ADMIN_*` (e.g. integ), through a free order
+with a 100 % promo code created by a temporary admin (no card, no Stripe webhook). With neither, they are skipped, not failed,
+when the GM or player account has no wheel left.
 On a hosted environment, leave `KEYCLOAK_ADMIN_*` empty and provide existing dedicated test accounts.
 Never use real user accounts.
 
