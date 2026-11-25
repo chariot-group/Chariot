@@ -204,7 +204,7 @@ describe("FR-combat-initiative-tracker — table footer layout", () => {
         roundLabel="Round 3"
         canGoPrevious={canGoPrevious}
         previousTurnState={canGoPrevious ? "available" : "currentTurnLocked"}
-        labels={{ ...baseLabels, turnNavigation: "Turn navigation" }}
+        labels={{ ...baseLabels, turnNavigation: "Turn navigation", endCombatShort: "End" }}
         onStartCombat={() => undefined}
         onCancelCombat={() => undefined}
         onEndCombat={() => undefined}
@@ -226,8 +226,19 @@ describe("FR-combat-initiative-tracker — table footer layout", () => {
     expect(next).toBeGreaterThan(round);
     expect(end).toBeGreaterThan(next);
     // Three zones: the navigation group is centered in the footer.
-    expect(html).toContain("grid-cols-[1fr_auto_1fr]");
-    expect(html).toMatch(/role="group" aria-label="Turn navigation" class="[^"]*justify-self-center/);
+    expect(html).toContain("sm:grid-cols-[1fr_auto_1fr]");
+    expect(html).toMatch(/role="group" aria-label="Turn navigation" class="[^"]*sm:justify-self-center/);
+  });
+
+  it("edge: mobile footer keeps navigation left and a short end combat label right", () => {
+    const html = renderControls(true);
+    const footer = html.match(/<div data-slot="tracker-footer" class="([^"]*)"/)?.[1] ?? "";
+
+    expect(footer).toContain("flex items-center justify-between");
+    expect(html).toContain('<span class="sm:hidden" aria-hidden="true">End</span>');
+    expect(html).toContain('<span class="hidden sm:inline" aria-hidden="true">End combat</span>');
+    // Accessible name stays the full label.
+    expect(html).toContain('aria-label="End combat"');
   });
 
   it("edge: locked turn disables previous only, next stays available", () => {

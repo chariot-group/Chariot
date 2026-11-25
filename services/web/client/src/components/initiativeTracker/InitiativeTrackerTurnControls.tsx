@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, OctagonX, Play, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -37,6 +37,8 @@ type InitiativeTrackerTurnControlsProps = {
     cancelCombatConfirmAction: string;
     cancelCombatCancelAction: string;
     endCombat: string;
+    /** Short End combat label shown on mobile (e.g. « Clôturer »). */
+    endCombatShort?: string;
     endCombatConfirmTitle: string;
     endCombatConfirmDescription: string;
     endCombatConfirmAction: string;
@@ -118,18 +120,26 @@ export function InitiativeTrackerTurnControls({
       data-slot="tracker-footer"
       className={cn(
         "w-full min-w-0 gap-3",
-        // Started: three zones so previous | round | next sits in the center of the footer.
-        battleStarted ? "grid grid-cols-[1fr_auto_1fr] items-center" : "flex flex-wrap items-center justify-between",
+        // Started: navigation left / end right on mobile; from `sm` three zones so previous | round | next
+        // sits in the center of the footer.
+        battleStarted
+          ? "flex items-center justify-between sm:grid sm:grid-cols-[1fr_auto_1fr]"
+          : "flex flex-wrap items-center justify-between",
         TRACKER_CARD_PADDING_X_CLASS,
         TRACKER_ZONE_PADDING_Y_CLASS,
       )}>
-      {battleStarted ? <span aria-hidden="true" /> : null}
+      {battleStarted ? (
+        <span
+          aria-hidden="true"
+          className="hidden sm:block"
+        />
+      ) : null}
       {battleStarted ? (
         // FR-combat-initiative-tracker — joined control: previous | round | next.
         <div
           role="group"
           aria-label={labels.turnNavigation ?? roundLabel}
-          className={cn(TURN_NAVIGATION_GROUP_CLASS, "justify-self-center")}>
+          className={cn(TURN_NAVIGATION_GROUP_CLASS, "sm:justify-self-center")}>
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="inline-flex">
@@ -197,13 +207,18 @@ export function InitiativeTrackerTurnControls({
             <Button
               type="button"
               variant="destructive"
-              aria-label={labels.endCombat}
-              className="min-w-[4.5rem] sm:min-w-0">
-              <OctagonX
-                className="size-4 sm:hidden"
-                aria-hidden="true"
-              />
-              <span className="sr-only sm:not-sr-only">{labels.endCombat}</span>
+              aria-label={labels.endCombat}>
+              {/* Mobile: short label so the footer stays on one line; full label from `sm`. */}
+              <span
+                className="sm:hidden"
+                aria-hidden="true">
+                {labels.endCombatShort ?? labels.endCombat}
+              </span>
+              <span
+                className="hidden sm:inline"
+                aria-hidden="true">
+                {labels.endCombat}
+              </span>
             </Button>
           </ConfirmDialog>
         ) : (

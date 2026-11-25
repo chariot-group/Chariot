@@ -150,6 +150,7 @@ describe("FR-combat-initiative-tracker — tracker table card", () => {
         columnLabels={columnLabels}
         getRowLabels={getRowLabels}
         headerActions={<button type="button">Add combatants</button>}
+        rowsLabel="Combatants"
         turnControls={<div data-testid="footer">Round 2</div>}
       />,
     );
@@ -166,8 +167,14 @@ describe("FR-combat-initiative-tracker — tracker table card", () => {
     expect(headings).toBeGreaterThan(toolbar);
     expect(rows).toBeGreaterThan(headings);
     expect(footer).toBeGreaterThan(rows);
+    // Header and footer stay in place; only the rows area scrolls (except on very short screens).
+    expect(html).toMatch(/data-slot="tracker-header" class="shrink-0"/);
+    expect(html).toMatch(/data-slot="tracker-footer-zone" class="shrink-0/);
+    expect(html).toMatch(/data-slot="tracker-rows" role="region" aria-label="Combatants" tabindex="0" class="[^"]*min-h-0 overflow-y-auto/);
+    expect(html).toMatch(/data-slot="tracker-card" class="[^"]*overflow-clip[^"]*\[@media\(min-height:30rem\)\]:min-h-0/);
+    expect(html).not.toContain("sticky");
     // Rows area uses a lighter (raised) tone than the header and footer.
-    expect(html).toMatch(/data-slot="tracker-rows" class="[^"]*bg-gray-middle-light/);
+    expect(html).toMatch(/data-slot="tracker-rows"[^>]*class="[^"]*bg-gray-middle-light/);
     expect(html.trimEnd().endsWith("</section>")).toBe(true);
   });
 

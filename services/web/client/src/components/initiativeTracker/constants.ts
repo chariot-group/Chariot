@@ -88,6 +88,17 @@ export const TRACKER_GRID_GAP_CLASS = "gap-x-4";
 /** Horizontal padding shared by every zone of the tracker card (toolbar, headings, rows, footer). */
 export const TRACKER_CARD_PADDING_X_CLASS = "px-3 sm:px-5";
 
+/**
+ * FR-combat-initiative-tracker — the card fits the screen height (header / footer fixed, rows scroll),
+ * except on very short screens (phone landscape) where the page scrolls to leave room for the rows.
+ * Apply on the page wrapper and on the card.
+ */
+export const TRACKER_FIT_SCREEN_CLASS = "[@media(min-height:30rem)]:min-h-0";
+
+/** Rows area: the only scrolling zone of the card, with the project scrollbar tokens. */
+export const TRACKER_ROWS_SCROLL_CLASS =
+  "min-h-0 overflow-y-auto overscroll-contain focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-scrollbar-track [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb [&::-webkit-scrollbar-thumb]:hover:bg-scrollbar-thumb-hover";
+
 /** Vertical rhythm shared by the toolbar, the column headings, the rows and the footer. */
 export const TRACKER_ZONE_PADDING_Y_CLASS = "py-3";
 

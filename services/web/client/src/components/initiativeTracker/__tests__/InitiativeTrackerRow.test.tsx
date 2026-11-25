@@ -612,4 +612,38 @@ describe("FR-combat-initiative-tracker — tracker table row", () => {
     expect(html).toContain('src="https://media.example/avatar.webp"');
     expect(html).not.toContain('data-slot="tracker-avatar-placeholder"');
   });
+
+  it("guard: on mobile, the expanded details carry no separator line and list conditions above the group", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        isExpanded
+        labels={labels}
+      />,
+    );
+    const mobile = html.slice(html.indexOf("<article"), html.indexOf("</article>"));
+
+    expect(mobile).toContain('id="initiative-tracker-row-details-row-1"');
+    expect(mobile).not.toContain("border-t");
+    // Conditions first, group name below them.
+    expect(mobile.indexOf('data-slot="tracker-mobile-conditions"')).toBeGreaterThan(-1);
+    expect(mobile.indexOf('data-slot="tracker-mobile-group"')).toBeGreaterThan(
+      mobile.indexOf('data-slot="tracker-mobile-conditions"'),
+    );
+  });
+
+  it("nominal: the mobile expand toggle is a ghost button, without box", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        labels={labels}
+      />,
+    );
+    const toggle = (html.match(/<button[^>]*>/g) ?? []).find((tag) => tag.includes('data-slot="tracker-mobile-expand"')) ?? "";
+
+    expect(toggle).toContain('data-variant="ghost"');
+    expect(toggle).not.toContain("bg-gray-middle-light");
+  });
 });

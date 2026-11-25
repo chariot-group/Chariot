@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { LayersMinus, LayersPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { AddCombatantsDialog, useHasAddableCombatants } from "@/components/dialogs/AddCombatantsDialog";
 import { RemoveCombatantGroupsDialog } from "@/components/dialogs/RemoveCombatantGroupsDialog";
 import { InitiativeTrackerHealthDialog } from "@/components/initiativeTracker/InitiativeTrackerHealthDialog";
@@ -40,7 +41,11 @@ import {
   replaceCustomEffectOnRow,
   upsertCustomEffectDefinition,
 } from "@/components/initiativeTracker/customEffects";
-import { ROUND_DURATION_SECONDS, SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
+import {
+  ROUND_DURATION_SECONDS,
+  SESSION_PARTICIPANTS_GROUP_ID,
+  TRACKER_FIT_SCREEN_CLASS,
+} from "@/components/initiativeTracker/constants";
 import type {
   InitiativeTrackerConditionDurationUnit,
   InitiativeTrackerConditionEntry,
@@ -616,8 +621,11 @@ export default function InitiativeTrackerPage() {
   }
 
   return (
-    <main className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 sm:px-5 lg:px-8">
-      <div className="mx-auto flex w-full max-w-[1520px] flex-col gap-3">
+    // Flex column: the tracker card fits its height and scrolls its rows; the page only scrolls on very
+    // short screens (FR-combat-initiative-tracker).
+    <main className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden px-2 py-3 sm:px-5 lg:px-8">
+      {/* Very large screens: centered horizontally and, when shorter than the screen, vertically. */}
+      <div className={cn("mx-auto flex w-full max-w-[1520px] flex-col gap-3 2xl:my-auto", TRACKER_FIT_SCREEN_CLASS)}>
         {!isGameMaster ? (
           <p
             className="text-center text-sm text-white/60"
@@ -690,6 +698,7 @@ export default function InitiativeTrackerPage() {
               : undefined
           }
           getRowLabels={getRowLabels}
+          rowsLabel={t("rowsRegion")}
           headerActions={
             isGameMaster && (canRemoveGroup || hasAddableCombatants) ? (
               <>
@@ -790,6 +799,7 @@ export default function InitiativeTrackerPage() {
                   cancelCombatConfirmAction: t("cancelCombatConfirmAction"),
                   cancelCombatCancelAction: t("cancelCombatCancelAction"),
                   endCombat: t("endCombat"),
+                  endCombatShort: t("endCombatShort"),
                   endCombatConfirmTitle: t("endCombatConfirmTitle"),
                   endCombatConfirmDescription: t("endCombatConfirmDescription"),
                   endCombatConfirmAction: t("endCombatConfirmAction"),

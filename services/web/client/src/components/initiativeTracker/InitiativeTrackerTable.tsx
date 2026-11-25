@@ -25,8 +25,10 @@ import { InitiativeTrackerRow as InitiativeTrackerRowComponent } from "@/compone
 import {
   getTrackerGridTemplateColumns,
   TRACKER_CARD_PADDING_X_CLASS,
+  TRACKER_FIT_SCREEN_CLASS,
   TRACKER_GRID_GAP_CLASS,
   TRACKER_HEADER_ALIGN,
+  TRACKER_ROWS_SCROLL_CLASS,
   TRACKER_ZONE_PADDING_Y_CLASS,
 } from "@/components/initiativeTracker/constants";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -199,6 +201,8 @@ export type InitiativeTrackerTableProps = {
   turnControls?: React.ReactNode;
   /** FR-combat-initiative-tracker — GM roster actions, right side of the card header toolbar. */
   headerActions?: React.ReactNode;
+  /** Accessible name of the scrolling rows area (e.g. « Combattants »). */
+  rowsLabel?: string;
   ownCharacterId?: string | null;
   ownCharacterSheetHref?: string | null;
   sessionCode?: string | null;
@@ -266,6 +270,7 @@ export function InitiativeTrackerTable({
   bulkVisibilityLabels,
   turnControls,
   headerActions,
+  rowsLabel,
   ownCharacterId = null,
   ownCharacterSheetHref = null,
   sessionCode = null,
@@ -523,126 +528,138 @@ export function InitiativeTrackerTable({
   return (
     <section
       data-slot="tracker-card"
-      className="w-full min-w-0 max-w-full overflow-hidden rounded-[24px] bg-card text-white shadow-xl">
+      // `overflow-clip` keeps the rounded corners without making the card a scroll container, so it never
+      // shrinks below its content on very short screens (the page scrolls there).
+      className={cn(
+        "flex w-full min-w-0 max-w-full flex-col overflow-clip rounded-[24px] bg-card text-white shadow-xl",
+        TRACKER_FIT_SCREEN_CLASS,
+      )}>
       <div aria-live="polite" aria-atomic="true" className="sr-only">{liveAnnouncement}</div>
 
-      {hasToolbar ? (
-        // Constant height: selecting rows never moves the table (FR-tracker-bulk-actions).
+      <div
+        data-slot="tracker-header"
+        className="shrink-0">
+        {hasToolbar ? (
+          // Constant height: selecting rows never moves the table (FR-tracker-bulk-actions).
+          <div
+            data-slot="tracker-toolbar"
+            className={cn(
+              "flex min-h-14 w-full min-w-0 flex-wrap items-center justify-between gap-2 border-b border-border sm:gap-3",
+              TRACKER_CARD_PADDING_X_CLASS,
+              TRACKER_ZONE_PADDING_Y_CLASS,
+            )}>
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 sm:gap-2">
+              {selectionEnabled && bulkVisibilityLabels ? (
+                <>
+                  {/* Mobile has no column headings: select-all lives in the toolbar. */}
+                  <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-white/85 md:hidden">
+                    <Checkbox
+                      checked={selectAllChecked}
+                      aria-label={bulkVisibilityLabels.selectAllRows}
+                      onCheckedChange={toggleSelectAllRows}
+                      className="size-5 shrink-0 cursor-pointer"
+                    />
+                    <span
+                      className={selectedCount > 0 ? "sr-only" : "truncate"}
+                      aria-hidden="true">
+                      {bulkVisibilityLabels.selectAllRowsShort}
+                    </span>
+                  </label>
+                  {selectedCount > 0 ? (
+                    <div
+                      className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2"
+                      role="toolbar"
+                      aria-label={bulkVisibilityLabels.selectionToolbar}>
+                      <TrackerSelectedCount
+                        count={selectedCount}
+                        label={selectedCountLabel ?? String(selectedCount)}
+                      />
+                      {renderSelectionActions()}
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+            </div>
+            {headerActions ? <div className="ml-auto flex shrink-0 items-center gap-2">{headerActions}</div> : null}
+          </div>
+        ) : null}
+
         <div
-          data-slot="tracker-toolbar"
+          data-slot="tracker-headings"
           className={cn(
-            "flex min-h-14 w-full min-w-0 flex-wrap items-center justify-between gap-2 border-b border-border sm:gap-3",
+            "hidden w-full max-w-full min-w-0 items-center border-b border-border text-xs font-bold uppercase tracking-wide text-muted-foreground md:grid",
+            TRACKER_GRID_GAP_CLASS,
             TRACKER_CARD_PADDING_X_CLASS,
             TRACKER_ZONE_PADDING_Y_CLASS,
-          )}>
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 sm:gap-2">
-            {selectionEnabled && bulkVisibilityLabels ? (
-              <>
-                {/* Mobile has no column headings: select-all lives in the toolbar. */}
-                <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-white/85 md:hidden">
-                  <Checkbox
-                    checked={selectAllChecked}
-                    aria-label={bulkVisibilityLabels.selectAllRows}
-                    onCheckedChange={toggleSelectAllRows}
-                    className="size-5 shrink-0 cursor-pointer"
-                  />
-                  <span
-                    className={selectedCount > 0 ? "sr-only" : "truncate"}
-                    aria-hidden="true">
-                    {bulkVisibilityLabels.selectAllRowsShort}
-                  </span>
-                </label>
-                {selectedCount > 0 ? (
-                  <div
-                    className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2"
-                    role="toolbar"
-                    aria-label={bulkVisibilityLabels.selectionToolbar}>
-                    <TrackerSelectedCount
-                      count={selectedCount}
-                      label={selectedCountLabel ?? String(selectedCount)}
-                    />
-                    {renderSelectionActions()}
-                  </div>
-                ) : null}
-              </>
-            ) : null}
-          </div>
-          {headerActions ? <div className="ml-auto flex shrink-0 items-center gap-2">{headerActions}</div> : null}
-        </div>
-      ) : null}
-
-      <div
-        data-slot="tracker-headings"
-        className={cn(
-          "hidden w-full max-w-full min-w-0 items-center border-b border-border text-xs font-bold uppercase tracking-wide text-muted-foreground md:grid",
-          TRACKER_GRID_GAP_CLASS,
-          TRACKER_CARD_PADDING_X_CLASS,
-          TRACKER_ZONE_PADDING_Y_CLASS,
-        )}
-        style={{ gridTemplateColumns }}>
-        {selectionEnabled ? (
-          <Checkbox
-            checked={selectAllChecked}
-            aria-label={bulkVisibilityLabels?.selectAllRows ?? ""}
-            onCheckedChange={toggleSelectAllRows}
-            className="size-5 cursor-pointer justify-self-start"
-          />
-        ) : null}
-        {!isPlayerView ? (
-          <span
-            className={`min-w-0 ${TRACKER_HEADER_ALIGN.visible}`}
-            title={columnLabels.visible}>
+          )}
+          style={{ gridTemplateColumns }}>
+          {selectionEnabled ? (
+            <Checkbox
+              checked={selectAllChecked}
+              aria-label={bulkVisibilityLabels?.selectAllRows ?? ""}
+              onCheckedChange={toggleSelectAllRows}
+              className="size-5 cursor-pointer justify-self-start"
+            />
+          ) : null}
+          {!isPlayerView ? (
             <span
-              className={headerLabelClassName}
-              aria-hidden="true">
-              {compactVisibleLabel}
+              className={`min-w-0 ${TRACKER_HEADER_ALIGN.visible}`}
+              title={columnLabels.visible}>
+              <span
+                className={headerLabelClassName}
+                aria-hidden="true">
+                {compactVisibleLabel}
+              </span>
+              <span className="sr-only">{columnLabels.visible}</span>
             </span>
-            <span className="sr-only">{columnLabels.visible}</span>
-          </span>
-        ) : null}
-        <span
-          className={`min-w-0 ${TRACKER_HEADER_ALIGN.initiative}`}
-          title={columnLabels.initiative}>
+          ) : null}
           <span
-            className={cn(headerLabelClassName, !initiativeLocked && "xl:hidden")}
-            aria-hidden="true">
-            {compactInitiativeLabel}
+            className={`min-w-0 ${TRACKER_HEADER_ALIGN.initiative}`}
+            title={columnLabels.initiative}>
+            <span
+              className={cn(headerLabelClassName, !initiativeLocked && "xl:hidden")}
+              aria-hidden="true">
+              {compactInitiativeLabel}
+            </span>
+            <span className={initiativeLocked ? "sr-only" : `${headerLabelClassName} sr-only xl:not-sr-only`}>
+              {columnLabels.initiative}
+            </span>
           </span>
-          <span className={initiativeLocked ? "sr-only" : `${headerLabelClassName} sr-only xl:not-sr-only`}>
-            {columnLabels.initiative}
+          <span
+            className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.character}`}
+            title={columnLabels.character}>
+            {columnLabels.character}
           </span>
-        </span>
-        <span
-          className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.character}`}
-          title={columnLabels.character}>
-          {columnLabels.character}
-        </span>
-        <span
-          className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.armorClass}`}
-          title={columnLabels.armorClass}>
-          {columnLabels.armorClass}
-        </span>
-        <span
-          className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.hitPoints}`}
-          title={columnLabels.hitPoints}>
-          {columnLabels.hitPoints}
-        </span>
-        <span
-          className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.condition}`}
-          title={columnLabels.condition}>
-          {columnLabels.condition}
-        </span>
-        <span
-          className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.group}`}
-          title={columnLabels.group}>
-          {columnLabels.group}
-        </span>
+          <span
+            className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.armorClass}`}
+            title={columnLabels.armorClass}>
+            {columnLabels.armorClass}
+          </span>
+          <span
+            className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.hitPoints}`}
+            title={columnLabels.hitPoints}>
+            {columnLabels.hitPoints}
+          </span>
+          <span
+            className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.condition}`}
+            title={columnLabels.condition}>
+            {columnLabels.condition}
+          </span>
+          <span
+            className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.group}`}
+            title={columnLabels.group}>
+            {columnLabels.group}
+          </span>
+        </div>
       </div>
 
       <div
         data-slot="tracker-rows"
-        // Raised, lighter tone than the card: the content reads apart from the header and the footer.
-        className="flex w-full min-w-0 flex-col bg-gray-middle-light"
+        role="region"
+        aria-label={rowsLabel}
+        tabIndex={0}
+        // Raised, lighter tone than the card; the only scrolling zone (header and footer stay in place).
+        className={cn("flex w-full min-w-0 flex-col bg-gray-middle-light", TRACKER_ROWS_SCROLL_CLASS)}
         onFocusCapture={(event) => {
           if (isInitiativeInputTarget(event.target)) setFrozenOrder((current) => current ?? rows.map((row) => row.id));
         }}
@@ -766,7 +783,13 @@ export function InitiativeTrackerTable({
         />
       ) : null}
 
-      {turnControls ? <div className="border-t border-border">{turnControls}</div> : null}
+      {turnControls ? (
+        <div
+          data-slot="tracker-footer-zone"
+          className="shrink-0 border-t border-border">
+          {turnControls}
+        </div>
+      ) : null}
     </section>
   );
 }

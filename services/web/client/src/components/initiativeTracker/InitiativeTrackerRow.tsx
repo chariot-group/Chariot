@@ -975,10 +975,12 @@ export function InitiativeTrackerRow({
                 onClick={() => setVisibilityOpen(true)}
               />
             ) : null}
+            {/* Disclosure toggle: ghost (no box), like the other expand toggles of the app. */}
             <Button
               type="button"
-              variant="secondary"
+              variant="ghost"
               size="icon-sm"
+              data-slot="tracker-mobile-expand"
               aria-expanded={isExpanded}
               aria-controls={detailsId}
               aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
@@ -1017,8 +1019,19 @@ export function InitiativeTrackerRow({
         <div
           id={detailsId}
           hidden={!isExpanded}
-          className="mt-4 border-t border-border pt-4">
-          <dl className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+          // Mobile: no separator inside a row, spacing only (the line splits rows, not their parts).
+          className="mt-4">
+          {/* Mobile order: conditions first, then group (and GM alias) below them. */}
+          <div data-slot="tracker-mobile-conditions">
+            <p className="text-[11px] font-semibold uppercase text-white/45">
+              {labels.visibilityDialog.fields.conditions}
+            </p>
+            <div className="mt-2 min-w-0">{renderConditionsCell(true)}</div>
+          </div>
+
+          <dl
+            data-slot="tracker-mobile-group"
+            className="mt-4 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
             {renderDetailItem(
               labels.visibilityDialog.fields.groupLabel,
               <span className="flex min-w-0 items-start gap-2 overflow-hidden">{renderGroupContent(true)}</span>,
@@ -1027,13 +1040,6 @@ export function InitiativeTrackerRow({
               ? renderDetailItem(labels.playerDisplayNameSubtitle, gmAliasDisplayName)
               : null}
           </dl>
-
-          <div className="mt-3 border-t border-border pt-3">
-            <p className="text-[11px] font-semibold uppercase text-white/45">
-              {labels.visibilityDialog.fields.conditions}
-            </p>
-            <div className="mt-2 min-w-0">{renderConditionsCell(true)}</div>
-          </div>
         </div>
       </article>
 
