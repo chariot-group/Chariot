@@ -2,6 +2,14 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  DIALOG_SECTIONED_CONTENT_CLASS,
+  DIALOG_SECTION_BODY_CLASS,
+  DIALOG_SECTION_FOOTER_CLASS,
+  DIALOG_SECTION_HEADER_CLASS,
+  DIALOG_SECTION_TITLE_CLASS,
+} from "@/components/ui/dialog-sections";
 import {
   Dialog,
   DialogClose,
@@ -58,13 +66,13 @@ export function RemoveCombatantGroupsDialog({ children }: RemoveCombatantGroupsD
       open={open}
       onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t("removeCombatantGroupsDialogTitle")}</DialogTitle>
-          <p className="text-sm text-white/65">{t("removeCombatantGroupsDescription")}</p>
+      <DialogContent className={cn(DIALOG_SECTIONED_CONTENT_CLASS, "sm:max-w-lg")}>
+        <DialogHeader className={DIALOG_SECTION_HEADER_CLASS}>
+          <DialogTitle className={DIALOG_SECTION_TITLE_CLASS}>{t("removeCombatantGroupsDialogTitle")}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
+        <div className={cn("flex flex-col gap-3", DIALOG_SECTION_BODY_CLASS)}>
+          <p className="text-sm text-white/65">{t("removeCombatantGroupsDescription")}</p>
           {removableGroups.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("removeCombatantGroupsEmpty")}</p>
           ) : (
@@ -89,7 +97,7 @@ export function RemoveCombatantGroupsDialog({ children }: RemoveCombatantGroupsD
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className={DIALOG_SECTION_FOOTER_CLASS}>
           <DialogClose asChild>
             <Button variant="secondary">{tCommon("cancel")}</Button>
           </DialogClose>

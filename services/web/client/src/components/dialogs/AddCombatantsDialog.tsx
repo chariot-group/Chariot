@@ -3,6 +3,14 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
+  DIALOG_SECTIONED_CONTENT_CLASS,
+  DIALOG_SECTION_BODY_CLASS,
+  DIALOG_SECTION_FOOTER_CLASS,
+  DIALOG_SECTION_HEADER_CLASS,
+  DIALOG_SECTION_TITLE_CLASS,
+} from "@/components/ui/dialog-sections";
+import { cn } from "@/lib/utils";
+import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -356,15 +364,15 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
       open={open}
       onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="!flex h-[min(88dvh,760px)] flex-col p-4 sm:max-w-3xl sm:p-6">
-        <DialogHeader>
-          <DialogTitle>{t("addCombatantsDialogTitle")}</DialogTitle>
+      <DialogContent className={cn(DIALOG_SECTIONED_CONTENT_CLASS, "!flex h-[min(88dvh,760px)] flex-col sm:max-w-3xl")}>
+        <DialogHeader className={DIALOG_SECTION_HEADER_CLASS}>
+          <DialogTitle className={DIALOG_SECTION_TITLE_CLASS}>{t("addCombatantsDialogTitle")}</DialogTitle>
+        </DialogHeader>
+
+        <div className={cn("flex min-h-0 flex-1 flex-col gap-4 overflow-hidden", DIALOG_SECTION_BODY_CLASS)}>
           {groupIdsInInitiative.size > 0 ? (
             <p className="text-sm text-white/65">{t("addCombatantsGroupsInCombatHint")}</p>
           ) : null}
-        </DialogHeader>
-
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
           {eligibleGroups.length === 0 && !isLoading ? (
             <p className="text-sm text-muted-foreground">{t("addCombatantsNoEligible")}</p>
           ) : (
@@ -461,7 +469,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className={DIALOG_SECTION_FOOTER_CLASS}>
           <DialogClose asChild>
             <Button variant="secondary">{tCommon("cancel")}</Button>
           </DialogClose>
