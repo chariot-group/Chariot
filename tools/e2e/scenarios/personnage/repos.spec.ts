@@ -15,6 +15,8 @@ import {
   openJoinCharacterOption,
   refreshCachedUser,
   seedActiveGroup,
+  depositWheel,
+  gotoSettled,
 } from "@/flows";
 import { expect, test as base } from "@/fixtures";
 
@@ -209,8 +211,8 @@ test.describe("Repos des PJ en session", () => {
       });
 
       await test.step("chacun dépose une wheel, le MJ lance la session", async () => {
-        await player.page.getByRole("dialog").getByRole("button", { name: "Déposer une wheel" }).click();
-        await gm.page.getByRole("dialog").getByRole("button", { name: "Déposer une wheel" }).click();
+        await depositWheel(player.page);
+        await depositWheel(gm.page);
         await expect(player.page.getByText(/en attente du maître du jeu pour lancer la session/)).toBeVisible();
         await gm.page.getByRole("button", { name: "Lancer la session (toutes les wheels ont été déposées)" }).click();
         await expect(gm.page.getByText("La session a été lancée !")).toBeVisible();
@@ -232,7 +234,7 @@ test.describe("Repos des PJ en session", () => {
       const dialog = player.page.getByRole("dialog", { name: "Confirmer le repos court ?" });
       await test.step("Joueur : repos court avec un dé de vie, la ligne de soin suit le jet", async () => {
         await closeDialogIfOpen(player.page);
-        await player.page.goto(`/${env.locale}/characters/${character._id}`);
+        await gotoSettled(player.page, `/${env.locale}/characters/${character._id}`, new RegExp(`/characters/${character._id}`));
         await statisticsCard(player.page).getByRole("button", { name: "Repos court" }).click();
         await expect(dialog.getByText("Points de vie récupérés : +0")).toBeVisible();
         await dialog.getByRole("button", { name: "Ajouter un dé de vie" }).click();

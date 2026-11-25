@@ -19,6 +19,8 @@ import {
   openPlayerSpace,
   refreshCachedUser,
   seedActiveGroup,
+  depositWheel,
+  gotoSettled,
 } from "@/flows";
 import { expect, test as base } from "@/fixtures";
 
@@ -184,8 +186,8 @@ test.describe("PNJ en session", () => {
 
       await test.step("chacun dépose une wheel (le compagnon ne compte pas), le MJ lance la session", async () => {
         await expect(gm.page.getByRole("progressbar", { name: /sur 2$/ })).toBeVisible();
-        await player.page.getByRole("dialog").getByRole("button", { name: "Déposer une wheel" }).click();
-        await gm.page.getByRole("dialog").getByRole("button", { name: "Déposer une wheel" }).click();
+        await depositWheel(player.page);
+        await depositWheel(gm.page);
         await gm.page.getByRole("button", { name: "Lancer la session (toutes les wheels ont été déposées)" }).click();
         await expect(gm.page.getByText("La session a été lancée !")).toBeVisible();
         await expect(player.page.getByText("La session a été lancée !")).toBeVisible();
@@ -238,7 +240,7 @@ test.describe("PNJ en session", () => {
 
       await test.step("Joueur : en session, la fiche de son compagnon (espace joueur) n'a aucun repos", async () => {
         await closeDialogIfOpen(player.page);
-        await player.page.goto(`/${env.locale}/characters/${companion._id}`);
+        await gotoSettled(player.page, `/${env.locale}/characters/${companion._id}`, new RegExp(`/characters/${companion._id}`));
         const stats = statisticsCard(player.page);
         await expect(stats).toBeVisible();
         await expect(stats.getByRole("button", { name: "Repos long" })).toHaveCount(0);

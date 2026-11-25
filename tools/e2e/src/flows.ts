@@ -328,11 +328,19 @@ export async function closeDialogIfOpen(page: Page): Promise<void> {
 export async function openJoinCharacterOption(page: Page, characterId: string, code: string, name: string): Promise<Locator> {
   await page.goto(`/${env.locale}/characters/${characterId}?join=${code}`);
   const join = page.getByRole("dialog", { name: "Rejoindre une session" });
+  const listbox = page.getByRole("listbox");
   const option = page.getByRole("option", { name: new RegExp(escapeRegExp(name)) });
+  // Le dialogue peut s'ouvrir après le chargement de la page (lent sous WebKit sur un environnement hébergé) :
+  // un Échap envoyé avant le fermerait, sans retour possible (le paramètre `join` est consommé).
+  await expect(join).toBeVisible({ timeout: 30_000 });
   await expect(async () => {
     if (!(await option.isVisible())) {
-      await page.keyboard.press("Escape");
-      await join.getByRole("combobox").click();
+      // Échap ne referme que la liste déroulante ouverte (encore vide), jamais le dialogue lui-même.
+      if (await listbox.isVisible()) {
+        await page.keyboard.press("Escape");
+        await expect(listbox).toBeHidden({ timeout: 2_000 });
+      }
+      await join.getByRole("combobox").click({ timeout: 5_000 });
     }
     await expect(option).toBeVisible({ timeout: 2_000 });
   }).toPass({ timeout: 30_000 });
@@ -456,4 +464,20 @@ export async function deleteQuickLinksByPrefix(api: ChariotApi, prefix: string):
   for (const link of links.filter((l) => l.label.startsWith(prefix))) {
     await api.deleteQuickLink(link._id).catch(() => undefined);
   }
+}
+
+/**
+ * Dépose une wheel dans le lobby de session ouvert (FR-session-lobby-wheel-deposit) et attend que le dépôt soit pris
+ * en compte (« actuellement 1 »). Sur un environnement hébergé, un clic envoyé juste après l'ouverture du lobby peut
+ * être perdu : on reclique tant que le dépôt n'apparaît pas.
+ */
+export async function depositWheel(page: Page): Promise<void> {
+  const lobby = page.getByRole("dialog");
+  const deposited = lobby.getByRole("group", { name: /actuellement 1$/ });
+  await expect(async () => {
+    if (!(await deposited.isVisible())) {
+      await lobby.getByRole("button", { name: "Déposer une wheel" }).click({ timeout: 5_000 });
+    }
+    await expect(deposited).toBeVisible({ timeout: 5_000 });
+  }).toPass({ timeout: 30_000 });
 }

@@ -44,7 +44,7 @@ export const env = {
    */
   stripeWebhook: process.env.E2E_STRIPE_WEBHOOK?.trim() === "1",
   /**
-   * Accès direct au service adventure (sans la gateway, qui retire les en-têtes internes) et son secret
+   * Accès direct au service adventure (sans passer par la gateway) et son secret
    * inter-services : servent uniquement à créditer des wheels aux comptes de test en local (`creditWheels`).
    * Sans secret, les scénarios qui lancent une session sont sautés quand le solde manque.
    */

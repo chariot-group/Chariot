@@ -216,7 +216,7 @@ export class ChariotApi {
   /**
    * Complète le solde de wheels jusqu'à `min`, pour les scénarios qui lancent une session. Renvoie le solde final.
    * - Avec `INTERNAL_SERVICE_SECRET` (stack locale) : route interne d'adventure (`POST /user/internal/tokens`),
-   *   appelée directement car la gateway retire l'en-tête interne.
+   *   appelée directement sur adventure (stack locale uniquement).
    * - Sinon, avec `KEYCLOAK_ADMIN_*` (ex. integ) : commande gratuite du pack le moins cher avec un code promo
    *   à 100 % créé par un admin jetable (`creditWheelsWithFreeOrder`).
    * - Sans l'un ni l'autre : ne crédite rien.
