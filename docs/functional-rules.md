@@ -1550,12 +1550,14 @@ When adding a rule:
 - Every character row shows an avatar bubble before the name: the character image when it has one, otherwise a neutral profile placeholder (decorative, same size and shape). A hidden identity in the player view also gets the placeholder, never the image.
 - Character name and group label show at most **20 characters**, then `…`; the full value stays available as tooltip and accessible name.
 - A read-only initiative (locked, or another combatant's in the player view) is plain text without a field frame; only the editable initiative input keeps its frame.
-- Buttons inside a row (show, conditions, concentration, details) look like real buttons (secondary fill and border), icon only (accessible name kept), with their current icon colors.
+- Buttons inside a row (show, conditions, concentration, tablet details) look like real buttons (secondary fill and border), icon only (accessible name kept), with their current icon colors. Exception: the mobile expand-details toggle is a ghost button (no box), like the other disclosure toggles of the app.
 - **Leave initiative** (selection toolbar, per-row and grouped display configuration dialogs) is the standard danger button (`destructive`), at the size of its context.
 - **Condition badges** carry no help icon: the condition (or custom effect) help appears when the badge is hovered for about 0.5 s, focused with the keyboard, or clicked / tapped (click toggles it).
-- **Tracker dialogs** (add combatants, remove a group, per-row display, grouped display) follow the sectioned dialog style: header and footer separated from the body by the structural layout line. The header holds the title only; a description or hint is the first element of the body.
-- **Footer** (GM): before combat start, the preparation status on the left and **Cancel combat** / **Start combat** on the right; once started, one joined control `previous | Round N | next` centered in the footer and **End combat** on the right. The player footer shows the read-only round number once combat has started.
-- **Mobile** (below `md`): same single card, header and footer; each combatant is a stacked block (name line, `Init.` / `CA` / `PV` cells, expandable details) separated from the next by the same thin line.
+- **Tracker dialogs** (add combatants, remove a group, per-row display, grouped display) follow the sectioned dialog style: header and footer separated from the body by the structural layout line. The header holds the title only; a description or hint is the first element of the body. The body uses no framed box (the display field list is a plain labelled group).
+- **Footer** (GM): before combat start, the preparation status on the left and **Cancel combat** / **Start combat** on the right; once started, one joined control `previous | Round N | next` centered in the footer and **End combat** on the right. On mobile (below `sm`) the joined control sits on the left (previous / next icon only) and End combat on the right with a short label (e.g. « Clôturer »), so the footer stays on one line. The player footer shows the read-only round number once combat has started.
+- **Fixed header and footer, scrolling rows**: when the rows do not fit the screen, the card fits the available height: its header (toolbar + column headings) and footer stay in place with their rounded corners, and only the rows area scrolls (its own scrollbar, nothing passes behind the header or footer), at every width. On very short screens (height below `30rem`, e.g. phone landscape) the whole page scrolls instead so the rows keep usable space.
+- **Very large screens** (`2xl`): the table, capped in width, is centered horizontally and vertically in the page when it is shorter than the screen.
+- **Mobile** (below `md`): same single card, header and footer; each combatant is a stacked block (name line, `Init.` / `CA` / `PV` cells, expandable details) separated from the next by the same thin line; the parts of one block are separated by spacing only, never by a line. In the expanded details, the conditions come first and the group name below them.
 
 **Row Context Menu (GM)**:
 
@@ -1626,7 +1628,10 @@ When adding a rule:
 - Table layout — edge: name and group longer than 20 characters are cut with `…` and keep the full value as tooltip / accessible name; exactly 20 characters is not cut
 - Table layout — guard: colored rows (active, dead, unconscious) carry no ring; locked initiative has no field frame
 - Table layout — nominal: armor class column before hit points; hit points value centered in its button; condition help opens on click without help icon
-- Table layout — guard: leave initiative uses the destructive button in toolbar and configuration dialogs
+- Table layout — guard: leave initiative uses the destructive button in toolbar and configuration dialogs; display dialogs have no bordered box in their body; mobile expand toggle is ghost
+- Table layout — nominal: header and footer fixed while only the rows area scrolls, except on very short screens where the page scrolls
+- Table layout — edge: mobile footer has navigation left and a short End combat label right
+- Table layout — guard: on mobile, the expanded details of a row carry no separator line; conditions are shown above the group name
 - Table layout — edge: a character without image (or with a hidden identity for players) shows the profile placeholder bubble, never an empty slot
 - Initiative edit: order frozen while the field is focused, re-sorted on blur, and on combat start
 

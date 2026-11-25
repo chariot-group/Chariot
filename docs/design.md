@@ -357,13 +357,16 @@ The tracker (FR-combat-initiative-tracker, Tracker Table Layout) is one table ca
 - Columns: selection · show · initiative · character · AC · HP · conditions · group; every value and heading left-aligned except the HP value, centered in its button; selection / show / initiative are narrow fixed tracks; name and group capped at 20 characters (`…`, full value in `title`)
 - Avatar: `size-9 sm:size-10` round bubble before the name; without image (or hidden identity) a decorative placeholder with the same shape: `bg-gray` + Lucide `User` `text-white/40` (same fallback as `MediaAvatar`)
 - Read-only initiative: plain `tabular-nums` text, no field frame; editable fields (initiative input, GM HP button) keep the field frame
-- Row buttons: `secondary` icon-only (`icon-sm`), icon colors unchanged (show: green when visible)
+- Row buttons: `secondary` icon-only (`icon-sm`), icon colors unchanged (show: green when visible); the mobile expand-details chevron is `ghost` (disclosure toggle, no box)
 - Footer: three zones (`grid-cols-[1fr_auto_1fr]`): preparation status left, joined control `previous | Round N | next` centered (secondary buttons, square inner corners, dividers, the round in the middle is plain text), End combat / Cancel / Start on the right
 - Leave initiative: `destructive` button, no local restyle
 - Condition badges: no help icon; the badge itself is the help trigger (tooltip after 0.5 s hover, on focus, or toggled by click)
-- Tracker dialogs: sectioned style shared with the codex / library dialogs (`DialogContent` `p-0 gap-0`, header `border-b border-frame`, body `px-6 py-4`, footer `border-t border-frame px-6 py-4`), from `components/ui/dialog-sections.ts`; the header holds the title only, descriptions and hints open the body
+- Tracker dialogs: sectioned style shared with the codex / library dialogs (`DialogContent` `p-0 gap-0`, header `border-b border-frame`, body `px-6 py-4`, footer `border-t border-frame px-6 py-4`), from `components/ui/dialog-sections.ts`; the header holds the title only, descriptions and hints open the body; no bordered box in the body (field groups are plain `fieldset` + muted uppercase `legend`)
 - Mobile toolbar: one line; the selected count shows the number alone (`sr-only` full label), action labels hidden behind icons
-- Mobile: same card; rows become stacked blocks separated by the same line
+- Fit to screen: the page `main` is a flex column; from `min-height: 30rem` the page wrapper and the card take `min-h-0` (`TRACKER_FIT_SCREEN_CLASS`) so the card shrinks to the screen; header and footer `shrink-0`, the rows area `min-h-0 overflow-y-auto` with the project scrollbar tokens (`TRACKER_ROWS_SCROLL_CLASS`), focusable region labelled « Combattants ». The card uses `overflow-clip` so it never shrinks below its content on short screens (the page scrolls there)
+- Page: `max-w-[1520px] mx-auto`; from `2xl` the wrapper also takes `my-auto` (vertical centering when shorter than the screen, no clipping when longer)
+- Mobile footer (below `sm`): navigation group left (icons), End combat right with the short label
+- Mobile: same card; rows become stacked blocks separated by the same line; no line between the parts of one block, spacing only; expanded details: conditions, then group
 
 ## 6. Responsive Baseline
 
