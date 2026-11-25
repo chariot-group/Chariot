@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Link } from "@/i18n/navigation";
-import { ChevronDown, ChevronRight, HeartCrack, Layers2, Pencil, Skull, Users } from "lucide-react";
+import { ChevronDown, ChevronRight, HeartCrack, Layers2, Pencil, Skull, User, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,7 +22,9 @@ import {
 } from "@/components/initiativeTracker/InitiativeTrackerVisibilityDialog";
 import {
   SESSION_PARTICIPANTS_GROUP_ID,
+  TRACKER_CARD_PADDING_X_CLASS,
   TRACKER_CELL_ALIGN,
+  TRACKER_GRID_GAP_CLASS,
   TRACKER_GRID_TEMPLATE_COLUMNS,
 } from "@/components/initiativeTracker/constants";
 import type { RowStatusAnimation } from "@/hooks/useStatusChangedRows";
@@ -34,6 +36,7 @@ import {
   resolvePlayerDisplayNameForSave,
   resolvePlayerTrackerDisplayName,
   shouldShowGmPlayerAliasSubtitle,
+  truncateTrackerLabel,
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
 import { InitiativeNumberInput } from "@/components/initiativeTracker/InitiativeNumberInput";
@@ -49,6 +52,7 @@ import {
 } from "@/components/initiativeTracker/concentration.utils";
 import type { TrackerConcentration } from "@/store/slices/sessionSlice";
 import { TrackerGridCell } from "@/components/initiativeTracker/TrackerGridCell";
+import { ConditionBadgeHelp } from "@/components/initiativeTracker/ConditionBadgeHelp";
 import { formatSignedBonus } from "@/utils/attack.utils";
 
 type InitiativeTrackerRowProps = {
@@ -155,6 +159,29 @@ type InitiativeTrackerRowProps = {
   };
 };
 
+/**
+ * FR-combat-initiative-tracker — name / group label cut after 20 characters (`…`).
+ * The full value stays available as tooltip and to assistive tech.
+ */
+function TrackerLabel({ value, className }: { value: string; className?: string }) {
+  const short = truncateTrackerLabel(value);
+  const isCut = short !== value.trim();
+  return (
+    <span
+      className={className}
+      title={value}>
+      {isCut ? (
+        <>
+          <span aria-hidden="true">{short}</span>
+          <span className="sr-only">{value}</span>
+        </>
+      ) : (
+        value
+      )}
+    </span>
+  );
+}
+
 export function InitiativeTrackerRow({
   row,
   mode = "gm",
@@ -225,9 +252,10 @@ export function InitiativeTrackerRow({
   const renderCharacterNameText = (primary: string, className = "") => (
     <span className={cn("flex w-full max-w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden", className)}>
       <span className="flex min-w-0 items-center gap-2">
-        <span className="block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white" title={primary}>
-          {primary}
-        </span>
+        <TrackerLabel
+          value={primary}
+          className="block min-w-0 max-w-full flex-1 truncate text-base font-semibold text-white"
+        />
         {isOwnCharacter ? (
           <span
             className="shrink-0 rounded-full bg-blue/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue"
@@ -239,9 +267,8 @@ export function InitiativeTrackerRow({
       {showGmAliasSubtitle ? (
         <span
           className="block w-full min-w-0 max-w-full truncate text-xs font-medium text-white/55"
-          title={gmAliasDisplayName}
           aria-label={labels.playerDisplayNameSubtitle}>
-          {gmAliasDisplayName}
+          <TrackerLabel value={gmAliasDisplayName} />
         </span>
       ) : null}
     </span>
@@ -266,10 +293,13 @@ export function InitiativeTrackerRow({
   );
 
   const hpCellClassName = cn(
-    "flex h-9 w-full min-w-[4.75rem] flex-col items-center justify-center gap-0 overflow-hidden rounded-[15px] bg-gray-middle-light px-2 tabular-nums",
+    "flex h-9 w-full flex-col items-start justify-center gap-0 overflow-hidden tabular-nums",
     TRACKER_CELL_ALIGN.hitPoints,
     showHp && hasTempHp && "min-h-10 py-0.5",
   );
+  /** Field frame only on the clickable GM hit points button (read-only values stay plain text). */
+  /** Rows sit on `gray-middle-light`: fields inside them use the next lighter level (`gray`). */
+  const hpFieldFrameClassName = "min-w-[5.25rem] rounded-[15px] bg-gray px-3";
 
   const StatusIcon = showLifeStatus && (isDead ? Skull : isUnconscious ? HeartCrack : null);
   const statusIconColor = isDead ? "text-red" : "text-yellow";
@@ -279,7 +309,7 @@ export function InitiativeTrackerRow({
 
   const hpCellContent = (
     <>
-      <span className="flex items-center justify-center gap-1 text-sm font-medium leading-tight text-white">
+      <span className="flex items-center justify-start gap-1 text-sm font-medium leading-tight text-white">
         {showHp ? (
           <span>
             {row.hitPoints}/{row.maxHitPoints ?? 0}
@@ -303,25 +333,19 @@ export function InitiativeTrackerRow({
     </>
   );
 
-  const rowBackgroundClass = showLifeStatus && isDead
-    ? "bg-red/35"
-    : showLifeStatus && isUnconscious
-      ? "bg-yellow/30"
-      : isActiveTurn
-        ? "bg-blue/35"
-        : "bg-gray";
-  const rowRingClass = cn(
-    isActiveTurn
-      ? "ring-2 ring-blue/60"
-      : showLifeStatus && isDead
-        ? "ring-2 ring-red/60"
-        : showLifeStatus && isUnconscious
-          ? "ring-2 ring-yellow/60"
-          : "",
-    isOwnCharacter && "ring-2 ring-white/30 ring-offset-1 ring-offset-background",
-    isNewlyRevealed && "shadow-[0_0_0_1.5px_rgba(154,226,1,0.65),0_0_14px_rgba(154,226,1,0.35)] animate-pulse",
-    statusChangeAnimation === "dead" && "shadow-[0_0_0_1.5px_rgba(255,45,45,0.65),0_0_14px_rgba(255,45,45,0.35)] animate-pulse",
-    statusChangeAnimation === "unconscious" && "shadow-[0_0_0_1.5px_rgba(255,196,0,0.65),0_0_14px_rgba(255,196,0,0.35)] animate-pulse",
+  // FR-combat-initiative-tracker table layout — a colored row changes its background only (no ring);
+  // the active turn background wins, the vital status stays readable through the HP icon + status text.
+  const rowBackgroundClass = isActiveTurn
+    ? "bg-blue/35"
+    : showLifeStatus && isDead
+      ? "bg-red/35"
+      : showLifeStatus && isUnconscious
+        ? "bg-yellow/30"
+        : "bg-transparent";
+  const rowEffectClass = cn(
+    // FR-tracker-combatant-reveal — the only ring allowed on a tracker row (temporary, 3 s).
+    isNewlyRevealed && "ring-2 ring-inset ring-green/60 animate-pulse",
+    statusChangeAnimation != null && "animate-pulse motion-reduce:animate-none",
   );
 
   const renderCharacterNameNode = () => {
@@ -378,8 +402,16 @@ export function InitiativeTrackerRow({
   };
 
   const renderAvatarThumb = () => {
+    // FR-combat-initiative-tracker — no image (or hidden identity): neutral profile bubble, same size.
     if (showHiddenName || !row.avatar?.trim()) {
-      return null;
+      return (
+        <span
+          data-slot="tracker-avatar-placeholder"
+          aria-hidden="true"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gray sm:size-10">
+          <User className="size-4 text-white/40" />
+        </span>
+      );
     }
 
     if (avatarImageUrl) {
@@ -393,7 +425,7 @@ export function InitiativeTrackerRow({
           height={36}
           loading="lazy"
           decoding="async"
-          className="size-9 shrink-0 rounded-full object-cover object-center"
+          className="size-9 shrink-0 rounded-full object-cover object-center sm:size-10"
         />
       );
     }
@@ -431,16 +463,19 @@ export function InitiativeTrackerRow({
             className="size-4 shrink-0 text-white/75"
           />
         )}
-        <span
-          title={row.groupLabel}
-          className={cn("block min-w-0 max-w-full text-base", detail ? "break-words" : "truncate")}>
-          {row.groupLabel}
-        </span>
+        {detail ? (
+          <span className="block min-w-0 max-w-full break-words text-sm">{row.groupLabel}</span>
+        ) : (
+          <TrackerLabel
+            value={row.groupLabel}
+            className="block min-w-0 max-w-full truncate text-sm"
+          />
+        )}
       </>
     ) : isPlayerView ? (
       detail ? hidden : compactHidden
     ) : (
-      <span className={cn("block min-w-0 max-w-full text-base text-white/70", detail ? "break-words" : "truncate")}>
+      <span className={cn("block min-w-0 max-w-full text-sm text-white/70", detail ? "break-words" : "truncate")}>
         {labels.otherGroup}
       </span>
     );
@@ -536,19 +571,16 @@ export function InitiativeTrackerRow({
     const modifierAriaLabel = labels.initiativeModifierFor(modifierText);
 
     return (
-    <div className={cn("flex w-full min-w-0 items-center", hasTabletExpansion && !compact && "pl-5")}>
+    <div className="flex w-full min-w-0 items-center">
       {showInitiative ? (
         initiativeLocked || (isPlayerView && !isOwnCharacter) ? (
-          <div
-            className={cn(
-              "mx-auto flex w-full max-w-[88px] flex-col items-center justify-center",
-              compact && "max-w-none",
-            )}>
+          // Not clickable: plain value, no field frame (FR-combat-initiative-tracker table layout).
+          <div className="flex w-full min-w-0 flex-col items-start justify-center">
             <div
+              data-slot="tracker-initiative-value"
               className={cn(
-                "flex h-9 w-full items-center justify-center rounded-[15px] bg-gray-middle-light px-3 text-sm font-medium tabular-nums text-white",
-                // Mobile card: plain value, no nested pill.
-                compact && "bg-transparent px-0 text-base font-semibold",
+                "flex h-9 items-center text-sm font-semibold tabular-nums text-white",
+                compact && "text-base",
               )}
               aria-label={
                 showModifier ? `${labels.initiativeFor}, ${modifierAriaLabel}` : labels.initiativeFor
@@ -566,6 +598,7 @@ export function InitiativeTrackerRow({
           <InitiativeNumberInput
             value={row.initiative}
             resetKey={row.id}
+            align="start"
             ariaLabel={
               initiativeMissing && initiativeMissingLabel
                 ? `${labels.initiativeFor}, ${initiativeMissingLabel}`
@@ -581,7 +614,7 @@ export function InitiativeTrackerRow({
               compact && "max-w-none",
             )}
             className={cn(
-              "h-9 rounded-[15px] bg-gray-middle-light px-3 text-center text-sm text-white",
+              "h-9 rounded-[15px] bg-gray px-3 text-left text-sm text-white",
               compact && "px-2",
               // Same 1px width focused or not; neutral dashed frame marks a roll still to enter.
               initiativeMissing && "border border-dashed border-white/40 focus-within:border-solid focus-within:border-white/80",
@@ -589,7 +622,7 @@ export function InitiativeTrackerRow({
           />
         )
       ) : (
-        <div className="flex justify-center">{compactHidden}</div>
+        compactHidden
       )}
     </div>
     );
@@ -599,13 +632,13 @@ export function InitiativeTrackerRow({
     hasTabletExpansion ? (
       <Button
         type="button"
-        variant="ghost"
+        variant="secondary"
         size="icon-sm"
         aria-expanded={isExpanded}
         aria-controls={tabletDetailsId}
         aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
         onClick={onToggleExpanded}
-        className="absolute left-2 top-1/2 hidden size-7 -translate-y-1/2 text-white/65 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 md:inline-flex lg:hidden">
+        className="hidden shrink-0 md:inline-flex lg:hidden">
         {isExpanded ? (
           <ChevronDown className="size-4" aria-hidden="true" />
         ) : (
@@ -615,7 +648,7 @@ export function InitiativeTrackerRow({
     ) : null;
 
   const renderHpCell = (compact = false) => (
-    <div className={cn("flex min-w-0 justify-center self-center")}>
+    <div className="flex min-w-0 justify-start self-center">
       {!isPlayerView && onHitPointsClick ? (
         <button
           type="button"
@@ -625,14 +658,22 @@ export function InitiativeTrackerRow({
           title={labels.hitPointsSessionTooltip}
           className={cn(
             hpCellClassName,
-            "cursor-pointer transition-colors hover:bg-gray-middle-light/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
+            hpFieldFrameClassName,
+            // The value is centered inside its button (FR-combat-initiative-tracker table layout).
+            "items-center [&>span:first-child]:justify-center",
+            "cursor-pointer transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
             // Clickable on mobile too: keep the field frame (like the initiative input) as affordance.
             compact && "min-w-0 [&>span:first-child]:text-base [&>span:first-child]:font-semibold",
           )}>
           {hpCellContent}
         </button>
       ) : (
-        <div className={cn(hpCellClassName, "text-sm font-medium", compact && "min-w-0 bg-transparent [&>span:first-child]:text-base [&>span:first-child]:font-semibold")}>
+        <div
+          className={cn(
+            hpCellClassName,
+            "text-sm font-medium",
+            compact && "[&>span:first-child]:text-base [&>span:first-child]:font-semibold",
+          )}>
           {hpCellContent}
         </div>
       )}
@@ -674,16 +715,17 @@ export function InitiativeTrackerRow({
               const badgeText = durationLabel ? `${conditionLabel} (${durationLabel})` : conditionLabel;
 
               return (
-                <span
+                <ConditionBadgeHelp
                   key={entry.condition}
+                  title={badgeText}
+                  description={labels.getConditionDescription(entry.condition)}
                   className={cn(
                     "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium",
                     badgeClassName,
-                  )}
-                  title={badgeText}>
+                  )}>
                   <Icon aria-hidden="true" className="size-3.5 shrink-0" />
                   <span className="min-w-0 truncate">{badgeText}</span>
-                </span>
+                </ConditionBadgeHelp>
               );
             })
           : null}
@@ -693,16 +735,17 @@ export function InitiativeTrackerRow({
               const durationLabel = labels.formatConditionEntryDuration(entry);
               const badgeText = durationLabel ? `${entry.name} (${durationLabel})` : entry.name;
               return (
-                <span
+                <ConditionBadgeHelp
                   key={entry.effectId}
+                  title={badgeText}
+                  description={entry.description}
                   className={cn(
                     "inline-flex max-w-full items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium",
                     badgeClassName,
-                  )}
-                  title={badgeText}>
+                  )}>
                   <Icon aria-hidden="true" className="size-3.5 shrink-0" />
                   <span className="min-w-0 truncate">{badgeText}</span>
-                </span>
+                </ConditionBadgeHelp>
               );
             })
           : null}
@@ -764,12 +807,15 @@ export function InitiativeTrackerRow({
             {canEditConcentration && battleStarted && showConcentration ? (
               <Button
                 type="button"
-                variant="ghost"
+                variant="secondary"
                 size="icon-sm"
                 aria-label={labels.conditionFor}
-                className="shrink-0 text-white/80 hover:bg-white/10 hover:text-white"
+                className="shrink-0"
                 onClick={() => openConcentrationDialog("set")}>
-                <Pencil className="size-4" />
+                <Pencil
+                  className="size-4 text-white/80"
+                  aria-hidden="true"
+                />
               </Button>
             ) : null}
             {compact ? renderConditionBadges() : conditionContent != null ? (
@@ -789,8 +835,8 @@ export function InitiativeTrackerRow({
   };
 
   const renderMobileStat = (shortLabel: string, fullLabel: string, value: React.ReactNode) => (
-    <div className="flex min-w-0 flex-col items-center gap-1.5">
-      <dt className="w-full truncate text-center text-[11px] font-semibold uppercase tracking-wide text-white/50">
+    <div className="flex min-w-0 flex-col items-start gap-1.5">
+      <dt className="w-full truncate text-left text-[11px] font-semibold uppercase tracking-wide text-white/50">
         <span aria-hidden="true">{shortLabel}</span>
         <span className="sr-only">{fullLabel}</span>
       </dt>
@@ -808,19 +854,28 @@ export function InitiativeTrackerRow({
   return (
     <>
       <div
-        className={`relative hidden w-full max-w-full min-w-0 items-center gap-x-2 overflow-x-clip rounded-[22px] py-3 pr-3 text-sm text-white shadow-lg transition-colors lg:gap-x-3 lg:px-5 lg:text-base md:grid ${hasTabletExpansion ? "pl-5 lg:pl-5" : "pl-3 lg:pl-5"
-          } ${rowBackgroundClass} ${rowRingClass}`}
+        data-slot="tracker-row"
+        className={cn(
+          "hidden w-full max-w-full min-w-0 items-center overflow-x-clip py-3 text-sm text-white transition-colors md:grid",
+          TRACKER_GRID_GAP_CLASS,
+          TRACKER_CARD_PADDING_X_CLASS,
+          rowBackgroundClass,
+          rowEffectClass,
+        )}
         style={{ gridTemplateColumns }}
         data-status={status}
+        aria-current={isActiveTurn ? "true" : undefined}
         aria-label={status === "alive" ? undefined : statusLabel}>
-        <span className="sr-only">{statusLabel}</span>
-        {renderTabletExpansionButton()}
+        <span className="sr-only">
+          {statusLabel}
+          {isActiveTurn ? `. ${labels.activeTurn}` : null}
+        </span>
         {selectionEnabled ? (
           <Checkbox
             checked={isSelected}
             aria-label={selectRowLabel}
             onCheckedChange={(checked) => onSelectionChange?.(Boolean(checked))}
-            className="size-5 cursor-pointer justify-self-center"
+            className="size-5 cursor-pointer justify-self-start"
           />
         ) : null}
 
@@ -840,13 +895,18 @@ export function InitiativeTrackerRow({
           {renderCharacterColumn()}
         </TrackerGridCell>
 
-        <TrackerGridCell align="hitPoints">{renderHpCell()}</TrackerGridCell>
-
         <TrackerGridCell align="armorClass" className="text-sm font-semibold tabular-nums text-white/90">
           {showAc ? row.armorClass : compactHidden}
         </TrackerGridCell>
 
-        <TrackerGridCell align="condition">{renderConditionsCell()}</TrackerGridCell>
+        <TrackerGridCell align="hitPoints">{renderHpCell()}</TrackerGridCell>
+
+        <TrackerGridCell align="condition">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="min-w-0 flex-1">{renderConditionsCell()}</div>
+            {renderTabletExpansionButton()}
+          </div>
+        </TrackerGridCell>
 
         <TrackerGridCell as="span" align="group" className="flex items-center gap-2">
           {groupContent}
@@ -856,15 +916,18 @@ export function InitiativeTrackerRow({
       <div
         id={tabletDetailsId}
         hidden={!isExpanded || !hasTabletExpansion}
-        className="hidden rounded-[18px] bg-card/95 p-3 text-white shadow-lg ring-1 ring-white/10 md:block lg:hidden">
+        className={cn(
+          "hidden border-t border-border bg-gray/40 py-3 text-white md:block lg:hidden",
+          TRACKER_CARD_PADDING_X_CLASS,
+        )}>
         <div className="grid min-w-0 grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] gap-3">
-          <div className="min-w-0 rounded-[15px] bg-black/10 px-3 py-2">
+          <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase text-white/45">
               {labels.visibilityDialog.fields.conditions}
             </p>
             <div className="mt-2 min-w-0">{renderConditionBadges()}</div>
           </div>
-          <div className="min-w-0 rounded-[15px] bg-black/10 px-3 py-2">
+          <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase text-white/45">
               {labels.visibilityDialog.fields.groupLabel}
             </p>
@@ -877,11 +940,13 @@ export function InitiativeTrackerRow({
 
       <article
         className={cn(
-          "w-full max-w-full min-w-0 overflow-hidden rounded-[20px] p-4 text-white shadow-lg transition-colors md:hidden",
+          "w-full max-w-full min-w-0 overflow-hidden py-4 text-white transition-colors md:hidden",
+          TRACKER_CARD_PADDING_X_CLASS,
           rowBackgroundClass,
-          rowRingClass,
+          rowEffectClass,
         )}
         data-status={status}
+        aria-current={isActiveTurn ? "true" : undefined}
         aria-label={status === "alive" ? labels.detailsFor : `${labels.detailsFor}. ${statusLabel}`}>
         <span className="sr-only">{statusLabel}</span>
         {/* Header on a single line: selection · character · active turn / visibility / expand. */}
@@ -912,40 +977,40 @@ export function InitiativeTrackerRow({
             ) : null}
             <Button
               type="button"
-              variant="ghost"
+              variant="secondary"
               size="icon-sm"
               aria-expanded={isExpanded}
               aria-controls={detailsId}
               aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
               onClick={onToggleExpanded}
-              className="size-9 shrink-0 text-white/75 hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white/40">
+              className="shrink-0">
               {isExpanded ? (
-                <ChevronDown className="size-5" aria-hidden="true" />
+                <ChevronDown className="size-4" aria-hidden="true" />
               ) : (
-                <ChevronRight className="size-5" aria-hidden="true" />
+                <ChevronRight className="size-4" aria-hidden="true" />
               )}
             </Button>
           </div>
         </div>
 
-        {/* Three equal stat cells, one background level: short visible label, centered value. */}
-        <dl className="mt-4 grid min-w-0 grid-cols-3 gap-3">
+        {/* Three equal stat cells, one background level: short visible label, left-aligned value. */}
+        <dl className="mt-4 grid min-w-0 grid-cols-3 gap-4">
           {renderMobileStat(
             mobileStatLabels.initiative,
             labels.visibilityDialog.fields.initiative,
             renderInitiativeCell(true),
           )}
           {renderMobileStat(
+            mobileStatLabels.armorClass,
+            labels.visibilityDialog.fields.armorClass,
+            <div className="flex h-9 items-center justify-start text-base font-semibold tabular-nums text-white">
+              {showAc ? row.armorClass : hidden}
+            </div>,
+          )}
+          {renderMobileStat(
             mobileStatLabels.hitPoints,
             labels.visibilityDialog.fields.hitPoints,
             renderHpCell(true),
-          )}
-          {renderMobileStat(
-            mobileStatLabels.armorClass,
-            labels.visibilityDialog.fields.armorClass,
-            <div className="flex h-9 items-center justify-center text-base font-semibold tabular-nums text-white">
-              {showAc ? row.armorClass : hidden}
-            </div>,
           )}
         </dl>
 

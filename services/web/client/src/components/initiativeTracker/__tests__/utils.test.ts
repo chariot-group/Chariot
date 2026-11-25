@@ -25,6 +25,8 @@ import {
   resolveInitiativeModifierFromStats,
   initiativeRollFromTotal,
   initiativeTotalFromRoll,
+  TRACKER_LABEL_MAX_CHARS,
+  truncateTrackerLabel,
 } from "@/components/initiativeTracker/utils";
 import { SESSION_PARTICIPANTS_GROUP_ID } from "@/components/initiativeTracker/constants";
 import type { InitiativeTrackerRow } from "@/store/slices/sessionSlice";
@@ -533,5 +535,28 @@ describe("findAdjacentInitiativeInput (FR-combat-initiative-tracker keyboard ent
   it("guard: unknown field (e.g. hidden duplicate) keeps native focus order", () => {
     expect(findAdjacentInitiativeInput(inputs, "z", false)).toBeNull();
     expect(findAdjacentInitiativeInput([], "a", false)).toBeNull();
+  });
+});
+
+describe("FR-combat-initiative-tracker — truncateTrackerLabel (20 characters max)", () => {
+  it("nominal: cuts after 20 characters and appends an ellipsis", () => {
+    expect(TRACKER_LABEL_MAX_CHARS).toBe(20);
+    expect(truncateTrackerLabel("Gobelins de la forêt sombre du nord")).toBe("Gobelins de la forêt…");
+  });
+
+  it("edge: exactly 20 characters is kept whole; trailing space before the cut is trimmed", () => {
+    expect(truncateTrackerLabel("12345678901234567890")).toBe("12345678901234567890");
+    expect(truncateTrackerLabel("Aragorn fils d'Arath orn")).toBe("Aragorn fils d'Arath…");
+    expect(truncateTrackerLabel("Bande de bandits du    nord")).toBe("Bande de bandits du…");
+  });
+
+  it("edge: counts emoji as one character and never splits them", () => {
+    expect(truncateTrackerLabel("🐉".repeat(21))).toBe(`${"🐉".repeat(20)}…`);
+  });
+
+  it("failure: empty or missing values return an empty string", () => {
+    expect(truncateTrackerLabel("")).toBe("");
+    expect(truncateTrackerLabel(undefined)).toBe("");
+    expect(truncateTrackerLabel(null)).toBe("");
   });
 });

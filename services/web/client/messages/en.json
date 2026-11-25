@@ -413,6 +413,7 @@
         "emptySelection": "Select at least one character before configuring grouped display.",
         "configure": "Configure",
         "configureShort": "Set",
+        "accept": "Accept",
         "leaveInitiative": "Leave initiative for selection"
       },
       "yourTurn": "It's your turn!",
@@ -436,6 +437,7 @@
       "newlyCombatantRevealed": "is now visible in combat",
       "previousTurn": "Previous",
       "nextTurn": "Next",
+      "turnNavigation": "Turn navigation",
       "previousTurnHintAvailable": "No action recorded this turn — you can undo the turn advance.",
       "previousTurnHintLocked": "An action was performed.",
       "previousTurnHintNoPrevious": "No previous turn.",

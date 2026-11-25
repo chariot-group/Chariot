@@ -10,7 +10,11 @@ import { RemoveCombatantGroupsDialog } from "@/components/dialogs/RemoveCombatan
 import { InitiativeTrackerHealthDialog } from "@/components/initiativeTracker/InitiativeTrackerHealthDialog";
 import { InitiativeTrackerTable } from "@/components/initiativeTracker/InitiativeTrackerTable";
 import type { ConditionSelectCustomEffectsProps } from "@/components/initiativeTracker/ConditionSelect";
-import { InitiativeTrackerTurnControls, type PreviousTurnState } from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
+import {
+  InitiativeTrackerRoundFooter,
+  InitiativeTrackerTurnControls,
+  type PreviousTurnState,
+} from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import {
   characterName,
@@ -626,53 +630,6 @@ export default function InitiativeTrackerPage() {
           </p>
         ) : null}
 
-        {(battleStarted || isGameMaster) ? (
-          <div className="flex min-w-0 items-center justify-between gap-2">
-            {battleStarted ? (
-              <div className="min-w-0 rounded-full bg-card px-4 py-2 text-sm font-bold text-white shadow-lg sm:px-5 sm:text-base">
-                <span className="block truncate">{t("roundIndicator", { round: currentRound })}</span>
-              </div>
-            ) : (
-              <span aria-hidden="true" />
-            )}
-
-            {isGameMaster ? (
-              <div className="flex shrink-0 items-center gap-2">
-                {canRemoveGroup ? (
-                <RemoveCombatantGroupsDialog>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    aria-label={tInit("removeCombatantGroups")}
-                    className="gap-2 px-3 sm:px-4">
-                    <LayersMinus
-                      className="size-4"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only sm:not-sr-only">{tInit("removeCombatantGroups")}</span>
-                  </Button>
-                </RemoveCombatantGroupsDialog>
-                ) : null}
-                {hasAddableCombatants ? (
-                <AddCombatantsDialog>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    aria-label={tInit("addCombatants")}
-                    className="gap-2 px-3 sm:px-4">
-                    <LayersPlus
-                      className="size-4"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only sm:not-sr-only">{tInit("addCombatants")}</span>
-                  </Button>
-                </AddCombatantsDialog>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
         <InitiativeTrackerTable
           rows={visibleRows}
           mode={trackerMode}
@@ -733,6 +690,42 @@ export default function InitiativeTrackerPage() {
               : undefined
           }
           getRowLabels={getRowLabels}
+          headerActions={
+            isGameMaster && (canRemoveGroup || hasAddableCombatants) ? (
+              <>
+                {canRemoveGroup ? (
+                  <RemoveCombatantGroupsDialog>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      aria-label={tInit("removeCombatantGroups")}>
+                      <LayersMinus
+                        className="size-4"
+                        aria-hidden="true"
+                      />
+                      <span className="sr-only lg:not-sr-only">{tInit("removeCombatantGroups")}</span>
+                    </Button>
+                  </RemoveCombatantGroupsDialog>
+                ) : null}
+                {hasAddableCombatants ? (
+                  <AddCombatantsDialog>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      aria-label={tInit("addCombatants")}>
+                      <LayersPlus
+                        className="size-4"
+                        aria-hidden="true"
+                      />
+                      <span className="sr-only lg:not-sr-only">{tInit("addCombatants")}</span>
+                    </Button>
+                  </AddCombatantsDialog>
+                ) : null}
+              </>
+            ) : undefined
+          }
           groupedInitiativeLabels={
             isGameMaster && !battleStarted
               ? {
@@ -766,6 +759,7 @@ export default function InitiativeTrackerPage() {
                   emptySelection: t("bulkVisibilityDialog.emptySelection"),
                   configure: t("bulkVisibilityDialog.configure"),
                   configureShort: t("bulkVisibilityDialog.configureShort"),
+                  accept: t("bulkVisibilityDialog.accept"),
                   cancel: t("visibilityDialog.cancel"),
                   leaveInitiative: t("bulkVisibilityDialog.leaveInitiative"),
                   fields: {
@@ -785,6 +779,7 @@ export default function InitiativeTrackerPage() {
             isGameMaster ? (
               <InitiativeTrackerTurnControls
                 battleStarted={battleStarted}
+                roundLabel={t("roundIndicator", { round: currentRound })}
                 canGoPrevious={canGoPrevious}
                 previousTurnState={previousTurnState}
                 labels={{
@@ -801,6 +796,7 @@ export default function InitiativeTrackerPage() {
                   endCombatCancelAction: t("endCombatCancelAction"),
                   previous: t("previousTurn"),
                   next: t("nextTurn"),
+                  turnNavigation: t("turnNavigation"),
                   previousHintAvailable: t("previousTurnHintAvailable"),
                   previousHintLocked: t("previousTurnHintLocked"),
                   previousHintNoPrevious: t("previousTurnHintNoPrevious"),
@@ -822,6 +818,8 @@ export default function InitiativeTrackerPage() {
                 onPrevious={() => dispatchTrackerAction(previousBattleTurn())}
                 onNext={() => dispatchTrackerAction(nextBattleTurn())}
               />
+            ) : battleStarted ? (
+              <InitiativeTrackerRoundFooter roundLabel={t("roundIndicator", { round: currentRound })} />
             ) : null
           }
           newlyCombatantRevealedLabel={!isGameMaster ? t("newlyCombatantRevealed") : undefined}

@@ -413,6 +413,7 @@
         "emptySelection": "Selecciona al menos un personaje antes de configurar una visualización agrupada.",
         "configure": "Configurar",
         "configureShort": "Ajustar",
+        "accept": "Aceptar",
         "leaveInitiative": "Sacar la selección de la iniciativa"
       },
       "yourTurn": "¡Es tu turno!",
@@ -436,6 +437,7 @@
       "newlyCombatantRevealed": "ahora es visible en el combate",
       "previousTurn": "Anterior",
       "nextTurn": "Siguiente",
+      "turnNavigation": "Navegación de turnos",
       "previousTurnHintAvailable": "Ninguna acción registrada en este turno — puedes corregir el avance.",
       "previousTurnHintLocked": "Se realizó una acción.",
       "previousTurnHintNoPrevious": "No hay turno anterior.",

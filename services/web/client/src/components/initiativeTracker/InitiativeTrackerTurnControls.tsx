@@ -4,11 +4,27 @@ import { ChevronLeft, ChevronRight, OctagonX, Play, XCircle } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  TRACKER_CARD_PADDING_X_CLASS,
+  TRACKER_ZONE_PADDING_Y_CLASS,
+} from "@/components/initiativeTracker/constants";
+import { cn } from "@/lib/utils";
+
+/**
+ * Joined button group (documented exception of FR-frontend-button-system, docs/design.md 5.7):
+ * one rounded frame, square inner segments, dividers between segments.
+ */
+const TURN_NAVIGATION_GROUP_CLASS =
+  "inline-flex h-9 min-w-0 items-stretch overflow-hidden rounded-[13px] border border-input bg-gray-middle-light";
+const TURN_NAVIGATION_SEGMENT_CLASS =
+  "h-full rounded-none border-0 focus-visible:ring-inset focus-visible:ring-offset-0";
 
 export type PreviousTurnState = "available" | "noPreviousTurn" | "currentTurnLocked";
 
 type InitiativeTrackerTurnControlsProps = {
   battleStarted: boolean;
+  /** FR-combat-initiative-tracker — round shown between previous and next once combat has started. */
+  roundLabel: string;
   canGoPrevious: boolean;
   previousTurnState: PreviousTurnState;
   /** FR-combat-initiative-tracker — rows still without initiative before combat start. */
@@ -27,6 +43,8 @@ type InitiativeTrackerTurnControlsProps = {
     endCombatCancelAction: string;
     previous: string;
     next: string;
+    /** Accessible name of the previous | round | next group. */
+    turnNavigation?: string;
     previousHintAvailable: string;
     previousHintLocked: string;
     previousHintNoPrevious: string;
@@ -57,10 +75,12 @@ function getPreviousHint(previousTurnState: PreviousTurnState, labels: Initiativ
 }
 
 /**
- * FR-combat-initiative-tracker — start / cancel (pre-start) / end combat + turn nav.
+ * FR-combat-initiative-tracker — tracker card footer: start / cancel (pre-start), then
+ * `previous | round | next` on the left and end combat on the right.
  */
 export function InitiativeTrackerTurnControls({
   battleStarted,
+  roundLabel,
   canGoPrevious,
   previousTurnState,
   missingInitiativeCount = 0,
@@ -77,27 +97,96 @@ export function InitiativeTrackerTurnControls({
   const prepStatus =
     missingInitiativeCount > 0 ? labels.getMissingInitiativesLabel?.(missingInitiativeCount) : labels.allInitiativesEntered;
 
-  return (
-    <div className="mt-4 flex flex-col items-center gap-2">
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="inline-flex">
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={!battleStarted || !canGoPrevious}
-                aria-label={labels.previous}
-                onClick={onPrevious}
-                className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-3">
-                <ChevronLeft className="size-4" />
-                <span className="sr-only sm:not-sr-only">{labels.previous}</span>
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs text-center">{previousHint}</TooltipContent>
-        </Tooltip>
+  const startButton = (
+    <Button
+      type="button"
+      onClick={confirmMissingStart ? undefined : onStartCombat}
+      variant="accent"
+      tone="green"
+      aria-label={labels.startCombat}
+      className="min-w-[4.5rem] sm:min-w-0">
+      <Play
+        className="size-4 sm:hidden"
+        aria-hidden="true"
+      />
+      <span className="sr-only sm:not-sr-only">{labels.startCombat}</span>
+    </Button>
+  );
 
+  return (
+    <div
+      data-slot="tracker-footer"
+      className={cn(
+        "w-full min-w-0 gap-3",
+        // Started: three zones so previous | round | next sits in the center of the footer.
+        battleStarted ? "grid grid-cols-[1fr_auto_1fr] items-center" : "flex flex-wrap items-center justify-between",
+        TRACKER_CARD_PADDING_X_CLASS,
+        TRACKER_ZONE_PADDING_Y_CLASS,
+      )}>
+      {battleStarted ? <span aria-hidden="true" /> : null}
+      {battleStarted ? (
+        // FR-combat-initiative-tracker — joined control: previous | round | next.
+        <div
+          role="group"
+          aria-label={labels.turnNavigation ?? roundLabel}
+          className={cn(TURN_NAVIGATION_GROUP_CLASS, "justify-self-center")}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={!canGoPrevious}
+                  aria-label={labels.previous}
+                  onClick={onPrevious}
+                  className={TURN_NAVIGATION_SEGMENT_CLASS}>
+                  <ChevronLeft
+                    className="size-4"
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only sm:not-sr-only">{labels.previous}</span>
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs text-center">{previousHint}</TooltipContent>
+          </Tooltip>
+          <span
+            data-slot="tracker-round"
+            role="status"
+            aria-live="polite"
+            className="flex items-center whitespace-nowrap border-x border-input px-3 text-sm font-semibold tabular-nums text-white">
+            {roundLabel}
+          </span>
+          <Button
+            type="button"
+            variant="secondary"
+            aria-label={labels.next}
+            onClick={onNext}
+            className={TURN_NAVIGATION_SEGMENT_CLASS}>
+            <span className="sr-only sm:not-sr-only">{labels.next}</span>
+            <ChevronRight
+              className="size-4"
+              aria-hidden="true"
+            />
+          </Button>
+        </div>
+      ) : labels.prepHint || prepStatus ? (
+        <p
+          className="min-w-0 flex-1 basis-64 text-sm text-white/70"
+          role="status"
+          aria-live="polite">
+          {labels.prepHint ? <span>{labels.prepHint} </span> : null}
+          {prepStatus ? (
+            <span className={missingInitiativeCount > 0 ? "font-semibold text-yellow" : "font-semibold text-green"}>
+              {prepStatus}
+            </span>
+          ) : null}
+        </p>
+      ) : (
+        <span aria-hidden="true" />
+      )}
+
+      <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2 justify-self-end">
         {battleStarted ? (
           <ConfirmDialog
             title={labels.endCombatConfirmTitle}
@@ -109,7 +198,7 @@ export function InitiativeTrackerTurnControls({
               type="button"
               variant="destructive"
               aria-label={labels.endCombat}
-              className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-4">
+              className="min-w-[4.5rem] sm:min-w-0">
               <OctagonX
                 className="size-4 sm:hidden"
                 aria-hidden="true"
@@ -129,7 +218,7 @@ export function InitiativeTrackerTurnControls({
                 type="button"
                 variant="secondary"
                 aria-label={labels.cancelCombat}
-                className="min-w-[4.5rem] border-red/50 bg-transparent px-5 text-red hover:bg-red/15 sm:min-w-0 sm:px-4">
+                className="min-w-[4.5rem] border-red/50 bg-transparent text-red hover:bg-red/15 sm:min-w-0">
                 <XCircle
                   className="size-4 sm:hidden"
                   aria-hidden="true"
@@ -145,62 +234,35 @@ export function InitiativeTrackerTurnControls({
                 cancelLabel={labels.startMissingCancelAction ?? labels.cancelCombatCancelAction}
                 confirmVariant="primary"
                 onConfirm={onStartCombat}>
-            <Button
-              type="button"
-              onClick={confirmMissingStart ? undefined : onStartCombat}
-              variant="accent"
-              tone="green"
-              aria-label={labels.startCombat}
-              className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-4">
-              <Play
-                className="size-4 sm:hidden"
-                aria-hidden="true"
-              />
-              <span className="sr-only sm:not-sr-only">{labels.startCombat}</span>
-            </Button>
+                {startButton}
               </ConfirmDialog>
             ) : (
-            <Button
-              type="button"
-              onClick={confirmMissingStart ? undefined : onStartCombat}
-              variant="accent"
-              tone="green"
-              aria-label={labels.startCombat}
-              className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-4">
-              <Play
-                className="size-4 sm:hidden"
-                aria-hidden="true"
-              />
-              <span className="sr-only sm:not-sr-only">{labels.startCombat}</span>
-            </Button>
+              startButton
             )}
           </>
         )}
-
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={!battleStarted}
-          aria-label={labels.next}
-          onClick={onNext}
-          className="min-w-[4.5rem] px-5 sm:min-w-0 sm:px-3">
-          <span className="sr-only sm:not-sr-only">{labels.next}</span>
-          <ChevronRight className="size-4" />
-        </Button>
       </div>
-      {!battleStarted && (labels.prepHint || prepStatus) ? (
-        <p
-          className="text-center text-sm text-white/70"
-          role="status"
-          aria-live="polite">
-          {labels.prepHint ? <span>{labels.prepHint} </span> : null}
-          {prepStatus ? (
-            <span className={missingInitiativeCount > 0 ? "font-semibold text-yellow" : "font-semibold text-green"}>
-              {prepStatus}
-            </span>
-          ) : null}
-        </p>
-      ) : null}
+    </div>
+  );
+}
+
+/** FR-session-combat-navigation — read-only round shown to players in the tracker footer. */
+export function InitiativeTrackerRoundFooter({ roundLabel }: { roundLabel: string }) {
+  return (
+    <div
+      data-slot="tracker-footer"
+      className={cn(
+        "flex w-full min-w-0 items-center justify-center",
+        TRACKER_CARD_PADDING_X_CLASS,
+        TRACKER_ZONE_PADDING_Y_CLASS,
+      )}>
+      <span
+        data-slot="tracker-round"
+        role="status"
+        aria-live="polite"
+        className="text-sm font-semibold tabular-nums text-white">
+        {roundLabel}
+      </span>
     </div>
   );
 }

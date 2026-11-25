@@ -413,6 +413,7 @@
         "emptySelection": "Sélectionnez au moins un personnage avant de paramétrer un affichage groupé.",
         "configure": "Paramétrer",
         "configureShort": "Régler",
+        "accept": "Accepter",
         "leaveInitiative": "Sortir la sélection de l'initiative"
       },
       "yourTurn": "C'est votre tour !",
@@ -436,6 +437,7 @@
       "newlyCombatantRevealed": "est maintenant visible dans le combat",
       "previousTurn": "Précédent",
       "nextTurn": "Suivant",
+      "turnNavigation": "Navigation des tours",
       "previousTurnHintAvailable": "Aucune action enregistrée sur ce tour — vous pouvez corriger le passage de tour.",
       "previousTurnHintLocked": "Une action a été effectuée.",
       "previousTurnHintNoPrevious": "Aucun tour précédent.",

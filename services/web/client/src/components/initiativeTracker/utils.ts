@@ -153,6 +153,20 @@ export function characterName(firstname: string, lastname: string, surname: stri
   return fullName || surname || "-";
 }
 
+/** FR-combat-initiative-tracker — max visible characters of a tracker name / group label. */
+export const TRACKER_LABEL_MAX_CHARS = 20;
+
+/**
+ * FR-combat-initiative-tracker — cuts a tracker label after `max` characters and appends `…`.
+ * Counts code points so emoji and accents are never split.
+ */
+export function truncateTrackerLabel(value: string | null | undefined, max = TRACKER_LABEL_MAX_CHARS): string {
+  const text = (value ?? "").trim();
+  const chars = Array.from(text);
+  if (max <= 0 || chars.length <= max) return text;
+  return `${chars.slice(0, max).join("").trimEnd()}…`;
+}
+
 export function clampConditionIndex(index: number, length: number) {
   if (length === 0) return -1;
   return Math.max(0, Math.min(index, length - 1));

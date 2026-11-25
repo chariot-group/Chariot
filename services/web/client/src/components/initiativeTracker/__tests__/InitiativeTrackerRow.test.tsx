@@ -407,9 +407,209 @@ describe("InitiativeTrackerRow mobile card layout (FR-combat-initiative-tracker)
     // Desktop grid + mobile card.
     expect(hpButtons).toHaveLength(2);
     for (const tag of hpButtons) {
-      expect(tag).toContain(" bg-gray-middle-light ");
+      // Rows sit on gray-middle-light: the field frame uses the next lighter level.
+      expect(tag).toContain(" bg-gray ");
       expect(tag).not.toContain("bg-transparent");
     }
   });
 });
 
+
+describe("FR-combat-initiative-tracker — tracker table row", () => {
+  const desktopRow = (html: string) => {
+    const start = html.indexOf('data-slot="tracker-row"');
+    return html.slice(html.lastIndexOf("<div", start), html.indexOf(">", start) + 1);
+  };
+
+  it("nominal: names and groups longer than 20 characters are cut with an ellipsis, full value kept", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('<span aria-hidden="true">A character with a v…</span>');
+    expect(html).toContain('<span class="sr-only">A character with a very long first name and an even longer family name</span>');
+    expect(html).toContain('title="A character with a very long first name and an even longer family name"');
+    expect(html).toContain('<span aria-hidden="true">Companions with an u…</span>');
+  });
+
+  it("edge: a 20-character name is shown whole, without ellipsis", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, firstname: "Twenty chars", lastname: "exactly", groupLabel: "Short group", playerDisplayName: "" }}
+        mode="gm"
+        labels={labels}
+      />,
+    );
+
+    expect("Twenty chars exactly").toHaveLength(20);
+    expect(html).toContain(">Twenty chars exactly<");
+    expect(html).not.toContain("…");
+  });
+
+  it("guard: colored rows change their background only, without ring; active turn wins over vital status", () => {
+    const dead = desktopRow(
+      renderToStaticMarkup(
+        <InitiativeTrackerRow
+          row={{ ...baseRow, hitPoints: 0 }}
+          mode="gm"
+          labels={labels}
+        />,
+      ),
+    );
+    const activeUnconscious = desktopRow(
+      renderToStaticMarkup(
+        <InitiativeTrackerRow
+          row={{ ...baseRow, hitPoints: 0, kind: "player", deathSavesFailures: 1 }}
+          mode="gm"
+          isActiveTurn
+          labels={labels}
+        />,
+      ),
+    );
+
+    expect(dead).toContain("bg-red/35");
+    expect(dead).not.toContain("ring");
+    expect(dead).not.toContain("rounded");
+    expect(activeUnconscious).toContain("bg-blue/35");
+    expect(activeUnconscious).not.toContain("bg-yellow/30");
+    expect(activeUnconscious).not.toContain("ring");
+    expect(activeUnconscious).toContain('aria-current="true"');
+  });
+
+  it("edge: the reveal halo stays the only ring on a player row", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        isNewlyRevealed
+        labels={labels}
+      />,
+    );
+
+    expect(desktopRow(html)).toContain("ring-green/60");
+  });
+
+  it("guard: a locked initiative is plain text, without field frame", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        initiativeLocked
+        battleStarted
+        labels={labels}
+      />,
+    );
+    const valueTags = (html.match(/<div[^>]*data-slot="tracker-initiative-value"[^>]*>/g) ?? []);
+
+    expect(valueTags.length).toBeGreaterThan(0);
+    for (const tag of valueTags) {
+      expect(tag).not.toContain("bg-gray-middle-light");
+      expect(tag).not.toContain("rounded");
+    }
+  });
+
+  it("nominal: row buttons look like real buttons and keep the show icon state color", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        onUpdateRow={() => {}}
+        labels={labels}
+      />,
+    );
+    const showButtons = (html.match(/<button[^>]*>/g) ?? []).filter((tag) =>
+      tag.includes(`aria-label="${labels.visibleFor}"`),
+    );
+
+    expect(showButtons.length).toBeGreaterThan(0);
+    for (const tag of showButtons) expect(tag).toContain("bg-gray-middle-light");
+    expect(html).toContain("text-green");
+  });
+
+  it("nominal: armor class comes before hit points; the hit points value is centered in its button", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        onHitPointsClick={() => {}}
+        labels={labels}
+      />,
+    );
+    const desktop = html.slice(html.indexOf('data-slot="tracker-row"'), html.indexOf("tablet-details"));
+
+    expect(desktop.indexOf('data-tracker-grid-cell-align="armorClass"')).toBeLessThan(
+      desktop.indexOf('data-tracker-grid-cell-align="hitPoints"'),
+    );
+    const hpButton = (desktop.match(/<button[^>]*>/g) ?? []).find((tag) =>
+      tag.includes(`aria-label="${labels.hitPointsFor}"`),
+    );
+    expect(hpButton).toContain("items-center");
+    expect(hpButton).toContain("first-child]:justify-center");
+  });
+
+  it("guard: a read-only hit points value stays plain and left-aligned", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    expect(html).not.toContain(`aria-label="${labels.hitPointsFor}"`);
+    expect(html).not.toContain("first-child]:justify-center");
+  });
+
+  it("edge: a character without image shows the profile placeholder bubble", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, avatar: "" }}
+        mode="gm"
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('data-slot="tracker-avatar-placeholder" aria-hidden="true"');
+    expect(html).toContain("lucide-user ");
+  });
+
+  it("guard: a hidden identity gets the placeholder, never the character image", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{
+          ...baseRow,
+          avatar: "characters/character-1/avatar.webp",
+          playerDisplayName: "",
+          playerFieldVisibility: { ...baseRow.playerFieldVisibility, name: false },
+        }}
+        mode="player"
+        ownCharacterId="other-character"
+        avatarImageUrl="https://media.example/avatar.webp"
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('data-slot="tracker-avatar-placeholder"');
+    expect(html).not.toContain("https://media.example/avatar.webp");
+  });
+
+  it("nominal: a character with a resolved image shows it instead of the placeholder", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, avatar: "characters/character-1/avatar.webp" }}
+        mode="gm"
+        avatarImageUrl="https://media.example/avatar.webp"
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('src="https://media.example/avatar.webp"');
+    expect(html).not.toContain('data-slot="tracker-avatar-placeholder"');
+  });
+});
