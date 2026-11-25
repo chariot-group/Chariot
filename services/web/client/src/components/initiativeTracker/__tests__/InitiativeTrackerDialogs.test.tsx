@@ -125,6 +125,7 @@ describe("FR-tracker-bulk-actions — grouped display dialog", () => {
 
     expect(html).toMatch(/data-slot="dialog-header" class="[^"]*border-b border-frame/);
     expect(html).toMatch(/data-slot="dialog-footer" class="[^"]*border-t border-frame/);
+    expect(html).not.toContain("border-white/10");
   });
 
   it("failure: without selection, accept and leave initiative are disabled", () => {
@@ -168,6 +169,8 @@ describe("FR-combat-initiative-tracker — per-row display dialog", () => {
     expect(html).toContain("Configure Snik");
     const leave = buttonTag(html, "Leave initiative");
     expect(leave).toContain('data-variant="destructive"');
+    // No bordered box inside the body.
+    expect(html).not.toContain("border-white/10");
     expect(leave).not.toContain("text-red");
     expect(html).toMatch(/data-slot="dialog-footer" class="[^"]*border-t border-frame/);
   });

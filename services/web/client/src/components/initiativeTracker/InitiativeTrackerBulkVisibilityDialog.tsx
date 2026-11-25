@@ -176,9 +176,9 @@ function InitiativeTrackerBulkVisibilityDialogContent({
         </div>
 
         <fieldset
-          className="flex flex-col gap-2.5 rounded-[15px] border border-white/10 p-4"
+          className="flex flex-col gap-2.5"
           disabled={draft.visible === false}>
-          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-white/55">
+          <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/55">
             {labels.fieldsTitle}
           </legend>
           {BULK_VISIBILITY_FIELD_KEYS.map((key) => (
