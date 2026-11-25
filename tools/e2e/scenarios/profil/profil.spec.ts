@@ -50,27 +50,51 @@ test.skip(!hasKeycloakAdmin(), "KEYCLOAK_ADMIN_* requis pour créer les comptes 
  * les GET en vol : un export lancé pendant ce rafraîchissement le réutiliserait au lieu d'en émettre un.
  *
  * Chaque chargement refait aussi l'aller-retour SSO (redirection Keycloak puis échange du code, qui recharge
- * la page). Sous WebKit, sur un environnement hébergé, l'utilisateur persisté s'affiche avant cette redirection :
- * on attend donc le `GET /user/me` qui suit l'échange du code, pas le premier venu.
+ * la page). Sous WebKit, sur un environnement hébergé, l'utilisateur persisté s'affiche avant cette redirection.
+ * Après l'échange du code, la page peut encore émettre plusieurs `GET /user/me` à quelques centaines de ms
+ * d'écart : on attend qu'il n'y en ait plus aucun en vol depuis `PROFILE_SETTLED_MS`.
  */
 async function openProfile(page: Page): Promise<void> {
   let codeExchanged = false;
   let refreshedAfterSso = false;
+  let lastActivity = 0;
+  const inFlight = new Set<Request>();
   const onResponse = (response: Response) => {
     if (isTokenExchange(response.request())) codeExchanged = true;
-    else if (codeExchanged && isCurrentUserFetch(response.request())) refreshedAfterSso = true;
+  };
+  const onRequest = (request: Request) => {
+    if (!codeExchanged || !isCurrentUserFetch(request)) return;
+    inFlight.add(request);
+    lastActivity = Date.now();
+  };
+  const onRequestDone = (request: Request) => {
+    if (!inFlight.delete(request)) return;
+    refreshedAfterSso = true;
+    lastActivity = Date.now();
   };
   page.on("response", onResponse);
+  page.on("request", onRequest);
+  page.on("requestfinished", onRequestDone);
+  page.on("requestfailed", onRequestDone);
   try {
     await page.goto(`/${env.locale}/profile`);
     await expect
-      .poll(() => refreshedAfterSso, { message: "profil rafraîchi après l'échange du code SSO", timeout: 30_000 })
+      .poll(() => refreshedAfterSso && inFlight.size === 0 && Date.now() - lastActivity >= PROFILE_SETTLED_MS, {
+        message: "profil rafraîchi après l'échange du code SSO, sans GET /user/me en vol",
+        timeout: 30_000,
+      })
       .toBe(true);
     await expect(page.getByLabel("Username")).toBeVisible();
   } finally {
     page.off("response", onResponse);
+    page.off("request", onRequest);
+    page.off("requestfinished", onRequestDone);
+    page.off("requestfailed", onRequestDone);
   }
 }
+
+/** Délai sans `GET /user/me` au-delà duquel le profil est considéré comme stabilisé. */
+const PROFILE_SETTLED_MS = 500;
 
 /** Échange du code d'autorisation contre un token (fin de l'aller-retour SSO d'un chargement de page). */
 function isTokenExchange(request: Request): boolean {

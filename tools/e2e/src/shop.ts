@@ -148,11 +148,17 @@ export async function answerThreeDSecure(page: Page, answer: "COMPLETE" | "FAIL"
   const challenge = challengeHost.frameLocator('iframe[name="stripe-challenge-frame"]');
   // Le bouton « Annuler » de la modale n'agit qu'une fois la page de la banque chargée.
   await expect(challenge.getByRole("button", { name: "COMPLETE" })).toBeVisible();
-  if (answer === "ANNULER") {
-    await challengeHost.getByRole("button", { name: "Annuler" }).click();
-    return;
-  }
-  await challenge.getByRole("button", { name: answer }).click();
+  const button =
+    answer === "ANNULER"
+      ? challengeHost.getByRole("button", { name: "Annuler" })
+      : challenge.getByRole("button", { name: answer });
+  // Sur un environnement lent, la page de la banque affiche ses boutons avant de les rendre actifs :
+  // un clic trop précoce est ignoré et la modale reste ouverte. On reclique jusqu'à sa fermeture.
+  const modal = page.locator('iframe[src*="three-ds-2-challenge"]');
+  await expect(async () => {
+    if ((await modal.count()) > 0) await button.click({ timeout: 5_000 });
+    await expect(modal).toHaveCount(0, { timeout: 5_000 });
+  }).toPass({ timeout: 45_000 });
 }
 
 export async function expectPaymentSuccess(page: Page): Promise<void> {
