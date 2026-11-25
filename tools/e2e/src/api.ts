@@ -8,6 +8,20 @@ export type CreatedCampaign = { _id: string; label: string };
 export type CreatedGroup = { _id: string; label: string };
 export type GroupSection = "active" | "archived";
 
+/** Lien rapide de la sidebar (FR-sidebar-quick-links). `campaignId: null` = espace joueur. */
+export type QuickLink = {
+  _id: string;
+  icon: string;
+  url: string;
+  label: string;
+  campaignId: string | null;
+  visibleInAllCampaigns?: boolean;
+  visibleInPlayerSpace?: boolean;
+};
+
+/** Lien rapide préparé par l'API : titre et URL requis ; par défaut icône « Link », espace joueur, non partagé. */
+export type QuickLinkSeed = Pick<QuickLink, "label" | "url"> & Partial<Omit<QuickLink, "_id" | "label" | "url">>;
+
 /** Classe D&D d'un PJ, au format adventure (`hitDice` = taille du dé de vie). */
 export type PlayerClass = { name: string; level: number; hitDice: number; hitDiceRemaining?: number };
 
@@ -58,10 +72,10 @@ export class ChariotApi {
     return new ChariotApi(await getUserAccessToken(role, slot), role);
   }
 
-  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  private async send(method: string, path: string, body?: unknown): Promise<Response> {
     // Adventure est exposé sous `/api`, le service session directement sous `/session` (cf. SessionService web).
     const prefix = path.startsWith("/session/") ? "" : "/api";
-    const response = await fetch(`${env.gatewayUrl}${prefix}${path}`, {
+    return fetch(`${env.gatewayUrl}${prefix}${path}`, {
       method,
       headers: {
         Authorization: `Bearer ${this.token}`,
@@ -69,6 +83,10 @@ export class ChariotApi {
       },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
+  }
+
+  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const response = await this.send(method, path, body);
     if (!response.ok) {
       const text = await response.text().catch(() => "");
       throw new Error(`${method} ${path} → HTTP ${response.status} ${text.slice(0, 300)}`);
@@ -255,5 +273,35 @@ export class ChariotApi {
 
   async leaveSession(code: string): Promise<void> {
     await this.request("POST", `/session/sessions/${code}/leave`);
+  }
+
+  /** Crée un lien rapide (même payload que `QuickLinkService.createQuickLink` côté web). */
+  async createQuickLink(seed: QuickLinkSeed): Promise<QuickLink> {
+    const res = await this.request<Envelope<QuickLink>>("POST", "/quick-links", {
+      icon: "Link",
+      campaignId: null,
+      ...seed,
+    });
+    return res.data;
+  }
+
+  /**
+   * Liens rapides du compte. `campaignId` : ceux affichés sous cette campagne (propres + communs) ;
+   * `null` : ceux de l'espace joueur ; sans argument : tous.
+   */
+  async listQuickLinks(campaignId?: string | null): Promise<QuickLink[]> {
+    const query = campaignId === undefined ? "" : `?campaignId=${campaignId ?? "null"}`;
+    const res = await this.request<Envelope<QuickLink[]>>("GET", `/quick-links${query}`);
+    return res.data ?? [];
+  }
+
+  async deleteQuickLink(id: string): Promise<void> {
+    await this.request("DELETE", `/quick-links/${id}`);
+  }
+
+  /** Statut HTTP brut d'un appel aux liens rapides, pour vérifier les refus (400, 403) sans lever d'erreur. */
+  async quickLinkStatus(method: "POST" | "PATCH" | "DELETE", path: string, body?: unknown): Promise<number> {
+    const response = await this.send(method, `/quick-links${path}`, body);
+    return response.status;
   }
 }

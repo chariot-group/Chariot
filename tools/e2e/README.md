@@ -39,6 +39,7 @@ tools/e2e/
 │   ├── auth/                 # login, post-auth navigation
 │   ├── campagne/             # campaign creation (welcome) and management from the GM space menu: create, rename, delete
 │   ├── groupe/               # campaign groups CRUD in the GM sidebar, archives included
+│   ├── lien/                 # sidebar quick links CRUD (player and GM spaces), shared links, API guards
 │   ├── personnage/           # PCs and NPCs: CRUD, duplication, move, companions, long / short rest, session (GM guest, companions)
 │   ├── profil/               # sign-up (Keycloak), profile read / edit, account deletion request
 │   ├── boutique/             # sales funnel: packs, promo codes, affiliation, referral (Stripe test mode)
@@ -46,7 +47,7 @@ tools/e2e/
 └── src/
     ├── env.ts                # configuration (.env)
     ├── keycloak.ts           # account provisioning + tokens
-    ├── api.ts                # gateway client to prepare / clean up data (campaigns, groups, archives)
+    ├── api.ts                # gateway client to prepare / clean up data (campaigns, groups, archives, quick links)
     ├── fixtures.ts           # `gm` and `player` actors (browser + API)
     ├── payment.ts            # payment / balance API client (catalog, referral, admin codes)
     ├── shop.ts               # shop journeys and outcome assertions

@@ -402,3 +402,58 @@ export async function deleteCampaignsByLabel(api: ChariotApi, label: string): Pr
     await api.deleteCampaign(campaign._id);
   }
 }
+
+/**
+ * Lien rapide de la sidebar par son titre exact (FR-sidebar-quick-links) : le nom accessible annonce
+ * l'ouverture dans un nouvel onglet. La section est hors des navigations « joueur » / « maître du jeu ».
+ */
+export function quickLink(scope: Locator | Page, label: string): Locator {
+  return scope.getByRole("link", { name: `${label} (s'ouvre dans un nouvel onglet)`, exact: true });
+}
+
+/** Liste des liens propres à l'espace courant (« Liens de cette campagne » ou « Liens de l'espace joueur »). */
+export function ownQuickLinks(page: Page, space: "campaign" | "player"): Locator {
+  return page.getByRole("list", { name: space === "campaign" ? "Liens de cette campagne" : "Liens de l'espace joueur" });
+}
+
+/** Liste des liens communs (partagés avec d'autres espaces). */
+export function sharedQuickLinks(page: Page): Locator {
+  return page.getByRole("list", { name: /^Liens communs/ });
+}
+
+/** Déplie la section « Liens rapides » si elle est repliée (état persisté par espace dans le localStorage). */
+export async function expandQuickLinks(page: Page): Promise<void> {
+  const collapse = page.getByRole("button", { name: "Replier les liens rapides" });
+  const expand = page.getByRole("button", { name: "Déplier les liens rapides" });
+  await expect(collapse.or(expand).first()).toBeVisible();
+  if (await expand.isVisible()) await expand.click();
+  await expect(collapse).toBeVisible();
+}
+
+/**
+ * Ouvre le menu « Actions sur le lien <titre> » : clic droit sur ordinateur, bouton `⋮` de la ligne
+ * sous 1024 px (FR-sidebar-context-actions). Mêmes entrées dans les deux cas (Modifier, Supprimer).
+ */
+export async function openQuickLinkActions(page: Page, label: string): Promise<Locator> {
+  const name = `Actions sur le lien ${label}`;
+  const menu = page.getByRole("menu", { name });
+  // Un clic envoyé avant que la ligne soit interactive (hydratation, rechargement de la liste) est perdu.
+  await expect(async () => {
+    if (isBelowTablet(page)) {
+      if ((page.viewportSize()?.width ?? Number.POSITIVE_INFINITY) < MOBILE_BREAKPOINT) await ensureSidebarOpen(page);
+      await page.getByRole("button", { name, exact: true }).click({ timeout: 3_000 });
+    } else {
+      await quickLink(page, label).click({ button: "right", timeout: 3_000 });
+    }
+    await expect(menu).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 30_000 });
+  return menu;
+}
+
+/** Supprime les liens rapides du compte dont le titre commence par `prefix` (nettoyage des scénarios). */
+export async function deleteQuickLinksByPrefix(api: ChariotApi, prefix: string): Promise<void> {
+  const links = await api.listQuickLinks().catch(() => []);
+  for (const link of links.filter((l) => l.label.startsWith(prefix))) {
+    await api.deleteQuickLink(link._id).catch(() => undefined);
+  }
+}
