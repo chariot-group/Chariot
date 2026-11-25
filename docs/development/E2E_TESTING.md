@@ -260,7 +260,7 @@ tools/e2e/
 │   ├── personnage/repos.spec.ts                  # long rest (sheet, group), no rest out of session in player space, short rest in a launched session
 │   ├── personnage/pnj.spec.ts                    # NPCs: create (player space / group), required name, rename, delete
 │   ├── personnage/pnj-duplication-deplacement.spec.ts # NPC duplicate (unlinked, linked companion, other group), move between groups
-│   ├── personnage/pnj-compagnons.spec.ts         # companions: link, Companions tab, « Lié à », unlink, reassign, delete / duplicate a PC with companions, none in GM space
+│   ├── personnage/pnj-compagnons.spec.ts         # companions CRUD: create linked, link / unlink (sidebar and Companions tab), reassign, rename, delete, search; PC delete / duplicate with companions; none in GM space
 │   ├── personnage/pnj-repos.spec.ts              # NPC long rest (sheet, mixed group), none in player space; in session: companion, GM guest, GM rest
 │   ├── profil/inscription.spec.ts   # sign-up through the Keycloak registration page
 │   ├── profil/profil.spec.ts        # profile read / edit, account deletion request

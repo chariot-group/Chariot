@@ -1,8 +1,9 @@
-import type { Locator } from "@playwright/test";
-import type { ChariotApi, CreatedCampaign } from "@/api";
-import { uniqueLabel } from "@/env";
+import type { Locator, Page } from "@playwright/test";
+import type { ChariotApi, CreatedCampaign, CreatedCharacter } from "@/api";
+import { env, uniqueLabel } from "@/env";
 import {
   characterLink,
+  closeDialogIfOpen,
   deleteCampaignWithGroups,
   deleteCharacters,
   deletePlayersWithoutGroupByPrefix,
@@ -23,7 +24,9 @@ import { expect, test as base } from "@/fixtures";
  * Couvre FR-npc-player-link (imbrication sous le PJ, onglet Compagnons, « Lié à {PJ} » en pied de fiche PNJ,
  * aucune liaison visible en espace MJ), FR-sidebar-npc-link (« Lier à un personnage », « Retirer de {PJ} »
  * avec confirmation, « Lier à un autre personnage » avec confirmation, toasts) et FR-player-companion-choice
- * (suppression et duplication d'un PJ qui a des compagnons).
+ * (suppression et duplication d'un PJ qui a des compagnons), ainsi que le CRUD des compagnons : création d'un PNJ
+ * déjà lié, liaison / retrait et recherche depuis l'onglet Compagnons, modification et suppression d'un compagnon
+ * depuis sa ligne imbriquée.
  *
  * Chaque test prépare ses personnages par l'API et les supprime à la fin, même en échec.
  */
@@ -335,6 +338,234 @@ test.describe("Compagnons — espace MJ", () => {
       });
     } finally {
       await deleteCharacters(gm.api, [npc._id, pc._id]);
+    }
+  });
+});
+
+/**
+ * Ouvre la fiche du PJ (`pc`) depuis « Vos personnages » puis son onglet Compagnons, et renvoie le panneau de l'onglet.
+ * Le clic sur le lien est relancé si une navigation en cours l'a annulé.
+ */
+async function openCompanionsTab(page: Page, nav: Locator, pc: CreatedCharacter): Promise<Locator> {
+  await expect(async () => {
+    await ensureSidebarOpen(page);
+    await openCharacterFromSidebar(page, nav, pc.firstname);
+    await expect(page).toHaveURL(new RegExp(`/characters/${pc._id}`), { timeout: 5_000 });
+  }).toPass({ timeout: 30_000 });
+  await page.getByRole("tab", { name: "Compagnons" }).click();
+  const panel = page.getByRole("tabpanel");
+  // Avec au moins un compagnon, la barre d'outils commence par la recherche ; sinon, l'état vide.
+  await expect(
+    panel.getByRole("searchbox", { name: "Rechercher un compagnon" }).or(panel.getByText("Aucun compagnon pour l'instant")),
+  ).toBeVisible();
+  return panel;
+}
+
+/** Carte d'un compagnon dans l'onglet : toute la surface ouvre sa fiche (« Ouvrir la fiche de {nom} »). */
+function companionCard(panel: Locator, npcName: string): Locator {
+  return panel.getByRole("link", { name: `Ouvrir la fiche de ${npcName}` });
+}
+
+test.describe("Compagnons — CRUD", () => {
+  test("le joueur crée un compagnon déjà lié depuis l'onglet Compagnons", async ({ player }) => {
+    const pcName = uniqueLabel("Invocateur");
+    const npcName = uniqueLabel("Élémentaire");
+    const pc = await player.api.createPlayer(pcName);
+    try {
+      const nav = await openPlayerSpace(player.page);
+      const panel = await openCompanionsTab(player.page, nav, pc);
+      await expect(panel.getByText("Aucun compagnon pour l'instant")).toBeVisible();
+
+      await test.step("« Créer un PNJ lié » ne propose que PNJ et librairie, puis ouvre le formulaire PNJ lié", async () => {
+        const dialog = player.page.getByRole("dialog", { name: "Créer un personnage" });
+        await expect(async () => {
+          if (!(await dialog.isVisible())) await panel.getByRole("button", { name: "Créer un PNJ lié" }).click();
+          await expect(dialog.getByRole("button", { name: "Créer un PNJ manuellement" })).toBeVisible({ timeout: 5_000 });
+          await expect(dialog.getByRole("button", { name: "Créer un personnage joueur manuellement" })).toHaveCount(0);
+          await dialog.getByRole("button", { name: "Créer un PNJ manuellement" }).click();
+          await expect(player.page).toHaveURL(new RegExp(`/${env.locale}/characters/new/npcs.*linkedPlayerId=${pc._id}`), {
+            timeout: 5_000,
+          });
+        }).toPass({ timeout: 30_000 });
+      });
+
+      await test.step("valider le formulaire : le PNJ est créé lié au PJ, imbriqué sous lui", async () => {
+        await player.page.getByLabel("Prénom").fill(npcName);
+        await player.page.getByRole("button", { name: "Créer", exact: true }).click();
+        await expect(player.page.getByText("Personnage créé avec succès")).toBeVisible();
+        await expect
+          .poll(async () => (await player.api.npcsLinkedTo([pc._id])).map((c) => c.firstname))
+          .toEqual([npcName]);
+        await ensureSidebarOpen(player.page);
+        await expect(characterLink(companionsOf(nav, pcName), npcName)).toBeVisible();
+      });
+
+      await test.step("l'onglet Compagnons du PJ liste le nouveau compagnon", async () => {
+        await closeDialogIfOpen(player.page);
+        const tab = await openCompanionsTab(player.page, nav, pc);
+        await expect(companionCard(tab, npcName)).toBeVisible();
+      });
+    } finally {
+      const linked = await player.api.npcsLinkedTo([pc._id]).catch(() => []);
+      await deleteCharacters(player.api, [...linked.map((c) => c._id), pc._id]);
+    }
+  });
+
+  test("le joueur lie puis retire un compagnon depuis l'onglet Compagnons", async ({ player }) => {
+    const pcName = uniqueLabel("Barde");
+    const npcName = uniqueLabel("Corbeau");
+    const pc = await player.api.createPlayer(pcName);
+    const npc = await player.api.createNpc(npcName);
+    try {
+      const nav = await openPlayerSpace(player.page);
+      const panel = await openCompanionsTab(player.page, nav, pc);
+
+      await test.step("« Lier un PNJ » liste les PNJ libres ; en choisir un le lie immédiatement", async () => {
+        await panel.getByRole("button", { name: "Lier un PNJ" }).click();
+        const picker = player.page.getByRole("dialog", { name: "Lier un PNJ" });
+        await expect(picker.getByText("Choisissez un PNJ de l'espace joueur (non lié, hors groupe).")).toBeVisible();
+        await picker.getByRole("button", { name: npcName, exact: true }).click();
+        await expect(picker).toBeHidden();
+        await expect.poll(() => linkedPlayerId(player.api, npc._id)).toBe(pc._id);
+        await expect(companionCard(panel, npcName)).toBeVisible();
+      });
+
+      const confirm = player.page.getByRole("dialog", { name: "Retirer le PNJ" });
+      await test.step("« Retirer » sur la carte demande confirmation ; Échap ne change rien", async () => {
+        await panel.getByRole("button", { name: `Retirer ${npcName} des compagnons` }).click();
+        await expect(confirm.getByText(`Voulez-vous retirer ${npcName} des compagnons de ${pcName} ?`, { exact: false })).toBeVisible();
+        await player.page.keyboard.press("Escape");
+        await expect(confirm).toBeHidden();
+        expect(await linkedPlayerId(player.api, npc._id)).toBe(pc._id);
+        await expect(companionCard(panel, npcName)).toBeVisible();
+      });
+
+      await test.step("confirmer : toast, la carte disparaît, le PNJ est délié", async () => {
+        await panel.getByRole("button", { name: `Retirer ${npcName} des compagnons` }).click();
+        await confirm.getByRole("button", { name: "Retirer" }).click();
+        await expect(player.page.getByText(/retiré avec succès\./)).toBeVisible();
+        await expect(confirm).toBeHidden();
+        await expect.poll(() => linkedPlayerId(player.api, npc._id)).toBeNull();
+        await expect(panel.getByText("Aucun compagnon pour l'instant")).toBeVisible();
+      });
+    } finally {
+      await deleteCharacters(player.api, [npc._id, pc._id]);
+    }
+  });
+
+  test("le joueur renomme un compagnon depuis sa ligne imbriquée", async ({ player }) => {
+    const pcName = uniqueLabel("Paladin");
+    const name = uniqueLabel("Monture");
+    const renamed = uniqueLabel("Monture renommée");
+    const pc = await player.api.createPlayer(pcName);
+    const npc = await player.api.createNpc(name, { linkedPlayerId: pc._id });
+    try {
+      const nav = await openPlayerSpace(player.page);
+
+      await test.step("Modifier ouvre la fiche du compagnon en édition", async () => {
+        const menu = await openCharacterActions(player.page, companionsOf(nav, pcName), name);
+        await menu.getByRole("menuitem", { name: "Modifier" }).click();
+        await expect(player.page).toHaveURL(new RegExp(`/characters/${npc._id}`));
+        await expect(player.page.getByLabel("Prénom")).toHaveValue(name);
+      });
+
+      await test.step("Sauvegarder : nouveau nom, toujours lié et imbriqué sous le PJ", async () => {
+        await player.page.getByLabel("Prénom").fill(renamed);
+        await player.page.getByRole("button", { name: "Sauvegarder", exact: true }).click();
+        await expect(player.page.getByText("Personnage mis à jour avec succès")).toBeVisible();
+        await expect.poll(async () => (await player.api.getCharacter(npc._id)).firstname).toBe(renamed);
+        expect(await linkedPlayerId(player.api, npc._id)).toBe(pc._id);
+        await ensureSidebarOpen(player.page);
+        await expect(characterLink(companionsOf(nav, pcName), renamed)).toBeVisible();
+        await expect(characterLink(nav, name)).toHaveCount(0);
+      });
+    } finally {
+      await deleteCharacters(player.api, [npc._id, pc._id]);
+    }
+  });
+
+  test("le joueur supprime un compagnon depuis sa ligne imbriquée, le PJ reste", async ({ player }) => {
+    const pcName = uniqueLabel("Sorcier");
+    const name = uniqueLabel("Diablotin");
+    const pc = await player.api.createPlayer(pcName);
+    const npc = await player.api.createNpc(name, { linkedPlayerId: pc._id });
+    try {
+      const nav = await openPlayerSpace(player.page);
+
+      await test.step("Supprimer : simple confirmation (pas de choix de compagnons)", async () => {
+        const menu = await openCharacterActions(player.page, companionsOf(nav, pcName), name);
+        await menu.getByRole("menuitem", { name: "Supprimer" }).click();
+        const confirm = player.page.getByRole("dialog", { name: "Supprimer le personnage" });
+        await expect(confirm).toBeVisible();
+        await expect(player.page.getByRole("dialog", { name: "Supprimer ce personnage" })).toHaveCount(0);
+        await confirm.getByRole("button", { name: "Supprimer" }).click();
+        await expect(confirm).toBeHidden();
+      });
+
+      await test.step("le compagnon a disparu ; le PJ reste, sans compagnon", async () => {
+        await expect.poll(async () => (await player.api.npcsLinkedTo([pc._id])).length).toBe(0);
+        expect((await player.api.listPlayersWithoutGroup()).map((p) => p._id)).toContain(pc._id);
+        await ensureSidebarOpen(player.page);
+        await expect(characterLink(nav, name)).toHaveCount(0);
+        await expect(companionsOf(nav, pcName)).toHaveCount(0);
+        await expect(characterLink(nav, pcName)).toBeVisible();
+        await closeDialogIfOpen(player.page);
+        const panel = await openCompanionsTab(player.page, nav, pc);
+        await expect(panel.getByText("Aucun compagnon pour l'instant")).toBeVisible();
+      });
+    } finally {
+      await deleteCharacters(player.api, [npc._id, pc._id]);
+    }
+  });
+
+  test("le joueur recherche un compagnon par nom ou surnom, sans accents ni casse", async ({ player }) => {
+    const pcName = uniqueLabel("Ranger");
+    const suffix = uniqueLabel("").split(" ").pop()!;
+    const lightning = `Éclair ${suffix}`;
+    const mist = `Brume ${suffix}`;
+    const pc = await player.api.createPlayer(pcName);
+    const npcs = [
+      await player.api.createNpc(lightning, { linkedPlayerId: pc._id }),
+      await player.api.createNpc(mist, { linkedPlayerId: pc._id, surname: "Ombre" }),
+    ];
+    try {
+      const nav = await openPlayerSpace(player.page);
+      const panel = await openCompanionsTab(player.page, nav, pc);
+      const search = panel.getByRole("searchbox", { name: "Rechercher un compagnon" });
+      await expect(companionCard(panel, lightning)).toBeVisible();
+      await expect(companionCard(panel, mist)).toBeVisible();
+
+      await test.step("nom sans accent ni casse : « eclair » trouve « Éclair »", async () => {
+        await search.fill("eclair");
+        await expect(companionCard(panel, lightning)).toBeVisible();
+        await expect(companionCard(panel, mist)).toHaveCount(0);
+      });
+
+      await test.step("surnom en majuscules : « OMBRE » trouve « Brume »", async () => {
+        await search.fill("OMBRE");
+        await expect(companionCard(panel, mist)).toBeVisible();
+        await expect(companionCard(panel, lightning)).toHaveCount(0);
+      });
+
+      await test.step("aucun résultat : message explicite, sans bouton", async () => {
+        await search.fill("introuvable");
+        await expect(panel.getByText("Aucun compagnon ne correspond à « introuvable ».")).toBeVisible();
+        await expect(companionCard(panel, lightning)).toHaveCount(0);
+        await expect(companionCard(panel, mist)).toHaveCount(0);
+      });
+
+      await test.step("Échap puis « Effacer la recherche » rétablissent la liste complète", async () => {
+        await search.press("Escape");
+        await expect(search).toHaveValue("");
+        await expect(companionCard(panel, lightning)).toBeVisible();
+        await expect(companionCard(panel, mist)).toBeVisible();
+        await search.fill("brume");
+        await panel.getByRole("button", { name: "Effacer la recherche" }).click();
+        await expect(search).toHaveValue("");
+        await expect(companionCard(panel, lightning)).toBeVisible();
+      });
+    } finally {
+      await deleteCharacters(player.api, [...npcs.map((n) => n._id), pc._id]);
     }
   });
 });

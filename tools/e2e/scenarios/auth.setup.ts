@@ -23,6 +23,10 @@ for (const slot of accountSlots) {
         localStorage.setItem("chariot_release_notes_muted", "true");
       });
 
+      // L'état Redux persisté garde l'heure du dernier chargement de « Vos personnages », et l'app ne le recharge pas
+      // dans les 3 s qui suivent (anti-boucle de `usePlayersWithoutGroup`), sans réessayer ensuite. Enregistrée
+      // trop tôt, la session ferait démarrer le premier scénario du worker avec une liste vide figée : on laisse passer ce délai.
+      await page.waitForTimeout(3_500);
       await page.context().storageState({ path: storageStatePath(role, slot) });
     });
   }

@@ -267,8 +267,11 @@ export async function openCharacterActions(page: Page, scope: Locator, name: str
       await expect(menu).toBeVisible({ timeout: 2_000 });
     }).toPass({ timeout: 30_000 });
   } else {
-    await characterLink(scope, name).click({ button: "right" });
-    await expect(menu).toBeVisible();
+    // Un clic droit envoyé avant que la ligne soit interactive (hydratation, rechargement de la liste) est perdu.
+    await expect(async () => {
+      await characterLink(scope, name).click({ button: "right", timeout: 3_000 });
+      await expect(menu).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 30_000 });
   }
   return menu;
 }

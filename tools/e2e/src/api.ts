@@ -20,6 +20,7 @@ export type PlayerSeed = {
 
 /** Champs optionnels d'un PNJ préparé par l'API. `linkedPlayerId: null` délie. */
 export type NpcSeed = {
+  surname?: string;
   groups?: string[];
   linkedPlayerId?: string | null;
   stats?: { currentHitPoints?: number; maxHitPoints?: number; tempHitPoints?: number; [key: string]: unknown };
