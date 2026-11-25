@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { expect, test as base, type Locator, type Page, type Request } from "@playwright/test";
+import { expect, test as base, type Locator, type Page, type Request, type Response } from "@playwright/test";
 import { loginWithCredentials, muteReleaseNotes } from "@/auth";
 import { env, testUser } from "@/env";
 import {
@@ -48,12 +48,33 @@ test.skip(!hasKeycloakAdmin(), "KEYCLOAK_ADMIN_* requis pour créer les comptes 
  * La page affiche d'abord l'utilisateur persisté, puis relance toujours un `GET /user/me`
  * (refresh on open), parfois plusieurs secondes plus tard sous charge. Le client API dédoublonne
  * les GET en vol : un export lancé pendant ce rafraîchissement le réutiliserait au lieu d'en émettre un.
+ *
+ * Chaque chargement refait aussi l'aller-retour SSO (redirection Keycloak puis échange du code, qui recharge
+ * la page). Sous WebKit, sur un environnement hébergé, l'utilisateur persisté s'affiche avant cette redirection :
+ * on attend donc le `GET /user/me` qui suit l'échange du code, pas le premier venu.
  */
 async function openProfile(page: Page): Promise<void> {
-  const refreshedOnOpen = page.waitForResponse((response) => isCurrentUserFetch(response.request()));
-  await page.goto(`/${env.locale}/profile`);
-  await expect(page.getByLabel("Username")).toBeVisible();
-  await refreshedOnOpen;
+  let codeExchanged = false;
+  let refreshedAfterSso = false;
+  const onResponse = (response: Response) => {
+    if (isTokenExchange(response.request())) codeExchanged = true;
+    else if (codeExchanged && isCurrentUserFetch(response.request())) refreshedAfterSso = true;
+  };
+  page.on("response", onResponse);
+  try {
+    await page.goto(`/${env.locale}/profile`);
+    await expect
+      .poll(() => refreshedAfterSso, { message: "profil rafraîchi après l'échange du code SSO", timeout: 30_000 })
+      .toBe(true);
+    await expect(page.getByLabel("Username")).toBeVisible();
+  } finally {
+    page.off("response", onResponse);
+  }
+}
+
+/** Échange du code d'autorisation contre un token (fin de l'aller-retour SSO d'un chargement de page). */
+function isTokenExchange(request: Request): boolean {
+  return request.method() === "POST" && /\/protocol\/openid-connect\/token$/.test(new URL(request.url()).pathname);
 }
 
 async function startEditing(page: Page): Promise<Locator> {
@@ -269,13 +290,16 @@ test.describe("Données personnelles", () => {
     const button = exportButton(page);
     await expect(button).toBeEnabled();
 
-    // Après le rafraîchissement d'ouverture (cf. `openProfile`) : seul l'appel de l'export échoue.
+    // Seul l'appel de l'export échoue : l'interception n'est armée qu'au clic. Sur un environnement hébergé,
+    // le profil peut se recharger une seconde fois après `openProfile` (second rafraîchissement du token) :
+    // intercepter ce rechargement-là laisserait passer l'export, qui réussirait.
+    let armed = false;
     let releaseResponse!: () => void;
     const responseHeld = new Promise<void>((resolve) => (releaseResponse = resolve));
     await page.route(
       (url) => /\/user\/me\/?$/.test(url.pathname),
       async (route) => {
-        if (route.request().method() !== "GET") return route.fallback();
+        if (!armed || route.request().method() !== "GET") return route.fallback();
         await responseHeld;
         await route.fulfill({ status: 500, contentType: "application/json", body: '{"message":"e2e"}' });
       },
@@ -283,6 +307,7 @@ test.describe("Données personnelles", () => {
     let downloads = 0;
     page.on("download", () => (downloads += 1));
 
+    armed = true;
     await button.click();
 
     await test.step("le bouton signale l'export en cours", async () => {
