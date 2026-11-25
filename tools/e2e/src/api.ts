@@ -25,9 +25,31 @@ export type QuickLinkSeed = Pick<QuickLink, "label" | "url"> & Partial<Omit<Quic
 /** Classe D&D d'un PJ, au format adventure (`hitDice` = taille du dé de vie). */
 export type PlayerClass = { name: string; level: number; hitDice: number; hitDiceRemaining?: number };
 
+/** Bloc d'incantation d'un PJ, au format adventure (`spellSlotsByLevel` indexé par niveau de sort). */
+export type SpellcastingSeed = {
+  className: string;
+  ability: string;
+  saveDC: number;
+  attackBonus: number;
+  spellSlotsByLevel: Record<string, { total: number; used: number }>;
+  totalSlots: number;
+  spells: unknown[];
+};
+
 /** Champs optionnels d'un PJ préparé par l'API (fusionnés avec les valeurs par défaut du formulaire web). */
 export type PlayerSeed = {
+  lastname?: string;
   groups?: string[];
+  /** Blocs d'incantation (au moins un emplacement ou un sort ajoute la page 3 du PDF, FR-character-sheet-pdf-export). */
+  spellcasting?: SpellcastingSeed[];
+  background?: {
+    personalityTraits?: string;
+    ideals?: string;
+    bonds?: string;
+    flaws?: string;
+    alliesAndOrgs?: string;
+    backstory?: string;
+  };
   class?: PlayerClass[];
   stats?: { currentHitPoints?: number; maxHitPoints?: number; tempHitPoints?: number; [key: string]: unknown };
 };

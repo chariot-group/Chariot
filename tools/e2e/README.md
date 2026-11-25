@@ -40,7 +40,7 @@ tools/e2e/
 │   ├── campagne/             # campaign creation (welcome) and management from the GM space menu: create, rename, delete
 │   ├── groupe/               # campaign groups CRUD in the GM sidebar, archives included
 │   ├── lien/                 # sidebar quick links CRUD (player and GM spaces), shared links, API guards
-│   ├── personnage/           # PCs and NPCs: CRUD, duplication, move, companions, long / short rest, session (GM guest, companions)
+│   ├── personnage/           # PCs and NPCs: CRUD, duplication, move, companions, long / short rest, PC sheet PDF export, session (GM guest, companions)
 │   ├── profil/               # sign-up (Keycloak), profile read / edit, account deletion request
 │   ├── boutique/             # sales funnel: packs, promo codes, affiliation, referral (Stripe test mode)
 │   └── session/              # GM + player in real time (WebSocket)

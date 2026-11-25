@@ -263,6 +263,7 @@ tools/e2e/
 │   ├── personnage/pnj-duplication-deplacement.spec.ts # NPC duplicate (unlinked, linked companion, other group), move between groups
 │   ├── personnage/pnj-compagnons.spec.ts         # companions CRUD: create linked, link / unlink (sidebar and Companions tab), reassign, rename, delete, search; PC delete / duplicate with companions; none in GM space
 │   ├── personnage/pnj-repos.spec.ts              # NPC long rest (sheet, mixed group), none in player space; in session: companion, GM guest, GM rest
+│   ├── personnage/export-pdf.spec.ts             # PC sheet PDF export: sheet / sidebar / group, dark and light themes, sanitized filename, 2 or 3 pages, long texts, cancel, NPC disabled, load error
 │   ├── profil/inscription.spec.ts   # sign-up through the Keycloak registration page
 │   ├── profil/profil.spec.ts        # profile read / edit, account deletion request
 │   ├── boutique/packs.spec.ts       # funnel per pack: success / failure / cancel, 3-D Secure, return page
