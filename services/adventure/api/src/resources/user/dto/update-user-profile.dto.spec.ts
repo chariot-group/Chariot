@@ -1,3 +1,4 @@
+import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { UpdateUserProfileDto } from '@/resources/user/dto/update-user-profile.dto';
 
@@ -43,24 +44,26 @@ describe('UpdateUserProfileDto', () => {
     expect(errors.length).toBe(0);
   });
 
-  it('should reject firstName with less than 2 characters', async () => {
+  it('should accept single-letter firstName and lastName', async () => {
     const dto = new UpdateUserProfileDto();
     dto.firstName = 'J';
-
-    const errors = await validate(dto);
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0].constraints).toHaveProperty('minLength');
-    expect(errors[0].constraints?.minLength).toContain('at least 2 characters');
-  });
-
-  it('should reject lastName with less than 2 characters', async () => {
-    const dto = new UpdateUserProfileDto();
     dto.lastName = 'D';
 
     const errors = await validate(dto);
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors[0].constraints).toHaveProperty('minLength');
-    expect(errors[0].constraints?.minLength).toContain('at least 2 characters');
+    expect(errors).toHaveLength(0);
+  });
+
+  it('should reject empty firstName and lastName', async () => {
+    const dto = new UpdateUserProfileDto();
+    dto.firstName = '';
+    dto.lastName = '';
+
+    const errors = await validate(dto);
+    expect(errors.map((e) => e.property).sort()).toEqual([
+      'firstName',
+      'lastName',
+    ]);
+    expect(errors[0].constraints?.minLength).toContain('must not be empty');
   });
 
   it('should reject invalid email format', async () => {
@@ -172,5 +175,39 @@ describe('UpdateUserProfileDto', () => {
     const errors = await validate(dto);
     expect(errors.length).toBeGreaterThan(0);
     expect(errors[0].property).toBe('preferredLocale');
+  });
+
+  describe('FR-user-profile-keycloak — person name rules', () => {
+    const run = (plain: Record<string, unknown>) =>
+      validate(plainToInstance(UpdateUserProfileDto, plain));
+
+    it('nominal: accepts accents, apostrophes, hyphens and spaces', async () => {
+      const errors = await run({
+        firstName: 'Jean-Pierre',
+        lastName: "de l'Étoile",
+      });
+      expect(errors).toHaveLength(0);
+    });
+
+    it('edge: measures length after trimming and accepts 50 characters', async () => {
+      expect(await run({ firstName: `  ${'a'.repeat(50)}  ` })).toHaveLength(0);
+    });
+
+    it('edge: rejects 51 characters and doubled separators', async () => {
+      expect(
+        (await run({ lastName: 'a'.repeat(51) })).map((e) => e.property),
+      ).toEqual(['lastName']);
+      expect(await run({ firstName: 'Jean--Pierre' })).toHaveLength(1);
+      expect(await run({ firstName: '-Jean' })).toHaveLength(1);
+    });
+
+    it.each(['Jean2', 'J@ne', '', '   ', '<b>x</b>'])(
+      'failure: rejects %p on the offending field',
+      async (value) => {
+        const errors = await run({ firstName: value });
+        expect(errors).toHaveLength(1);
+        expect(errors[0].property).toBe('firstName');
+      },
+    );
   });
 });

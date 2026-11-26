@@ -141,6 +141,28 @@ describe('UserService - updateUser preferredLocale', () => {
     expect(response.data.preferredLocale).toBe('es');
   });
 
+  it('nominal: normalizes name case before calling Keycloak (FR-user-profile-keycloak)', async () => {
+    const save = jest.fn().mockResolvedValue(undefined);
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue({
+        keycloakId,
+        balance: 1,
+        history: [],
+        save,
+      }),
+    });
+
+    await service.updateUser(keycloakId, {
+      firstName: '  JEAN-pierre  ',
+      lastName: "o'NEIL",
+    });
+
+    expect(keycloakService.updateUser).toHaveBeenCalledWith(keycloakId, {
+      firstName: 'Jean-Pierre',
+      lastName: "O'Neil",
+    });
+  });
+
   it('edge: leaves preferredLocale unchanged when omitted', async () => {
     const save = jest.fn().mockResolvedValue(undefined);
     const user = {
@@ -245,5 +267,92 @@ describe('UserService - findPublicProfile', () => {
     await expect(service.findPublicProfile(targetId)).rejects.toBeInstanceOf(
       InternalServerErrorException,
     );
+  });
+});
+
+describe('UserService - findOne first-connection name sync (FR-user-profile-keycloak)', () => {
+  let service: UserService;
+  let userModel: { findOne: jest.Mock; create: jest.Mock };
+  let keycloakService: { updateUser: jest.Mock; getUserById: jest.Mock };
+  const keycloakId = '11111111-1111-4111-8111-111111111111';
+
+  const setup = async (names: { firstName: string; lastName: string }) => {
+    userModel = { findOne: jest.fn(), create: jest.fn() };
+    keycloakService = {
+      updateUser: jest.fn().mockResolvedValue(undefined),
+      getUserById: jest.fn().mockResolvedValue({
+        id: keycloakId,
+        email: 'user@example.com',
+        username: 'player',
+        attributes: {},
+        ...names,
+      }),
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UserService,
+        { provide: getModelToken(User.name), useValue: userModel },
+        { provide: KeycloakService, useValue: keycloakService },
+      ],
+    }).compile();
+    service = module.get<UserService>(UserService);
+  };
+
+  const firstConnection = () => {
+    userModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    });
+    userModel.create.mockResolvedValue({ keycloakId, balance: 1, history: [] });
+  };
+
+  it('nominal: normalizes valid names on the first connection and returns them', async () => {
+    await setup({ firstName: 'JEAN-pierre', lastName: 'dupont' });
+    firstConnection();
+
+    const response = await service.findOne(keycloakId);
+
+    expect(keycloakService.updateUser).toHaveBeenCalledWith(keycloakId, {
+      firstName: 'Jean-Pierre',
+      lastName: 'Dupont',
+    });
+    expect(response.data.firstName).toBe('Jean-Pierre');
+    expect(response.data.lastName).toBe('Dupont');
+  });
+
+  it('edge: does nothing on later connections or when names are already normalized', async () => {
+    await setup({ firstName: 'JEAN', lastName: 'DUPONT' });
+    userModel.findOne.mockReturnValue({
+      exec: jest
+        .fn()
+        .mockResolvedValue({ keycloakId, balance: 1, history: [] }),
+    });
+    await service.findOne(keycloakId);
+    expect(keycloakService.updateUser).not.toHaveBeenCalled();
+
+    await setup({ firstName: 'Jean', lastName: 'Dupont' });
+    firstConnection();
+    await service.findOne(keycloakId);
+    expect(keycloakService.updateUser).not.toHaveBeenCalled();
+  });
+
+  it('edge: never touches invalid names, and only normalizes the valid one', async () => {
+    await setup({ firstName: 'JEAN', lastName: '1' });
+    firstConnection();
+
+    await service.findOne(keycloakId);
+
+    expect(keycloakService.updateUser).toHaveBeenCalledWith(keycloakId, {
+      firstName: 'Jean',
+    });
+  });
+
+  it('failure: a Keycloak error does not block the connection', async () => {
+    await setup({ firstName: 'JEAN', lastName: 'DUPONT' });
+    firstConnection();
+    keycloakService.updateUser.mockRejectedValue(new Error('Keycloak down'));
+
+    const response = await service.findOne(keycloakId);
+
+    expect(response.data.firstName).toBe('JEAN');
   });
 });

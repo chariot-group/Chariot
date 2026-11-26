@@ -944,8 +944,8 @@ When adding a rule:
 - Endpoint `PUT /users/me` accepts partial updates to user profile
 - DTO `UpdateUserProfileDto` with optional fields: `firstName`, `lastName`, `email`
 - Validation rules:
-  - `firstName`: Optional string, minimum 2 characters when provided
-  - `lastName`: Optional string, minimum 2 characters when provided
+  - `firstName`: Optional string, person name rules when provided (see "Person name rules")
+  - `lastName`: Optional string, person name rules when provided (see "Person name rules")
   - `email`: Optional valid email format when provided
 - Updates are applied to Keycloak via `KeycloakService.updateUser(keycloakId, userData)`
 - Winston logging for all update operations (success and errors) - respects FR-logging-system
@@ -957,8 +957,8 @@ When adding a rule:
 - Hook `useProfileForm()` centralizes profile update logic
 - React Hook Form with Zod resolver for client-side validation
 - Zod schema validation:
-  - `firstName`: Required, min 2 characters
-  - `lastName`: Required, min 2 characters
+  - `firstName`: Required, person name rules (see "Person name rules")
+  - `lastName`: Required, person name rules (see "Person name rules")
   - `email`: Required, valid email format
 - Form states: `isLoading`, `isSaving`, `error`, `success`
 - Returns form instance for component integration
@@ -971,11 +971,34 @@ When adding a rule:
 **Validation Rules**:
 
 - All field updates are optional (partial update)
-- Empty strings are rejected (must be min 2 characters or omitted)
+- Empty strings are rejected (must be 1 character or more, or omitted); single-letter first or last names are valid
 - Email format must be standard RFC 5322
 - Username is **NOT** editable (immutable field)
 - Avatar is **NOT** managed by this endpoint (separate feature)
 - Updates are applied atomically in Keycloak
+
+### Person name rules (firstName, lastName)
+
+Applies to registration (Keycloak form), `PUT /users/me`, and every profile form. These rules replace the former "min 2 characters" check: single-letter first or last names exist and MUST be accepted.
+
+- **Allowed characters**: Unicode letters (accents included), spaces, apostrophes (`'` and `’`) and hyphens (`-`). Digits and any other character are rejected.
+- **Shape**: after cleanup, 1 to 50 characters; MUST start and end with a letter; no two consecutive separators (space, apostrophe, hyphen).
+- **Cleanup before validation**: trim, collapse repeated whitespace to one space, Unicode NFC normalization, `’` stored as `'`.
+- **Case normalization** (applied before saving, never left to the client): first letter of each word upper-case, the rest lower-case, where a word starts after a space, hyphen or apostrophe (`JEAN-pierre o'NEIL` → `Jean-Pierre O'Neil`). No exception list for particles.
+- **Enforcement**: the same rules MUST be enforced in Keycloak (registration form and user profile validators) and in the Adventure API (`UpdateUserProfileDto`); the API MUST normalize before calling Keycloak and MUST return 400 with the field name on violation. The web client mirrors the rules for instant feedback (FR-form-field-validation) but is never the only check.
+- **Registration case normalization**: Keycloak validators cannot transform values, so a registration that bypasses the form script is normalized by the API on the user's **first connection** (when the application user record is created): valid names are renormalized in Keycloak, invalid names are left untouched, and a Keycloak failure never blocks the connection. The registration form MUST reject invalid names with field-level errors (Keycloak validators, not only client script).
+- **One source**: the rule set is defined once and shared (constant/regex) by API and client; Keycloak validators MUST be configured to the same pattern via `keycloak-config.sh` and the realm exports.
+
+### Irregular account regularization (existing accounts)
+
+- **Irregular account**: an existing user whose `firstName` or `lastName` violates the person name rules above (after safe cleanup).
+- **Data cleanup (one-off script)**: a script MUST support a dry-run mode and a report. It MAY auto-fix only safe cases (case and whitespace normalization). It MUST NOT alter values that need the user's correction (digits, special characters, empty/too short). It MUST output an exportable list of irregular accounts (user id, e-mail, offending fields) for a future mailing; sending that mailing is out of scope.
+- **Detection**: `GET /users/me` exposes an account status: the list of invalid fields. It is computed server-side from the current Keycloak values, not inferred from the token.
+- **Gate**: while at least one condition of the account gate is unmet (irregular name, unverified e-mail, see FR-user-email-verification), the web client MUST show a single blocking modal in steps. It cannot be closed (no Escape, no backdrop click) and the application behind it is unreachable. Logout stays available.
+- **Name step** (« Compte irrégulier »): explains why, shows only the offending fields pre-filled with the current values, and corrects them through `PUT /users/me`. Field-level errors follow FR-form-field-validation. On success the step disappears without reload and the gate moves to the next unmet condition, or closes.
+- Accounts created after the rollout can never be irregular (rules enforced at creation); the gate does not appear for them on the name step.
+- The gate applies after authentication and does not alter the post-authentication destination logic (FR-post-auth-navigation), which resumes once the gate closes. Service/internal accounts are excluded.
+- Accessibility: modal with focus trap, initial focus on the first invalid field, title and description wired with `aria-labelledby`/`aria-describedby`, errors with `aria-invalid` and `aria-describedby`, usable on mobile (design baseline `docs/design.md`).
 
 **Prohibitions**:
 
@@ -1031,7 +1054,7 @@ When adding a rule:
 
 - **Backend**:
   - Unit: UserService calls KeycloakService with correct parameters
-  - Unit: Validation rejects firstName/lastName < 2 characters
+  - Unit: Validation rejects empty firstName/lastName and accepts single-letter ones
   - Unit: Validation rejects invalid email format
   - Unit: Winston logger called on success and error
   - E2E: PUT /users/me returns 401 without authentication
@@ -1049,6 +1072,15 @@ When adding a rule:
   - Integration: Form submission with valid data updates user in Redux
   - Integration: Form submission with invalid email shows validation error
   - Integration: Network error displays translated error message
+- **Person names**:
+  - Nominal: `JEAN-pierre o'NEIL` is saved as `Jean-Pierre O'Neil`; `  Élise   Dupont ` becomes `Élise Dupont`; the same input is accepted at registration and by `PUT /users/me`.
+  - Edge: `’` is stored as `'`; a 50-character name is accepted, 51 rejected; accented and non-Latin letters accepted; single-letter names (`J`, `Li`-style short names) accepted; `Jean--Pierre` and `-Jean` rejected.
+  - Failure: `Jean2`, `J@ne` and empty values return 400 on the offending field; Keycloak rejects them on the registration form even if the API is bypassed.
+  - Nominal (registration): a first connection with `JEAN` / `dupont` renormalizes them to `Jean` / `Dupont` in Keycloak; edge: later connections and already-normalized names trigger no update, an invalid name is never altered; failure: a Keycloak error during the sync does not block the connection.
+- **Regularization**:
+  - Nominal: an account with `Jean2` sees the blocking modal, corrects it, the modal closes without reload.
+  - Edge: only the invalid field is editable; closing via Escape/backdrop does nothing; an account valid on names never sees the name step.
+  - Failure: the correction is rejected (400) → field-level message, modal stays; script dry-run changes nothing and lists the irregular accounts; script never modifies a value containing digits or special characters.
 
 **References**:
 
@@ -2589,9 +2621,17 @@ Each initiative tracker row carries:
 - Loading/busy state on export (`aria-busy`); success/error toasts via existing toast hook
 - Follow FR-frontend-design design baseline: Card, `rounded-[15px]`, responsive row layout, destructive variant for delete trigger
 
+### Newsletter consent
+
+- **Registration**: the Keycloak registration form shows an optional newsletter checkbox, **unchecked by default**, never required, with a short translated label (fr/en/es) and a link to the privacy policy when `NEXT_PUBLIC_PRIVACY_POLICY_URL` is set.
+- **Storage**: consent is stored on the Mongo `User` as `newsletterOptIn` (boolean, default `false`) and `newsletterConsentAt` (date of the last change, `null` if never opted in). It is recorded server-side from the registration choice, not by the client alone. Existing users are migrated to `false`; they are never opted in implicitly.
+- **Unsubscribe**: the Security/profile section MUST expose a switch to opt in or out at any time, persisted through the API; opting out sets `newsletterOptIn=false` and updates `newsletterConsentAt`. It is exposed in `GET /user/me` and MUST appear in the profile data export (it is personal data).
+- **Out of scope**: sending newsletters and synchronizing with an emailing tool; a future tool MUST read this consent as the source of truth.
+
 **Accessibility**:
 
 - Each action control has an accessible name (`aria-label` or visible label)
+- The newsletter switch/checkbox has a visible label, is keyboard-operable and announces its state
 - Delete confirmation dialog is keyboard-operable and traps focus per existing Dialog primitive
 - Export loading state communicated with `aria-busy`
 
@@ -2608,6 +2648,9 @@ Each initiative tracker row carries:
 - Unit: mailto builders encode subject/body correctly
 - Component: GDPR card renders three actions with expected accessible labels
 - Component: delete dialog renders warning text
+- Newsletter — nominal: registering with the box ticked stores `newsletterOptIn=true` and a consent date; the profile switch turns it off and updates the date.
+- Newsletter — edge: registering without touching the box stores `false`; migrated existing users are `false` with no date.
+- Newsletter — failure: the opt-in/out API call fails → switch reverts and an error toast is shown; export JSON contains the newsletter fields.
 
 **References**:
 
@@ -6601,3 +6644,46 @@ The path app → Keycloak login page → back in the app MUST use as few sequent
 - `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`, `shared/SidebarItemWithActions.tsx`, `shared/sidebarActionIcons.ts`
 - `services/web/client/src/services/CharacterService.ts`
+
+---
+
+## FR-user-email-verification: E-mail Address Verification and Account Access Gate
+
+**Rule**: A user MUST have a verified e-mail address to use the application; verification status is stored by Keycloak, and no address is considered verified merely because it exists in the database.
+
+**Scope**: complements FR-user-profile-keycloak (name rules and the shared blocking gate) and FR-post-auth-navigation (destination after the gate). Does not cover newsletter consent (FR-profile-gdpr) or password reset.
+
+**Requirements**:
+
+- **Source of truth**: Keycloak `emailVerified` (`verified` / `unverified`). The Keycloak `VERIFY_EMAIL` required action is enabled and applied to new registrations; verification is by link sent by e-mail (themed fr/en/es, reusing the realm SMTP configuration).
+- **New accounts**: registration sends the verification e-mail immediately. Until the link is used, the user cannot access the application: after login they see a dedicated waiting screen explaining that the e-mail must be verified, to which address the mail was sent, and a « Resend e-mail » action. The wording MUST state clearly that access is locked until verification.
+- **Existing accounts (migration)**: a one-off migration sets every existing account to `unverified` (no address is trusted because it was already stored). No e-mail is sent by the migration itself.
+- **Existing users on next login**: they get the blocking account gate (shared with the name step, see FR-user-profile-keycloak) with a verification step that explains this is a **new rule** (security and communication), shows the address, offers « Send me the verification e-mail » and « Resend », and offers to correct the address if wrong. Logout stays available.
+- **Resend**: possible at any time from the waiting screen or gate step; rate-limited server-side (at least 60 seconds between sends per account) with a visible cooldown, and a neutral confirmation message.
+- **Gate release**: once the link is confirmed, the gate closes without manual reload (the client re-checks the verification status from the API, not from a possibly stale token; refresh of the token as needed) and the post-authentication navigation resumes.
+- **Address change**: changing the e-mail through `PUT /users/me` resets the status to `unverified`, sends a new verification e-mail and re-enables the gate. Duplicate e-mails remain rejected.
+- **API**: `GET /users/me` exposes the account status (`emailVerified`). The Adventure API MUST refuse protected resources for an authenticated user whose e-mail is unverified (403 with an explicit code), except the endpoints needed by the gate (read/update own profile, resend verification, logout); the client gate is never the only protection. Internal/service accounts are excluded.
+- **Accessibility**: waiting screen and gate step have a clear heading, a live region for send/resend/cooldown feedback, keyboard-operable actions, and are translated fr/en/es.
+
+**Prohibitions**:
+
+- Marking an existing account as verified without a confirmed link.
+- Granting application access to an unverified account, whether through the UI or by calling the API directly.
+- Revealing, on resend, whether an address belongs to another account.
+- Unlimited resends.
+
+**Tests**:
+
+- Nominal: registering sends the verification e-mail; before confirming, login shows the waiting screen and API calls return 403; after confirming, the application opens at the usual post-login destination.
+- Nominal: migration marks all existing accounts `unverified`; an existing user sees the explanatory gate step and, after verifying, enters the app.
+- Edge: resend inside the cooldown is refused (client disabled, API 429); changing the e-mail resets to `unverified` and re-locks; user who is both irregular on names and unverified sees the two steps in one modal.
+- Edge (race): verifying in another tab/window releases the gate here without reload.
+- Failure: e-mail sending fails → error message with retry, no state change; a direct API call with an unverified account returns 403 except on gate endpoints; an expired/invalid link shows a message with a resend action.
+
+**References**:
+
+- `services/sso/keycloak-config.sh`, `services/sso/keycloak/realm-export*.json`
+- `services/sso/keycloak/themes/chariot/email/`, `services/sso/keycloak/themes/chariot/login/`
+- `services/adventure/api/src/resources/user/` (controller, service, `keycloak.service.ts`)
+- `services/web/client/src/providers/KeycloakProvider.tsx`
+- `services/web/client/messages/{en,fr,es}.json`

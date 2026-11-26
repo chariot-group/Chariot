@@ -132,8 +132,11 @@ cat > /tmp/user-profile-update.json <<'PROFILE_EOF'
       "name": "firstName",
       "displayName": "${firstName}",
       "validations": {
-        "length": { "max": 255 },
-        "person-name-prohibited-characters": {}
+        "length": { "min": 1, "max": 50 },
+        "pattern": {
+          "pattern": "^\\p{L}[\\p{L}\\p{M}]*(?:[ '\u2019-]\\p{L}[\\p{L}\\p{M}]*)*$",
+          "error-message": "error-person-name"
+        }
       },
       "required": {
         "roles": ["user"]
@@ -148,8 +151,11 @@ cat > /tmp/user-profile-update.json <<'PROFILE_EOF'
       "name": "lastName",
       "displayName": "${lastName}",
       "validations": {
-        "length": { "max": 255 },
-        "person-name-prohibited-characters": {}
+        "length": { "min": 1, "max": 50 },
+        "pattern": {
+          "pattern": "^\\p{L}[\\p{L}\\p{M}]*(?:[ '\u2019-]\\p{L}[\\p{L}\\p{M}]*)*$",
+          "error-message": "error-person-name"
+        }
       },
       "required": {
         "roles": ["user"]

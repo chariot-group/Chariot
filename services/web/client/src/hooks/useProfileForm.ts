@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/useToast';
 import { useTranslations } from 'next-intl';
 import { UpdateUserDto } from '@/types/user';
 import { makeZodMessages } from '@/lib/zodErrorMap';
+import { getPersonNameIssue } from '@/lib/personName';
 
 // Type definition for profile form data
 export type ProfileFormData = {
@@ -30,11 +31,18 @@ export function useProfileForm() {
     const zm = makeZodMessages(tZod);
 
     // Zod schema with translated validation messages via zodErrorMap
-    const profileSchema = useMemo(() => z.object({
-        firstName: z.string({ message: zm.required() }).min(2, { message: zm.minString(2) }),
-        lastName: z.string({ message: zm.required() }).min(2, { message: zm.minString(2) }),
-        email: z.string({ message: zm.required() }).email({ message: zm.email() }),
-    }), [zm]);
+    const profileSchema = useMemo(() => {
+        const personNameCheck = (value: string, ctx: z.RefinementCtx) => {
+            const issue = getPersonNameIssue(value);
+            if (issue === 'required') ctx.addIssue({ code: 'custom', message: zm.required() });
+            else if (issue) ctx.addIssue({ code: 'custom', message: zm.personName() });
+        };
+        return z.object({
+            firstName: z.string({ message: zm.required() }).superRefine(personNameCheck),
+            lastName: z.string({ message: zm.required() }).superRefine(personNameCheck),
+            email: z.string({ message: zm.required() }).email({ message: zm.email() }),
+        });
+    }, [zm]);
 
     const form = useForm<ProfileFormData>({
         resolver: zodResolver(profileSchema),

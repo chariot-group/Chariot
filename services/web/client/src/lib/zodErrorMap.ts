@@ -70,6 +70,11 @@ export function makeZodMessages(t: TranslationFunction) {
         maxArray: (max: number) => t('tooBig.array.inclusive', { maximum: max }),
 
         /**
+         * Prénom / nom : lettres, espaces, apostrophes, traits d'union (FR-user-profile-keycloak)
+         */
+        personName: () => t('personName'),
+
+        /**
          * Message pour .multipleOf()
          */
         notMultipleOf: (multipleOf: number) => t('notMultipleOf', { multipleOf }),

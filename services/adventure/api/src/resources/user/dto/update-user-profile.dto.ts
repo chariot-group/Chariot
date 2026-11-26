@@ -1,12 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
   IsIn,
   IsOptional,
   IsString,
+  Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
+import {
+  PERSON_NAME_MAX_LENGTH,
+  PERSON_NAME_MIN_LENGTH,
+  PERSON_NAME_PATTERN,
+  cleanPersonName,
+} from '@/common/person-name/person-name';
+
+/** Validates the cleaned value, so padded input is measured after trimming. */
+const CleanPersonName = () =>
+  Transform(({ value }) =>
+    typeof value === 'string' ? cleanPersonName(value) : value,
+  );
 
 export const SUPPORTED_USER_LOCALES = ['fr', 'en', 'es'] as const;
 export type SupportedUserLocale = (typeof SUPPORTED_USER_LOCALES)[number];
@@ -20,22 +35,44 @@ export class UpdateUserProfileDto {
     description: 'User first name',
     example: 'John',
     required: false,
-    minLength: 2,
+    minLength: PERSON_NAME_MIN_LENGTH,
+    maxLength: PERSON_NAME_MAX_LENGTH,
   })
   @IsOptional()
+  @CleanPersonName()
   @IsString()
-  @MinLength(2, { message: 'First name must be at least 2 characters long' })
+  @MinLength(PERSON_NAME_MIN_LENGTH, {
+    message: 'First name must not be empty',
+  })
+  @MaxLength(PERSON_NAME_MAX_LENGTH, {
+    message: 'First name must be at most 50 characters long',
+  })
+  @Matches(PERSON_NAME_PATTERN, {
+    message:
+      'First name may only contain letters, spaces, apostrophes and hyphens',
+  })
   firstName?: string;
 
   @ApiProperty({
     description: 'User last name',
     example: 'Doe',
     required: false,
-    minLength: 2,
+    minLength: PERSON_NAME_MIN_LENGTH,
+    maxLength: PERSON_NAME_MAX_LENGTH,
   })
   @IsOptional()
+  @CleanPersonName()
   @IsString()
-  @MinLength(2, { message: 'Last name must be at least 2 characters long' })
+  @MinLength(PERSON_NAME_MIN_LENGTH, {
+    message: 'Last name must not be empty',
+  })
+  @MaxLength(PERSON_NAME_MAX_LENGTH, {
+    message: 'Last name must be at most 50 characters long',
+  })
+  @Matches(PERSON_NAME_PATTERN, {
+    message:
+      'Last name may only contain letters, spaces, apostrophes and hyphens',
+  })
   lastName?: string;
 
   @ApiProperty({

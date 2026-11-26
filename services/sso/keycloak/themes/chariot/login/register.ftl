@@ -124,5 +124,26 @@
                 </div>
             </div>
         </form>
+        <script type="text/javascript">
+            // Convenience only: the API and Keycloak validators remain authoritative (FR-user-profile-keycloak).
+            (function () {
+                var form = document.getElementById('kc-form-card');
+                if (!form) return;
+                var clean = function (v) {
+                    return v.normalize('NFC').replace(/[\u2018\u2019\u02BC]/g, "'").replace(/\s+/g, ' ').trim();
+                };
+                var titleCase = function (v) {
+                    return clean(v).toLowerCase().replace(/(^|[ '-])(\p{L})/gu, function (m, sep, l) {
+                        return sep + l.toUpperCase();
+                    });
+                };
+                form.addEventListener('submit', function () {
+                    ['firstName', 'lastName'].forEach(function (id) {
+                        var el = document.getElementById(id);
+                        if (el) el.value = titleCase(el.value);
+                    });
+                });
+            })();
+        </script>
     </#if>
 </@layout.registrationLayout>

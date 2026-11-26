@@ -6,6 +6,10 @@ import {
   NotFoundException,
   HttpException,
 } from '@nestjs/common';
+import {
+  isValidPersonName,
+  normalizePersonName,
+} from '@/common/person-name/person-name';
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
 import { PublicUserInfoDto } from '@/resources/user/dto/sub/public-user-info.dto';
 import { KeycloakService } from '@/resources/user/keycloak.service';
@@ -27,6 +31,37 @@ export class UserService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private readonly keycloakService: KeycloakService,
   ) {}
+
+  /**
+   * Registration goes through the Keycloak form, which cannot transform values:
+   * normalize the case of valid names on the user's first connection.
+   * Invalid names are left untouched (they need the user's correction) and a
+   * Keycloak failure never blocks the connection.
+   * @see FR-user-profile-keycloak: Person name rules
+   */
+  private async syncNameCaseOnFirstConnection(
+    keycloakId: string,
+    keycloakUser: UserRepresentation,
+  ): Promise<void> {
+    const changes: { firstName?: string; lastName?: string } = {};
+    for (const field of ['firstName', 'lastName'] as const) {
+      const current = keycloakUser[field];
+      if (typeof current !== 'string' || !isValidPersonName(current)) continue;
+      const normalized = normalizePersonName(current);
+      if (normalized !== current) changes[field] = normalized;
+    }
+    if (Object.keys(changes).length === 0) return;
+
+    try {
+      await this.keycloakService.updateUser(keycloakId, changes);
+      Object.assign(keycloakUser, changes);
+    } catch (error) {
+      this.logger.warn(
+        `Could not normalize names of user #${keycloakId} on first connection: ${error.message}`,
+        this.SERVICE_NAME,
+      );
+    }
+  }
 
   async findOne(id: string): Promise<IResponse<UserInfoDto>> {
     try {
@@ -50,6 +85,8 @@ export class UserService {
           balance: 1,
           history: [],
         });
+        // First connection: names typed at registration are only normalized client-side
+        await this.syncNameCaseOnFirstConnection(id, keycloakUser);
       }
       const end: number = Date.now();
 
@@ -197,6 +234,18 @@ export class UserService {
         showBothUnits,
         ...keycloakUpdateData
       } = updateData;
+
+      // Normalize name case server-side before persisting (FR-user-profile-keycloak)
+      if (keycloakUpdateData.firstName !== undefined) {
+        keycloakUpdateData.firstName = normalizePersonName(
+          keycloakUpdateData.firstName,
+        );
+      }
+      if (keycloakUpdateData.lastName !== undefined) {
+        keycloakUpdateData.lastName = normalizePersonName(
+          keycloakUpdateData.lastName,
+        );
+      }
 
       // Update user in Keycloak
       await this.keycloakService.updateUser(keycloakId, keycloakUpdateData);

@@ -881,6 +881,7 @@
       "url": "URL invalide",
       "uuid": "UUID invalide"
     },
+    "personName": "Uniquement des lettres, espaces, apostrophes et traits d'union (1 à 50 caractères)",
     "notMultipleOf": "Le nombre doit être un multiple de {multipleOf}",
     "abilityCounterOrder": "L'utilisation actuelle ne peut pas dépasser le plafond.",
     "classLevelTotalsVsGlobalHitDice": "Le total des niveaux de classe ({total}) dépasse le niveau global ({global}). Corrigez les niveaux de classe ou le niveau global — l’erreur est indiquée sur les dés restants.",
