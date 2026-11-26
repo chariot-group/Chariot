@@ -11,7 +11,6 @@ const minimalLabels: CharacterSheetPdfLabels = {
   characterName: "Character",
   playerName: "Player",
   race: "Race",
-  classAndLevel: "Class",
   background: "Background",
   alignment: "Alignment",
   experience: "XP",
@@ -22,12 +21,13 @@ const minimalLabels: CharacterSheetPdfLabels = {
   initiativeShort: "Init.",
   languages: "Languages",
   qrCodeHint: "Open sheet",
-  speed: "Speed",
+  speedShort: "Speed",
   maxHp: "Max HP",
   currentHp: "HP",
   tempHp: "Temp HP",
   hitPoints: "Hit Points",
   hitDice: "Hit Dice",
+  hitDiceRemaining: "Dice remaining",
   hitPointsRoll: "HP Roll",
   proficiencyBonus: "Prof",
   inspiration: "Inspiration",
@@ -69,8 +69,6 @@ const minimalLabels: CharacterSheetPdfLabels = {
   cantrips: "Cantrips",
   preparedSpells: "Prepared",
   spellSlots: "Slots",
-  slotsUsed: "Used",
-  slotsTotal: "Total",
   spellsSection: "Spells",
   spellSchool: "School",
   spellCastingTime: "Casting time",
@@ -82,7 +80,6 @@ const minimalLabels: CharacterSheetPdfLabels = {
   spellHealing: "Healing",
   spellPreparedLabel: "Prepared",
   spellUnpreparedLabel: "Unprepared",
-  spellDescriptionContinuation: "Description (cont.)",
   npcAtWill: "At will",
   npcUsesPerDay: "{count}/day",
   spellUsesTracker: "Uses",
@@ -298,7 +295,6 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
       damage: "3d4+3 force",
       prepared: true,
     });
-    expect(data.inspiration).toBe(true);
     expect(data.race).toBe("Human");
     expect(data.subrace).toBe("");
     expect(data.classPrimary).toBe("Fighter Lv.5");
@@ -367,11 +363,54 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     expect(data.classEntries[0]).toMatchObject({ name: "Fighter", subclass: "Champion", level: 5, label: "Fighter Lv.5" });
     expect(data.classEntries[1]).toMatchObject({ name: "Wizard", subclass: "Evocation", level: 3, label: "Wizard Lv.3" });
     expect(data.classPrimary).toBe("Fighter Lv.5 / Wizard Lv.3");
+    // Pills show the class total: the remaining count is written by hand on the sheet.
     expect(data.hitDiceEntries).toEqual([
-      { notation: "3d10", className: "Fighter" },
-      { notation: "2d6", className: "Wizard" },
+      { notation: "5d10", className: "Fighter" },
+      { notation: "3d6", className: "Wizard" },
     ]);
-    expect(data.hitDice).toBe("3d10 (Fighter), 2d6 (Wizard)");
+    expect(data.hitDice).toBe("5d10 (Fighter), 3d6 (Wizard)");
+  });
+
+  it("nominal: play-time state is not exported (current / temp HP, death saves, inspiration)", () => {
+    const player = {
+      ...basePlayer,
+      stats: { ...basePlayer.stats, currentHitPoints: 7, tempHitPoints: 4 },
+      deathSaves: { successes: 2, failures: 1 },
+      inspiration: true,
+    };
+    const data = mapCharacterToPdfData(player, mapOptions);
+    for (const key of ["currentHp", "tempHp", "deathSaveSuccesses", "deathSaveFailures", "inspiration"]) {
+      expect(data, key).not.toHaveProperty(key);
+    }
+  });
+
+  it("nominal: an attack keeps its damage dice and types apart, in entry order", () => {
+    const player = {
+      ...basePlayer,
+      actions: [
+        {
+          name: "Longsword",
+          type: "melee",
+          attackBonus: 5,
+          range: "5 ft",
+          damage: [
+            { dice: "1d8+3", type: "slashing" },
+            { dice: "1d6", type: "fire" },
+          ],
+        },
+      ],
+    } as Player;
+    const [attack] = mapCharacterToPdfData(player, mapOptions).attacks;
+    expect(attack).toMatchObject({ name: "Longsword", bonus: "+5", damage: "1d8+3 + 1d6", damageType: "slashing + fire" });
+  });
+
+  it("edge: an attack without damage maps to empty dice and type", () => {
+    const player = {
+      ...basePlayer,
+      actions: [{ name: "Shove", type: "melee", attackBonus: 3, range: "5 ft" }],
+    } as Player;
+    const [attack] = mapCharacterToPdfData(player, mapOptions).attacks;
+    expect(attack).toMatchObject({ damage: "", damageType: "" });
   });
 
   it("nominal: maps NPC with CR and without death saves", () => {
@@ -400,7 +439,6 @@ describe("FR-character-sheet-pdf-export — mapCharacterToPdfData", () => {
     const data = mapCharacterToPdfData(npc, mapOptions);
     expect(data.isPlayer).toBe(false);
     expect(data.classOrCr).toContain("1/4");
-    expect(data.deathSaveSuccesses).toBe(0);
     expect(data.hitDice).toBe("2d6+2");
   });
 

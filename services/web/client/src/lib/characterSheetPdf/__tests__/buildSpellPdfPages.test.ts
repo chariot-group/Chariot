@@ -2,17 +2,16 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  batchSpellsForDetailPages,
+  buildSpellOverviewColumns,
   buildSpellPdfPages,
-  computeSpellOverviewDensity,
-  estimateSpellDetailCardHeight,
+  getSpellDetailCardLayout,
+  getSpellDetailMetaParts,
   getSpellLevelGroups,
-  getSpellOverviewColumnLevels,
-  getSpellOverviewDisplaySpells,
-  getSpellOverviewLineCount,
-  PDF_SPELL_OVERVIEW_LINES_PER_LEVEL,
-  truncateSpellDescription,
+  getSpellOverviewRowHeight,
+  PDF_SPELL_DETAIL_CARD_MAX_HEIGHT,
+  PDF_SPELL_OVERVIEW,
 } from "@/lib/characterSheetPdf/buildSpellPdfPages";
+import { PDF_PAGE_CONTENT_HEIGHT } from "@/lib/characterSheetPdf/pdfPageGeometry";
 import type { PdfSpellcastingBlock } from "@/lib/characterSheetPdf/types";
 
 const baseSpell = {
@@ -64,50 +63,46 @@ const baseBlock: PdfSpellcastingBlock = {
   isInnate: false,
 };
 
-describe("buildSpellPdfPages", () => {
-  it("nominal: builds overview plus compact detail batches", () => {
+const denseBlock: PdfSpellcastingBlock = {
+  ...baseBlock,
+  cantrips: Array.from({ length: 12 }, (_, index) => ({ ...baseSpell, level: 0, name: `Cantrip ${index}` })),
+  spellsByLevel: Object.fromEntries(
+    Array.from({ length: 9 }, (_, level) => [
+      level + 1,
+      Array.from({ length: 12 }, (_, index) => ({
+        ...baseSpell,
+        level: level + 1,
+        name: `Spell ${level + 1}-${index}`,
+      })),
+    ]),
+  ),
+  slotsByLevel: Object.fromEntries(Array.from({ length: 9 }, (_, level) => [level + 1, { used: 0, total: 4 }])),
+};
+
+describe("FR-character-sheet-pdf-export — buildSpellPdfPages", () => {
+  it("nominal: builds an overview page then one flowing details page per block", () => {
     const pages = buildSpellPdfPages([baseBlock]);
     expect(pages).toHaveLength(2);
     expect(pages[0]).toMatchObject({ kind: "overview", blockIndex: 0 });
-    expect(pages[1]).toMatchObject({ kind: "detailBatch", blockIndex: 0 });
+    expect(pages[1]).toMatchObject({ kind: "details", blockIndex: 0 });
     expect(pages[1]?.spells?.map((spell) => spell.name)).toEqual(["Fire Bolt", "Magic Missile"]);
   });
 
-  it("nominal: batches more short spells per page than long descriptions", () => {
-    const shortSpells = Array.from({ length: 6 }, (_, index) => ({
-      ...baseSpell,
-      name: `Spell ${index + 1}`,
-      description: "Short.",
-    }));
-    const longSpells = Array.from({ length: 3 }, (_, index) => ({
-      ...baseSpell,
-      name: `Long ${index + 1}`,
-      description: "word ".repeat(120).trim(),
-    }));
-
-    const shortBatches = batchSpellsForDetailPages(shortSpells);
-    const longBatches = batchSpellsForDetailPages(longSpells);
-
-    expect(shortBatches.flat()).toHaveLength(6);
-    expect(longBatches.flat()).toHaveLength(3);
-    expect(shortBatches[0]?.length ?? 0).toBeGreaterThan(longBatches[0]?.length ?? 0);
-  });
-
-  it("edge: splits long spell descriptions into continuation pages after batches", () => {
-    const longDescription = "word ".repeat(900).trim();
+  it("edge: a very long description adds no continuation page", () => {
     const block: PdfSpellcastingBlock = {
       ...baseBlock,
       cantrips: [],
-      spellsByLevel: {
-        1: [{ ...baseSpell, description: longDescription }],
-      },
+      spellsByLevel: { 1: [{ ...baseSpell, description: "word ".repeat(5000).trim() }] },
     };
 
     const pages = buildSpellPdfPages([block]);
-    const batches = pages.filter((page) => page.kind === "detailBatch");
-    const continuations = pages.filter((page) => page.kind === "detailContinuation");
-    expect(batches).toHaveLength(1);
-    expect(continuations.length).toBeGreaterThan(0);
+    expect(pages.map((page) => page.kind)).toEqual(["overview", "details"]);
+    expect(pages[1]?.spells).toHaveLength(1);
+  });
+
+  it("guard: a block without any spell only gets its overview page", () => {
+    const block: PdfSpellcastingBlock = { ...baseBlock, cantrips: [], spellsByLevel: {} };
+    expect(buildSpellPdfPages([block]).map((page) => page.kind)).toEqual(["overview"]);
   });
 
   it("edge: innate blocks group spells by uses per day", () => {
@@ -129,146 +124,132 @@ describe("buildSpellPdfPages", () => {
     expect(groups[0]?.usesPerDay).toBeNull();
     expect(groups[1]?.usesPerDay).toBe(3);
   });
+});
 
-  it("layout: overview uses two columns for spell levels", () => {
-    const columns = getSpellOverviewColumnLevels();
-    expect(columns).toHaveLength(2);
-    expect(columns).toEqual([
+describe("FR-character-sheet-pdf-export — spell detail card", () => {
+  it("nominal: a short description is kept whole under the half-page cap", () => {
+    const layout = getSpellDetailCardLayout(baseSpell, "+5");
+    expect(layout.description).toBe("Three darts of force.");
+    expect(layout.descriptionMaxLines).toBeGreaterThan(10);
+  });
+
+  it("edge: a long description is cut with an ellipsis and bounded by the line budget", () => {
+    const long = "word ".repeat(5000).trim();
+    const layout = getSpellDetailCardLayout({ ...baseSpell, description: long }, "+5");
+    expect(layout.description.endsWith("…")).toBe(true);
+    expect(layout.description.length).toBeLessThan(long.length);
+    // Enough text to fill every allowed line, but nowhere near the full description.
+    expect(layout.description.length).toBeLessThan(layout.descriptionMaxLines * 120);
+  });
+
+  it("layout: a card is capped at half of the page content height", () => {
+    expect(PDF_SPELL_DETAIL_CARD_MAX_HEIGHT).toBeLessThanOrEqual(PDF_PAGE_CONTENT_HEIGHT / 2);
+  });
+
+  it("layout: more meta pills leave fewer description lines", () => {
+    const few = getSpellDetailCardLayout({ ...baseSpell, components: "", duration: "", damage: null }, "");
+    const many = getSpellDetailCardLayout(
+      { ...baseSpell, components: "V, S, M (a long list of material components)", damage: "8d6 fire" },
+      "+5",
+    );
+    expect(many.descriptionMaxLines).toBeLessThan(few.descriptionMaxLines);
+  });
+
+  it("guard: an empty description renders no description section", () => {
+    const layout = getSpellDetailCardLayout({ ...baseSpell, description: "   " }, "+5");
+    expect(layout.description).toBe("");
+    expect(layout.descriptionMaxLines).toBe(0);
+  });
+
+  it("meta: lists filled facts, adds the attack bonus for attack spells only, clamps long values", () => {
+    const parts = getSpellDetailMetaParts(
+      { ...baseSpell, components: "x".repeat(80), healing: null, duration: "" },
+      "+5",
+    );
+    expect(parts).toEqual(["Evocation", "1 action", "120 ft", `${"x".repeat(39)}…`, "1d4+1 force", "+5"]);
+    expect(getSpellDetailMetaParts({ ...baseSpell, effectType: "utility" }, "+5")).not.toContain("+5");
+  });
+});
+
+describe("FR-character-sheet-pdf-export — spell overview sheet", () => {
+  const levelsOf = (columns: ReturnType<typeof buildSpellOverviewColumns>) =>
+    columns.map((cards) => cards.map((card) => card.group.level));
+
+  it("layout: three columns hold levels 0-2, 3-5 and 6-9", () => {
+    expect(levelsOf(buildSpellOverviewColumns(baseBlock))).toEqual([
       [0, 1, 2],
-      [3, 4, 5, 6, 7, 8, 9],
+      [3, 4, 5],
+      [6, 7, 8, 9],
     ]);
   });
 
-  it("layout: caps overview spell rows at ten per level", () => {
-    const spells = Array.from({ length: 14 }, (_, index) => ({
-      ...baseSpell,
-      name: `Spell ${index + 1}`,
-    }));
-    const group = {
-      level: 2,
-      usesPerDay: null,
-      spells,
-      slots: { used: 0, total: 3 },
+  it("nominal: blank lines fill every card at about the preferred line height", () => {
+    for (const column of buildSpellOverviewColumns(baseBlock)) {
+      const rowHeight = getSpellOverviewRowHeight(column);
+      expect(rowHeight).toBeGreaterThanOrEqual(PDF_SPELL_OVERVIEW.targetRowHeight);
+      expect(rowHeight).toBeLessThan(PDF_SPELL_OVERVIEW.targetRowHeight * 1.25);
+      // Cards of a column share the blank lines evenly.
+      expect(new Set(column.map((card) => card.lineCount)).size).toBe(1);
+    }
+  });
+
+  it("edge: the third column, with four cards, gets fewer lines per card", () => {
+    const [first, , third] = buildSpellOverviewColumns(baseBlock);
+    expect(third![0]!.lineCount).toBeLessThan(first![0]!.lineCount);
+  });
+
+  it("edge: a level with many spells gets one line per spell and the column lines shrink", () => {
+    const columns = buildSpellOverviewColumns(denseBlock);
+    const [cantrips] = columns[0]!;
+    expect(cantrips!.spells).toHaveLength(12);
+    expect(cantrips!.lineCount).toBe(12);
+    for (const column of columns) {
+      expect(getSpellOverviewRowHeight(column)).toBeGreaterThanOrEqual(PDF_SPELL_OVERVIEW.minRowHeight);
+    }
+  });
+
+  it("guard: a level with more spells than fit is capped so the sheet stays on one page", () => {
+    const crowded: PdfSpellcastingBlock = {
+      ...baseBlock,
+      spellsByLevel: {
+        7: Array.from({ length: 80 }, (_, index) => ({ ...baseSpell, level: 7, name: `Spell ${index}` })),
+      },
     };
-    expect(getSpellOverviewLineCount(group)).toBe(10);
-    expect(getSpellOverviewDisplaySpells(group)).toHaveLength(10);
-  });
-
-  it("layout: empty inaccessible levels use fewer blank lines", () => {
-    expect(
-      getSpellOverviewLineCount({
-        level: 9,
-        usesPerDay: null,
-        spells: [],
-        slots: null,
-      }),
-    ).toBe(3);
-    expect(
-      getSpellOverviewLineCount({
-        level: 1,
-        usesPerDay: null,
-        spells: [baseSpell],
-        slots: { used: 0, total: 2 },
-      }),
-    ).toBe(10);
-  });
-
-  it("layout: truncates compact spell descriptions with ellipsis", () => {
-    const truncated = truncateSpellDescription("alpha beta gamma delta", 12);
-    expect(truncated.endsWith("…")).toBe(true);
-    expect(truncated.length).toBeLessThanOrEqual(12);
-  });
-
-  it("layout: reserves ten spell lines per overview level", () => {
-    expect(PDF_SPELL_OVERVIEW_LINES_PER_LEVEL).toBe(10);
-  });
-
-  it("layout: taller cards consume more vertical budget", () => {
-    const shortHeight = estimateSpellDetailCardHeight({ ...baseSpell, description: "Short." });
-    const longHeight = estimateSpellDetailCardHeight(
-      { ...baseSpell, description: "word ".repeat(80).trim() },
+    const seventh = buildSpellOverviewColumns(crowded)[2]!.find((card) => card.group.level === 7)!;
+    expect(seventh.spells.length).toBeLessThan(80);
+    expect(seventh.lineCount).toBe(seventh.spells.length);
+    expect(getSpellOverviewRowHeight(buildSpellOverviewColumns(crowded)[2]!)).toBeGreaterThanOrEqual(
+      PDF_SPELL_OVERVIEW.minRowHeight,
     );
-    expect(longHeight).toBeGreaterThan(shortHeight);
   });
 
-  describe("computeSpellOverviewDensity", () => {
-    it("nominal: a caster with only cantrips (right column fully empty) gets the airy ceiling", () => {
-      // Right column (levels 3-9) is always at least 21 lines (7 empty levels x 3), which is the
-      // sparsest possible driver — this is the case that should render maximally airy.
-      const sparseBlock: PdfSpellcastingBlock = {
-        ...baseBlock,
-        spellsByLevel: {},
-        slotsByLevel: {},
-      };
-      const density = computeSpellOverviewDensity(sparseBlock);
-      expect(density.rowMinHeight).toBeCloseTo(15, 5);
-      expect(density.sectionMarginBottom).toBeCloseTo(9, 5);
-      expect(density.pagePaddingVertical).toBeCloseTo(18, 5);
-    });
+  it("edge: innate groups are spread in order over the three columns", () => {
+    const innateBlock: PdfSpellcastingBlock = {
+      ...baseBlock,
+      isInnate: true,
+      cantrips: [{ ...baseSpell, name: "Light", usesPerDay: null }],
+      spellsByLevel: {
+        1: [{ ...baseSpell, name: "Charm", usesPerDay: 3 }],
+        2: [{ ...baseSpell, name: "Fly", usesPerDay: 1 }],
+      },
+    };
+    const columns = buildSpellOverviewColumns(innateBlock);
+    expect(columns).toHaveLength(3);
+    expect(columns.map((cards) => cards.map((card) => card.group.usesPerDay))).toEqual([[null], [1], [3]]);
+  });
 
-    it("edge: a caster with every spell level (1-9) populated falls back to the original tight baseline", () => {
-      const denseBlock: PdfSpellcastingBlock = {
-        ...baseBlock,
-        cantrips: [{ ...baseSpell, level: 0 }],
-        spellsByLevel: Object.fromEntries(
-          Array.from({ length: 9 }, (_, index) => [index + 1, [{ ...baseSpell, level: index + 1 }]]),
-        ),
-        slotsByLevel: Object.fromEntries(
-          Array.from({ length: 9 }, (_, index) => [index + 1, { used: 0, total: 1 }]),
-        ),
-      };
-      const density = computeSpellOverviewDensity(denseBlock);
-      // Right column (levels 3-9) is fully populated: 7 levels x 10 lines = 70, the densest possible case.
-      // This must reproduce the original fixed spacing exactly, since that baseline was already
-      // validated to fit a single LETTER page for this worst case — any airier value here risks
-      // the overview content overflowing past the physical page (wrap=false forbids a 4th page).
-      expect(density.rowMinHeight).toBeCloseTo(8, 5);
-      expect(density.sectionMarginBottom).toBeCloseTo(1, 5);
-      expect(density.pagePaddingVertical).toBeCloseTo(12, 5);
-    });
-
-    it("failure/guard: a spellcasting block with no cantrips, spells, or slots never yields a negative or NaN metric", () => {
+  it("guard: a block without spells or slots still yields three columns with finite line heights", () => {
+    for (const isInnate of [false, true]) {
       const emptyBlock: PdfSpellcastingBlock = {
         ...baseBlock,
+        isInnate,
         cantrips: [],
         spellsByLevel: {},
         slotsByLevel: {},
       };
-      const density = computeSpellOverviewDensity(emptyBlock);
-      for (const value of Object.values(density)) {
-        expect(Number.isFinite(value)).toBe(true);
-        expect(value).toBeGreaterThan(0);
-      }
-    });
-
-    it("failure/guard: an innate block with zero uses-per-day groups (empty reduce) never yields a negative or NaN metric", () => {
-      const emptyInnateBlock: PdfSpellcastingBlock = {
-        ...baseBlock,
-        isInnate: true,
-        cantrips: [],
-        spellsByLevel: {},
-        slotsByLevel: {},
-      };
-      const density = computeSpellOverviewDensity(emptyInnateBlock);
-      for (const value of Object.values(density)) {
-        expect(Number.isFinite(value)).toBe(true);
-        expect(value).toBeGreaterThan(0);
-      }
-    });
-
-    it("innate: density derives from the tallest single uses-per-day column, not a stacked total", () => {
-      const innateBlock: PdfSpellcastingBlock = {
-        ...baseBlock,
-        isInnate: true,
-        cantrips: [],
-        spellsByLevel: {
-          3: [{ ...baseSpell, level: 3, usesPerDay: 1 }],
-        },
-        slotsByLevel: {},
-      };
-      const density = computeSpellOverviewDensity(innateBlock);
-      // A single populated uses-per-day group (10 lines) is far below the sparse threshold, so it stays airy.
-      expect(density.rowMinHeight).toBeCloseTo(15, 5);
-    });
+      const columns = buildSpellOverviewColumns(emptyBlock);
+      expect(columns).toHaveLength(3);
+      for (const column of columns) expect(Number.isFinite(getSpellOverviewRowHeight(column))).toBe(true);
+    }
   });
 });
