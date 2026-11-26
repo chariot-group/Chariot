@@ -401,15 +401,17 @@ export function InitiativeTrackerRow({
     return renderCharacterNameText(gmName);
   };
 
-  const renderAvatarThumb = () => {
+  /** `small`: mobile collapsed line (thin rows). */
+  const renderAvatarThumb = (small = false) => {
+    const sizeClassName = small ? "size-7" : "size-9 sm:size-10";
     // FR-combat-initiative-tracker — no image (or hidden identity): neutral profile bubble, same size.
     if (showHiddenName || !row.avatar?.trim()) {
       return (
         <span
           data-slot="tracker-avatar-placeholder"
           aria-hidden="true"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gray sm:size-10">
-          <User className="size-4 text-white/40" />
+          className={cn("flex shrink-0 items-center justify-center rounded-full bg-gray", sizeClassName)}>
+          <User className={cn("text-white/40", small ? "size-3.5" : "size-4")} />
         </span>
       );
     }
@@ -421,11 +423,11 @@ export function InitiativeTrackerRow({
           src={avatarImageUrl}
           alt=""
           aria-hidden="true"
-          width={36}
-          height={36}
+          width={small ? 28 : 36}
+          height={small ? 28 : 36}
           loading="lazy"
           decoding="async"
-          className="size-9 shrink-0 rounded-full object-cover object-center sm:size-10"
+          className={cn("shrink-0 rounded-full object-cover object-center", sizeClassName)}
         />
       );
     }
@@ -438,6 +440,7 @@ export function InitiativeTrackerRow({
         size="thumb"
         sessionCode={sessionCode}
         alt={displayName}
+        className={small ? "size-7" : undefined}
       />
     );
   };
@@ -561,8 +564,6 @@ export function InitiativeTrackerRow({
       : null;
 
   const detailsId = `initiative-tracker-row-details-${row.id}`;
-  const tabletDetailsId = `initiative-tracker-row-tablet-details-${row.id}`;
-  const hasTabletExpansion = totalStateCount > 1;
 
   const renderInitiativeCell = (compact = false) => {
     const showModifier = !battleStarted && (!isPlayerView || isOwnCharacter);
@@ -627,25 +628,6 @@ export function InitiativeTrackerRow({
     </div>
     );
   };
-
-  const renderTabletExpansionButton = () =>
-    hasTabletExpansion ? (
-      <Button
-        type="button"
-        variant="secondary"
-        size="icon-sm"
-        aria-expanded={isExpanded}
-        aria-controls={tabletDetailsId}
-        aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
-        onClick={onToggleExpanded}
-        className="hidden shrink-0 md:inline-flex lg:hidden">
-        {isExpanded ? (
-          <ChevronDown className="size-4" aria-hidden="true" />
-        ) : (
-          <ChevronRight className="size-4" aria-hidden="true" />
-        )}
-      </Button>
-    ) : null;
 
   const renderHpCell = (compact = false) => (
     <div className="flex min-w-0 justify-start self-center">
@@ -830,7 +812,6 @@ export function InitiativeTrackerRow({
 
   const mobileStatLabels = {
     initiative: labels.shortStatLabels?.initiative ?? labels.visibilityDialog.fields.initiative,
-    hitPoints: labels.shortStatLabels?.hitPoints ?? labels.visibilityDialog.fields.hitPoints,
     armorClass: labels.shortStatLabels?.armorClass ?? labels.visibilityDialog.fields.armorClass,
   };
 
@@ -841,13 +822,6 @@ export function InitiativeTrackerRow({
         <span className="sr-only">{fullLabel}</span>
       </dt>
       <dd className="w-full min-w-0">{value}</dd>
-    </div>
-  );
-
-  const renderDetailItem = (label: string, value: React.ReactNode) => (
-    <div className="min-w-0">
-      <dt className="text-[11px] font-semibold uppercase text-white/45">{label}</dt>
-      <dd className="mt-1 min-w-0 break-words text-sm font-medium text-white/85">{value}</dd>
     </div>
   );
 
@@ -902,10 +876,7 @@ export function InitiativeTrackerRow({
         <TrackerGridCell align="hitPoints">{renderHpCell()}</TrackerGridCell>
 
         <TrackerGridCell align="condition">
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="min-w-0 flex-1">{renderConditionsCell()}</div>
-            {renderTabletExpansionButton()}
-          </div>
+          {renderConditionsCell()}
         </TrackerGridCell>
 
         <TrackerGridCell as="span" align="group" className="flex items-center gap-2">
@@ -913,34 +884,9 @@ export function InitiativeTrackerRow({
         </TrackerGridCell>
       </div>
 
-      <div
-        id={tabletDetailsId}
-        hidden={!isExpanded || !hasTabletExpansion}
-        className={cn(
-          "hidden border-t border-border bg-gray/40 py-3 text-white md:block lg:hidden",
-          TRACKER_CARD_PADDING_X_CLASS,
-        )}>
-        <div className="grid min-w-0 grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] gap-3">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase text-white/45">
-              {labels.visibilityDialog.fields.conditions}
-            </p>
-            <div className="mt-2 min-w-0">{renderConditionBadges()}</div>
-          </div>
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase text-white/45">
-              {labels.visibilityDialog.fields.groupLabel}
-            </p>
-            <div className="mt-2 flex min-w-0 items-start gap-2 overflow-hidden text-sm text-white/85">
-              {renderGroupContent(true)}
-            </div>
-          </div>
-        </div>
-      </div>
-
       <article
         className={cn(
-          "w-full max-w-full min-w-0 overflow-hidden py-4 text-white transition-colors md:hidden",
+          "w-full max-w-full min-w-0 overflow-hidden py-2.5 text-white transition-colors md:hidden",
           TRACKER_CARD_PADDING_X_CLASS,
           rowBackgroundClass,
           rowEffectClass,
@@ -949,8 +895,11 @@ export function InitiativeTrackerRow({
         aria-current={isActiveTurn ? "true" : undefined}
         aria-label={status === "alive" ? labels.detailsFor : `${labels.detailsFor}. ${statusLabel}`}>
         <span className="sr-only">{statusLabel}</span>
-        {/* Header on a single line: selection · character · active turn / visibility / expand. */}
-        <div data-slot="tracker-mobile-header" className="flex min-w-0 items-center gap-3">
+        {/* Collapsed line: selection · avatar + name (remaining width) · clickable HP without label (fixed width,
+            sized for « 000/000 » plus the status icon) · chevron. */}
+        <div
+          data-slot="tracker-mobile-header"
+          className="flex min-w-0 items-center gap-3">
           {selectionEnabled ? (
             <Checkbox
               checked={isSelected}
@@ -960,14 +909,74 @@ export function InitiativeTrackerRow({
             />
           ) : null}
 
-          <div className="min-w-0 flex-1 overflow-hidden text-left">{renderCharacterColumn()}</div>
+          <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-left">
+            {renderAvatarThumb(true)}
+            <div className="min-w-0 flex-1 overflow-hidden">{renderCharacterNameNode()}</div>
+          </div>
 
-          <div className="flex shrink-0 items-center gap-1">
-            {isActiveTurn ? (
-              <span className="max-w-[5.5rem] truncate rounded-full bg-blue/20 px-2 py-0.5 text-[11px] font-semibold text-blue">
-                {labels.activeTurn}
-              </span>
+          <div
+            data-slot="tracker-mobile-hp"
+            className="flex w-28 shrink-0 items-center [&>div]:w-full [&_button]:w-full [&_button]:min-w-0">
+            {/* No visible label: the GM button carries its own name, the read-only value gets one for AT. */}
+            {isPlayerView || !onHitPointsClick ? (
+              <span className="sr-only">{labels.visibilityDialog.fields.hitPoints}</span>
             ) : null}
+            {renderHpCell(true)}
+          </div>
+
+          {/* Disclosure toggle: ghost (no box), like the other expand toggles of the app. */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            data-slot="tracker-mobile-expand"
+            aria-expanded={isExpanded}
+            aria-controls={detailsId}
+            aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
+            onClick={onToggleExpanded}
+            className="shrink-0">
+            {isExpanded ? (
+              <ChevronDown className="size-4" aria-hidden="true" />
+            ) : (
+              <ChevronRight className="size-4" aria-hidden="true" />
+            )}
+          </Button>
+        </div>
+
+        <div
+          id={detailsId}
+          hidden={!isExpanded}
+          // Mobile: no separator inside a row, spacing only (the line splits rows, not their parts).
+          className="mt-3">
+          {/* Second line: initiative, armor class, group, each with its label. */}
+          <dl
+            data-slot="tracker-mobile-stats"
+            className="grid min-w-0 grid-cols-3 gap-4">
+            {renderMobileStat(
+              mobileStatLabels.initiative,
+              labels.visibilityDialog.fields.initiative,
+              renderInitiativeCell(true),
+            )}
+            {renderMobileStat(
+              mobileStatLabels.armorClass,
+              labels.visibilityDialog.fields.armorClass,
+              <div className="flex h-9 items-center justify-start text-base font-semibold tabular-nums text-white">
+                {showAc ? row.armorClass : hidden}
+              </div>,
+            )}
+            {renderMobileStat(
+              labels.visibilityDialog.fields.groupLabel,
+              labels.visibilityDialog.fields.groupLabel,
+              <div className="flex h-9 min-w-0 items-center overflow-hidden text-sm text-white/85">
+                {renderGroupContent(true)}
+              </div>,
+            )}
+          </dl>
+
+          {/* Third line: display button and condition editor, icon only (accessible names kept). */}
+          <div
+            data-slot="tracker-mobile-actions"
+            className="mt-3 flex min-w-0 items-center gap-2">
             {!isPlayerView ? (
               <VisibilityTriggerButton
                 row={row}
@@ -975,71 +984,8 @@ export function InitiativeTrackerRow({
                 onClick={() => setVisibilityOpen(true)}
               />
             ) : null}
-            {/* Disclosure toggle: ghost (no box), like the other expand toggles of the app. */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              data-slot="tracker-mobile-expand"
-              aria-expanded={isExpanded}
-              aria-controls={detailsId}
-              aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
-              onClick={onToggleExpanded}
-              className="shrink-0">
-              {isExpanded ? (
-                <ChevronDown className="size-4" aria-hidden="true" />
-              ) : (
-                <ChevronRight className="size-4" aria-hidden="true" />
-              )}
-            </Button>
+            <div className="min-w-0 flex-1">{renderConditionsCell(true)}</div>
           </div>
-        </div>
-
-        {/* Three equal stat cells, one background level: short visible label, left-aligned value. */}
-        <dl className="mt-4 grid min-w-0 grid-cols-3 gap-4">
-          {renderMobileStat(
-            mobileStatLabels.initiative,
-            labels.visibilityDialog.fields.initiative,
-            renderInitiativeCell(true),
-          )}
-          {renderMobileStat(
-            mobileStatLabels.armorClass,
-            labels.visibilityDialog.fields.armorClass,
-            <div className="flex h-9 items-center justify-start text-base font-semibold tabular-nums text-white">
-              {showAc ? row.armorClass : hidden}
-            </div>,
-          )}
-          {renderMobileStat(
-            mobileStatLabels.hitPoints,
-            labels.visibilityDialog.fields.hitPoints,
-            renderHpCell(true),
-          )}
-        </dl>
-
-        <div
-          id={detailsId}
-          hidden={!isExpanded}
-          // Mobile: no separator inside a row, spacing only (the line splits rows, not their parts).
-          className="mt-4">
-          {/* Mobile order: conditions first, then group (and GM alias) below them. */}
-          <div data-slot="tracker-mobile-conditions">
-            <p className="text-[11px] font-semibold uppercase text-white/45">
-              {labels.visibilityDialog.fields.conditions}
-            </p>
-            <div className="mt-2 min-w-0">{renderConditionsCell(true)}</div>
-          </div>
-
-          <dl
-            data-slot="tracker-mobile-group"
-            className="mt-4 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
-            {renderDetailItem(
-              labels.visibilityDialog.fields.groupLabel,
-              <span className="flex min-w-0 items-start gap-2 overflow-hidden">{renderGroupContent(true)}</span>,
-            )}
-            {showGmAliasSubtitle
-              ? renderDetailItem(labels.playerDisplayNameSubtitle, gmAliasDisplayName)
-              : null}
-          </dl>
         </div>
       </article>
 

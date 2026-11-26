@@ -402,3 +402,30 @@ export function getVisibleInitiativeInputs(container: ParentNode): HTMLElement[]
     (input) => !input.hasAttribute("disabled") && input.getClientRects().length > 0,
   );
 }
+
+/** Elements of a row that keep their own action: a row click on them never toggles the selection. */
+const ROW_INTERACTIVE_SELECTOR =
+  'button, a, input, textarea, select, label, [role="button"], [role="checkbox"], [role="combobox"], [role="menuitem"], [contenteditable="true"]';
+
+/**
+ * FR-tracker-bulk-actions — true when a click on `target` should toggle the row selection:
+ * the target is inside the row (not a portal such as a dialog opened from it) and not one of its controls.
+ */
+export function isRowSelectionClickTarget(
+  target: EventTarget | null,
+  row: { contains: (node: Node | null) => boolean },
+): boolean {
+  const element = target as Partial<Pick<Element, "closest">> | null;
+  if (!element || typeof element.closest !== "function" || !row.contains(target as Node)) return false;
+  const interactive = element.closest(ROW_INTERACTIVE_SELECTOR);
+  return interactive == null || !row.contains(interactive);
+}
+
+/**
+ * FR-combat-initiative-tracker — scroll offset that puts the active row second in the rows area:
+ * the previous row's top, or 0 when the active row is first (or unknown).
+ */
+export function getActiveTurnScrollTop(rowTops: number[], activeIndex: number): number {
+  if (activeIndex <= 0 || activeIndex >= rowTops.length) return 0;
+  return Math.max(0, rowTops[activeIndex - 1] - rowTops[0]);
+}

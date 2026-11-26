@@ -35,8 +35,9 @@ const TRACKER_COLUMN_TRACKS = {
   character: "minmax(8rem, 16rem)",
   armorClass: "3rem",
   hitPoints: "6rem",
-  condition: "minmax(7rem, 1fr)",
-  group: "minmax(6rem, 14rem)",
+  // At least one full condition pill (+ the edit button) always fits; the group gives up width first.
+  condition: "minmax(10rem, 1fr)",
+  group: "minmax(4rem, 14rem)",
 } as const;
 
 export function getTrackerGridTemplateColumns({

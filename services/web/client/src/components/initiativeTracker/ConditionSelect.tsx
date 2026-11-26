@@ -162,13 +162,9 @@ function ConditionInfoButton({
 function CustomEffectBadge({
   entry,
   durationLabel,
-  badgeIndex,
-  totalStateCount,
 }: {
   entry: InitiativeTrackerCustomEffectEntry;
   durationLabel: string | null;
-  badgeIndex: number;
-  totalStateCount: number;
 }) {
   const { Icon, badgeClassName } = CUSTOM_EFFECT_META;
   const badgeText = durationLabel ? `${entry.name} (${durationLabel})` : entry.name;
@@ -178,14 +174,13 @@ function CustomEffectBadge({
       description={entry.description}
       className={cn(
         "inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium md:max-w-[8.5rem] lg:max-w-[11rem] xl:max-w-[13rem]",
-        badgeIndex > 0 && "md:hidden lg:inline-flex",
         badgeClassName,
       )}>
       <Icon
         aria-hidden="true"
         className="size-3.5 shrink-0"
       />
-      <span className={cn("min-w-0 flex-1 truncate", totalStateCount > 1 && "md:sr-only lg:not-sr-only")}>
+      <span className="min-w-0 flex-1 truncate">
         {badgeText}
       </span>
     </ConditionBadgeHelp>
@@ -652,7 +647,7 @@ export function ConditionSelect({
                   placeholder={customEffects.descriptionPlaceholder}
                   rows={3}
                   onChange={(event) => setCreateDescription(event.target.value)}
-                  className="min-h-16 bg-gray-middle-light text-sm"
+                  className="field-sizing-fixed h-20 min-h-20 resize-none overflow-y-auto bg-gray-middle-light text-sm"
                 />
               </div>
 
@@ -921,14 +916,11 @@ export function ConditionSelect({
                 dropLabel={concentration?.dropLabel ?? ""}
                 onEdit={() => openConcentrationDialog("replace")}
                 onRemove={() => concentration?.onSetConcentration(null)}
-                badgeIndex={0}
-                totalBadgeCount={totalStateCount}
                 variant="select"
               />
               </div>
             ) : null}
-            {rowConditions.map((entry, index) => {
-            const badgeIndex = index + (activeConcentration ? 1 : 0);
+            {rowConditions.map((entry) => {
             const { Icon, badgeClassName } = CONDITION_META[entry.condition];
             const conditionLabel = getConditionLabel(entry.condition);
             const conditionDescription = getConditionDescription(entry.condition);
@@ -941,40 +933,29 @@ export function ConditionSelect({
                 description={conditionDescription}
                 className={cn(
                   "inline-flex min-w-0 max-w-full items-center gap-1 rounded-full border px-2 py-1 text-xs font-medium md:max-w-[8.5rem] lg:max-w-[11rem] xl:max-w-[13rem]",
-                  badgeIndex > 0 && "md:hidden lg:inline-flex",
                   badgeClassName,
                 )}>
                 <Icon
                   aria-hidden="true"
                   className="size-3.5 shrink-0"
                 />
-                <span className={cn("min-w-0 flex-1 truncate", totalStateCount > 1 && "md:sr-only lg:not-sr-only")}>
+                <span className="min-w-0 flex-1 truncate">
                   {badgeText}
                 </span>
               </ConditionBadgeHelp>
             );
           })}
-            {rowCustomEffects.map((entry, index) => {
-              const badgeIndex = index + rowConditions.length + (activeConcentration ? 1 : 0);
+            {rowCustomEffects.map((entry) => {
               return (
                 <CustomEffectBadge
                   key={entry.effectId}
                   entry={entry}
                   durationLabel={formatConditionEntryDuration(entry)}
-                  badgeIndex={badgeIndex}
-                  totalStateCount={totalStateCount}
                 />
               );
             })}
           </>
         )}
-        {totalStateCount > 1 ? (
-          <span
-            className="hidden size-6 items-center justify-center rounded-full border border-white/15 bg-white/5 text-xs font-semibold leading-none text-white/60 md:inline-flex lg:hidden"
-            aria-label="Plus d'états">
-            <span aria-hidden="true">...</span>
-          </span>
-        ) : null}
       </div>
     </div>
   );

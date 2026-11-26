@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  getActiveTurnScrollTop,
+  isRowSelectionClickTarget,
   isInitiativeInputTarget,
   orderRowsByFrozenIds,
   findAdjacentInitiativeInput,
@@ -558,5 +560,50 @@ describe("FR-combat-initiative-tracker — truncateTrackerLabel (20 characters m
     expect(truncateTrackerLabel("")).toBe("");
     expect(truncateTrackerLabel(undefined)).toBe("");
     expect(truncateTrackerLabel(null)).toBe("");
+  });
+});
+
+describe("FR-combat-initiative-tracker — getActiveTurnScrollTop (active row second)", () => {
+  const tops = [0, 60, 120, 180, 240];
+
+  it("nominal: scrolls to the previous row so the active one is second", () => {
+    expect(getActiveTurnScrollTop(tops, 3)).toBe(120);
+    expect(getActiveTurnScrollTop(tops, 1)).toBe(0);
+  });
+
+  it("edge: first active row scrolls to the top; offsets are relative to the first row", () => {
+    expect(getActiveTurnScrollTop(tops, 0)).toBe(0);
+    expect(getActiveTurnScrollTop([20, 80, 140], 2)).toBe(60);
+  });
+
+  it("failure: unknown active row scrolls to the top", () => {
+    expect(getActiveTurnScrollTop(tops, -1)).toBe(0);
+    expect(getActiveTurnScrollTop(tops, 9)).toBe(0);
+    expect(getActiveTurnScrollTop([], 0)).toBe(0);
+  });
+});
+
+describe("FR-tracker-bulk-actions — isRowSelectionClickTarget", () => {
+  type FakeNode = { closest: (selector: string) => FakeNode | null };
+  const makeRow = (inside: FakeNode[]) => ({
+    contains: (node: Node | null) => inside.includes(node as unknown as FakeNode),
+  });
+  const plainCell: FakeNode = { closest: () => null };
+  const button: FakeNode = { closest: () => button };
+  const iconInButton: FakeNode = { closest: () => button };
+
+  it("nominal: a click on plain row content toggles the selection", () => {
+    expect(isRowSelectionClickTarget(plainCell as unknown as EventTarget, makeRow([plainCell]))).toBe(true);
+  });
+
+  it("edge: a click on a row control (or an icon inside it) keeps the control's action", () => {
+    const row = makeRow([button, iconInButton]);
+    expect(isRowSelectionClickTarget(button as unknown as EventTarget, row)).toBe(false);
+    expect(isRowSelectionClickTarget(iconInButton as unknown as EventTarget, row)).toBe(false);
+  });
+
+  it("guard: a click outside the row DOM (dialog portal) or without target is ignored", () => {
+    expect(isRowSelectionClickTarget(plainCell as unknown as EventTarget, makeRow([]))).toBe(false);
+    expect(isRowSelectionClickTarget(null, makeRow([plainCell]))).toBe(false);
   });
 });

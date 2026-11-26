@@ -42,7 +42,9 @@ import {
   isInitiativeInputTarget,
   orderRowsByFrozenIds,
   findAdjacentInitiativeInput,
+  getActiveTurnScrollTop,
   getVisibleInitiativeInputs,
+  isRowSelectionClickTarget,
   resolveInitiativeModifier,
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
@@ -523,6 +525,36 @@ export function InitiativeTrackerTable({
       />
     ) : null;
 
+  // FR-combat-initiative-tracker — on turn change, scroll so the active combatant is second (previous one above).
+  const rowsRef = React.useRef<HTMLDivElement>(null);
+  const displayRowIdsKey = displayRows.map((row) => row.id).join("|");
+  React.useEffect(() => {
+    const container = rowsRef.current;
+    if (!container || !activeTurnRowId) return;
+    const rowElements = Array.from(container.querySelectorAll<HTMLElement>(":scope > [data-row-id]"));
+    const activeIndex = rowElements.findIndex((element) => element.dataset.rowId === activeTurnRowId);
+    if (activeIndex < 0) return;
+    const containerTop = container.getBoundingClientRect().top;
+    const rowTops = rowElements.map((element) => element.getBoundingClientRect().top - containerTop + container.scrollTop);
+    const reduceMotion =
+      typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
+    if (container.scrollHeight > container.clientHeight) {
+      container.scrollTo?.({ top: getActiveTurnScrollTop(rowTops, activeIndex), behavior });
+      return;
+    }
+    // Very short screens: the page scrolls instead of the rows area.
+    if (activeIndex > 0) rowElements[activeIndex - 1].scrollIntoView?.({ block: "start", behavior });
+    // Only the active turn (and the row ids it is placed among) drive the scroll, not every row update.
+  }, [activeTurnRowId, displayRowIdsKey]);
+
+  // FR-tracker-bulk-actions — once a row is selected, a click anywhere on a row (outside its controls) toggles it.
+  const rowClickSelects = selectionEnabled && selectedCount > 0;
+  const handleRowClick = (rowId: string) => (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!rowClickSelects || !isRowSelectionClickTarget(event.target, event.currentTarget)) return;
+    toggleRowSelection(rowId, !selectedRowIds.has(rowId));
+  };
+
   const selectAllChecked = allRowsSelected ? true : someRowsSelected ? "indeterminate" : false;
 
   return (
@@ -654,6 +686,7 @@ export function InitiativeTrackerTable({
       </div>
 
       <div
+        ref={rowsRef}
         data-slot="tracker-rows"
         role="region"
         aria-label={rowsLabel}
@@ -722,12 +755,16 @@ export function InitiativeTrackerTable({
             />
           );
           // Square rows split by a thin line (FR-combat-initiative-tracker table layout).
-          const rowWrapperClassName = "min-w-0 border-b border-border last:border-b-0";
+          const rowWrapperProps = {
+            "data-row-id": row.id,
+            className: cn("min-w-0 border-b border-border last:border-b-0", rowClickSelects && "cursor-pointer"),
+            onClick: handleRowClick(row.id),
+          };
           if (isPlayerView || !onRemoveFromInitiative || !bulkVisibilityLabels) {
             return (
               <div
                 key={row.id}
-                className={rowWrapperClassName}>
+                {...rowWrapperProps}>
                 {rowNode}
               </div>
             );
@@ -735,7 +772,7 @@ export function InitiativeTrackerTable({
           return (
             <ContextMenu key={row.id}>
               <ContextMenuTrigger asChild>
-                <div className={rowWrapperClassName}>{rowNode}</div>
+                <div {...rowWrapperProps}>{rowNode}</div>
               </ContextMenuTrigger>
               <ContextMenuContent>
                 <ContextMenuLabel className="max-w-64 truncate">

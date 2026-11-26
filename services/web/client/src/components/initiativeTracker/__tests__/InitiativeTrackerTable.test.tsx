@@ -222,3 +222,12 @@ describe("FR-tracker-bulk-actions — selected count in the header toolbar", () 
     expect(html).toContain('<span class="sr-only">1 character selected</span>');
   });
 });
+
+describe("FR-combat-initiative-tracker — column widths", () => {
+  it("nominal: the conditions column always fits one full pill, the group column is narrower first", () => {
+    const columns = getTrackerGridTemplateColumns({ selection: true, visibility: true, initiativeEditable: false });
+
+    expect(columns).toContain("minmax(10rem, 1fr)");
+    expect(columns.endsWith("minmax(4rem, 14rem)")).toBe(true);
+  });
+});
