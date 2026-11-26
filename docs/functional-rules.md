@@ -326,6 +326,7 @@ When adding a rule:
 - Authenticated user already on a valid page does not get redirected
 - Locale is preserved in all redirect URLs
 - Navigation logic executes only once per authentication
+- E2E (`tools/e2e/scenarios/profil/inscription.spec.ts`): an account created through the Keycloak registration page lands on the welcome page; registering with a taken username keeps the user on Keycloak with a field error
 
 **References**:
 
@@ -920,6 +921,14 @@ When adding a rule:
 - Hook displays specific error message on failure
 - Hook returns react-hook-form instance
 
+**E2E Tests (Playwright, `tools/e2e/scenarios/profil/profil.spec.ts`)**:
+
+- Nominal: changing the password shows the success toast, empties the three fields and keeps the user signed in; Keycloak then accepts the new password and refuses the old one, and a fresh SSO login with the new password succeeds; no password appears in `localStorage`, `sessionStorage`, cookies or the URL
+- Failure: a wrong current password shows `incorrectPassword` on the current-password field, sends exactly one `PUT /users/me/password` (a replayed 401 would trigger the Keycloak quick-login lockout) and leaves the password unchanged
+- Failure: empty fields, a new password shorter than 8 characters and a mismatched confirmation show field errors and send no request
+- Failure: a 403 policy response (simulated, no policy in the local realm) shows `complexityError` on the new-password field; the submit button is `aria-busy` and disabled while the request is pending
+- Edge: the show / hide buttons toggle `aria-pressed` and the input type of the new and confirmation fields
+
 **References**:
 
 - `services/adventure/api/src/resources/user/dto/change-password.dto.ts` - Backend DTO
@@ -1049,6 +1058,12 @@ When adding a rule:
   - Integration: Form submission with valid data updates user in Redux
   - Integration: Form submission with invalid email shows validation error
   - Integration: Network error displays translated error message
+- **E2E (Playwright, `tools/e2e/scenarios/profil/profil.spec.ts`)**:
+  - Nominal: the profile page shows username, full name and email of the signed-in account
+  - Nominal: editing first name, last name and email shows the success toast, and the new values persist after reload
+  - Edge: Cancel restores the last loaded values without saving
+  - Failure: a one-character first name or an invalid email shows a field error and saves nothing
+  - Failure: an email already used by another account shows the `emailAlreadyInUse` field error
 
 **References**:
 
@@ -1217,6 +1232,43 @@ When adding a rule:
 - `services/payment/api/src/resources/stripe/stripe.service.ts`
 - `services/web/client/src/lib/checkout-utils.ts`
 - `services/web/client/src/components/checkout/CheckoutForm.tsx`
+
+---
+
+### Checkout Outcomes (Success, Failure, Cancel)
+
+**Rule**: Every checkout ends in exactly one of three outcomes. Only a confirmed payment (Stripe `payment_intent.succeeded` webhook, or a free order) credits tokens and consumes discounts.
+
+**Requirements**:
+
+- **Success**: the return page shows the success state; the balance is credited with `token_number × quantity` of the pack; the token history gains one purchase entry for that amount
+- **Failure** (card declined, insufficient funds, 3-D Secure authentication failed): the error is shown on the checkout page (`role="alert"`), the user stays on the checkout and can retry; no tokens are credited
+- **Cancel** (the user leaves the checkout with « Retour » before paying): no tokens are credited
+- The return page MUST show the failure state for any `redirect_status` other than `succeeded` or `processing`, and when no status can be determined
+- Promo code usage, affiliation usage and referral discounts (referee 15 %, referrer tier) are consumed only on a confirmed payment; after a failure or a cancel, the same code or referral discount MUST still be available on the next checkout
+- A referee is validated (counted toward the referrer's tier) only on a confirmed payment
+- When a referral discount applies, the manual code field is disabled and the « Non cumulable » notice is shown
+
+**Prohibitions**:
+
+- Crediting tokens, recording a promo/affiliation usage or consuming a referral discount when the payment failed or was cancelled
+- Showing an empty return page (neither success nor failure state)
+
+**Tests**:
+
+- Return page: `redirect_status=succeeded` → success; `redirect_status=failed` → failure; no parameter → failure
+- E2E coverage (`tools/e2e/scenarios/boutique/`):
+  - `packs.spec.ts`: success, failure (declined card) and cancel for each pack of the catalog (Explorateur, Aventurier, Légendaire, pay per unit); 3-D Secure accepted / failed / abandoned, insufficient funds, retry after a decline credited once, quantity 2; return page states
+  - `codes-promo.spec.ts`: percentage promo code success (then consumed) / failure / cancel (code still usable), 100 % code free order, « Cadeau » line below the Stripe minimum, unknown / inactive / first-order-only / minimum-order / exhausted codes, code removal
+  - `affiliation.spec.ts`: affiliation code success (one usage recorded) / failure / cancel (no usage recorded, code still usable), inactive code
+  - `parrainage.spec.ts`: referee 15 % success / failure / cancel (discount still available and referee not validated after failure or cancel), discount consumed after the first payment, referrer 10 % once the referee paid and tier reset after use, referrer discount kept after a declined card, not cumulative with a manual code (field disabled), own referral code refused
+
+**References**:
+
+- `services/web/client/src/app/[locale]/checkout/return/page.tsx`
+- `services/web/client/src/components/checkout/CheckoutForm.tsx`
+- `services/payment/api/src/resources/stripe/stripe.service.ts`
+- `tools/e2e/scenarios/boutique/`
 
 ---
 
@@ -2608,6 +2660,8 @@ Each initiative tracker row carries:
 - Unit: mailto builders encode subject/body correctly
 - Component: GDPR card renders three actions with expected accessible labels
 - Component: delete dialog renders warning text
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): export downloads `chariot-profile-YYYY-MM-DD.json` from a fresh `GET /user/me` (account profile fields, no internal auth identifiers at any depth) with a success toast; a failing `GET /user/me` shows `aria-busy` then the error toast, downloads nothing and re-enables the button; "Request all my data" opens a `mailto:` to the privacy contact with the account email and no internal auth identifiers
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): the delete dialog shows its warning; Cancel closes it without any request; Confirm opens a `mailto:` to the privacy contact without internal auth identifiers, and the account stays usable
 
 **References**:
 
@@ -2774,6 +2828,7 @@ Each initiative tracker row carries:
 - API: `preferredLocale` validation and persistence on `PUT /user/me`
 - Component: locale select renders with label and accessible name
 - Component: all supported locales appear as options
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): choosing English sends `PUT /user/me` `{ preferredLocale: "en" }`, moves to `/en/profile` in English, stores `user-preferred-locale` and survives a reload; a fresh SSO login applies the account locale and lands on the post-auth page under `/en`; the select opens with the keyboard, lists the three locales and closes on Escape; a failing `PUT` shows the error toast and keeps `/fr/profile`
 
 **References**:
 
@@ -3174,6 +3229,7 @@ Each initiative tracker row carries:
 
 - The profile page exposes a "Voir les nouveautés" button (localized) that opens the same `ReleaseNotesModal`.
 - When opened from the profile page, closing does NOT dispatch `markVersionSeen` (`readOnly={true}`).
+- A checkbox « Ne plus afficher les nouveautés automatiquement à la connexion » (own `aria-label`) mutes the auto-detection modal for the signed-in account: checked, `ReleaseNotesProvider` never opens the modal automatically, even for an unseen version; unchecked, the auto-detection applies again. The choice is stored per account in client storage (`chariot_release_notes_muted_<userId>`), not on the user record; the profile button keeps opening the notes either way.
 
 **Accessibility Requirements (FR-frontend-design)**:
 
@@ -3203,6 +3259,7 @@ Each initiative tracker row carries:
 - `ReleaseNotesModal`: switching Select updates displayed content without closing.
 - `ReleaseNotesModal`: mobile `Select` defaults to `CURRENT_APP_VERSION`; side navigation marks only the selected version with `aria-current`; an unknown selected version falls back to the latest note.
 - `getReleaseNoteByVersion`: returns correct note for known version; returns `undefined` for unknown.
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): the profile button opens the notes and closing does not write the seen version; on a first login the modal opens automatically; once « Ne plus afficher » is checked an unseen version does not reopen it, and unchecking it brings the automatic opening back; `Chariot vX.Y.Z` shows in the Preferences section when the version is exposed
 
 **References**:
 
@@ -3262,6 +3319,7 @@ Each initiative tracker row carries:
 - Change is saved immediately (same pattern as `preferredLocale`)
 - Exposed in all user DTOs (`UpdateUserProfileDto`, `UserInfoDto`) and the frontend `User` / `UpdateUserDto` types
 - The stored preference is available globally for any future display formatting of size/weight values
+- **Show both units** (`showBothUnits`, boolean, default `false`): a checkbox « Afficher les deux unités » in the same Preferences section, with an info tooltip, saved immediately via `PUT /user/me` (same pattern); when enabled, distances also show the secondary unit next to the preferred one (`useDistanceUnit`). The checkbox is disabled while saving; an API error shows the `editProfile.errorMessage` toast and leaves the stored value unchanged
 
 **Prohibitions**:
 
@@ -3272,6 +3330,7 @@ Each initiative tracker row carries:
 - Nominal: selecting `imperial` calls `updateCurrentUser` with `preferredMeasurementUnit: 'imperial'` and dispatches `updateUser`
 - Edge: selecting the already-active unit does nothing (no API call)
 - Failure: API error shows an error toast and does not change the stored preference
+- E2E (`tools/e2e/scenarios/profil/profil.spec.ts`): choosing `imperial` (keyboard-opened select) sends `{ preferredMeasurementUnit: "imperial" }` and survives a reload; choosing the active unit sends nothing; a failing `PUT` shows the error toast and keeps « Mètres »; checking then unchecking « Afficher les deux unités » sends `showBothUnits` `true` / `false`, each surviving a reload; a failing `PUT` shows the error toast and leaves the box unchecked
 
 **References**:
 
@@ -3348,6 +3407,8 @@ Each initiative tracker row carries:
 | Archives section header | Delete all archived groups (only when at least one archived group exists) |
 | Campaign | Edit (rename), Delete |
 
+- **Delete campaign** (decision 2026-11-20): when the deleted campaign is the one selected or displayed, the app MUST leave its URL and resolve the post-login destination (FR-post-auth-navigation) among the remaining campaigns. When it was the user's **last** campaign, the app MUST switch to the Player space (`contextMode = "player"`, no selected campaign), navigate to the Player space destination (FR-welcome-onboarding-fallbacks) with `router.replace`, and show the « space changed » info toast. Deleting another campaign MUST NOT change the current view.
+
 - **Delete all archived groups** (archives section header) MUST open a confirmation dialog stating the number of groups to delete; on confirm, MUST permanently delete every archived group in the current campaign (full campaign archived list, not only the currently loaded sidebar page); MUST refresh sidebar group data once after completion; MUST redirect navigation when the user is viewing a deleted archived group (same rules as single group delete).
 
 - **Edit character** MUST navigate to the character sheet with `?mode=edit` (existing CharacterDetailView behavior).
@@ -3400,6 +3461,7 @@ Each initiative tracker row carries:
 - Touch: overflow menu reveals actions and triggers the same handler as context menu.
 - Confirmation: Enter confirms, Escape cancels on delete dialogs.
 - Edge: move character excludes current group; delete redirects when viewing deleted entity.
+- Edge: deleting the selected campaign leaves its URL; deleting the last campaign switches to the Player space with the « space changed » toast; deleting another campaign keeps the current view.
 - Failure: confirm dialog ignores Enter while `isDeleting` / async in progress.
 - Truncated group names — nominal: a cut group name is shown in full as the first label of the group menu.
 - Truncated group names — edge: hovering the header never shows the name; a collapsed group holding the displayed sheet shows the active indication in the app tooltip (no native `title`).
@@ -6568,6 +6630,7 @@ The path app → Keycloak login page → back in the app MUST use as few sequent
 - **NPC sheet**: a « Repos long » button is shown to the GM (sheet editor) **in and out of session**.
 - **PC sheet, GM space**: the « Repos long » button is shown to the GM **in and out of session** for the GM's own PCs.
 - **PC sheet, player space**: unchanged — a PC owned by a player space MUST NEVER get any rest (short or long) out of session, from any surface; the existing « session only » note stays.
+- **NPC sheet, player space** (decision 2026-11-20): an NPC viewed in player space (`contextMode = "player"`, own NPCs and companions) MUST NEVER get any rest, in or out of session; the sheet shows no rest control. The session GM rests a player's companion from GM space (FR-session-player-companion-combatants).
 - Being in the lobby only (not launched) counts as out of session (FR-session-lobby-navigation); the GM-space long rest is allowed there as an out-of-session action.
 
 ### Group (sidebar)
@@ -6592,6 +6655,7 @@ The path app → Keycloak login page → back in the app MUST use as few sequent
 - Edge (race): a rested character updated in session is broadcast once; a reconnecting client gets the rested values.
 - Failure: one character update rejected (403 / network) → others are rested, toast reports « 1 ignoré »; dialog cannot be closed by Escape while running.
 - Failure: player space out of session → no long rest button; group rest out of session skips a player-space PC (counted as ignored).
+- Failure: NPC sheet in player space → no rest control (long or short), in or out of session.
 - Nominal: checking the short rest flag checks the long rest flag; Edge: checking the long rest flag leaves the short rest flag unchanged.
 
 **References**:

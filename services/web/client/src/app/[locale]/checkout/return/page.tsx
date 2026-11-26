@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/useUser";
 import paymentService, { CheckoutSessionStatus } from "@/services/PaymentService";
+import { resolveCheckoutReturnState } from "@/lib/checkoutReturnState";
 import Logo from "@public/logo.svg";
 
 function ReturnContent() {
@@ -56,11 +57,9 @@ function ReturnContent() {
     };
   }, [sessionId, redirectStatus]);
 
-  // Determine success: either from redirect_status param (PI flow) or API (session flow)
-  const isSuccess =
-    redirectStatus !== null
-      ? redirectStatus === "succeeded" || redirectStatus === "processing"
-      : status?.status === "complete";
+  // FR-stripe-checkout (Checkout Outcomes): every settled state is success or failure, never empty.
+  const returnState = resolveCheckoutReturnState({ loading, error, redirectStatus, sessionStatus: status });
+  const isSuccess = returnState === "success";
 
   useEffect(() => {
     if (loading || !isSuccess || !isAuthenticated || hasRefreshedUserRef.current) {
@@ -83,7 +82,7 @@ function ReturnContent() {
         priority
       />
 
-      {loading && (
+      {returnState === "loading" && (
         <div className="flex flex-col items-center gap-3 text-muted-foreground">
           <Loader2
             className="h-10 w-10 animate-spin text-primary-light"
@@ -93,7 +92,7 @@ function ReturnContent() {
         </div>
       )}
 
-      {!loading && !error && isSuccess && (
+      {returnState === "success" && (
         <div className="flex flex-col items-center gap-4 text-center max-w-sm">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10">
             <CheckCircle2
@@ -112,7 +111,7 @@ function ReturnContent() {
         </div>
       )}
 
-      {!loading && (error || (!isSuccess && status)) && (
+      {returnState === "failure" && (
         <div className="flex flex-col items-center gap-4 text-center max-w-sm">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10">
             <XCircle
