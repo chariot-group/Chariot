@@ -258,4 +258,14 @@ export class KeycloakService {
       throw error;
     }
   }
+
+  /**
+   * One page of realm users (identity fields only), for batch scripts.
+   * @see FR-user-profile-keycloak: Irregular account regularization
+   */
+  async listUsers(first: number, max: number): Promise<UserRepresentation[]> {
+    await this.authenticate();
+    const realm = this.configService.get<string>('KEYCLOAK_REALM', this.realm);
+    return this.adminClient.users.find({ realm, first, max });
+  }
 }

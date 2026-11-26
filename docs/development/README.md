@@ -9,6 +9,7 @@ Documentation of development processes and workflows.
 - [Dependency update policy](DEPENDENCY_POLICY.md) - Dependabot, Node requirements and deliberate pins
 - [Stripe dev flow](STRIPE_DEV_FLOW.md) - Checkout/webhook path and local test procedure
 - [E2E testing (Playwright)](E2E_TESTING.md) - Run, write and debug end-to-end scenarios, read reports and traces
+- [User names cleanup](USER_NAMES_CLEANUP.md) - Script that normalizes Keycloak first/last names and lists irregular accounts
 
 ## 🔗 Useful links
 

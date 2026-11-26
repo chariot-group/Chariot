@@ -12,14 +12,27 @@ describe('FR-user-profile-keycloak — person name rules', () => {
       ['JEAN DUPONT', 'Jean Dupont'],
       ['o’brien', "O'Brien"],
       ['élodie', 'Élodie'],
+      ['MJ', 'MJ'],
+      ['Jean MJ', 'Jean MJ'],
+      ['jean MJ', 'Jean MJ'],
+      ['mj', 'Mj'],
+      ['Mj', 'Mj'],
+      ['ÉA', 'ÉA'],
+      ['DE LA FONTAINE', 'De La Fontaine'],
+      ['LE GOFF', 'Le Goff'],
+      ['JO-ANNE', 'Jo-Anne'],
+      ['JEAN MJ', 'Jean Mj'],
     ])('normalizes %p to %p', (input, expected) => {
       expect(normalizePersonName(input)).toBe(expected);
     });
 
-    it('is idempotent', () => {
-      const once = normalizePersonName("JEAN-pierre o'NEIL");
-      expect(normalizePersonName(once)).toBe(once);
-    });
+    it.each(["JEAN-pierre o'NEIL", 'Jean MJ', 'DE LA FONTAINE', 'MJ'])(
+      'is idempotent for %p',
+      (input) => {
+        const once = normalizePersonName(input);
+        expect(normalizePersonName(once)).toBe(once);
+      },
+    );
 
     it('returns an invalid value cleaned, without altering digits', () => {
       expect(normalizePersonName('  jean2  ')).toBe('Jean2');

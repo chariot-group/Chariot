@@ -984,7 +984,7 @@ Applies to registration (Keycloak form), `PUT /users/me`, and every profile form
 - **Allowed characters**: Unicode letters (accents included), spaces, apostrophes (`'` and `’`) and hyphens (`-`). Digits and any other character are rejected.
 - **Shape**: after cleanup, 1 to 50 characters; MUST start and end with a letter; no two consecutive separators (space, apostrophe, hyphen).
 - **Cleanup before validation**: trim, collapse repeated whitespace to one space, Unicode NFC normalization, `’` stored as `'`.
-- **Case normalization** (applied before saving, never left to the client): first letter of each word upper-case, the rest lower-case, where a word starts after a space, hyphen or apostrophe (`JEAN-pierre o'NEIL` → `Jean-Pierre O'Neil`). No exception list for particles.
+- **Case normalization** (applied before saving, never left to the client): first letter of each word upper-case, the rest lower-case, where a word starts after a space, hyphen or apostrophe (`JEAN-pierre o'NEIL` → `Jean-Pierre O'Neil`). No exception list for particles. Exception: a word of exactly 2 letters written entirely in upper case is kept as is, as initials or an acronym (`MJ` stays `MJ`, `Jean MJ` stays `Jean MJ`), unless the value also contains an upper-case word of 3 letters or more, in which case the whole value is treated as typed in capitals and normalized (`DE LA FONTAINE` → `De La Fontaine`, `JO-ANNE` → `Jo-Anne`). A lower-case 2-letter word is normalized (`mj` → `Mj`).
 - **Enforcement**: the same rules MUST be enforced in Keycloak (registration form and user profile validators) and in the Adventure API (`UpdateUserProfileDto`); the API MUST normalize before calling Keycloak and MUST return 400 with the field name on violation. The web client mirrors the rules for instant feedback (FR-form-field-validation) but is never the only check.
 - **Registration case normalization**: Keycloak validators cannot transform values, so a registration that bypasses the form script is normalized by the API on the user's **first connection** (when the application user record is created): valid names are renormalized in Keycloak, invalid names are left untouched, and a Keycloak failure never blocks the connection. The registration form MUST reject invalid names with field-level errors (Keycloak validators, not only client script).
 - **One source**: the rule set is defined once and shared (constant/regex) by API and client; Keycloak validators MUST be configured to the same pattern via `keycloak-config.sh` and the realm exports.
@@ -1074,7 +1074,7 @@ Applies to registration (Keycloak form), `PUT /users/me`, and every profile form
   - Integration: Network error displays translated error message
 - **Person names**:
   - Nominal: `JEAN-pierre o'NEIL` is saved as `Jean-Pierre O'Neil`; `  Élise   Dupont ` becomes `Élise Dupont`; the same input is accepted at registration and by `PUT /users/me`.
-  - Edge: `’` is stored as `'`; a 50-character name is accepted, 51 rejected; accented and non-Latin letters accepted; single-letter names (`J`, `Li`-style short names) accepted; `Jean--Pierre` and `-Jean` rejected.
+  - Edge: `MJ` and `Jean MJ` are kept, `DE LA FONTAINE` → `De La Fontaine`, `JO-ANNE` → `Jo-Anne`, `mj` → `Mj`; `’` is stored as `'`; a 50-character name is accepted, 51 rejected; accented and non-Latin letters accepted; single-letter names (`J`, `Li`-style short names) accepted; `Jean--Pierre` and `-Jean` rejected.
   - Failure: `Jean2`, `J@ne` and empty values return 400 on the offending field; Keycloak rejects them on the registration form even if the API is bypassed.
   - Nominal (registration): a first connection with `JEAN` / `dupont` renormalizes them to `Jean` / `Dupont` in Keycloak; edge: later connections and already-normalized names trigger no update, an invalid name is never altered; failure: a Keycloak error during the sync does not block the connection.
 - **Regularization**:
@@ -1088,6 +1088,8 @@ Applies to registration (Keycloak form), `PUT /users/me`, and every profile form
 - `services/adventure/api/src/resources/user/user.service.ts` - updateUser method
 - `services/adventure/api/src/resources/user/keycloak.service.ts` - updateUser method
 - `services/adventure/api/src/resources/user/dto/update-user-profile.dto.ts` - DTO definition
+- `services/adventure/api/src/common/person-name/person-name.ts` - Person name rules (API); mirror in `services/web/client/src/lib/personName.ts`
+- `services/adventure/api/src/scripts/user-names-cleanup/` - One-off names cleanup script (`npm run users:names-cleanup [-- --apply] [-- --out <file>]`)
 - `services/web/client/src/hooks/useProfileForm.ts` - Profile form hook
 - `services/web/client/src/services/UserService.ts` - updateCurrentUser method
 - `services/web/client/src/types/user.ts` - UpdateUserDto type

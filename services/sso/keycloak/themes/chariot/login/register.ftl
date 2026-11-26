@@ -133,9 +133,16 @@
                     return v.normalize('NFC').replace(/[\u2018\u2019\u02BC]/g, "'").replace(/\s+/g, ' ').trim();
                 };
                 var titleCase = function (v) {
-                    return clean(v).toLowerCase().replace(/(^|[ '-])(\p{L})/gu, function (m, sep, l) {
-                        return sep + l.toUpperCase();
-                    });
+                    var isUpper = function (w) { return w === w.toUpperCase() && w !== w.toLowerCase(); };
+                    var parts = clean(v).split(/([ '-])/);
+                    var capitals = parts.some(function (w) { return Array.from(w).length >= 3 && isUpper(w); });
+                    return parts.map(function (w) {
+                        if (w === '' || /^[ '-]$/.test(w)) return w;
+                        // 2-letter initials in upper case (MJ) are kept, unless the whole name is typed in capitals
+                        if (!capitals && Array.from(w).length === 2 && isUpper(w)) return w;
+                        var chars = Array.from(w.toLowerCase());
+                        return chars[0].toUpperCase() + chars.slice(1).join('');
+                    }).join('');
                 };
                 form.addEventListener('submit', function () {
                     ['firstName', 'lastName'].forEach(function (id) {
