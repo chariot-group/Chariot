@@ -1,0 +1,863 @@
+[
+  {
+    "type": "subclass-feature",
+    "key": "alchemist-tool-proficiency",
+    "label": {
+      "en": "Tool Proficiency",
+      "fr": "Maîtrise d'outil",
+      "es": "Competencia con herramientas"
+    },
+    "parentKey": "alchemist",
+    "description": {
+      "en": "You gain proficiency with alchemist's supplies. If you already have it, you gain proficiency with another type of artisan's tools of your choice.",
+      "fr": "Tu obtiens la maîtrise des matériels d'alchimiste. Si tu l'as déjà, tu obtiens la maîtrise d'un autre type d'outils d'artisan de ton choix.",
+      "es": "Obtienes competencia con suministros de alquimista. Si ya la tienes, obtienes competencia con otro tipo de herramientas de artesano a tu elección."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["alchemists-supplies"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "alchemist-spells",
+    "label": {
+      "en": "Specialist Spells",
+      "fr": "Sorts de spécialiste",
+      "es": "Conjuros de especialista"
+    },
+    "parentKey": "alchemist",
+    "description": {
+      "en": "You always have these specialist spells prepared once you reach the listed artificer level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de spécialiste préparés dès que tu atteins le niveau d'artificier indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de especialista al alcanzar el nivel de artífice indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Healing Word", "Ray of Sickness"],
+        "5": ["Flaming Sphere", "Acid Arrow"],
+        "9": ["Gaseous Form", "Mass Healing Word"],
+        "13": ["Blight", "Death Ward"],
+        "17": ["Cloudkill", "Raise Dead"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Healing Word",
+            "classLevel": 3
+          },
+          {
+            "name": "Ray of Sickness",
+            "classLevel": 3
+          },
+          {
+            "name": "Flaming Sphere",
+            "classLevel": 5
+          },
+          {
+            "name": "Acid Arrow",
+            "classLevel": 5
+          },
+          {
+            "name": "Gaseous Form",
+            "classLevel": 9
+          },
+          {
+            "name": "Mass Healing Word",
+            "classLevel": 9
+          },
+          {
+            "name": "Blight",
+            "classLevel": 13
+          },
+          {
+            "name": "Death Ward",
+            "classLevel": 13
+          },
+          {
+            "name": "Cloudkill",
+            "classLevel": 17
+          },
+          {
+            "name": "Raise Dead",
+            "classLevel": 17
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "experimental-elixir",
+    "label": {
+      "en": "Experimental Elixir",
+      "fr": "Élixir expérimental",
+      "es": "Elixir experimental"
+    },
+    "parentKey": "alchemist",
+    "description": {
+      "en": "After a long rest, you can produce an experimental elixir in an empty flask (two at 6th level, three at 15th): roll a d6 with your own dice to determine its effect. You can also expend a spell slot of 1st level or higher to create one more, choosing its effect. Effects: 1 Healing (2d4 + your Intelligence modifier hit points); 2 Swiftness (+10 feet of walking speed for 1 hour); 3 Resilience (+1 AC for 10 minutes); 4 Boldness (add 1d4 to attack rolls and saving throws for 1 minute); 5 Flight (30-foot flying speed for 10 minutes); 6 Transformation (as alter self for 10 minutes). Drinking an elixir takes an action; it loses its magic at your next long rest.",
+      "fr": "Après un repos long, tu peux produire un élixir expérimental dans une fiole vide (deux au niveau 6, trois au niveau 15) : lance un d6 avec tes propres dés pour déterminer son effet. Tu peux aussi dépenser un emplacement de sort de niveau 1 ou supérieur pour en créer un de plus, en choisissant son effet. Effets : 1 Soins (2d4 + ton modificateur d'Intelligence points de vie) ; 2 Vitesse (+3 m de vitesse de marche pendant 1 heure) ; 3 Résistance (+1 à la CA pendant 10 minutes) ; 4 Audace (ajoute 1d4 aux jets d'attaque et de sauvegarde pendant 1 minute) ; 5 Vol (vitesse de vol de 9 m pendant 10 minutes) ; 6 Transformation (comme modification d'apparence pendant 10 minutes). Boire un élixir demande une action ; il perd sa magie à ton prochain repos long.",
+      "es": "Tras un descanso largo, puedes producir un elixir experimental en un frasco vacío (dos en el nivel 6, tres en el 15): tira un d6 con tus propios dados para determinar su efecto. También puedes gastar un espacio de conjuro de nivel 1 o superior para crear uno más eligiendo su efecto. Efectos: 1 Curación (2d4 + tu modificador de Inteligencia puntos de golpe); 2 Rapidez (+10 pies de velocidad caminando durante 1 hora); 3 Resistencia (+1 a la CA durante 10 minutos); 4 Audacia (suma 1d4 a tiradas de ataque y salvación durante 1 minuto); 5 Vuelo (velocidad de vuelo de 30 pies durante 10 minutos); 6 Transformación (como alterar el propio aspecto durante 10 minutos). Beber un elixir requiere una acción; pierde su magia en tu siguiente descanso largo."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": [0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3],
+        "reset": "long"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "alchemical-savant",
+    "label": {
+      "en": "Alchemical Savant",
+      "fr": "Savant alchimiste",
+      "es": "Sabio alquímico"
+    },
+    "parentKey": "alchemist",
+    "description": {
+      "en": "When you cast a spell using alchemist's supplies as the focus, you add your Intelligence modifier (minimum +1) to one roll of the spell that restores hit points or deals acid, fire, necrotic or poison damage.",
+      "fr": "Lorsque tu lances un sort avec ton matériel d'alchimiste comme focaliseur, tu ajoutes ton modificateur d'Intelligence (minimum +1) à un jet du sort qui rend des points de vie ou inflige des dégâts d'acide, de feu, nécrotiques ou de poison.",
+      "es": "Cuando lanzas un conjuro usando suministros de alquimista como canalizador, sumas tu modificador de Inteligencia (mínimo +1) a una tirada del conjuro que devuelva puntos de golpe o inflija daño de ácido, fuego, necrótico o veneno."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "restorative-reagents",
+    "label": {
+      "en": "Restorative Reagents",
+      "fr": "Réactifs reconstituants",
+      "es": "Reactivos reconstituyentes"
+    },
+    "parentKey": "alchemist",
+    "description": {
+      "en": "Whenever a creature drinks one of your experimental elixirs, it gains temporary hit points equal to 2d6 + your Intelligence modifier (minimum 1). You can also cast lesser restoration without a spell slot, using alchemist's supplies as focus, a number of times equal to your Intelligence modifier (minimum 1) per long rest.",
+      "fr": "Chaque fois qu'une créature boit l'un de tes élixirs expérimentaux, elle gagne des points de vie temporaires égaux à 2d6 + ton modificateur d'Intelligence (minimum 1). Tu peux aussi lancer restauration partielle sans emplacement de sort, avec ton matériel d'alchimiste comme focaliseur, un nombre de fois égal à ton modificateur d'Intelligence (minimum 1) par repos long.",
+      "es": "Cada vez que una criatura beba uno de tus elixires experimentales, obtiene puntos de golpe temporales iguales a 2d6 + tu modificador de Inteligencia (mínimo 1). Además puedes lanzar restablecimiento menor sin gastar espacios, con suministros de alquimista como canalizador, tantas veces como tu modificador de Inteligencia (mínimo 1) por descanso largo."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": {
+          "max": [
+            1,
+            {
+              "var": "intelligenceModifier"
+            }
+          ]
+        },
+        "reset": "long"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "chemical-mastery",
+    "label": {
+      "en": "Chemical Mastery",
+      "fr": "Maîtrise chimique",
+      "es": "Dominio químico"
+    },
+    "parentKey": "alchemist",
+    "description": {
+      "en": "You have resistance to acid and poison damage, and you are immune to the poisoned condition. You can also cast greater restoration and heal once each per long rest without a spell slot or material components, using alchemist's supplies as focus.",
+      "fr": "Tu as la résistance aux dégâts d'acide et de poison et l'immunité contre l'état empoisonné. Tu peux aussi lancer restauration supérieure et guérison une fois chacun par repos long sans emplacement de sort ni composantes matérielles, avec ton matériel d'alchimiste comme focaliseur.",
+      "es": "Tienes resistencia al daño de ácido y veneno e inmunidad al estado envenenado. Además puedes lanzar restablecimiento mayor y curar una vez cada uno por descanso largo sin espacios de conjuro ni componentes materiales, con suministros de alquimista como canalizador."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["acid-damage", "poison-damage"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "armor-model",
+    "key": "armor-model-guardian",
+    "label": {
+      "en": "Guardian",
+      "fr": "Gardien",
+      "es": "Guardián"
+    },
+    "description": {
+      "en": "Thunder gauntlets: each deals 1d8 thunder damage on a hit, and the target has disadvantage on attack rolls against targets other than you until the start of your next turn. Defensive field: as a bonus action, gain temporary hit points equal to your artificer level (uses equal to your proficiency bonus per long rest).",
+      "fr": "Gantelets de tonnerre : chacun inflige 1d8 dégâts de tonnerre en cas de réussite, et la cible a le désavantage aux attaques contre une autre cible que toi jusqu'au début de ton prochain tour. Champ défensif : par une action bonus, gagne des points de vie temporaires égaux à ton niveau d'artificier (utilisations égales à ton bonus de maîtrise par repos long).",
+      "es": "Guanteletes de trueno: cada uno inflige 1d8 de daño de trueno al impactar, y el objetivo tiene desventaja en los ataques contra objetivos que no seas tú hasta el comienzo de tu siguiente turno. Campo defensivo: como acción adicional, obtienes puntos de golpe temporales iguales a tu nivel de artífice (usos iguales a tu bonificador por competencia por descanso largo)."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "armor-model",
+    "key": "armor-model-infiltrator",
+    "label": {
+      "en": "Infiltrator",
+      "fr": "Infiltrateur",
+      "es": "Infiltrador"
+    },
+    "description": {
+      "en": "Lightning launcher: a ranged weapon (range 90/300 feet) dealing 1d6 lightning damage, plus 1d6 once per turn. Powered steps: your walking speed increases by 5 feet. Dampening field: you have advantage on Dexterity (Stealth) checks, and the armor doesn't impose disadvantage on them.",
+      "fr": "Lance-foudre : une arme à distance (portée 27/90 m) infligeant 1d6 dégâts de foudre, plus 1d6 une fois par tour. Pas assistés : ta vitesse de marche augmente de 1,50 m. Champ d'atténuation : tu as l'avantage aux tests de Dextérité (Discrétion), et l'armure ne t'impose pas de désavantage à ces tests.",
+      "es": "Lanzador de relámpagos: un arma a distancia (alcance 90/300 pies) que inflige 1d6 de daño de relámpago, más 1d6 una vez por turno. Pasos potenciados: tu velocidad caminando aumenta en 5 pies. Campo amortiguador: tienes ventaja en las pruebas de Destreza (Sigilo) y la armadura no te impone desventaja en ellas."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "tools-of-the-trade",
+    "label": {
+      "en": "Tools of the Trade",
+      "fr": "Outils du métier",
+      "es": "Herramientas del oficio"
+    },
+    "parentKey": "armorer",
+    "description": {
+      "en": "You gain proficiency with heavy armor and with smith's tools. If you already have this tool proficiency, you gain proficiency with another type of artisan's tools of your choice.",
+      "fr": "Tu obtiens la maîtrise des armures lourdes et des outils de forgeron. Si tu maîtrises déjà ces outils, tu obtiens la maîtrise d'un autre type d'outils d'artisan de ton choix.",
+      "es": "Obtienes competencia con armaduras pesadas y herramientas de herrero. Si ya tienes esa competencia, obtienes competencia con otro tipo de herramientas de artesano a tu elección."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["heavy-armor"]
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["smiths-tools"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "armorer-spells",
+    "label": {
+      "en": "Specialist Spells",
+      "fr": "Sorts de spécialiste",
+      "es": "Conjuros de especialista"
+    },
+    "parentKey": "armorer",
+    "description": {
+      "en": "You always have these specialist spells prepared once you reach the listed artificer level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de spécialiste préparés dès que tu atteins le niveau d'artificier indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de especialista al alcanzar el nivel de artífice indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Magic Missile", "Thunderwave"],
+        "5": ["Mirror Image", "Shatter"],
+        "9": ["Hypnotic Pattern", "Lightning Bolt"],
+        "13": ["Fire Shield", "Greater Invisibility"],
+        "17": ["Passwall", "Wall of Force"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Magic Missile",
+            "classLevel": 3
+          },
+          {
+            "name": "Thunderwave",
+            "classLevel": 3
+          },
+          {
+            "name": "Mirror Image",
+            "classLevel": 5
+          },
+          {
+            "name": "Shatter",
+            "classLevel": 5
+          },
+          {
+            "name": "Hypnotic Pattern",
+            "classLevel": 9
+          },
+          {
+            "name": "Lightning Bolt",
+            "classLevel": 9
+          },
+          {
+            "name": "Fire Shield",
+            "classLevel": 13
+          },
+          {
+            "name": "Greater Invisibility",
+            "classLevel": 13
+          },
+          {
+            "name": "Passwall",
+            "classLevel": 17
+          },
+          {
+            "name": "Wall of Force",
+            "classLevel": 17
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "arcane-armor",
+    "label": {
+      "en": "Arcane Armor",
+      "fr": "Armure arcanique",
+      "es": "Armadura arcana"
+    },
+    "parentKey": "armorer",
+    "description": {
+      "en": "As an action, you turn a suit of armor you wear into Arcane Armor (with smith's tools in hand). It has no Strength requirement, can be your spellcasting focus, covers your whole body, replaces missing limbs, can't be removed against your will, and can be donned or doffed as an action.",
+      "fr": "Par une action, tu transformes l'armure que tu portes en Armure arcanique (avec des outils de forgeron en main). Elle n'a pas de condition de Force, peut servir de focaliseur d'incantation, couvre tout ton corps, remplace les membres manquants, ne peut pas être retirée contre ta volonté et s'enfile ou se retire par une action.",
+      "es": "Como acción, conviertes la armadura que llevas en Armadura arcana (con herramientas de herrero en la mano). No tiene requisito de Fuerza, puede ser tu canalizador, cubre todo tu cuerpo, sustituye extremidades perdidas, no puede quitártela nadie contra tu voluntad y se pone o quita como acción."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "armor-model",
+    "label": {
+      "en": "Armor Model",
+      "fr": "Modèle d'armure",
+      "es": "Modelo de armadura"
+    },
+    "parentKey": "armorer",
+    "description": {
+      "en": "You can customize your Arcane Armor as a Guardian or an Infiltrator model, gaining its special weapon (you use Intelligence for its attack and damage rolls) and features. You can change the model after a short or long rest, with smith's tools in hand.",
+      "fr": "Tu peux personnaliser ton Armure arcanique en modèle Gardien ou Infiltrateur, et obtiens son arme spéciale (tu utilises l'Intelligence pour ses jets d'attaque et de dégâts) et ses aptitudes. Tu peux changer de modèle après un repos court ou long, avec des outils de forgeron en main.",
+      "es": "Puedes personalizar tu Armadura arcana como modelo Guardián o Infiltrador, obteniendo su arma especial (usas Inteligencia para sus tiradas de ataque y daño) y sus rasgos. Puedes cambiar de modelo tras un descanso corto o largo, con herramientas de herrero en la mano."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "armor-model-choice",
+        "kind": "choose",
+        "from": {
+          "type": "armor-model"
+        },
+        "count": 1,
+        "level": 3
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "armorer-extra-attack",
+    "label": {
+      "en": "Extra Attack",
+      "fr": "Attaque supplémentaire",
+      "es": "Ataque adicional"
+    },
+    "parentKey": "armorer",
+    "description": {
+      "en": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, lorsque tu fais l'action Attaquer pendant ton tour.",
+      "es": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "armor-modifications",
+    "label": {
+      "en": "Armor Modifications",
+      "fr": "Modifications d'armure",
+      "es": "Modificaciones de armadura"
+    },
+    "parentKey": "armorer",
+    "description": {
+      "en": "Your Arcane Armor counts as separate items for your infusions: armor (chest), boots, helmet and special weapon. Each can bear one infusion, and the number of items you can infuse increases by 2 as long as those extra items are part of your armor.",
+      "fr": "Ton Armure arcanique compte comme plusieurs objets distincts pour tes infusions : armure (plastron), bottes, casque et arme spéciale. Chacun peut recevoir une infusion, et le nombre d'objets que tu peux infuser augmente de 2 tant que ces objets supplémentaires font partie de ton armure.",
+      "es": "Tu Armadura arcana cuenta como objetos separados para tus infusiones: armadura (peto), botas, yelmo y arma especial. Cada uno puede llevar una infusión, y el número de objetos que puedes infundir aumenta en 2 siempre que esos objetos adicionales formen parte de tu armadura."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "perfected-armor",
+    "label": {
+      "en": "Perfected Armor",
+      "fr": "Armure perfectionnée",
+      "es": "Armadura perfeccionada"
+    },
+    "parentKey": "armorer",
+    "description": {
+      "en": "Guardian: when a Huge or smaller creature you can see ends its turn within 30 feet, you can use your reaction to pull it up to 25 feet toward you (Strength saving throw) and make a melee attack against it if it ends within 5 feet; uses equal to your proficiency bonus per long rest. Infiltrator: a creature hit by your lightning launcher glimmers until your next turn, giving advantage to the next attack against it and taking an extra 1d6 lightning damage on a hit.",
+      "fr": "Gardien : lorsqu'une créature de taille Très grande ou inférieure que tu vois termine son tour à 9 m, tu peux utiliser ta réaction pour l'attirer de 7,50 m vers toi (jet de sauvegarde de Force) et l'attaquer au corps à corps si elle finit à 1,50 m ; utilisations égales à ton bonus de maîtrise par repos long. Infiltrateur : une créature touchée par ton lance-foudre scintille jusqu'à ton prochain tour, ce qui donne l'avantage à la prochaine attaque contre elle et lui inflige 1d6 dégâts de foudre supplémentaires en cas de réussite.",
+      "es": "Guardián: cuando una criatura Enorme o menor que puedas ver termine su turno a 30 pies, puedes usar tu reacción para atraerla hasta 25 pies hacia ti (tirada de salvación de Fuerza) y atacarla cuerpo a cuerpo si acaba a 5 pies; usos iguales a tu bonificador por competencia por descanso largo. Infiltrador: una criatura impactada por tu lanzador de relámpagos brilla hasta tu siguiente turno, dando ventaja al siguiente ataque contra ella e infligiéndole 1d6 de daño de relámpago adicional si impacta."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "artillerist-tool-proficiency",
+    "label": {
+      "en": "Tool Proficiency",
+      "fr": "Maîtrise d'outil",
+      "es": "Competencia con herramientas"
+    },
+    "parentKey": "artillerist",
+    "description": {
+      "en": "You gain proficiency with woodcarver's tools. If you already have it, you gain proficiency with another type of artisan's tools of your choice.",
+      "fr": "Tu obtiens la maîtrise des outils de sculpteur sur bois. Si tu l'as déjà, tu obtiens la maîtrise d'un autre type d'outils d'artisan de ton choix.",
+      "es": "Obtienes competencia con herramientas de tallista. Si ya la tienes, obtienes competencia con otro tipo de herramientas de artesano a tu elección."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["woodcarvers-tools"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "artillerist-spells",
+    "label": {
+      "en": "Specialist Spells",
+      "fr": "Sorts de spécialiste",
+      "es": "Conjuros de especialista"
+    },
+    "parentKey": "artillerist",
+    "description": {
+      "en": "You always have these specialist spells prepared once you reach the listed artificer level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de spécialiste préparés dès que tu atteins le niveau d'artificier indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de especialista al alcanzar el nivel de artífice indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Shield", "Thunderwave"],
+        "5": ["Scorching Ray", "Shatter"],
+        "9": ["Fireball", "Wind Wall"],
+        "13": ["Ice Storm", "Wall of Fire"],
+        "17": ["Cone of Cold", "Wall of Force"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Shield",
+            "classLevel": 3
+          },
+          {
+            "name": "Thunderwave",
+            "classLevel": 3
+          },
+          {
+            "name": "Scorching Ray",
+            "classLevel": 5
+          },
+          {
+            "name": "Shatter",
+            "classLevel": 5
+          },
+          {
+            "name": "Fireball",
+            "classLevel": 9
+          },
+          {
+            "name": "Wind Wall",
+            "classLevel": 9
+          },
+          {
+            "name": "Ice Storm",
+            "classLevel": 13
+          },
+          {
+            "name": "Wall of Fire",
+            "classLevel": 13
+          },
+          {
+            "name": "Cone of Cold",
+            "classLevel": 17
+          },
+          {
+            "name": "Wall of Force",
+            "classLevel": 17
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "eldritch-cannon",
+    "label": {
+      "en": "Eldritch Cannon",
+      "fr": "Canon occulte",
+      "es": "Cañón sobrenatural"
+    },
+    "parentKey": "artillerist",
+    "description": {
+      "en": "As an action, with woodcarver's or smith's tools in hand, you create a Small or Tiny eldritch cannon (AC 18, hit points equal to five times your artificer level) for 1 hour: once per long rest for free, or by expending a spell slot. As a bonus action you activate it: Flamethrower (15-foot cone, Dexterity save, 2d8 fire), Force Ballista (ranged spell attack within 120 feet, 2d8 force, push 5 feet) or Protector (1d8 + your Intelligence modifier temporary hit points to creatures within 10 feet).",
+      "fr": "Par une action, avec des outils de sculpteur sur bois ou de forgeron en main, tu crées un canon occulte Petit ou Très petit (CA 18, points de vie égaux à cinq fois ton niveau d'artificier) pour 1 heure : une fois par repos long gratuitement, ou en dépensant un emplacement de sort. Par une action bonus, tu l'actives : Lance-flammes (cône de 4,50 m, sauvegarde de Dextérité, 2d8 feu), Baliste de force (attaque de sort à distance à 36 m, 2d8 force, recul de 1,50 m) ou Protecteur (1d8 + ton modificateur d'Intelligence points de vie temporaires aux créatures à 3 m).",
+      "es": "Como acción, con herramientas de tallista o de herrero en la mano, creas un cañón sobrenatural Pequeño o Diminuto (CA 18, puntos de golpe iguales a cinco veces tu nivel de artífice) durante 1 hora: una vez por descanso largo gratis, o gastando un espacio de conjuro. Como acción adicional lo activas: Lanzallamas (cono de 15 pies, salvación de Destreza, 2d8 de fuego), Balista de fuerza (ataque de conjuro a distancia a 120 pies, 2d8 de fuerza, empuje de 5 pies) o Protector (1d8 + tu modificador de Inteligencia puntos de golpe temporales a criaturas a 10 pies)."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": 1,
+        "reset": "long"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "arcane-firearm",
+    "label": {
+      "en": "Arcane Firearm",
+      "fr": "Arme à feu arcanique",
+      "es": "Arma de fuego arcana"
+    },
+    "parentKey": "artillerist",
+    "description": {
+      "en": "You can turn a wand, staff or rod into an arcane firearm after a long rest. When you cast an artificer spell through it, roll a d8 and add it to one of the spell's damage rolls.",
+      "fr": "Après un repos long, tu peux transformer une baguette, un bâton ou un sceptre en arme à feu arcanique. Lorsque tu lances un sort d'artificier à travers elle, lance un d8 et ajoute-le à l'un des jets de dégâts du sort.",
+      "es": "Tras un descanso largo, puedes convertir una varita, bastón o cetro en un arma de fuego arcana. Cuando lances un conjuro de artífice a través de ella, tira un d8 y súmalo a una de las tiradas de daño del conjuro."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "explosive-cannon",
+    "label": {
+      "en": "Explosive Cannon",
+      "fr": "Canon explosif",
+      "es": "Cañón explosivo"
+    },
+    "parentKey": "artillerist",
+    "description": {
+      "en": "Your eldritch cannon's damage rolls increase by 1d8. As an action, you can detonate a cannon within 60 feet: each creature within 20 feet of it makes a Dexterity saving throw, taking 3d8 force damage on a failure or half on a success.",
+      "fr": "Les jets de dégâts de ton canon occulte augmentent de 1d8. Par une action, tu peux faire exploser un canon à 18 m : chaque créature à 6 m de lui fait un jet de sauvegarde de Dextérité et subit 3d8 dégâts de force en cas d'échec, la moitié en cas de réussite.",
+      "es": "Las tiradas de daño de tu cañón sobrenatural aumentan en 1d8. Como acción, puedes detonar un cañón a 60 pies: cada criatura a 20 pies de él hace una tirada de salvación de Destreza y recibe 3d8 de daño de fuerza si falla, o la mitad si tiene éxito."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "fortified-position",
+    "label": {
+      "en": "Fortified Position",
+      "fr": "Position fortifiée",
+      "es": "Posición fortificada"
+    },
+    "parentKey": "artillerist",
+    "description": {
+      "en": "You and your allies have half cover while within 10 feet of your eldritch cannon. You can now have two cannons at the same time, created and activated with the same action or bonus action.",
+      "fr": "Toi et tes alliés bénéficiez d'un abri partiel tant que vous êtes à 3 m de ton canon occulte. Tu peux désormais avoir deux canons à la fois, créés et activés par la même action ou action bonus.",
+      "es": "Tú y tus aliados tenéis cobertura media mientras estéis a 10 pies de tu cañón sobrenatural. Ahora puedes tener dos cañones a la vez, creados y activados con la misma acción o acción adicional."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "battle-smith-tool-proficiency",
+    "label": {
+      "en": "Tool Proficiency",
+      "fr": "Maîtrise d'outil",
+      "es": "Competencia con herramientas"
+    },
+    "parentKey": "battle-smith",
+    "description": {
+      "en": "You gain proficiency with smith's tools. If you already have it, you gain proficiency with another type of artisan's tools of your choice.",
+      "fr": "Tu obtiens la maîtrise des outils de forgeron. Si tu l'as déjà, tu obtiens la maîtrise d'un autre type d'outils d'artisan de ton choix.",
+      "es": "Obtienes competencia con herramientas de herrero. Si ya la tienes, obtienes competencia con otro tipo de herramientas de artesano a tu elección."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["smiths-tools"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "battle-smith-spells",
+    "label": {
+      "en": "Specialist Spells",
+      "fr": "Sorts de spécialiste",
+      "es": "Conjuros de especialista"
+    },
+    "parentKey": "battle-smith",
+    "description": {
+      "en": "You always have these specialist spells prepared once you reach the listed artificer level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de spécialiste préparés dès que tu atteins le niveau d'artificier indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de especialista al alcanzar el nivel de artífice indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Heroism", "Shield"],
+        "5": ["Branding Smite", "Warding Bond"],
+        "9": ["Aura of Vitality", "Conjure Barrage"],
+        "13": ["Aura of Purity", "Fire Shield"],
+        "17": ["Banishing Smite", "Mass Cure Wounds"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Heroism",
+            "classLevel": 3
+          },
+          {
+            "name": "Shield",
+            "classLevel": 3
+          },
+          {
+            "name": "Branding Smite",
+            "classLevel": 5
+          },
+          {
+            "name": "Warding Bond",
+            "classLevel": 5
+          },
+          {
+            "name": "Aura of Vitality",
+            "classLevel": 9
+          },
+          {
+            "name": "Conjure Barrage",
+            "classLevel": 9
+          },
+          {
+            "name": "Aura of Purity",
+            "classLevel": 13
+          },
+          {
+            "name": "Fire Shield",
+            "classLevel": 13
+          },
+          {
+            "name": "Banishing Smite",
+            "classLevel": 17
+          },
+          {
+            "name": "Mass Cure Wounds",
+            "classLevel": 17
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "battle-ready",
+    "label": {
+      "en": "Battle Ready",
+      "fr": "Prêt au combat",
+      "es": "Preparado para la batalla"
+    },
+    "parentKey": "battle-smith",
+    "description": {
+      "en": "You gain proficiency with martial weapons. When you attack with a magic weapon, you can use your Intelligence modifier, instead of Strength or Dexterity, for the attack and damage rolls.",
+      "fr": "Tu obtiens la maîtrise des armes de guerre. Lorsque tu attaques avec une arme magique, tu peux utiliser ton modificateur d'Intelligence au lieu de la Force ou de la Dextérité pour les jets d'attaque et de dégâts.",
+      "es": "Obtienes competencia con armas marciales. Cuando atacas con un arma mágica, puedes usar tu modificador de Inteligencia en lugar de Fuerza o Destreza para las tiradas de ataque y daño."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["martial-weapons"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "steel-defender",
+    "label": {
+      "en": "Steel Defender",
+      "fr": "Défenseur d'acier",
+      "es": "Defensor de acero"
+    },
+    "parentKey": "battle-smith",
+    "description": {
+      "en": "You build a Medium steel defender construct that is friendly to you and obeys your commands; its statistics use your proficiency bonus and its hit points equal 2 + your Intelligence modifier + five times your artificer level. It shares your initiative and takes the Dodge action unless you use a bonus action to command it; it can use its reaction to impose disadvantage on an attack against a creature within 5 feet. You can rebuild it after a long rest, or by expending a spell slot within an hour of its destruction.",
+      "fr": "Tu fabriques un défenseur d'acier, une créature artificielle Moyenne amicale envers toi qui obéit à tes ordres ; ses statistiques utilisent ton bonus de maîtrise et ses points de vie sont égaux à 2 + ton modificateur d'Intelligence + cinq fois ton niveau d'artificier. Il partage ton initiative et fait l'action Esquiver sauf si tu utilises une action bonus pour lui donner un ordre ; il peut utiliser sa réaction pour imposer le désavantage à une attaque contre une créature à 1,50 m de lui. Tu peux le reconstruire après un repos long, ou en dépensant un emplacement de sort dans l'heure suivant sa destruction.",
+      "es": "Construyes un defensor de acero, un constructo Mediano amistoso contigo que obedece tus órdenes; sus estadísticas usan tu bonificador por competencia y sus puntos de golpe son 2 + tu modificador de Inteligencia + cinco veces tu nivel de artífice. Comparte tu iniciativa y realiza la acción de Esquivar salvo que uses una acción adicional para ordenarle otra cosa; puede usar su reacción para imponer desventaja a un ataque contra una criatura a 5 pies de él. Puedes reconstruirlo tras un descanso largo, o gastando un espacio de conjuro en la hora siguiente a su destrucción."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "battle-smith-extra-attack",
+    "label": {
+      "en": "Extra Attack",
+      "fr": "Attaque supplémentaire",
+      "es": "Ataque adicional"
+    },
+    "parentKey": "battle-smith",
+    "description": {
+      "en": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, lorsque tu fais l'action Attaquer pendant ton tour.",
+      "es": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "arcane-jolt",
+    "label": {
+      "en": "Arcane Jolt",
+      "fr": "Décharge arcanique",
+      "es": "Descarga arcana"
+    },
+    "parentKey": "battle-smith",
+    "description": {
+      "en": "When you or your steel defender hit a target with a magic weapon attack, you can channel magical energy through the strike: deal an extra 2d6 force damage to the target, or restore 2d6 hit points to a creature you can see within 30 feet of it. Once per turn, uses equal to your Intelligence modifier (minimum 1) per long rest. Both values become 4d6 at 15th level.",
+      "fr": "Lorsque toi ou ton défenseur d'acier touchez une cible avec une attaque d'arme magique, tu peux canaliser de l'énergie magique dans le coup : inflige 2d6 dégâts de force supplémentaires à la cible, ou rends 2d6 points de vie à une créature que tu vois à 9 m d'elle. Une fois par tour, utilisations égales à ton modificateur d'Intelligence (minimum 1) par repos long. Les deux valeurs passent à 4d6 au niveau 15.",
+      "es": "Cuando tú o tu defensor de acero impactáis a un objetivo con un ataque con arma mágica, puedes canalizar energía mágica: inflige 2d6 de daño de fuerza adicional al objetivo, o devuelve 2d6 puntos de golpe a una criatura que puedas ver a 30 pies de él. Una vez por turno, usos iguales a tu modificador de Inteligencia (mínimo 1) por descanso largo. Ambos valores pasan a 4d6 en el nivel 15."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": {
+          "max": [
+            1,
+            {
+              "var": "intelligenceModifier"
+            }
+          ]
+        },
+        "reset": "long"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "improved-defender",
+    "label": {
+      "en": "Improved Defender",
+      "fr": "Défenseur amélioré",
+      "es": "Defensor mejorado"
+    },
+    "parentKey": "battle-smith",
+    "description": {
+      "en": "Your Arcane Jolt damage and healing increase to 4d6, and your steel defender gains a +2 bonus to AC. When it uses its deflect attack reaction, the attacker takes force damage equal to 1d4 + your Intelligence modifier.",
+      "fr": "Les dégâts et les soins de ta Décharge arcanique passent à 4d6, et ton défenseur d'acier obtient un bonus de +2 à la CA. Lorsqu'il utilise sa réaction de déviation d'attaque, l'attaquant subit 1d4 + ton modificateur d'Intelligence dégâts de force.",
+      "es": "El daño y la curación de tu Descarga arcana pasan a 4d6, y tu defensor de acero obtiene un +2 a la CA. Cuando usa su reacción de desviar ataques, el atacante recibe 1d4 + tu modificador de Inteligencia de daño de fuerza."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]

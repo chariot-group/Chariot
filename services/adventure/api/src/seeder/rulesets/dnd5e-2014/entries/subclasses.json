@@ -1,0 +1,838 @@
+[
+  {
+    "type": "subclass",
+    "key": "path-of-the-berserker",
+    "label": {
+      "en": "Path of the Berserker",
+      "fr": "Voie du berserker",
+      "es": "Senda del berserker"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "A path of untamed fury: your rage becomes a frenzy that drives extra attacks and shrugs off fear and charm.",
+      "fr": "Une voie de fureur indomptée : ta rage devient une frénésie qui te donne des attaques supplémentaires et te protège de la peur et du charme.",
+      "es": "Una senda de furia indómita: tu furia se convierte en un frenesí que te da ataques adicionales y te protege del miedo y el encantamiento."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "path-of-the-totem-warrior",
+    "label": {
+      "en": "Path of the Totem Warrior",
+      "fr": "Voie du guerrier totémique",
+      "es": "Senda del guerrero totémico"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "A spiritual path: you bond with an animal spirit (bear, eagle or wolf) that guides and strengthens you.",
+      "fr": "Une voie spirituelle : tu te lies à un esprit animal (ours, aigle ou loup) qui te guide et te renforce.",
+      "es": "Una senda espiritual: te vinculas a un espíritu animal (oso, águila o lobo) que te guía y fortalece."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "college-of-lore",
+    "label": {
+      "en": "College of Lore",
+      "fr": "Collège du savoir",
+      "es": "Colegio del conocimiento"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "Bards who collect knowledge from every source, gaining extra skills, cutting words and magical secrets from any list.",
+      "fr": "Des bardes qui collectent le savoir de toutes les sources, et obtiennent des compétences supplémentaires, des mots cinglants et des secrets magiques de toutes les listes.",
+      "es": "Bardos que reúnen conocimiento de cualquier fuente y obtienen habilidades adicionales, palabras hirientes y secretos mágicos de cualquier lista."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "college-of-valor",
+    "label": {
+      "en": "College of Valor",
+      "fr": "Collège de la vaillance",
+      "es": "Colegio del valor"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "Daring skalds who inspire on the battlefield, gaining martial training and combat inspiration.",
+      "fr": "Des scaldes audacieux qui inspirent sur le champ de bataille, et obtiennent un entraînement martial et une inspiration de combat.",
+      "es": "Escaldos audaces que inspiran en el campo de batalla y obtienen entrenamiento marcial e inspiración de combate."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "knowledge-domain",
+    "label": {
+      "en": "Knowledge Domain",
+      "fr": "Domaine du savoir",
+      "es": "Dominio del conocimiento"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Gods of learning and understanding: extra languages and expertise in knowledge skills, and the power to read minds and memories.",
+      "fr": "Dieux de l'étude et de la compréhension : langues supplémentaires, expertise dans les compétences de savoir et pouvoir de lire les esprits et les souvenirs.",
+      "es": "Dioses del saber y la comprensión: idiomas adicionales, pericia en habilidades de conocimiento y el poder de leer mentes y recuerdos."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "life-domain",
+    "label": {
+      "en": "Life Domain",
+      "fr": "Domaine de la vie",
+      "es": "Dominio de la vida"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Gods of healing and vitality: heavy armor and the most powerful healing magic.",
+      "fr": "Dieux de la guérison et de la vitalité : armures lourdes et magie de soin la plus puissante.",
+      "es": "Dioses de la curación y la vitalidad: armadura pesada y la magia curativa más poderosa."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "light-domain",
+    "label": {
+      "en": "Light Domain",
+      "fr": "Domaine de la lumière",
+      "es": "Dominio de la luz"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Gods of sun, fire and truth: radiant and fire magic that burns away darkness.",
+      "fr": "Dieux du soleil, du feu et de la vérité : magie radiante et de feu qui chasse les ténèbres.",
+      "es": "Dioses del sol, el fuego y la verdad: magia radiante y de fuego que disipa la oscuridad."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "nature-domain",
+    "label": {
+      "en": "Nature Domain",
+      "fr": "Domaine de la nature",
+      "es": "Dominio de la naturaleza"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Gods of the wild: heavy armor, a druid cantrip and power over beasts and plants.",
+      "fr": "Dieux de la nature sauvage : armures lourdes, un sort mineur de druide et pouvoir sur les bêtes et les plantes.",
+      "es": "Dioses de lo salvaje: armadura pesada, un truco de druida y poder sobre bestias y plantas."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "tempest-domain",
+    "label": {
+      "en": "Tempest Domain",
+      "fr": "Domaine de la tempête",
+      "es": "Dominio de la tempestad"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Gods of storms and sea: martial training and devastating thunder and lightning.",
+      "fr": "Dieux des orages et de la mer : entraînement martial et foudre et tonnerre dévastateurs.",
+      "es": "Dioses de las tormentas y el mar: entrenamiento marcial y rayos y truenos devastadores."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "trickery-domain",
+    "label": {
+      "en": "Trickery Domain",
+      "fr": "Domaine de la duperie",
+      "es": "Dominio del engaño"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Gods of mischief and deceit: stealth, illusory duplicates and blessings of trickery.",
+      "fr": "Dieux de la malice et de la ruse : discrétion, doubles illusoires et bénédictions de l'escroc.",
+      "es": "Dioses de la travesura y el engaño: sigilo, dobles ilusorios y bendiciones del embaucador."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "war-domain",
+    "label": {
+      "en": "War Domain",
+      "fr": "Domaine de la guerre",
+      "es": "Dominio de la guerra"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Gods of battle: heavy armor, martial weapons and divine bonuses to attacks.",
+      "fr": "Dieux de la bataille : armures lourdes, armes de guerre et bonus divins aux attaques.",
+      "es": "Dioses de la batalla: armadura pesada, armas marciales y bonificaciones divinas a los ataques."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "circle-of-the-land",
+    "label": {
+      "en": "Circle of the Land",
+      "fr": "Cercle de la terre",
+      "es": "Círculo de la tierra"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "Mystics tied to a land type, gaining extra cantrips, circle spells and fast recovery of spell slots.",
+      "fr": "Des mystiques liés à un type de terrain, qui obtiennent un sort mineur supplémentaire, des sorts de cercle et une récupération rapide des emplacements de sorts.",
+      "es": "Místicos ligados a un tipo de terreno, que obtienen un truco adicional, conjuros de círculo y recuperación rápida de espacios de conjuro."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "circle-of-the-moon",
+    "label": {
+      "en": "Circle of the Moon",
+      "fr": "Cercle de la lune",
+      "es": "Círculo de la luna"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "Fierce guardians of the wild who master Wild Shape and take on powerful beast and elemental forms.",
+      "fr": "De farouches gardiens de la nature qui maîtrisent la Forme sauvage et prennent des formes de bêtes et d'élémentaires puissantes.",
+      "es": "Fieros guardianes de lo salvaje que dominan la Forma salvaje y adoptan formas poderosas de bestias y elementales."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "champion",
+    "label": {
+      "en": "Champion",
+      "fr": "Champion",
+      "es": "Campeón"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "Raw physical excellence: improved critical hits, athletic prowess and an extra fighting style.",
+      "fr": "L'excellence physique pure : critiques améliorés, prouesses athlétiques et un style de combat supplémentaire.",
+      "es": "Excelencia física pura: críticos mejorados, proezas atléticas y un estilo de combate adicional."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "battle-master",
+    "label": {
+      "en": "Battle Master",
+      "fr": "Maître de guerre",
+      "es": "Maestro de batalla"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "Tactical fighters who use superiority dice to perform combat maneuvers.",
+      "fr": "Des combattants tacticiens qui utilisent des dés de supériorité pour effectuer des manœuvres de combat.",
+      "es": "Guerreros tácticos que usan dados de superioridad para realizar maniobras de combate."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "eldritch-knight",
+    "label": {
+      "en": "Eldritch Knight",
+      "fr": "Chevalier occulte",
+      "es": "Caballero arcano"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "Fighters who blend weapon mastery with wizard magic, mainly abjuration and evocation.",
+      "fr": "Des guerriers qui allient la maîtrise des armes à la magie de magicien, surtout d'abjuration et d'évocation.",
+      "es": "Guerreros que combinan el dominio de las armas con la magia de mago, sobre todo de abjuración y evocación."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "way-of-the-open-hand",
+    "label": {
+      "en": "Way of the Open Hand",
+      "fr": "Voie de la paume",
+      "es": "Camino de la mano abierta"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "Masters of unarmed combat who knock foes down, push them away and heal themselves.",
+      "fr": "Des maîtres du combat à mains nues qui renversent et repoussent leurs adversaires et se soignent eux-mêmes.",
+      "es": "Maestros del combate sin armas que derriban y empujan a sus enemigos y se curan a sí mismos."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "way-of-shadow",
+    "label": {
+      "en": "Way of Shadow",
+      "fr": "Voie de l'ombre",
+      "es": "Camino de la sombra"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "Ninja-like monks who use ki to cast shadow spells and step from shadow to shadow.",
+      "fr": "Des moines proches des ninjas qui utilisent le ki pour lancer des sorts d'ombre et passer d'ombre en ombre.",
+      "es": "Monjes similares a ninjas que usan el ki para lanzar conjuros de sombra y saltar de sombra en sombra."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "way-of-the-four-elements",
+    "label": {
+      "en": "Way of the Four Elements",
+      "fr": "Voie des quatre éléments",
+      "es": "Camino de los cuatro elementos"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "Monks who channel ki into elemental disciplines to shape fire, water, air and earth.",
+      "fr": "Des moines qui canalisent le ki dans des disciplines élémentaires pour façonner le feu, l'eau, l'air et la terre.",
+      "es": "Monjes que canalizan el ki en disciplinas elementales para moldear fuego, agua, aire y tierra."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "oath-of-devotion",
+    "label": {
+      "en": "Oath of Devotion",
+      "fr": "Serment de dévotion",
+      "es": "Juramento de devoción"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "Knights of honesty, courage and justice who repel evil and shine with holy light.",
+      "fr": "Des chevaliers d'honnêteté, de courage et de justice qui repoussent le mal et rayonnent d'une lumière sacrée.",
+      "es": "Caballeros de honestidad, valor y justicia que repelen el mal y brillan con luz sagrada."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "oath-of-the-ancients",
+    "label": {
+      "en": "Oath of the Ancients",
+      "fr": "Serment des anciens",
+      "es": "Juramento de los antiguos"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "Green knights who protect light, life and beauty against darkness.",
+      "fr": "Des chevaliers verts qui protègent la lumière, la vie et la beauté contre les ténèbres.",
+      "es": "Caballeros verdes que protegen la luz, la vida y la belleza frente a la oscuridad."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "oath-of-vengeance",
+    "label": {
+      "en": "Oath of Vengeance",
+      "fr": "Serment de vengeance",
+      "es": "Juramento de venganza"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "Avengers who hunt down those who committed grave wrongs, whatever the cost.",
+      "fr": "Des vengeurs qui traquent les auteurs de graves méfaits, quel qu'en soit le prix.",
+      "es": "Vengadores que persiguen a quienes cometieron graves injusticias, cueste lo que cueste."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "hunter",
+    "label": {
+      "en": "Hunter",
+      "fr": "Chasseur",
+      "es": "Cazador"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "Rangers who specialize in fighting the most dangerous threats of the wild.",
+      "fr": "Des rôdeurs spécialisés dans le combat contre les menaces les plus dangereuses de la nature.",
+      "es": "Exploradores especializados en combatir las amenazas más peligrosas de lo salvaje."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "beast-master",
+    "label": {
+      "en": "Beast Master",
+      "fr": "Maître des bêtes",
+      "es": "Señor de las bestias"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "Rangers who bond with an animal companion that fights at their side.",
+      "fr": "Des rôdeurs liés à un compagnon animal qui combat à leurs côtés.",
+      "es": "Exploradores vinculados a un compañero animal que lucha a su lado."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "thief",
+    "label": {
+      "en": "Thief",
+      "fr": "Voleur",
+      "es": "Ladrón"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "Burglars and treasure hunters, quick with their hands and agile on rooftops.",
+      "fr": "Des cambrioleurs et chasseurs de trésors, aux mains rapides et agiles sur les toits.",
+      "es": "Ladrones y cazadores de tesoros, de manos rápidas y ágiles en los tejados."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "assassin",
+    "label": {
+      "en": "Assassin",
+      "fr": "Assassin",
+      "es": "Asesino"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "Masters of disguise, poison and the deadly ambush.",
+      "fr": "Des maîtres du déguisement, du poison et de l'embuscade mortelle.",
+      "es": "Maestros del disfraz, el veneno y la emboscada mortal."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "arcane-trickster",
+    "label": {
+      "en": "Arcane Trickster",
+      "fr": "Arnaqueur arcanique",
+      "es": "Embaucador arcano"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "Rogues who add enchantment and illusion magic to their tricks.",
+      "fr": "Des roublards qui ajoutent la magie d'enchantement et d'illusion à leurs tours.",
+      "es": "Pícaros que añaden magia de encantamiento e ilusión a sus trucos."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "draconic-bloodline",
+    "label": {
+      "en": "Draconic Bloodline",
+      "fr": "Lignée draconique",
+      "es": "Linaje dracónico"
+    },
+    "parentKey": "sorcerer",
+    "description": {
+      "en": "Sorcerers whose magic comes from dragon blood, with scales, wings and elemental power.",
+      "fr": "Des ensorceleurs dont la magie provient du sang de dragon, avec écailles, ailes et puissance élémentaire.",
+      "es": "Hechiceros cuya magia proviene de sangre de dragón, con escamas, alas y poder elemental."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "wild-magic",
+    "label": {
+      "en": "Wild Magic",
+      "fr": "Magie sauvage",
+      "es": "Magia salvaje"
+    },
+    "parentKey": "sorcerer",
+    "description": {
+      "en": "Sorcerers whose chaotic magic can surge unpredictably.",
+      "fr": "Des ensorceleurs dont la magie chaotique peut déferler de façon imprévisible.",
+      "es": "Hechiceros cuya magia caótica puede desatarse de forma impredecible."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "the-archfey",
+    "label": {
+      "en": "The Archfey",
+      "fr": "L'Archifée",
+      "es": "El Archihada"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "A pact with a lord or lady of the fey, granting charm, illusions and misty escapes.",
+      "fr": "Un pacte avec un seigneur ou une dame des fées, qui confère charme, illusions et fuites brumeuses.",
+      "es": "Un pacto con un señor o señora de las hadas que otorga encanto, ilusiones y huidas brumosas."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "the-fiend",
+    "label": {
+      "en": "The Fiend",
+      "fr": "Le Fiélon",
+      "es": "El Infernal"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "A pact with a being of the lower planes, granting fiery magic and dark resilience.",
+      "fr": "Un pacte avec un être des plans inférieurs, qui confère une magie de feu et une sombre résistance.",
+      "es": "Un pacto con un ser de los planos inferiores que otorga magia ígnea y una oscura resistencia."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "the-great-old-one",
+    "label": {
+      "en": "The Great Old One",
+      "fr": "Le Grand Ancien",
+      "es": "El Gran Antiguo"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "A pact with an alien entity from beyond, granting telepathy and mind-bending powers.",
+      "fr": "Un pacte avec une entité étrangère venue d'ailleurs, qui confère la télépathie et des pouvoirs qui troublent l'esprit.",
+      "es": "Un pacto con una entidad ajena del más allá que otorga telepatía y poderes que trastornan la mente."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "school-of-abjuration",
+    "label": {
+      "en": "School of Abjuration",
+      "fr": "École d'abjuration",
+      "es": "Escuela de abjuración"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Wizards of protective magic who shield themselves with an arcane ward.",
+      "fr": "Des magiciens de la magie protectrice qui se protègent avec une égide arcanique.",
+      "es": "Magos de la magia protectora que se protegen con una guarda arcana."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "school-of-conjuration",
+    "label": {
+      "en": "School of Conjuration",
+      "fr": "École d'invocation",
+      "es": "Escuela de conjuración"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Wizards who create objects and creatures out of thin air and teleport.",
+      "fr": "Des magiciens qui créent objets et créatures à partir de rien et se téléportent.",
+      "es": "Magos que crean objetos y criaturas de la nada y se teletransportan."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "school-of-divination",
+    "label": {
+      "en": "School of Divination",
+      "fr": "École de divination",
+      "es": "Escuela de adivinación"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Wizards who glimpse the future and replace dice rolls with their portents.",
+      "fr": "Des magiciens qui entrevoient l'avenir et remplacent des jets de dés par leurs présages.",
+      "es": "Magos que vislumbran el futuro y sustituyen tiradas por sus presagios."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "school-of-enchantment",
+    "label": {
+      "en": "School of Enchantment",
+      "fr": "École d'enchantement",
+      "es": "Escuela de encantamiento"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Wizards who beguile and control the minds of others.",
+      "fr": "Des magiciens qui envoûtent et contrôlent l'esprit d'autrui.",
+      "es": "Magos que hechizan y controlan la mente de otros."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "school-of-evocation",
+    "label": {
+      "en": "School of Evocation",
+      "fr": "École d'évocation",
+      "es": "Escuela de evocación"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Wizards of raw elemental power who shape spells to spare their allies.",
+      "fr": "Des magiciens de la puissance élémentaire brute qui façonnent leurs sorts pour épargner leurs alliés.",
+      "es": "Magos de poder elemental puro que moldean sus conjuros para proteger a sus aliados."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "school-of-illusion",
+    "label": {
+      "en": "School of Illusion",
+      "fr": "École d'illusion",
+      "es": "Escuela de ilusionismo"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Wizards who bend perception and eventually make illusions real.",
+      "fr": "Des magiciens qui trompent les sens et finissent par rendre leurs illusions réelles.",
+      "es": "Magos que engañan los sentidos y acaban haciendo reales sus ilusiones."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "school-of-necromancy",
+    "label": {
+      "en": "School of Necromancy",
+      "fr": "École de nécromancie",
+      "es": "Escuela de nigromancia"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Wizards who study life and death and command the undead.",
+      "fr": "Des magiciens qui étudient la vie et la mort et commandent aux morts-vivants.",
+      "es": "Magos que estudian la vida y la muerte y dominan a los muertos vivientes."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "school-of-transmutation",
+    "label": {
+      "en": "School of Transmutation",
+      "fr": "École de transmutation",
+      "es": "Escuela de transmutación"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Wizards who change the nature of matter and create a transmuter's stone.",
+      "fr": "Des magiciens qui modifient la nature de la matière et créent une pierre de transmutation.",
+      "es": "Magos que cambian la naturaleza de la materia y crean una piedra de transmutador."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "alchemist",
+    "label": {
+      "en": "Alchemist",
+      "fr": "Alchimiste",
+      "es": "Alquimista"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "Artificers who brew experimental elixirs and empower healing and damage spells.",
+      "fr": "Des artificiers qui préparent des élixirs expérimentaux et renforcent les sorts de soin et de dégâts.",
+      "es": "Artífices que preparan elixires experimentales y potencian conjuros de curación y daño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "armorer",
+    "label": {
+      "en": "Armorer",
+      "fr": "Armurier",
+      "es": "Armero"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "Artificers who turn their armor into a magical suit, as a guardian or an infiltrator.",
+      "fr": "Des artificiers qui transforment leur armure en combinaison magique, de gardien ou d'infiltrateur.",
+      "es": "Artífices que convierten su armadura en un traje mágico, de guardián o de infiltrador."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "artillerist",
+    "label": {
+      "en": "Artillerist",
+      "fr": "Artilleur",
+      "es": "Artillero"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "Artificers who build magical cannons and wield arcane firearms.",
+      "fr": "Des artificiers qui fabriquent des canons magiques et manient des armes à feu arcaniques.",
+      "es": "Artífices que construyen cañones mágicos y empuñan armas de fuego arcanas."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass",
+    "key": "battle-smith",
+    "label": {
+      "en": "Battle Smith",
+      "fr": "Forgeron de guerre",
+      "es": "Herrero de batalla"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "Artificers who fight alongside a steel defender construct.",
+      "fr": "Des artificiers qui combattent aux côtés d'une créature artificielle : le défenseur d'acier.",
+      "es": "Artífices que luchan junto a un constructo defensor de acero."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]

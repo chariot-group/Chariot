@@ -1,0 +1,727 @@
+[
+  {
+    "type": "weapon-category",
+    "key": "simple-weapons",
+    "label": {
+      "en": "Simple weapons",
+      "fr": "Armes courantes",
+      "es": "Armas sencillas"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "weapon-category",
+    "key": "martial-weapons",
+    "label": {
+      "en": "Martial weapons",
+      "fr": "Armes de guerre",
+      "es": "Armas marciales"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "weapon",
+    "key": "club",
+    "label": {
+      "en": "Club",
+      "fr": "Gourdin",
+      "es": "Garrote"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d4",
+      "damageType": "bludgeoning",
+      "properties": ["light"],
+      "costGp": 0.1,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "dagger",
+    "label": {
+      "en": "Dagger",
+      "fr": "Dague",
+      "es": "Daga"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d4",
+      "damageType": "piercing",
+      "properties": ["finesse", "light", "thrown:20/60"],
+      "costGp": 2,
+      "weightLb": 1
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "greatclub",
+    "label": {
+      "en": "Greatclub",
+      "fr": "Massue",
+      "es": "Gran garrote"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": ["two-handed"],
+      "costGp": 0.2,
+      "weightLb": 10
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "handaxe",
+    "label": {
+      "en": "Handaxe",
+      "fr": "Hachette",
+      "es": "Hacha de mano"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d6",
+      "damageType": "slashing",
+      "properties": ["light", "thrown:20/60"],
+      "costGp": 5,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "javelin",
+    "label": {
+      "en": "Javelin",
+      "fr": "Javeline",
+      "es": "Jabalina"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": ["thrown:30/120"],
+      "costGp": 0.5,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "light-hammer",
+    "label": {
+      "en": "Light hammer",
+      "fr": "Marteau léger",
+      "es": "Martillo ligero"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d4",
+      "damageType": "bludgeoning",
+      "properties": ["light", "thrown:20/60"],
+      "costGp": 2,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "mace",
+    "label": {
+      "en": "Mace",
+      "fr": "Masse d'armes",
+      "es": "Maza"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d6",
+      "damageType": "bludgeoning",
+      "properties": [],
+      "costGp": 5,
+      "weightLb": 4
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "quarterstaff",
+    "label": {
+      "en": "Quarterstaff",
+      "fr": "Bâton",
+      "es": "Bastón"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d6",
+      "damageType": "bludgeoning",
+      "properties": ["versatile:1d8"],
+      "costGp": 0.2,
+      "weightLb": 4
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "sickle",
+    "label": {
+      "en": "Sickle",
+      "fr": "Serpe",
+      "es": "Hoz"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d4",
+      "damageType": "slashing",
+      "properties": ["light"],
+      "costGp": 1,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "spear",
+    "label": {
+      "en": "Spear",
+      "fr": "Lance",
+      "es": "Lanza"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": ["thrown:20/60", "versatile:1d8"],
+      "costGp": 1,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "light-crossbow",
+    "label": {
+      "en": "Light crossbow",
+      "fr": "Arbalète légère",
+      "es": "Ballesta ligera"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": ["ammunition:80/320", "loading", "two-handed"],
+      "costGp": 25,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "dart",
+    "label": {
+      "en": "Dart",
+      "fr": "Fléchette",
+      "es": "Dardo"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": "1d4",
+      "damageType": "piercing",
+      "properties": ["finesse", "thrown:20/60"],
+      "costGp": 0.05,
+      "weightLb": 0.25
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "shortbow",
+    "label": {
+      "en": "Shortbow",
+      "fr": "Arc court",
+      "es": "Arco corto"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": ["ammunition:80/320", "two-handed"],
+      "costGp": 25,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "sling",
+    "label": {
+      "en": "Sling",
+      "fr": "Fronde",
+      "es": "Honda"
+    },
+    "parentKey": "simple-weapons",
+    "tags": ["simple-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": "1d4",
+      "damageType": "bludgeoning",
+      "properties": ["ammunition:30/120"],
+      "costGp": 0.1,
+      "weightLb": 0
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "battleaxe",
+    "label": {
+      "en": "Battleaxe",
+      "fr": "Hache d'armes",
+      "es": "Hacha de batalla"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": ["versatile:1d10"],
+      "costGp": 10,
+      "weightLb": 4
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "flail",
+    "label": {
+      "en": "Flail",
+      "fr": "Fléau d'armes",
+      "es": "Mangual"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": [],
+      "costGp": 10,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "glaive",
+    "label": {
+      "en": "Glaive",
+      "fr": "Coutille",
+      "es": "Guja"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": ["heavy", "reach", "two-handed"],
+      "costGp": 20,
+      "weightLb": 6
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "greataxe",
+    "label": {
+      "en": "Greataxe",
+      "fr": "Hache à deux mains",
+      "es": "Gran hacha"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d12",
+      "damageType": "slashing",
+      "properties": ["heavy", "two-handed"],
+      "costGp": 30,
+      "weightLb": 7
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "greatsword",
+    "label": {
+      "en": "Greatsword",
+      "fr": "Épée à deux mains",
+      "es": "Espadón"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "2d6",
+      "damageType": "slashing",
+      "properties": ["heavy", "two-handed"],
+      "costGp": 50,
+      "weightLb": 6
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "halberd",
+    "label": {
+      "en": "Halberd",
+      "fr": "Hallebarde",
+      "es": "Alabarda"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d10",
+      "damageType": "slashing",
+      "properties": ["heavy", "reach", "two-handed"],
+      "costGp": 20,
+      "weightLb": 6
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "lance",
+    "label": {
+      "en": "Lance",
+      "fr": "Lance d'arçon",
+      "es": "Lanza de caballería"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d12",
+      "damageType": "piercing",
+      "properties": ["reach", "special"],
+      "costGp": 10,
+      "weightLb": 6
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "longsword",
+    "label": {
+      "en": "Longsword",
+      "fr": "Épée longue",
+      "es": "Espada larga"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d8",
+      "damageType": "slashing",
+      "properties": ["versatile:1d10"],
+      "costGp": 15,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "maul",
+    "label": {
+      "en": "Maul",
+      "fr": "Maillet d'armes",
+      "es": "Mazo"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "2d6",
+      "damageType": "bludgeoning",
+      "properties": ["heavy", "two-handed"],
+      "costGp": 10,
+      "weightLb": 10
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "morningstar",
+    "label": {
+      "en": "Morningstar",
+      "fr": "Morgenstern",
+      "es": "Lucero del alba"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [],
+      "costGp": 15,
+      "weightLb": 4
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "pike",
+    "label": {
+      "en": "Pike",
+      "fr": "Pique",
+      "es": "Pica"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": ["heavy", "reach", "two-handed"],
+      "costGp": 5,
+      "weightLb": 18
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "rapier",
+    "label": {
+      "en": "Rapier",
+      "fr": "Rapière",
+      "es": "Estoque"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": ["finesse"],
+      "costGp": 25,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "scimitar",
+    "label": {
+      "en": "Scimitar",
+      "fr": "Cimeterre",
+      "es": "Cimitarra"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d6",
+      "damageType": "slashing",
+      "properties": ["finesse", "light"],
+      "costGp": 25,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "shortsword",
+    "label": {
+      "en": "Shortsword",
+      "fr": "Épée courte",
+      "es": "Espada corta"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": ["finesse", "light"],
+      "costGp": 10,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "trident",
+    "label": {
+      "en": "Trident",
+      "fr": "Trident",
+      "es": "Tridente"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": ["thrown:20/60", "versatile:1d8"],
+      "costGp": 5,
+      "weightLb": 4
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "war-pick",
+    "label": {
+      "en": "War pick",
+      "fr": "Pic de guerre",
+      "es": "Pico de guerra"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": [],
+      "costGp": 5,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "warhammer",
+    "label": {
+      "en": "Warhammer",
+      "fr": "Marteau de guerre",
+      "es": "Martillo de guerra"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d8",
+      "damageType": "bludgeoning",
+      "properties": ["versatile:1d10"],
+      "costGp": 15,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "whip",
+    "label": {
+      "en": "Whip",
+      "fr": "Fouet",
+      "es": "Látigo"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "melee"],
+    "data": {
+      "kind": "melee",
+      "damage": "1d4",
+      "damageType": "slashing",
+      "properties": ["finesse", "reach"],
+      "costGp": 2,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "blowgun",
+    "label": {
+      "en": "Blowgun",
+      "fr": "Sarbacane",
+      "es": "Cerbatana"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": "1",
+      "damageType": "piercing",
+      "properties": ["ammunition:25/100", "loading"],
+      "costGp": 10,
+      "weightLb": 1
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "hand-crossbow",
+    "label": {
+      "en": "Hand crossbow",
+      "fr": "Arbalète de poing",
+      "es": "Ballesta de mano"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": "1d6",
+      "damageType": "piercing",
+      "properties": ["ammunition:30/120", "light", "loading"],
+      "costGp": 75,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "heavy-crossbow",
+    "label": {
+      "en": "Heavy crossbow",
+      "fr": "Arbalète lourde",
+      "es": "Ballesta pesada"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": "1d10",
+      "damageType": "piercing",
+      "properties": ["ammunition:100/400", "heavy", "loading", "two-handed"],
+      "costGp": 50,
+      "weightLb": 18
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "longbow",
+    "label": {
+      "en": "Longbow",
+      "fr": "Arc long",
+      "es": "Arco largo"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": "1d8",
+      "damageType": "piercing",
+      "properties": ["ammunition:150/600", "heavy", "two-handed"],
+      "costGp": 50,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "weapon",
+    "key": "net",
+    "label": {
+      "en": "Net",
+      "fr": "Filet",
+      "es": "Red"
+    },
+    "parentKey": "martial-weapons",
+    "tags": ["martial-weapons", "ranged"],
+    "data": {
+      "kind": "ranged",
+      "damage": null,
+      "damageType": null,
+      "properties": ["special", "thrown:5/15"],
+      "costGp": 1,
+      "weightLb": 3
+    }
+  }
+]

@@ -1,0 +1,2298 @@
+{
+  "key": "dnd5e-2014",
+  "gameSystem": "DND_5E",
+  "version": 1,
+  "status": "published",
+  "name": {
+    "en": "Dungeons & Dragons 5e (2014)",
+    "fr": "Donjons & Dragons 5e (2014)",
+    "es": "Dungeons & Dragons 5e (2014)"
+  },
+  "description": {
+    "en": "Character builder for the 2014 rules of the fifth edition.",
+    "fr": "Création de personnage pour les règles 2014 de la cinquième édition.",
+    "es": "Creación de personajes para las reglas de 2014 de la quinta edición."
+  },
+  "flow": {
+    "steps": [
+      {
+        "id": "race",
+        "order": 1,
+        "modes": ["creation"],
+        "title": {
+          "en": "Choose your race",
+          "fr": "Choisis ta race",
+          "es": "Elige tu raza"
+        },
+        "breadcrumb": {
+          "en": "Race",
+          "fr": "Race",
+          "es": "Raza"
+        },
+        "description": {
+          "en": "Your race sets your size, speed, senses, languages and innate traits.",
+          "fr": "Ta race détermine ta taille, ta vitesse, tes sens, tes langues et tes traits innés.",
+          "es": "Tu raza determina tu tamaño, velocidad, sentidos, idiomas y rasgos innatos."
+        },
+        "fields": [
+          {
+            "id": "race",
+            "type": "entitySelect",
+            "label": {
+              "en": "Race",
+              "fr": "Race",
+              "es": "Raza"
+            },
+            "source": {
+              "type": "race"
+            },
+            "requiredWhen": true
+          },
+          {
+            "id": "raceChoices",
+            "type": "grantedChoices",
+            "label": {
+              "en": "Racial choices",
+              "fr": "Choix raciaux",
+              "es": "Elecciones raciales"
+            },
+            "from": "race"
+          },
+          {
+            "id": "racialCantrip",
+            "type": "spellSelect",
+            "label": {
+              "en": "Racial cantrip",
+              "fr": "Sort mineur racial",
+              "es": "Truco racial"
+            },
+            "visibleWhen": {
+              "!!": [
+                {
+                  "var": "state.racialCantrip"
+                }
+              ]
+            },
+            "count": {
+              "var": ["state.racialCantrip.count", 0]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "state.racialCantrip.className"
+              },
+              "minLevel": 0,
+              "maxLevel": 0
+            }
+          }
+        ]
+      },
+      {
+        "id": "class",
+        "order": 2,
+        "modes": ["creation"],
+        "title": {
+          "en": "Choose your class",
+          "fr": "Choisis ta classe",
+          "es": "Elige tu clase"
+        },
+        "breadcrumb": {
+          "en": "Class",
+          "fr": "Classe",
+          "es": "Clase"
+        },
+        "description": {
+          "en": "Your class defines your hit die, proficiencies and features. Pick the level you start at.",
+          "fr": "Ta classe définit ton dé de vie, tes maîtrises et tes aptitudes. Choisis le niveau de départ.",
+          "es": "Tu clase define tu dado de golpe, competencias y rasgos. Elige tu nivel inicial."
+        },
+        "fields": [
+          {
+            "id": "class",
+            "type": "entitySelect",
+            "label": {
+              "en": "Class",
+              "fr": "Classe",
+              "es": "Clase"
+            },
+            "source": {
+              "type": "class"
+            },
+            "requiredWhen": true
+          },
+          {
+            "id": "targetLevel",
+            "type": "number",
+            "label": {
+              "en": "Character level",
+              "fr": "Niveau du personnage",
+              "es": "Nivel del personaje"
+            },
+            "default": 1,
+            "requiredWhen": true,
+            "config": {
+              "min": 1,
+              "max": 20
+            },
+            "validation": {
+              "and": [
+                {
+                  ">=": [
+                    {
+                      "var": "targetLevel"
+                    },
+                    1
+                  ]
+                },
+                {
+                  "<=": [
+                    {
+                      "var": "targetLevel"
+                    },
+                    20
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "classChoices",
+            "type": "grantedChoices",
+            "label": {
+              "en": "Class choices",
+              "fr": "Choix de classe",
+              "es": "Elecciones de clase"
+            },
+            "from": "class"
+          },
+          {
+            "id": "featSpells",
+            "type": "spellSelect",
+            "label": {
+              "en": "Feat spells",
+              "fr": "Sorts de don",
+              "es": "Conjuros de dote"
+            },
+            "visibleWhen": {
+              "!!": [
+                {
+                  "var": "state.featSpell"
+                }
+              ]
+            },
+            "count": {
+              "var": ["state.featSpell.count", 0]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "state.featSpell.className"
+              },
+              "minLevel": 1,
+              "maxLevel": {
+                "var": ["state.featSpell.level", 1]
+              }
+            }
+          },
+          {
+            "id": "subclassCantrip",
+            "type": "spellSelect",
+            "label": {
+              "en": "Subclass cantrip",
+              "fr": "Sort mineur de sous-classe",
+              "es": "Truco de subclase"
+            },
+            "visibleWhen": {
+              "!!": [
+                {
+                  "var": "state.subclassCantrip"
+                }
+              ]
+            },
+            "count": {
+              "var": ["state.subclassCantrip.count", 0]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "state.subclassCantrip.className"
+              },
+              "minLevel": 0,
+              "maxLevel": 0
+            }
+          }
+        ]
+      },
+      {
+        "id": "ability-scores",
+        "order": 3,
+        "modes": ["creation"],
+        "title": {
+          "en": "Ability scores",
+          "fr": "Caractéristiques",
+          "es": "Puntuaciones de característica"
+        },
+        "breadcrumb": {
+          "en": "Abilities",
+          "fr": "Caractéristiques",
+          "es": "Características"
+        },
+        "description": {
+          "en": "Choose a method. For the dice roll, roll 4d6 six times with your own dice, drop the lowest die each time and enter the results. Every score stays editable.",
+          "fr": "Choisis une méthode. Pour le jet de dés, lance 4d6 six fois avec tes propres dés, retire le plus faible à chaque fois et saisis les résultats. Chaque valeur reste modifiable.",
+          "es": "Elige un método. Para la tirada, lanza 4d6 seis veces con tus propios dados, descarta el más bajo cada vez e introduce los resultados. Cada puntuación sigue siendo editable."
+        },
+        "fields": [
+          {
+            "id": "abilityScores",
+            "type": "abilityAllocation",
+            "label": {
+              "en": "Base scores",
+              "fr": "Valeurs de base",
+              "es": "Puntuaciones base"
+            },
+            "methods": ["pointBuy", "standardArray", "roll"],
+            "requiredWhen": true,
+            "config": {
+              "abilities": [
+                "strength",
+                "dexterity",
+                "constitution",
+                "intelligence",
+                "wisdom",
+                "charisma"
+              ],
+              "pointBuy": {
+                "budget": 27,
+                "min": 8,
+                "max": 15,
+                "costs": {
+                  "8": 0,
+                  "9": 1,
+                  "10": 2,
+                  "11": 3,
+                  "12": 4,
+                  "13": 5,
+                  "14": 7,
+                  "15": 9
+                }
+              },
+              "standardArray": [15, 14, 13, 12, 10, 8],
+              "roll": {
+                "dice": "4d6",
+                "dropLowest": 1,
+                "count": 6,
+                "entry": "manual",
+                "min": 3,
+                "max": 18
+              }
+            }
+          },
+          {
+            "id": "strengthTotal",
+            "type": "computed",
+            "label": {
+              "en": "Strength (with bonuses)",
+              "fr": "Force (avec bonus)",
+              "es": "Fuerza (con bonificadores)"
+            },
+            "formula": {
+              "var": "strength"
+            }
+          },
+          {
+            "id": "dexterityTotal",
+            "type": "computed",
+            "label": {
+              "en": "Dexterity (with bonuses)",
+              "fr": "Dextérité (avec bonus)",
+              "es": "Destreza (con bonificadores)"
+            },
+            "formula": {
+              "var": "dexterity"
+            }
+          },
+          {
+            "id": "constitutionTotal",
+            "type": "computed",
+            "label": {
+              "en": "Constitution (with bonuses)",
+              "fr": "Constitution (avec bonus)",
+              "es": "Constitución (con bonificadores)"
+            },
+            "formula": {
+              "var": "constitution"
+            }
+          },
+          {
+            "id": "intelligenceTotal",
+            "type": "computed",
+            "label": {
+              "en": "Intelligence (with bonuses)",
+              "fr": "Intelligence (avec bonus)",
+              "es": "Inteligencia (con bonificadores)"
+            },
+            "formula": {
+              "var": "intelligence"
+            }
+          },
+          {
+            "id": "wisdomTotal",
+            "type": "computed",
+            "label": {
+              "en": "Wisdom (with bonuses)",
+              "fr": "Sagesse (avec bonus)",
+              "es": "Sabiduría (con bonificadores)"
+            },
+            "formula": {
+              "var": "wisdom"
+            }
+          },
+          {
+            "id": "charismaTotal",
+            "type": "computed",
+            "label": {
+              "en": "Charisma (with bonuses)",
+              "fr": "Charisme (avec bonus)",
+              "es": "Carisma (con bonificadores)"
+            },
+            "formula": {
+              "var": "charisma"
+            }
+          }
+        ]
+      },
+      {
+        "id": "background",
+        "order": 4,
+        "modes": ["creation"],
+        "title": {
+          "en": "Choose your background",
+          "fr": "Choisis ton historique",
+          "es": "Elige tu trasfondo"
+        },
+        "breadcrumb": {
+          "en": "Background",
+          "fr": "Historique",
+          "es": "Trasfondo"
+        },
+        "fields": [
+          {
+            "id": "background",
+            "type": "entitySelect",
+            "label": {
+              "en": "Background",
+              "fr": "Historique",
+              "es": "Trasfondo"
+            },
+            "source": {
+              "type": "background"
+            },
+            "requiredWhen": true
+          },
+          {
+            "id": "backgroundChoices",
+            "type": "grantedChoices",
+            "label": {
+              "en": "Background choices",
+              "fr": "Choix d'historique",
+              "es": "Elecciones de trasfondo"
+            },
+            "from": "background"
+          },
+          {
+            "id": "personalityTraits",
+            "type": "text",
+            "label": {
+              "en": "Personality traits",
+              "fr": "Traits de personnalité",
+              "es": "Rasgos de personalidad"
+            },
+            "config": {
+              "suggestionsFrom": "background",
+              "suggestionsKey": "personalityTraits"
+            }
+          },
+          {
+            "id": "ideals",
+            "type": "text",
+            "label": {
+              "en": "Ideals",
+              "fr": "Idéaux",
+              "es": "Ideales"
+            },
+            "config": {
+              "suggestionsFrom": "background",
+              "suggestionsKey": "ideals"
+            }
+          },
+          {
+            "id": "bonds",
+            "type": "text",
+            "label": {
+              "en": "Bonds",
+              "fr": "Liens",
+              "es": "Vínculos"
+            },
+            "config": {
+              "suggestionsFrom": "background",
+              "suggestionsKey": "bonds"
+            }
+          },
+          {
+            "id": "flaws",
+            "type": "text",
+            "label": {
+              "en": "Flaws",
+              "fr": "Défauts",
+              "es": "Defectos"
+            },
+            "config": {
+              "suggestionsFrom": "background",
+              "suggestionsKey": "flaws"
+            }
+          }
+        ]
+      },
+      {
+        "id": "equipment",
+        "order": 5,
+        "modes": ["creation"],
+        "title": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "breadcrumb": {
+          "en": "Equipment",
+          "fr": "Équipement",
+          "es": "Equipo"
+        },
+        "fields": [
+          {
+            "id": "equipmentPack",
+            "type": "entitySelect",
+            "label": {
+              "en": "Class equipment pack",
+              "fr": "Pack d'équipement de classe",
+              "es": "Paquete de equipo de clase"
+            },
+            "source": {
+              "type": "equipment-pack"
+            },
+            "optionsFilter": {
+              "==": [
+                {
+                  "var": "option.parentKey"
+                },
+                {
+                  "var": "class"
+                }
+              ]
+            }
+          },
+          {
+            "id": "equipmentChoices",
+            "type": "grantedChoices",
+            "label": {
+              "en": "Equipment choices",
+              "fr": "Choix d'équipement",
+              "es": "Elecciones de equipo"
+            },
+            "from": "equipmentPack"
+          }
+        ]
+      },
+      {
+        "id": "spells",
+        "order": 6,
+        "modes": ["creation"],
+        "title": {
+          "en": "Spells",
+          "fr": "Sorts",
+          "es": "Conjuros"
+        },
+        "breadcrumb": {
+          "en": "Spells",
+          "fr": "Sorts",
+          "es": "Conjuros"
+        },
+        "description": {
+          "en": "Pick spells from the Codex or add them manually. The suggested numbers follow your class table.",
+          "fr": "Choisis tes sorts dans le Codex ou ajoute-les à la main. Les nombres suggérés suivent la table de ta classe.",
+          "es": "Elige conjuros del Codex o añádelos a mano. Las cantidades sugeridas siguen la tabla de tu clase."
+        },
+        "visibleWhen": {
+          "var": "isSpellcaster"
+        },
+        "fields": [
+          {
+            "id": "cantrips",
+            "type": "spellSelect",
+            "label": {
+              "en": "Cantrips",
+              "fr": "Sorts mineurs",
+              "es": "Trucos"
+            },
+            "count": {
+              "var": "cantripsKnown"
+            },
+            "visibleWhen": {
+              ">": [
+                {
+                  "var": "cantripsKnown"
+                },
+                0
+              ]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "class"
+              },
+              "minLevel": 0,
+              "maxLevel": 0
+            }
+          },
+          {
+            "id": "spells",
+            "type": "spellSelect",
+            "label": {
+              "en": "Spells",
+              "fr": "Sorts",
+              "es": "Conjuros"
+            },
+            "count": {
+              "var": "spellsKnown"
+            },
+            "visibleWhen": {
+              ">": [
+                {
+                  "var": "maxSpellLevel"
+                },
+                0
+              ]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "class"
+              },
+              "minLevel": 1,
+              "maxLevel": {
+                "var": "maxSpellLevel"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "level-up",
+        "order": 7,
+        "modes": ["creation", "levelUp"],
+        "title": {
+          "en": "Level up",
+          "fr": "Montée de niveau",
+          "es": "Subida de nivel"
+        },
+        "breadcrumb": {
+          "en": "Level {repeat.index}",
+          "fr": "Niveau {repeat.index}",
+          "es": "Nivel {repeat.index}"
+        },
+        "repeat": {
+          "from": {
+            "if": [
+              {
+                "==": [
+                  {
+                    "var": "context.mode"
+                  },
+                  "levelUp"
+                ]
+              },
+              {
+                "+": [
+                  {
+                    "var": "context.currentLevel"
+                  },
+                  1
+                ]
+              },
+              2
+            ]
+          },
+          "to": {
+            "var": "characterLevel"
+          }
+        },
+        "fields": [
+          {
+            "id": "levelClass",
+            "type": "entitySelect",
+            "label": {
+              "en": "Class gaining the level",
+              "fr": "Classe qui gagne le niveau",
+              "es": "Clase que gana el nivel"
+            },
+            "source": {
+              "type": "class"
+            },
+            "default": {
+              "var": "class"
+            },
+            "requiredWhen": true,
+            "validation": {
+              "or": [
+                {
+                  "in": [
+                    {
+                      "var": "levelClass"
+                    },
+                    {
+                      "var": ["state.classKeys", []]
+                    }
+                  ]
+                },
+                {
+                  "and": [
+                    {
+                      "<": [
+                        {
+                          "var": ["state.classCount", 0]
+                        },
+                        2
+                      ]
+                    },
+                    {
+                      "in": [
+                        {
+                          "var": "levelClass"
+                        },
+                        {
+                          "var": ["state.multiclassEligible", []]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "id": "hitPoints",
+            "type": "number",
+            "label": {
+              "en": "Hit points gained",
+              "fr": "Points de vie gagnés",
+              "es": "Puntos de golpe ganados"
+            },
+            "help": {
+              "en": "Roll your class hit die with your own dice and add your Constitution modifier, or keep the suggested average.",
+              "fr": "Lance le dé de vie de ta classe avec tes propres dés et ajoute ton modificateur de Constitution, ou garde la moyenne suggérée.",
+              "es": "Tira el dado de golpe de tu clase con tus propios dados y suma tu modificador de Constitución, o conserva la media sugerida."
+            },
+            "default": {
+              "max": [
+                1,
+                {
+                  "+": [
+                    {
+                      "/": [
+                        {
+                          "var": ["repeat.hitDie", 8]
+                        },
+                        2
+                      ]
+                    },
+                    1,
+                    {
+                      "var": "constitutionModifier"
+                    }
+                  ]
+                }
+              ]
+            },
+            "requiredWhen": true
+          },
+          {
+            "id": "levelChoices",
+            "type": "grantedChoices",
+            "label": {
+              "en": "New features and choices",
+              "fr": "Nouvelles aptitudes et choix",
+              "es": "Nuevos rasgos y elecciones"
+            },
+            "from": "levelClass"
+          },
+          {
+            "id": "levelFeatSpells",
+            "type": "spellSelect",
+            "label": {
+              "en": "Feat spells",
+              "fr": "Sorts de don",
+              "es": "Conjuros de dote"
+            },
+            "visibleWhen": {
+              "!!": [
+                {
+                  "var": "repeat.featSpell"
+                }
+              ]
+            },
+            "count": {
+              "var": ["repeat.featSpell.count", 0]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "repeat.featSpell.className"
+              },
+              "minLevel": 1,
+              "maxLevel": {
+                "var": ["repeat.featSpell.level", 1]
+              }
+            }
+          },
+          {
+            "id": "levelSubclassCantrip",
+            "type": "spellSelect",
+            "label": {
+              "en": "Subclass cantrip",
+              "fr": "Sort mineur de sous-classe",
+              "es": "Truco de subclase"
+            },
+            "visibleWhen": {
+              "!!": [
+                {
+                  "var": "repeat.subclassCantrip"
+                }
+              ]
+            },
+            "count": {
+              "var": ["repeat.subclassCantrip.count", 0]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "repeat.subclassCantrip.className"
+              },
+              "minLevel": 0,
+              "maxLevel": 0
+            }
+          },
+          {
+            "id": "levelCantrips",
+            "type": "spellSelect",
+            "label": {
+              "en": "New cantrips",
+              "fr": "Nouveaux sorts mineurs",
+              "es": "Nuevos trucos"
+            },
+            "visibleWhen": {
+              ">": [
+                {
+                  "var": ["repeat.newCantrips", 0]
+                },
+                0
+              ]
+            },
+            "count": {
+              "var": ["repeat.newCantrips", 0]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "levelClass"
+              },
+              "minLevel": 0,
+              "maxLevel": 0
+            }
+          },
+          {
+            "id": "levelSpells",
+            "type": "spellSelect",
+            "label": {
+              "en": "New spells",
+              "fr": "Nouveaux sorts",
+              "es": "Nuevos conjuros"
+            },
+            "visibleWhen": {
+              ">": [
+                {
+                  "var": ["repeat.maxSpellLevel", 0]
+                },
+                0
+              ]
+            },
+            "count": {
+              "var": ["repeat.newSpells", 0]
+            },
+            "spellFilter": {
+              "className": {
+                "var": "levelClass"
+              },
+              "minLevel": 1,
+              "maxLevel": {
+                "var": ["repeat.maxSpellLevel", 0]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "details",
+        "order": 8,
+        "modes": ["creation"],
+        "title": {
+          "en": "Character details",
+          "fr": "Détails du personnage",
+          "es": "Detalles del personaje"
+        },
+        "breadcrumb": {
+          "en": "Details",
+          "fr": "Détails",
+          "es": "Detalles"
+        },
+        "fields": [
+          {
+            "id": "firstname",
+            "type": "text",
+            "label": {
+              "en": "First name",
+              "fr": "Prénom",
+              "es": "Nombre"
+            },
+            "requiredWhen": true
+          },
+          {
+            "id": "lastname",
+            "type": "text",
+            "label": {
+              "en": "Last name",
+              "fr": "Nom",
+              "es": "Apellido"
+            }
+          },
+          {
+            "id": "surname",
+            "type": "text",
+            "label": {
+              "en": "Nickname",
+              "fr": "Surnom",
+              "es": "Apodo"
+            }
+          },
+          {
+            "id": "alignment",
+            "type": "entitySelect",
+            "label": {
+              "en": "Alignment",
+              "fr": "Alignement",
+              "es": "Alineamiento"
+            },
+            "source": {
+              "type": "alignment"
+            },
+            "default": "true-neutral",
+            "requiredWhen": true
+          },
+          {
+            "id": "age",
+            "type": "text",
+            "label": {
+              "en": "Age",
+              "fr": "Âge",
+              "es": "Edad"
+            }
+          },
+          {
+            "id": "height",
+            "type": "text",
+            "label": {
+              "en": "Height",
+              "fr": "Taille",
+              "es": "Altura"
+            }
+          },
+          {
+            "id": "weight",
+            "type": "text",
+            "label": {
+              "en": "Weight",
+              "fr": "Poids",
+              "es": "Peso"
+            }
+          },
+          {
+            "id": "eyes",
+            "type": "text",
+            "label": {
+              "en": "Eyes",
+              "fr": "Yeux",
+              "es": "Ojos"
+            }
+          },
+          {
+            "id": "skin",
+            "type": "text",
+            "label": {
+              "en": "Skin",
+              "fr": "Peau",
+              "es": "Piel"
+            }
+          },
+          {
+            "id": "hair",
+            "type": "text",
+            "label": {
+              "en": "Hair",
+              "fr": "Cheveux",
+              "es": "Pelo"
+            }
+          },
+          {
+            "id": "appearanceDescription",
+            "type": "text",
+            "label": {
+              "en": "Appearance",
+              "fr": "Apparence",
+              "es": "Apariencia"
+            }
+          },
+          {
+            "id": "backstory",
+            "type": "text",
+            "label": {
+              "en": "Backstory",
+              "fr": "Histoire",
+              "es": "Historia"
+            }
+          },
+          {
+            "id": "alliesAndOrgs",
+            "type": "text",
+            "label": {
+              "en": "Allies and organizations",
+              "fr": "Alliés et organisations",
+              "es": "Aliados y organizaciones"
+            }
+          }
+        ]
+      },
+      {
+        "id": "summary",
+        "order": 9,
+        "modes": ["creation", "levelUp"],
+        "title": {
+          "en": "Summary",
+          "fr": "Récapitulatif",
+          "es": "Resumen"
+        },
+        "breadcrumb": {
+          "en": "Summary",
+          "fr": "Récapitulatif",
+          "es": "Resumen"
+        },
+        "fields": [
+          {
+            "id": "summary",
+            "type": "summary",
+            "label": {
+              "en": "Your character",
+              "fr": "Ton personnage",
+              "es": "Tu personaje"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "formulas": [
+    {
+      "id": "strength",
+      "expression": {
+        "+": [
+          {
+            "var": ["abilityScores.strength", 10]
+          },
+          {
+            "var": ["state.abilityBonuses.strength", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "strengthModifier",
+      "expression": {
+        "/": [
+          {
+            "-": [
+              {
+                "-": [
+                  {
+                    "var": "strength"
+                  },
+                  10
+                ]
+              },
+              {
+                "%": [
+                  {
+                    "+": [
+                      {
+                        "%": [
+                          {
+                            "-": [
+                              {
+                                "var": "strength"
+                              },
+                              10
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      2
+                    ]
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          2
+        ]
+      }
+    },
+    {
+      "id": "dexterity",
+      "expression": {
+        "+": [
+          {
+            "var": ["abilityScores.dexterity", 10]
+          },
+          {
+            "var": ["state.abilityBonuses.dexterity", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "dexterityModifier",
+      "expression": {
+        "/": [
+          {
+            "-": [
+              {
+                "-": [
+                  {
+                    "var": "dexterity"
+                  },
+                  10
+                ]
+              },
+              {
+                "%": [
+                  {
+                    "+": [
+                      {
+                        "%": [
+                          {
+                            "-": [
+                              {
+                                "var": "dexterity"
+                              },
+                              10
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      2
+                    ]
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          2
+        ]
+      }
+    },
+    {
+      "id": "constitution",
+      "expression": {
+        "+": [
+          {
+            "var": ["abilityScores.constitution", 10]
+          },
+          {
+            "var": ["state.abilityBonuses.constitution", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "constitutionModifier",
+      "expression": {
+        "/": [
+          {
+            "-": [
+              {
+                "-": [
+                  {
+                    "var": "constitution"
+                  },
+                  10
+                ]
+              },
+              {
+                "%": [
+                  {
+                    "+": [
+                      {
+                        "%": [
+                          {
+                            "-": [
+                              {
+                                "var": "constitution"
+                              },
+                              10
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      2
+                    ]
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          2
+        ]
+      }
+    },
+    {
+      "id": "intelligence",
+      "expression": {
+        "+": [
+          {
+            "var": ["abilityScores.intelligence", 10]
+          },
+          {
+            "var": ["state.abilityBonuses.intelligence", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "intelligenceModifier",
+      "expression": {
+        "/": [
+          {
+            "-": [
+              {
+                "-": [
+                  {
+                    "var": "intelligence"
+                  },
+                  10
+                ]
+              },
+              {
+                "%": [
+                  {
+                    "+": [
+                      {
+                        "%": [
+                          {
+                            "-": [
+                              {
+                                "var": "intelligence"
+                              },
+                              10
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      2
+                    ]
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          2
+        ]
+      }
+    },
+    {
+      "id": "wisdom",
+      "expression": {
+        "+": [
+          {
+            "var": ["abilityScores.wisdom", 10]
+          },
+          {
+            "var": ["state.abilityBonuses.wisdom", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "wisdomModifier",
+      "expression": {
+        "/": [
+          {
+            "-": [
+              {
+                "-": [
+                  {
+                    "var": "wisdom"
+                  },
+                  10
+                ]
+              },
+              {
+                "%": [
+                  {
+                    "+": [
+                      {
+                        "%": [
+                          {
+                            "-": [
+                              {
+                                "var": "wisdom"
+                              },
+                              10
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      2
+                    ]
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          2
+        ]
+      }
+    },
+    {
+      "id": "charisma",
+      "expression": {
+        "+": [
+          {
+            "var": ["abilityScores.charisma", 10]
+          },
+          {
+            "var": ["state.abilityBonuses.charisma", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "charismaModifier",
+      "expression": {
+        "/": [
+          {
+            "-": [
+              {
+                "-": [
+                  {
+                    "var": "charisma"
+                  },
+                  10
+                ]
+              },
+              {
+                "%": [
+                  {
+                    "+": [
+                      {
+                        "%": [
+                          {
+                            "-": [
+                              {
+                                "var": "charisma"
+                              },
+                              10
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      2
+                    ]
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          2
+        ]
+      }
+    },
+    {
+      "id": "characterLevel",
+      "expression": {
+        "if": [
+          {
+            "==": [
+              {
+                "var": "context.mode"
+              },
+              "levelUp"
+            ]
+          },
+          {
+            "var": "context.targetLevel"
+          },
+          {
+            "var": ["targetLevel", 1]
+          }
+        ]
+      }
+    },
+    {
+      "id": "proficiencyBonus",
+      "expression": {
+        "+": [
+          2,
+          {
+            "/": [
+              {
+                "-": [
+                  {
+                    "-": [
+                      {
+                        "var": "characterLevel"
+                      },
+                      1
+                    ]
+                  },
+                  {
+                    "%": [
+                      {
+                        "-": [
+                          {
+                            "var": "characterLevel"
+                          },
+                          1
+                        ]
+                      },
+                      4
+                    ]
+                  }
+                ]
+              },
+              4
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "perceptionBonus",
+      "expression": {
+        "if": [
+          {
+            "==": [
+              {
+                "var": ["state.skills.perception", 0]
+              },
+              3
+            ]
+          },
+          {
+            "*": [
+              {
+                "var": "proficiencyBonus"
+              },
+              2
+            ]
+          },
+          {
+            "==": [
+              {
+                "var": ["state.skills.perception", 0]
+              },
+              2
+            ]
+          },
+          {
+            "var": "proficiencyBonus"
+          },
+          {
+            "==": [
+              {
+                "var": ["state.skills.perception", 0]
+              },
+              1
+            ]
+          },
+          {
+            "/": [
+              {
+                "-": [
+                  {
+                    "var": "proficiencyBonus"
+                  },
+                  {
+                    "%": [
+                      {
+                        "+": [
+                          {
+                            "%": [
+                              {
+                                "var": "proficiencyBonus"
+                              },
+                              2
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      2
+                    ]
+                  }
+                ]
+              },
+              2
+            ]
+          },
+          0
+        ]
+      }
+    },
+    {
+      "id": "passivePerception",
+      "expression": {
+        "+": [
+          10,
+          {
+            "var": "wisdomModifier"
+          },
+          {
+            "var": "perceptionBonus"
+          },
+          {
+            "var": ["state.passivePerceptionBonus", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "firstLevelHitPoints",
+      "expression": {
+        "+": [
+          {
+            "var": ["state.entries.class.data.hitDie", 8]
+          },
+          {
+            "var": "constitutionModifier"
+          }
+        ]
+      }
+    },
+    {
+      "id": "maxHitPoints",
+      "expression": {
+        "max": [
+          1,
+          {
+            "+": [
+              {
+                "var": "firstLevelHitPoints"
+              },
+              {
+                "reduce": [
+                  {
+                    "var": ["hitPoints", []]
+                  },
+                  {
+                    "+": [
+                      {
+                        "var": "current"
+                      },
+                      {
+                        "var": "accumulator"
+                      }
+                    ]
+                  },
+                  0
+                ]
+              },
+              {
+                "*": [
+                  {
+                    "var": ["state.hitPointBonusPerLevel", 0]
+                  },
+                  {
+                    "var": "characterLevel"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "armorClass",
+      "expression": {
+        "+": [
+          10,
+          {
+            "var": "dexterityModifier"
+          },
+          {
+            "if": [
+              {
+                "==": [
+                  {
+                    "var": "state.unarmoredDefense"
+                  },
+                  "constitution"
+                ]
+              },
+              {
+                "var": "constitutionModifier"
+              },
+              {
+                "==": [
+                  {
+                    "var": "state.unarmoredDefense"
+                  },
+                  "wisdom"
+                ]
+              },
+              {
+                "var": "wisdomModifier"
+              },
+              0
+            ]
+          },
+          {
+            "var": ["state.armorClassBonus", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "initiative",
+      "expression": {
+        "+": [
+          {
+            "var": "dexterityModifier"
+          },
+          {
+            "var": ["state.initiativeBonus", 0]
+          }
+        ]
+      }
+    },
+    {
+      "id": "isSpellcaster",
+      "expression": {
+        "!!": [
+          {
+            "var": "state.spellcasting.ability"
+          }
+        ]
+      }
+    },
+    {
+      "id": "spellcastingModifier",
+      "expression": {
+        "var": [
+          {
+            "cat": [
+              {
+                "var": "state.spellcasting.ability"
+              },
+              "Modifier"
+            ]
+          },
+          0
+        ]
+      }
+    },
+    {
+      "id": "spellSaveDC",
+      "expression": {
+        "+": [
+          8,
+          {
+            "var": "proficiencyBonus"
+          },
+          {
+            "var": "spellcastingModifier"
+          }
+        ]
+      }
+    },
+    {
+      "id": "spellAttackBonus",
+      "expression": {
+        "+": [
+          {
+            "var": "proficiencyBonus"
+          },
+          {
+            "var": "spellcastingModifier"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cantripsKnown",
+      "expression": {
+        "var": [
+          {
+            "cat": [
+              "state.spellcasting.cantripsKnown.",
+              {
+                "-": [
+                  {
+                    "var": "characterLevel"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    {
+      "id": "spellsKnown",
+      "expression": {
+        "if": [
+          {
+            "==": [
+              {
+                "var": "state.spellcasting.preparation"
+              },
+              "prepared"
+            ]
+          },
+          {
+            "max": [
+              1,
+              {
+                "+": [
+                  {
+                    "var": "spellcastingModifier"
+                  },
+                  {
+                    "if": [
+                      {
+                        "==": [
+                          {
+                            "var": "state.spellcasting.preparedLevel"
+                          },
+                          "half"
+                        ]
+                      },
+                      {
+                        "/": [
+                          {
+                            "-": [
+                              {
+                                "var": "characterLevel"
+                              },
+                              {
+                                "%": [
+                                  {
+                                    "+": [
+                                      {
+                                        "%": [
+                                          {
+                                            "var": "characterLevel"
+                                          },
+                                          2
+                                        ]
+                                      },
+                                      2
+                                    ]
+                                  },
+                                  2
+                                ]
+                              }
+                            ]
+                          },
+                          2
+                        ]
+                      },
+                      {
+                        "var": "characterLevel"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "var": [
+              {
+                "cat": [
+                  "state.spellcasting.spellsKnown.",
+                  {
+                    "-": [
+                      {
+                        "var": "characterLevel"
+                      },
+                      1
+                    ]
+                  }
+                ]
+              },
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "maxSpellLevel",
+      "expression": {
+        "var": [
+          {
+            "cat": [
+              "state.spellcasting.maxSpellLevelByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "characterLevel"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    {
+      "id": "experience",
+      "expression": {
+        "var": [
+          {
+            "cat": [
+              "state.experienceByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "characterLevel"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    }
+  ],
+  "projection": [
+    {
+      "source": {
+        "var": "firstname"
+      },
+      "target": "firstname"
+    },
+    {
+      "source": {
+        "var": "lastname"
+      },
+      "target": "lastname"
+    },
+    {
+      "source": {
+        "var": "surname"
+      },
+      "target": "surname"
+    },
+    {
+      "source": "DND_5E",
+      "target": "gameSystem"
+    },
+    {
+      "source": {
+        "var": "state.entries.race.label"
+      },
+      "target": "profile.race"
+    },
+    {
+      "source": {
+        "var": "state.entries.subrace.label"
+      },
+      "target": "profile.subrace"
+    },
+    {
+      "source": {
+        "var": "state.entries.background.label"
+      },
+      "target": "profile.history"
+    },
+    {
+      "source": {
+        "var": "state.entries.alignment.data.sheetValue"
+      },
+      "target": "profile.alignment"
+    },
+    {
+      "source": {
+        "var": "characterLevel"
+      },
+      "target": "progression.level"
+    },
+    {
+      "source": {
+        "var": "experience"
+      },
+      "target": "progression.experience"
+    },
+    {
+      "source": {
+        "var": "state.sheetClasses"
+      },
+      "target": "class"
+    },
+    {
+      "source": {
+        "var": "proficiencyBonus"
+      },
+      "target": "stats.proficiencyBonus"
+    },
+    {
+      "source": {
+        "var": "passivePerception"
+      },
+      "target": "stats.passivePerception"
+    },
+    {
+      "source": {
+        "var": "maxHitPoints"
+      },
+      "target": "stats.maxHitPoints"
+    },
+    {
+      "source": {
+        "var": "maxHitPoints"
+      },
+      "target": "stats.currentHitPoints"
+    },
+    {
+      "source": {
+        "var": "armorClass"
+      },
+      "target": "stats.armorClass"
+    },
+    {
+      "source": {
+        "var": "initiative"
+      },
+      "target": "stats.initiative"
+    },
+    {
+      "source": {
+        "var": ["state.size", "Medium"]
+      },
+      "target": "stats.size"
+    },
+    {
+      "source": {
+        "var": ["state.speed.walk", 30]
+      },
+      "target": "stats.speed.walk"
+    },
+    {
+      "source": {
+        "var": ["state.speed.climb", 0]
+      },
+      "target": "stats.speed.climb"
+    },
+    {
+      "source": {
+        "var": ["state.speed.swim", 0]
+      },
+      "target": "stats.speed.swim"
+    },
+    {
+      "source": {
+        "var": ["state.speed.fly", 0]
+      },
+      "target": "stats.speed.fly"
+    },
+    {
+      "source": {
+        "var": ["state.speed.burrow", 0]
+      },
+      "target": "stats.speed.burrow"
+    },
+    {
+      "source": {
+        "var": ["state.labels.senses", []]
+      },
+      "target": "stats.senses"
+    },
+    {
+      "source": {
+        "var": ["state.labels.resistances", []]
+      },
+      "target": "affinities.resistances"
+    },
+    {
+      "source": {
+        "var": ["state.labels.immunities", []]
+      },
+      "target": "affinities.immunities"
+    },
+    {
+      "source": {
+        "var": ["state.labels.languages", []]
+      },
+      "target": "stats.languages"
+    },
+    {
+      "source": {
+        "var": ["state.labels.proficiencies.armors", []]
+      },
+      "target": "stats.armors"
+    },
+    {
+      "source": {
+        "var": ["state.labels.proficiencies.weapons", []]
+      },
+      "target": "stats.weapons"
+    },
+    {
+      "source": {
+        "var": ["state.labels.proficiencies.tools", []]
+      },
+      "target": "stats.tools"
+    },
+    {
+      "source": {
+        "var": ["state.sheetAbilities", []]
+      },
+      "target": "abilities"
+    },
+    {
+      "source": {
+        "var": ["state.sheetActions", []]
+      },
+      "target": "actions"
+    },
+    {
+      "source": {
+        "var": ["state.sheetSpellcasting", []]
+      },
+      "target": "spellcasting"
+    },
+    {
+      "source": {
+        "var": ["state.labels.equipment", ""]
+      },
+      "target": "treasure.equipment"
+    },
+    {
+      "source": {
+        "var": ["state.gold", 0]
+      },
+      "target": "treasure.gp"
+    },
+    {
+      "source": {
+        "var": "personalityTraits"
+      },
+      "target": "background.personalityTraits"
+    },
+    {
+      "source": {
+        "var": "ideals"
+      },
+      "target": "background.ideals"
+    },
+    {
+      "source": {
+        "var": "bonds"
+      },
+      "target": "background.bonds"
+    },
+    {
+      "source": {
+        "var": "flaws"
+      },
+      "target": "background.flaws"
+    },
+    {
+      "source": {
+        "var": "backstory"
+      },
+      "target": "background.backstory"
+    },
+    {
+      "source": {
+        "var": "alliesAndOrgs"
+      },
+      "target": "background.alliesAndOrgs"
+    },
+    {
+      "source": {
+        "var": "age"
+      },
+      "target": "appearance.age"
+    },
+    {
+      "source": {
+        "var": "height"
+      },
+      "target": "appearance.height"
+    },
+    {
+      "source": {
+        "var": "weight"
+      },
+      "target": "appearance.weight"
+    },
+    {
+      "source": {
+        "var": "eyes"
+      },
+      "target": "appearance.eyes"
+    },
+    {
+      "source": {
+        "var": "skin"
+      },
+      "target": "appearance.skin"
+    },
+    {
+      "source": {
+        "var": "hair"
+      },
+      "target": "appearance.hair"
+    },
+    {
+      "source": {
+        "var": "appearanceDescription"
+      },
+      "target": "appearance.description"
+    },
+    {
+      "source": {
+        "var": "strength"
+      },
+      "target": "stats.abilityScores.strength"
+    },
+    {
+      "source": {
+        "var": "dexterity"
+      },
+      "target": "stats.abilityScores.dexterity"
+    },
+    {
+      "source": {
+        "var": "constitution"
+      },
+      "target": "stats.abilityScores.constitution"
+    },
+    {
+      "source": {
+        "var": "intelligence"
+      },
+      "target": "stats.abilityScores.intelligence"
+    },
+    {
+      "source": {
+        "var": "wisdom"
+      },
+      "target": "stats.abilityScores.wisdom"
+    },
+    {
+      "source": {
+        "var": "charisma"
+      },
+      "target": "stats.abilityScores.charisma"
+    },
+    {
+      "source": {
+        "!!": [
+          {
+            "var": "state.savingThrows.strength"
+          }
+        ]
+      },
+      "target": "stats.masteriesAbility.strength"
+    },
+    {
+      "source": {
+        "!!": [
+          {
+            "var": "state.savingThrows.dexterity"
+          }
+        ]
+      },
+      "target": "stats.masteriesAbility.dexterity"
+    },
+    {
+      "source": {
+        "!!": [
+          {
+            "var": "state.savingThrows.constitution"
+          }
+        ]
+      },
+      "target": "stats.masteriesAbility.constitution"
+    },
+    {
+      "source": {
+        "!!": [
+          {
+            "var": "state.savingThrows.intelligence"
+          }
+        ]
+      },
+      "target": "stats.masteriesAbility.intelligence"
+    },
+    {
+      "source": {
+        "!!": [
+          {
+            "var": "state.savingThrows.wisdom"
+          }
+        ]
+      },
+      "target": "stats.masteriesAbility.wisdom"
+    },
+    {
+      "source": {
+        "!!": [
+          {
+            "var": "state.savingThrows.charisma"
+          }
+        ]
+      },
+      "target": "stats.masteriesAbility.charisma"
+    },
+    {
+      "source": {
+        "var": ["state.skills.athletics", 0]
+      },
+      "target": "stats.masteries.athletics"
+    },
+    {
+      "source": {
+        "var": ["state.skills.acrobatics", 0]
+      },
+      "target": "stats.masteries.acrobatics"
+    },
+    {
+      "source": {
+        "var": ["state.skills.sleight-of-hand", 0]
+      },
+      "target": "stats.masteries.sleightHand"
+    },
+    {
+      "source": {
+        "var": ["state.skills.stealth", 0]
+      },
+      "target": "stats.masteries.stealth"
+    },
+    {
+      "source": {
+        "var": ["state.skills.arcana", 0]
+      },
+      "target": "stats.masteries.arcana"
+    },
+    {
+      "source": {
+        "var": ["state.skills.history", 0]
+      },
+      "target": "stats.masteries.history"
+    },
+    {
+      "source": {
+        "var": ["state.skills.investigation", 0]
+      },
+      "target": "stats.masteries.investigation"
+    },
+    {
+      "source": {
+        "var": ["state.skills.nature", 0]
+      },
+      "target": "stats.masteries.nature"
+    },
+    {
+      "source": {
+        "var": ["state.skills.religion", 0]
+      },
+      "target": "stats.masteries.religion"
+    },
+    {
+      "source": {
+        "var": ["state.skills.animal-handling", 0]
+      },
+      "target": "stats.masteries.animalHandling"
+    },
+    {
+      "source": {
+        "var": ["state.skills.insight", 0]
+      },
+      "target": "stats.masteries.insight"
+    },
+    {
+      "source": {
+        "var": ["state.skills.medicine", 0]
+      },
+      "target": "stats.masteries.medicine"
+    },
+    {
+      "source": {
+        "var": ["state.skills.perception", 0]
+      },
+      "target": "stats.masteries.perception"
+    },
+    {
+      "source": {
+        "var": ["state.skills.survival", 0]
+      },
+      "target": "stats.masteries.survival"
+    },
+    {
+      "source": {
+        "var": ["state.skills.deception", 0]
+      },
+      "target": "stats.masteries.deception"
+    },
+    {
+      "source": {
+        "var": ["state.skills.intimidation", 0]
+      },
+      "target": "stats.masteries.intimidation"
+    },
+    {
+      "source": {
+        "var": ["state.skills.performance", 0]
+      },
+      "target": "stats.masteries.performance"
+    },
+    {
+      "source": {
+        "var": ["state.skills.persuasion", 0]
+      },
+      "target": "stats.masteries.persuasion"
+    }
+  ]
+}

@@ -1,0 +1,3278 @@
+[
+  {
+    "type": "adventuring-pack",
+    "key": "burglars-pack",
+    "label": {
+      "en": "Burglar's pack",
+      "fr": "Sac de cambrioleur",
+      "es": "Equipo de ladrón"
+    },
+    "description": {
+      "en": "A backpack, a bag of 1,000 ball bearings, 10 feet of string, a bell, 5 candles, a crowbar, a hammer, 10 pitons, a hooded lantern, 2 flasks of oil, 5 days of rations, a tinderbox, a waterskin and 50 feet of hempen rope.",
+      "fr": "Un sac à dos, un sac de 1 000 billes, 3 m de ficelle, une clochette, 5 bougies, un pied-de-biche, un marteau, 10 pitons, une lanterne à capote, 2 flasques d'huile, 5 jours de rations, une boîte à amadou, une gourde et une corde de chanvre de 15 m.",
+      "es": "Una mochila, una bolsa de 1.000 canicas, 10 pies de cordel, una campanilla, 5 velas, una palanca, un martillo, 10 pitones, una linterna sorda, 2 frascos de aceite, raciones para 5 días, un yesquero, un odre y 50 pies de cuerda de cáñamo."
+    },
+    "tags": [],
+    "data": {
+      "costGp": 16
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "adventuring-pack",
+    "key": "diplomats-pack",
+    "label": {
+      "en": "Diplomat's pack",
+      "fr": "Sac de diplomate",
+      "es": "Equipo de diplomático"
+    },
+    "description": {
+      "en": "A chest, 2 cases for maps and scrolls, a set of fine clothes, a bottle of ink, an ink pen, a lamp, 2 flasks of oil, 5 sheets of paper, a vial of perfume, sealing wax and soap.",
+      "fr": "Un coffre, 2 étuis à cartes et parchemins, des vêtements fins, une bouteille d'encre, une plume, une lampe, 2 flasques d'huile, 5 feuilles de papier, une fiole de parfum, de la cire à cacheter et du savon.",
+      "es": "Un cofre, 2 estuches para mapas y pergaminos, ropa fina, un frasco de tinta, una pluma, una lámpara, 2 frascos de aceite, 5 hojas de papel, un vial de perfume, lacre y jabón."
+    },
+    "tags": [],
+    "data": {
+      "costGp": 39
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "adventuring-pack",
+    "key": "dungeoneers-pack",
+    "label": {
+      "en": "Dungeoneer's pack",
+      "fr": "Sac d'exploration souterraine",
+      "es": "Equipo de explorador de mazmorras"
+    },
+    "description": {
+      "en": "A backpack, a crowbar, a hammer, 10 pitons, 10 torches, a tinderbox, 10 days of rations, a waterskin and 50 feet of hempen rope.",
+      "fr": "Un sac à dos, un pied-de-biche, un marteau, 10 pitons, 10 torches, une boîte à amadou, 10 jours de rations, une gourde et une corde de chanvre de 15 m.",
+      "es": "Una mochila, una palanca, un martillo, 10 pitones, 10 antorchas, un yesquero, raciones para 10 días, un odre y 50 pies de cuerda de cáñamo."
+    },
+    "tags": [],
+    "data": {
+      "costGp": 12
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "adventuring-pack",
+    "key": "entertainers-pack",
+    "label": {
+      "en": "Entertainer's pack",
+      "fr": "Sac d'artiste",
+      "es": "Equipo de artista"
+    },
+    "description": {
+      "en": "A backpack, a bedroll, 2 costumes, 5 candles, 5 days of rations, a waterskin and a disguise kit.",
+      "fr": "Un sac à dos, un sac de couchage, 2 costumes, 5 bougies, 5 jours de rations, une gourde et un kit de déguisement.",
+      "es": "Una mochila, un petate, 2 disfraces, 5 velas, raciones para 5 días, un odre y útiles para disfrazarse."
+    },
+    "tags": [],
+    "data": {
+      "costGp": 40
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "adventuring-pack",
+    "key": "explorers-pack",
+    "label": {
+      "en": "Explorer's pack",
+      "fr": "Sac d'explorateur",
+      "es": "Equipo de explorador"
+    },
+    "description": {
+      "en": "A backpack, a bedroll, a mess kit, a tinderbox, 10 torches, 10 days of rations, a waterskin and 50 feet of hempen rope.",
+      "fr": "Un sac à dos, un sac de couchage, une gamelle, une boîte à amadou, 10 torches, 10 jours de rations, une gourde et une corde de chanvre de 15 m.",
+      "es": "Una mochila, un petate, un juego de cocina, un yesquero, 10 antorchas, raciones para 10 días, un odre y 50 pies de cuerda de cáñamo."
+    },
+    "tags": [],
+    "data": {
+      "costGp": 10
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "adventuring-pack",
+    "key": "priests-pack",
+    "label": {
+      "en": "Priest's pack",
+      "fr": "Sac d'ecclésiastique",
+      "es": "Equipo de sacerdote"
+    },
+    "description": {
+      "en": "A backpack, a blanket, 10 candles, a tinderbox, an alms box, 2 blocks of incense, a censer, vestments, 2 days of rations and a waterskin.",
+      "fr": "Un sac à dos, une couverture, 10 bougies, une boîte à amadou, un tronc à aumônes, 2 pains d'encens, un encensoir, des habits de cérémonie, 2 jours de rations et une gourde.",
+      "es": "Una mochila, una manta, 10 velas, un yesquero, un cepillo para limosnas, 2 bloques de incienso, un incensario, vestiduras, raciones para 2 días y un odre."
+    },
+    "tags": [],
+    "data": {
+      "costGp": 19
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "adventuring-pack",
+    "key": "scholars-pack",
+    "label": {
+      "en": "Scholar's pack",
+      "fr": "Sac d'érudit",
+      "es": "Equipo de erudito"
+    },
+    "description": {
+      "en": "A backpack, a book of lore, a bottle of ink, an ink pen, 10 sheets of parchment, a little bag of sand and a small knife.",
+      "fr": "Un sac à dos, un livre de savoir, une bouteille d'encre, une plume, 10 feuilles de parchemin, un petit sac de sable et un petit couteau.",
+      "es": "Una mochila, un libro de saber, un frasco de tinta, una pluma, 10 hojas de pergamino, una bolsita de arena y un cuchillo pequeño."
+    },
+    "tags": [],
+    "data": {
+      "costGp": 40
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "equipment-pack",
+    "key": "barbarian-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 4,
+            "key": "javelin"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["javelin"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "barbarian-equipment-weapon-1",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "barbarian-equipment-greataxe",
+            "barbarian-equipment-martial-melee"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "barbarian-equipment-weapon-2",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["barbarian-equipment-handaxes", "barbarian-equipment-simple"]
+        },
+        "count": 1
+      },
+      {
+        "id": "barbarian-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "barbarian-equipment-greataxe",
+    "label": {
+      "en": "A greataxe",
+      "fr": "Une hache à deux mains",
+      "es": "Una gran hacha"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "greataxe"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["greataxe"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "barbarian-equipment-martial-melee",
+    "label": {
+      "en": "Any martial melee weapon",
+      "fr": "Une arme de guerre de corps à corps",
+      "es": "Un arma marcial cuerpo a cuerpo"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "barbarian-martial-melee",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "battleaxe",
+            "flail",
+            "glaive",
+            "greataxe",
+            "greatsword",
+            "halberd",
+            "lance",
+            "longsword",
+            "maul",
+            "morningstar",
+            "pike",
+            "rapier",
+            "scimitar",
+            "shortsword",
+            "trident",
+            "war-pick",
+            "warhammer",
+            "whip"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "barbarian-equipment-handaxes",
+    "label": {
+      "en": "Two handaxes",
+      "fr": "Deux hachettes",
+      "es": "Dos hachas de mano"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 2,
+            "key": "handaxe"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["handaxe"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "barbarian-equipment-simple",
+    "label": {
+      "en": "Any simple weapon",
+      "fr": "Une arme courante",
+      "es": "Un arma sencilla"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "barbarian-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-pack",
+    "key": "bard-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "leather-armor"
+          },
+          {
+            "quantity": 1,
+            "key": "dagger"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["dagger"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "bard-equipment-weapon",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "bard-equipment-rapier",
+            "bard-equipment-longsword",
+            "bard-equipment-simple"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "bard-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["diplomats-pack", "entertainers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bard-equipment-instrument",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["bard-equipment-lute", "bard-equipment-instrument"]
+        },
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "bard-equipment-rapier",
+    "label": {
+      "en": "A rapier",
+      "fr": "Une rapière",
+      "es": "Un estoque"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "rapier"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["rapier"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "bard-equipment-longsword",
+    "label": {
+      "en": "A longsword",
+      "fr": "Une épée longue",
+      "es": "Una espada larga"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "longsword"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["longsword"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "bard-equipment-simple",
+    "label": {
+      "en": "Any simple weapon",
+      "fr": "Une arme courante",
+      "es": "Un arma sencilla"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "bard-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "bard-equipment-lute",
+    "label": {
+      "en": "A lute",
+      "fr": "Un luth",
+      "es": "Un laúd"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "lute"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "bard-equipment-instrument",
+    "label": {
+      "en": "Any other musical instrument",
+      "fr": "Un autre instrument de musique",
+      "es": "Otro instrumento musical"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "bard-instrument-item",
+        "kind": "choose",
+        "from": {
+          "type": "tool",
+          "keys": [
+            "bagpipes",
+            "drum",
+            "dulcimer",
+            "flute",
+            "lute",
+            "lyre",
+            "horn",
+            "pan-flute",
+            "shawm",
+            "viol"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-pack",
+    "key": "cleric-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "shield"
+          },
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Holy symbol",
+              "fr": "Symbole sacré",
+              "es": "Símbolo sagrado"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": [
+      {
+        "id": "cleric-equipment-weapon",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["cleric-equipment-mace", "cleric-equipment-warhammer"]
+        },
+        "count": 1
+      },
+      {
+        "id": "cleric-equipment-armor",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "cleric-equipment-scale-mail",
+            "cleric-equipment-leather",
+            "cleric-equipment-chain-mail"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "cleric-equipment-ranged",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["cleric-equipment-crossbow", "cleric-equipment-simple"]
+        },
+        "count": 1
+      },
+      {
+        "id": "cleric-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["priests-pack", "explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "cleric-equipment-mace",
+    "label": {
+      "en": "A mace",
+      "fr": "Une masse d'armes",
+      "es": "Una maza"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "mace"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["mace"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "cleric-equipment-warhammer",
+    "label": {
+      "en": "A warhammer (if proficient)",
+      "fr": "Un marteau de guerre (si maîtrisé)",
+      "es": "Un martillo de guerra (si eres competente)"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "warhammer"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["warhammer"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "cleric-equipment-scale-mail",
+    "label": {
+      "en": "Scale mail",
+      "fr": "Armure d'écailles",
+      "es": "Cota de escamas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "scale-mail"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "cleric-equipment-leather",
+    "label": {
+      "en": "Leather armor",
+      "fr": "Armure de cuir",
+      "es": "Armadura de cuero"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "leather-armor"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "cleric-equipment-chain-mail",
+    "label": {
+      "en": "Chain mail (if proficient)",
+      "fr": "Cotte de mailles (si maîtrisée)",
+      "es": "Cota de mallas (si eres competente)"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "chain-mail"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "cleric-equipment-crossbow",
+    "label": {
+      "en": "A light crossbow and 20 bolts",
+      "fr": "Une arbalète légère et 20 carreaux",
+      "es": "Una ballesta ligera y 20 virotes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "light-crossbow"
+          },
+          {
+            "quantity": 20,
+            "label": {
+              "en": "Crossbow bolts",
+              "fr": "Carreaux d'arbalète",
+              "es": "Virotes"
+            }
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["light-crossbow"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "cleric-equipment-simple",
+    "label": {
+      "en": "Any simple weapon",
+      "fr": "Une arme courante",
+      "es": "Un arma sencilla"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "cleric-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-pack",
+    "key": "druid-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "leather-armor"
+          },
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Druidic focus",
+              "fr": "Focaliseur druidique",
+              "es": "Canalizador druídico"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": [
+      {
+        "id": "druid-equipment-shield",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["druid-equipment-shield", "druid-equipment-simple"]
+        },
+        "count": 1
+      },
+      {
+        "id": "druid-equipment-weapon",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["druid-equipment-scimitar", "druid-equipment-simple-melee"]
+        },
+        "count": 1
+      },
+      {
+        "id": "druid-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "druid-equipment-shield",
+    "label": {
+      "en": "A wooden shield",
+      "fr": "Un bouclier en bois",
+      "es": "Un escudo de madera"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "shield"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "druid-equipment-simple",
+    "label": {
+      "en": "Any simple weapon",
+      "fr": "Une arme courante",
+      "es": "Un arma sencilla"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "druid-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "druid-equipment-scimitar",
+    "label": {
+      "en": "A scimitar",
+      "fr": "Un cimeterre",
+      "es": "Una cimitarra"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "scimitar"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["scimitar"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "druid-equipment-simple-melee",
+    "label": {
+      "en": "Any simple melee weapon",
+      "fr": "Une arme courante de corps à corps",
+      "es": "Un arma sencilla cuerpo a cuerpo"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "druid-simple-melee",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-pack",
+    "key": "fighter-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "fighter-equipment-armor",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "fighter-equipment-chain-mail",
+            "fighter-equipment-leather-longbow"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "fighter-equipment-weapons",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "fighter-equipment-martial-shield",
+            "fighter-equipment-two-martial"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "fighter-equipment-ranged",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["fighter-equipment-crossbow", "fighter-equipment-handaxes"]
+        },
+        "count": 1
+      },
+      {
+        "id": "fighter-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["dungeoneers-pack", "explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "fighter-equipment-chain-mail",
+    "label": {
+      "en": "Chain mail",
+      "fr": "Cotte de mailles",
+      "es": "Cota de mallas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "chain-mail"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "fighter-equipment-leather-longbow",
+    "label": {
+      "en": "Leather armor, longbow and 20 arrows",
+      "fr": "Armure de cuir, arc long et 20 flèches",
+      "es": "Armadura de cuero, arco largo y 20 flechas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "leather-armor"
+          },
+          {
+            "quantity": 1,
+            "key": "longbow"
+          },
+          {
+            "quantity": 20,
+            "label": {
+              "en": "Arrows",
+              "fr": "Flèches",
+              "es": "Flechas"
+            }
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["longbow"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "fighter-equipment-martial-shield",
+    "label": {
+      "en": "A martial weapon and a shield",
+      "fr": "Une arme de guerre et un bouclier",
+      "es": "Un arma marcial y un escudo"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "shield"
+          }
+        ]
+      }
+    ],
+    "grants": [
+      {
+        "id": "fighter-martial-1",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "battleaxe",
+            "flail",
+            "glaive",
+            "greataxe",
+            "greatsword",
+            "halberd",
+            "lance",
+            "longsword",
+            "maul",
+            "morningstar",
+            "pike",
+            "rapier",
+            "scimitar",
+            "shortsword",
+            "trident",
+            "war-pick",
+            "warhammer",
+            "whip",
+            "blowgun",
+            "hand-crossbow",
+            "heavy-crossbow",
+            "longbow",
+            "net"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "fighter-equipment-two-martial",
+    "label": {
+      "en": "Two martial weapons",
+      "fr": "Deux armes de guerre",
+      "es": "Dos armas marciales"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "fighter-martial-2",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "battleaxe",
+            "flail",
+            "glaive",
+            "greataxe",
+            "greatsword",
+            "halberd",
+            "lance",
+            "longsword",
+            "maul",
+            "morningstar",
+            "pike",
+            "rapier",
+            "scimitar",
+            "shortsword",
+            "trident",
+            "war-pick",
+            "warhammer",
+            "whip",
+            "blowgun",
+            "hand-crossbow",
+            "heavy-crossbow",
+            "longbow",
+            "net"
+          ]
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "fighter-equipment-crossbow",
+    "label": {
+      "en": "A light crossbow and 20 bolts",
+      "fr": "Une arbalète légère et 20 carreaux",
+      "es": "Una ballesta ligera y 20 virotes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "light-crossbow"
+          },
+          {
+            "quantity": 20,
+            "label": {
+              "en": "Crossbow bolts",
+              "fr": "Carreaux d'arbalète",
+              "es": "Virotes"
+            }
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["light-crossbow"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "fighter-equipment-handaxes",
+    "label": {
+      "en": "Two handaxes",
+      "fr": "Deux hachettes",
+      "es": "Dos hachas de mano"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 2,
+            "key": "handaxe"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["handaxe"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-pack",
+    "key": "monk-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 10,
+            "key": "dart"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["dart"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "monk-equipment-weapon",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["monk-equipment-shortsword", "monk-equipment-simple"]
+        },
+        "count": 1
+      },
+      {
+        "id": "monk-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["dungeoneers-pack", "explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "monk-equipment-shortsword",
+    "label": {
+      "en": "A shortsword",
+      "fr": "Une épée courte",
+      "es": "Una espada corta"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "shortsword"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["shortsword"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "monk-equipment-simple",
+    "label": {
+      "en": "Any simple weapon",
+      "fr": "Une arme courante",
+      "es": "Un arma sencilla"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "monk-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-pack",
+    "key": "paladin-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "chain-mail"
+          },
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Holy symbol",
+              "fr": "Symbole sacré",
+              "es": "Símbolo sagrado"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": [
+      {
+        "id": "paladin-equipment-weapons",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "paladin-equipment-martial-shield",
+            "paladin-equipment-two-martial"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "paladin-equipment-secondary",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "paladin-equipment-javelins",
+            "paladin-equipment-simple-melee"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "paladin-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["priests-pack", "explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "paladin-equipment-martial-shield",
+    "label": {
+      "en": "A martial weapon and a shield",
+      "fr": "Une arme de guerre et un bouclier",
+      "es": "Un arma marcial y un escudo"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "shield"
+          }
+        ]
+      }
+    ],
+    "grants": [
+      {
+        "id": "paladin-martial-1",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "battleaxe",
+            "flail",
+            "glaive",
+            "greataxe",
+            "greatsword",
+            "halberd",
+            "lance",
+            "longsword",
+            "maul",
+            "morningstar",
+            "pike",
+            "rapier",
+            "scimitar",
+            "shortsword",
+            "trident",
+            "war-pick",
+            "warhammer",
+            "whip",
+            "blowgun",
+            "hand-crossbow",
+            "heavy-crossbow",
+            "longbow",
+            "net"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "paladin-equipment-two-martial",
+    "label": {
+      "en": "Two martial weapons",
+      "fr": "Deux armes de guerre",
+      "es": "Dos armas marciales"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "paladin-martial-2",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "battleaxe",
+            "flail",
+            "glaive",
+            "greataxe",
+            "greatsword",
+            "halberd",
+            "lance",
+            "longsword",
+            "maul",
+            "morningstar",
+            "pike",
+            "rapier",
+            "scimitar",
+            "shortsword",
+            "trident",
+            "war-pick",
+            "warhammer",
+            "whip",
+            "blowgun",
+            "hand-crossbow",
+            "heavy-crossbow",
+            "longbow",
+            "net"
+          ]
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "paladin-equipment-javelins",
+    "label": {
+      "en": "Five javelins",
+      "fr": "Cinq javelines",
+      "es": "Cinco jabalinas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 5,
+            "key": "javelin"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["javelin"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "paladin-equipment-simple-melee",
+    "label": {
+      "en": "Any simple melee weapon",
+      "fr": "Une arme courante de corps à corps",
+      "es": "Un arma sencilla cuerpo a cuerpo"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "paladin-simple-melee",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-pack",
+    "key": "ranger-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "longbow"
+          },
+          {
+            "quantity": 20,
+            "label": {
+              "en": "Arrows",
+              "fr": "Flèches",
+              "es": "Flechas"
+            }
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["longbow"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "ranger-equipment-armor",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["ranger-equipment-scale-mail", "ranger-equipment-leather"]
+        },
+        "count": 1
+      },
+      {
+        "id": "ranger-equipment-weapons",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "ranger-equipment-shortswords",
+            "ranger-equipment-simple-melee"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "ranger-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["dungeoneers-pack", "explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "ranger-equipment-scale-mail",
+    "label": {
+      "en": "Scale mail",
+      "fr": "Armure d'écailles",
+      "es": "Cota de escamas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "scale-mail"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "ranger-equipment-leather",
+    "label": {
+      "en": "Leather armor",
+      "fr": "Armure de cuir",
+      "es": "Armadura de cuero"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "leather-armor"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "ranger-equipment-shortswords",
+    "label": {
+      "en": "Two shortswords",
+      "fr": "Deux épées courtes",
+      "es": "Dos espadas cortas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 2,
+            "key": "shortsword"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["shortsword"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "ranger-equipment-simple-melee",
+    "label": {
+      "en": "Two simple melee weapons",
+      "fr": "Deux armes courantes de corps à corps",
+      "es": "Dos armas sencillas cuerpo a cuerpo"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "ranger-simple-melee",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear"
+          ]
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-pack",
+    "key": "rogue-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "leather-armor"
+          },
+          {
+            "quantity": 2,
+            "key": "dagger"
+          },
+          {
+            "quantity": 1,
+            "key": "thieves-tools"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["dagger"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "rogue-equipment-weapon",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["rogue-equipment-rapier", "rogue-equipment-shortsword"]
+        },
+        "count": 1
+      },
+      {
+        "id": "rogue-equipment-ranged",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "rogue-equipment-shortbow",
+            "rogue-equipment-second-shortsword"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "rogue-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["burglars-pack", "dungeoneers-pack", "explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "rogue-equipment-rapier",
+    "label": {
+      "en": "A rapier",
+      "fr": "Une rapière",
+      "es": "Un estoque"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "rapier"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["rapier"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "rogue-equipment-shortsword",
+    "label": {
+      "en": "A shortsword",
+      "fr": "Une épée courte",
+      "es": "Una espada corta"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "shortsword"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["shortsword"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "rogue-equipment-shortbow",
+    "label": {
+      "en": "A shortbow and 20 arrows",
+      "fr": "Un arc court et 20 flèches",
+      "es": "Un arco corto y 20 flechas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "shortbow"
+          },
+          {
+            "quantity": 20,
+            "label": {
+              "en": "Arrows",
+              "fr": "Flèches",
+              "es": "Flechas"
+            }
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["shortbow"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "rogue-equipment-second-shortsword",
+    "label": {
+      "en": "A shortsword",
+      "fr": "Une épée courte",
+      "es": "Una espada corta"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "shortsword"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["shortsword"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-pack",
+    "key": "sorcerer-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "sorcerer",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 2,
+            "key": "dagger"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["dagger"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "sorcerer-equipment-weapon",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["sorcerer-equipment-crossbow", "sorcerer-equipment-simple"]
+        },
+        "count": 1
+      },
+      {
+        "id": "sorcerer-equipment-focus",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["sorcerer-equipment-pouch", "sorcerer-equipment-focus"]
+        },
+        "count": 1
+      },
+      {
+        "id": "sorcerer-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["dungeoneers-pack", "explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "sorcerer-equipment-crossbow",
+    "label": {
+      "en": "A light crossbow and 20 bolts",
+      "fr": "Une arbalète légère et 20 carreaux",
+      "es": "Una ballesta ligera y 20 virotes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "light-crossbow"
+          },
+          {
+            "quantity": 20,
+            "label": {
+              "en": "Crossbow bolts",
+              "fr": "Carreaux d'arbalète",
+              "es": "Virotes"
+            }
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["light-crossbow"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "sorcerer-equipment-simple",
+    "label": {
+      "en": "Any simple weapon",
+      "fr": "Une arme courante",
+      "es": "Un arma sencilla"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "sorcerer-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "sorcerer-equipment-pouch",
+    "label": {
+      "en": "A component pouch",
+      "fr": "Une sacoche à composantes",
+      "es": "Una bolsa de componentes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Component pouch",
+              "fr": "Sacoche à composantes",
+              "es": "Bolsa de componentes"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "sorcerer-equipment-focus",
+    "label": {
+      "en": "An arcane focus",
+      "fr": "Un focaliseur arcanique",
+      "es": "Un canalizador arcano"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Arcane focus",
+              "fr": "Focaliseur arcanique",
+              "es": "Canalizador arcano"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-pack",
+    "key": "warlock-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "leather-armor"
+          },
+          {
+            "quantity": 2,
+            "key": "dagger"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["dagger"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "warlock-equipment-weapon",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["warlock-equipment-crossbow", "warlock-equipment-simple"]
+        },
+        "count": 1
+      },
+      {
+        "id": "warlock-equipment-focus",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["warlock-equipment-pouch", "warlock-equipment-focus"]
+        },
+        "count": 1
+      },
+      {
+        "id": "warlock-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["scholars-pack", "dungeoneers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "warlock-extra-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "warlock-equipment-crossbow",
+    "label": {
+      "en": "A light crossbow and 20 bolts",
+      "fr": "Une arbalète légère et 20 carreaux",
+      "es": "Una ballesta ligera y 20 virotes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "light-crossbow"
+          },
+          {
+            "quantity": 20,
+            "label": {
+              "en": "Crossbow bolts",
+              "fr": "Carreaux d'arbalète",
+              "es": "Virotes"
+            }
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["light-crossbow"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "warlock-equipment-simple",
+    "label": {
+      "en": "Any simple weapon",
+      "fr": "Une arme courante",
+      "es": "Un arma sencilla"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "warlock-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "warlock-equipment-pouch",
+    "label": {
+      "en": "A component pouch",
+      "fr": "Une sacoche à composantes",
+      "es": "Una bolsa de componentes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Component pouch",
+              "fr": "Sacoche à composantes",
+              "es": "Bolsa de componentes"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "warlock-equipment-focus",
+    "label": {
+      "en": "An arcane focus",
+      "fr": "Un focaliseur arcanique",
+      "es": "Un canalizador arcano"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Arcane focus",
+              "fr": "Focaliseur arcanique",
+              "es": "Canalizador arcano"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-pack",
+    "key": "wizard-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Spellbook",
+              "fr": "Grimoire",
+              "es": "Libro de conjuros"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": [
+      {
+        "id": "wizard-equipment-weapon",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["wizard-equipment-quarterstaff", "wizard-equipment-dagger"]
+        },
+        "count": 1
+      },
+      {
+        "id": "wizard-equipment-focus",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": ["wizard-equipment-pouch", "wizard-equipment-focus"]
+        },
+        "count": 1
+      },
+      {
+        "id": "wizard-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["scholars-pack", "explorers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "wizard-equipment-quarterstaff",
+    "label": {
+      "en": "A quarterstaff",
+      "fr": "Un bâton",
+      "es": "Un bastón"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "quarterstaff"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["quarterstaff"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "wizard-equipment-dagger",
+    "label": {
+      "en": "A dagger",
+      "fr": "Une dague",
+      "es": "Una daga"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "dagger"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["dagger"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "wizard-equipment-pouch",
+    "label": {
+      "en": "A component pouch",
+      "fr": "Une sacoche à composantes",
+      "es": "Una bolsa de componentes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Component pouch",
+              "fr": "Sacoche à composantes",
+              "es": "Bolsa de componentes"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "wizard-equipment-focus",
+    "label": {
+      "en": "An arcane focus",
+      "fr": "Un focaliseur arcanique",
+      "es": "Un canalizador arcano"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "label": {
+              "en": "Arcane focus",
+              "fr": "Focaliseur arcanique",
+              "es": "Canalizador arcano"
+            }
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-pack",
+    "key": "artificer-starting-equipment",
+    "label": {
+      "en": "Starting equipment",
+      "fr": "Équipement de départ",
+      "es": "Equipo inicial"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "Starting equipment of the class. Each choice is a suggestion you can change on the sheet.",
+      "fr": "Équipement de départ de la classe. Chaque choix est une suggestion modifiable ensuite sur la fiche.",
+      "es": "Equipo inicial de la clase. Cada elección es una sugerencia que puedes cambiar en la hoja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "light-crossbow"
+          },
+          {
+            "quantity": 20,
+            "label": {
+              "en": "Crossbow bolts",
+              "fr": "Carreaux d'arbalète",
+              "es": "Virotes"
+            }
+          },
+          {
+            "quantity": 1,
+            "key": "thieves-tools"
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "attackWeapons",
+        "value": ["light-crossbow"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "artificer-simple",
+        "kind": "choose",
+        "from": {
+          "type": "weapon",
+          "keys": [
+            "club",
+            "dagger",
+            "greatclub",
+            "handaxe",
+            "javelin",
+            "light-hammer",
+            "mace",
+            "quarterstaff",
+            "sickle",
+            "spear",
+            "light-crossbow",
+            "dart",
+            "shortbow",
+            "sling"
+          ]
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          },
+          {
+            "op": "grant",
+            "target": "attackWeapons",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "artificer-equipment-armor",
+        "kind": "choose",
+        "from": {
+          "type": "equipment-option",
+          "keys": [
+            "artificer-equipment-studded",
+            "artificer-equipment-scale-mail"
+          ]
+        },
+        "count": 1
+      },
+      {
+        "id": "artificer-pack",
+        "kind": "choose",
+        "from": {
+          "type": "adventuring-pack",
+          "keys": ["dungeoneers-pack"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "equipment",
+            "value": [
+              {
+                "key": "{key}",
+                "quantity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "equipment-option",
+    "key": "artificer-equipment-studded",
+    "label": {
+      "en": "Studded leather armor",
+      "fr": "Armure de cuir clouté",
+      "es": "Armadura de cuero tachonado"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "studded-leather-armor"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "equipment-option",
+    "key": "artificer-equipment-scale-mail",
+    "label": {
+      "en": "Scale mail",
+      "fr": "Armure d'écailles",
+      "es": "Cota de escamas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "quantity": 1,
+            "key": "scale-mail"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  }
+]

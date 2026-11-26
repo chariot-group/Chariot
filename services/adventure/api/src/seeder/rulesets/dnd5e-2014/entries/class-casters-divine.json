@@ -1,0 +1,1431 @@
+[
+  {
+    "type": "class",
+    "key": "bard",
+    "label": {
+      "en": "Bard",
+      "fr": "Barde",
+      "es": "Bardo"
+    },
+    "description": {
+      "en": "An inspiring performer whose music and words weave magic, support allies and master many skills.",
+      "fr": "Un artiste inspirant dont la musique et les mots tissent la magie, soutiennent ses alliés et maîtrisent de nombreuses compétences.",
+      "es": "Un artista inspirador cuya música y palabras tejen magia, apoyan a sus aliados y dominan muchas habilidades."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Bard",
+      "hitDie": 8,
+      "primaryAbilities": ["charisma"],
+      "savingThrows": ["dexterity", "charisma"],
+      "multiclassPrerequisite": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "charisma"
+              },
+              13
+            ]
+          }
+        ]
+      },
+      "subclassLevel": 3,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "charisma",
+        "preparation": "known",
+        "slots": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ],
+        "maxSpellLevelByLevel": [
+          1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9
+        ],
+        "cantripsKnown": [
+          2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+        ],
+        "spellsKnown": [
+          4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 15, 16, 18, 19, 19, 20, 22, 22,
+          22
+        ],
+        "preparedLevel": "full",
+        "ritualCasting": true,
+        "focus": "musical instrument"
+      },
+      "startingGoldDice": "5d4 x 10 gp"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.dexterity",
+        "value": true,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.charisma",
+        "value": true,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor"],
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": [
+          "simple-weapons",
+          "hand-crossbow",
+          "longsword",
+          "rapier",
+          "shortsword"
+        ],
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor"],
+        "when": {
+          "var": ["state.multiclassing", false]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ability",
+        "value": "charisma"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.preparation",
+        "value": "known"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.cantripsKnown",
+        "value": [2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.spellsKnown",
+        "value": [
+          4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 15, 16, 18, 19, 19, 20, 22, 22,
+          22
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.maxSpellLevelByLevel",
+        "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "jackOfAllTrades",
+        "value": true,
+        "when": {
+          ">=": [
+            {
+              "var": ["state.classLevels.bard", 0]
+            },
+            2
+          ]
+        }
+      }
+    ],
+    "grants": [
+      {
+        "id": "bard-skills",
+        "kind": "choose",
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion"
+          ]
+        },
+        "count": 3,
+        "level": 1,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "bard-multiclass-skill",
+        "kind": "choose",
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion"
+          ]
+        },
+        "count": 1,
+        "level": 1,
+        "when": {
+          "var": ["state.multiclassing", false]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "bard-subclass",
+        "kind": "choose",
+        "from": {
+          "type": "subclass",
+          "parentKey": "bard"
+        },
+        "count": 1,
+        "level": 3
+      },
+      {
+        "id": "bard-asi-4",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "bard-asi-8",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "bard-asi-12",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "bard-asi-16",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "bard-asi-19",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "bard-instruments",
+        "kind": "choose",
+        "from": {
+          "type": "tool",
+          "keys": [
+            "bagpipes",
+            "drum",
+            "dulcimer",
+            "flute",
+            "lute",
+            "lyre",
+            "horn",
+            "pan-flute",
+            "shawm",
+            "viol"
+          ]
+        },
+        "count": 3,
+        "level": 1,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        },
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "bard-multiclass-instrument",
+        "kind": "choose",
+        "from": {
+          "type": "tool",
+          "keys": [
+            "bagpipes",
+            "drum",
+            "dulcimer",
+            "flute",
+            "lute",
+            "lyre",
+            "horn",
+            "pan-flute",
+            "shawm",
+            "viol"
+          ]
+        },
+        "count": 1,
+        "level": 1,
+        "when": {
+          "var": ["state.multiclassing", false]
+        },
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "bard-expertise-3",
+        "kind": "choose",
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion"
+          ]
+        },
+        "count": 2,
+        "level": 3,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "id": "bard-expertise-10",
+        "kind": "choose",
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion"
+          ]
+        },
+        "count": 2,
+        "level": 10,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "bard-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "You cast spells using Charisma, with a musical instrument as focus. You know two cantrips (three at 4th level, four at 10th) and four 1st-level spells, learning more as you level; each time you gain a level, you can replace one known spell. You can cast known ritual spells as rituals.",
+      "fr": "Tu lances des sorts grâce au Charisme, avec un instrument de musique comme focaliseur. Tu connais deux sorts mineurs (trois au niveau 4, quatre au niveau 10) et quatre sorts de niveau 1, et en apprends d'autres en progressant ; à chaque niveau, tu peux remplacer un sort connu. Tu peux lancer comme rituels les sorts rituels que tu connais.",
+      "es": "Lanzas conjuros con Carisma, con un instrumento musical como canalizador. Conoces dos trucos (tres en el nivel 4, cuatro en el 10) y cuatro conjuros de nivel 1, y aprendes más al subir de nivel; cada vez que subes de nivel puedes sustituir un conjuro conocido. Puedes lanzar como rituales los conjuros rituales que conozcas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "bardic-inspiration",
+    "label": {
+      "en": "Bardic Inspiration",
+      "fr": "Inspiration bardique",
+      "es": "Inspiración bárdica"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "As a bonus action, choose one creature other than you within 60 feet that can hear you: it gains a Bardic Inspiration die (d6). Within 10 minutes, it can add the die to one ability check, attack roll or saving throw after seeing the roll. You can use this a number of times equal to your Charisma modifier (minimum 1). The die becomes a d8 at 5th level, d10 at 10th and d12 at 15th. Uses return after a long rest (after a short or long rest from 5th level).",
+      "fr": "Par une action bonus, choisis une créature autre que toi à 18 m qui peut t'entendre : elle gagne un dé d'inspiration bardique (d6). Dans les 10 minutes, elle peut ajouter ce dé à un test de caractéristique, un jet d'attaque ou un jet de sauvegarde après avoir vu le résultat. Tu peux le faire un nombre de fois égal à ton modificateur de Charisme (minimum 1). Le dé devient un d8 au niveau 5, un d10 au niveau 10 et un d12 au niveau 15. Les utilisations reviennent après un repos long (après un repos court ou long à partir du niveau 5).",
+      "es": "Como acción adicional, elige a una criatura distinta de ti a 60 pies que pueda oírte: obtiene un dado de inspiración bárdica (d6). En los 10 minutos siguientes puede sumarlo a una prueba de característica, tirada de ataque o de salvación tras ver el resultado. Puedes hacerlo tantas veces como tu modificador de Carisma (mínimo 1). El dado pasa a d8 en el nivel 5, d10 en el 10 y d12 en el 15. Los usos vuelven tras un descanso largo (corto o largo a partir del nivel 5)."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "inspirationDie": [
+        6, 6, 6, 6, 8, 8, 8, 8, 8, 10, 10, 10, 10, 10, 12, 12, 12, 12, 12, 12
+      ],
+      "uses": {
+        "count": {
+          "max": [
+            1,
+            {
+              "var": "charismaModifier"
+            }
+          ]
+        },
+        "reset": "long",
+        "shortRestFromLevel": 5
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "jack-of-all-trades",
+    "label": {
+      "en": "Jack of All Trades",
+      "fr": "Touche-à-tout",
+      "es": "Aprendiz de mucho"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "You can add half your proficiency bonus, rounded down, to any ability check you make that doesn't already include your proficiency bonus.",
+      "fr": "Tu peux ajouter la moitié de ton bonus de maîtrise, arrondie à l'inférieur, à tout test de caractéristique qui n'inclut pas déjà ton bonus de maîtrise.",
+      "es": "Puedes sumar la mitad de tu bonificador por competencia, redondeando hacia abajo, a cualquier prueba de característica que no lo incluya ya."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "song-of-rest",
+    "label": {
+      "en": "Song of Rest",
+      "fr": "Chant reposant",
+      "es": "Canción de descanso"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "During a short rest, if you or friendly creatures who can hear your performance regain hit points by spending Hit Dice, each of them regains an extra 1d6 hit points (1d8 at 9th level, 1d10 at 13th, 1d12 at 17th).",
+      "fr": "Pendant un repos court, si toi ou des créatures amies qui entendent ta représentation récupérez des points de vie en dépensant des dés de vie, chacune récupère 1d6 points de vie supplémentaires (1d8 au niveau 9, 1d10 au niveau 13, 1d12 au niveau 17).",
+      "es": "Durante un descanso corto, si tú o criaturas amistosas que oigan tu actuación recuperáis puntos de golpe gastando Dados de Golpe, cada una recupera 1d6 puntos de golpe adicionales (1d8 en el nivel 9, 1d10 en el 13, 1d12 en el 17)."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "songDie": [
+        0, 6, 6, 6, 6, 6, 6, 6, 8, 8, 8, 8, 10, 10, 10, 10, 12, 12, 12, 12
+      ]
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "bard-expertise",
+    "label": {
+      "en": "Expertise",
+      "fr": "Expertise",
+      "es": "Pericia"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "Choose two of your skill proficiencies: your proficiency bonus is doubled for any ability check using them. At 10th level, choose two more.",
+      "fr": "Choisis deux de tes compétences maîtrisées : ton bonus de maîtrise est doublé pour tout test qui les utilise. Au niveau 10, choisis-en deux de plus.",
+      "es": "Elige dos de tus habilidades con competencia: tu bonificador por competencia se duplica en cualquier prueba que las use. En el nivel 10, elige dos más."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "font-of-inspiration",
+    "label": {
+      "en": "Font of Inspiration",
+      "fr": "Source d'inspiration",
+      "es": "Fuente de inspiración"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "You regain all of your expended uses of Bardic Inspiration when you finish a short or long rest.",
+      "fr": "Tu récupères toutes tes utilisations d'Inspiration bardique après un repos court ou long.",
+      "es": "Recuperas todos los usos gastados de Inspiración bárdica tras un descanso corto o largo."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "countercharm",
+    "label": {
+      "en": "Countercharm",
+      "fr": "Contre-charme",
+      "es": "Contraencantamiento"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "As an action, you start a performance that lasts until the end of your next turn. During that time, you and friendly creatures within 30 feet have advantage on saving throws against being frightened or charmed, if they can hear you.",
+      "fr": "Par une action, tu commences une représentation qui dure jusqu'à la fin de ton prochain tour. Pendant ce temps, toi et les créatures amies à 9 m qui t'entendent avez l'avantage aux jets de sauvegarde contre les états effrayé et charmé.",
+      "es": "Como acción, empiezas una actuación que dura hasta el final de tu siguiente turno. Durante ese tiempo, tú y las criaturas amistosas a 30 pies que te oigan tenéis ventaja en las tiradas de salvación para evitar ser asustados o hechizados."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "magical-secrets",
+    "label": {
+      "en": "Magical Secrets",
+      "fr": "Secrets magiques",
+      "es": "Secretos mágicos"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "Choose two spells from any class's spell list, including cantrips, of a level you can cast. They count as bard spells for you and are included in your spells known. You learn two more at 14th and 18th level.",
+      "fr": "Choisis deux sorts de n'importe quelle liste de classe, sorts mineurs compris, d'un niveau que tu peux lancer. Ils comptent pour toi comme des sorts de barde et font partie de tes sorts connus. Tu en apprends deux de plus aux niveaux 14 et 18.",
+      "es": "Elige dos conjuros de la lista de cualquier clase, trucos incluidos, de un nivel que puedas lanzar. Cuentan para ti como conjuros de bardo y se incluyen en tus conjuros conocidos. Aprendes dos más en los niveles 14 y 18."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "superior-inspiration",
+    "label": {
+      "en": "Superior Inspiration",
+      "fr": "Inspiration supérieure",
+      "es": "Inspiración superior"
+    },
+    "parentKey": "bard",
+    "description": {
+      "en": "When you roll initiative and have no uses of Bardic Inspiration left, you regain one use.",
+      "fr": "Lorsque tu lances l'initiative et qu'il ne te reste aucune utilisation d'Inspiration bardique, tu en récupères une.",
+      "es": "Cuando tiras iniciativa y no te quedan usos de Inspiración bárdica, recuperas uno."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "cleric",
+    "label": {
+      "en": "Cleric",
+      "fr": "Clerc",
+      "es": "Clérigo"
+    },
+    "description": {
+      "en": "A priestly champion who wields divine magic granted by a deity to heal, protect and smite.",
+      "fr": "Un champion sacerdotal qui manie la magie divine accordée par une divinité pour soigner, protéger et châtier.",
+      "es": "Un campeón sacerdotal que empuña la magia divina concedida por una deidad para curar, proteger y castigar."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Cleric",
+      "hitDie": 8,
+      "primaryAbilities": ["wisdom"],
+      "savingThrows": ["wisdom", "charisma"],
+      "multiclassPrerequisite": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "wisdom"
+              },
+              13
+            ]
+          }
+        ]
+      },
+      "subclassLevel": 1,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "wisdom",
+        "preparation": "prepared",
+        "slots": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ],
+        "maxSpellLevelByLevel": [
+          1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9
+        ],
+        "cantripsKnown": [
+          3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+        ],
+        "spellsKnown": null,
+        "preparedLevel": "full",
+        "ritualCasting": true,
+        "focus": "holy symbol"
+      },
+      "startingGoldDice": "5d4 x 10 gp"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.wisdom",
+        "value": true,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.charisma",
+        "value": true,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons"],
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "var": ["state.multiclassing", false]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ability",
+        "value": "wisdom"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.preparation",
+        "value": "prepared"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.cantripsKnown",
+        "value": [3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.maxSpellLevelByLevel",
+        "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.preparedLevel",
+        "value": "full"
+      }
+    ],
+    "grants": [
+      {
+        "id": "cleric-skills",
+        "kind": "choose",
+        "from": {
+          "type": "skill",
+          "keys": ["history", "insight", "medicine", "persuasion", "religion"]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "cleric-subclass",
+        "kind": "choose",
+        "from": {
+          "type": "subclass",
+          "parentKey": "cleric"
+        },
+        "count": 1,
+        "level": 1
+      },
+      {
+        "id": "cleric-asi-4",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "cleric-asi-8",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "cleric-asi-12",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "cleric-asi-16",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "cleric-asi-19",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "cleric-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "You cast spells using Wisdom, with a holy symbol as focus. You know three cantrips (four at 4th level, five at 10th). After a long rest, prepare a number of cleric spells equal to your Wisdom modifier + your cleric level (minimum 1). Domain spells are always prepared and don't count against that number. You can cast prepared ritual spells as rituals.",
+      "fr": "Tu lances des sorts grâce à la Sagesse, avec un symbole sacré comme focaliseur. Tu connais trois sorts mineurs (quatre au niveau 4, cinq au niveau 10). Après un repos long, prépare un nombre de sorts de clerc égal à ton modificateur de Sagesse + ton niveau de clerc (minimum 1). Les sorts de domaine sont toujours préparés et ne comptent pas dans ce nombre. Tu peux lancer comme rituels les sorts rituels préparés.",
+      "es": "Lanzas conjuros con Sabiduría, con un símbolo sagrado como canalizador. Conoces tres trucos (cuatro en el nivel 4, cinco en el 10). Tras un descanso largo, prepara tantos conjuros de clérigo como tu modificador de Sabiduría + tu nivel de clérigo (mínimo 1). Los conjuros de dominio siempre están preparados y no cuentan para ese número. Puedes lanzar como rituales los conjuros rituales preparados."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "divine-domain",
+    "label": {
+      "en": "Divine Domain",
+      "fr": "Domaine divin",
+      "es": "Dominio divino"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "Choose a domain related to your deity. It grants you domain spells and features at 1st, 2nd, 6th, 8th and 17th level.",
+      "fr": "Choisis un domaine lié à ta divinité. Il te confère des sorts de domaine et des aptitudes aux niveaux 1, 2, 6, 8 et 17.",
+      "es": "Elige un dominio relacionado con tu deidad. Te otorga conjuros de dominio y rasgos en los niveles 1, 2, 6, 8 y 17."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "channel-divinity",
+    "label": {
+      "en": "Channel Divinity",
+      "fr": "Conduit divin",
+      "es": "Canalizar divinidad"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "You can channel divine energy to fuel magical effects: Turn Undead and the effect granted by your domain. You can use it once between rests (twice from 6th level, three times from 18th), regaining uses after a short or long rest. Its save DC is your cleric spell save DC.",
+      "fr": "Tu peux canaliser l'énergie divine pour produire des effets magiques : Renvoi des morts-vivants et l'effet accordé par ton domaine. Tu peux l'utiliser une fois entre deux repos (deux fois à partir du niveau 6, trois à partir du niveau 18) et récupères les utilisations après un repos court ou long. Son DD est celui de tes sorts de clerc.",
+      "es": "Puedes canalizar energía divina para producir efectos mágicos: Expulsar muertos vivientes y el efecto que otorgue tu dominio. Puedes usarlo una vez entre descansos (dos veces desde el nivel 6, tres desde el 18) y recuperas los usos tras un descanso corto o largo. Su CD es la de tus conjuros de clérigo."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": [0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3],
+        "reset": "short"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "turn-undead",
+    "label": {
+      "en": "Channel Divinity: Turn Undead",
+      "fr": "Conduit divin : renvoi des morts-vivants",
+      "es": "Canalizar divinidad: expulsar muertos vivientes"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "As an action, you present your holy symbol: each undead within 30 feet that can see or hear you makes a Wisdom saving throw. On a failure, it is turned for 1 minute or until it takes damage: it must move as far away from you as it can and can't willingly come within 30 feet of you.",
+      "fr": "Par une action, tu brandis ton symbole sacré : chaque mort-vivant à 9 m qui peut te voir ou t'entendre fait un jet de sauvegarde de Sagesse. En cas d'échec, il est renvoyé pendant 1 minute ou jusqu'à ce qu'il subisse des dégâts : il doit s'éloigner le plus possible de toi et ne peut pas s'approcher volontairement à moins de 9 m.",
+      "es": "Como acción, muestras tu símbolo sagrado: cada muerto viviente a 30 pies que pueda verte u oírte hace una tirada de salvación de Sabiduría. Si falla, queda expulsado durante 1 minuto o hasta que reciba daño: debe alejarse de ti tanto como pueda y no puede acercarse voluntariamente a menos de 30 pies."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "destroy-undead",
+    "label": {
+      "en": "Destroy Undead",
+      "fr": "Destruction des morts-vivants",
+      "es": "Destruir muertos vivientes"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "When an undead fails its saving throw against your Turn Undead, it is instantly destroyed if its challenge rating is at or below 1/2 (1 at 8th level, 2 at 11th, 3 at 14th, 4 at 17th).",
+      "fr": "Lorsqu'un mort-vivant rate son jet de sauvegarde contre ton Renvoi des morts-vivants, il est détruit instantanément si son facteur de puissance est inférieur ou égal à 1/2 (1 au niveau 8, 2 au niveau 11, 3 au niveau 14, 4 au niveau 17).",
+      "es": "Cuando un muerto viviente falla su tirada contra tu Expulsar muertos vivientes, queda destruido al instante si su valor de desafío es 1/2 o menos (1 en el nivel 8, 2 en el 11, 3 en el 14, 4 en el 17)."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {
+      "maxChallengeRating": [
+        0, 0, 0, 0, 0.5, 0.5, 0.5, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4
+      ]
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "divine-intervention",
+    "label": {
+      "en": "Divine Intervention",
+      "fr": "Intervention divine",
+      "es": "Intervención divina"
+    },
+    "parentKey": "cleric",
+    "description": {
+      "en": "As an action, you describe the assistance you seek and roll percentile dice: if you roll a number equal to or lower than your cleric level, your deity intervenes. If it does, you can't use this feature again for 7 days; otherwise, you can try again after a long rest. At 20th level, your call succeeds automatically.",
+      "fr": "Par une action, tu décris l'aide que tu demandes et lances un dé de pourcentage : si tu obtiens un résultat inférieur ou égal à ton niveau de clerc, ta divinité intervient. Dans ce cas, tu ne peux plus utiliser cette aptitude pendant 7 jours ; sinon, tu peux réessayer après un repos long. Au niveau 20, ton appel réussit automatiquement.",
+      "es": "Como acción, describes la ayuda que pides y tiras dados de porcentaje: si sacas un número igual o inferior a tu nivel de clérigo, tu deidad interviene. Si lo hace, no puedes volver a usar este rasgo durante 7 días; si no, puedes intentarlo tras un descanso largo. En el nivel 20 tu llamada tiene éxito automáticamente."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "druid",
+    "label": {
+      "en": "Druid",
+      "fr": "Druide",
+      "es": "Druida"
+    },
+    "description": {
+      "en": "A priest of the Old Faith who draws on nature's power, casting spells and taking the shape of beasts.",
+      "fr": "Un prêtre de l'Ancienne Foi qui puise dans la puissance de la nature, lance des sorts et prend la forme de bêtes.",
+      "es": "Un sacerdote de la Antigua Fe que recurre al poder de la naturaleza, lanza conjuros y adopta la forma de bestias."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Druid",
+      "hitDie": 8,
+      "primaryAbilities": ["wisdom"],
+      "savingThrows": ["intelligence", "wisdom"],
+      "multiclassPrerequisite": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "wisdom"
+              },
+              13
+            ]
+          }
+        ]
+      },
+      "subclassLevel": 2,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "wisdom",
+        "preparation": "prepared",
+        "slots": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ],
+        "maxSpellLevelByLevel": [
+          1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9
+        ],
+        "cantripsKnown": [
+          2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+        ],
+        "spellsKnown": null,
+        "preparedLevel": "full",
+        "ritualCasting": true,
+        "focus": "druidic focus"
+      },
+      "startingGoldDice": "2d4 x 10 gp"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.intelligence",
+        "value": true,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.wisdom",
+        "value": true,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": [
+          "club",
+          "dagger",
+          "dart",
+          "javelin",
+          "mace",
+          "quarterstaff",
+          "scimitar",
+          "sickle",
+          "sling",
+          "spear"
+        ],
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["herbalism-kit"],
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "var": ["state.multiclassing", false]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ability",
+        "value": "wisdom"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.preparation",
+        "value": "prepared"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.cantripsKnown",
+        "value": [2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.maxSpellLevelByLevel",
+        "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.preparedLevel",
+        "value": "full"
+      }
+    ],
+    "grants": [
+      {
+        "id": "druid-skills",
+        "kind": "choose",
+        "from": {
+          "type": "skill",
+          "keys": [
+            "arcana",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "nature",
+            "perception",
+            "religion",
+            "survival"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "!": [
+            {
+              "var": ["state.multiclassing", false]
+            }
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "druid-subclass",
+        "kind": "choose",
+        "from": {
+          "type": "subclass",
+          "parentKey": "druid"
+        },
+        "count": 1,
+        "level": 2
+      },
+      {
+        "id": "druid-asi-4",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "druid-asi-8",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "druid-asi-12",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "druid-asi-16",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "druid-asi-19",
+        "kind": "choose",
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "druidic-feature",
+    "label": {
+      "en": "Druidic",
+      "fr": "Druidique",
+      "es": "Druídico"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "You know Druidic, the secret language of druids. You can speak it and leave hidden messages; others spot such a message with a DC 15 Wisdom (Perception) check but can't decipher it without magic.",
+      "fr": "Tu connais le druidique, la langue secrète des druides. Tu peux le parler et laisser des messages cachés ; les autres repèrent un tel message avec un test de Sagesse (Perception) DD 15 mais ne peuvent pas le déchiffrer sans magie.",
+      "es": "Conoces el druídico, el idioma secreto de los druidas. Puedes hablarlo y dejar mensajes ocultos; otros detectan esos mensajes con una prueba de Sabiduría (Percepción) CD 15, pero no pueden descifrarlos sin magia."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["druidic"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "druid-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "You cast spells using Wisdom, with a druidic focus. You know two cantrips (three at 4th level, four at 10th). After a long rest, prepare a number of druid spells equal to your Wisdom modifier + your druid level (minimum 1). You can cast prepared ritual spells as rituals. Druids traditionally refuse to wear metal armor or shields.",
+      "fr": "Tu lances des sorts grâce à la Sagesse, avec un focaliseur druidique. Tu connais deux sorts mineurs (trois au niveau 4, quatre au niveau 10). Après un repos long, prépare un nombre de sorts de druide égal à ton modificateur de Sagesse + ton niveau de druide (minimum 1). Tu peux lancer comme rituels les sorts rituels préparés. Par tradition, les druides refusent de porter armures et boucliers en métal.",
+      "es": "Lanzas conjuros con Sabiduría, con un canalizador druídico. Conoces dos trucos (tres en el nivel 4, cuatro en el 10). Tras un descanso largo, prepara tantos conjuros de druida como tu modificador de Sabiduría + tu nivel de druida (mínimo 1). Puedes lanzar como rituales los conjuros rituales preparados. Por tradición, los druidas se niegan a llevar armaduras y escudos de metal."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "wild-shape",
+    "label": {
+      "en": "Wild Shape",
+      "fr": "Forme sauvage",
+      "es": "Forma salvaje"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "As an action, you magically assume the shape of a beast you have seen, twice per short or long rest. Maximum challenge rating 1/4 without flying or swimming speed at 2nd level, 1/2 without flying speed at 4th, 1 at 8th. You stay transformed for half your druid level in hours; you take the beast's game statistics but keep your alignment, personality and mental scores, and revert when you drop to 0 hit points, carrying over excess damage.",
+      "fr": "Par une action, tu prends par magie la forme d'une bête que tu as déjà vue, deux fois par repos court ou long. Facteur de puissance maximal 1/4 sans vitesse de vol ni de nage au niveau 2, 1/2 sans vitesse de vol au niveau 4, 1 au niveau 8. Tu restes transformé pendant un nombre d'heures égal à la moitié de ton niveau de druide ; tu prends les statistiques de la bête mais gardes ton alignement, ta personnalité et tes caractéristiques mentales, et reprends ta forme lorsque tu tombes à 0 point de vie, en conservant l'excédent de dégâts.",
+      "es": "Como acción, adoptas mágicamente la forma de una bestia que hayas visto, dos veces por descanso corto o largo. Valor de desafío máximo 1/4 sin velocidad de vuelo ni de nado en el nivel 2, 1/2 sin velocidad de vuelo en el 4, 1 en el 8. Permaneces transformado tantas horas como la mitad de tu nivel de druida; adoptas las estadísticas de la bestia pero conservas tu alineamiento, personalidad y características mentales, y vuelves a tu forma al caer a 0 puntos de golpe, trasladando el daño sobrante."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "maxChallengeRating": [
+        0, 0.25, 0.25, 0.5, 0.5, 0.5, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+      ],
+      "uses": {
+        "count": 2,
+        "reset": "short"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "druid-timeless-body",
+    "label": {
+      "en": "Timeless Body",
+      "fr": "Jeunesse éternelle",
+      "es": "Cuerpo atemporal"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "The primal magic you wield slows your aging: for every 10 years that pass, your body ages only 1 year.",
+      "fr": "La magie primordiale que tu manies ralentit ton vieillissement : pour 10 années écoulées, ton corps ne vieillit que d'un an.",
+      "es": "La magia primigenia que empuñas ralentiza tu envejecimiento: por cada 10 años que pasan, tu cuerpo solo envejece 1."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "beast-spells",
+    "label": {
+      "en": "Beast Spells",
+      "fr": "Incantation bestiale",
+      "es": "Conjuros bestiales"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "You can cast many of your druid spells in any shape you assume with Wild Shape, performing somatic and verbal components, but you can't provide material components.",
+      "fr": "Tu peux lancer beaucoup de tes sorts de druide sous n'importe quelle forme prise avec Forme sauvage, en accomplissant les composantes somatiques et verbales, mais tu ne peux pas fournir de composantes matérielles.",
+      "es": "Puedes lanzar muchos de tus conjuros de druida en cualquier forma adoptada con Forma salvaje, realizando los componentes somáticos y verbales, pero no puedes aportar componentes materiales."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "archdruid",
+    "label": {
+      "en": "Archdruid",
+      "fr": "Archidruide",
+      "es": "Archidruida"
+    },
+    "parentKey": "druid",
+    "description": {
+      "en": "You can use Wild Shape an unlimited number of times. You can also ignore the verbal and somatic components of your druid spells, as well as material components that have no cost and aren't consumed.",
+      "fr": "Tu peux utiliser Forme sauvage un nombre illimité de fois. Tu peux aussi ignorer les composantes verbales et somatiques de tes sorts de druide, ainsi que les composantes matérielles sans coût et non consommées.",
+      "es": "Puedes usar Forma salvaje un número ilimitado de veces. También puedes ignorar los componentes verbales y somáticos de tus conjuros de druida, y los materiales sin coste que no se consuman."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]

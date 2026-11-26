@@ -1,0 +1,2555 @@
+[
+  {
+    "type": "race",
+    "key": "dwarf",
+    "label": {
+      "en": "Dwarf",
+      "fr": "Nain",
+      "es": "Enano"
+    },
+    "description": {
+      "en": "Stout folk of mountain halls and deep mines, dwarves are tireless workers, loyal to their clan and hard to bring down.",
+      "fr": "Peuple robuste des halls montagnards et des mines profondes, les nains sont des travailleurs infatigables, fidèles à leur clan et difficiles à abattre.",
+      "es": "Pueblo robusto de salones montañosos y minas profundas, los enanos son trabajadores incansables, leales a su clan y difíciles de derribar."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 50,
+      "lifespan": 350,
+      "typicalHeight": "4-5 ft",
+      "typicalWeight": "150 lb"
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.constitution",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Medium"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 25
+      },
+      {
+        "op": "grant",
+        "target": "senses",
+        "value": [
+          {
+            "key": "darkvision",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["poison-damage"]
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["battleaxe", "handaxe", "light-hammer", "warhammer"]
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common", "dwarvish"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "dwarf-subrace",
+        "kind": "choose",
+        "from": {
+          "type": "subrace",
+          "parentKey": "dwarf"
+        },
+        "count": 1
+      },
+      {
+        "id": "dwarf-tool",
+        "kind": "choose",
+        "from": {
+          "type": "tool",
+          "keys": ["smiths-tools", "brewers-supplies", "masons-tools"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subrace",
+    "key": "hill-dwarf",
+    "label": {
+      "en": "Hill dwarf",
+      "fr": "Nain des collines",
+      "es": "Enano de las colinas"
+    },
+    "parentKey": "dwarf",
+    "description": {
+      "en": "Hill dwarves have keen senses, deep intuition and remarkable resilience.",
+      "fr": "Les nains des collines ont des sens aiguisés, une profonde intuition et une résistance remarquable.",
+      "es": "Los enanos de las colinas tienen sentidos agudos, una gran intuición y una resistencia notable."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.wisdom",
+        "value": 1
+      },
+      {
+        "op": "add",
+        "target": "hitPointBonusPerLevel",
+        "value": 1
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subrace",
+    "key": "mountain-dwarf",
+    "label": {
+      "en": "Mountain dwarf",
+      "fr": "Nain des montagnes",
+      "es": "Enano de las montañas"
+    },
+    "parentKey": "dwarf",
+    "description": {
+      "en": "Strong and hardy, mountain dwarves are used to a rugged life in difficult terrain.",
+      "fr": "Forts et endurcis, les nains des montagnes sont habitués à une vie rude en terrain difficile.",
+      "es": "Fuertes y resistentes, los enanos de las montañas están acostumbrados a una vida dura en terreno difícil."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.strength",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "race",
+    "key": "elf",
+    "label": {
+      "en": "Elf",
+      "fr": "Elfe",
+      "es": "Elfo"
+    },
+    "description": {
+      "en": "Graceful and long-lived, elves live in harmony with nature and magic, in forests, starry towers or the depths of the Underdark.",
+      "fr": "Gracieux et d'une grande longévité, les elfes vivent en harmonie avec la nature et la magie, dans les forêts, des tours étoilées ou les profondeurs de l'Outreterre.",
+      "es": "Gráciles y longevos, los elfos viven en armonía con la naturaleza y la magia, en bosques, torres estrelladas o las profundidades de la Infraoscuridad."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 100,
+      "lifespan": 750,
+      "typicalHeight": "5-6 ft",
+      "typicalWeight": "100-145 lb"
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.dexterity",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Medium"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 30
+      },
+      {
+        "op": "grant",
+        "target": "senses",
+        "value": [
+          {
+            "key": "darkvision",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "op": "set",
+        "target": "skills.perception",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common", "elvish"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "elf-subrace",
+        "kind": "choose",
+        "from": {
+          "type": "subrace",
+          "parentKey": "elf"
+        },
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "subrace",
+    "key": "high-elf",
+    "label": {
+      "en": "High elf",
+      "fr": "Haut-elfe",
+      "es": "Alto elfo"
+    },
+    "parentKey": "elf",
+    "description": {
+      "en": "High elves have a keen mind and a mastery of at least the basics of magic.",
+      "fr": "Les hauts-elfes ont l'esprit vif et maîtrisent au moins les rudiments de la magie.",
+      "es": "Los altos elfos tienen una mente aguda y dominan al menos los rudimentos de la magia."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.intelligence",
+        "value": 1
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["longsword", "shortsword", "shortbow", "longbow"]
+      },
+      {
+        "op": "set",
+        "target": "racialCantrip",
+        "value": {
+          "className": "wizard",
+          "ability": "intelligence",
+          "count": 1
+        }
+      }
+    ],
+    "grants": [
+      {
+        "id": "high-elf-language",
+        "kind": "choose",
+        "from": {
+          "type": "language",
+          "keys": [
+            "common",
+            "dwarvish",
+            "elvish",
+            "giant",
+            "gnomish",
+            "goblin",
+            "halfling-language",
+            "orc",
+            "abyssal",
+            "celestial",
+            "draconic",
+            "deep-speech",
+            "infernal",
+            "primordial",
+            "sylvan",
+            "undercommon"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subrace",
+    "key": "wood-elf",
+    "label": {
+      "en": "Wood elf",
+      "fr": "Elfe des bois",
+      "es": "Elfo de los bosques"
+    },
+    "parentKey": "elf",
+    "description": {
+      "en": "Wood elves are swift and stealthy, at home in the deep forests.",
+      "fr": "Les elfes des bois sont rapides et discrets, chez eux au cœur des forêts profondes.",
+      "es": "Los elfos de los bosques son rápidos y sigilosos, y se sienten en casa en los bosques profundos."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.wisdom",
+        "value": 1
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["longsword", "shortsword", "shortbow", "longbow"]
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 35
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subrace",
+    "key": "drow",
+    "label": {
+      "en": "Drow (dark elf)",
+      "fr": "Drow (elfe noir)",
+      "es": "Drow (elfo oscuro)"
+    },
+    "parentKey": "elf",
+    "description": {
+      "en": "Descendants of elves banished to the Underdark, drow see in deep darkness and wield innate magic, but suffer in sunlight.",
+      "fr": "Descendants d'elfes bannis dans l'Outreterre, les drows voient dans les ténèbres profondes et possèdent une magie innée, mais souffrent à la lumière du soleil.",
+      "es": "Descendientes de elfos desterrados a la Infraoscuridad, los drow ven en la oscuridad profunda y poseen magia innata, pero sufren bajo la luz del sol."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.charisma",
+        "value": 1
+      },
+      {
+        "op": "set",
+        "target": "senses",
+        "value": [
+          {
+            "key": "darkvision",
+            "value": 120
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["rapier", "shortsword", "hand-crossbow"]
+      },
+      {
+        "op": "grant",
+        "target": "racialSpells",
+        "value": [
+          {
+            "name": "Dancing Lights",
+            "level": 0,
+            "ability": "charisma",
+            "minCharacterLevel": 1
+          },
+          {
+            "name": "Faerie Fire",
+            "level": 1,
+            "ability": "charisma",
+            "minCharacterLevel": 3,
+            "uses": 1,
+            "reset": "long"
+          },
+          {
+            "name": "Darkness",
+            "level": 2,
+            "ability": "charisma",
+            "minCharacterLevel": 5,
+            "uses": 1,
+            "reset": "long"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "race",
+    "key": "halfling",
+    "label": {
+      "en": "Halfling",
+      "fr": "Halfelin",
+      "es": "Mediano"
+    },
+    "description": {
+      "en": "Small, cheerful and surprisingly brave, halflings value home comforts but rarely refuse an adventure.",
+      "fr": "Petits, joyeux et étonnamment courageux, les halfelins apprécient le confort du foyer mais refusent rarement une aventure.",
+      "es": "Pequeños, alegres y sorprendentemente valientes, los medianos aprecian las comodidades del hogar pero rara vez rechazan una aventura."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 20,
+      "lifespan": 150,
+      "typicalHeight": "3 ft",
+      "typicalWeight": "40 lb"
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.dexterity",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Small"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 25
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common", "halfling-language"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "halfling-subrace",
+        "kind": "choose",
+        "from": {
+          "type": "subrace",
+          "parentKey": "halfling"
+        },
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "subrace",
+    "key": "lightfoot-halfling",
+    "label": {
+      "en": "Lightfoot halfling",
+      "fr": "Halfelin pied-léger",
+      "es": "Mediano piesligeros"
+    },
+    "parentKey": "halfling",
+    "description": {
+      "en": "Lightfoot halflings are discreet and affable travellers who easily slip out of sight.",
+      "fr": "Les halfelins pieds-légers sont des voyageurs discrets et affables qui disparaissent facilement à la vue.",
+      "es": "Los medianos piesligeros son viajeros discretos y afables que se ocultan con facilidad."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.charisma",
+        "value": 1
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subrace",
+    "key": "stout-halfling",
+    "label": {
+      "en": "Stout halfling",
+      "fr": "Halfelin robuste",
+      "es": "Mediano fornido"
+    },
+    "parentKey": "halfling",
+    "description": {
+      "en": "Stout halflings are hardier than other halflings and resist poison.",
+      "fr": "Les halfelins robustes sont plus endurants que les autres halfelins et résistent au poison.",
+      "es": "Los medianos fornidos son más resistentes que otros medianos y resisten el veneno."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.constitution",
+        "value": 1
+      },
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["poison-damage"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "race",
+    "key": "human",
+    "label": {
+      "en": "Human",
+      "fr": "Humain",
+      "es": "Humano"
+    },
+    "description": {
+      "en": "Ambitious, adaptable and short-lived, humans are found everywhere and excel in every path.",
+      "fr": "Ambitieux, adaptables et à la vie brève, les humains sont présents partout et excellent dans toutes les voies.",
+      "es": "Ambiciosos, adaptables y de vida breve, los humanos están en todas partes y destacan en cualquier camino."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 18,
+      "lifespan": 90,
+      "typicalHeight": "5-6 ft",
+      "typicalWeight": "125-250 lb"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Medium"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 30
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "human-subrace",
+        "kind": "choose",
+        "from": {
+          "type": "subrace",
+          "parentKey": "human"
+        },
+        "count": 1
+      },
+      {
+        "id": "human-language",
+        "kind": "choose",
+        "from": {
+          "type": "language",
+          "keys": [
+            "common",
+            "dwarvish",
+            "elvish",
+            "giant",
+            "gnomish",
+            "goblin",
+            "halfling-language",
+            "orc",
+            "abyssal",
+            "celestial",
+            "draconic",
+            "deep-speech",
+            "infernal",
+            "primordial",
+            "sylvan",
+            "undercommon"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subrace",
+    "key": "standard-human",
+    "label": {
+      "en": "Human (standard)",
+      "fr": "Humain (standard)",
+      "es": "Humano (estándar)"
+    },
+    "parentKey": "human",
+    "description": {
+      "en": "Increase each of your six ability scores by 1.",
+      "fr": "Augmente chacune de tes six caractéristiques de 1.",
+      "es": "Aumenta en 1 cada una de tus seis puntuaciones de característica."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.strength",
+        "value": 1
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.dexterity",
+        "value": 1
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.constitution",
+        "value": 1
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.intelligence",
+        "value": 1
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.wisdom",
+        "value": 1
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.charisma",
+        "value": 1
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subrace",
+    "key": "variant-human",
+    "label": {
+      "en": "Human (variant)",
+      "fr": "Humain (variante)",
+      "es": "Humano (variante)"
+    },
+    "parentKey": "human",
+    "description": {
+      "en": "Instead of increasing every ability, increase two abilities of your choice by 1, gain proficiency in one skill and gain one feat.",
+      "fr": "Au lieu d'augmenter toutes tes caractéristiques, augmente deux caractéristiques de ton choix de 1, obtiens la maîtrise d'une compétence et un don.",
+      "es": "En lugar de aumentar todas las características, aumenta en 1 dos características a tu elección, obtén competencia en una habilidad y una dote."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "variant-human-abilities",
+        "kind": "choose",
+        "from": {
+          "type": "ability",
+          "keys": [
+            "strength",
+            "dexterity",
+            "constitution",
+            "intelligence",
+            "wisdom",
+            "charisma"
+          ]
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "variant-human-skill",
+        "kind": "choose",
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "variant-human-feat",
+        "kind": "choose",
+        "from": {
+          "type": "feat"
+        },
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "race",
+    "key": "dragonborn",
+    "label": {
+      "en": "Dragonborn",
+      "fr": "Drakéide",
+      "es": "Dracónido"
+    },
+    "description": {
+      "en": "Proud humanoids with draconic blood, dragonborn breathe destructive energy and resist the element of their ancestors.",
+      "fr": "Humanoïdes fiers au sang de dragon, les drakéides soufflent une énergie destructrice et résistent à l'élément de leurs ancêtres.",
+      "es": "Humanoides orgullosos con sangre de dragón, los dracónidos exhalan energía destructiva y resisten el elemento de sus ancestros."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 15,
+      "lifespan": 80,
+      "typicalHeight": "6+ ft",
+      "typicalWeight": "250 lb"
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.strength",
+        "value": 2
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.charisma",
+        "value": 1
+      },
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Medium"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 30
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common", "draconic"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "draconic-ancestry",
+        "kind": "choose",
+        "from": {
+          "type": "draconic-ancestry"
+        },
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "race",
+    "key": "gnome",
+    "label": {
+      "en": "Gnome",
+      "fr": "Gnome",
+      "es": "Gnomo"
+    },
+    "description": {
+      "en": "Curious, inventive and full of energy, gnomes savour life and resist magic thanks to their sharp minds.",
+      "fr": "Curieux, inventifs et pleins d'énergie, les gnomes savourent la vie et résistent à la magie grâce à leur esprit vif.",
+      "es": "Curiosos, ingeniosos y llenos de energía, los gnomos disfrutan la vida y resisten la magia gracias a su mente aguda."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 40,
+      "lifespan": 500,
+      "typicalHeight": "3-4 ft",
+      "typicalWeight": "40 lb"
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.intelligence",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Small"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 25
+      },
+      {
+        "op": "grant",
+        "target": "senses",
+        "value": [
+          {
+            "key": "darkvision",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common", "gnomish"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "gnome-subrace",
+        "kind": "choose",
+        "from": {
+          "type": "subrace",
+          "parentKey": "gnome"
+        },
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "subrace",
+    "key": "forest-gnome",
+    "label": {
+      "en": "Forest gnome",
+      "fr": "Gnome des forêts",
+      "es": "Gnomo de los bosques"
+    },
+    "parentKey": "gnome",
+    "description": {
+      "en": "Forest gnomes are secretive folk with a knack for illusion and a bond with small animals.",
+      "fr": "Les gnomes des forêts sont discrets, doués pour l'illusion et proches des petits animaux.",
+      "es": "Los gnomos de los bosques son reservados, hábiles con las ilusiones y cercanos a los animales pequeños."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.dexterity",
+        "value": 1
+      },
+      {
+        "op": "grant",
+        "target": "racialSpells",
+        "value": [
+          {
+            "name": "Minor Illusion",
+            "level": 0,
+            "ability": "intelligence",
+            "minCharacterLevel": 1
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subrace",
+    "key": "rock-gnome",
+    "label": {
+      "en": "Rock gnome",
+      "fr": "Gnome des roches",
+      "es": "Gnomo de las rocas"
+    },
+    "parentKey": "gnome",
+    "description": {
+      "en": "Rock gnomes are inventors and tinkerers with a natural sense for craft.",
+      "fr": "Les gnomes des roches sont des inventeurs et des bricoleurs au sens inné de l'artisanat.",
+      "es": "Los gnomos de las rocas son inventores y hojalateros con un talento natural para la artesanía."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.constitution",
+        "value": 1
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["tinkers-tools"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "race",
+    "key": "half-elf",
+    "label": {
+      "en": "Half-elf",
+      "fr": "Demi-elfe",
+      "es": "Semielfo"
+    },
+    "description": {
+      "en": "Between two worlds, half-elves combine human curiosity and ambition with elven grace and senses.",
+      "fr": "Entre deux mondes, les demi-elfes allient la curiosité et l'ambition humaines à la grâce et aux sens elfiques.",
+      "es": "Entre dos mundos, los semielfos combinan la curiosidad y ambición humanas con la gracia y los sentidos élficos."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 20,
+      "lifespan": 180,
+      "typicalHeight": "5-6 ft",
+      "typicalWeight": "110-190 lb"
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.charisma",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Medium"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 30
+      },
+      {
+        "op": "grant",
+        "target": "senses",
+        "value": [
+          {
+            "key": "darkvision",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common", "elvish"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "half-elf-abilities",
+        "kind": "choose",
+        "from": {
+          "type": "ability",
+          "keys": [
+            "strength",
+            "dexterity",
+            "constitution",
+            "intelligence",
+            "wisdom"
+          ]
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "half-elf-skills",
+        "kind": "choose",
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion"
+          ]
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "half-elf-language",
+        "kind": "choose",
+        "from": {
+          "type": "language",
+          "keys": [
+            "common",
+            "dwarvish",
+            "elvish",
+            "giant",
+            "gnomish",
+            "goblin",
+            "halfling-language",
+            "orc",
+            "abyssal",
+            "celestial",
+            "draconic",
+            "deep-speech",
+            "infernal",
+            "primordial",
+            "sylvan",
+            "undercommon"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "race",
+    "key": "half-orc",
+    "label": {
+      "en": "Half-orc",
+      "fr": "Demi-orc",
+      "es": "Semiorco"
+    },
+    "description": {
+      "en": "Imposing and fierce, half-orcs inherit orcish strength and endurance and refuse to fall.",
+      "fr": "Imposants et farouches, les demi-orcs héritent de la force et de l'endurance orques et refusent de tomber.",
+      "es": "Imponentes y fieros, los semiorcos heredan la fuerza y el aguante orcos y se niegan a caer."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 14,
+      "lifespan": 75,
+      "typicalHeight": "5-6+ ft",
+      "typicalWeight": "140-240 lb"
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.strength",
+        "value": 2
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.constitution",
+        "value": 1
+      },
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Medium"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 30
+      },
+      {
+        "op": "grant",
+        "target": "senses",
+        "value": [
+          {
+            "key": "darkvision",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "op": "set",
+        "target": "skills.intimidation",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common", "orc"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "race",
+    "key": "tiefling",
+    "label": {
+      "en": "Tiefling",
+      "fr": "Tieffelin",
+      "es": "Tiflin"
+    },
+    "description": {
+      "en": "Marked by an infernal heritage, tieflings bear horns and a tail, resist fire and command a little hellish magic.",
+      "fr": "Marqués par un héritage infernal, les tieffelins portent cornes et queue, résistent au feu et manient un peu de magie infernale.",
+      "es": "Marcados por una herencia infernal, los tiflin tienen cuernos y cola, resisten el fuego y dominan algo de magia infernal."
+    },
+    "tags": [],
+    "data": {
+      "ageAdulthood": 18,
+      "lifespan": 100,
+      "typicalHeight": "5-6 ft",
+      "typicalWeight": "110-190 lb"
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.intelligence",
+        "value": 1
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.charisma",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "size",
+        "value": "Medium"
+      },
+      {
+        "op": "set",
+        "target": "speed.walk",
+        "value": 30
+      },
+      {
+        "op": "grant",
+        "target": "senses",
+        "value": [
+          {
+            "key": "darkvision",
+            "value": 60
+          }
+        ]
+      },
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["fire-damage"]
+      },
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["common", "infernal"]
+      },
+      {
+        "op": "grant",
+        "target": "racialSpells",
+        "value": [
+          {
+            "name": "Thaumaturgy",
+            "level": 0,
+            "ability": "charisma",
+            "minCharacterLevel": 1
+          },
+          {
+            "name": "Hellish Rebuke",
+            "level": 1,
+            "castAtLevel": 2,
+            "ability": "charisma",
+            "minCharacterLevel": 3,
+            "uses": 1,
+            "reset": "long"
+          },
+          {
+            "name": "Darkness",
+            "level": 2,
+            "ability": "charisma",
+            "minCharacterLevel": 5,
+            "uses": 1,
+            "reset": "long"
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "black-dragon-ancestry",
+    "label": {
+      "en": "Black dragon",
+      "fr": "Dragon noir",
+      "es": "Dragón negro"
+    },
+    "description": {
+      "en": "Acid damage, breath weapon in a 5 by 30 ft line (Dexterity saving throw).",
+      "fr": "Dégâts de acide, souffle en ligne de 1,50 m sur 9 m (jet de sauvegarde de Dextérité).",
+      "es": "Daño de ácido, arma de aliento en línea de 5 por 30 pies (tirada de salvación de Destreza)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "acid",
+      "area": "line",
+      "save": "dexterity"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["acid-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "acid",
+          "area": "line",
+          "save": "dexterity"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "blue-dragon-ancestry",
+    "label": {
+      "en": "Blue dragon",
+      "fr": "Dragon bleu",
+      "es": "Dragón azul"
+    },
+    "description": {
+      "en": "Lightning damage, breath weapon in a 5 by 30 ft line (Dexterity saving throw).",
+      "fr": "Dégâts de foudre, souffle en ligne de 1,50 m sur 9 m (jet de sauvegarde de Dextérité).",
+      "es": "Daño de relámpago, arma de aliento en línea de 5 por 30 pies (tirada de salvación de Destreza)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "lightning",
+      "area": "line",
+      "save": "dexterity"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["lightning-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "lightning",
+          "area": "line",
+          "save": "dexterity"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "brass-dragon-ancestry",
+    "label": {
+      "en": "Brass dragon",
+      "fr": "Dragon airain",
+      "es": "Dragón latón"
+    },
+    "description": {
+      "en": "Fire damage, breath weapon in a 5 by 30 ft line (Dexterity saving throw).",
+      "fr": "Dégâts de feu, souffle en ligne de 1,50 m sur 9 m (jet de sauvegarde de Dextérité).",
+      "es": "Daño de fuego, arma de aliento en línea de 5 por 30 pies (tirada de salvación de Destreza)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "fire",
+      "area": "line",
+      "save": "dexterity"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["fire-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "fire",
+          "area": "line",
+          "save": "dexterity"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "bronze-dragon-ancestry",
+    "label": {
+      "en": "Bronze dragon",
+      "fr": "Dragon bronze",
+      "es": "Dragón bronce"
+    },
+    "description": {
+      "en": "Lightning damage, breath weapon in a 5 by 30 ft line (Dexterity saving throw).",
+      "fr": "Dégâts de foudre, souffle en ligne de 1,50 m sur 9 m (jet de sauvegarde de Dextérité).",
+      "es": "Daño de relámpago, arma de aliento en línea de 5 por 30 pies (tirada de salvación de Destreza)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "lightning",
+      "area": "line",
+      "save": "dexterity"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["lightning-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "lightning",
+          "area": "line",
+          "save": "dexterity"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "copper-dragon-ancestry",
+    "label": {
+      "en": "Copper dragon",
+      "fr": "Dragon cuivre",
+      "es": "Dragón cobre"
+    },
+    "description": {
+      "en": "Acid damage, breath weapon in a 5 by 30 ft line (Dexterity saving throw).",
+      "fr": "Dégâts de acide, souffle en ligne de 1,50 m sur 9 m (jet de sauvegarde de Dextérité).",
+      "es": "Daño de ácido, arma de aliento en línea de 5 por 30 pies (tirada de salvación de Destreza)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "acid",
+      "area": "line",
+      "save": "dexterity"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["acid-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "acid",
+          "area": "line",
+          "save": "dexterity"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "gold-dragon-ancestry",
+    "label": {
+      "en": "Gold dragon",
+      "fr": "Dragon or",
+      "es": "Dragón oro"
+    },
+    "description": {
+      "en": "Fire damage, breath weapon in a 15 ft cone (Dexterity saving throw).",
+      "fr": "Dégâts de feu, souffle en cône de 4,50 m (jet de sauvegarde de Dextérité).",
+      "es": "Daño de fuego, arma de aliento en cono de 15 pies (tirada de salvación de Destreza)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "fire",
+      "area": "cone",
+      "save": "dexterity"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["fire-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "fire",
+          "area": "cone",
+          "save": "dexterity"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "green-dragon-ancestry",
+    "label": {
+      "en": "Green dragon",
+      "fr": "Dragon vert",
+      "es": "Dragón verde"
+    },
+    "description": {
+      "en": "Poison damage, breath weapon in a 15 ft cone (Constitution saving throw).",
+      "fr": "Dégâts de poison, souffle en cône de 4,50 m (jet de sauvegarde de Constitution).",
+      "es": "Daño de veneno, arma de aliento en cono de 15 pies (tirada de salvación de Constitución)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "poison",
+      "area": "cone",
+      "save": "constitution"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["poison-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "poison",
+          "area": "cone",
+          "save": "constitution"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "red-dragon-ancestry",
+    "label": {
+      "en": "Red dragon",
+      "fr": "Dragon rouge",
+      "es": "Dragón rojo"
+    },
+    "description": {
+      "en": "Fire damage, breath weapon in a 15 ft cone (Dexterity saving throw).",
+      "fr": "Dégâts de feu, souffle en cône de 4,50 m (jet de sauvegarde de Dextérité).",
+      "es": "Daño de fuego, arma de aliento en cono de 15 pies (tirada de salvación de Destreza)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "fire",
+      "area": "cone",
+      "save": "dexterity"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["fire-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "fire",
+          "area": "cone",
+          "save": "dexterity"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "silver-dragon-ancestry",
+    "label": {
+      "en": "Silver dragon",
+      "fr": "Dragon argent",
+      "es": "Dragón plata"
+    },
+    "description": {
+      "en": "Cold damage, breath weapon in a 15 ft cone (Constitution saving throw).",
+      "fr": "Dégâts de froid, souffle en cône de 4,50 m (jet de sauvegarde de Constitution).",
+      "es": "Daño de frío, arma de aliento en cono de 15 pies (tirada de salvación de Constitución)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "cold",
+      "area": "cone",
+      "save": "constitution"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["cold-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "cold",
+          "area": "cone",
+          "save": "constitution"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "draconic-ancestry",
+    "key": "white-dragon-ancestry",
+    "label": {
+      "en": "White dragon",
+      "fr": "Dragon blanc",
+      "es": "Dragón blanco"
+    },
+    "description": {
+      "en": "Cold damage, breath weapon in a 15 ft cone (Constitution saving throw).",
+      "fr": "Dégâts de froid, souffle en cône de 4,50 m (jet de sauvegarde de Constitution).",
+      "es": "Daño de frío, arma de aliento en cono de 15 pies (tirada de salvación de Constitución)."
+    },
+    "tags": [],
+    "data": {
+      "damageType": "cold",
+      "area": "cone",
+      "save": "constitution"
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["cold-damage"]
+      },
+      {
+        "op": "set",
+        "target": "breathWeapon",
+        "value": {
+          "damageType": "cold",
+          "area": "cone",
+          "save": "constitution"
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "dwarf-darkvision",
+    "label": {
+      "en": "Darkvision",
+      "fr": "Vision dans le noir",
+      "es": "Visión en la oscuridad"
+    },
+    "parentKey": "dwarf",
+    "description": {
+      "en": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray.",
+      "fr": "Tu vois dans la pénombre jusqu'à 18 m comme en pleine lumière, et dans l'obscurité comme dans la pénombre. Dans l'obscurité, tu ne distingues pas les couleurs, seulement des nuances de gris.",
+      "es": "Ves en luz tenue a 60 pies como si fuera luz brillante, y en la oscuridad como si fuera luz tenue. En la oscuridad no distingues colores, solo tonos de gris."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "dwarven-resilience",
+    "label": {
+      "en": "Dwarven Resilience",
+      "fr": "Résistance naine",
+      "es": "Resistencia enana"
+    },
+    "parentKey": "dwarf",
+    "description": {
+      "en": "You have advantage on saving throws against poison, and you have resistance to poison damage.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde contre le poison et tu as la résistance aux dégâts de poison.",
+      "es": "Tienes ventaja en las tiradas de salvación contra veneno y resistencia al daño de veneno."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "dwarven-combat-training",
+    "label": {
+      "en": "Dwarven Combat Training",
+      "fr": "Entraînement aux armes naines",
+      "es": "Entrenamiento de combate enano"
+    },
+    "parentKey": "dwarf",
+    "description": {
+      "en": "You have proficiency with the battleaxe, handaxe, light hammer and warhammer.",
+      "fr": "Tu maîtrises la hache d'armes, la hachette, le marteau léger et le marteau de guerre.",
+      "es": "Tienes competencia con el hacha de batalla, el hacha de mano, el martillo ligero y el martillo de guerra."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "dwarven-tool-proficiency",
+    "label": {
+      "en": "Tool Proficiency",
+      "fr": "Maîtrise des outils",
+      "es": "Competencia con herramientas"
+    },
+    "parentKey": "dwarf",
+    "description": {
+      "en": "You gain proficiency with the artisan's tools of your choice: smith's tools, brewer's supplies or mason's tools.",
+      "fr": "Tu maîtrises les outils d'artisan de ton choix : outils de forgeron, matériel de brasseur ou outils de maçon.",
+      "es": "Obtienes competencia con las herramientas de artesano que elijas: herramientas de herrero, suministros de cervecero o herramientas de albañil."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "stonecunning",
+    "label": {
+      "en": "Stonecunning",
+      "fr": "Connaissance de la pierre",
+      "es": "Afinidad con la piedra"
+    },
+    "parentKey": "dwarf",
+    "description": {
+      "en": "Whenever you make an Intelligence (History) check related to the origin of stonework, you are considered proficient in History and add double your proficiency bonus to the check.",
+      "fr": "Lorsque tu fais un test d'Intelligence (Histoire) lié à l'origine d'un ouvrage en pierre, tu es considéré comme maîtrisant Histoire et tu ajoutes le double de ton bonus de maîtrise au test.",
+      "es": "Cuando hagas una prueba de Inteligencia (Historia) relacionada con el origen de una obra de piedra, se te considera competente en Historia y sumas el doble de tu bonificador por competencia."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "dwarven-speed",
+    "label": {
+      "en": "Dwarven Speed",
+      "fr": "Vitesse naine",
+      "es": "Velocidad enana"
+    },
+    "parentKey": "dwarf",
+    "description": {
+      "en": "Your base walking speed is 25 feet. Your speed is not reduced by wearing heavy armor.",
+      "fr": "Ta vitesse de marche de base est de 7,50 m. Porter une armure lourde ne réduit pas ta vitesse.",
+      "es": "Tu velocidad caminando base es de 25 pies. Llevar armadura pesada no reduce tu velocidad."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "dwarven-toughness",
+    "label": {
+      "en": "Dwarven Toughness",
+      "fr": "Robustesse naine",
+      "es": "Dureza enana"
+    },
+    "parentKey": "hill-dwarf",
+    "description": {
+      "en": "Your hit point maximum increases by 1, and it increases by 1 again every time you gain a level.",
+      "fr": "Ton maximum de points de vie augmente de 1, puis de 1 à nouveau chaque fois que tu gagnes un niveau.",
+      "es": "Tus puntos de golpe máximos aumentan en 1, y vuelven a aumentar en 1 cada vez que subes de nivel."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "dwarven-armor-training",
+    "label": {
+      "en": "Dwarven Armor Training",
+      "fr": "Formation au port des armures naines",
+      "es": "Entrenamiento con armaduras enanas"
+    },
+    "parentKey": "mountain-dwarf",
+    "description": {
+      "en": "You have proficiency with light and medium armor.",
+      "fr": "Tu maîtrises les armures légères et intermédiaires.",
+      "es": "Tienes competencia con armaduras ligeras y medias."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "elf-darkvision",
+    "label": {
+      "en": "Darkvision",
+      "fr": "Vision dans le noir",
+      "es": "Visión en la oscuridad"
+    },
+    "parentKey": "elf",
+    "description": {
+      "en": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray.",
+      "fr": "Tu vois dans la pénombre jusqu'à 18 m comme en pleine lumière, et dans l'obscurité comme dans la pénombre. Dans l'obscurité, tu ne distingues pas les couleurs, seulement des nuances de gris.",
+      "es": "Ves en luz tenue a 60 pies como si fuera luz brillante, y en la oscuridad como si fuera luz tenue. En la oscuridad no distingues colores, solo tonos de gris."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "keen-senses",
+    "label": {
+      "en": "Keen Senses",
+      "fr": "Sens aiguisés",
+      "es": "Sentidos agudos"
+    },
+    "parentKey": "elf",
+    "description": {
+      "en": "You have proficiency in the Perception skill.",
+      "fr": "Tu maîtrises la compétence Perception.",
+      "es": "Tienes competencia en la habilidad Percepción."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "elf-fey-ancestry",
+    "label": {
+      "en": "Fey Ancestry",
+      "fr": "Ascendance féerique",
+      "es": "Linaje feérico"
+    },
+    "parentKey": "elf",
+    "description": {
+      "en": "You have advantage on saving throws against being charmed, and magic can't put you to sleep.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde contre l'état charmé, et la magie ne peut pas t'endormir.",
+      "es": "Tienes ventaja en las tiradas de salvación para evitar ser hechizado, y la magia no puede dormirte."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "trance",
+    "label": {
+      "en": "Trance",
+      "fr": "Transe",
+      "es": "Trance"
+    },
+    "parentKey": "elf",
+    "description": {
+      "en": "You don't need to sleep. Instead, you meditate deeply, semiconscious, for 4 hours a day, and gain the same benefit a human gets from 8 hours of sleep.",
+      "fr": "Tu n'as pas besoin de dormir. À la place, tu médites profondément, à demi conscient, 4 heures par jour, et tu en retires le même bénéfice qu'un humain après 8 heures de sommeil.",
+      "es": "No necesitas dormir. En su lugar, meditas profundamente, semiconsciente, 4 horas al día, y obtienes el mismo beneficio que un humano tras 8 horas de sueño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "elf-weapon-training-high",
+    "label": {
+      "en": "Elf Weapon Training",
+      "fr": "Entraînement aux armes elfiques",
+      "es": "Entrenamiento con armas élficas"
+    },
+    "parentKey": "high-elf",
+    "description": {
+      "en": "You have proficiency with the longsword, shortsword, shortbow and longbow.",
+      "fr": "Tu maîtrises l'épée longue, l'épée courte, l'arc court et l'arc long.",
+      "es": "Tienes competencia con la espada larga, la espada corta, el arco corto y el arco largo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "high-elf-cantrip",
+    "label": {
+      "en": "Cantrip",
+      "fr": "Sort mineur",
+      "es": "Truco"
+    },
+    "parentKey": "high-elf",
+    "description": {
+      "en": "You know one cantrip of your choice from the wizard spell list. Intelligence is your spellcasting ability for it.",
+      "fr": "Tu connais un sort mineur de ton choix de la liste des sorts de magicien. L'Intelligence est ta caractéristique d'incantation pour ce sort.",
+      "es": "Conoces un truco de tu elección de la lista de conjuros de mago. La Inteligencia es tu característica para lanzarlo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "high-elf-extra-language",
+    "label": {
+      "en": "Extra Language",
+      "fr": "Langue supplémentaire",
+      "es": "Idioma adicional"
+    },
+    "parentKey": "high-elf",
+    "description": {
+      "en": "You can speak, read and write one extra language of your choice.",
+      "fr": "Tu sais parler, lire et écrire une langue supplémentaire de ton choix.",
+      "es": "Puedes hablar, leer y escribir un idioma adicional de tu elección."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "elf-weapon-training-wood",
+    "label": {
+      "en": "Elf Weapon Training",
+      "fr": "Entraînement aux armes elfiques",
+      "es": "Entrenamiento con armas élficas"
+    },
+    "parentKey": "wood-elf",
+    "description": {
+      "en": "You have proficiency with the longsword, shortsword, shortbow and longbow.",
+      "fr": "Tu maîtrises l'épée longue, l'épée courte, l'arc court et l'arc long.",
+      "es": "Tienes competencia con la espada larga, la espada corta, el arco corto y el arco largo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "fleet-of-foot",
+    "label": {
+      "en": "Fleet of Foot",
+      "fr": "Foulée légère",
+      "es": "Pies ligeros"
+    },
+    "parentKey": "wood-elf",
+    "description": {
+      "en": "Your base walking speed increases to 35 feet.",
+      "fr": "Ta vitesse de marche de base passe à 10,50 m.",
+      "es": "Tu velocidad caminando base aumenta a 35 pies."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "mask-of-the-wild",
+    "label": {
+      "en": "Mask of the Wild",
+      "fr": "Cachette naturelle",
+      "es": "Máscara de la naturaleza"
+    },
+    "parentKey": "wood-elf",
+    "description": {
+      "en": "You can attempt to hide even when you are only lightly obscured by foliage, heavy rain, falling snow, mist or other natural phenomena.",
+      "fr": "Tu peux tenter de te cacher même lorsque tu n'es que légèrement masqué par du feuillage, une forte pluie, des chutes de neige, de la brume ou d'autres phénomènes naturels.",
+      "es": "Puedes intentar esconderte incluso cuando solo estés ligeramente oculto por follaje, lluvia intensa, nieve, niebla u otros fenómenos naturales."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "superior-darkvision",
+    "label": {
+      "en": "Superior Darkvision",
+      "fr": "Vision dans le noir supérieure",
+      "es": "Visión en la oscuridad superior"
+    },
+    "parentKey": "drow",
+    "description": {
+      "en": "Your darkvision has a radius of 120 feet.",
+      "fr": "Ta vision dans le noir porte à 36 m.",
+      "es": "Tu visión en la oscuridad alcanza 120 pies."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "sunlight-sensitivity",
+    "label": {
+      "en": "Sunlight Sensitivity",
+      "fr": "Sensibilité au soleil",
+      "es": "Sensibilidad a la luz solar"
+    },
+    "parentKey": "drow",
+    "description": {
+      "en": "You have disadvantage on attack rolls and on Wisdom (Perception) checks that rely on sight when you, the target of your attack or what you are trying to perceive is in direct sunlight.",
+      "fr": "Tu as le désavantage aux jets d'attaque et aux tests de Sagesse (Perception) basés sur la vue lorsque toi, la cible de ton attaque ou ce que tu cherches à percevoir est en plein soleil.",
+      "es": "Tienes desventaja en las tiradas de ataque y en las pruebas de Sabiduría (Percepción) basadas en la vista cuando tú, el objetivo de tu ataque o lo que intentas percibir está bajo la luz directa del sol."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "drow-magic",
+    "label": {
+      "en": "Drow Magic",
+      "fr": "Magie drow",
+      "es": "Magia drow"
+    },
+    "parentKey": "drow",
+    "description": {
+      "en": "You know the dancing lights cantrip. From 3rd level, you can cast faerie fire once, and from 5th level darkness once, without spell slots; each recharges after a long rest. Charisma is your spellcasting ability for these spells.",
+      "fr": "Tu connais le sort mineur lumières dansantes. À partir du niveau 3, tu peux lancer lueurs féeriques une fois, et à partir du niveau 5 ténèbres une fois, sans emplacement de sort ; chacun se recharge après un repos long. Le Charisme est ta caractéristique d'incantation pour ces sorts.",
+      "es": "Conoces el truco luces danzantes. A partir del nivel 3 puedes lanzar fuego feérico una vez, y a partir del nivel 5 oscuridad una vez, sin espacios de conjuro; cada uno se recupera tras un descanso largo. El Carisma es tu característica para lanzarlos."
+    },
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": 1,
+        "reset": "long"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "drow-weapon-training",
+    "label": {
+      "en": "Drow Weapon Training",
+      "fr": "Entraînement aux armes drows",
+      "es": "Entrenamiento con armas drow"
+    },
+    "parentKey": "drow",
+    "description": {
+      "en": "You have proficiency with rapiers, shortswords and hand crossbows.",
+      "fr": "Tu maîtrises la rapière, l'épée courte et l'arbalète de poing.",
+      "es": "Tienes competencia con estoques, espadas cortas y ballestas de mano."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "lucky",
+    "label": {
+      "en": "Lucky",
+      "fr": "Chanceux",
+      "es": "Afortunado"
+    },
+    "parentKey": "halfling",
+    "description": {
+      "en": "When you roll a 1 on the d20 for an attack roll, ability check or saving throw, you can reroll the die and must use the new roll.",
+      "fr": "Lorsque tu obtiens un 1 au d20 lors d'un jet d'attaque, d'un test de caractéristique ou d'un jet de sauvegarde, tu peux relancer le dé et tu dois utiliser le nouveau résultat.",
+      "es": "Cuando saques un 1 en el d20 de una tirada de ataque, prueba de característica o tirada de salvación, puedes volver a tirar el dado y debes usar el nuevo resultado."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "brave",
+    "label": {
+      "en": "Brave",
+      "fr": "Brave",
+      "es": "Valiente"
+    },
+    "parentKey": "halfling",
+    "description": {
+      "en": "You have advantage on saving throws against being frightened.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde contre l'état effrayé.",
+      "es": "Tienes ventaja en las tiradas de salvación para evitar ser asustado."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "halfling-nimbleness",
+    "label": {
+      "en": "Halfling Nimbleness",
+      "fr": "Agilité halfeline",
+      "es": "Agilidad de mediano"
+    },
+    "parentKey": "halfling",
+    "description": {
+      "en": "You can move through the space of any creature that is of a size larger than yours.",
+      "fr": "Tu peux traverser l'espace de toute créature d'une taille supérieure à la tienne.",
+      "es": "Puedes moverte a través del espacio de cualquier criatura de un tamaño mayor que el tuyo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "naturally-stealthy",
+    "label": {
+      "en": "Naturally Stealthy",
+      "fr": "Discrétion naturelle",
+      "es": "Sigiloso por naturaleza"
+    },
+    "parentKey": "lightfoot-halfling",
+    "description": {
+      "en": "You can attempt to hide even when you are obscured only by a creature that is at least one size larger than you.",
+      "fr": "Tu peux tenter de te cacher même lorsque tu n'es masqué que par une créature d'au moins une taille de plus que toi.",
+      "es": "Puedes intentar esconderte incluso cuando solo te oculte una criatura al menos un tamaño mayor que tú."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "stout-resilience",
+    "label": {
+      "en": "Stout Resilience",
+      "fr": "Résistance des robustes",
+      "es": "Resistencia de los fornidos"
+    },
+    "parentKey": "stout-halfling",
+    "description": {
+      "en": "You have advantage on saving throws against poison, and you have resistance to poison damage.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde contre le poison et tu as la résistance aux dégâts de poison.",
+      "es": "Tienes ventaja en las tiradas de salvación contra veneno y resistencia al daño de veneno."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "human-extra-language",
+    "label": {
+      "en": "Extra Language",
+      "fr": "Langue supplémentaire",
+      "es": "Idioma adicional"
+    },
+    "parentKey": "human",
+    "description": {
+      "en": "You can speak, read and write Common and one extra language of your choice.",
+      "fr": "Tu sais parler, lire et écrire le commun et une langue supplémentaire de ton choix.",
+      "es": "Puedes hablar, leer y escribir el común y un idioma adicional de tu elección."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "variant-human-skills",
+    "label": {
+      "en": "Skills",
+      "fr": "Compétences",
+      "es": "Habilidades"
+    },
+    "parentKey": "variant-human",
+    "description": {
+      "en": "You gain proficiency in one skill of your choice.",
+      "fr": "Tu obtiens la maîtrise d'une compétence de ton choix.",
+      "es": "Obtienes competencia en una habilidad de tu elección."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "variant-human-feat",
+    "label": {
+      "en": "Feat",
+      "fr": "Don",
+      "es": "Dote"
+    },
+    "parentKey": "variant-human",
+    "description": {
+      "en": "You gain one feat of your choice.",
+      "fr": "Tu obtiens un don de ton choix.",
+      "es": "Obtienes una dote de tu elección."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "draconic-ancestry-trait",
+    "label": {
+      "en": "Draconic Ancestry",
+      "fr": "Ascendance draconique",
+      "es": "Linaje dracónico"
+    },
+    "parentKey": "dragonborn",
+    "description": {
+      "en": "You have draconic ancestry. Choose one type of dragon: it determines the damage type and area of your breath weapon and your damage resistance.",
+      "fr": "Tu as une ascendance draconique. Choisis un type de dragon : il détermine le type de dégâts et la zone de ton souffle ainsi que ta résistance aux dégâts.",
+      "es": "Tienes linaje dracónico. Elige un tipo de dragón: determina el tipo de daño y el área de tu arma de aliento y tu resistencia al daño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "breath-weapon",
+    "label": {
+      "en": "Breath Weapon",
+      "fr": "Souffle",
+      "es": "Arma de aliento"
+    },
+    "parentKey": "dragonborn",
+    "description": {
+      "en": "As an action, you exhale destructive energy in the area set by your ancestry. Each creature in the area makes a saving throw (DC 8 + your Constitution modifier + your proficiency bonus), taking 2d6 damage on a failure or half as much on a success. The damage becomes 3d6 at 6th level, 4d6 at 11th and 5d6 at 16th. You can use it again after a short or long rest.",
+      "fr": "Par une action, tu exhales une énergie destructrice dans la zone définie par ton ascendance. Chaque créature dans la zone fait un jet de sauvegarde (DD 8 + ton modificateur de Constitution + ton bonus de maîtrise) et subit 2d6 dégâts en cas d'échec, la moitié en cas de réussite. Les dégâts passent à 3d6 au niveau 6, 4d6 au niveau 11 et 5d6 au niveau 16. Tu peux l'utiliser à nouveau après un repos court ou long.",
+      "es": "Como acción, exhalas energía destructiva en el área que indique tu linaje. Cada criatura en el área hace una tirada de salvación (CD 8 + tu modificador de Constitución + tu bonificador por competencia) y recibe 2d6 de daño si falla o la mitad si tiene éxito. El daño pasa a 3d6 en el nivel 6, 4d6 en el 11 y 5d6 en el 16. Puedes volver a usarla tras un descanso corto o largo."
+    },
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": 1,
+        "reset": "short"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "draconic-damage-resistance",
+    "label": {
+      "en": "Damage Resistance",
+      "fr": "Résistance aux dégâts",
+      "es": "Resistencia al daño"
+    },
+    "parentKey": "dragonborn",
+    "description": {
+      "en": "You have resistance to the damage type associated with your draconic ancestry.",
+      "fr": "Tu as la résistance au type de dégâts associé à ton ascendance draconique.",
+      "es": "Tienes resistencia al tipo de daño asociado a tu linaje dracónico."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "gnome-darkvision",
+    "label": {
+      "en": "Darkvision",
+      "fr": "Vision dans le noir",
+      "es": "Visión en la oscuridad"
+    },
+    "parentKey": "gnome",
+    "description": {
+      "en": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray.",
+      "fr": "Tu vois dans la pénombre jusqu'à 18 m comme en pleine lumière, et dans l'obscurité comme dans la pénombre. Dans l'obscurité, tu ne distingues pas les couleurs, seulement des nuances de gris.",
+      "es": "Ves en luz tenue a 60 pies como si fuera luz brillante, y en la oscuridad como si fuera luz tenue. En la oscuridad no distingues colores, solo tonos de gris."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "gnome-cunning",
+    "label": {
+      "en": "Gnome Cunning",
+      "fr": "Ruse gnome",
+      "es": "Astucia gnoma"
+    },
+    "parentKey": "gnome",
+    "description": {
+      "en": "You have advantage on all Intelligence, Wisdom and Charisma saving throws against magic.",
+      "fr": "Tu as l'avantage à tous les jets de sauvegarde d'Intelligence, de Sagesse et de Charisme contre la magie.",
+      "es": "Tienes ventaja en todas las tiradas de salvación de Inteligencia, Sabiduría y Carisma contra la magia."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "natural-illusionist",
+    "label": {
+      "en": "Natural Illusionist",
+      "fr": "Illusionniste-né",
+      "es": "Ilusionista nato"
+    },
+    "parentKey": "forest-gnome",
+    "description": {
+      "en": "You know the minor illusion cantrip. Intelligence is your spellcasting ability for it.",
+      "fr": "Tu connais le sort mineur illusion mineure. L'Intelligence est ta caractéristique d'incantation pour ce sort.",
+      "es": "Conoces el truco ilusión menor. La Inteligencia es tu característica para lanzarlo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "speak-with-small-beasts",
+    "label": {
+      "en": "Speak with Small Beasts",
+      "fr": "Communication avec les petits animaux",
+      "es": "Hablar con bestias pequeñas"
+    },
+    "parentKey": "forest-gnome",
+    "description": {
+      "en": "Through sounds and gestures, you can communicate simple ideas with Small or smaller beasts.",
+      "fr": "Par des sons et des gestes, tu peux communiquer des idées simples aux bêtes de taille Petite ou inférieure.",
+      "es": "Mediante sonidos y gestos, puedes comunicar ideas sencillas a bestias de tamaño Pequeño o inferior."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "artificers-lore",
+    "label": {
+      "en": "Artificer's Lore",
+      "fr": "Connaissances d'artificier",
+      "es": "Saber de artífice"
+    },
+    "parentKey": "rock-gnome",
+    "description": {
+      "en": "Whenever you make an Intelligence (History) check related to magic items, alchemical objects or technological devices, you can add twice your proficiency bonus instead of any proficiency bonus you normally apply.",
+      "fr": "Lorsque tu fais un test d'Intelligence (Histoire) lié aux objets magiques, aux objets alchimiques ou aux appareils technologiques, tu peux ajouter le double de ton bonus de maîtrise au lieu du bonus que tu appliques normalement.",
+      "es": "Cuando hagas una prueba de Inteligencia (Historia) relacionada con objetos mágicos, alquímicos o dispositivos tecnológicos, puedes sumar el doble de tu bonificador por competencia en lugar del que aplicarías normalmente."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "tinker",
+    "label": {
+      "en": "Tinker",
+      "fr": "Bricoleur",
+      "es": "Hojalatero"
+    },
+    "parentKey": "rock-gnome",
+    "description": {
+      "en": "You have proficiency with tinker's tools. Using them, you can spend 1 hour and 10 gp of materials to build a Tiny clockwork device (AC 5, 1 hp): a clockwork toy, a fire starter or a music box. A device stops working after 24 hours unless you spend 1 hour repairing it, and you can have up to three active at a time.",
+      "fr": "Tu maîtrises les outils de bricoleur. Avec eux, tu peux consacrer 1 heure et 10 po de matériaux à fabriquer un mécanisme Très petit (CA 5, 1 pv) : un jouet mécanique, un allume-feu ou une boîte à musique. Un mécanisme cesse de fonctionner au bout de 24 heures sauf si tu passes 1 heure à le réparer, et tu peux en avoir jusqu'à trois actifs à la fois.",
+      "es": "Tienes competencia con herramientas de hojalatero. Con ellas puedes invertir 1 hora y 10 po de materiales en construir un mecanismo Diminuto (CA 5, 1 pg): un juguete de cuerda, un encendedor o una caja de música. Un mecanismo deja de funcionar tras 24 horas salvo que dediques 1 hora a repararlo, y puedes tener hasta tres activos a la vez."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "half-elf-darkvision",
+    "label": {
+      "en": "Darkvision",
+      "fr": "Vision dans le noir",
+      "es": "Visión en la oscuridad"
+    },
+    "parentKey": "half-elf",
+    "description": {
+      "en": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray.",
+      "fr": "Tu vois dans la pénombre jusqu'à 18 m comme en pleine lumière, et dans l'obscurité comme dans la pénombre. Dans l'obscurité, tu ne distingues pas les couleurs, seulement des nuances de gris.",
+      "es": "Ves en luz tenue a 60 pies como si fuera luz brillante, y en la oscuridad como si fuera luz tenue. En la oscuridad no distingues colores, solo tonos de gris."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "half-elf-fey-ancestry",
+    "label": {
+      "en": "Fey Ancestry",
+      "fr": "Ascendance féerique",
+      "es": "Linaje feérico"
+    },
+    "parentKey": "half-elf",
+    "description": {
+      "en": "You have advantage on saving throws against being charmed, and magic can't put you to sleep.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde contre l'état charmé, et la magie ne peut pas t'endormir.",
+      "es": "Tienes ventaja en las tiradas de salvación para evitar ser hechizado, y la magia no puede dormirte."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "skill-versatility",
+    "label": {
+      "en": "Skill Versatility",
+      "fr": "Polyvalence",
+      "es": "Versatilidad con habilidades"
+    },
+    "parentKey": "half-elf",
+    "description": {
+      "en": "You gain proficiency in two skills of your choice.",
+      "fr": "Tu obtiens la maîtrise de deux compétences de ton choix.",
+      "es": "Obtienes competencia en dos habilidades de tu elección."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "half-elf-ability-increase",
+    "label": {
+      "en": "Ability Score Increase",
+      "fr": "Augmentation de caractéristiques",
+      "es": "Mejora de característica"
+    },
+    "parentKey": "half-elf",
+    "description": {
+      "en": "Your Charisma score increases by 2, and two other ability scores of your choice increase by 1.",
+      "fr": "Ton Charisme augmente de 2, et deux autres caractéristiques de ton choix augmentent de 1.",
+      "es": "Tu Carisma aumenta en 2, y otras dos características de tu elección aumentan en 1."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "half-orc-darkvision",
+    "label": {
+      "en": "Darkvision",
+      "fr": "Vision dans le noir",
+      "es": "Visión en la oscuridad"
+    },
+    "parentKey": "half-orc",
+    "description": {
+      "en": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray.",
+      "fr": "Tu vois dans la pénombre jusqu'à 18 m comme en pleine lumière, et dans l'obscurité comme dans la pénombre. Dans l'obscurité, tu ne distingues pas les couleurs, seulement des nuances de gris.",
+      "es": "Ves en luz tenue a 60 pies como si fuera luz brillante, y en la oscuridad como si fuera luz tenue. En la oscuridad no distingues colores, solo tonos de gris."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "menacing",
+    "label": {
+      "en": "Menacing",
+      "fr": "Menaçant",
+      "es": "Amenazador"
+    },
+    "parentKey": "half-orc",
+    "description": {
+      "en": "You gain proficiency in the Intimidation skill.",
+      "fr": "Tu maîtrises la compétence Intimidation.",
+      "es": "Tienes competencia en la habilidad Intimidación."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "relentless-endurance",
+    "label": {
+      "en": "Relentless Endurance",
+      "fr": "Endurance implacable",
+      "es": "Aguante incansable"
+    },
+    "parentKey": "half-orc",
+    "description": {
+      "en": "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest.",
+      "fr": "Lorsque tes points de vie tombent à 0 sans que tu sois tué sur le coup, tu peux rester à 1 point de vie à la place. Tu ne peux pas réutiliser cette aptitude avant d'avoir terminé un repos long.",
+      "es": "Cuando tus puntos de golpe se reducen a 0 sin morir en el acto, puedes quedarte a 1 punto de golpe en su lugar. No puedes volver a usar este rasgo hasta terminar un descanso largo."
+    },
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": 1,
+        "reset": "long"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "savage-attacks",
+    "label": {
+      "en": "Savage Attacks",
+      "fr": "Attaques sauvages",
+      "es": "Ataques salvajes"
+    },
+    "parentKey": "half-orc",
+    "description": {
+      "en": "When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage dice one additional time and add it to the extra damage of the critical hit.",
+      "fr": "Lorsque tu obtiens un coup critique avec une attaque d'arme au corps à corps, tu peux lancer une fois de plus l'un des dés de dégâts de l'arme et l'ajouter aux dégâts supplémentaires du critique.",
+      "es": "Cuando consigas un impacto crítico con un ataque con arma cuerpo a cuerpo, puedes tirar una vez más uno de los dados de daño del arma y sumarlo al daño extra del crítico."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "tiefling-darkvision",
+    "label": {
+      "en": "Darkvision",
+      "fr": "Vision dans le noir",
+      "es": "Visión en la oscuridad"
+    },
+    "parentKey": "tiefling",
+    "description": {
+      "en": "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray.",
+      "fr": "Tu vois dans la pénombre jusqu'à 18 m comme en pleine lumière, et dans l'obscurité comme dans la pénombre. Dans l'obscurité, tu ne distingues pas les couleurs, seulement des nuances de gris.",
+      "es": "Ves en luz tenue a 60 pies como si fuera luz brillante, y en la oscuridad como si fuera luz tenue. En la oscuridad no distingues colores, solo tonos de gris."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "hellish-resistance",
+    "label": {
+      "en": "Hellish Resistance",
+      "fr": "Résistance infernale",
+      "es": "Resistencia infernal"
+    },
+    "parentKey": "tiefling",
+    "description": {
+      "en": "You have resistance to fire damage.",
+      "fr": "Tu as la résistance aux dégâts de feu.",
+      "es": "Tienes resistencia al daño de fuego."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "racial-trait",
+    "key": "infernal-legacy",
+    "label": {
+      "en": "Infernal Legacy",
+      "fr": "Héritage infernal",
+      "es": "Legado infernal"
+    },
+    "parentKey": "tiefling",
+    "description": {
+      "en": "You know the thaumaturgy cantrip. From 3rd level, you can cast hellish rebuke as a 2nd-level spell once, and from 5th level darkness once, without spell slots; each recharges after a long rest. Charisma is your spellcasting ability for these spells.",
+      "fr": "Tu connais le sort mineur thaumaturgie. À partir du niveau 3, tu peux lancer représailles infernales comme un sort de niveau 2 une fois, et à partir du niveau 5 ténèbres une fois, sans emplacement de sort ; chacun se recharge après un repos long. Le Charisme est ta caractéristique d'incantation pour ces sorts.",
+      "es": "Conoces el truco taumaturgia. A partir del nivel 3 puedes lanzar reprensión infernal como conjuro de nivel 2 una vez, y a partir del nivel 5 oscuridad una vez, sin espacios de conjuro; cada uno se recupera tras un descanso largo. El Carisma es tu característica para lanzarlos."
+    },
+    "tags": [],
+    "data": {
+      "uses": {
+        "count": 1,
+        "reset": "long"
+      }
+    },
+    "effects": [],
+    "grants": []
+  }
+]

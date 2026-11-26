@@ -1,0 +1,319 @@
+[
+  {
+    "type": "armor-category",
+    "key": "light-armor",
+    "label": {
+      "en": "Light armor",
+      "fr": "Armures légères",
+      "es": "Armaduras ligeras"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "armor-category",
+    "key": "medium-armor",
+    "label": {
+      "en": "Medium armor",
+      "fr": "Armures intermédiaires",
+      "es": "Armaduras medias"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "armor-category",
+    "key": "heavy-armor",
+    "label": {
+      "en": "Heavy armor",
+      "fr": "Armures lourdes",
+      "es": "Armaduras pesadas"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "armor-category",
+    "key": "shields",
+    "label": {
+      "en": "Shields",
+      "fr": "Boucliers",
+      "es": "Escudos"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "armor",
+    "key": "padded-armor",
+    "label": {
+      "en": "Padded armor",
+      "fr": "Armure matelassée",
+      "es": "Armadura acolchada"
+    },
+    "parentKey": "light-armor",
+    "tags": ["light-armor"],
+    "data": {
+      "armorClass": 11,
+      "addDexterity": true,
+      "dexterityCap": null,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": true,
+      "costGp": 5,
+      "weightLb": 8
+    }
+  },
+  {
+    "type": "armor",
+    "key": "leather-armor",
+    "label": {
+      "en": "Leather armor",
+      "fr": "Armure de cuir",
+      "es": "Armadura de cuero"
+    },
+    "parentKey": "light-armor",
+    "tags": ["light-armor"],
+    "data": {
+      "armorClass": 11,
+      "addDexterity": true,
+      "dexterityCap": null,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": false,
+      "costGp": 10,
+      "weightLb": 10
+    }
+  },
+  {
+    "type": "armor",
+    "key": "studded-leather-armor",
+    "label": {
+      "en": "Studded leather armor",
+      "fr": "Armure de cuir clouté",
+      "es": "Armadura de cuero tachonado"
+    },
+    "parentKey": "light-armor",
+    "tags": ["light-armor"],
+    "data": {
+      "armorClass": 12,
+      "addDexterity": true,
+      "dexterityCap": null,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": false,
+      "costGp": 45,
+      "weightLb": 13
+    }
+  },
+  {
+    "type": "armor",
+    "key": "hide-armor",
+    "label": {
+      "en": "Hide armor",
+      "fr": "Armure de peau",
+      "es": "Armadura de pieles"
+    },
+    "parentKey": "medium-armor",
+    "tags": ["medium-armor"],
+    "data": {
+      "armorClass": 12,
+      "addDexterity": true,
+      "dexterityCap": 2,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": false,
+      "costGp": 10,
+      "weightLb": 12
+    }
+  },
+  {
+    "type": "armor",
+    "key": "chain-shirt",
+    "label": {
+      "en": "Chain shirt",
+      "fr": "Chemise de mailles",
+      "es": "Camisote de mallas"
+    },
+    "parentKey": "medium-armor",
+    "tags": ["medium-armor"],
+    "data": {
+      "armorClass": 13,
+      "addDexterity": true,
+      "dexterityCap": 2,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": false,
+      "costGp": 50,
+      "weightLb": 20
+    }
+  },
+  {
+    "type": "armor",
+    "key": "scale-mail",
+    "label": {
+      "en": "Scale mail",
+      "fr": "Armure d'écailles",
+      "es": "Cota de escamas"
+    },
+    "parentKey": "medium-armor",
+    "tags": ["medium-armor"],
+    "data": {
+      "armorClass": 14,
+      "addDexterity": true,
+      "dexterityCap": 2,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": true,
+      "costGp": 50,
+      "weightLb": 45
+    }
+  },
+  {
+    "type": "armor",
+    "key": "breastplate",
+    "label": {
+      "en": "Breastplate",
+      "fr": "Cuirasse",
+      "es": "Coraza"
+    },
+    "parentKey": "medium-armor",
+    "tags": ["medium-armor"],
+    "data": {
+      "armorClass": 14,
+      "addDexterity": true,
+      "dexterityCap": 2,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": false,
+      "costGp": 400,
+      "weightLb": 20
+    }
+  },
+  {
+    "type": "armor",
+    "key": "half-plate",
+    "label": {
+      "en": "Half plate",
+      "fr": "Demi-plate",
+      "es": "Semiplacas"
+    },
+    "parentKey": "medium-armor",
+    "tags": ["medium-armor"],
+    "data": {
+      "armorClass": 15,
+      "addDexterity": true,
+      "dexterityCap": 2,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": true,
+      "costGp": 750,
+      "weightLb": 40
+    }
+  },
+  {
+    "type": "armor",
+    "key": "ring-mail",
+    "label": {
+      "en": "Ring mail",
+      "fr": "Broigne",
+      "es": "Cota de anillas"
+    },
+    "parentKey": "heavy-armor",
+    "tags": ["heavy-armor"],
+    "data": {
+      "armorClass": 14,
+      "addDexterity": false,
+      "dexterityCap": null,
+      "bonus": false,
+      "strengthRequirement": null,
+      "stealthDisadvantage": true,
+      "costGp": 30,
+      "weightLb": 40
+    }
+  },
+  {
+    "type": "armor",
+    "key": "chain-mail",
+    "label": {
+      "en": "Chain mail",
+      "fr": "Cotte de mailles",
+      "es": "Cota de mallas"
+    },
+    "parentKey": "heavy-armor",
+    "tags": ["heavy-armor"],
+    "data": {
+      "armorClass": 16,
+      "addDexterity": false,
+      "dexterityCap": null,
+      "bonus": false,
+      "strengthRequirement": 13,
+      "stealthDisadvantage": true,
+      "costGp": 75,
+      "weightLb": 55
+    }
+  },
+  {
+    "type": "armor",
+    "key": "splint-armor",
+    "label": {
+      "en": "Splint armor",
+      "fr": "Clibanion",
+      "es": "Armadura de bandas"
+    },
+    "parentKey": "heavy-armor",
+    "tags": ["heavy-armor"],
+    "data": {
+      "armorClass": 17,
+      "addDexterity": false,
+      "dexterityCap": null,
+      "bonus": false,
+      "strengthRequirement": 15,
+      "stealthDisadvantage": true,
+      "costGp": 200,
+      "weightLb": 60
+    }
+  },
+  {
+    "type": "armor",
+    "key": "plate-armor",
+    "label": {
+      "en": "Plate armor",
+      "fr": "Harnois",
+      "es": "Armadura de placas"
+    },
+    "parentKey": "heavy-armor",
+    "tags": ["heavy-armor"],
+    "data": {
+      "armorClass": 18,
+      "addDexterity": false,
+      "dexterityCap": null,
+      "bonus": false,
+      "strengthRequirement": 15,
+      "stealthDisadvantage": true,
+      "costGp": 1500,
+      "weightLb": 65
+    }
+  },
+  {
+    "type": "armor",
+    "key": "shield",
+    "label": {
+      "en": "Shield",
+      "fr": "Bouclier",
+      "es": "Escudo"
+    },
+    "parentKey": "shields",
+    "tags": ["shields"],
+    "data": {
+      "armorClass": 2,
+      "addDexterity": false,
+      "dexterityCap": null,
+      "bonus": true,
+      "strengthRequirement": null,
+      "stealthDisadvantage": false,
+      "costGp": 10,
+      "weightLb": 6
+    }
+  }
+]

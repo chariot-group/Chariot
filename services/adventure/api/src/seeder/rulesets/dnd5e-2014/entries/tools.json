@@ -1,0 +1,642 @@
+[
+  {
+    "type": "tool-category",
+    "key": "artisans-tools",
+    "label": {
+      "en": "Artisan's tools",
+      "fr": "Outils d'artisan",
+      "es": "Herramientas de artesano"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "tool-category",
+    "key": "gaming-sets",
+    "label": {
+      "en": "Gaming sets",
+      "fr": "Jeux",
+      "es": "Juegos"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "tool-category",
+    "key": "musical-instruments",
+    "label": {
+      "en": "Musical instruments",
+      "fr": "Instruments de musique",
+      "es": "Instrumentos musicales"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "tool-category",
+    "key": "kits",
+    "label": {
+      "en": "Kits and specialist tools",
+      "fr": "Kits et outils spécialisés",
+      "es": "Kits y herramientas especializadas"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "tool-category",
+    "key": "vehicles",
+    "label": {
+      "en": "Vehicles",
+      "fr": "Véhicules",
+      "es": "Vehículos"
+    },
+    "tags": [],
+    "data": {}
+  },
+  {
+    "type": "tool",
+    "key": "alchemists-supplies",
+    "label": {
+      "en": "Alchemist's supplies",
+      "fr": "Matériel d'alchimiste",
+      "es": "Suministros de alquimista"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 50,
+      "weightLb": 8
+    }
+  },
+  {
+    "type": "tool",
+    "key": "brewers-supplies",
+    "label": {
+      "en": "Brewer's supplies",
+      "fr": "Matériel de brasseur",
+      "es": "Suministros de cervecero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 20,
+      "weightLb": 9
+    }
+  },
+  {
+    "type": "tool",
+    "key": "calligraphers-supplies",
+    "label": {
+      "en": "Calligrapher's supplies",
+      "fr": "Matériel de calligraphe",
+      "es": "Suministros de calígrafo"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 10,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "carpenters-tools",
+    "label": {
+      "en": "Carpenter's tools",
+      "fr": "Outils de charpentier",
+      "es": "Herramientas de carpintero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 8,
+      "weightLb": 6
+    }
+  },
+  {
+    "type": "tool",
+    "key": "cartographers-tools",
+    "label": {
+      "en": "Cartographer's tools",
+      "fr": "Outils de cartographe",
+      "es": "Herramientas de cartógrafo"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 15,
+      "weightLb": 6
+    }
+  },
+  {
+    "type": "tool",
+    "key": "cobblers-tools",
+    "label": {
+      "en": "Cobbler's tools",
+      "fr": "Outils de cordonnier",
+      "es": "Herramientas de zapatero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 5,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "cooks-utensils",
+    "label": {
+      "en": "Cook's utensils",
+      "fr": "Ustensiles de cuisinier",
+      "es": "Utensilios de cocinero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 1,
+      "weightLb": 8
+    }
+  },
+  {
+    "type": "tool",
+    "key": "glassblowers-tools",
+    "label": {
+      "en": "Glassblower's tools",
+      "fr": "Outils de souffleur de verre",
+      "es": "Herramientas de soplador de vidrio"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 30,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "jewelers-tools",
+    "label": {
+      "en": "Jeweler's tools",
+      "fr": "Outils de joaillier",
+      "es": "Herramientas de joyero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 25,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "tool",
+    "key": "leatherworkers-tools",
+    "label": {
+      "en": "Leatherworker's tools",
+      "fr": "Outils de tanneur",
+      "es": "Herramientas de peletero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 5,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "masons-tools",
+    "label": {
+      "en": "Mason's tools",
+      "fr": "Outils de maçon",
+      "es": "Herramientas de albañil"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 10,
+      "weightLb": 8
+    }
+  },
+  {
+    "type": "tool",
+    "key": "painters-supplies",
+    "label": {
+      "en": "Painter's supplies",
+      "fr": "Matériel de peintre",
+      "es": "Suministros de pintor"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 10,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "potters-tools",
+    "label": {
+      "en": "Potter's tools",
+      "fr": "Outils de potier",
+      "es": "Herramientas de alfarero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 10,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "tool",
+    "key": "smiths-tools",
+    "label": {
+      "en": "Smith's tools",
+      "fr": "Outils de forgeron",
+      "es": "Herramientas de herrero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 20,
+      "weightLb": 8
+    }
+  },
+  {
+    "type": "tool",
+    "key": "tinkers-tools",
+    "label": {
+      "en": "Tinker's tools",
+      "fr": "Outils de bricoleur",
+      "es": "Herramientas de hojalatero"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 50,
+      "weightLb": 10
+    }
+  },
+  {
+    "type": "tool",
+    "key": "weavers-tools",
+    "label": {
+      "en": "Weaver's tools",
+      "fr": "Outils de tisserand",
+      "es": "Herramientas de tejedor"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 1,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "woodcarvers-tools",
+    "label": {
+      "en": "Woodcarver's tools",
+      "fr": "Outils de sculpteur sur bois",
+      "es": "Herramientas de tallista"
+    },
+    "parentKey": "artisans-tools",
+    "tags": ["artisans-tools"],
+    "data": {
+      "costGp": 1,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "dice-set",
+    "label": {
+      "en": "Dice set",
+      "fr": "Jeu de dés",
+      "es": "Juego de dados"
+    },
+    "parentKey": "gaming-sets",
+    "tags": ["gaming-sets"],
+    "data": {
+      "costGp": 0.1,
+      "weightLb": 0
+    }
+  },
+  {
+    "type": "tool",
+    "key": "dragonchess-set",
+    "label": {
+      "en": "Dragonchess set",
+      "fr": "Échecs draconiques",
+      "es": "Ajedrez de dragones"
+    },
+    "parentKey": "gaming-sets",
+    "tags": ["gaming-sets"],
+    "data": {
+      "costGp": 1,
+      "weightLb": 0.5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "playing-card-set",
+    "label": {
+      "en": "Playing card set",
+      "fr": "Jeu de cartes",
+      "es": "Baraja de cartas"
+    },
+    "parentKey": "gaming-sets",
+    "tags": ["gaming-sets"],
+    "data": {
+      "costGp": 0.5,
+      "weightLb": 0
+    }
+  },
+  {
+    "type": "tool",
+    "key": "three-dragon-ante-set",
+    "label": {
+      "en": "Three-Dragon Ante set",
+      "fr": "Jeu des trois dragons",
+      "es": "Juego de los tres dragones"
+    },
+    "parentKey": "gaming-sets",
+    "tags": ["gaming-sets"],
+    "data": {
+      "costGp": 1,
+      "weightLb": 0
+    }
+  },
+  {
+    "type": "tool",
+    "key": "bagpipes",
+    "label": {
+      "en": "Bagpipes",
+      "fr": "Cornemuse",
+      "es": "Gaita"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 30,
+      "weightLb": 6
+    }
+  },
+  {
+    "type": "tool",
+    "key": "drum",
+    "label": {
+      "en": "Drum",
+      "fr": "Tambour",
+      "es": "Tambor"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 6,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "tool",
+    "key": "dulcimer",
+    "label": {
+      "en": "Dulcimer",
+      "fr": "Tympanon",
+      "es": "Dulcémele"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 25,
+      "weightLb": 10
+    }
+  },
+  {
+    "type": "tool",
+    "key": "flute",
+    "label": {
+      "en": "Flute",
+      "fr": "Flûte",
+      "es": "Flauta"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 2,
+      "weightLb": 1
+    }
+  },
+  {
+    "type": "tool",
+    "key": "lute",
+    "label": {
+      "en": "Lute",
+      "fr": "Luth",
+      "es": "Laúd"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 35,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "tool",
+    "key": "lyre",
+    "label": {
+      "en": "Lyre",
+      "fr": "Lyre",
+      "es": "Lira"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 30,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "tool",
+    "key": "horn",
+    "label": {
+      "en": "Horn",
+      "fr": "Cor",
+      "es": "Cuerno"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 3,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "tool",
+    "key": "pan-flute",
+    "label": {
+      "en": "Pan flute",
+      "fr": "Flûte de pan",
+      "es": "Flauta de pan"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 12,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "tool",
+    "key": "shawm",
+    "label": {
+      "en": "Shawm",
+      "fr": "Chalemie",
+      "es": "Chirimía"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 2,
+      "weightLb": 1
+    }
+  },
+  {
+    "type": "tool",
+    "key": "viol",
+    "label": {
+      "en": "Viol",
+      "fr": "Viole",
+      "es": "Viola"
+    },
+    "parentKey": "musical-instruments",
+    "tags": ["musical-instruments"],
+    "data": {
+      "costGp": 30,
+      "weightLb": 1
+    }
+  },
+  {
+    "type": "tool",
+    "key": "disguise-kit",
+    "label": {
+      "en": "Disguise kit",
+      "fr": "Kit de déguisement",
+      "es": "Útiles para disfrazarse"
+    },
+    "parentKey": "kits",
+    "tags": ["kits"],
+    "data": {
+      "costGp": 25,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "tool",
+    "key": "forgery-kit",
+    "label": {
+      "en": "Forgery kit",
+      "fr": "Kit de contrefaçon",
+      "es": "Útiles para falsificar"
+    },
+    "parentKey": "kits",
+    "tags": ["kits"],
+    "data": {
+      "costGp": 15,
+      "weightLb": 5
+    }
+  },
+  {
+    "type": "tool",
+    "key": "herbalism-kit",
+    "label": {
+      "en": "Herbalism kit",
+      "fr": "Kit d'herboriste",
+      "es": "Útiles de herborista"
+    },
+    "parentKey": "kits",
+    "tags": ["kits"],
+    "data": {
+      "costGp": 5,
+      "weightLb": 3
+    }
+  },
+  {
+    "type": "tool",
+    "key": "navigators-tools",
+    "label": {
+      "en": "Navigator's tools",
+      "fr": "Instruments de navigateur",
+      "es": "Herramientas de navegante"
+    },
+    "parentKey": "kits",
+    "tags": ["kits"],
+    "data": {
+      "costGp": 25,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "tool",
+    "key": "poisoners-kit",
+    "label": {
+      "en": "Poisoner's kit",
+      "fr": "Kit d'empoisonneur",
+      "es": "Útiles de envenenador"
+    },
+    "parentKey": "kits",
+    "tags": ["kits"],
+    "data": {
+      "costGp": 50,
+      "weightLb": 2
+    }
+  },
+  {
+    "type": "tool",
+    "key": "thieves-tools",
+    "label": {
+      "en": "Thieves' tools",
+      "fr": "Outils de voleur",
+      "es": "Herramientas de ladrón"
+    },
+    "parentKey": "kits",
+    "tags": ["kits"],
+    "data": {
+      "costGp": 25,
+      "weightLb": 1
+    }
+  },
+  {
+    "type": "tool",
+    "key": "land-vehicles",
+    "label": {
+      "en": "Land vehicles",
+      "fr": "Véhicules terrestres",
+      "es": "Vehículos terrestres"
+    },
+    "parentKey": "vehicles",
+    "tags": ["vehicles"],
+    "data": {
+      "costGp": 0,
+      "weightLb": 0
+    }
+  },
+  {
+    "type": "tool",
+    "key": "water-vehicles",
+    "label": {
+      "en": "Water vehicles",
+      "fr": "Véhicules aquatiques",
+      "es": "Vehículos acuáticos"
+    },
+    "parentKey": "vehicles",
+    "tags": ["vehicles"],
+    "data": {
+      "costGp": 0,
+      "weightLb": 0
+    }
+  }
+]

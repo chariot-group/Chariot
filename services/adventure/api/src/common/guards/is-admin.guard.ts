@@ -8,6 +8,13 @@ import {
 
 const ADMIN_ROLE = 'admin';
 
+/** True when the authenticated request user holds the Keycloak realm role `admin`. */
+export function hasAdminRole(user: unknown): boolean {
+  const realmAccess = (user as { realm_access?: { roles?: string[] } } | null)
+    ?.realm_access;
+  return (realmAccess?.roles ?? []).includes(ADMIN_ROLE);
+}
+
 @Injectable()
 export class IsAdminGuard implements CanActivate {
   private readonly logger = new Logger(IsAdminGuard.name);
@@ -21,10 +28,7 @@ export class IsAdminGuard implements CanActivate {
       throw new ForbiddenException('Access denied');
     }
 
-    const roles: string[] =
-      (user.realm_access as { roles?: string[] } | undefined)?.roles ?? [];
-
-    if (!roles.includes(ADMIN_ROLE)) {
+    if (!hasAdminRole(user)) {
       this.logger.warn(
         `IsAdminGuard: user ${user.keycloakId} does not have role '${ADMIN_ROLE}'`,
       );

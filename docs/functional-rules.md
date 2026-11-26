@@ -6601,3 +6601,128 @@ The path app → Keycloak login page → back in the app MUST use as few sequent
 - `services/web/client/src/components/character/tabContents/shared/Statistics.tsx`, `NpcStatistics.tsx`
 - `services/web/client/src/components/layout/Sidebar/GroupList.tsx`, `shared/SidebarItemWithActions.tsx`, `shared/sidebarActionIcons.ts`
 - `services/web/client/src/services/CharacterService.ts`
+
+---
+
+## FR-ruleset-character-builder: Data-Driven Ruleset for the Character Builder
+
+**Rule**: Game logic used by the step-by-step character builder (catalog of races, classes, levels, features, the builder pages and their business rules) MUST be stored as data in the adventure service, in two collections `rulesets` and `ruleset_entries`, and MUST NOT be hardcoded. Adding or changing a ruleset MUST NOT require a code change.
+
+**Scope**:
+- Complements **FR-game-system**: a ruleset belongs to one `gameSystem` (enum unchanged, `DND_5E`); the edition is carried by the ruleset `key` (e.g. `dnd5e-2014`, later `dnd5e-2024`).
+- This first stage covers the data model, its validation, the admin write API and the read API. Out of scope (later stages): the evaluation engine, the web builder UI, the admin panel UI, the full D&D 5e 2014 content seed, and storing builder choices on `Player`.
+
+### Collection `rulesets` (one document per ruleset version)
+- **Meta**: `key` (kebab-case, e.g. `dnd5e-2014`), `gameSystem` (FR-game-system enum), `version` (integer ≥ 1), `status` (`draft` | `published` | `archived`), `name` and `description` as translated labels.
+- **Flow** (`flow.steps[]`), ordered pages of the builder. Each step has: `id` (unique within the ruleset), `order`, `title`, `breadcrumb`, optional `description`, `modes` (`creation` and/or `levelUp`), optional `visibleWhen`, optional `repeat` (generates one page per item, e.g. per level gained) and `fields[]`.
+- **Field**: `id` (unique within the ruleset), `type`, `label`, optional `help`, and optional logic: `visibleWhen`, `requiredWhen`, `default`, `optionsFilter`, `validation`. Allowed types: `entitySelect`, `multiSelect`, `grantedChoices`, `abilityAllocation`, `number`, `text`, `computed`, `summary`. Type-specific config: `source` (entry type and filter) for selects, `count` for multi-choice, `method` for ability allocation (point buy, standard array, roll), `formula` for computed.
+- **Formulas** (`formulas[]`): named derived values (`id`, `expression`), e.g. ability modifier, proficiency bonus, hit points. Formulas may reference field values, entry effects and other formulas.
+- **Projection** (`projection[]`): mapping from builder values or formulas to a target path of the `Player` sheet (e.g. `stats.abilityScores.dex`). Stored here, applied in a later stage.
+
+### Collection `ruleset_entries` (one document per catalog item)
+- `rulesetId`, `type` (free kebab-case string: `race`, `subrace`, `class`, `subclass`, `background`, `feat`, `feature`, `spell`, `item`, …), `key` (unique per ruleset + type), optional `parentKey` (e.g. subrace → race, subclass → class), `label`, optional `description`, optional `level` (for leveled features), `tags[]`, free `data` object for system-specific attributes.
+- `effects[]`: applied when the entry is selected. Each effect has `op` (`add` | `set` | `grant` | `remove`), `target` (path in the builder state), `value`, optional `when`.
+- `grants[]`: choices the entry gives to the player (e.g. a race grants a subrace choice, a class grants N skills at level 1). Each grant has `id`, `kind` (`choose`), `from` (entry type + filter or explicit list), `count`, optional `level` and optional `when`. A grant may carry `effects` applied once per chosen option, where `{key}` stands for the chosen option key (e.g. `+1` to the chosen ability, proficiency in the chosen skill). These choices are shown by `grantedChoices` fields, which is how the builder evolves based on previous choices without hardcoded steps.
+
+### Logic and expressions
+- Every condition, filter, validation and formula (`visibleWhen`, `requiredWhen`, `optionsFilter`, `validation`, `formula`, `expression`, `when`) MUST be a **JSON Logic** expression.
+- An expression may read any builder value, whichever page it comes from, so a field can influence any other field or step.
+- A `var` path MUST start with a field id, a formula id or a reserved root: `state` (builder state produced by entry effects, e.g. `state.abilities.dex`), `repeat` (current repetition, `repeat.index`) `context` (builder context, e.g. `context.mode`) or `option` (the candidate entry while an `optionsFilter` is evaluated). Reserved roots cannot be used as field or formula ids. Vars evaluated per item inside `map`, `filter`, `reduce`, `all`, `some`, `none` are not checked.
+- Executable code (JavaScript strings, `eval`, functions) MUST NOT be stored or accepted.
+
+### Translations
+- Every user-facing text (`name`, `description`, `title`, `breadcrumb`, `label`, `help`) is a translated object stored in the document, with one key per locale supported by Chariot (`fr`, `en`, `es`, aligned with `services/web/client/src/i18n/request.ts`). `en` (the application default locale) is mandatory; `fr` and `es` are optional and clients fall back to `en` when the user's locale is missing. Unknown locale keys are rejected.
+
+### Integrity (validated on write)
+- `rulesets`: (`key`, `version`) is unique; at most one `published` version per `key`.
+- Step ids and field ids are unique within a ruleset; every `id` referenced by `repeat`, a `grantedChoices` field or an expression variable resolves to an existing field, formula or entry type.
+- Every expression is valid JSON Logic; unknown operators (and `log`) are rejected.
+- Formulas MUST NOT reference each other in a cycle.
+- Type-specific config is required: `source` for `entitySelect`/`multiSelect`, `count` for `multiSelect`, `from` (an existing select field) for `grantedChoices`, `methods` for `abilityAllocation`, `formula` for `computed`.
+- An entry referenced as `parentKey` by other entries cannot be deleted.
+- `ruleset_entries`: (`rulesetId`, `type`, `key`) is unique; `parentKey` resolves to an existing entry of the same ruleset.
+- A `published` ruleset and its entries are immutable: any change goes through a new `draft` version (copy then edit). This keeps the characters created with a given version consistent.
+
+### Access
+- Write endpoints (create, update, delete draft, publish, archive, create new version, CRUD on entries) are restricted to the Keycloak `admin` role (`@IsAdmin()`), used by the admin panel.
+- Read endpoints are available to any authenticated user and return only `published` rulesets (admins also see `draft` and `archived`):
+  - list rulesets (filter by `gameSystem`), without the catalog;
+  - get a ruleset by `key` (latest published) or by id, with its flow, formulas and projection;
+  - list entries of a ruleset, filterable by `type`, `parentKey`, `level` and `tags`, paginated.
+- Swagger documents every endpoint and schema.
+
+### Suggested values, never imposed
+- Every value the ruleset derives (field `default`, `computed` fields, effects, projection) is a **suggestion** pre-filled in the builder: the player can always change it. Only the structural constraints stay enforced (required choices, at most two classes, level 1–20).
+- `computed` fields show the suggested value and stay editable unless the field declares `locked: true`.
+- Counts given by grants or fields (skills to pick, spells known, …) guide the player (counter, warning) but do not block an extra or missing choice.
+
+### Spells
+- Field type `spellSelect`: the player picks spells from the **Codex** (search filtered by class and spell level computed by the ruleset) or enters a spell **manually** with the same fields as the sheet Magic tab. Both sources are equivalent in the builder.
+- Suggested counts and maximum spell level come from the ruleset (cantrips known, spells known or prepared, slots by level).
+
+### Seed `dnd5e-2014`
+- One ruleset `dnd5e-2014` (`gameSystem: DND_5E`, version 1) with its entries, stored as JSON files in `services/adventure/api/src/seeder/rulesets/dnd5e-2014/` (`ruleset.json` plus one file per entry type) and imported with status `published`. Every text is written in `en`, `fr` and `es`, with full descriptions.
+- **Catalog**: the D&D 5e 2014 races and subraces; the 13 classes offered by Chariot (`Artificer` included) with their subclasses and class features from level 1 to 20; backgrounds; feats; the equipment packs of each class; reference entries for skills, languages, tools, weapons and armors.
+- **Creation flow** (in order): Race → Class → Ability scores → Background → Equipment → Spells (only for spellcasting classes) → Details (name, alignment, personality, appearance) → Summary. The player picks a target level (1–20, default 1); levels 2 to the target level use the level-up pages (`repeat`), which are also the `levelUp` mode pages.
+- **Ability scores**: methods point buy (27 points, scores 8–15 before racial bonuses), standard array (15, 14, 13, 12, 10, 8) and dice roll; the result stays editable.
+- **No virtual dice**: Chariot never rolls dice. Whenever a rule asks for a roll (4d6-drop-lowest ability scores, hit points at level-up, starting gold), the player rolls physical dice and **enters the result**; the builder only explains the roll to make and, when relevant, suggests the fixed alternative (e.g. average hit points).
+- **Level-up**: hit points (level 1: max hit die + CON modifier; next levels: the player chooses, the average `die / 2 + 1 + CON` is suggested), new class features, subclass at the level defined by the class, Ability Score Improvement at the class levels (+2 to one score, +1 to two scores, or a feat), new spells.
+- **Multiclass**: at most two classes (FR-character-general-bento-layout); a second class requires 13 in the primary abilities of both classes.
+- **Projection to the Player sheet** (FR-character-universal-fields, FR-character-general-bento-layout):
+  - race, subrace, background (`profile.history`), subclass, languages and proficiencies (`armors`, `weapons`, `tools`) are written as **labels in the user's locale** at creation time, like the rest of the sheet;
+  - class name, level, hit die and remaining hit dice go to `class[]`; global level and minimum XP to `progression`;
+  - ability scores, saving throw proficiencies (`masteriesAbility`), skill masteries (`masteries`: 1 half, 2 proficient, 3 expertise), proficiency bonus, passive perception, speeds, size and senses go to `stats`;
+  - racial traits, class and subclass features and feats go to `abilities[]` with their description and, when limited, their counter and short/long rest reset;
+  - the chosen equipment pack is written to `treasure.equipment`, its weapons are suggested as attack `actions[]`;
+  - spellcasting classes get a `spellcasting[]` entry (class, ability, save DC, attack bonus, slots by level) holding the chosen spells;
+  - player alignments only (no « Unaligned » nor « Any … »).
+
+### Seed import
+- The command `npm run ruleset:import` (adventure service) loads every seed folder of `src/seeder/rulesets/` into `rulesets` and `ruleset_entries`. Options: `--key=<key>` to import one ruleset, `--dry-run` to validate without writing.
+- Before writing, the seed is checked with the same DTO and integrity rules as the admin API (plus parents and grant targets); an invalid seed writes nothing and the command exits with an error.
+- Each imported ruleset stores a content hash. For a seed (`key`, `version`):
+  - not in the database: it is created, its entries inserted, then it is published and the previously published version of the key is archived;
+  - already in the database with the same content: nothing is written (idempotent);
+  - already in the database with a different content: the import fails, asking to raise `version` in the seed (a published version is never modified);
+  - a higher version of the key already exists: the import fails (no downgrade).
+- If a write fails midway, the draft and its entries are removed so no partial ruleset remains.
+- Integration and production imports are run manually; no deployment hook runs it automatically.
+
+**Prohibitions**:
+- Hardcoding races, classes, features or builder steps in the services or clients.
+- Storing executable code in a ruleset or an entry.
+- Modifying a `published` ruleset or its entries in place.
+- Exposing `draft` or `archived` rulesets to non-admin users.
+- Allowing non-admin users to write rulesets or entries.
+
+**Tests**:
+- Nominal: an admin creates a draft ruleset with one step and one field, adds a `race` entry with an effect and a grant, publishes it; an authenticated user reads it by `key` and lists its `race` entries.
+- Nominal: a new version is created from a published ruleset as a draft; the published version stays unchanged and still served.
+- Edge: two drafts of the same `key`; publishing the second archives the first published version so only one stays `published`.
+- Edge: entries list filtered by `type` + `parentKey` returns only the matching subraces; pagination respects the limit.
+- Edge: translated labels with only `en` are accepted; with `fr`, `en` and `es` are accepted.
+- Failure: translated labels without `en`, or with an unknown locale key (e.g. `de`), are rejected.
+- Failure: a non-admin user calling a write endpoint gets 403.
+- Failure: a non-admin user reading a draft ruleset gets 404.
+- Failure: updating a published ruleset or one of its entries is rejected.
+- Failure: invalid JSON Logic, unknown operator, duplicate step/field id, unresolved field reference or unresolved `parentKey` is rejected by validation.
+- Failure: duplicate (`key`, `version`) or duplicate (`rulesetId`, `type`, `key`) is rejected.
+- Failure: a formula cycle, a reserved id used as field id, or a missing type-specific config is rejected.
+- Nominal (seed): the `dnd5e-2014` files import as one published ruleset; every expression and reference passes the integrity checks; the 13 Chariot classes are present.
+- Edge (seed): a level-5 Fighter creation goes through the level-up pages 2–5 (subclass at 3, ASI at 4); a second class without 13 in its primary ability is refused.
+- Edge: a suggested value (hit points, passive perception) changed by the player is kept; a non-`locked` computed field is editable.
+- Edge: a spell can be added from the Codex or manually in the same `spellSelect` field.
+- Edge: the dice-roll method only asks for the six results rolled by the player; no value is generated by the application.
+- Nominal (import): an empty database gets `dnd5e-2014` v1 published with all its entries.
+- Edge (import): a second run with the same seed writes nothing; `--dry-run` validates without writing; a seed with a higher version publishes it and archives the previous one.
+- Failure (import): same version with a different content, a higher version already in the database, or an invalid seed fails without writing; a failed entry insertion removes the draft.
+
+**References**:
+- `services/adventure/api/src/common/constants/game-system.constant.ts`
+- `services/adventure/api/src/common/decorators/is-admin.decorator.ts`
+- `services/web/client/src/i18n/request.ts` (supported locales)
+- `services/adventure/api/src/resources/ruleset/` (module, schemas, DTOs, services, controller)
+- `services/adventure/api/src/resources/ruleset/validation/` (JSON Logic analysis, integrity checks)
+- `services/adventure/api/src/seeder/rulesets/dnd5e-2014/` (seed files and engine conventions README)
+- `services/adventure/api/src/seeder/rulesets/dnd5e-2014.seed.spec.ts` (seed integrity tests)
+- `services/adventure/api/src/seeder/rulesets/import-rulesets.ts`, `ruleset-import.service.ts`, `ruleset-seed.loader.ts` (import command)

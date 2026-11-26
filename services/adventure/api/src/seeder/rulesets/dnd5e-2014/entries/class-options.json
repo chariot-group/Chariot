@@ -1,0 +1,1776 @@
+[
+  {
+    "type": "ability-score-improvement",
+    "key": "asi-plus-two",
+    "label": {
+      "en": "+2 to one ability",
+      "fr": "+2 à une caractéristique",
+      "es": "+2 a una característica"
+    },
+    "description": {
+      "en": "Increase one ability score of your choice by 2. You can't raise an ability score above 20 this way.",
+      "fr": "Augmente de 2 une caractéristique de ton choix. Cette aptitude ne permet pas de dépasser 20.",
+      "es": "Aumenta en 2 una característica de tu elección. No puedes superar 20 de esta forma."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "asi-plus-two-ability",
+        "kind": "choose",
+        "from": {
+          "type": "ability",
+          "keys": [
+            "strength",
+            "dexterity",
+            "constitution",
+            "intelligence",
+            "wisdom",
+            "charisma"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "ability-score-improvement",
+    "key": "asi-plus-one-one",
+    "label": {
+      "en": "+1 to two abilities",
+      "fr": "+1 à deux caractéristiques",
+      "es": "+1 a dos características"
+    },
+    "description": {
+      "en": "Increase two ability scores of your choice by 1 each. You can't raise an ability score above 20 this way.",
+      "fr": "Augmente de 1 deux caractéristiques de ton choix. Cette aptitude ne permet pas de dépasser 20.",
+      "es": "Aumenta en 1 dos características de tu elección. No puedes superar 20 de esta forma."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "asi-plus-one-abilities",
+        "kind": "choose",
+        "from": {
+          "type": "ability",
+          "keys": [
+            "strength",
+            "dexterity",
+            "constitution",
+            "intelligence",
+            "wisdom",
+            "charisma"
+          ]
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "ability-score-improvement",
+    "key": "asi-feat",
+    "label": {
+      "en": "A feat",
+      "fr": "Un don",
+      "es": "Una dote"
+    },
+    "description": {
+      "en": "Instead of increasing your ability scores, you gain one feat of your choice for which you meet the prerequisites.",
+      "fr": "Au lieu d'augmenter tes caractéristiques, tu obtiens un don de ton choix dont tu remplis les prérequis.",
+      "es": "En lugar de aumentar tus características, obtienes una dote de tu elección cuyos requisitos cumplas."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "asi-feat-choice",
+        "kind": "choose",
+        "from": {
+          "type": "feat"
+        },
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "fighting-style",
+    "key": "fighting-style-archery",
+    "label": {
+      "en": "Archery",
+      "fr": "Archerie",
+      "es": "Combate con armas a distancia"
+    },
+    "description": {
+      "en": "You gain a +2 bonus to attack rolls you make with ranged weapons.",
+      "fr": "Tu obtiens un bonus de +2 aux jets d'attaque effectués avec des armes à distance.",
+      "es": "Obtienes un +2 a las tiradas de ataque que hagas con armas a distancia."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "fightingStyles.archery",
+        "value": true
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "fighting-style",
+    "key": "fighting-style-defense",
+    "label": {
+      "en": "Defense",
+      "fr": "Défense",
+      "es": "Defensa"
+    },
+    "description": {
+      "en": "While you are wearing armor, you gain a +1 bonus to AC.",
+      "fr": "Tant que tu portes une armure, tu obtiens un bonus de +1 à la CA.",
+      "es": "Mientras lleves armadura, obtienes un +1 a la CA."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "fightingStyles.defense",
+        "value": true
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "fighting-style",
+    "key": "fighting-style-dueling",
+    "label": {
+      "en": "Dueling",
+      "fr": "Duel",
+      "es": "Combate con un arma"
+    },
+    "description": {
+      "en": "When you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.",
+      "fr": "Lorsque tu manies une arme de corps à corps dans une main et aucune autre arme, tu obtiens un bonus de +2 aux jets de dégâts avec cette arme.",
+      "es": "Cuando empuñas un arma cuerpo a cuerpo en una mano y ninguna otra arma, obtienes un +2 a las tiradas de daño con esa arma."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "fightingStyles.dueling",
+        "value": true
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "fighting-style",
+    "key": "fighting-style-great-weapon-fighting",
+    "label": {
+      "en": "Great Weapon Fighting",
+      "fr": "Combat avec une arme à deux mains",
+      "es": "Combate con armas grandes"
+    },
+    "description": {
+      "en": "When you roll a 1 or 2 on a damage die for an attack with a melee weapon held in two hands, you can reroll the die and must use the new roll. The weapon must have the two-handed or versatile property.",
+      "fr": "Lorsque tu obtiens 1 ou 2 sur un dé de dégâts d'une attaque avec une arme de corps à corps tenue à deux mains, tu peux relancer le dé et tu dois garder le nouveau résultat. L'arme doit avoir la propriété à deux mains ou polyvalente.",
+      "es": "Cuando saques un 1 o un 2 en un dado de daño de un ataque con un arma cuerpo a cuerpo empuñada a dos manos, puedes volver a tirarlo y debes usar el nuevo resultado. El arma debe tener la propiedad a dos manos o versátil."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "fightingStyles.great-weapon-fighting",
+        "value": true
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "fighting-style",
+    "key": "fighting-style-protection",
+    "label": {
+      "en": "Protection",
+      "fr": "Protection",
+      "es": "Protección"
+    },
+    "description": {
+      "en": "When a creature you can see attacks a target other than you within 5 feet of you, you can use your reaction to impose disadvantage on the attack roll. You must be wielding a shield.",
+      "fr": "Lorsqu'une créature que tu vois attaque une cible autre que toi située à 1,50 m de toi, tu peux utiliser ta réaction pour imposer le désavantage au jet d'attaque. Tu dois porter un bouclier.",
+      "es": "Cuando una criatura que puedas ver ataque a un objetivo distinto de ti a 5 pies de ti, puedes usar tu reacción para imponer desventaja a la tirada de ataque. Debes llevar un escudo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "fightingStyles.protection",
+        "value": true
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "fighting-style",
+    "key": "fighting-style-two-weapon-fighting",
+    "label": {
+      "en": "Two-Weapon Fighting",
+      "fr": "Combat à deux armes",
+      "es": "Combate con dos armas"
+    },
+    "description": {
+      "en": "When you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack.",
+      "fr": "Lorsque tu combats avec deux armes, tu peux ajouter ton modificateur de caractéristique aux dégâts de la seconde attaque.",
+      "es": "Cuando combates con dos armas, puedes sumar tu modificador de característica al daño del segundo ataque."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "fightingStyles.two-weapon-fighting",
+        "value": true
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "metamagic",
+    "key": "careful-spell",
+    "label": {
+      "en": "Careful Spell",
+      "fr": "Sort prudent",
+      "es": "Conjuro cuidadoso"
+    },
+    "description": {
+      "en": "When you cast a spell that forces other creatures to make a saving throw, spend 1 sorcery point and choose up to your Charisma modifier creatures (minimum 1): they automatically succeed on their saving throw against the spell.",
+      "fr": "Lorsque tu lances un sort qui oblige d'autres créatures à faire un jet de sauvegarde, dépense 1 point de sorcellerie et choisis un nombre de créatures égal à ton modificateur de Charisme (minimum 1) : elles réussissent automatiquement leur jet contre ce sort.",
+      "es": "Cuando lanzas un conjuro que obliga a otras criaturas a hacer una tirada de salvación, gasta 1 punto de hechicería y elige tantas criaturas como tu modificador de Carisma (mínimo 1): superan automáticamente su tirada contra el conjuro."
+    },
+    "tags": [],
+    "data": {
+      "sorceryPoints": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "metamagic",
+    "key": "distant-spell",
+    "label": {
+      "en": "Distant Spell",
+      "fr": "Sort distant",
+      "es": "Conjuro distante"
+    },
+    "description": {
+      "en": "Spend 1 sorcery point to double the range of a spell with a range of 5 feet or more, or to give a touch spell a range of 30 feet.",
+      "fr": "Dépense 1 point de sorcellerie pour doubler la portée d'un sort d'au moins 1,50 m, ou pour donner une portée de 9 m à un sort de contact.",
+      "es": "Gasta 1 punto de hechicería para duplicar el alcance de un conjuro de 5 pies o más, o dar 30 pies de alcance a un conjuro de toque."
+    },
+    "tags": [],
+    "data": {
+      "sorceryPoints": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "metamagic",
+    "key": "empowered-spell",
+    "label": {
+      "en": "Empowered Spell",
+      "fr": "Sort intensifié",
+      "es": "Conjuro potenciado"
+    },
+    "description": {
+      "en": "When you roll damage for a spell, spend 1 sorcery point to reroll up to your Charisma modifier damage dice (minimum 1); you must use the new rolls. You can combine it with another Metamagic option on the same spell.",
+      "fr": "Lorsque tu lances les dégâts d'un sort, dépense 1 point de sorcellerie pour relancer un nombre de dés de dégâts égal à ton modificateur de Charisme (minimum 1) ; tu dois garder les nouveaux résultats. Tu peux combiner cette option avec une autre métamagie sur le même sort.",
+      "es": "Al tirar el daño de un conjuro, gasta 1 punto de hechicería para volver a tirar tantos dados de daño como tu modificador de Carisma (mínimo 1); debes usar los nuevos resultados. Puedes combinarlo con otra opción de metamagia en el mismo conjuro."
+    },
+    "tags": [],
+    "data": {
+      "sorceryPoints": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "metamagic",
+    "key": "extended-spell",
+    "label": {
+      "en": "Extended Spell",
+      "fr": "Sort prolongé",
+      "es": "Conjuro prolongado"
+    },
+    "description": {
+      "en": "Spend 1 sorcery point to double the duration of a spell lasting 1 minute or longer, up to 24 hours.",
+      "fr": "Dépense 1 point de sorcellerie pour doubler la durée d'un sort d'au moins 1 minute, jusqu'à 24 heures maximum.",
+      "es": "Gasta 1 punto de hechicería para duplicar la duración de un conjuro de 1 minuto o más, hasta un máximo de 24 horas."
+    },
+    "tags": [],
+    "data": {
+      "sorceryPoints": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "metamagic",
+    "key": "heightened-spell",
+    "label": {
+      "en": "Heightened Spell",
+      "fr": "Sort accéléré",
+      "es": "Conjuro intensificado"
+    },
+    "description": {
+      "en": "Spend 3 sorcery points when you cast a spell that forces a saving throw: one target has disadvantage on its first saving throw against the spell.",
+      "fr": "Dépense 3 points de sorcellerie lorsque tu lances un sort qui impose un jet de sauvegarde : une cible a le désavantage à son premier jet de sauvegarde contre ce sort.",
+      "es": "Gasta 3 puntos de hechicería al lanzar un conjuro que obligue a una tirada de salvación: un objetivo tiene desventaja en su primera tirada contra el conjuro."
+    },
+    "tags": [],
+    "data": {
+      "sorceryPoints": 3
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "metamagic",
+    "key": "quickened-spell",
+    "label": {
+      "en": "Quickened Spell",
+      "fr": "Sort rapide",
+      "es": "Conjuro acelerado"
+    },
+    "description": {
+      "en": "Spend 2 sorcery points to cast a spell with a casting time of 1 action as a bonus action instead.",
+      "fr": "Dépense 2 points de sorcellerie pour lancer par une action bonus un sort dont le temps d'incantation est d'une action.",
+      "es": "Gasta 2 puntos de hechicería para lanzar como acción adicional un conjuro con tiempo de lanzamiento de 1 acción."
+    },
+    "tags": [],
+    "data": {
+      "sorceryPoints": 2
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "metamagic",
+    "key": "subtle-spell",
+    "label": {
+      "en": "Subtle Spell",
+      "fr": "Sort discret",
+      "es": "Conjuro sutil"
+    },
+    "description": {
+      "en": "Spend 1 sorcery point to cast a spell without any somatic or verbal components.",
+      "fr": "Dépense 1 point de sorcellerie pour lancer un sort sans composantes somatiques ni verbales.",
+      "es": "Gasta 1 punto de hechicería para lanzar un conjuro sin componentes somáticos ni verbales."
+    },
+    "tags": [],
+    "data": {
+      "sorceryPoints": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "metamagic",
+    "key": "twinned-spell",
+    "label": {
+      "en": "Twinned Spell",
+      "fr": "Sort jumeau",
+      "es": "Conjuro duplicado"
+    },
+    "description": {
+      "en": "When you cast a spell that targets only one creature and can't target more at its current level, spend sorcery points equal to the spell's level (1 for a cantrip) to target a second creature within range.",
+      "fr": "Lorsque tu lances un sort qui ne cible qu'une créature et ne peut pas en cibler davantage à son niveau actuel, dépense un nombre de points de sorcellerie égal au niveau du sort (1 pour un sort mineur) pour cibler une seconde créature à portée.",
+      "es": "Cuando lanzas un conjuro que solo puede apuntar a una criatura en su nivel actual, gasta tantos puntos de hechicería como el nivel del conjuro (1 para un truco) para apuntar a una segunda criatura dentro del alcance."
+    },
+    "tags": [],
+    "data": {
+      "sorceryPoints": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "pact-boon",
+    "key": "pact-of-the-chain",
+    "label": {
+      "en": "Pact of the Chain",
+      "fr": "Pacte de la chaîne",
+      "es": "Pacto de la cadena"
+    },
+    "description": {
+      "en": "You learn find familiar and can cast it as a ritual. Your familiar can also take the form of an imp, pseudodragon, quasit or sprite. When you take the Attack action, you can forgo one of your attacks to let your familiar make one attack with its reaction.",
+      "fr": "Tu apprends appel de familier et peux le lancer comme rituel. Ton familier peut aussi prendre la forme d'un diablotin, d'un pseudodragon, d'un quasit ou d'un esprit follet. Lorsque tu fais l'action Attaquer, tu peux renoncer à l'une de tes attaques pour que ton familier attaque une fois avec sa réaction.",
+      "es": "Aprendes encontrar familiar y puedes lanzarlo como ritual. Tu familiar también puede adoptar la forma de un diablillo, pseudodragón, quasit o duendecillo. Al realizar la acción de Atacar, puedes renunciar a uno de tus ataques para que tu familiar ataque una vez con su reacción."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "pact-boon",
+    "key": "pact-of-the-blade",
+    "label": {
+      "en": "Pact of the Blade",
+      "fr": "Pacte de la lame",
+      "es": "Pacto del filo"
+    },
+    "description": {
+      "en": "As an action, you create a pact weapon in your empty hand, of any melee form you choose. You are proficient with it, and it counts as magical. You can also bind a magic weapon to you through a one-hour ritual, done during a short rest.",
+      "fr": "Par une action, tu crées une arme de pacte dans ta main libre, de la forme d'arme de corps à corps de ton choix. Tu la maîtrises et elle est considérée comme magique. Tu peux aussi te lier une arme magique par un rituel d'une heure, réalisé pendant un repos court.",
+      "es": "Como acción, creas un arma de pacto en tu mano libre, con la forma de arma cuerpo a cuerpo que elijas. Eres competente con ella y cuenta como mágica. También puedes vincularte a un arma mágica con un ritual de una hora durante un descanso corto."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "pact-boon",
+    "key": "pact-of-the-tome",
+    "label": {
+      "en": "Pact of the Tome",
+      "fr": "Pacte du grimoire",
+      "es": "Pacto del tomo"
+    },
+    "description": {
+      "en": "Your patron gives you a Book of Shadows holding three cantrips of your choice from any class's spell list. While you carry it, you can cast them at will; they count as warlock cantrips for you.",
+      "fr": "Ton protecteur te donne un Livre des ombres contenant trois sorts mineurs de ton choix, issus de n'importe quelle liste de sorts. Tant que tu le portes, tu peux les lancer à volonté ; ils comptent pour toi comme des sorts mineurs de sorcier.",
+      "es": "Tu patrón te entrega un Libro de las sombras con tres trucos de tu elección de cualquier lista de conjuros. Mientras lo lleves, puedes lanzarlos a voluntad; cuentan para ti como trucos de brujo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "agonizing-blast",
+    "label": {
+      "en": "Agonizing Blast",
+      "fr": "Explosion agonisante",
+      "es": "Estallido agónico"
+    },
+    "description": {
+      "en": "When you cast eldritch blast, add your Charisma modifier to the damage it deals on a hit.",
+      "fr": "Lorsque tu lances décharge occulte, ajoute ton modificateur de Charisme aux dégâts infligés en cas de réussite.",
+      "es": "Cuando lanzas descarga sobrenatural, suma tu modificador de Carisma al daño que inflige al impactar."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": "eldritch-blast"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "armor-of-shadows",
+    "label": {
+      "en": "Armor of Shadows",
+      "fr": "Armure d'ombres",
+      "es": "Armadura de sombras"
+    },
+    "description": {
+      "en": "You can cast mage armor on yourself at will, without expending a spell slot or material components.",
+      "fr": "Tu peux lancer armure de mage sur toi-même à volonté, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "es": "Puedes lanzar armadura de mago sobre ti a voluntad, sin gastar espacios de conjuro ni componentes materiales."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "ascendant-step",
+    "label": {
+      "en": "Ascendant Step",
+      "fr": "Ascension",
+      "es": "Paso ascendente"
+    },
+    "description": {
+      "en": "You can cast levitate on yourself at will, without expending a spell slot or material components.",
+      "fr": "Tu peux lancer lévitation sur toi-même à volonté, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "es": "Puedes lanzar levitar sobre ti a voluntad, sin gastar espacios de conjuro ni componentes materiales."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 9,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "beast-speech",
+    "label": {
+      "en": "Beast Speech",
+      "fr": "Langage bestial",
+      "es": "Habla de las bestias"
+    },
+    "description": {
+      "en": "You can cast speak with animals at will, without expending a spell slot.",
+      "fr": "Tu peux lancer communication avec les animaux à volonté, sans dépenser d'emplacement de sort.",
+      "es": "Puedes lanzar hablar con los animales a voluntad, sin gastar espacios de conjuro."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "beguiling-influence",
+    "label": {
+      "en": "Beguiling Influence",
+      "fr": "Influence ensorcelante",
+      "es": "Influencia seductora"
+    },
+    "description": {
+      "en": "You gain proficiency in the Deception and Persuasion skills.",
+      "fr": "Tu obtiens la maîtrise des compétences Tromperie et Persuasion.",
+      "es": "Obtienes competencia en las habilidades Engaño y Persuasión."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.deception",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.persuasion",
+        "value": 2
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "bewitching-whispers",
+    "label": {
+      "en": "Bewitching Whispers",
+      "fr": "Murmures envoûtants",
+      "es": "Susurros hechiceros"
+    },
+    "description": {
+      "en": "You can cast compulsion once using a warlock spell slot. You can't do so again until you finish a long rest.",
+      "fr": "Tu peux lancer coercition mystique une fois en utilisant un emplacement de sort de sorcier. Tu ne peux pas recommencer avant d'avoir terminé un repos long.",
+      "es": "Puedes lanzar compulsión una vez usando un espacio de conjuro de brujo. No puedes volver a hacerlo hasta terminar un descanso largo."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 7,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "book-of-ancient-secrets",
+    "label": {
+      "en": "Book of Ancient Secrets",
+      "fr": "Livre des secrets anciens",
+      "es": "Libro de secretos antiguos"
+    },
+    "description": {
+      "en": "You can inscribe magical rituals in your Book of Shadows: choose two 1st-level ritual spells from any class's list. You can cast them as rituals while holding the book, and add further ritual spells you find (level up to half your warlock level, rounded up) by spending 2 hours and 50 gp per spell level.",
+      "fr": "Tu peux inscrire des rituels magiques dans ton Livre des ombres : choisis deux sorts rituels de niveau 1 issus de n'importe quelle liste. Tu peux les lancer comme rituels en tenant le livre, et y ajouter d'autres sorts rituels trouvés (de niveau au plus égal à la moitié de ton niveau de sorcier, arrondie au supérieur) en dépensant 2 heures et 50 po par niveau de sort.",
+      "es": "Puedes inscribir rituales mágicos en tu Libro de las sombras: elige dos conjuros rituales de nivel 1 de cualquier lista. Puedes lanzarlos como rituales sosteniendo el libro y añadir otros rituales que encuentres (de nivel hasta la mitad de tu nivel de brujo, redondeando hacia arriba) gastando 2 horas y 50 po por nivel de conjuro."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": "pact-of-the-tome"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "chains-of-carceri",
+    "label": {
+      "en": "Chains of Carceri",
+      "fr": "Chaînes de Carcéri",
+      "es": "Cadenas de Carceri"
+    },
+    "description": {
+      "en": "You can cast hold monster at will, targeting a celestial, fiend or elemental, without expending a spell slot or material components. You must finish a long rest before targeting the same creature again.",
+      "fr": "Tu peux lancer immobilisation de monstre à volonté sur un céleste, un fiélon ou un élémentaire, sans dépenser d'emplacement de sort ni de composantes matérielles. Tu dois terminer un repos long avant de cibler de nouveau la même créature.",
+      "es": "Puedes lanzar inmovilizar monstruo a voluntad sobre un celestial, infernal o elemental, sin gastar espacios de conjuro ni componentes materiales. Debes terminar un descanso largo antes de volver a elegir a la misma criatura."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 15,
+      "prerequisite": "pact-of-the-chain"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "devils-sight",
+    "label": {
+      "en": "Devil's Sight",
+      "fr": "Vue du diable",
+      "es": "Vista del diablo"
+    },
+    "description": {
+      "en": "You can see normally in darkness, both magical and nonmagical, to a distance of 120 feet.",
+      "fr": "Tu vois normalement dans les ténèbres, magiques ou non, jusqu'à 36 m.",
+      "es": "Puedes ver con normalidad en la oscuridad, mágica o no, hasta 120 pies."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "dreadful-word",
+    "label": {
+      "en": "Dreadful Word",
+      "fr": "Mot terrible",
+      "es": "Palabra temible"
+    },
+    "description": {
+      "en": "You can cast confusion once using a warlock spell slot. You can't do so again until you finish a long rest.",
+      "fr": "Tu peux lancer confusion une fois en utilisant un emplacement de sort de sorcier. Tu ne peux pas recommencer avant d'avoir terminé un repos long.",
+      "es": "Puedes lanzar confusión una vez usando un espacio de conjuro de brujo. No puedes volver a hacerlo hasta terminar un descanso largo."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 7,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "eldritch-sight",
+    "label": {
+      "en": "Eldritch Sight",
+      "fr": "Vision occulte",
+      "es": "Vista sobrenatural"
+    },
+    "description": {
+      "en": "You can cast detect magic at will, without expending a spell slot.",
+      "fr": "Tu peux lancer détection de la magie à volonté, sans dépenser d'emplacement de sort.",
+      "es": "Puedes lanzar detectar magia a voluntad, sin gastar espacios de conjuro."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "eldritch-spear",
+    "label": {
+      "en": "Eldritch Spear",
+      "fr": "Lance occulte",
+      "es": "Lanza sobrenatural"
+    },
+    "description": {
+      "en": "When you cast eldritch blast, its range is 300 feet.",
+      "fr": "Lorsque tu lances décharge occulte, sa portée est de 90 m.",
+      "es": "Cuando lanzas descarga sobrenatural, su alcance es de 300 pies."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": "eldritch-blast"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "eyes-of-the-rune-keeper",
+    "label": {
+      "en": "Eyes of the Rune Keeper",
+      "fr": "Yeux du gardien des runes",
+      "es": "Ojos del guardián de runas"
+    },
+    "description": {
+      "en": "You can read all writing.",
+      "fr": "Tu sais lire toutes les écritures.",
+      "es": "Puedes leer cualquier escritura."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "fiendish-vigor",
+    "label": {
+      "en": "Fiendish Vigor",
+      "fr": "Vigueur fiélonne",
+      "es": "Vigor infernal"
+    },
+    "description": {
+      "en": "You can cast false life on yourself at will as a 1st-level spell, without expending a spell slot or material components.",
+      "fr": "Tu peux lancer simulacre de vie sur toi-même à volonté comme un sort de niveau 1, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "es": "Puedes lanzar falsa vida sobre ti a voluntad como conjuro de nivel 1, sin gastar espacios de conjuro ni componentes materiales."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "gaze-of-two-minds",
+    "label": {
+      "en": "Gaze of Two Minds",
+      "fr": "Regard des deux esprits",
+      "es": "Mirada de dos mentes"
+    },
+    "description": {
+      "en": "You can use your action to touch a willing humanoid and perceive through its senses until the end of your next turn. As long as it stays on the same plane, you can use your action on later turns to maintain this connection. While perceiving through it, you are blinded and deafened to your own surroundings.",
+      "fr": "Par une action, tu touches un humanoïde consentant et perçois à travers ses sens jusqu'à la fin de ton prochain tour. Tant qu'il reste sur le même plan, tu peux maintenir ce lien par une action lors de tes tours suivants. Pendant ce temps, tu es aveuglé et assourdi vis-à-vis de ton propre environnement.",
+      "es": "Puedes usar tu acción para tocar a un humanoide voluntario y percibir a través de sus sentidos hasta el final de tu siguiente turno. Mientras siga en el mismo plano, puedes mantener la conexión con tu acción en turnos posteriores. Mientras tanto, estás cegado y ensordecido respecto a tu propio entorno."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "lifedrinker",
+    "label": {
+      "en": "Lifedrinker",
+      "fr": "Buveur de vie",
+      "es": "Bebedor de vida"
+    },
+    "description": {
+      "en": "When you hit a creature with your pact weapon, it takes extra necrotic damage equal to your Charisma modifier (minimum 1).",
+      "fr": "Lorsque tu touches une créature avec ton arme de pacte, elle subit des dégâts nécrotiques supplémentaires égaux à ton modificateur de Charisme (minimum 1).",
+      "es": "Cuando impactas a una criatura con tu arma de pacto, recibe daño necrótico adicional igual a tu modificador de Carisma (mínimo 1)."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 12,
+      "prerequisite": "pact-of-the-blade"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "mask-of-many-faces",
+    "label": {
+      "en": "Mask of Many Faces",
+      "fr": "Masque aux mille visages",
+      "es": "Máscara de muchos rostros"
+    },
+    "description": {
+      "en": "You can cast disguise self at will, without expending a spell slot.",
+      "fr": "Tu peux lancer déguisement à volonté, sans dépenser d'emplacement de sort.",
+      "es": "Puedes lanzar disfrazarse a voluntad, sin gastar espacios de conjuro."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "master-of-myriad-forms",
+    "label": {
+      "en": "Master of Myriad Forms",
+      "fr": "Maître des formes innombrables",
+      "es": "Maestro de formas incontables"
+    },
+    "description": {
+      "en": "You can cast alter self at will, without expending a spell slot.",
+      "fr": "Tu peux lancer modification d'apparence à volonté, sans dépenser d'emplacement de sort.",
+      "es": "Puedes lanzar alterar el propio aspecto a voluntad, sin gastar espacios de conjuro."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 15,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "minions-of-chaos",
+    "label": {
+      "en": "Minions of Chaos",
+      "fr": "Serviteurs du chaos",
+      "es": "Siervos del caos"
+    },
+    "description": {
+      "en": "You can cast conjure elemental once using a warlock spell slot. You can't do so again until you finish a long rest.",
+      "fr": "Tu peux lancer invocation d'élémentaire une fois en utilisant un emplacement de sort de sorcier. Tu ne peux pas recommencer avant d'avoir terminé un repos long.",
+      "es": "Puedes lanzar conjurar elemental una vez usando un espacio de conjuro de brujo. No puedes volver a hacerlo hasta terminar un descanso largo."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 9,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "mire-the-mind",
+    "label": {
+      "en": "Mire the Mind",
+      "fr": "Esprit embourbé",
+      "es": "Embotar la mente"
+    },
+    "description": {
+      "en": "You can cast slow once using a warlock spell slot. You can't do so again until you finish a long rest.",
+      "fr": "Tu peux lancer lenteur une fois en utilisant un emplacement de sort de sorcier. Tu ne peux pas recommencer avant d'avoir terminé un repos long.",
+      "es": "Puedes lanzar ralentizar una vez usando un espacio de conjuro de brujo. No puedes volver a hacerlo hasta terminar un descanso largo."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 5,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "misty-visions",
+    "label": {
+      "en": "Misty Visions",
+      "fr": "Visions brumeuses",
+      "es": "Visiones brumosas"
+    },
+    "description": {
+      "en": "You can cast silent image at will, without expending a spell slot or material components.",
+      "fr": "Tu peux lancer image silencieuse à volonté, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "es": "Puedes lanzar imagen silenciosa a voluntad, sin gastar espacios de conjuro ni componentes materiales."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "one-with-shadows",
+    "label": {
+      "en": "One with Shadows",
+      "fr": "Ne faire qu'un avec les ombres",
+      "es": "Uno con las sombras"
+    },
+    "description": {
+      "en": "When you are in an area of dim light or darkness, you can use your action to become invisible until you move or take an action or a reaction.",
+      "fr": "Lorsque tu te trouves dans une zone de pénombre ou d'obscurité, tu peux utiliser ton action pour devenir invisible jusqu'à ce que tu te déplaces ou fasses une action ou une réaction.",
+      "es": "Cuando estás en una zona de luz tenue u oscuridad, puedes usar tu acción para volverte invisible hasta que te muevas o realices una acción o reacción."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 5,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "otherworldly-leap",
+    "label": {
+      "en": "Otherworldly Leap",
+      "fr": "Bond surnaturel",
+      "es": "Salto de otro mundo"
+    },
+    "description": {
+      "en": "You can cast jump on yourself at will, without expending a spell slot or material components.",
+      "fr": "Tu peux lancer saut sur toi-même à volonté, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "es": "Puedes lanzar salto sobre ti a voluntad, sin gastar espacios de conjuro ni componentes materiales."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 9,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "repelling-blast",
+    "label": {
+      "en": "Repelling Blast",
+      "fr": "Décharge repoussante",
+      "es": "Estallido repulsor"
+    },
+    "description": {
+      "en": "When you hit a creature with eldritch blast, you can push it up to 10 feet away from you in a straight line.",
+      "fr": "Lorsque tu touches une créature avec décharge occulte, tu peux la repousser de 3 m en ligne droite.",
+      "es": "Cuando impactas a una criatura con descarga sobrenatural, puedes empujarla hasta 10 pies en línea recta."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": "eldritch-blast"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "sculptor-of-flesh",
+    "label": {
+      "en": "Sculptor of Flesh",
+      "fr": "Sculpteur de chair",
+      "es": "Escultor de carne"
+    },
+    "description": {
+      "en": "You can cast polymorph once using a warlock spell slot. You can't do so again until you finish a long rest.",
+      "fr": "Tu peux lancer métamorphose une fois en utilisant un emplacement de sort de sorcier. Tu ne peux pas recommencer avant d'avoir terminé un repos long.",
+      "es": "Puedes lanzar polimorfar una vez usando un espacio de conjuro de brujo. No puedes volver a hacerlo hasta terminar un descanso largo."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 7,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "sign-of-ill-omen",
+    "label": {
+      "en": "Sign of Ill Omen",
+      "fr": "Mauvais présage",
+      "es": "Señal de mal agüero"
+    },
+    "description": {
+      "en": "You can cast bestow curse once using a warlock spell slot. You can't do so again until you finish a long rest.",
+      "fr": "Tu peux lancer malédiction une fois en utilisant un emplacement de sort de sorcier. Tu ne peux pas recommencer avant d'avoir terminé un repos long.",
+      "es": "Puedes lanzar imponer maldición una vez usando un espacio de conjuro de brujo. No puedes volver a hacerlo hasta terminar un descanso largo."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 5,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "thief-of-five-fates",
+    "label": {
+      "en": "Thief of Five Fates",
+      "fr": "Voleur des cinq destins",
+      "es": "Ladrón de los cinco destinos"
+    },
+    "description": {
+      "en": "You can cast bane once using a warlock spell slot. You can't do so again until you finish a long rest.",
+      "fr": "Tu peux lancer fléau une fois en utilisant un emplacement de sort de sorcier. Tu ne peux pas recommencer avant d'avoir terminé un repos long.",
+      "es": "Puedes lanzar perdición una vez usando un espacio de conjuro de brujo. No puedes volver a hacerlo hasta terminar un descanso largo."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "thirsting-blade",
+    "label": {
+      "en": "Thirsting Blade",
+      "fr": "Lame assoiffée",
+      "es": "Filo sediento"
+    },
+    "description": {
+      "en": "You can attack with your pact weapon twice, instead of once, whenever you take the Attack action on your turn.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, avec ton arme de pacte lorsque tu fais l'action Attaquer pendant ton tour.",
+      "es": "Puedes atacar dos veces, en lugar de una, con tu arma de pacto cuando realizas la acción de Atacar en tu turno."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 5,
+      "prerequisite": "pact-of-the-blade"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "visions-of-distant-realms",
+    "label": {
+      "en": "Visions of Distant Realms",
+      "fr": "Visions de royaumes lointains",
+      "es": "Visiones de reinos lejanos"
+    },
+    "description": {
+      "en": "You can cast arcane eye at will, without expending a spell slot.",
+      "fr": "Tu peux lancer œil magique à volonté, sans dépenser d'emplacement de sort.",
+      "es": "Puedes lanzar ojo arcano a voluntad, sin gastar espacios de conjuro."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 15,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "voice-of-the-chain-master",
+    "label": {
+      "en": "Voice of the Chain Master",
+      "fr": "Voix du maître des chaînes",
+      "es": "Voz del amo de la cadena"
+    },
+    "description": {
+      "en": "You can communicate telepathically with your familiar and perceive through its senses as long as you are on the same plane. While doing so, you can speak through it in your own voice.",
+      "fr": "Tu peux communiquer par télépathie avec ton familier et percevoir à travers ses sens tant que vous êtes sur le même plan. Ce faisant, tu peux parler par sa bouche avec ta propre voix.",
+      "es": "Puedes comunicarte telepáticamente con tu familiar y percibir a través de sus sentidos mientras estéis en el mismo plano. Mientras tanto, puedes hablar a través de él con tu propia voz."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 1,
+      "prerequisite": "pact-of-the-chain"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "whispers-of-the-grave",
+    "label": {
+      "en": "Whispers of the Grave",
+      "fr": "Murmures d'outre-tombe",
+      "es": "Susurros de la tumba"
+    },
+    "description": {
+      "en": "You can cast speak with dead at will, without expending a spell slot.",
+      "fr": "Tu peux lancer communication avec les morts à volonté, sans dépenser d'emplacement de sort.",
+      "es": "Puedes lanzar hablar con los muertos a voluntad, sin gastar espacios de conjuro."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 9,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "eldritch-invocation",
+    "key": "witch-sight",
+    "label": {
+      "en": "Witch Sight",
+      "fr": "Vue de sorcier",
+      "es": "Vista de bruja"
+    },
+    "description": {
+      "en": "You can see the true form of any shapechanger or creature concealed by illusion or transmutation magic while it is within 30 feet of you and within line of sight.",
+      "fr": "Tu vois la véritable forme de tout métamorphe ou de toute créature dissimulée par une illusion ou une transmutation, tant qu'elle est à 9 m de toi et dans ton champ de vision.",
+      "es": "Puedes ver la verdadera forma de cualquier cambiaformas o criatura oculta por magia de ilusión o transmutación que esté a 30 pies de ti y en tu línea de visión."
+    },
+    "tags": [],
+    "data": {
+      "minWarlockLevel": 15,
+      "prerequisite": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "enhanced-arcane-focus",
+    "label": {
+      "en": "Enhanced Arcane Focus",
+      "fr": "Focaliseur arcanique amélioré",
+      "es": "Canalizador arcano mejorado"
+    },
+    "description": {
+      "en": "While holding this item, a creature gains a +1 bonus to spell attack rolls and ignores half cover when making a spell attack. The bonus becomes +2 at 10th level.",
+      "fr": "Une créature qui tient cet objet obtient un bonus de +1 aux jets d'attaque de sort et ignore l'abri partiel lors d'une attaque de sort. Le bonus passe à +2 au niveau 10.",
+      "es": "Una criatura que sostenga este objeto obtiene un +1 a las tiradas de ataque de conjuro e ignora la cobertura media al hacer ataques de conjuro. El bonificador pasa a +2 en el nivel 10."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 1,
+      "itemRequirement": "rod, staff or wand (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "enhanced-defense",
+    "label": {
+      "en": "Enhanced Defense",
+      "fr": "Défense améliorée",
+      "es": "Defensa mejorada"
+    },
+    "description": {
+      "en": "A creature gains a +1 bonus to Armor Class while wearing (armor) or wielding (shield) the infused item. The bonus becomes +2 at 10th level.",
+      "fr": "Une créature obtient un bonus de +1 à la CA tant qu'elle porte (armure) ou manie (bouclier) l'objet infusé. Le bonus passe à +2 au niveau 10.",
+      "es": "Una criatura obtiene un +1 a la CA mientras lleve (armadura) o empuñe (escudo) el objeto infundido. El bonificador pasa a +2 en el nivel 10."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 1,
+      "itemRequirement": "armor or shield"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "enhanced-weapon",
+    "label": {
+      "en": "Enhanced Weapon",
+      "fr": "Arme améliorée",
+      "es": "Arma mejorada"
+    },
+    "description": {
+      "en": "This magic weapon grants a +1 bonus to attack and damage rolls made with it. The bonus becomes +2 at 10th level.",
+      "fr": "Cette arme magique confère un bonus de +1 aux jets d'attaque et de dégâts effectués avec elle. Le bonus passe à +2 au niveau 10.",
+      "es": "Esta arma mágica otorga un +1 a las tiradas de ataque y daño hechas con ella. El bonificador pasa a +2 en el nivel 10."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 1,
+      "itemRequirement": "simple or martial weapon"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "homunculus-servant",
+    "label": {
+      "en": "Homunculus Servant",
+      "fr": "Homoncule serviteur",
+      "es": "Homúnculo sirviente"
+    },
+    "description": {
+      "en": "You create a Tiny homunculus that is friendly to you and your companions and obeys your commands. In combat it shares your initiative and acts on your turn; it can take the Dodge action unless you use a bonus action to command it. Its statistics scale with your proficiency bonus.",
+      "fr": "Tu crées un homoncule Très petit, amical envers toi et tes compagnons, qui obéit à tes ordres. En combat, il partage ton initiative et agit pendant ton tour ; il fait l'action Esquiver sauf si tu utilises une action bonus pour lui donner un ordre. Ses statistiques évoluent avec ton bonus de maîtrise.",
+      "es": "Creas un homúnculo Diminuto, amistoso contigo y tus compañeros, que obedece tus órdenes. En combate comparte tu iniciativa y actúa en tu turno; realiza la acción de Esquivar salvo que uses una acción adicional para ordenarle otra cosa. Sus estadísticas escalan con tu bonificador por competencia."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 1,
+      "itemRequirement": "gem or crystal worth 100 gp"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "mind-sharpener",
+    "label": {
+      "en": "Mind Sharpener",
+      "fr": "Aiguiseur d'esprit",
+      "es": "Afilador mental"
+    },
+    "description": {
+      "en": "The item has 4 charges. When the wearer fails a Constitution saving throw to maintain concentration, it can use its reaction to expend 1 charge and succeed instead. The item regains 1d4 charges daily at dawn.",
+      "fr": "L'objet possède 4 charges. Lorsque son porteur rate un jet de sauvegarde de Constitution pour maintenir sa concentration, il peut utiliser sa réaction pour dépenser 1 charge et réussir à la place. L'objet récupère 1d4 charges chaque jour à l'aube.",
+      "es": "El objeto tiene 4 cargas. Cuando su portador falla una tirada de salvación de Constitución para mantener la concentración, puede usar su reacción para gastar 1 carga y superarla. El objeto recupera 1d4 cargas cada día al amanecer."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 1,
+      "itemRequirement": "armor or robes"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "repeating-shot",
+    "label": {
+      "en": "Repeating Shot",
+      "fr": "Tir répété",
+      "es": "Disparo repetido"
+    },
+    "description": {
+      "en": "This magic weapon grants a +1 bonus to attack and damage rolls when used to make a ranged attack, ignores the loading property, and produces its own ammunition when fired without any loaded.",
+      "fr": "Cette arme magique confère un bonus de +1 aux jets d'attaque et de dégâts lors des attaques à distance, ignore la propriété chargement, et produit sa propre munition si on tire sans en avoir chargé.",
+      "es": "Esta arma mágica otorga un +1 a las tiradas de ataque y daño en ataques a distancia, ignora la propiedad de recarga y crea su propia munición si se dispara sin munición cargada."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 1,
+      "itemRequirement": "simple or martial weapon with the ammunition property (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "replicate-magic-item",
+    "label": {
+      "en": "Replicate Magic Item",
+      "fr": "Réplique d'objet magique",
+      "es": "Replicar objeto mágico"
+    },
+    "description": {
+      "en": "You learn to replicate one common or uncommon magic item from the artificer list available at your level (for example a bag of holding, goggles of night or a wand of magic detection). Each time you learn this infusion, choose a different item.",
+      "fr": "Tu apprends à reproduire un objet magique commun ou peu commun de la liste de l'artificier accessible à ton niveau (par exemple un sac sans fond, des lunettes de nuit ou une baguette de détection de la magie). Chaque fois que tu apprends cette infusion, choisis un objet différent.",
+      "es": "Aprendes a replicar un objeto mágico común o poco común de la lista del artífice disponible a tu nivel (por ejemplo una bolsa de contención, unas gafas de visión nocturna o una varita de detectar magia). Cada vez que aprendas esta infusión, elige un objeto distinto."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 1,
+      "itemRequirement": "see the artificer replicable items list"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "returning-weapon",
+    "label": {
+      "en": "Returning Weapon",
+      "fr": "Arme de retour",
+      "es": "Arma retornante"
+    },
+    "description": {
+      "en": "This magic weapon grants a +1 bonus to attack and damage rolls, and it returns to the wielder's hand immediately after it is used to make a ranged attack.",
+      "fr": "Cette arme magique confère un bonus de +1 aux jets d'attaque et de dégâts, et revient dans la main de son porteur juste après une attaque à distance.",
+      "es": "Esta arma mágica otorga un +1 a las tiradas de ataque y daño, y vuelve a la mano de quien la empuña justo después de usarse en un ataque a distancia."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 1,
+      "itemRequirement": "simple or martial weapon with the thrown property"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "boots-of-the-winding-path",
+    "label": {
+      "en": "Boots of the Winding Path",
+      "fr": "Bottes du chemin sinueux",
+      "es": "Botas del camino serpenteante"
+    },
+    "description": {
+      "en": "While wearing these boots, a creature can teleport up to 15 feet as a bonus action to an unoccupied space it occupied earlier during the same turn.",
+      "fr": "Une créature qui porte ces bottes peut se téléporter par une action bonus jusqu'à 4,50 m dans un espace inoccupé qu'elle a occupé plus tôt au cours du même tour.",
+      "es": "Mientras lleve estas botas, una criatura puede teletransportarse como acción adicional hasta 15 pies a un espacio desocupado que haya ocupado antes en ese mismo turno."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 6,
+      "itemRequirement": "pair of boots (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "radiant-weapon",
+    "label": {
+      "en": "Radiant Weapon",
+      "fr": "Arme radieuse",
+      "es": "Arma radiante"
+    },
+    "description": {
+      "en": "This magic weapon grants a +1 bonus to attack and damage rolls and can shed light on command. It has 4 charges: as a reaction when hit by an attack, the wielder can expend 1 charge to blind the attacker until the end of its next turn unless it succeeds on a Constitution saving throw against your spell save DC. It regains 1d4 charges daily at dawn.",
+      "fr": "Cette arme magique confère un bonus de +1 aux jets d'attaque et de dégâts et peut émettre de la lumière sur commande. Elle a 4 charges : par une réaction lorsqu'il est touché par une attaque, le porteur peut dépenser 1 charge pour aveugler l'attaquant jusqu'à la fin de son prochain tour, sauf s'il réussit un jet de sauvegarde de Constitution contre ton DD de sort. Elle récupère 1d4 charges chaque jour à l'aube.",
+      "es": "Esta arma mágica otorga un +1 a las tiradas de ataque y daño y puede emitir luz a voluntad. Tiene 4 cargas: como reacción al ser impactado por un ataque, quien la empuña puede gastar 1 carga para cegar al atacante hasta el final de su siguiente turno salvo que supere una tirada de salvación de Constitución contra tu CD de conjuro. Recupera 1d4 cargas cada día al amanecer."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 6,
+      "itemRequirement": "simple or martial weapon (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "repulsion-shield",
+    "label": {
+      "en": "Repulsion Shield",
+      "fr": "Bouclier répulsif",
+      "es": "Escudo repulsor"
+    },
+    "description": {
+      "en": "A creature gains a +1 bonus to AC while wielding this shield. It has 4 charges: when hit by a melee attack, the wielder can use its reaction to expend 1 charge and push the attacker up to 15 feet away. It regains 1d4 charges daily at dawn.",
+      "fr": "Une créature obtient un bonus de +1 à la CA tant qu'elle manie ce bouclier. Il a 4 charges : lorsqu'il est touché par une attaque au corps à corps, le porteur peut utiliser sa réaction pour dépenser 1 charge et repousser l'attaquant de 4,50 m. Il récupère 1d4 charges chaque jour à l'aube.",
+      "es": "Una criatura obtiene un +1 a la CA mientras empuñe este escudo. Tiene 4 cargas: al ser impactado por un ataque cuerpo a cuerpo, su portador puede usar su reacción para gastar 1 carga y empujar al atacante hasta 15 pies. Recupera 1d4 cargas cada día al amanecer."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 6,
+      "itemRequirement": "shield (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "resistant-armor",
+    "label": {
+      "en": "Resistant Armor",
+      "fr": "Armure résistante",
+      "es": "Armadura resistente"
+    },
+    "description": {
+      "en": "While wearing this armor, a creature has resistance to one damage type chosen when you infuse it: acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant or thunder.",
+      "fr": "Une créature qui porte cette armure a la résistance à un type de dégâts choisi lors de l'infusion : acide, froid, feu, force, foudre, nécrotique, poison, psychique, radiant ou tonnerre.",
+      "es": "Mientras lleve esta armadura, una criatura tiene resistencia a un tipo de daño elegido al infundirla: ácido, frío, fuego, fuerza, relámpago, necrótico, veneno, psíquico, radiante o trueno."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 6,
+      "itemRequirement": "armor (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "spell-refueling-ring",
+    "label": {
+      "en": "Spell-Refueling Ring",
+      "fr": "Anneau de recharge de sorts",
+      "es": "Anillo recargador de conjuros"
+    },
+    "description": {
+      "en": "While wearing this ring, a creature can recover one expended spell slot of 3rd level or lower as an action. Once used, the ring can't be used again until the next dawn.",
+      "fr": "Une créature qui porte cet anneau peut récupérer, par une action, un emplacement de sort dépensé de niveau 3 ou inférieur. Une fois utilisé, l'anneau ne peut plus servir avant l'aube suivante.",
+      "es": "Mientras lleve este anillo, una criatura puede recuperar como acción un espacio de conjuro gastado de nivel 3 o inferior. Una vez usado, no puede volver a usarse hasta el siguiente amanecer."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 6,
+      "itemRequirement": "ring (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "armor-of-magical-strength",
+    "label": {
+      "en": "Armor of Magical Strength",
+      "fr": "Armure de force magique",
+      "es": "Armadura de fuerza mágica"
+    },
+    "description": {
+      "en": "This armor has 6 charges. The wearer can expend charges to add its Intelligence modifier to Strength checks and saving throws, or as a reaction to avoid being knocked prone. It regains 1d6 charges daily at dawn.",
+      "fr": "Cette armure a 6 charges. Son porteur peut en dépenser pour ajouter son modificateur d'Intelligence à ses tests et jets de sauvegarde de Force, ou par une réaction pour éviter d'être jeté à terre. Elle récupère 1d6 charges chaque jour à l'aube.",
+      "es": "Esta armadura tiene 6 cargas. Su portador puede gastarlas para sumar su modificador de Inteligencia a pruebas y tiradas de salvación de Fuerza, o como reacción para evitar ser derribado. Recupera 1d6 cargas cada día al amanecer."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 10,
+      "itemRequirement": "armor (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "helm-of-awareness",
+    "label": {
+      "en": "Helm of Awareness",
+      "fr": "Heaume de vigilance",
+      "es": "Yelmo de alerta"
+    },
+    "description": {
+      "en": "While wearing this helmet, a creature has advantage on initiative rolls and can't be surprised, provided it isn't incapacitated.",
+      "fr": "Une créature qui porte ce heaume a l'avantage aux jets d'initiative et ne peut pas être surprise, tant qu'elle n'est pas neutralisée.",
+      "es": "Mientras lleve este yelmo, una criatura tiene ventaja en las tiradas de iniciativa y no puede ser sorprendida, siempre que no esté incapacitada."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 10,
+      "itemRequirement": "helmet (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "artificer-infusion",
+    "key": "arcane-propulsion-armor",
+    "label": {
+      "en": "Arcane Propulsion Armor",
+      "fr": "Armure à propulsion arcanique",
+      "es": "Armadura de propulsión arcana"
+    },
+    "description": {
+      "en": "The wearer's walking speed increases by 5 feet. The armor's gauntlets are magic melee weapons dealing 1d8 force damage, with a thrown range of 20/60 feet, and they return after being thrown. The armor can't be removed against the wearer's will and replaces missing limbs.",
+      "fr": "La vitesse de marche du porteur augmente de 1,50 m. Les gantelets de l'armure sont des armes de corps à corps magiques infligeant 1d8 dégâts de force, lançables à 6/18 m, qui reviennent après avoir été lancées. L'armure ne peut pas être retirée contre la volonté de son porteur et remplace les membres manquants.",
+      "es": "La velocidad caminando del portador aumenta en 5 pies. Los guanteletes de la armadura son armas cuerpo a cuerpo mágicas que infligen 1d8 de daño de fuerza, arrojadizas a 20/60 pies, y regresan tras lanzarse. La armadura no puede quitarse contra la voluntad del portador y sustituye extremidades perdidas."
+    },
+    "tags": [],
+    "data": {
+      "minArtificerLevel": 14,
+      "itemRequirement": "armor (requires attunement)"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-aberrations",
+    "label": {
+      "en": "Aberrations",
+      "fr": "Aberrations",
+      "es": "Aberraciones"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-beasts",
+    "label": {
+      "en": "Beasts",
+      "fr": "Bêtes",
+      "es": "Bestias"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-celestials",
+    "label": {
+      "en": "Celestials",
+      "fr": "Célestes",
+      "es": "Celestiales"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-constructs",
+    "label": {
+      "en": "Constructs",
+      "fr": "Créatures artificielles",
+      "es": "Constructos"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-dragons",
+    "label": {
+      "en": "Dragons",
+      "fr": "Dragons",
+      "es": "Dragones"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-elementals",
+    "label": {
+      "en": "Elementals",
+      "fr": "Élémentaires",
+      "es": "Elementales"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-fey",
+    "label": {
+      "en": "Fey",
+      "fr": "Fées",
+      "es": "Feéricos"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-fiends",
+    "label": {
+      "en": "Fiends",
+      "fr": "Fiélons",
+      "es": "Infernales"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-giants",
+    "label": {
+      "en": "Giants",
+      "fr": "Géants",
+      "es": "Gigantes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-monstrosities",
+    "label": {
+      "en": "Monstrosities",
+      "fr": "Créatures monstrueuses",
+      "es": "Monstruosidades"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-oozes",
+    "label": {
+      "en": "Oozes",
+      "fr": "Vases",
+      "es": "Cienos"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-plants",
+    "label": {
+      "en": "Plants",
+      "fr": "Plantes",
+      "es": "Plantas"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-undead",
+    "label": {
+      "en": "Undead",
+      "fr": "Morts-vivants",
+      "es": "Muertos vivientes"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-enemy",
+    "key": "favored-enemy-humanoids",
+    "label": {
+      "en": "Two humanoid races",
+      "fr": "Deux races d'humanoïdes",
+      "es": "Dos razas de humanoides"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-terrain",
+    "key": "favored-terrain-arctic",
+    "label": {
+      "en": "Arctic",
+      "fr": "Arctique",
+      "es": "Ártico"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-terrain",
+    "key": "favored-terrain-coast",
+    "label": {
+      "en": "Coast",
+      "fr": "Côte",
+      "es": "Costa"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-terrain",
+    "key": "favored-terrain-desert",
+    "label": {
+      "en": "Desert",
+      "fr": "Désert",
+      "es": "Desierto"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-terrain",
+    "key": "favored-terrain-forest",
+    "label": {
+      "en": "Forest",
+      "fr": "Forêt",
+      "es": "Bosque"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-terrain",
+    "key": "favored-terrain-grassland",
+    "label": {
+      "en": "Grassland",
+      "fr": "Plaine",
+      "es": "Pradera"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-terrain",
+    "key": "favored-terrain-mountain",
+    "label": {
+      "en": "Mountain",
+      "fr": "Montagne",
+      "es": "Montaña"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-terrain",
+    "key": "favored-terrain-swamp",
+    "label": {
+      "en": "Swamp",
+      "fr": "Marais",
+      "es": "Pantano"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "favored-terrain",
+    "key": "favored-terrain-underdark",
+    "label": {
+      "en": "Underdark",
+      "fr": "Outreterre",
+      "es": "Infraoscuridad"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]
