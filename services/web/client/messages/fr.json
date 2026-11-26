@@ -2039,5 +2039,15 @@
     "description": "Cette campagne ne contient encore aucun personnage. Créez un groupe, puis ajoutez-y vos personnages.",
     "createGroup": "Créer un groupe",
     "createCharacter": "Créer un personnage"
+  },
+  "AccountGate": {
+    "stepIndicator": "Étape {current} sur {total}",
+    "logout": "Se déconnecter",
+    "name": {
+      "title": "Compte irrégulier",
+      "description": "Les règles sur les prénoms et noms ont évolué : seuls les lettres, espaces, apostrophes et traits d'union sont désormais acceptés. Corrigez les informations ci-dessous pour retrouver l'accès à votre compte.",
+      "submit": "Enregistrer et continuer",
+      "saving": "Enregistrement…"
+    }
   }
 }

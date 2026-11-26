@@ -163,6 +163,20 @@ describe('UserService - updateUser preferredLocale', () => {
     });
   });
 
+  it('nominal: returns the refreshed account status after a correction', async () => {
+    userModel.findOne.mockReturnValue({
+      exec: jest
+        .fn()
+        .mockResolvedValue({ keycloakId, balance: 1, history: [] }),
+    });
+
+    const response = await service.updateUser(keycloakId, {
+      lastName: 'Doe',
+    });
+
+    expect(response.data.accountStatus).toEqual({ invalidFields: [] });
+  });
+
   it('edge: leaves preferredLocale unchanged when omitted', async () => {
     const save = jest.fn().mockResolvedValue(undefined);
     const user = {
@@ -317,6 +331,18 @@ describe('UserService - findOne first-connection name sync (FR-user-profile-keyc
     });
     expect(response.data.firstName).toBe('Jean-Pierre');
     expect(response.data.lastName).toBe('Dupont');
+    expect(response.data.accountStatus).toEqual({ invalidFields: [] });
+  });
+
+  it('edge: exposes the invalid fields in the account status', async () => {
+    await setup({ firstName: 'Jean', lastName: '1' });
+    firstConnection();
+
+    const response = await service.findOne(keycloakId);
+
+    expect(response.data.accountStatus).toEqual({
+      invalidFields: ['lastName'],
+    });
   });
 
   it('edge: does nothing on later connections or when names are already normalized', async () => {

@@ -57,6 +57,14 @@ export const LazyJoinSessionDialog = createLazyDialog<JoinSessionDialogProps>(()
 );
 
 /** `onOpenChange(false)` is only called on a failed fetch, so the notes are not marked as seen. */
-export const LazyReleaseNotesModal = createLazyDialog<ReleaseNotesModalProps>(() =>
+type AccountGateModalProps = ComponentProps<
+  typeof import("@/components/dialogs/AccountGateModal").AccountGateModal
+> & { onOpenChange?: (open: boolean) => void };
+
+export const LazyAccountGateModal = createLazyDialog<AccountGateModalProps>(() =>
+  import("@/components/dialogs/AccountGateModal").then((m) => ({ default: m.AccountGateModal })),
+);
+
+export const LazyReleaseNotesModal =createLazyDialog<ReleaseNotesModalProps>(() =>
   import("@/components/dialogs/ReleaseNotesModal").then((m) => ({ default: m.ReleaseNotesModal })),
 );

@@ -10,6 +10,15 @@ export interface User {
     preferredLocale?: 'fr' | 'en' | 'es';
     preferredMeasurementUnit?: 'metric' | 'imperial';
     showBothUnits?: boolean;
+    /** Account gate conditions computed by the API (FR-user-profile-keycloak). */
+    accountStatus?: AccountStatus;
+}
+
+export type PersonNameField = 'firstName' | 'lastName';
+
+export interface AccountStatus {
+    /** Name fields that violate the person name rules and block the account. */
+    invalidFields: PersonNameField[];
 }
 
 export interface History {

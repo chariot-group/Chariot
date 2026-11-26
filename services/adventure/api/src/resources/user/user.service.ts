@@ -11,6 +11,7 @@ import {
   normalizePersonName,
 } from '@/common/person-name/person-name';
 import { UserInfoDto } from '@/resources/user/dto/sub/user-info.dto';
+import { computeAccountStatus } from '@/resources/user/dto/sub/account-status.dto';
 import { PublicUserInfoDto } from '@/resources/user/dto/sub/public-user-info.dto';
 import { KeycloakService } from '@/resources/user/keycloak.service';
 import { IResponse } from '@/common/dtos/reponse.dto';
@@ -102,6 +103,7 @@ export class UserService {
         preferredLocale: user.preferredLocale,
         preferredMeasurementUnit: user.preferredMeasurementUnit,
         showBothUnits: user.showBothUnits,
+        accountStatus: computeAccountStatus(keycloakUser),
       };
 
       const message: string = `User #${id} found in ${end - start}ms`;
@@ -304,6 +306,7 @@ export class UserService {
         preferredLocale: user.preferredLocale,
         preferredMeasurementUnit: user.preferredMeasurementUnit,
         showBothUnits: user.showBothUnits,
+        accountStatus: computeAccountStatus(keycloakUser),
       };
 
       const message: string = `User #${keycloakId} updated successfully in ${end - start}ms`;
@@ -376,6 +379,7 @@ export class UserService {
         preferredLocale: user.preferredLocale,
         preferredMeasurementUnit: user.preferredMeasurementUnit,
         showBothUnits: user.showBothUnits,
+        accountStatus: computeAccountStatus(keycloakUser),
       };
 
       const message: string = `History entry added for user #${keycloakId} in ${end - start}ms`;

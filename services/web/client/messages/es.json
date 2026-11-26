@@ -2035,5 +2035,15 @@
     "description": "Esta campaña aún no tiene personajes. Crea un grupo y añade tus personajes.",
     "createGroup": "Crear un grupo",
     "createCharacter": "Crear un personaje"
+  },
+  "AccountGate": {
+    "stepIndicator": "Paso {current} de {total}",
+    "logout": "Cerrar sesión",
+    "name": {
+      "title": "Cuenta irregular",
+      "description": "Las reglas para nombres y apellidos han cambiado: ahora solo se aceptan letras, espacios, apóstrofos y guiones. Corrige los datos a continuación para recuperar el acceso a tu cuenta.",
+      "submit": "Guardar y continuar",
+      "saving": "Guardando…"
+    }
   }
 }

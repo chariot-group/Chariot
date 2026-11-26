@@ -8,6 +8,7 @@ import AccountLocaleSync from "@/components/AccountLocaleSync";
 import CampaignContextUrlSync from "@/components/CampaignContextUrlSync";
 import PostLoginNavigator from "@/components/PostLoginNavigator";
 import ReleaseNotesProvider from "@/components/ReleaseNotesProvider";
+import AccountGateProvider from "@/components/AccountGateProvider";
 import SessionCharacterSyncClientDynamic from "@/components/SessionCharacterSyncClientDynamic";
 import SessionLobbyDialogDynamic from "@/components/dialogs/SessionLobbyDialogDynamic";
 import SessionJoinParamListener from "@/components/SessionJoinParamListener";
@@ -39,6 +40,7 @@ export default function AuthenticatedShell({ children }: AuthenticatedShellProps
 
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative">
           <PostLoginNavigator />
+          <AccountGateProvider />
           <ReleaseNotesProvider />
           <LocaleDetector />
           <AccountLocaleSync />

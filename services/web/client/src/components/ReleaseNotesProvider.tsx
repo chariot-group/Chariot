@@ -10,15 +10,23 @@ import {
   isReleaseNotesMuted,
 } from "@/lib/releaseNotesSeen";
 import { LazyReleaseNotesModal } from "@/components/lazy/lazyDialogs";
+import { useAppSelector } from "@/store/hooks";
+import { selectUser, selectUserError } from "@/store/slices/userSlice";
+import { getAccountGateSteps } from "@/lib/accountGate";
 
 export default function ReleaseNotesProvider() {
   const { authenticated, loading } = useKeycloak();
   const [open, setOpen] = useState(false);
   const hasOpenedRef = useRef(false);
+  const user = useAppSelector(selectUser);
+  const userError = useAppSelector(selectUserError);
+  // Never stack on the blocking account gate: wait until the user is known and the gate closed.
+  const waitsForAccountGate = (!user && !userError) || getAccountGateSteps(user).length > 0;
 
   useEffect(() => {
     if (loading || !authenticated) return;
     if (hasOpenedRef.current) return;
+    if (waitsForAccountGate) return;
 
     // chariot_user_id is set by KeycloakProvider at auth time (FR-user-cache-isolation)
     const userId = getStoredUserId();
@@ -28,7 +36,7 @@ export default function ReleaseNotesProvider() {
 
     hasOpenedRef.current = true;
     setOpen(true);
-  }, [authenticated, loading]);
+  }, [authenticated, loading, waitsForAccountGate]);
 
   const handleClose = () => {
     setLastSeenVersion(getStoredUserId(), CURRENT_APP_VERSION);

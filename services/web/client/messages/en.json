@@ -2035,5 +2035,15 @@
     "description": "This campaign has no character yet. Create a group, then add your characters to it.",
     "createGroup": "Create a group",
     "createCharacter": "Create a character"
+  },
+  "AccountGate": {
+    "stepIndicator": "Step {current} of {total}",
+    "logout": "Log out",
+    "name": {
+      "title": "Irregular account",
+      "description": "The rules for first and last names have changed: only letters, spaces, apostrophes and hyphens are now accepted. Correct the information below to get back into your account.",
+      "submit": "Save and continue",
+      "saving": "Saving…"
+    }
   }
 }

@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
 import { HistoryDto } from '@/resources/user/dto/sub/history.dto';
 import { Type } from 'class-transformer';
+import { AccountStatusDto } from '@/resources/user/dto/sub/account-status.dto';
 
 export class UserInfoDto {
   @ApiProperty({
@@ -78,4 +79,11 @@ export class UserInfoDto {
     required: false,
   })
   showBothUnits?: boolean;
+
+  @ApiProperty({
+    description:
+      'Account gate conditions (FR-user-profile-keycloak: Irregular account regularization)',
+    type: AccountStatusDto,
+  })
+  accountStatus: AccountStatusDto;
 }
