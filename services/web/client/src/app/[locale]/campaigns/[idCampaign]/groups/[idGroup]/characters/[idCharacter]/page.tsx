@@ -7,7 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 import { Player, NPC } from "@/types/character";
 import CharacterDetailView from "@/components/character/CharacterDetailView";
-import CharacterSheetSkeleton from "@/components/character/skeleton/CharacterSheetSkeleton";
+import { CharacterSheetLoading } from "@/components/character/skeleton/CharacterSheetLoading";
 import { resolveCharacterSheetSkeletonVariant } from "@/components/character/skeleton/characterSheetSkeletonLayout";
 import { useAppSelector } from "@/store/hooks";
 import { selectActiveGroups, selectArchivedGroups } from "@/store/slices/groupSlice";
@@ -140,7 +140,10 @@ export default function Character() {
 
   if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (
-      <CharacterSheetSkeleton {...resolveCharacterSheetSkeletonVariant("campaign", searchParams.get("tab"))} />
+      <CharacterSheetLoading
+        characterId={characterId}
+        {...resolveCharacterSheetSkeletonVariant("campaign", searchParams.get("tab"))}
+      />
     );
   }
 

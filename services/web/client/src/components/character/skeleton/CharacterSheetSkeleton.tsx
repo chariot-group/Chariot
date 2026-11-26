@@ -219,7 +219,25 @@ export function CompanionsTabSkeleton({ showActions, label }: { showActions: boo
  * (tab bar, scroll area, footer) and the bento layout of the tab that will open. Also embedded
  * in the authentication skeleton, which owns the status region there (FR-auth-loading-skeleton).
  */
-export function CharacterSheetSkeletonFrame({ kind, activeTab, tabs }: CharacterSheetSkeletonVariant) {
+/** Placeholder edit buttons of the sheet footer (decorative). */
+export function SkeletonFooterActions() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex w-full justify-end gap-2">
+      {/* Same widths as the real buttons: equal shares below 480px, natural widths above. */}
+      <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 flex-1 rounded-[13px] min-[480px]:w-28 min-[480px]:flex-none")} />
+      <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 flex-1 rounded-[13px] min-[480px]:w-32 min-[480px]:flex-none")} />
+    </div>
+  );
+}
+
+type CharacterSheetSkeletonFrameProps = CharacterSheetSkeletonVariant & {
+  /** The caller renders the footer itself (e.g. the session combat footer, kept still across navigations). */
+  hideFooter?: boolean;
+};
+
+export function CharacterSheetSkeletonFrame({ kind, activeTab, tabs, hideFooter = false }: CharacterSheetSkeletonFrameProps) {
   return (
     <div
       aria-hidden="true"
@@ -257,12 +275,11 @@ export function CharacterSheetSkeletonFrame({ kind, activeTab, tabs }: Character
         )}
       </div>
 
-      <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
-        <div className="flex w-full justify-end gap-2">
-          <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 w-28 rounded-[13px]")} />
-          <Skeleton className={cn(SKELETON_BAR_CLASS, "h-9 w-32 rounded-[13px]")} />
+      {hideFooter ? null : (
+        <div className="shrink-0 border-t border-white/10 px-4 sm:px-6 md:px-8 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+          <SkeletonFooterActions />
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -271,7 +288,7 @@ export function CharacterSheetSkeletonFrame({ kind, activeTab, tabs }: Character
  * Loading state of the character sheet, so the page does not jump on load.
  * @see FR-character-sheet-skeleton
  */
-export default function CharacterSheetSkeleton(variant: CharacterSheetSkeletonVariant) {
+export default function CharacterSheetSkeleton(variant: CharacterSheetSkeletonFrameProps) {
   const t = useTranslations("characterDetail");
 
   return (

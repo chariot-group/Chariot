@@ -51,6 +51,15 @@ interface CharacterDetailViewProps {
   onCharacterUpdate?: (updated?: Player | NPC) => void;
 }
 
+
+/**
+ * FR-session-combat-navigation — sheet footer buttons on very small screens (below 480px): each one takes
+ * an equal share of the width (e.g. Export | Edit 50/50); from 480px they keep their natural width.
+ */
+const FOOTER_ACTION_FILL_CLASS = "flex-1 basis-0 min-[480px]:flex-none min-[480px]:basis-auto";
+/** Inner element of a wrapped footer button (export inside its wrapper / tooltip): fills its share. */
+const FOOTER_ACTION_FILL_INNER_CLASS = "w-full min-[480px]:w-auto";
+
 export default function CharacterDetailView({
   character,
   refetchCharacter,
@@ -398,6 +407,7 @@ export default function CharacterDetailView({
       tabIndex={0}
       className={cn(
         "max-w-full min-w-0 lg:text-sm text-xs font-semibold",
+        FOOTER_ACTION_FILL_INNER_CLASS,
         isNpcPdfExportDisabled && "pointer-events-none",
       )}
       aria-label={isNpcPdfExportDisabled ? t("pdfExport.npcComingSoonAria") : t("pdfExport.exportAria")}
@@ -412,9 +422,11 @@ export default function CharacterDetailView({
       content={t("pdfExport.npcComingSoon")}
       side="top"
       helpPlacement="corner"
-      className="max-w-full min-w-0"
+      className={cn("max-w-full min-w-0", FOOTER_ACTION_FILL_INNER_CLASS)}
       moreInfoLabel={t("pdfExport.npcComingSoon")}>
-      <span className="inline-flex max-w-full min-w-0 cursor-not-allowed">{exportPdfButton}</span>
+      <span className={cn("inline-flex max-w-full min-w-0 cursor-not-allowed", FOOTER_ACTION_FILL_INNER_CLASS)}>
+        {exportPdfButton}
+      </span>
     </InfoTooltip>
   ) : (
     exportPdfButton
@@ -429,7 +441,7 @@ export default function CharacterDetailView({
     ) : null;
 
   const exportPdfWithLinkedPlayer = (
-    <div className="inline-flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2">
+    <div className={cn("inline-flex min-w-0 max-w-full flex-wrap items-center justify-end gap-2", FOOTER_ACTION_FILL_CLASS)}>
       {linkedPlayerFooterLink}
       {linkedPlayerFooterLink ? (
         <span
@@ -454,7 +466,7 @@ export default function CharacterDetailView({
             disabled={isSaving || isAvatarCommitting || !hasPendingChanges}
             tabIndex={0}
             variant="primary"
-            className="max-w-full min-w-0"
+            className={cn("max-w-full min-w-0", FOOTER_ACTION_FILL_CLASS)}
             aria-label={t("saveChanges")}
             aria-busy={isSaving || isAvatarCommitting}>
             <Save aria-hidden="true" />
@@ -472,7 +484,7 @@ export default function CharacterDetailView({
                 handleCancelEditor();
               }
             }}
-            className="max-w-full min-w-0"
+            className={cn("max-w-full min-w-0", FOOTER_ACTION_FILL_CLASS)}
             aria-label={t("cancel")}>
             <X aria-hidden="true" />
             <span className="truncate">{t("cancel")}</span>
@@ -491,7 +503,7 @@ export default function CharacterDetailView({
               }
             }}
             variant="primary"
-            className="max-w-full min-w-0"
+            className={cn("max-w-full min-w-0", FOOTER_ACTION_FILL_CLASS)}
             aria-label={t("editCharacter")}>
             <SquarePen aria-hidden="true" />
             <span className="truncate">{t("editCharacter")}</span>

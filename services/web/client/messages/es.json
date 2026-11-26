@@ -417,10 +417,6 @@
         "leaveInitiative": "Sacar la selección de la iniciativa"
       },
       "yourTurn": "¡Es tu turno!",
-      "notYourTurn": "Turno de {name}",
-      "expandStats": "Mostrar estadísticas de {name}",
-      "collapseStats": "Ocultar estadísticas de {name}",
-      "noVisibleStats": "Sin estadísticas visibles",
       "roundIndicator": "Ronda {round}",
       "startCombat": "Iniciar combate",
       "cancelCombat": "Cancelar combate",

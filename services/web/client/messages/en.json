@@ -417,10 +417,6 @@
         "leaveInitiative": "Leave initiative for selection"
       },
       "yourTurn": "It's your turn!",
-      "notYourTurn": "{name}'s turn",
-      "expandStats": "Show stats for {name}",
-      "collapseStats": "Hide stats for {name}",
-      "noVisibleStats": "No visible stats",
       "roundIndicator": "Round {round}",
       "startCombat": "Start combat",
       "cancelCombat": "Cancel combat",
