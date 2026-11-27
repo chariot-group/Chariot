@@ -16,7 +16,8 @@ const spellIdentity = (spell: { name?: unknown; level?: unknown }) =>
 
 /**
  * Builder answer from a Magic tab spell: the spell fields are kept, chosen spells of level 1+ are prepared.
- * `null` without a name.
+ * `null` without a name. The manual form gives the level as typed (`"2"`): a whole level 0–9 is kept, anything else
+ * falls back to `fallbackLevel` (the lowest level of the field).
  */
 export function toSpellChoice(
   spell: Partial<Spell>,
@@ -25,8 +26,14 @@ export function toSpellChoice(
 ): SpellChoice | null {
   const name = spell.name?.trim();
   if (!name) return null;
-  const level = typeof spell.level === "number" && Number.isFinite(spell.level) ? spell.level : fallbackLevel;
+  const level = spellLevelOf(spell.level) ?? fallbackLevel;
   return { ...spell, source, name, level, ...(level >= 1 ? { prepared: true } : {}) };
+}
+
+/** Spell level from a number or a numeric text (form input); `null` when it is not a whole level 0–9. */
+function spellLevelOf(value: unknown): number | null {
+  const level = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
+  return typeof level === "number" && Number.isInteger(level) && level >= 0 && level <= 9 ? level : null;
 }
 
 /** Adds spells, each name + level once (the first one is kept). */

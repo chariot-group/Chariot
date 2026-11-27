@@ -144,6 +144,20 @@ Scenarios that change the account itself (profile edit, sign-up) never touch the
 - **Codes**: a temporary account with the realm role `admin` (one per worker) creates promo / affiliation codes through the payment API (`createPromo`, `createAffiliation`); they are deleted at the end of the test.
 - **Targets**: the full matrix runs on `desktop-chrome`; the other targets only schedule the `@smoke` subset (one success, failure and cancel, one code of each kind, the return page), so they never show up as « skipped ». This bounds the calls to Stripe's test API. Tags and filters live in `@/tags`.
 
+### Character builder scenarios
+
+`scenarios/personnage/assistant-creation.spec.ts` (lot A) and `assistant-sorts.spec.ts` (lot B, spells) cover the step-by-step character builder (FR-ruleset-character-builder — Web builder UI) on the `dnd5e-2014` seed. Journeys and selectors live in `@/builder`.
+
+- **Ruleset**: the stack does not import it. Import it once (idempotent) on the target environment, otherwise the scenarios are skipped, not failed:
+
+  ```bash
+  cd services/adventure && docker compose -f compose.dev.yml exec chariot-adventure npm run ruleset:import
+  ```
+
+- **Codex**: the lot B nominal scenario searches French wizard cantrips in the Codex (`lang=fr`). A Codex without French translations returns no result and the scenario fails at the search step.
+- **Simulated failures**: catalog error, empty state and Codex down are simulated in the browser (`page.route`), whatever the environment.
+- **Targets**: like the shop, the full matrix runs on `desktop-chrome`; the other targets only schedule the `@smoke` subset (nominal journey, required choice, breadcrumb accessibility). A journey goes through about ten pages.
+
 ---
 
 ## 3. Running tests
@@ -264,6 +278,8 @@ tools/e2e/
 │   ├── personnage/pnj-compagnons.spec.ts         # companions CRUD: create linked, link / unlink (sidebar and Companions tab), reassign, rename, delete, search; PC delete / duplicate with companions; none in GM space
 │   ├── personnage/pnj-repos.spec.ts              # NPC long rest (sheet, mixed group), none in player space; in session: companion, GM guest, GM rest
 │   ├── personnage/export-pdf.spec.ts             # PC sheet PDF export: sheet / sidebar / group, dark and light themes, sanitized filename, 2 or 3 pages, long texts, cancel, NPC disabled, load error
+│   ├── personnage/assistant-creation.spec.ts     # character builder (lot A): player space / group, required choice, breadcrumb accessibility, re-evaluation and reload, return page, load error, empty state
+│   ├── personnage/assistant-sorts.spec.ts        # character builder (lot B): Codex cantrips, manual spell, duplicate, out-of-range warning, remove, Codex down
 │   ├── profil/inscription.spec.ts   # sign-up through the Keycloak registration page
 │   ├── profil/profil.spec.ts        # profile read / edit, account deletion request
 │   ├── boutique/packs.spec.ts       # funnel per pack: success / failure / cancel, 3-D Secure, return page
@@ -279,6 +295,7 @@ tools/e2e/
 │   ├── fixtures.ts             # `gm` and `player` actors
 │   ├── payment.ts              # GatewayClient: catalog, balance, referral, admin promo / affiliation codes
 │   ├── shop.ts                 # shop journeys: packs, Stripe card entry, 3-D Secure, outcome assertions
+│   ├── builder.ts              # character builder journeys: open, pages, options, standard array, spells, published ruleset check
 │   ├── shop-fixtures.ts        # `buyer`, `openBuyer`, `adminApi`, `createPromo`, `createAffiliation`
 │   ├── tags.ts                 # `@smoke` / `@webhook` tags and the per-project filters
 │   └── flows.ts                # reusable UI journeys

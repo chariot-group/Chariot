@@ -40,7 +40,7 @@ tools/e2e/
 │   ├── campagne/             # campaign creation (welcome) and management from the GM space menu: create, rename, delete
 │   ├── groupe/               # campaign groups CRUD in the GM sidebar, archives included
 │   ├── lien/                 # sidebar quick links CRUD (player and GM spaces), shared links, API guards
-│   ├── personnage/           # PCs and NPCs: CRUD, duplication, move, companions, long / short rest, PC sheet PDF export, session (GM guest, companions)
+│   ├── personnage/           # PCs and NPCs: CRUD, duplication, move, companions, long / short rest, PC sheet PDF export, character builder, session (GM guest, companions)
 │   ├── profil/               # sign-up (Keycloak), profile read / edit, account deletion request
 │   ├── boutique/             # sales funnel: packs, promo codes, affiliation, referral (Stripe test mode)
 │   └── session/              # GM + player in real time (WebSocket)
@@ -52,6 +52,7 @@ tools/e2e/
     ├── payment.ts            # payment / balance API client (catalog, referral, admin codes)
     ├── shop.ts               # shop journeys and outcome assertions
     ├── shop-fixtures.ts      # `buyer`, `openBuyer`, promo / affiliation code factories
+    ├── builder.ts            # character builder journeys (needs the `dnd5e-2014` ruleset: `npm run ruleset:import` in adventure)
     └── flows.ts              # reusable UI journeys
 ```
 

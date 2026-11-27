@@ -115,6 +115,24 @@ describe("evaluateBuilder — FR-ruleset-character-builder (builder engine, stag
     expect(field(result, "race", "raceChoices")?.grants?.map((grant) => grant.id)).toEqual(["elf-subrace"]);
   });
 
+  it("edge: the choices of a grant no longer offered are signalled as dropped (warning), not applied", () => {
+    const result = evaluate({ ...creationAnswers, race: "elf" });
+    const dropped = result.issues.filter((issue) => issue.code === "answer-dropped");
+
+    expect(dropped).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ fieldId: "raceChoices", grantId: "dwarf-subrace", severity: "warning" }),
+        expect.objectContaining({ fieldId: "raceChoices", grantId: "hill-dwarf-language", severity: "warning" }),
+      ]),
+    );
+    expect(field(result, "race", "raceChoices")?.value).not.toHaveProperty("dwarf-subrace");
+    expect(page(result, "race")?.complete).toBe(true);
+    // Nominal: grants still offered do not warn; an explicit `[]` for a grant no longer offered is not a choice.
+    expect(evaluate(creationAnswers).issues.some((issue) => issue.code === "answer-dropped")).toBe(false);
+    const cleared = evaluate({ ...creationAnswers, race: "elf", raceChoices: { "dwarf-subrace": [] } });
+    expect(cleared.issues.some((issue) => issue.code === "answer-dropped")).toBe(false);
+  });
+
   it("edge: a count not reached is a warning, not an error", () => {
     const result = evaluate({ ...creationAnswers, classChoices: { "fighter-skills": ["athletics"] } });
 

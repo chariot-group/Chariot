@@ -501,6 +501,14 @@ class BuilderEngine {
           this.attachedChildren(owner, work).forEach((child) => visit(child, depth + 1, ownerChain));
         };
         owners.forEach((owner) => visit(owner, 0, ""));
+        // Choices of a grant no longer offered (e.g. the dwarf subrace after choosing an elf) are dropped: a warning
+        // (announced by the view), never applied. An explicit `[]` is not a choice.
+        const offeredIds = new Set(grants.map((grant) => grant.id));
+        for (const [grantId, rawChoice] of Object.entries(answer)) {
+          const keys = rawChoice === undefined || rawChoice === null ? [] : [rawChoice].flat();
+          if (offeredIds.has(grantId) || !keys.length) continue;
+          issue(field.id, "answer-dropped", "warning", { grantId, message: keys.map(String).join(", ") });
+        }
         evaluated.grants = grants;
         evaluated.value = value;
         break;

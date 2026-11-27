@@ -85,7 +85,20 @@ describe("builder spell choices — FR-ruleset-character-builder (Spells, lot B)
     expect(codexLevelFilter({ minLevel: 1, maxLevel: 3 })).toBeNull();
   });
 
+  it("edge: the level typed in the manual form (text) is kept, so an out-of-range spell is flagged", () => {
+    const filter = { className: "wizard", minLevel: 1, maxLevel: 1 };
+    const typed = toSpellChoice({ name: "Misty Step", level: "2" as unknown as number }, "manual", 1);
+
+    expect(typed).toMatchObject({ name: "Misty Step", level: 2, prepared: true, source: "manual" });
+    expect(isOutsideLevelRange(typed!, filter)).toBe(true);
+    expect(toSpellChoice({ name: "Light", level: "0" as unknown as number }, "manual", 1)).toMatchObject({ level: 0 });
+  });
+
   it("failure: a spell without name is not added; unknown classes and malformed answers are ignored", () => {
+    // An empty, non-integer or out-of-scale level falls back to the field level.
+    for (const level of ["", "abc", "2.5", "12", -1]) {
+      expect(toSpellChoice({ name: "Shield", level: level as unknown as number }, "manual", 1)?.level).toBe(1);
+    }
     expect(toSpellChoice({ name: "  ", level: 1 }, "manual")).toBeNull();
     expect(toSpellChoice({ name: "Light" }, "codex", 0)).toMatchObject({ name: "Light", level: 0, source: "codex" });
     expect(codexClassFilter({ className: "innate" })).toEqual([]);

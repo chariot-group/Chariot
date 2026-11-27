@@ -67,8 +67,21 @@ export type CharacterDetail = CreatedCharacter & {
   groups: string[];
   linkedPlayerId?: string | null;
   class?: PlayerClass[];
-  stats?: { currentHitPoints?: number; maxHitPoints?: number; tempHitPoints?: number };
+  stats?: {
+    currentHitPoints?: number;
+    maxHitPoints?: number;
+    tempHitPoints?: number;
+    abilityScores?: Record<string, number>;
+  };
+  /** Profil du PJ (race, sous-race, historique), tel que l'assistant de création le projette. */
+  profile?: { race?: string; subrace?: string; history?: string; [key: string]: unknown };
+  /** Ruleset avec lequel le PJ a été créé (FR-game-system — Ruleset reference). */
+  rulesetId?: string | null;
+  spellcasting?: { className?: string; spells?: { name?: string; level?: number }[] }[];
 };
+
+/** Ruleset publié, sans son flow ni son catalogue (FR-ruleset-character-builder). */
+export type RulesetSummary = { _id: string; key: string; status: string; version: number };
 
 type CampaignGroups = { active?: unknown[]; archived?: unknown[] };
 
@@ -205,6 +218,15 @@ export class ChariotApi {
   async groupCharacters(groupId: string): Promise<CreatedCharacter[]> {
     const res = await this.request<Envelope<{ characters?: CreatedCharacter[] }>>("GET", `/groups/${groupId}`);
     return res.data.characters ?? [];
+  }
+
+  /**
+   * Rulesets publiés (FR-ruleset-character-builder), ceux que l'assistant de création propose.
+   * Ils ne sont pas créés par la stack : `npm run ruleset:import` dans adventure.
+   */
+  async publishedRulesets(): Promise<RulesetSummary[]> {
+    const res = await this.request<{ data?: RulesetSummary[] }>("GET", "/rulesets");
+    return (Array.isArray(res?.data) ? res.data : []).filter((ruleset) => ruleset.status === "published");
   }
 
   /** Identifiant Keycloak du compte (claim `sub` du jeton). */
