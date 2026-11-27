@@ -4,6 +4,7 @@ import {
   IsArray,
   IsBoolean,
   IsInt,
+  IsMongoId,
   IsOptional,
   Max,
   Min,
@@ -18,6 +19,12 @@ import { ActionDto } from '@/resources/character/core/dto/actions/action.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePlayerDto extends CreateCharacterDto {
+  /** @see FR-game-system — Ruleset reference (defaults to the published ruleset of the game system) */
+  @ApiProperty({ example: '507f1f77bcf86cd799439011', required: false })
+  @IsOptional()
+  @IsMongoId()
+  readonly rulesetId?: string;
+
   @ApiProperty({ type: [ActionDto] })
   @ValidateNested({ each: true })
   @IsArray()

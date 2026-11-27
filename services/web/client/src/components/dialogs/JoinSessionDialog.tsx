@@ -67,9 +67,7 @@ export function JoinSessionDialog({
     () => orderSessionCharactersLikeSidebar(characters, sidebarPlayers),
     [characters, sidebarPlayers],
   );
-  const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>(
-    {},
-  );
+  const [companionCountByCharacterId, setCompanionCountByCharacterId] = useState<Record<string, number>>({});
   const [loadingCharacters, setLoadingCharacters] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);

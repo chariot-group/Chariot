@@ -12,12 +12,13 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { User, Bot, BookOpen, ArrowRight } from "lucide-react";
+import { User, Bot, BookOpen, ArrowRight, Wand2 } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useCodexHealth } from "@/hooks/useCodexHealth";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
+  CREATE_CHARACTER_BUILDER_BUTTON,
   CREATE_CHARACTER_DIALOG_CONTENT,
   CREATE_CHARACTER_LIBRARY_SECTION,
   CREATE_CHARACTER_MANUAL_GROUP,
@@ -25,6 +26,7 @@ import {
   CREATE_CHARACTER_PLAYER_BUTTON,
 } from "@/components/dialogs/createCharacterDialogStyles";
 import { cn } from "@/lib/utils";
+import { saveBuilderReturnPath } from "@/lib/characterBuilder/builderReturn";
 import {
   buildCreateCharacterPath,
   type CampaignCreateContext,
@@ -68,6 +70,10 @@ export function CreateCharacterDialog({
     campaignId && groupId ? { campaignId, groupId } : undefined;
 
   const handleSelectType = (type: CreateCharacterChoice) => {
+    // « Cancel » in the builder (or in the form it opens) returns to the page shown now.
+    if (type === "builder") {
+      saveBuilderReturnPath(window.sessionStorage, `${window.location.pathname}${window.location.search}`);
+    }
     setOpen(false);
     setOpenMobile(false);
     router.push(buildCreateCharacterPath(type, campaignContext, { linkedPlayerId }));
@@ -109,6 +115,20 @@ export function CreateCharacterDialog({
               <Bot aria-hidden="true" />
               {t("npcCharacter")}
             </Button>
+            {!npcOnly ? (
+              <Button
+                type="button"
+                variant="secondary"
+                aria-label={t("createCharacterBuilderAriaLabel")}
+                className={CREATE_CHARACTER_BUILDER_BUTTON}
+                onClick={() => handleSelectType("builder")}>
+                <Wand2
+                  className="text-primary-light"
+                  aria-hidden="true"
+                />
+                {t("createCharacterBuilder")}
+              </Button>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-3">

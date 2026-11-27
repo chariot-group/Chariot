@@ -23,14 +23,10 @@ describe("FR-group-duplicate — DuplicateGroupDialog — buildDuplicateGroupLab
   });
 
   it("nominal: increments past an existing copy", () => {
-    expect(buildDuplicateGroupLabel({ label: "Gobelins" }, ["Gobelins", "Gobelins 2"])).toBe(
-      "Gobelins 3",
-    );
+    expect(buildDuplicateGroupLabel({ label: "Gobelins" }, ["Gobelins", "Gobelins 2"])).toBe("Gobelins 3");
   });
 
   it("nominal: duplicating a copy continues the stem sequence", () => {
-    expect(buildDuplicateGroupLabel({ label: "Gobelins 2" }, ["Gobelins", "Gobelins 2"])).toBe(
-      "Gobelins 3",
-    );
+    expect(buildDuplicateGroupLabel({ label: "Gobelins 2" }, ["Gobelins", "Gobelins 2"])).toBe("Gobelins 3");
   });
 });

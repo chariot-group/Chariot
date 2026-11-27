@@ -1,0 +1,2305 @@
+[
+  {
+    "type": "background",
+    "key": "acolyte",
+    "label": {
+      "en": "Acolyte",
+      "fr": "Acolyte",
+      "es": "Acólito"
+    },
+    "description": {
+      "en": "You spent your life in the service of a temple, acting as an intermediary between the sacred and the mortal world.",
+      "fr": "Tu as passé ta vie au service d'un temple, servant d'intermédiaire entre le sacré et le monde des mortels.",
+      "es": "Has pasado tu vida al servicio de un templo, como intermediario entre lo sagrado y el mundo mortal."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["insight", "religion"],
+      "startingGold": 15,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I quote sacred texts in almost every situation.",
+            "fr": "Je cite les textes sacrés en presque toute occasion.",
+            "es": "Cito textos sagrados en casi cualquier situación."
+          },
+          {
+            "en": "I see omens in every event and action.",
+            "fr": "Je vois des présages dans chaque événement.",
+            "es": "Veo presagios en cada suceso."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Faith: I trust that my deity will guide my actions.",
+            "fr": "Foi : je crois que ma divinité guidera mes actes.",
+            "es": "Fe: confío en que mi deidad guiará mis actos."
+          },
+          {
+            "en": "Charity: I always try to help those in need.",
+            "fr": "Charité : j'aide toujours ceux qui sont dans le besoin.",
+            "es": "Caridad: siempre ayudo a los necesitados."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I would die to recover an ancient relic of my faith.",
+            "fr": "Je donnerais ma vie pour retrouver une relique de ma foi.",
+            "es": "Daría la vida por recuperar una antigua reliquia de mi fe."
+          },
+          {
+            "en": "I owe my life to the priest who took me in.",
+            "fr": "Je dois la vie au prêtre qui m'a recueilli.",
+            "es": "Debo la vida al sacerdote que me acogió."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I judge others harshly, and myself even more.",
+            "fr": "Je juge sévèrement les autres, et moi-même davantage.",
+            "es": "Juzgo con dureza a los demás, y a mí aún más."
+          },
+          {
+            "en": "I am inflexible in my thinking.",
+            "fr": "Je suis rigide dans ma façon de penser.",
+            "es": "Soy inflexible en mi forma de pensar."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.insight",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.religion",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Holy symbol",
+              "fr": "Symbole sacré",
+              "es": "Símbolo sagrado"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Prayer book",
+              "fr": "Livre de prières",
+              "es": "Libro de oraciones"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Stick of incense",
+              "fr": "Bâton d'encens",
+              "es": "Varita de incienso"
+            },
+            "quantity": 5
+          },
+          {
+            "label": {
+              "en": "Vestments",
+              "fr": "Habits de cérémonie",
+              "es": "Vestiduras"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Common clothes",
+              "fr": "Vêtements communs",
+              "es": "Ropa común"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 15
+      }
+    ],
+    "grants": [
+      {
+        "id": "acolyte-languages",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "acolyte-feature",
+    "label": {
+      "en": "Shelter of the Faithful",
+      "fr": "Abri des fidèles",
+      "es": "Refugio de los fieles"
+    },
+    "parentKey": "acolyte",
+    "description": {
+      "en": "You and your companions can receive free healing and care at temples of your faith, and supporters of your faith provide modest support. You may have ties to a specific temple where you have a residence.",
+      "fr": "Toi et tes compagnons pouvez recevoir gratuitement soins et assistance dans les temples de ta foi, et ses fidèles t'apportent un soutien modeste. Tu peux être lié à un temple précis où tu disposes d'un logement.",
+      "es": "Tú y tus compañeros podéis recibir curación y cuidados gratuitos en los templos de tu fe, y sus fieles te prestan un apoyo modesto. Puedes estar vinculado a un templo concreto donde tienes alojamiento."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "charlatan",
+    "label": {
+      "en": "Charlatan",
+      "fr": "Charlatan",
+      "es": "Charlatán"
+    },
+    "description": {
+      "en": "You have always had a way with people, telling them what they want to hear and selling them whatever suits your interest.",
+      "fr": "Tu as toujours su t'y prendre avec les gens, leur dire ce qu'ils veulent entendre et leur vendre ce qui t'arrange.",
+      "es": "Siempre has sabido tratar con la gente, decirle lo que quiere oír y venderle lo que te conviene."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["deception", "sleight-of-hand"],
+      "startingGold": 15,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I fall in and out of love easily.",
+            "fr": "Je tombe amoureux et me lasse facilement.",
+            "es": "Me enamoro y desenamoro con facilidad."
+          },
+          {
+            "en": "I have a joke for every occasion.",
+            "fr": "J'ai une blague pour chaque occasion.",
+            "es": "Tengo un chiste para cada ocasión."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Independence: I am a free spirit.",
+            "fr": "Indépendance : je suis un esprit libre.",
+            "es": "Independencia: soy un espíritu libre."
+          },
+          {
+            "en": "Creativity: I never run the same con twice.",
+            "fr": "Créativité : je ne fais jamais deux fois la même arnaque.",
+            "es": "Creatividad: nunca repito la misma estafa."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I fleeced the wrong person and must make amends.",
+            "fr": "J'ai escroqué la mauvaise personne et dois me racheter.",
+            "es": "Estafé a la persona equivocada y debo enmendarlo."
+          },
+          {
+            "en": "I owe everything to my mentor, a horrible scoundrel.",
+            "fr": "Je dois tout à mon mentor, une horrible canaille.",
+            "es": "Se lo debo todo a mi mentor, un sinvergüenza terrible."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I can't resist a pretty face.",
+            "fr": "Je ne résiste pas à un joli minois.",
+            "es": "No me resisto a una cara bonita."
+          },
+          {
+            "en": "I'm always in debt.",
+            "fr": "Je suis toujours endetté.",
+            "es": "Siempre estoy endeudado."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.deception",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.sleight-of-hand",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["disguise-kit", "forgery-kit"]
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Fine clothes",
+              "fr": "Vêtements fins",
+              "es": "Ropa fina"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Disguise kit",
+              "fr": "Kit de déguisement",
+              "es": "Útiles para disfrazarse"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Con tools (weighted dice, marked cards or fake signet ring)",
+              "fr": "Outils d'escroc (dés pipés, cartes marquées ou fausse chevalière)",
+              "es": "Herramientas de estafador (dados trucados, cartas marcadas o anillo falso)"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 15
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "background-feature",
+    "key": "charlatan-feature",
+    "label": {
+      "en": "False Identity",
+      "fr": "Fausse identité",
+      "es": "Identidad falsa"
+    },
+    "parentKey": "charlatan",
+    "description": {
+      "en": "You have a second identity with documentation, acquaintances and disguises. You can also forge documents, including official papers and personal letters, if you have seen an example.",
+      "fr": "Tu disposes d'une seconde identité avec documents, connaissances et déguisements. Tu peux aussi contrefaire des documents, officiels ou personnels, si tu en as déjà vu un exemplaire.",
+      "es": "Tienes una segunda identidad con documentos, conocidos y disfraces. También puedes falsificar documentos, oficiales o personales, si has visto un ejemplo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "criminal",
+    "label": {
+      "en": "Criminal",
+      "fr": "Criminel",
+      "es": "Criminal"
+    },
+    "description": {
+      "en": "You are an experienced criminal with a history of breaking the law and contacts in the underworld.",
+      "fr": "Tu es un criminel expérimenté, habitué à enfreindre la loi et en contact avec la pègre.",
+      "es": "Eres un criminal experimentado, acostumbrado a saltarte la ley y con contactos en los bajos fondos."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["deception", "stealth"],
+      "startingGold": 15,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I always have a plan for when things go wrong.",
+            "fr": "J'ai toujours un plan si les choses tournent mal.",
+            "es": "Siempre tengo un plan por si las cosas salen mal."
+          },
+          {
+            "en": "I am always calm, no matter the situation.",
+            "fr": "Je reste calme en toutes circonstances.",
+            "es": "Siempre mantengo la calma."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Honor: I don't steal from others in the trade.",
+            "fr": "Honneur : je ne vole pas les gens du milieu.",
+            "es": "Honor: no robo a los del oficio."
+          },
+          {
+            "en": "Freedom: chains are meant to be broken.",
+            "fr": "Liberté : les chaînes sont faites pour être brisées.",
+            "es": "Libertad: las cadenas están para romperse."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I'm trying to pay off an old debt.",
+            "fr": "J'essaie de rembourser une vieille dette.",
+            "es": "Intento saldar una vieja deuda."
+          },
+          {
+            "en": "Someone I loved died because of a mistake I made.",
+            "fr": "Un être cher est mort à cause d'une de mes erreurs.",
+            "es": "Alguien a quien quería murió por un error mío."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "When I see something valuable, I think about how to steal it.",
+            "fr": "Quand je vois un objet de valeur, je pense à le voler.",
+            "es": "Cuando veo algo valioso, pienso en cómo robarlo."
+          },
+          {
+            "en": "I turn tail and run when things look bad.",
+            "fr": "Je prends la fuite quand ça tourne mal.",
+            "es": "Huyo cuando las cosas pintan mal."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.deception",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.stealth",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["thieves-tools"]
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Crowbar",
+              "fr": "Pied-de-biche",
+              "es": "Palanca"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Dark common clothes with a hood",
+              "fr": "Vêtements communs sombres avec capuche",
+              "es": "Ropa común oscura con capucha"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 15
+      }
+    ],
+    "grants": [
+      {
+        "id": "criminal-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "dice-set",
+            "dragonchess-set",
+            "playing-card-set",
+            "three-dragon-ante-set"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "criminal-feature",
+    "label": {
+      "en": "Criminal Contact",
+      "fr": "Contact criminel",
+      "es": "Contacto criminal"
+    },
+    "parentKey": "criminal",
+    "description": {
+      "en": "You have a reliable and trustworthy contact who acts as your liaison to a network of criminals. You know how to get messages to and from them, even over great distances.",
+      "fr": "Tu as un contact fiable qui te sert d'intermédiaire avec un réseau de criminels. Tu sais lui faire parvenir des messages et en recevoir, même sur de grandes distances.",
+      "es": "Tienes un contacto fiable que hace de enlace con una red de criminales. Sabes enviarle y recibir mensajes, incluso a grandes distancias."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "entertainer",
+    "label": {
+      "en": "Entertainer",
+      "fr": "Artiste",
+      "es": "Artista"
+    },
+    "description": {
+      "en": "You thrive in front of an audience and know how to entrance, entertain and inspire them.",
+      "fr": "Tu t'épanouis devant un public et sais le captiver, le divertir et l'inspirer.",
+      "es": "Te creces ante el público y sabes cautivarlo, entretenerlo e inspirarlo."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["acrobatics", "performance"],
+      "startingGold": 15,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I know a story relevant to almost every situation.",
+            "fr": "Je connais une histoire pour presque chaque situation.",
+            "es": "Conozco una historia para casi cualquier situación."
+          },
+          {
+            "en": "I love a good insult, even one directed at me.",
+            "fr": "J'adore les bonnes répliques, même contre moi.",
+            "es": "Me encanta un buen insulto, aunque vaya dirigido a mí."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Beauty: my performances make the world better.",
+            "fr": "Beauté : mes représentations rendent le monde meilleur.",
+            "es": "Belleza: mis actuaciones mejoran el mundo."
+          },
+          {
+            "en": "Fame: I want to be known everywhere.",
+            "fr": "Célébrité : je veux être connu partout.",
+            "es": "Fama: quiero que me conozcan en todas partes."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "My instrument is my most treasured possession.",
+            "fr": "Mon instrument est mon bien le plus précieux.",
+            "es": "Mi instrumento es mi posesión más preciada."
+          },
+          {
+            "en": "I want to be famous, whatever it takes.",
+            "fr": "Je veux être célèbre, coûte que coûte.",
+            "es": "Quiero ser famoso, cueste lo que cueste."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I'll do anything to win fame and renown.",
+            "fr": "Je ferais n'importe quoi pour la gloire.",
+            "es": "Haría cualquier cosa por la fama."
+          },
+          {
+            "en": "I can't resist a pretty face.",
+            "fr": "Je ne résiste pas à un joli minois.",
+            "es": "No me resisto a una cara bonita."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.acrobatics",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.performance",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["disguise-kit"]
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Musical instrument",
+              "fr": "Instrument de musique",
+              "es": "Instrumento musical"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Favor of an admirer",
+              "fr": "Gage d'un admirateur",
+              "es": "Prenda de un admirador"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Costume",
+              "fr": "Costume",
+              "es": "Disfraz"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 15
+      }
+    ],
+    "grants": [
+      {
+        "id": "entertainer-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "bagpipes",
+            "drum",
+            "dulcimer",
+            "flute",
+            "lute",
+            "lyre",
+            "horn",
+            "pan-flute",
+            "shawm",
+            "viol"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "entertainer-feature",
+    "label": {
+      "en": "By Popular Demand",
+      "fr": "À la demande générale",
+      "es": "A petición del público"
+    },
+    "parentKey": "entertainer",
+    "description": {
+      "en": "You can always find a place to perform, usually an inn or tavern, where you receive free lodging and food of modest standard as long as you perform each night. You are recognized and people tend to like you.",
+      "fr": "Tu trouves toujours un lieu où te produire, souvent une auberge ou une taverne, où tu es logé et nourri modestement tant que tu te produis chaque soir. On te reconnaît et on t'apprécie volontiers.",
+      "es": "Siempre encuentras un lugar donde actuar, normalmente una posada o taberna, donde recibes alojamiento y comida modestos mientras actúes cada noche. Te reconocen y la gente suele apreciarte."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "folk-hero",
+    "label": {
+      "en": "Folk Hero",
+      "fr": "Héros du peuple",
+      "es": "Héroe del pueblo"
+    },
+    "description": {
+      "en": "You come from a humble background, but you are destined for much more: the people of your village already see you as their champion.",
+      "fr": "Tu viens d'un milieu modeste, mais tu es destiné à bien plus : les gens de ton village voient déjà en toi leur champion.",
+      "es": "Procedes de un origen humilde, pero estás destinado a mucho más: la gente de tu aldea ya te ve como su campeón."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["animal-handling", "survival"],
+      "startingGold": 10,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I judge people by their actions, not their words.",
+            "fr": "Je juge les gens sur leurs actes, pas sur leurs paroles.",
+            "es": "Juzgo a la gente por sus actos, no por sus palabras."
+          },
+          {
+            "en": "I have a strong sense of fair play.",
+            "fr": "J'ai un sens aigu de la justice.",
+            "es": "Tengo un fuerte sentido de la justicia."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Respect: people deserve to be treated with dignity.",
+            "fr": "Respect : chacun mérite d'être traité avec dignité.",
+            "es": "Respeto: todos merecen ser tratados con dignidad."
+          },
+          {
+            "en": "Destiny: nothing can steer me from my higher calling.",
+            "fr": "Destinée : rien ne me détournera de ma vocation.",
+            "es": "Destino: nada me apartará de mi vocación."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I protect those who cannot protect themselves.",
+            "fr": "Je protège ceux qui ne peuvent pas se défendre.",
+            "es": "Protejo a quienes no pueden defenderse."
+          },
+          {
+            "en": "I wish my childhood sweetheart had come with me.",
+            "fr": "J'aurais voulu que mon amour d'enfance me suive.",
+            "es": "Ojalá mi amor de infancia hubiera venido conmigo."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I'm convinced of the significance of my destiny.",
+            "fr": "Je suis convaincu de l'importance de mon destin.",
+            "es": "Estoy convencido de la importancia de mi destino."
+          },
+          {
+            "en": "I have trouble trusting my allies.",
+            "fr": "J'ai du mal à faire confiance à mes alliés.",
+            "es": "Me cuesta confiar en mis aliados."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.animal-handling",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.survival",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["land-vehicles"]
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Artisan's tools",
+              "fr": "Outils d'artisan",
+              "es": "Herramientas de artesano"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Shovel",
+              "fr": "Pelle",
+              "es": "Pala"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Iron pot",
+              "fr": "Marmite en fer",
+              "es": "Olla de hierro"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Common clothes",
+              "fr": "Vêtements communs",
+              "es": "Ropa común"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 10
+      }
+    ],
+    "grants": [
+      {
+        "id": "folk-hero-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "alchemists-supplies",
+            "brewers-supplies",
+            "calligraphers-supplies",
+            "carpenters-tools",
+            "cartographers-tools",
+            "cobblers-tools",
+            "cooks-utensils",
+            "glassblowers-tools",
+            "jewelers-tools",
+            "leatherworkers-tools",
+            "masons-tools",
+            "painters-supplies",
+            "potters-tools",
+            "smiths-tools",
+            "tinkers-tools",
+            "weavers-tools",
+            "woodcarvers-tools"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "folk-hero-feature",
+    "label": {
+      "en": "Rustic Hospitality",
+      "fr": "Hospitalité rustique",
+      "es": "Hospitalidad rústica"
+    },
+    "parentKey": "folk-hero",
+    "description": {
+      "en": "Since you come from the ranks of the common folk, you fit in among them easily. You can find a place to hide, rest or recuperate among commoners, unless you have shown yourself to be a danger to them.",
+      "fr": "Issu du peuple, tu t'y fonds facilement. Tu peux trouver parmi les gens ordinaires un endroit où te cacher, te reposer ou te remettre, sauf si tu t'es montré dangereux pour eux.",
+      "es": "Como vienes del pueblo llano, te integras fácilmente entre la gente común. Puedes encontrar entre ellos un lugar donde esconderte, descansar o recuperarte, salvo que te hayas mostrado peligroso para ellos."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "guild-artisan",
+    "label": {
+      "en": "Guild Artisan",
+      "fr": "Artisan de guilde",
+      "es": "Artesano gremial"
+    },
+    "description": {
+      "en": "You are a member of an artisan's guild, skilled in a particular craft and closely associated with other artisans.",
+      "fr": "Tu es membre d'une guilde d'artisans, habile dans un métier précis et lié aux autres artisans.",
+      "es": "Eres miembro de un gremio de artesanos, diestro en un oficio concreto y vinculado a otros artesanos."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["insight", "persuasion"],
+      "startingGold": 15,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I believe that anything worth doing is worth doing right.",
+            "fr": "Ce qui mérite d'être fait mérite d'être bien fait.",
+            "es": "Lo que merece hacerse, merece hacerse bien."
+          },
+          {
+            "en": "I'm a snob who looks down on those who can't appreciate fine art.",
+            "fr": "Je méprise ceux qui n'apprécient pas le bel ouvrage.",
+            "es": "Desprecio a quien no aprecia el buen trabajo."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Community: we must help each other.",
+            "fr": "Communauté : nous devons nous entraider.",
+            "es": "Comunidad: debemos ayudarnos."
+          },
+          {
+            "en": "Aspiration: I work hard to be the best.",
+            "fr": "Ambition : je travaille dur pour être le meilleur.",
+            "es": "Aspiración: trabajo duro para ser el mejor."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "My guild is my family.",
+            "fr": "Ma guilde est ma famille.",
+            "es": "Mi gremio es mi familia."
+          },
+          {
+            "en": "I will get revenge on the forces that destroyed my workshop.",
+            "fr": "Je me vengerai de ceux qui ont détruit mon atelier.",
+            "es": "Me vengaré de quienes destruyeron mi taller."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I'll do anything to get my hands on something rare.",
+            "fr": "Je ferais tout pour obtenir un objet rare.",
+            "es": "Haría cualquier cosa por algo raro."
+          },
+          {
+            "en": "I'm quick to assume someone is cheating me.",
+            "fr": "Je soupçonne vite qu'on me roule.",
+            "es": "Enseguida sospecho que me engañan."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.insight",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.persuasion",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Artisan's tools",
+              "fr": "Outils d'artisan",
+              "es": "Herramientas de artesano"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Letter of introduction from your guild",
+              "fr": "Lettre de recommandation de ta guilde",
+              "es": "Carta de presentación de tu gremio"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Traveler's clothes",
+              "fr": "Vêtements de voyageur",
+              "es": "Ropa de viaje"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 15
+      }
+    ],
+    "grants": [
+      {
+        "id": "guild-artisan-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "alchemists-supplies",
+            "brewers-supplies",
+            "calligraphers-supplies",
+            "carpenters-tools",
+            "cartographers-tools",
+            "cobblers-tools",
+            "cooks-utensils",
+            "glassblowers-tools",
+            "jewelers-tools",
+            "leatherworkers-tools",
+            "masons-tools",
+            "painters-supplies",
+            "potters-tools",
+            "smiths-tools",
+            "tinkers-tools",
+            "weavers-tools",
+            "woodcarvers-tools"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "guild-artisan-languages",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "guild-artisan-feature",
+    "label": {
+      "en": "Guild Membership",
+      "fr": "Membre de guilde",
+      "es": "Miembro del gremio"
+    },
+    "parentKey": "guild-artisan",
+    "description": {
+      "en": "Your guild offers lodging and food if necessary, and pays for your funeral if needed. You have access to its members and political connections, in exchange for dues of 5 gp per month.",
+      "fr": "Ta guilde t'offre gîte et couvert si nécessaire et paie tes funérailles le cas échéant. Tu as accès à ses membres et à ses relations politiques, contre une cotisation de 5 po par mois.",
+      "es": "Tu gremio te ofrece alojamiento y comida si hace falta y paga tu funeral si es necesario. Tienes acceso a sus miembros y conexiones políticas, a cambio de una cuota de 5 po al mes."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "hermit",
+    "label": {
+      "en": "Hermit",
+      "fr": "Ermite",
+      "es": "Ermitaño"
+    },
+    "description": {
+      "en": "You lived in seclusion for a formative part of your life, seeking quiet, solitude and perhaps answers.",
+      "fr": "Tu as vécu à l'écart pendant une période décisive de ta vie, en quête de calme, de solitude et peut-être de réponses.",
+      "es": "Viviste aislado durante una etapa decisiva de tu vida, buscando calma, soledad y quizá respuestas."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["medicine", "religion"],
+      "startingGold": 5,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I've been isolated so long that I rarely speak.",
+            "fr": "J'ai été isolé si longtemps que je parle rarement.",
+            "es": "He estado aislado tanto tiempo que apenas hablo."
+          },
+          {
+            "en": "I am utterly serene, even in the face of disaster.",
+            "fr": "Je reste serein, même face au désastre.",
+            "es": "Mantengo la serenidad incluso ante el desastre."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Knowledge: the path to power is through understanding.",
+            "fr": "Savoir : le chemin du pouvoir passe par la compréhension.",
+            "es": "Conocimiento: el camino al poder pasa por la comprensión."
+          },
+          {
+            "en": "Self-knowledge: if you know yourself, there's nothing left to know.",
+            "fr": "Connaissance de soi : qui se connaît connaît tout.",
+            "es": "Autoconocimiento: quien se conoce lo sabe todo."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I entered seclusion to hide from those who might still hunt me.",
+            "fr": "Je me suis retiré pour fuir ceux qui me traquent peut-être encore.",
+            "es": "Me retiré para esconderme de quienes quizá aún me persiguen."
+          },
+          {
+            "en": "I'm still seeking the enlightenment I pursued.",
+            "fr": "Je cherche encore l'illumination que je poursuivais.",
+            "es": "Aún busco la iluminación que perseguía."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I harbor dark thoughts that my isolation failed to quell.",
+            "fr": "Je nourris de sombres pensées que la solitude n'a pas apaisées.",
+            "es": "Albergo pensamientos oscuros que el aislamiento no calmó."
+          },
+          {
+            "en": "I am dogmatic in my beliefs.",
+            "fr": "Je suis dogmatique dans mes croyances.",
+            "es": "Soy dogmático en mis creencias."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.medicine",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.religion",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["herbalism-kit"]
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Scroll case stuffed with notes",
+              "fr": "Étui à parchemins rempli de notes",
+              "es": "Portapergaminos lleno de notas"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Winter blanket",
+              "fr": "Couverture d'hiver",
+              "es": "Manta de invierno"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Common clothes",
+              "fr": "Vêtements communs",
+              "es": "Ropa común"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Herbalism kit",
+              "fr": "Kit d'herboriste",
+              "es": "Útiles de herborista"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 5
+      }
+    ],
+    "grants": [
+      {
+        "id": "hermit-languages",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "hermit-feature",
+    "label": {
+      "en": "Discovery",
+      "fr": "Découverte",
+      "es": "Descubrimiento"
+    },
+    "parentKey": "hermit",
+    "description": {
+      "en": "Your seclusion gave you access to a unique and powerful discovery: a truth about the cosmos, the gods or a site, a forgotten fact or a secret. Work out its nature with your GM.",
+      "fr": "Ta retraite t'a permis de faire une découverte unique et puissante : une vérité sur le cosmos, les dieux ou un lieu, un fait oublié ou un secret. Définis sa nature avec ton MJ.",
+      "es": "Tu retiro te permitió hacer un descubrimiento único y poderoso: una verdad sobre el cosmos, los dioses o un lugar, un hecho olvidado o un secreto. Define su naturaleza con tu DJ."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "noble",
+    "label": {
+      "en": "Noble",
+      "fr": "Noble",
+      "es": "Noble"
+    },
+    "description": {
+      "en": "You understand wealth, power and privilege: you carry a noble title and your family owns land and wields influence.",
+      "fr": "Tu connais la richesse, le pouvoir et les privilèges : tu portes un titre de noblesse et ta famille possède des terres et de l'influence.",
+      "es": "Conoces la riqueza, el poder y los privilegios: tienes un título nobiliario y tu familia posee tierras e influencia."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["history", "persuasion"],
+      "startingGold": 25,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "My eloquent flattery makes everyone feel important.",
+            "fr": "Mes flatteries éloquentes font que chacun se sent important.",
+            "es": "Mis halagos elocuentes hacen que todos se sientan importantes."
+          },
+          {
+            "en": "Despite my birth, I don't place myself above others.",
+            "fr": "Malgré ma naissance, je ne me crois pas au-dessus des autres.",
+            "es": "Pese a mi cuna, no me creo superior a nadie."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Responsibility: it is my duty to protect those beneath me.",
+            "fr": "Responsabilité : je dois protéger ceux qui dépendent de moi.",
+            "es": "Responsabilidad: debo proteger a quienes dependen de mí."
+          },
+          {
+            "en": "Power: if I gain power, no one will tell me what to do.",
+            "fr": "Pouvoir : avec le pouvoir, personne ne me dictera ma conduite.",
+            "es": "Poder: con poder, nadie me dirá qué hacer."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I will face any challenge to win my family's approval.",
+            "fr": "J'affronterai tout pour gagner l'approbation de ma famille.",
+            "es": "Afrontaré cualquier reto para ganarme la aprobación de mi familia."
+          },
+          {
+            "en": "My house's alliance with another must be maintained at all costs.",
+            "fr": "L'alliance de ma maison doit être préservée à tout prix.",
+            "es": "La alianza de mi casa debe mantenerse a toda costa."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I secretly believe everyone is beneath me.",
+            "fr": "Je pense en secret que tous me sont inférieurs.",
+            "es": "En secreto creo que todos están por debajo de mí."
+          },
+          {
+            "en": "I hide a scandalous secret that could ruin my family.",
+            "fr": "Je cache un secret scandaleux qui pourrait ruiner ma famille.",
+            "es": "Oculto un secreto escandaloso que podría arruinar a mi familia."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.history",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.persuasion",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Fine clothes",
+              "fr": "Vêtements fins",
+              "es": "Ropa fina"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Signet ring",
+              "fr": "Chevalière",
+              "es": "Anillo de sello"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Scroll of pedigree",
+              "fr": "Parchemin de lignage",
+              "es": "Pergamino genealógico"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 25
+      }
+    ],
+    "grants": [
+      {
+        "id": "noble-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "dice-set",
+            "dragonchess-set",
+            "playing-card-set",
+            "three-dragon-ante-set"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "noble-languages",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "noble-feature",
+    "label": {
+      "en": "Position of Privilege",
+      "fr": "Privilège",
+      "es": "Posición privilegiada"
+    },
+    "parentKey": "noble",
+    "description": {
+      "en": "People are inclined to think the best of you. You are welcome in high society, common folk try to accommodate you, and you can secure an audience with a local noble if you need to.",
+      "fr": "Les gens ont tendance à bien te considérer. Tu es bienvenu dans la haute société, les gens du peuple cherchent à te satisfaire, et tu peux obtenir une audience auprès d'un noble local si besoin.",
+      "es": "La gente tiende a pensar bien de ti. Eres bienvenido en la alta sociedad, el pueblo llano intenta complacerte y puedes conseguir audiencia con un noble local si lo necesitas."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "outlander",
+    "label": {
+      "en": "Outlander",
+      "fr": "Sauvageon",
+      "es": "Forastero"
+    },
+    "description": {
+      "en": "You grew up in the wilds, far from civilization, and witnessed the migration of herds and the passing of the seasons.",
+      "fr": "Tu as grandi dans les terres sauvages, loin de la civilisation, au rythme des migrations et des saisons.",
+      "es": "Creciste en tierras salvajes, lejos de la civilización, al ritmo de las migraciones y las estaciones."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["athletics", "survival"],
+      "startingGold": 10,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I'm driven by a wanderlust that led me away from home.",
+            "fr": "Une soif de voyage m'a poussé loin de chez moi.",
+            "es": "Un ansia de viajar me alejó de casa."
+          },
+          {
+            "en": "I feel far more comfortable around animals than people.",
+            "fr": "Je suis plus à l'aise avec les animaux qu'avec les gens.",
+            "es": "Me siento más cómodo con animales que con personas."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Nature: the natural world is more important than civilization.",
+            "fr": "Nature : la nature compte plus que la civilisation.",
+            "es": "Naturaleza: el mundo natural importa más que la civilización."
+          },
+          {
+            "en": "Glory: I must earn glory in battle.",
+            "fr": "Gloire : je dois conquérir la gloire au combat.",
+            "es": "Gloria: debo ganarme la gloria en combate."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "My family, clan or tribe is the most important thing in my life.",
+            "fr": "Ma famille, mon clan ou ma tribu compte plus que tout.",
+            "es": "Mi familia, clan o tribu es lo más importante."
+          },
+          {
+            "en": "I suffer awful visions of a coming disaster.",
+            "fr": "J'ai d'affreuses visions d'un désastre à venir.",
+            "es": "Tengo visiones terribles de un desastre inminente."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I'm too enamored of ale, wine and other intoxicants.",
+            "fr": "J'aime trop la bière, le vin et autres boissons fortes.",
+            "es": "Me gustan demasiado la cerveza, el vino y otros licores."
+          },
+          {
+            "en": "There's no room for caution in a life lived to the fullest.",
+            "fr": "Il n'y a pas de place pour la prudence dans une vie pleinement vécue.",
+            "es": "No hay sitio para la prudencia en una vida vivida al máximo."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.athletics",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.survival",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Staff",
+              "fr": "Bâton",
+              "es": "Bastón"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Hunting trap",
+              "fr": "Piège de chasse",
+              "es": "Trampa de caza"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Trophy from an animal you killed",
+              "fr": "Trophée d'un animal que tu as tué",
+              "es": "Trofeo de un animal que cazaste"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Traveler's clothes",
+              "fr": "Vêtements de voyageur",
+              "es": "Ropa de viaje"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 10
+      }
+    ],
+    "grants": [
+      {
+        "id": "outlander-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "bagpipes",
+            "drum",
+            "dulcimer",
+            "flute",
+            "lute",
+            "lyre",
+            "horn",
+            "pan-flute",
+            "shawm",
+            "viol"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "outlander-languages",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "outlander-feature",
+    "label": {
+      "en": "Wanderer",
+      "fr": "Voyageur",
+      "es": "Trotamundos"
+    },
+    "parentKey": "outlander",
+    "description": {
+      "en": "You have an excellent memory for maps and geography, and you can always recall the general layout of terrain and settlements around you. You can find food and fresh water for yourself and up to five others each day, provided the land offers them.",
+      "fr": "Tu as une excellente mémoire des cartes et de la géographie, et tu te souviens toujours de la disposition générale des terrains et des lieux habités alentour. Tu peux trouver chaque jour de la nourriture et de l'eau potable pour toi et jusqu'à cinq personnes, si la région le permet.",
+      "es": "Tienes una memoria excelente para mapas y geografía, y siempre recuerdas la disposición general del terreno y los asentamientos cercanos. Puedes encontrar cada día comida y agua potable para ti y hasta cinco personas más, si la tierra lo permite."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "sage",
+    "label": {
+      "en": "Sage",
+      "fr": "Sage",
+      "es": "Sabio"
+    },
+    "description": {
+      "en": "You spent years learning the lore of the multiverse, reading manuscripts and studying scrolls.",
+      "fr": "Tu as passé des années à étudier le savoir du multivers, à lire des manuscrits et des parchemins.",
+      "es": "Pasaste años estudiando el saber del multiverso, leyendo manuscritos y pergaminos."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["arcana", "history"],
+      "startingGold": 10,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I use polysyllabic words that convey the impression of great erudition.",
+            "fr": "J'emploie des mots savants pour paraître érudit.",
+            "es": "Uso palabras rebuscadas para parecer erudito."
+          },
+          {
+            "en": "I'm used to helping out those who aren't as smart as I am.",
+            "fr": "J'ai l'habitude d'aider ceux qui sont moins instruits.",
+            "es": "Estoy acostumbrado a ayudar a quienes saben menos."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Knowledge: the path to power is through knowledge.",
+            "fr": "Savoir : le pouvoir passe par la connaissance.",
+            "es": "Conocimiento: el poder pasa por el saber."
+          },
+          {
+            "en": "Logic: emotions must not cloud our thinking.",
+            "fr": "Logique : les émotions ne doivent pas troubler la raison.",
+            "es": "Lógica: las emociones no deben nublar el juicio."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I have an ancient text that holds terrible secrets.",
+            "fr": "Je possède un texte ancien aux secrets terribles.",
+            "es": "Tengo un texto antiguo con secretos terribles."
+          },
+          {
+            "en": "I've been searching my whole life for the answer to a question.",
+            "fr": "Toute ma vie, j'ai cherché la réponse à une question.",
+            "es": "Llevo toda la vida buscando la respuesta a una pregunta."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "I am easily distracted by the promise of information.",
+            "fr": "Je me laisse facilement distraire par une promesse de savoir.",
+            "es": "Me distrae fácilmente la promesa de información."
+          },
+          {
+            "en": "I speak without really thinking through my words.",
+            "fr": "Je parle sans vraiment réfléchir.",
+            "es": "Hablo sin pensar bien lo que digo."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.arcana",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.history",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Bottle of black ink",
+              "fr": "Bouteille d'encre noire",
+              "es": "Frasco de tinta negra"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Quill",
+              "fr": "Plume",
+              "es": "Pluma"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Small knife",
+              "fr": "Petit couteau",
+              "es": "Cuchillo pequeño"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Letter from a dead colleague",
+              "fr": "Lettre d'un collègue décédé",
+              "es": "Carta de un colega fallecido"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Common clothes",
+              "fr": "Vêtements communs",
+              "es": "Ropa común"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 10
+      }
+    ],
+    "grants": [
+      {
+        "id": "sage-languages",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "sage-feature",
+    "label": {
+      "en": "Researcher",
+      "fr": "Chercheur",
+      "es": "Investigador"
+    },
+    "parentKey": "sage",
+    "description": {
+      "en": "When you attempt to learn or recall a piece of lore, if you don't know it, you often know where and from whom you can obtain it: a library, a scholar, a university or a sage.",
+      "fr": "Lorsque tu cherches à apprendre ou à te rappeler une information que tu ignores, tu sais souvent où et auprès de qui l'obtenir : une bibliothèque, un érudit, une université ou un sage.",
+      "es": "Cuando intentas aprender o recordar un dato que desconoces, a menudo sabes dónde y de quién obtenerlo: una biblioteca, un erudito, una universidad o un sabio."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "sailor",
+    "label": {
+      "en": "Sailor",
+      "fr": "Marin",
+      "es": "Marinero"
+    },
+    "description": {
+      "en": "You sailed on a seagoing vessel for years, braving storms, monsters of the deep and those who wanted to sink your ship.",
+      "fr": "Tu as navigué des années, affrontant tempêtes, monstres des profondeurs et ceux qui voulaient couler ton navire.",
+      "es": "Navegaste durante años, desafiando tormentas, monstruos de las profundidades y a quienes querían hundir tu barco."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["athletics", "perception"],
+      "startingGold": 10,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "My friends know they can rely on me, no matter what.",
+            "fr": "Mes amis savent qu'ils peuvent compter sur moi.",
+            "es": "Mis amigos saben que pueden contar conmigo."
+          },
+          {
+            "en": "I stretch the truth for the sake of a good story.",
+            "fr": "J'enjolive la vérité pour une bonne histoire.",
+            "es": "Exagero la verdad por una buena historia."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Freedom: the sea is freedom.",
+            "fr": "Liberté : la mer, c'est la liberté.",
+            "es": "Libertad: el mar es libertad."
+          },
+          {
+            "en": "Fairness: we all do the work, so we all share the reward.",
+            "fr": "Équité : on partage le travail, on partage la récompense.",
+            "es": "Equidad: compartimos el trabajo y la recompensa."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I'm loyal to my captain first, everything else second.",
+            "fr": "Ma loyauté va d'abord à mon capitaine.",
+            "es": "Mi lealtad es primero para mi capitán."
+          },
+          {
+            "en": "The ship is most important: crewmates and captains come and go.",
+            "fr": "Le navire passe avant tout : équipages et capitaines changent.",
+            "es": "El barco es lo primero: tripulantes y capitanes van y vienen."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "Once I start drinking, it's hard for me to stop.",
+            "fr": "Quand je commence à boire, j'ai du mal à m'arrêter.",
+            "es": "Cuando empiezo a beber, me cuesta parar."
+          },
+          {
+            "en": "I follow orders, even if I think they're wrong.",
+            "fr": "J'obéis aux ordres, même quand je les crois injustes.",
+            "es": "Obedezco órdenes aunque crea que son injustas."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.athletics",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.perception",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["navigators-tools", "water-vehicles"]
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Belaying pin (club)",
+              "fr": "Cabillot (gourdin)",
+              "es": "Cabilla (garrote)"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "50 feet of silk rope",
+              "fr": "Corde en soie de 15 m",
+              "es": "Cuerda de seda de 50 pies"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Lucky charm",
+              "fr": "Porte-bonheur",
+              "es": "Amuleto de la suerte"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Common clothes",
+              "fr": "Vêtements communs",
+              "es": "Ropa común"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 10
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "background-feature",
+    "key": "sailor-feature",
+    "label": {
+      "en": "Ship's Passage",
+      "fr": "Passage gratuit",
+      "es": "Pasaje en barco"
+    },
+    "parentKey": "sailor",
+    "description": {
+      "en": "When you need to, you can secure free passage on a sailing ship for yourself and your companions, in exchange for helping the crew during the voyage.",
+      "fr": "Lorsque tu en as besoin, tu peux obtenir un passage gratuit sur un navire pour toi et tes compagnons, en échange d'une aide à l'équipage pendant la traversée.",
+      "es": "Cuando lo necesitas, puedes conseguir pasaje gratuito en un barco para ti y tus compañeros, a cambio de ayudar a la tripulación durante el viaje."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "soldier",
+    "label": {
+      "en": "Soldier",
+      "fr": "Soldat",
+      "es": "Soldado"
+    },
+    "description": {
+      "en": "War has been your life for as long as you care to remember: you trained, served in an army and know the realities of battle.",
+      "fr": "La guerre est ta vie depuis aussi longtemps que tu t'en souviennes : tu as été entraîné, as servi dans une armée et connais la réalité des combats.",
+      "es": "La guerra ha sido tu vida desde que recuerdas: te entrenaste, serviste en un ejército y conoces la realidad de la batalla."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["athletics", "intimidation"],
+      "startingGold": 10,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I'm always polite and respectful.",
+            "fr": "Je suis toujours poli et respectueux.",
+            "es": "Siempre soy educado y respetuoso."
+          },
+          {
+            "en": "I've lost too many friends, and I'm slow to make new ones.",
+            "fr": "J'ai perdu trop d'amis et j'en fais difficilement de nouveaux.",
+            "es": "He perdido demasiados amigos y me cuesta hacer otros."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Greater good: our lot is to lay down our lives in defense of others.",
+            "fr": "Bien commun : notre lot est de donner notre vie pour les autres.",
+            "es": "Bien común: nuestro destino es dar la vida por los demás."
+          },
+          {
+            "en": "Responsibility: I do what I must and obey just authority.",
+            "fr": "Responsabilité : je fais ce que je dois et obéis à l'autorité juste.",
+            "es": "Responsabilidad: hago lo que debo y obedezco a la autoridad justa."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I would still lay down my life for the people I served with.",
+            "fr": "Je donnerais encore ma vie pour mes frères d'armes.",
+            "es": "Aún daría la vida por mis compañeros de armas."
+          },
+          {
+            "en": "Someone saved my life on the battlefield; I will never leave a friend behind.",
+            "fr": "Quelqu'un m'a sauvé la vie au combat ; je n'abandonnerai jamais un ami.",
+            "es": "Alguien me salvó la vida en batalla; nunca dejaré atrás a un amigo."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "The monstrous enemy we faced still leaves me quivering with fear.",
+            "fr": "L'ennemi monstrueux que nous avons affronté me fait encore trembler.",
+            "es": "El enemigo monstruoso al que nos enfrentamos aún me hace temblar."
+          },
+          {
+            "en": "I'd rather eat my armor than admit when I'm wrong.",
+            "fr": "Je préférerais manger mon armure que d'admettre une erreur.",
+            "es": "Antes me comería la armadura que admitir un error."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.athletics",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.intimidation",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["land-vehicles"]
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Insignia of rank",
+              "fr": "Insigne de grade",
+              "es": "Insignia de rango"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Trophy taken from a fallen enemy",
+              "fr": "Trophée pris à un ennemi vaincu",
+              "es": "Trofeo de un enemigo caído"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Set of bone dice or deck of cards",
+              "fr": "Jeu de dés en os ou jeu de cartes",
+              "es": "Dados de hueso o baraja de cartas"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Common clothes",
+              "fr": "Vêtements communs",
+              "es": "Ropa común"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 10
+      }
+    ],
+    "grants": [
+      {
+        "id": "soldier-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "dice-set",
+            "dragonchess-set",
+            "playing-card-set",
+            "three-dragon-ante-set"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "background-feature",
+    "key": "soldier-feature",
+    "label": {
+      "en": "Military Rank",
+      "fr": "Grade militaire",
+      "es": "Rango militar"
+    },
+    "parentKey": "soldier",
+    "description": {
+      "en": "You have a military rank from your career. Soldiers loyal to your former organization recognize your authority, and you can invoke it to temporarily requisition simple equipment or horses, or gain access to friendly military encampments and fortresses.",
+      "fr": "Tu as un grade militaire hérité de ta carrière. Les soldats fidèles à ton ancienne armée reconnaissent ton autorité, et tu peux l'invoquer pour réquisitionner temporairement du matériel simple ou des chevaux, ou accéder aux camps et forteresses militaires alliés.",
+      "es": "Tienes un rango militar de tu carrera. Los soldados leales a tu antigua organización reconocen tu autoridad, y puedes invocarla para requisar temporalmente equipo sencillo o caballos, o acceder a campamentos y fortalezas militares aliados."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "background",
+    "key": "urchin",
+    "label": {
+      "en": "Urchin",
+      "fr": "Enfant des rues",
+      "es": "Huérfano"
+    },
+    "description": {
+      "en": "You grew up on the streets alone, orphaned and poor, learning to survive by your wits.",
+      "fr": "Tu as grandi seul dans les rues, orphelin et pauvre, en apprenant à survivre grâce à ta débrouillardise.",
+      "es": "Creciste solo en las calles, huérfano y pobre, aprendiendo a sobrevivir con tu ingenio."
+    },
+    "tags": [],
+    "data": {
+      "skills": ["sleight-of-hand", "stealth"],
+      "startingGold": 10,
+      "suggestions": {
+        "personalityTraits": [
+          {
+            "en": "I hide scraps of food and trinkets away in my pockets.",
+            "fr": "Je cache des restes de nourriture et des babioles dans mes poches.",
+            "es": "Escondo restos de comida y baratijas en los bolsillos."
+          },
+          {
+            "en": "I don't like to bathe.",
+            "fr": "Je n'aime pas me laver.",
+            "es": "No me gusta bañarme."
+          }
+        ],
+        "ideals": [
+          {
+            "en": "Community: we have to take care of each other.",
+            "fr": "Communauté : nous devons prendre soin les uns des autres.",
+            "es": "Comunidad: debemos cuidarnos unos a otros."
+          },
+          {
+            "en": "Change: the low are lifted up, the high brought down.",
+            "fr": "Changement : les humbles s'élèvent, les puissants chutent.",
+            "es": "Cambio: los humildes se elevan y los poderosos caen."
+          }
+        ],
+        "bonds": [
+          {
+            "en": "I owe my survival to another urchin who taught me to live on the streets.",
+            "fr": "Je dois ma survie à un autre enfant des rues qui m'a appris à vivre dehors.",
+            "es": "Debo mi supervivencia a otro huérfano que me enseñó a vivir en la calle."
+          },
+          {
+            "en": "No one else should have to endure the hardships I've been through.",
+            "fr": "Personne ne devrait endurer ce que j'ai vécu.",
+            "es": "Nadie debería sufrir lo que yo he vivido."
+          }
+        ],
+        "flaws": [
+          {
+            "en": "Gold seems like a lot of money to me, and I'll do just about anything for more of it.",
+            "fr": "L'or me semble une fortune et je ferais presque tout pour en avoir plus.",
+            "es": "El oro me parece una fortuna y haría casi cualquier cosa por más."
+          },
+          {
+            "en": "I will never fully trust anyone other than myself.",
+            "fr": "Je ne ferai jamais entièrement confiance qu'à moi-même.",
+            "es": "Nunca confiaré del todo en nadie salvo en mí."
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "skills.sleight-of-hand",
+        "value": 2
+      },
+      {
+        "op": "set",
+        "target": "skills.stealth",
+        "value": 2
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["disguise-kit", "thieves-tools"]
+      },
+      {
+        "op": "grant",
+        "target": "equipment",
+        "value": [
+          {
+            "label": {
+              "en": "Small knife",
+              "fr": "Petit couteau",
+              "es": "Cuchillo pequeño"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Map of your home city",
+              "fr": "Carte de ta ville natale",
+              "es": "Mapa de tu ciudad natal"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Pet mouse",
+              "fr": "Souris apprivoisée",
+              "es": "Ratón mascota"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Token to remember your parents by",
+              "fr": "Souvenir de tes parents",
+              "es": "Recuerdo de tus padres"
+            },
+            "quantity": 1
+          },
+          {
+            "label": {
+              "en": "Common clothes",
+              "fr": "Vêtements communs",
+              "es": "Ropa común"
+            },
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "op": "add",
+        "target": "gold",
+        "value": 10
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "background-feature",
+    "key": "urchin-feature",
+    "label": {
+      "en": "City Secrets",
+      "fr": "Secrets de la ville",
+      "es": "Secretos de la ciudad"
+    },
+    "parentKey": "urchin",
+    "description": {
+      "en": "You know the secret patterns and flow of cities and can find passages through the urban sprawl that others would miss. When not in combat, you and your companions can travel between any two locations in a city twice as fast as your speed would normally allow.",
+      "fr": "Tu connais les rouages et passages secrets des villes et trouves des chemins que d'autres manqueraient. Hors combat, toi et tes compagnons pouvez vous déplacer entre deux lieux d'une ville deux fois plus vite que votre vitesse ne le permettrait.",
+      "es": "Conoces los patrones y pasajes secretos de las ciudades y encuentras caminos que otros pasarían por alto. Fuera de combate, tú y tus compañeros podéis viajar entre dos lugares de una ciudad el doble de rápido de lo que permitiría vuestra velocidad."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]

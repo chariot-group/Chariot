@@ -1,0 +1,2602 @@
+[
+  {
+    "type": "class",
+    "key": "barbarian",
+    "label": {
+      "en": "Barbarian",
+      "fr": "Barbare",
+      "es": "Bárbaro"
+    },
+    "description": {
+      "en": "A fierce warrior who channels primal rage to hit harder, endure more and shrug off danger.",
+      "fr": "Un guerrier farouche qui canalise une rage primitive pour frapper plus fort, encaisser davantage et ignorer le danger.",
+      "es": "Un guerrero feroz que canaliza una furia primigenia para golpear más fuerte, aguantar más e ignorar el peligro."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Barbarian",
+      "hitDie": 12,
+      "primaryAbilities": ["strength"],
+      "savingThrows": ["strength", "constitution"],
+      "subclassLevel": 3,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "startingGoldDice": "2d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "strength"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.strength",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.constitution",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "martial-weapons"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["shields"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "martial-weapons"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      }
+    ],
+    "grants": [
+      {
+        "id": "barbarian-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "animal-handling",
+            "athletics",
+            "intimidation",
+            "nature",
+            "perception",
+            "survival"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "barbarian-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "barbarian"
+        },
+        "count": 1,
+        "level": 3
+      },
+      {
+        "id": "barbarian-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "barbarian-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "barbarian-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "barbarian-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "barbarian-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "barbarian-rage",
+    "label": {
+      "en": "Rage",
+      "fr": "Rage",
+      "es": "Furia"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "As a bonus action, you enter a rage for up to 1 minute while not wearing heavy armor. While raging you have advantage on Strength checks and saving throws, a bonus to melee weapon damage using Strength (+2, +3 at 9th level, +4 at 16th) and resistance to bludgeoning, piercing and slashing damage. You can't cast or concentrate on spells. The rage ends early if you are knocked unconscious or if your turn ends without you attacking a hostile creature or taking damage since your last turn. You can rage 2 times (3 at 3rd level, 4 at 6th, 5 at 12th, 6 at 17th, unlimited at 20th) and regain all uses after a long rest.",
+      "fr": "Par une action bonus, tu entres en rage pendant 1 minute au maximum si tu ne portes pas d'armure lourde. En rage, tu as l'avantage aux tests et jets de sauvegarde de Force, un bonus aux dégâts des armes de corps à corps utilisant la Force (+2, +3 au niveau 9, +4 au niveau 16) et la résistance aux dégâts contondants, perforants et tranchants. Tu ne peux ni lancer de sorts ni te concentrer sur un sort. La rage prend fin plus tôt si tu tombes inconscient ou si ton tour se termine sans que tu aies attaqué une créature hostile ni subi de dégâts depuis ton tour précédent. Tu peux entrer en rage 2 fois (3 au niveau 3, 4 au niveau 6, 5 au niveau 12, 6 au niveau 17, illimité au niveau 20) et récupères toutes les utilisations après un repos long.",
+      "es": "Como acción adicional, entras en furia durante hasta 1 minuto si no llevas armadura pesada. En furia tienes ventaja en pruebas y tiradas de salvación de Fuerza, un bonificador al daño con armas cuerpo a cuerpo que usen Fuerza (+2, +3 en el nivel 9, +4 en el 16) y resistencia al daño contundente, perforante y cortante. No puedes lanzar conjuros ni concentrarte en ellos. La furia termina antes si quedas inconsciente o si tu turno acaba sin haber atacado a una criatura hostil ni recibido daño desde tu turno anterior. Puedes enfurecerte 2 veces (3 en el nivel 3, 4 en el 6, 5 en el 12, 6 en el 17, ilimitadas en el 20) y recuperas todos los usos tras un descanso largo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "rageDamage": [
+        2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4
+      ],
+      "uses": {
+        "reset": "long"
+      },
+      "usesByLevel": [
+        2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 99
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "barbarian-unarmored-defense",
+    "label": {
+      "en": "Unarmored Defense",
+      "fr": "Défense sans armure",
+      "es": "Defensa sin armadura"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit.",
+      "fr": "Tant que tu ne portes pas d'armure, ta CA est égale à 10 + ton modificateur de Dextérité + ton modificateur de Constitution. Tu peux utiliser un bouclier et conserver ce bénéfice.",
+      "es": "Mientras no lleves armadura, tu CA es 10 + tu modificador de Destreza + tu modificador de Constitución. Puedes usar un escudo y seguir obteniendo este beneficio."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "unarmoredDefense",
+        "value": "constitution"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "reckless-attack",
+    "label": {
+      "en": "Reckless Attack",
+      "fr": "Attaque téméraire",
+      "es": "Ataque temerario"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "When you make your first attack on your turn, you can decide to attack recklessly: you have advantage on melee weapon attack rolls using Strength during this turn, but attack rolls against you have advantage until your next turn.",
+      "fr": "Lorsque tu fais ta première attaque de ton tour, tu peux décider d'attaquer de façon téméraire : tu as l'avantage aux jets d'attaque d'arme de corps à corps utilisant la Force pendant ce tour, mais les jets d'attaque contre toi ont l'avantage jusqu'à ton prochain tour.",
+      "es": "Cuando haces tu primer ataque en tu turno, puedes atacar temerariamente: tienes ventaja en las tiradas de ataque con armas cuerpo a cuerpo que usen Fuerza durante ese turno, pero las tiradas de ataque contra ti tienen ventaja hasta tu siguiente turno."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "danger-sense",
+    "label": {
+      "en": "Danger Sense",
+      "fr": "Sens du danger",
+      "es": "Sentir el peligro"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "You have advantage on Dexterity saving throws against effects you can see, such as traps and spells, as long as you are not blinded, deafened or incapacitated.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde de Dextérité contre les effets que tu peux voir, comme les pièges et les sorts, tant que tu n'es ni aveuglé, ni assourdi, ni neutralisé.",
+      "es": "Tienes ventaja en las tiradas de salvación de Destreza contra efectos que puedas ver, como trampas y conjuros, siempre que no estés cegado, ensordecido ni incapacitado."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "barbarian-extra-attack",
+    "label": {
+      "en": "Extra Attack",
+      "fr": "Attaque supplémentaire",
+      "es": "Ataque adicional"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, lorsque tu fais l'action Attaquer pendant ton tour.",
+      "es": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "fast-movement",
+    "label": {
+      "en": "Fast Movement",
+      "fr": "Déplacement rapide",
+      "es": "Movimiento rápido"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "Your speed increases by 10 feet while you aren't wearing heavy armor.",
+      "fr": "Ta vitesse augmente de 3 m tant que tu ne portes pas d'armure lourde.",
+      "es": "Tu velocidad aumenta en 10 pies mientras no lleves armadura pesada."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "speed.walk",
+        "value": 10
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "feral-instinct",
+    "label": {
+      "en": "Feral Instinct",
+      "fr": "Instinct sauvage",
+      "es": "Instinto salvaje"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "You have advantage on initiative rolls. If you are surprised at the start of combat and not incapacitated, you can act normally on your first turn, but only if you enter your rage first.",
+      "fr": "Tu as l'avantage aux jets d'initiative. Si tu es surpris au début d'un combat sans être neutralisé, tu peux agir normalement lors de ton premier tour, à condition d'entrer en rage avant toute autre chose.",
+      "es": "Tienes ventaja en las tiradas de iniciativa. Si eres sorprendido al comienzo del combate y no estás incapacitado, puedes actuar con normalidad en tu primer turno, pero solo si entras en furia antes de hacer nada más."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "brutal-critical",
+    "label": {
+      "en": "Brutal Critical",
+      "fr": "Critique brutal",
+      "es": "Crítico brutal"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "You can roll one additional weapon damage die when determining the extra damage for a critical hit with a melee attack. This becomes two additional dice at 13th level and three at 17th level.",
+      "fr": "Tu peux lancer un dé de dégâts d'arme supplémentaire pour calculer les dégâts en plus d'un coup critique au corps à corps. Ce nombre passe à deux dés au niveau 13 et à trois au niveau 17.",
+      "es": "Puedes tirar un dado de daño de arma adicional al calcular el daño extra de un crítico con un ataque cuerpo a cuerpo. Pasan a ser dos dados en el nivel 13 y tres en el 17."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {
+      "extraDice": [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3]
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "relentless-rage",
+    "label": {
+      "en": "Relentless Rage",
+      "fr": "Rage implacable",
+      "es": "Furia implacable"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "If you drop to 0 hit points while raging and don't die outright, you can make a DC 10 Constitution saving throw to drop to 1 hit point instead. Each time you use this feature after the first, the DC increases by 5; it resets to 10 after a short or long rest.",
+      "fr": "Si tes points de vie tombent à 0 pendant ta rage sans que tu meures sur le coup, tu peux faire un jet de sauvegarde de Constitution DD 10 pour rester à 1 point de vie. Chaque utilisation après la première augmente le DD de 5 ; il revient à 10 après un repos court ou long.",
+      "es": "Si tus puntos de golpe caen a 0 mientras estás en furia y no mueres en el acto, puedes hacer una tirada de salvación de Constitución CD 10 para quedarte a 1 punto de golpe. Cada uso después del primero aumenta la CD en 5; vuelve a 10 tras un descanso corto o largo."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "persistent-rage",
+    "label": {
+      "en": "Persistent Rage",
+      "fr": "Rage persistante",
+      "es": "Furia persistente"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "Your rage is so fierce that it ends early only if you fall unconscious or if you choose to end it.",
+      "fr": "Ta rage est si intense qu'elle ne prend fin plus tôt que si tu tombes inconscient ou si tu choisis d'y mettre fin.",
+      "es": "Tu furia es tan intensa que solo termina antes si caes inconsciente o decides ponerle fin."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "indomitable-might",
+    "label": {
+      "en": "Indomitable Might",
+      "fr": "Puissance indomptable",
+      "es": "Poder indomable"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "If your total for a Strength check is less than your Strength score, you can use that score in place of the total.",
+      "fr": "Si le résultat total d'un test de Force est inférieur à ta valeur de Force, tu peux utiliser cette valeur à la place du total.",
+      "es": "Si el total de una prueba de Fuerza es menor que tu puntuación de Fuerza, puedes usar esa puntuación en lugar del total."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "primal-champion",
+    "label": {
+      "en": "Primal Champion",
+      "fr": "Champion primitif",
+      "es": "Campeón primigenio"
+    },
+    "parentKey": "barbarian",
+    "description": {
+      "en": "You embody the power of the wilds. Your Strength and Constitution scores increase by 4, and your maximum for those scores is now 24.",
+      "fr": "Tu incarnes la puissance de la nature sauvage. Ta Force et ta Constitution augmentent de 4, et leur maximum passe à 24.",
+      "es": "Encarnas el poder de lo salvaje. Tu Fuerza y Constitución aumentan en 4, y su máximo pasa a ser 24."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.strength",
+        "value": 4
+      },
+      {
+        "op": "add",
+        "target": "abilityBonuses.constitution",
+        "value": 4
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "fighter",
+    "label": {
+      "en": "Fighter",
+      "fr": "Guerrier",
+      "es": "Guerrero"
+    },
+    "description": {
+      "en": "A master of weapons and armor, trained to fight in any style and to keep going when others fall.",
+      "fr": "Un maître des armes et des armures, entraîné à combattre dans tous les styles et à tenir quand les autres tombent.",
+      "es": "Un maestro de las armas y las armaduras, entrenado para luchar en cualquier estilo y resistir cuando otros caen."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Fighter",
+      "hitDie": 10,
+      "primaryAbilities": ["strength", "dexterity"],
+      "savingThrows": ["strength", "constitution"],
+      "subclassLevel": 3,
+      "asiLevels": [4, 6, 8, 12, 14, 16, 19],
+      "startingGoldDice": "5d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "or": [
+          {
+            ">=": [
+              {
+                "var": "strength"
+              },
+              13
+            ]
+          },
+          {
+            ">=": [
+              {
+                "var": "dexterity"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.strength",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.constitution",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "heavy-armor", "shields"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "martial-weapons"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "martial-weapons"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      }
+    ],
+    "grants": [
+      {
+        "id": "fighter-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "acrobatics",
+            "animal-handling",
+            "athletics",
+            "history",
+            "insight",
+            "intimidation",
+            "perception",
+            "survival"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "fighter-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "fighter"
+        },
+        "count": 1,
+        "level": 3
+      },
+      {
+        "id": "fighter-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "fighter-asi-6",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 6
+      },
+      {
+        "id": "fighter-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "fighter-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "fighter-asi-14",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 14
+      },
+      {
+        "id": "fighter-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "fighter-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "fighter-fighting-style",
+        "kind": "choose",
+        "label": {
+          "en": "Fighting style",
+          "fr": "Style de combat",
+          "es": "Estilo de combate"
+        },
+        "description": {
+          "en": "A combat specialty that improves one way of fighting.",
+          "fr": "Une spécialité de combat qui améliore une façon de te battre.",
+          "es": "Una especialidad de combate que mejora una forma de luchar."
+        },
+        "from": {
+          "type": "fighting-style"
+        },
+        "count": 1,
+        "level": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "fighter-fighting-style",
+    "label": {
+      "en": "Fighting Style",
+      "fr": "Style de combat",
+      "es": "Estilo de combate"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "You adopt a particular style of fighting as your specialty. You can't take the same Fighting Style option more than once, even if you later get to choose again.",
+      "fr": "Tu adoptes un style de combat particulier comme spécialité. Tu ne peux pas choisir plusieurs fois la même option de style de combat, même si tu peux en choisir une autre plus tard.",
+      "es": "Adoptas un estilo de combate concreto como especialidad. No puedes elegir la misma opción de estilo más de una vez, aunque más adelante puedas elegir otra."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "second-wind",
+    "label": {
+      "en": "Second Wind",
+      "fr": "Second souffle",
+      "es": "Nuevas energías"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level. You can use it again after a short or long rest.",
+      "fr": "Pendant ton tour, tu peux utiliser une action bonus pour récupérer 1d10 + ton niveau de guerrier points de vie. Tu peux l'utiliser à nouveau après un repos court ou long.",
+      "es": "En tu turno, puedes usar una acción adicional para recuperar 1d10 + tu nivel de guerrero puntos de golpe. Puedes volver a usarlo tras un descanso corto o largo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "action-surge",
+    "label": {
+      "en": "Action Surge",
+      "fr": "Fougue",
+      "es": "Oleada de acción"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "On your turn, you can take one additional action. Once you use this feature, you must finish a short or long rest before using it again. From 17th level you can use it twice before a rest, but only once on the same turn.",
+      "fr": "Pendant ton tour, tu peux effectuer une action supplémentaire. Une fois utilisée, tu dois terminer un repos court ou long avant de pouvoir la réutiliser. À partir du niveau 17, tu peux l'utiliser deux fois entre deux repos, mais une seule fois par tour.",
+      "es": "En tu turno, puedes realizar una acción adicional. Tras usarlo, debes terminar un descanso corto o largo para volver a usarlo. A partir del nivel 17 puedes usarlo dos veces entre descansos, pero solo una vez por turno."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      },
+      "usesByLevel": [
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "fighter-extra-attack",
+    "label": {
+      "en": "Extra Attack",
+      "fr": "Attaque supplémentaire",
+      "es": "Ataque adicional"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "You can attack twice, instead of once, whenever you take the Attack action on your turn. This becomes three attacks at 11th level and four at 20th level.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, lorsque tu fais l'action Attaquer pendant ton tour. Tu attaques trois fois au niveau 11 et quatre fois au niveau 20.",
+      "es": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno. Pasan a ser tres ataques en el nivel 11 y cuatro en el 20."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {
+      "attacks": [1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4]
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "indomitable",
+    "label": {
+      "en": "Indomitable",
+      "fr": "Inflexible",
+      "es": "Indomable"
+    },
+    "parentKey": "fighter",
+    "description": {
+      "en": "You can reroll a saving throw that you fail, but you must use the new roll. You regain this feature after a long rest. You can use it twice between long rests from 13th level and three times from 17th level.",
+      "fr": "Tu peux relancer un jet de sauvegarde raté, mais tu dois garder le nouveau résultat. Tu récupères cette aptitude après un repos long. Tu peux l'utiliser deux fois entre deux repos longs à partir du niveau 13 et trois fois à partir du niveau 17.",
+      "es": "Puedes repetir una tirada de salvación fallada, pero debes usar el nuevo resultado. Recuperas este rasgo tras un descanso largo. Puedes usarlo dos veces entre descansos largos a partir del nivel 13 y tres veces a partir del 17."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      },
+      "usesByLevel": [
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "monk",
+    "label": {
+      "en": "Monk",
+      "fr": "Moine",
+      "es": "Monje"
+    },
+    "description": {
+      "en": "A martial artist who harnesses ki to strike with blinding speed, move like the wind and resist harm.",
+      "fr": "Un adepte des arts martiaux qui maîtrise le ki pour frapper avec une vitesse fulgurante, se déplacer comme le vent et résister aux coups.",
+      "es": "Un artista marcial que domina el ki para golpear con una velocidad cegadora, moverse como el viento y resistir el daño."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Monk",
+      "hitDie": 8,
+      "primaryAbilities": ["dexterity", "wisdom"],
+      "savingThrows": ["strength", "dexterity"],
+      "subclassLevel": 3,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "startingGoldDice": "5d4 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "dexterity"
+              },
+              13
+            ]
+          },
+          {
+            ">=": [
+              {
+                "var": "wisdom"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.strength",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.dexterity",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "shortsword"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "shortsword"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      }
+    ],
+    "grants": [
+      {
+        "id": "monk-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "acrobatics",
+            "athletics",
+            "history",
+            "insight",
+            "religion",
+            "stealth"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "monk-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "monk"
+        },
+        "count": 1,
+        "level": 3
+      },
+      {
+        "id": "monk-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "monk-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "monk-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "monk-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "monk-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "monk-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "alchemists-supplies",
+            "brewers-supplies",
+            "calligraphers-supplies",
+            "carpenters-tools",
+            "cartographers-tools",
+            "cobblers-tools",
+            "cooks-utensils",
+            "glassblowers-tools",
+            "jewelers-tools",
+            "leatherworkers-tools",
+            "masons-tools",
+            "painters-supplies",
+            "potters-tools",
+            "smiths-tools",
+            "tinkers-tools",
+            "weavers-tools",
+            "woodcarvers-tools",
+            "bagpipes",
+            "drum",
+            "dulcimer",
+            "flute",
+            "lute",
+            "lyre",
+            "horn",
+            "pan-flute",
+            "shawm",
+            "viol"
+          ]
+        },
+        "count": 1,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "monk-unarmored-defense",
+    "label": {
+      "en": "Unarmored Defense",
+      "fr": "Défense sans armure",
+      "es": "Defensa sin armadura"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "While you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier.",
+      "fr": "Tant que tu ne portes ni armure ni bouclier, ta CA est égale à 10 + ton modificateur de Dextérité + ton modificateur de Sagesse.",
+      "es": "Mientras no lleves armadura ni escudo, tu CA es 10 + tu modificador de Destreza + tu modificador de Sabiduría."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "unarmoredDefense",
+        "value": "wisdom"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "martial-arts",
+    "label": {
+      "en": "Martial Arts",
+      "fr": "Arts martiaux",
+      "es": "Artes marciales"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "While unarmed or wielding only monk weapons (shortswords and simple melee weapons without the two-handed or heavy property) and wearing no armor or shield: you can use Dexterity instead of Strength for attack and damage rolls; you can roll a d4 in place of the normal damage (d6 at 5th level, d8 at 11th, d10 at 17th); and when you take the Attack action, you can make one unarmed strike as a bonus action.",
+      "fr": "Lorsque tu es à mains nues ou que tu ne manies que des armes de moine (épée courte et armes courantes de corps à corps sans les propriétés à deux mains ou lourde) sans armure ni bouclier : tu peux utiliser la Dextérité au lieu de la Force pour les jets d'attaque et de dégâts ; tu peux lancer un d4 à la place des dégâts normaux (d6 au niveau 5, d8 au niveau 11, d10 au niveau 17) ; et lorsque tu fais l'action Attaquer, tu peux porter une attaque à mains nues par une action bonus.",
+      "es": "Sin armas o empuñando solo armas de monje (espadas cortas y armas sencillas cuerpo a cuerpo sin las propiedades a dos manos o pesada) y sin armadura ni escudo: puedes usar Destreza en lugar de Fuerza para las tiradas de ataque y daño; puedes tirar un d4 en lugar del daño normal (d6 en el nivel 5, d8 en el 11, d10 en el 17); y al realizar la acción de Atacar puedes hacer un ataque sin armas como acción adicional."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "martialArtsDie": [
+        4, 4, 4, 4, 6, 6, 6, 6, 6, 6, 8, 8, 8, 8, 8, 8, 10, 10, 10, 10
+      ]
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "ki",
+    "label": {
+      "en": "Ki",
+      "fr": "Ki",
+      "es": "Ki"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "You have a number of ki points equal to your monk level, regained after a short or long rest. Your ki save DC is 8 + your proficiency bonus + your Wisdom modifier. You know: Flurry of Blows (1 ki after the Attack action: two unarmed strikes as a bonus action); Patient Defense (1 ki: Dodge as a bonus action); Step of the Wind (1 ki: Disengage or Dash as a bonus action, and your jump distance is doubled for the turn).",
+      "fr": "Tu disposes d'un nombre de points de ki égal à ton niveau de moine, récupérés après un repos court ou long. Le DD de sauvegarde de ton ki est 8 + ton bonus de maîtrise + ton modificateur de Sagesse. Tu connais : Déluge de coups (1 ki après l'action Attaquer : deux attaques à mains nues par une action bonus) ; Défense patiente (1 ki : Esquiver par une action bonus) ; Pas du vent (1 ki : Se désengager ou Foncer par une action bonus, et ta distance de saut est doublée pour ce tour).",
+      "es": "Tienes tantos puntos de ki como tu nivel de monje, que recuperas tras un descanso corto o largo. La CD de salvación de tu ki es 8 + tu bonificador por competencia + tu modificador de Sabiduría. Conoces: Ráfaga de golpes (1 ki tras la acción de Atacar: dos ataques sin armas como acción adicional); Defensa paciente (1 ki: Esquivar como acción adicional); Paso del viento (1 ki: Retirarse o Correr como acción adicional, y tu distancia de salto se duplica ese turno)."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      },
+      "usesByLevel": [
+        0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "unarmored-movement",
+    "label": {
+      "en": "Unarmored Movement",
+      "fr": "Déplacement sans armure",
+      "es": "Movimiento sin armadura"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "Your speed increases by 10 feet while you are not wearing armor or wielding a shield (15 ft at 6th level, 20 ft at 10th, 25 ft at 14th, 30 ft at 18th). From 9th level, you can move along vertical surfaces and across liquids on your turn without falling during the move.",
+      "fr": "Ta vitesse augmente de 3 m tant que tu ne portes ni armure ni bouclier (4,50 m au niveau 6, 6 m au niveau 10, 7,50 m au niveau 14, 9 m au niveau 18). À partir du niveau 9, tu peux te déplacer sur les surfaces verticales et sur les liquides pendant ton tour sans tomber au cours du déplacement.",
+      "es": "Tu velocidad aumenta en 10 pies mientras no lleves armadura ni escudo (15 pies en el nivel 6, 20 en el 10, 25 en el 14, 30 en el 18). A partir del nivel 9 puedes moverte por superficies verticales y sobre líquidos en tu turno sin caer durante el movimiento."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "speedBonus": [
+        0, 10, 10, 10, 10, 15, 15, 15, 15, 20, 20, 20, 20, 25, 25, 25, 25, 30,
+        30, 30
+      ]
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "speed.walk",
+        "value": 10
+      },
+      {
+        "op": "add",
+        "target": "speed.walk",
+        "value": 5,
+        "when": {
+          ">=": [
+            {
+              "var": ["state.classes.of.monk", 0]
+            },
+            6
+          ]
+        }
+      },
+      {
+        "op": "add",
+        "target": "speed.walk",
+        "value": 5,
+        "when": {
+          ">=": [
+            {
+              "var": ["state.classes.of.monk", 0]
+            },
+            10
+          ]
+        }
+      },
+      {
+        "op": "add",
+        "target": "speed.walk",
+        "value": 5,
+        "when": {
+          ">=": [
+            {
+              "var": ["state.classes.of.monk", 0]
+            },
+            14
+          ]
+        }
+      },
+      {
+        "op": "add",
+        "target": "speed.walk",
+        "value": 5,
+        "when": {
+          ">=": [
+            {
+              "var": ["state.classes.of.monk", 0]
+            },
+            18
+          ]
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "deflect-missiles",
+    "label": {
+      "en": "Deflect Missiles",
+      "fr": "Parade de projectiles",
+      "es": "Desviar proyectiles"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "You can use your reaction to deflect or catch a missile when hit by a ranged weapon attack, reducing the damage by 1d10 + your Dexterity modifier + your monk level. If the damage drops to 0 and you have a free hand, you can catch it and spend 1 ki point to throw it back as part of the same reaction (range 20/60 ft, monk weapon).",
+      "fr": "Tu peux utiliser ta réaction pour dévier ou attraper un projectile lorsqu'une attaque d'arme à distance te touche, en réduisant les dégâts de 1d10 + ton modificateur de Dextérité + ton niveau de moine. Si les dégâts tombent à 0 et que tu as une main libre, tu peux l'attraper et dépenser 1 point de ki pour le renvoyer dans la même réaction (portée 6/18 m, arme de moine).",
+      "es": "Puedes usar tu reacción para desviar o atrapar un proyectil cuando te impacta un ataque con arma a distancia, reduciendo el daño en 1d10 + tu modificador de Destreza + tu nivel de monje. Si el daño baja a 0 y tienes una mano libre, puedes atraparlo y gastar 1 punto de ki para devolverlo en la misma reacción (alcance 20/60 pies, arma de monje)."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "slow-fall",
+    "label": {
+      "en": "Slow Fall",
+      "fr": "Chute ralentie",
+      "es": "Caída lenta"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "You can use your reaction when you fall to reduce any falling damage you take by an amount equal to five times your monk level.",
+      "fr": "Tu peux utiliser ta réaction lorsque tu tombes pour réduire les dégâts de chute subis d'un montant égal à cinq fois ton niveau de moine.",
+      "es": "Puedes usar tu reacción al caer para reducir el daño por caída en una cantidad igual a cinco veces tu nivel de monje."
+    },
+    "level": 4,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "monk-extra-attack",
+    "label": {
+      "en": "Extra Attack",
+      "fr": "Attaque supplémentaire",
+      "es": "Ataque adicional"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, lorsque tu fais l'action Attaquer pendant ton tour.",
+      "es": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "stunning-strike",
+    "label": {
+      "en": "Stunning Strike",
+      "fr": "Frappe étourdissante",
+      "es": "Golpe aturdidor"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "When you hit another creature with a melee weapon attack, you can spend 1 ki point: the target must succeed on a Constitution saving throw or be stunned until the end of your next turn.",
+      "fr": "Lorsque tu touches une autre créature avec une attaque d'arme de corps à corps, tu peux dépenser 1 point de ki : la cible doit réussir un jet de sauvegarde de Constitution ou être étourdie jusqu'à la fin de ton prochain tour.",
+      "es": "Cuando impactas a otra criatura con un ataque con arma cuerpo a cuerpo, puedes gastar 1 punto de ki: el objetivo debe superar una tirada de salvación de Constitución o quedar aturdido hasta el final de tu siguiente turno."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "ki-empowered-strikes",
+    "label": {
+      "en": "Ki-Empowered Strikes",
+      "fr": "Frappes de ki",
+      "es": "Golpes potenciados por el ki"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "Your unarmed strikes count as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage.",
+      "fr": "Tes attaques à mains nues sont considérées comme magiques pour surmonter la résistance et l'immunité aux attaques et dégâts non magiques.",
+      "es": "Tus ataques sin armas cuentan como mágicos para superar la resistencia y la inmunidad a ataques y daño no mágicos."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "monk-evasion",
+    "label": {
+      "en": "Evasion",
+      "fr": "Dérobade",
+      "es": "Evasión"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "When an effect allows a Dexterity saving throw to take only half damage, you take no damage on a success and only half damage on a failure.",
+      "fr": "Lorsqu'un effet permet un jet de sauvegarde de Dextérité pour ne subir que la moitié des dégâts, tu ne subis aucun dégât en cas de réussite et seulement la moitié en cas d'échec.",
+      "es": "Cuando un efecto permite una tirada de salvación de Destreza para recibir solo la mitad del daño, no recibes daño si la superas y solo la mitad si la fallas."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "stillness-of-mind",
+    "label": {
+      "en": "Stillness of Mind",
+      "fr": "Sérénité",
+      "es": "Quietud mental"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "You can use your action to end one effect on yourself that is causing you to be charmed or frightened.",
+      "fr": "Tu peux utiliser ton action pour mettre fin à un effet qui te charme ou t'effraie.",
+      "es": "Puedes usar tu acción para poner fin a un efecto que te tenga hechizado o asustado."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "purity-of-body",
+    "label": {
+      "en": "Purity of Body",
+      "fr": "Pureté du corps",
+      "es": "Pureza corporal"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "Your mastery of the ki flowing through you makes you immune to disease and poison.",
+      "fr": "Ta maîtrise du ki qui circule en toi te rend immunisé contre les maladies et le poison.",
+      "es": "Tu dominio del ki que fluye por ti te hace inmune a las enfermedades y el veneno."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "immunities",
+        "value": ["poison-damage"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "tongue-of-the-sun-and-moon",
+    "label": {
+      "en": "Tongue of the Sun and Moon",
+      "fr": "Langue du soleil et de la lune",
+      "es": "Lengua del sol y la luna"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "You understand all spoken languages, and any creature that can understand a language can understand what you say.",
+      "fr": "Tu comprends toutes les langues parlées, et toute créature capable de comprendre une langue comprend ce que tu dis.",
+      "es": "Entiendes todos los idiomas hablados, y cualquier criatura que entienda un idioma entiende lo que dices."
+    },
+    "level": 13,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "diamond-soul",
+    "label": {
+      "en": "Diamond Soul",
+      "fr": "Âme de diamant",
+      "es": "Alma de diamante"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "You gain proficiency in all saving throws. Whenever you fail a saving throw, you can spend 1 ki point to reroll it and take the second result.",
+      "fr": "Tu obtiens la maîtrise de tous les jets de sauvegarde. Lorsque tu rates un jet de sauvegarde, tu peux dépenser 1 point de ki pour le relancer et garder le second résultat.",
+      "es": "Obtienes competencia en todas las tiradas de salvación. Cuando falles una, puedes gastar 1 punto de ki para repetirla y quedarte con el segundo resultado."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.strength",
+        "value": true
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.dexterity",
+        "value": true
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.constitution",
+        "value": true
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.intelligence",
+        "value": true
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.wisdom",
+        "value": true
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.charisma",
+        "value": true
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "monk-timeless-body",
+    "label": {
+      "en": "Timeless Body",
+      "fr": "Jeunesse éternelle",
+      "es": "Cuerpo atemporal"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "Your ki sustains you: you no longer suffer the frailty of old age, can't be aged magically, and no longer need food or water.",
+      "fr": "Ton ki te soutient : tu ne subis plus les effets de la vieillesse, ne peux pas être vieilli par magie et n'as plus besoin de nourriture ni d'eau.",
+      "es": "Tu ki te sustenta: ya no sufres la fragilidad de la vejez, no puedes ser envejecido mágicamente y ya no necesitas comida ni agua."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "empty-body",
+    "label": {
+      "en": "Empty Body",
+      "fr": "Désertion de l'âme",
+      "es": "Cuerpo vacío"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "You can spend 4 ki points to become invisible for 1 minute, with resistance to all damage except force. You can also spend 8 ki points to cast astral projection without material components, alone.",
+      "fr": "Tu peux dépenser 4 points de ki pour devenir invisible pendant 1 minute, avec la résistance à tous les dégâts sauf de force. Tu peux aussi dépenser 8 points de ki pour lancer projection astrale sans composantes matérielles, seul.",
+      "es": "Puedes gastar 4 puntos de ki para volverte invisible durante 1 minuto, con resistencia a todo el daño salvo de fuerza. También puedes gastar 8 puntos de ki para lanzar proyección astral sin componentes materiales, solo para ti."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "perfect-self",
+    "label": {
+      "en": "Perfect Self",
+      "fr": "Perfection de l'être",
+      "es": "Perfección del ser"
+    },
+    "parentKey": "monk",
+    "description": {
+      "en": "When you roll for initiative and have no ki points remaining, you regain 4 ki points.",
+      "fr": "Lorsque tu lances l'initiative et qu'il ne te reste aucun point de ki, tu en récupères 4.",
+      "es": "Cuando tiras iniciativa y no te quedan puntos de ki, recuperas 4."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "rogue",
+    "label": {
+      "en": "Rogue",
+      "fr": "Roublard",
+      "es": "Pícaro"
+    },
+    "description": {
+      "en": "A cunning expert who relies on stealth, skill and precise strikes against distracted foes.",
+      "fr": "Un expert rusé qui compte sur la discrétion, ses compétences et des frappes précises contre les adversaires distraits.",
+      "es": "Un experto astuto que confía en el sigilo, la habilidad y golpes precisos contra enemigos distraídos."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Rogue",
+      "hitDie": 8,
+      "primaryAbilities": ["dexterity"],
+      "savingThrows": ["dexterity", "intelligence"],
+      "subclassLevel": 3,
+      "asiLevels": [4, 8, 10, 12, 16, 19],
+      "startingGoldDice": "4d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "dexterity"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.dexterity",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.intelligence",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": [
+          "simple-weapons",
+          "hand-crossbow",
+          "longsword",
+          "rapier",
+          "shortsword"
+        ],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["thieves-tools"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["thieves-tools"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      }
+    ],
+    "grants": [
+      {
+        "id": "rogue-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "acrobatics",
+            "athletics",
+            "deception",
+            "insight",
+            "intimidation",
+            "investigation",
+            "perception",
+            "performance",
+            "persuasion",
+            "sleight-of-hand",
+            "stealth"
+          ]
+        },
+        "count": 4,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "rogue-multiclass-skill",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "acrobatics",
+            "athletics",
+            "deception",
+            "insight",
+            "intimidation",
+            "investigation",
+            "perception",
+            "performance",
+            "persuasion",
+            "sleight-of-hand",
+            "stealth"
+          ]
+        },
+        "count": 1,
+        "level": 1,
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "rogue-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "rogue"
+        },
+        "count": 1,
+        "level": 3
+      },
+      {
+        "id": "rogue-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "rogue-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "rogue-asi-10",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 10
+      },
+      {
+        "id": "rogue-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "rogue-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "rogue-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "rogue-expertise-1",
+        "kind": "choose",
+        "label": {
+          "en": "Expertise",
+          "fr": "Expertise",
+          "es": "Pericia"
+        },
+        "description": {
+          "en": "Your proficiency bonus is doubled for the chosen skills.",
+          "fr": "Ton bonus de maîtrise est doublé pour les compétences choisies.",
+          "es": "Tu bonificador de competencia se duplica para las habilidades elegidas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion",
+            "thieves-tools"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "id": "rogue-expertise-6",
+        "kind": "choose",
+        "label": {
+          "en": "Expertise",
+          "fr": "Expertise",
+          "es": "Pericia"
+        },
+        "description": {
+          "en": "Your proficiency bonus is doubled for the chosen skills.",
+          "fr": "Ton bonus de maîtrise est doublé pour les compétences choisies.",
+          "es": "Tu bonificador de competencia se duplica para las habilidades elegidas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion",
+            "thieves-tools"
+          ]
+        },
+        "count": 2,
+        "level": 6,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "rogue-expertise",
+    "label": {
+      "en": "Expertise",
+      "fr": "Expertise",
+      "es": "Pericia"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "Choose two of your skill proficiencies, or one skill and your proficiency with thieves' tools: your proficiency bonus is doubled for any ability check using them. At 6th level, choose two more.",
+      "fr": "Choisis deux de tes compétences maîtrisées, ou une compétence et ta maîtrise des outils de voleur : ton bonus de maîtrise est doublé pour tout test qui les utilise. Au niveau 6, choisis-en deux de plus.",
+      "es": "Elige dos de tus habilidades con competencia, o una habilidad y tu competencia con herramientas de ladrón: tu bonificador por competencia se duplica en cualquier prueba que las use. En el nivel 6, elige dos más."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "sneak-attack",
+    "label": {
+      "en": "Sneak Attack",
+      "fr": "Attaque sournoise",
+      "es": "Ataque furtivo"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "Once per turn, you deal extra damage to one creature you hit with an attack using a finesse or ranged weapon if you have advantage on the attack roll, or if another enemy of the target is within 5 feet of it, isn't incapacitated, and you don't have disadvantage. The extra damage is 1d6 and increases by 1d6 at every odd rogue level (10d6 at 19th level).",
+      "fr": "Une fois par tour, tu infliges des dégâts supplémentaires à une créature que tu touches avec une arme de finesse ou à distance si tu as l'avantage au jet d'attaque, ou si un autre ennemi de la cible se trouve à 1,50 m d'elle, n'est pas neutralisé et que tu n'as pas le désavantage. Les dégâts supplémentaires sont de 1d6 et augmentent de 1d6 à chaque niveau impair de roublard (10d6 au niveau 19).",
+      "es": "Una vez por turno, infliges daño adicional a una criatura que impactes con un arma sutil o a distancia si tienes ventaja en la tirada de ataque, o si otro enemigo del objetivo está a 5 pies de él, no está incapacitado y tú no tienes desventaja. El daño adicional es 1d6 y aumenta en 1d6 en cada nivel impar de pícaro (10d6 en el nivel 19)."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "sneakAttackDice": [
+        1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10
+      ]
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "thieves-cant-feature",
+    "label": {
+      "en": "Thieves' Cant",
+      "fr": "Argot des voleurs",
+      "es": "Jerga de ladrones"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "You know thieves' cant, a secret mix of dialect, jargon and code that lets you hide messages in normal conversation, plus a set of secret signs and symbols. It takes four times longer to convey such a message than to say it plainly.",
+      "fr": "Tu connais l'argot des voleurs, un mélange secret de dialecte, de jargon et de code qui permet de dissimuler des messages dans une conversation ordinaire, ainsi qu'un ensemble de signes et symboles secrets. Transmettre un tel message prend quatre fois plus de temps que de le dire clairement.",
+      "es": "Conoces la jerga de ladrones, una mezcla secreta de dialecto, jerga y código que permite ocultar mensajes en una conversación normal, además de un conjunto de signos y símbolos secretos. Transmitir así un mensaje lleva cuatro veces más que decirlo claramente."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["thieves-cant"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "cunning-action",
+    "label": {
+      "en": "Cunning Action",
+      "fr": "Ruse",
+      "es": "Acción astuta"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "You can take a bonus action on each of your turns to take the Dash, Disengage or Hide action.",
+      "fr": "Tu peux utiliser une action bonus à chacun de tes tours pour Foncer, Se désengager ou Se cacher.",
+      "es": "Puedes usar una acción adicional en cada uno de tus turnos para Correr, Retirarte o Esconderte."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "uncanny-dodge",
+    "label": {
+      "en": "Uncanny Dodge",
+      "fr": "Esquive instinctive",
+      "es": "Esquiva asombrosa"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you.",
+      "fr": "Lorsqu'un attaquant que tu vois te touche avec une attaque, tu peux utiliser ta réaction pour réduire de moitié les dégâts de cette attaque.",
+      "es": "Cuando un atacante que puedas ver te impacta con un ataque, puedes usar tu reacción para reducir a la mitad el daño de ese ataque."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "rogue-evasion",
+    "label": {
+      "en": "Evasion",
+      "fr": "Dérobade",
+      "es": "Evasión"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "When an effect allows a Dexterity saving throw to take only half damage, you take no damage on a success and only half damage on a failure.",
+      "fr": "Lorsqu'un effet permet un jet de sauvegarde de Dextérité pour ne subir que la moitié des dégâts, tu ne subis aucun dégât en cas de réussite et seulement la moitié en cas d'échec.",
+      "es": "Cuando un efecto permite una tirada de salvación de Destreza para recibir solo la mitad del daño, no recibes daño si la superas y solo la mitad si la fallas."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "reliable-talent",
+    "label": {
+      "en": "Reliable Talent",
+      "fr": "Talent fiable",
+      "es": "Talento fiable"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "Whenever you make an ability check that lets you add your proficiency bonus, you can treat a d20 roll of 9 or lower as a 10.",
+      "fr": "Lorsque tu fais un test de caractéristique qui te permet d'ajouter ton bonus de maîtrise, tu peux considérer un résultat de 9 ou moins au d20 comme un 10.",
+      "es": "Cuando hagas una prueba de característica que te permita sumar tu bonificador por competencia, puedes tratar un resultado de 9 o menos en el d20 como un 10."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "blindsense",
+    "label": {
+      "en": "Blindsense",
+      "fr": "Perception aveugle",
+      "es": "Sentido ciego"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "If you are able to hear, you are aware of the location of any hidden or invisible creature within 10 feet of you.",
+      "fr": "Si tu peux entendre, tu connais la position de toute créature cachée ou invisible située à 3 m de toi.",
+      "es": "Si puedes oír, conoces la posición de cualquier criatura escondida o invisible a 10 pies de ti."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "senses",
+        "value": [
+          {
+            "key": "blindsight",
+            "value": 10
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "slippery-mind",
+    "label": {
+      "en": "Slippery Mind",
+      "fr": "Esprit fuyant",
+      "es": "Mente escurridiza"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "You gain proficiency in Wisdom saving throws.",
+      "fr": "Tu obtiens la maîtrise des jets de sauvegarde de Sagesse.",
+      "es": "Obtienes competencia en las tiradas de salvación de Sabiduría."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.wisdom",
+        "value": true
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "elusive",
+    "label": {
+      "en": "Elusive",
+      "fr": "Insaisissable",
+      "es": "Escurridizo"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "No attack roll has advantage against you while you aren't incapacitated.",
+      "fr": "Aucun jet d'attaque n'a l'avantage contre toi tant que tu n'es pas neutralisé.",
+      "es": "Ninguna tirada de ataque tiene ventaja contra ti mientras no estés incapacitado."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "stroke-of-luck",
+    "label": {
+      "en": "Stroke of Luck",
+      "fr": "Coup de chance",
+      "es": "Golpe de suerte"
+    },
+    "parentKey": "rogue",
+    "description": {
+      "en": "If your attack misses a target within range, you can turn the miss into a hit. Alternatively, if you fail an ability check, you can treat the d20 roll as a 20. You can use it again after a short or long rest.",
+      "fr": "Si ton attaque rate une cible à portée, tu peux transformer cet échec en réussite. Sinon, si tu rates un test de caractéristique, tu peux considérer le d20 comme un 20. Tu peux l'utiliser à nouveau après un repos court ou long.",
+      "es": "Si fallas un ataque contra un objetivo dentro del alcance, puedes convertir el fallo en un impacto. O bien, si fallas una prueba de característica, puedes tratar el d20 como un 20. Puedes volver a usarlo tras un descanso corto o largo."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  }
+]

@@ -1,6 +1,7 @@
+import { RulesetReferenceService } from '@/resources/ruleset/reference/ruleset-reference.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { PlayerService } from './player.service';
+import { PlayerService } from '@/resources/character/player/player.service';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
 import { Types } from 'mongoose';
@@ -12,6 +13,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+
+const rulesetReferenceMock = {
+  idForCreate: jest.fn().mockResolvedValue(null),
+  resolvePublished: jest.fn(),
+};
 
 describe('PlayerService', () => {
   let service: PlayerService;
@@ -58,6 +64,7 @@ describe('PlayerService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PlayerService,
+        { provide: RulesetReferenceService, useValue: rulesetReferenceMock },
         {
           provide: getModelToken(Character.name),
           useValue: characterMock,
@@ -107,6 +114,34 @@ describe('PlayerService', () => {
       );
       expect(result.data._id).toBe('playerId');
       expect(result.message).toContain('Player created in');
+    });
+
+    it('FR-game-system: passes the rulesetId sent by the builder to the reference check', async () => {
+      const rulesetId = '507f1f77bcf86cd799439011';
+      rulesetReferenceMock.idForCreate.mockClear();
+
+      await service.create(
+        { firstname: 'Test', groups: [], rulesetId } as CreatePlayerDto,
+        new Types.ObjectId().toHexString(),
+      );
+
+      expect(rulesetReferenceMock.idForCreate).toHaveBeenCalledWith(
+        undefined,
+        rulesetId,
+      );
+    });
+
+    it('FR-game-system: an invalid rulesetId answers 400', async () => {
+      rulesetReferenceMock.idForCreate.mockRejectedValueOnce(
+        new BadRequestException('Unknown ruleset'),
+      );
+
+      await expect(
+        service.create(
+          { firstname: 'Test', groups: [], rulesetId: 'x' } as CreatePlayerDto,
+          new Types.ObjectId().toHexString(),
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should throw BadRequestException if a group ID is invalid', async () => {

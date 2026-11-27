@@ -43,10 +43,7 @@ export function DuplicateGroupDialog({
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
 
-  const defaultLabel = React.useMemo(
-    () => buildDuplicateGroupLabel(group, existingLabels),
-    [group, existingLabels],
-  );
+  const defaultLabel = React.useMemo(() => buildDuplicateGroupLabel(group, existingLabels), [group, existingLabels]);
 
   const [label, setLabel] = React.useState(defaultLabel);
   const [countStr, setCountStr] = React.useState("1");
@@ -142,7 +139,10 @@ export function DuplicateGroupDialog({
             disabled={!canSubmit}
             onClick={() => void handleCreate()}>
             {isCreating ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                aria-hidden
+              />
             ) : null}
             {t("duplicateGroupCreate")}
           </Button>

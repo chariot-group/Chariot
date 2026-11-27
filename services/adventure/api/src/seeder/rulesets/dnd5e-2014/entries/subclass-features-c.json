@@ -1,0 +1,1447 @@
+[
+  {
+    "type": "subclass-feature",
+    "key": "devotion-oath-spells",
+    "label": {
+      "en": "Oath Spells",
+      "fr": "Sorts de serment",
+      "es": "Conjuros de juramento"
+    },
+    "parentKey": "oath-of-devotion",
+    "description": {
+      "en": "You always have these oath spells prepared once you reach the listed paladin level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de serment préparés dès que tu atteins le niveau de paladin indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de juramento al alcanzar el nivel de paladín indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Protection from Evil and Good", "Sanctuary"],
+        "5": ["Lesser Restoration", "Zone of Truth"],
+        "9": ["Beacon of Hope", "Dispel Magic"],
+        "13": ["Freedom of Movement", "Guardian of Faith"],
+        "17": ["Commune", "Flame Strike"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Protection from Evil and Good",
+            "classLevel": 3
+          },
+          {
+            "name": "Sanctuary",
+            "classLevel": 3
+          },
+          {
+            "name": "Lesser Restoration",
+            "classLevel": 5
+          },
+          {
+            "name": "Zone of Truth",
+            "classLevel": 5
+          },
+          {
+            "name": "Beacon of Hope",
+            "classLevel": 9
+          },
+          {
+            "name": "Dispel Magic",
+            "classLevel": 9
+          },
+          {
+            "name": "Freedom of Movement",
+            "classLevel": 13
+          },
+          {
+            "name": "Guardian of Faith",
+            "classLevel": 13
+          },
+          {
+            "name": "Commune",
+            "classLevel": 17
+          },
+          {
+            "name": "Flame Strike",
+            "classLevel": 17
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "sacred-weapon",
+    "label": {
+      "en": "Channel Divinity: Sacred Weapon",
+      "fr": "Conduit divin : arme sacrée",
+      "es": "Canalizar divinidad: arma sagrada"
+    },
+    "parentKey": "oath-of-devotion",
+    "description": {
+      "en": "As an action, you imbue one weapon you hold with positive energy for 1 minute: you add your Charisma modifier (minimum +1) to attack rolls with it, it emits bright light in a 20-foot radius and dim light 20 feet beyond, and it counts as magical.",
+      "fr": "Par une action, tu imprègnes d'énergie positive une arme que tu tiens pendant 1 minute : tu ajoutes ton modificateur de Charisme (minimum +1) aux jets d'attaque avec elle, elle émet une lumière vive sur 6 m et faible sur 6 m de plus, et elle est considérée comme magique.",
+      "es": "Como acción, imbuyes de energía positiva un arma que sostengas durante 1 minuto: sumas tu modificador de Carisma (mínimo +1) a las tiradas de ataque con ella, emite luz brillante en 20 pies y tenue 20 pies más, y cuenta como mágica."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "turn-the-unholy",
+    "label": {
+      "en": "Channel Divinity: Turn the Unholy",
+      "fr": "Conduit divin : renvoi des impies",
+      "es": "Canalizar divinidad: expulsar lo impío"
+    },
+    "parentKey": "oath-of-devotion",
+    "description": {
+      "en": "As an action, each fiend or undead within 30 feet that can hear you makes a Wisdom saving throw; on a failure, it is turned for 1 minute or until it takes damage.",
+      "fr": "Par une action, chaque fiélon ou mort-vivant à 9 m qui peut t'entendre fait un jet de sauvegarde de Sagesse ; en cas d'échec, il est renvoyé pendant 1 minute ou jusqu'à ce qu'il subisse des dégâts.",
+      "es": "Como acción, cada infernal o muerto viviente a 30 pies que pueda oírte hace una tirada de salvación de Sabiduría; si falla, queda expulsado durante 1 minuto o hasta que reciba daño."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "aura-of-devotion",
+    "label": {
+      "en": "Aura of Devotion",
+      "fr": "Aura de dévotion",
+      "es": "Aura de devoción"
+    },
+    "parentKey": "oath-of-devotion",
+    "description": {
+      "en": "You and friendly creatures within 10 feet of you can't be charmed while you are conscious. The range becomes 30 feet at 18th level.",
+      "fr": "Toi et les créatures amies à 3 m de toi ne pouvez pas être charmés tant que tu es conscient. La portée passe à 9 m au niveau 18.",
+      "es": "Tú y las criaturas amistosas a 10 pies de ti no podéis ser hechizados mientras estés consciente. El alcance pasa a 30 pies en el nivel 18."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "purity-of-spirit",
+    "label": {
+      "en": "Purity of Spirit",
+      "fr": "Pureté de l'esprit",
+      "es": "Pureza de espíritu"
+    },
+    "parentKey": "oath-of-devotion",
+    "description": {
+      "en": "You are always under the effects of a protection from evil and good spell.",
+      "fr": "Tu es en permanence sous l'effet d'un sort de protection contre le mal et le bien.",
+      "es": "Siempre estás bajo los efectos de un conjuro de protección contra el bien y el mal."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "holy-nimbus",
+    "label": {
+      "en": "Holy Nimbus",
+      "fr": "Nimbe sacré",
+      "es": "Nimbo sagrado"
+    },
+    "parentKey": "oath-of-devotion",
+    "description": {
+      "en": "As an action, you emanate an aura of sunlight for 1 minute: bright light in a 30-foot radius and dim light 30 feet beyond. Enemies starting their turn in the bright light take 10 radiant damage, and you have advantage on saving throws against spells cast by fiends or undead. Once per long rest.",
+      "fr": "Par une action, tu émets une aura de lumière solaire pendant 1 minute : lumière vive sur 9 m et faible sur 9 m de plus. Les ennemis qui commencent leur tour dans la lumière vive subissent 10 dégâts radiants, et tu as l'avantage aux jets de sauvegarde contre les sorts lancés par des fiélons ou des morts-vivants. Une fois par repos long.",
+      "es": "Como acción, emanas un aura de luz solar durante 1 minuto: luz brillante en 30 pies y tenue 30 pies más. Los enemigos que empiecen su turno en la luz brillante reciben 10 de daño radiante, y tienes ventaja en las tiradas de salvación contra conjuros lanzados por infernales o muertos vivientes. Una vez por descanso largo."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "ancients-oath-spells",
+    "label": {
+      "en": "Oath Spells",
+      "fr": "Sorts de serment",
+      "es": "Conjuros de juramento"
+    },
+    "parentKey": "oath-of-the-ancients",
+    "description": {
+      "en": "You always have these oath spells prepared once you reach the listed paladin level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de serment préparés dès que tu atteins le niveau de paladin indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de juramento al alcanzar el nivel de paladín indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Ensnaring Strike", "Speak with Animals"],
+        "5": ["Moonbeam", "Misty Step"],
+        "9": ["Plant Growth", "Protection from Energy"],
+        "13": ["Ice Storm", "Stoneskin"],
+        "17": ["Commune with Nature", "Tree Stride"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Ensnaring Strike",
+            "classLevel": 3
+          },
+          {
+            "name": "Speak with Animals",
+            "classLevel": 3
+          },
+          {
+            "name": "Moonbeam",
+            "classLevel": 5
+          },
+          {
+            "name": "Misty Step",
+            "classLevel": 5
+          },
+          {
+            "name": "Plant Growth",
+            "classLevel": 9
+          },
+          {
+            "name": "Protection from Energy",
+            "classLevel": 9
+          },
+          {
+            "name": "Ice Storm",
+            "classLevel": 13
+          },
+          {
+            "name": "Stoneskin",
+            "classLevel": 13
+          },
+          {
+            "name": "Commune with Nature",
+            "classLevel": 17
+          },
+          {
+            "name": "Tree Stride",
+            "classLevel": 17
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "natures-wrath",
+    "label": {
+      "en": "Channel Divinity: Nature's Wrath",
+      "fr": "Conduit divin : courroux de la nature",
+      "es": "Canalizar divinidad: ira de la naturaleza"
+    },
+    "parentKey": "oath-of-the-ancients",
+    "description": {
+      "en": "As an action, spectral vines spring up and reach for a creature within 10 feet: it must succeed on a Strength or Dexterity saving throw (its choice) or be restrained. It repeats the save at the end of each of its turns, ending the effect on a success.",
+      "fr": "Par une action, des lianes spectrales surgissent vers une créature à 3 m : elle doit réussir un jet de sauvegarde de Force ou de Dextérité (à son choix) ou être entravée. Elle refait le jet à la fin de chacun de ses tours et se libère en cas de réussite.",
+      "es": "Como acción, enredaderas espectrales brotan hacia una criatura a 10 pies: debe superar una tirada de salvación de Fuerza o Destreza (a su elección) o quedar apresada. Repite la tirada al final de cada uno de sus turnos y se libera si tiene éxito."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "turn-the-faithless",
+    "label": {
+      "en": "Channel Divinity: Turn the Faithless",
+      "fr": "Conduit divin : renvoi des infidèles",
+      "es": "Canalizar divinidad: expulsar a los infieles"
+    },
+    "parentKey": "oath-of-the-ancients",
+    "description": {
+      "en": "As an action, each fey or fiend within 30 feet that can hear you makes a Wisdom saving throw; on a failure, it is turned for 1 minute or until it takes damage, and its true form is revealed if it is disguised.",
+      "fr": "Par une action, chaque fée ou fiélon à 9 m qui peut t'entendre fait un jet de sauvegarde de Sagesse ; en cas d'échec, il est renvoyé pendant 1 minute ou jusqu'à ce qu'il subisse des dégâts, et sa véritable forme est révélée s'il est déguisé.",
+      "es": "Como acción, cada feérico o infernal a 30 pies que pueda oírte hace una tirada de salvación de Sabiduría; si falla, queda expulsado durante 1 minuto o hasta que reciba daño, y se revela su verdadera forma si está disfrazado."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "aura-of-warding",
+    "label": {
+      "en": "Aura of Warding",
+      "fr": "Aura de protection contre les sorts",
+      "es": "Aura de protección"
+    },
+    "parentKey": "oath-of-the-ancients",
+    "description": {
+      "en": "You and friendly creatures within 10 feet of you have resistance to damage from spells. The range becomes 30 feet at 18th level.",
+      "fr": "Toi et les créatures amies à 3 m de toi avez la résistance aux dégâts des sorts. La portée passe à 9 m au niveau 18.",
+      "es": "Tú y las criaturas amistosas a 10 pies de ti tenéis resistencia al daño de conjuros. El alcance pasa a 30 pies en el nivel 18."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "undying-sentinel",
+    "label": {
+      "en": "Undying Sentinel",
+      "fr": "Sentinelle immortelle",
+      "es": "Centinela imperecedero"
+    },
+    "parentKey": "oath-of-the-ancients",
+    "description": {
+      "en": "When you are reduced to 0 hit points and not killed outright, you can drop to 1 hit point instead, once per long rest. You also suffer none of the drawbacks of old age and can't be aged magically.",
+      "fr": "Lorsque tes points de vie tombent à 0 sans que tu sois tué sur le coup, tu peux rester à 1 point de vie, une fois par repos long. Tu ne subis pas non plus les effets de la vieillesse et ne peux pas être vieilli par magie.",
+      "es": "Cuando tus puntos de golpe se reduzcan a 0 sin morir en el acto, puedes quedarte a 1, una vez por descanso largo. Además no sufres los efectos de la vejez ni puedes ser envejecido mágicamente."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "elder-champion",
+    "label": {
+      "en": "Elder Champion",
+      "fr": "Champion ancestral",
+      "es": "Campeón ancestral"
+    },
+    "parentKey": "oath-of-the-ancients",
+    "description": {
+      "en": "As an action, you take the form of a force of nature for 1 minute: you regain 10 hit points at the start of each of your turns, you can cast paladin spells with a casting time of 1 action as a bonus action, and enemies within 10 feet have disadvantage on saving throws against your paladin spells and Channel Divinity. Once per long rest.",
+      "fr": "Par une action, tu prends la forme d'une force de la nature pendant 1 minute : tu récupères 10 points de vie au début de chacun de tes tours, tu peux lancer par une action bonus les sorts de paladin au temps d'incantation d'une action, et les ennemis à 3 m ont le désavantage aux jets de sauvegarde contre tes sorts de paladin et ton Conduit divin. Une fois par repos long.",
+      "es": "Como acción, adoptas la forma de una fuerza de la naturaleza durante 1 minuto: recuperas 10 puntos de golpe al comienzo de cada uno de tus turnos, puedes lanzar como acción adicional los conjuros de paladín de 1 acción, y los enemigos a 10 pies tienen desventaja en las tiradas de salvación contra tus conjuros de paladín y tu Canalizar divinidad. Una vez por descanso largo."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "vengeance-oath-spells",
+    "label": {
+      "en": "Oath Spells",
+      "fr": "Sorts de serment",
+      "es": "Conjuros de juramento"
+    },
+    "parentKey": "oath-of-vengeance",
+    "description": {
+      "en": "You always have these oath spells prepared once you reach the listed paladin level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de serment préparés dès que tu atteins le niveau de paladin indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de juramento al alcanzar el nivel de paladín indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Bane", "Hunter's Mark"],
+        "5": ["Hold Person", "Misty Step"],
+        "9": ["Haste", "Protection from Energy"],
+        "13": ["Banishment", "Dimension Door"],
+        "17": ["Hold Monster", "Scrying"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Bane",
+            "classLevel": 3
+          },
+          {
+            "name": "Hunter's Mark",
+            "classLevel": 3
+          },
+          {
+            "name": "Hold Person",
+            "classLevel": 5
+          },
+          {
+            "name": "Misty Step",
+            "classLevel": 5
+          },
+          {
+            "name": "Haste",
+            "classLevel": 9
+          },
+          {
+            "name": "Protection from Energy",
+            "classLevel": 9
+          },
+          {
+            "name": "Banishment",
+            "classLevel": 13
+          },
+          {
+            "name": "Dimension Door",
+            "classLevel": 13
+          },
+          {
+            "name": "Hold Monster",
+            "classLevel": 17
+          },
+          {
+            "name": "Scrying",
+            "classLevel": 17
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "abjure-enemy",
+    "label": {
+      "en": "Channel Divinity: Abjure Enemy",
+      "fr": "Conduit divin : abjuration de l'ennemi",
+      "es": "Canalizar divinidad: abjurar enemigo"
+    },
+    "parentKey": "oath-of-vengeance",
+    "description": {
+      "en": "As an action, choose a creature within 60 feet that you can see: it makes a Wisdom saving throw (fiends and undead have disadvantage). On a failure, it is frightened for 1 minute or until it takes damage, and its speed is 0; on a success, its speed is halved for 1 minute or until it takes damage.",
+      "fr": "Par une action, choisis une créature que tu vois à 18 m : elle fait un jet de sauvegarde de Sagesse (désavantage pour les fiélons et morts-vivants). En cas d'échec, elle est effrayée pendant 1 minute ou jusqu'à ce qu'elle subisse des dégâts, et sa vitesse tombe à 0 ; en cas de réussite, sa vitesse est réduite de moitié pendant 1 minute ou jusqu'à ce qu'elle subisse des dégâts.",
+      "es": "Como acción, elige a una criatura que puedas ver a 60 pies: hace una tirada de salvación de Sabiduría (infernales y muertos vivientes con desventaja). Si falla, queda asustada durante 1 minuto o hasta que reciba daño, y su velocidad es 0; si tiene éxito, su velocidad se reduce a la mitad durante 1 minuto o hasta que reciba daño."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "vow-of-enmity",
+    "label": {
+      "en": "Channel Divinity: Vow of Enmity",
+      "fr": "Conduit divin : vœu d'hostilité",
+      "es": "Canalizar divinidad: voto de enemistad"
+    },
+    "parentKey": "oath-of-vengeance",
+    "description": {
+      "en": "As a bonus action, you utter a vow against a creature you can see within 10 feet: you have advantage on attack rolls against it for 1 minute or until it drops to 0 hit points or falls unconscious.",
+      "fr": "Par une action bonus, tu prononces un vœu contre une créature que tu vois à 3 m : tu as l'avantage aux jets d'attaque contre elle pendant 1 minute ou jusqu'à ce qu'elle tombe à 0 point de vie ou inconsciente.",
+      "es": "Como acción adicional, pronuncias un voto contra una criatura que puedas ver a 10 pies: tienes ventaja en las tiradas de ataque contra ella durante 1 minuto o hasta que caiga a 0 puntos de golpe o inconsciente."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "relentless-avenger",
+    "label": {
+      "en": "Relentless Avenger",
+      "fr": "Vengeur implacable",
+      "es": "Vengador implacable"
+    },
+    "parentKey": "oath-of-vengeance",
+    "description": {
+      "en": "When you hit a creature with an opportunity attack, you can move up to half your speed immediately after the attack as part of the same reaction, without provoking opportunity attacks.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'opportunité, tu peux te déplacer de la moitié de ta vitesse juste après dans la même réaction, sans provoquer d'attaque d'opportunité.",
+      "es": "Cuando impactas a una criatura con un ataque de oportunidad, puedes moverte hasta la mitad de tu velocidad justo después como parte de la misma reacción, sin provocar ataques de oportunidad."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "soul-of-vengeance",
+    "label": {
+      "en": "Soul of Vengeance",
+      "fr": "Âme de vengeance",
+      "es": "Alma de venganza"
+    },
+    "parentKey": "oath-of-vengeance",
+    "description": {
+      "en": "When a creature under the effect of your Vow of Enmity makes an attack, you can use your reaction to make a melee weapon attack against it if it is within range.",
+      "fr": "Lorsqu'une créature sous l'effet de ton Vœu d'hostilité fait une attaque, tu peux utiliser ta réaction pour faire une attaque d'arme de corps à corps contre elle si elle est à portée.",
+      "es": "Cuando una criatura bajo tu Voto de enemistad realiza un ataque, puedes usar tu reacción para hacer un ataque con arma cuerpo a cuerpo contra ella si está a tu alcance."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "avenging-angel",
+    "label": {
+      "en": "Avenging Angel",
+      "fr": "Ange vengeur",
+      "es": "Ángel vengador"
+    },
+    "parentKey": "oath-of-vengeance",
+    "description": {
+      "en": "As an action, you transform for 1 hour: wings give you a flying speed of 60 feet, and you emanate a 30-foot aura of menace. The first time an enemy enters the aura or starts its turn there during a battle, it must succeed on a Wisdom saving throw or be frightened of you for 1 minute or until it takes damage; attack rolls against a frightened creature have advantage. Once per long rest.",
+      "fr": "Par une action, tu te transformes pendant 1 heure : des ailes te donnent une vitesse de vol de 18 m, et tu émets une aura menaçante de 9 m. La première fois qu'un ennemi entre dans l'aura ou y commence son tour pendant un combat, il doit réussir un jet de sauvegarde de Sagesse ou être effrayé par toi pendant 1 minute ou jusqu'à ce qu'il subisse des dégâts ; les attaques contre une créature effrayée ont l'avantage. Une fois par repos long.",
+      "es": "Como acción, te transformas durante 1 hora: unas alas te dan velocidad de vuelo de 60 pies y emanas un aura amenazadora de 30 pies. La primera vez que un enemigo entre en el aura o empiece allí su turno en un combate, debe superar una tirada de salvación de Sabiduría o quedar asustado de ti durante 1 minuto o hasta que reciba daño; los ataques contra una criatura asustada tienen ventaja. Una vez por descanso largo."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "hunters-prey",
+    "key": "colossus-slayer",
+    "label": {
+      "en": "Colossus Slayer",
+      "fr": "Tueur de colosses",
+      "es": "Asesino de colosos"
+    },
+    "description": {
+      "en": "Once per turn, when you hit a creature that is below its hit point maximum with a weapon attack, it takes an extra 1d8 damage.",
+      "fr": "Une fois par tour, lorsque tu touches avec une attaque d'arme une créature qui n'a plus son maximum de points de vie, elle subit 1d8 dégâts supplémentaires.",
+      "es": "Una vez por turno, cuando impactas con un ataque con arma a una criatura que no tiene sus puntos de golpe máximos, recibe 1d8 de daño adicional."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "hunters-prey",
+    "key": "giant-killer",
+    "label": {
+      "en": "Giant Killer",
+      "fr": "Tueur de géants",
+      "es": "Asesino de gigantes"
+    },
+    "description": {
+      "en": "When a Large or larger creature within 5 feet of you hits or misses you with an attack, you can use your reaction to attack it immediately, if you can see it.",
+      "fr": "Lorsqu'une créature de taille Grande ou supérieure à 1,50 m de toi te touche ou te rate avec une attaque, tu peux utiliser ta réaction pour l'attaquer immédiatement, si tu la vois.",
+      "es": "Cuando una criatura Grande o mayor a 5 pies de ti te impacte o falle con un ataque, puedes usar tu reacción para atacarla de inmediato, si puedes verla."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "hunters-prey",
+    "key": "horde-breaker",
+    "label": {
+      "en": "Horde Breaker",
+      "fr": "Briseur de hordes",
+      "es": "Rompehordas"
+    },
+    "description": {
+      "en": "Once on each of your turns when you make a weapon attack, you can make another attack with the same weapon against a different creature within 5 feet of the original target and within range.",
+      "fr": "Une fois à chacun de tes tours, lorsque tu fais une attaque d'arme, tu peux faire une autre attaque avec la même arme contre une autre créature située à 1,50 m de la cible initiale et à portée.",
+      "es": "Una vez en cada uno de tus turnos, cuando haces un ataque con arma, puedes hacer otro ataque con la misma arma contra otra criatura a 5 pies del objetivo original y dentro del alcance."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "defensive-tactics",
+    "key": "escape-the-horde",
+    "label": {
+      "en": "Escape the Horde",
+      "fr": "Échapper à la horde",
+      "es": "Escapar de la horda"
+    },
+    "description": {
+      "en": "Opportunity attacks against you are made with disadvantage.",
+      "fr": "Les attaques d'opportunité contre toi ont le désavantage.",
+      "es": "Los ataques de oportunidad contra ti se hacen con desventaja."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "defensive-tactics",
+    "key": "multiattack-defense",
+    "label": {
+      "en": "Multiattack Defense",
+      "fr": "Défense contre les attaques multiples",
+      "es": "Defensa contra ataques múltiples"
+    },
+    "description": {
+      "en": "When a creature hits you with an attack, you gain a +4 bonus to AC against all subsequent attacks made by that creature for the rest of the turn.",
+      "fr": "Lorsqu'une créature te touche avec une attaque, tu obtiens un bonus de +4 à la CA contre toutes ses attaques suivantes jusqu'à la fin du tour.",
+      "es": "Cuando una criatura te impacta con un ataque, obtienes un +4 a la CA contra todos sus ataques posteriores durante el resto del turno."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "defensive-tactics",
+    "key": "steel-will",
+    "label": {
+      "en": "Steel Will",
+      "fr": "Volonté d'acier",
+      "es": "Voluntad de acero"
+    },
+    "description": {
+      "en": "You have advantage on saving throws against being frightened.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde contre l'état effrayé.",
+      "es": "Tienes ventaja en las tiradas de salvación para evitar ser asustado."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "hunter-multiattack",
+    "key": "volley",
+    "label": {
+      "en": "Volley",
+      "fr": "Volée",
+      "es": "Andanada"
+    },
+    "description": {
+      "en": "You can use your action to make a ranged attack against any number of creatures within 10 feet of a point you can see within your weapon's range, with a separate attack roll for each target.",
+      "fr": "Tu peux utiliser ton action pour faire une attaque à distance contre autant de créatures que tu veux situées à 3 m d'un point que tu vois à portée de ton arme, avec un jet d'attaque séparé pour chaque cible.",
+      "es": "Puedes usar tu acción para hacer un ataque a distancia contra cualquier número de criaturas a 10 pies de un punto que puedas ver dentro del alcance de tu arma, con una tirada de ataque separada para cada una."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "hunter-multiattack",
+    "key": "whirlwind-attack",
+    "label": {
+      "en": "Whirlwind Attack",
+      "fr": "Attaque tourbillonnante",
+      "es": "Ataque torbellino"
+    },
+    "description": {
+      "en": "You can use your action to make a melee attack against any number of creatures within 5 feet of you, with a separate attack roll for each target.",
+      "fr": "Tu peux utiliser ton action pour faire une attaque au corps à corps contre autant de créatures que tu veux situées à 1,50 m de toi, avec un jet d'attaque séparé pour chaque cible.",
+      "es": "Puedes usar tu acción para hacer un ataque cuerpo a cuerpo contra cualquier número de criaturas a 5 pies de ti, con una tirada de ataque separada para cada una."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "superior-hunters-defense",
+    "key": "hunter-evasion",
+    "label": {
+      "en": "Evasion",
+      "fr": "Dérobade",
+      "es": "Evasión"
+    },
+    "description": {
+      "en": "When an effect allows a Dexterity saving throw to take only half damage, you take no damage on a success and only half damage on a failure.",
+      "fr": "Lorsqu'un effet permet un jet de sauvegarde de Dextérité pour ne subir que la moitié des dégâts, tu ne subis aucun dégât en cas de réussite et seulement la moitié en cas d'échec.",
+      "es": "Cuando un efecto permite una tirada de salvación de Destreza para recibir solo la mitad del daño, no recibes daño si la superas y solo la mitad si la fallas."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "superior-hunters-defense",
+    "key": "stand-against-the-tide",
+    "label": {
+      "en": "Stand Against the Tide",
+      "fr": "Résister à la marée",
+      "es": "Resistir la marea"
+    },
+    "description": {
+      "en": "When a hostile creature misses you with a melee attack, you can use your reaction to force it to repeat the same attack against another creature (other than itself) of your choice.",
+      "fr": "Lorsqu'une créature hostile te rate avec une attaque au corps à corps, tu peux utiliser ta réaction pour l'obliger à répéter la même attaque contre une autre créature de ton choix (autre qu'elle-même).",
+      "es": "Cuando una criatura hostil falle un ataque cuerpo a cuerpo contra ti, puedes usar tu reacción para obligarla a repetir el mismo ataque contra otra criatura de tu elección (que no sea ella misma)."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "superior-hunters-defense",
+    "key": "hunter-uncanny-dodge",
+    "label": {
+      "en": "Uncanny Dodge",
+      "fr": "Esquive instinctive",
+      "es": "Esquiva asombrosa"
+    },
+    "description": {
+      "en": "When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you.",
+      "fr": "Lorsqu'un attaquant que tu vois te touche avec une attaque, tu peux utiliser ta réaction pour réduire de moitié les dégâts de cette attaque.",
+      "es": "Cuando un atacante que puedas ver te impacta con un ataque, puedes usar tu reacción para reducir a la mitad el daño de ese ataque."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "hunters-prey-feature",
+    "label": {
+      "en": "Hunter's Prey",
+      "fr": "Proie du chasseur",
+      "es": "Presa del cazador"
+    },
+    "parentKey": "hunter",
+    "description": {
+      "en": "Choose one of the following: Colossus Slayer, Giant Killer or Horde Breaker.",
+      "fr": "Choisis une option : Tueur de colosses, Tueur de géants ou Briseur de hordes.",
+      "es": "Elige una opción: Asesino de colosos, Asesino de gigantes o Rompehordas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "hunters-prey-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Hunter's prey",
+          "fr": "Proie du chasseur",
+          "es": "Presa del cazador"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "hunters-prey"
+        },
+        "count": 1,
+        "level": 3,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "defensive-tactics-feature",
+    "label": {
+      "en": "Defensive Tactics",
+      "fr": "Tactiques défensives",
+      "es": "Tácticas defensivas"
+    },
+    "parentKey": "hunter",
+    "description": {
+      "en": "Choose one of the following: Escape the Horde, Multiattack Defense or Steel Will.",
+      "fr": "Choisis une option : Échapper à la horde, Défense contre les attaques multiples ou Volonté d'acier.",
+      "es": "Elige una opción: Escapar de la horda, Defensa contra ataques múltiples o Voluntad de acero."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "defensive-tactics-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Defensive tactics",
+          "fr": "Tactiques défensives",
+          "es": "Tácticas defensivas"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "defensive-tactics"
+        },
+        "count": 1,
+        "level": 7,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "hunter-multiattack-feature",
+    "label": {
+      "en": "Multiattack",
+      "fr": "Attaques multiples",
+      "es": "Ataque múltiple"
+    },
+    "parentKey": "hunter",
+    "description": {
+      "en": "Choose one of the following: Volley or Whirlwind Attack.",
+      "fr": "Choisis une option : Volée ou Attaque tourbillonnante.",
+      "es": "Elige una opción: Andanada o Ataque torbellino."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "hunter-multiattack-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Multiattack",
+          "fr": "Attaques multiples",
+          "es": "Ataque múltiple"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "hunter-multiattack"
+        },
+        "count": 1,
+        "level": 11,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "superior-hunters-defense-feature",
+    "label": {
+      "en": "Superior Hunter's Defense",
+      "fr": "Défense supérieure du chasseur",
+      "es": "Defensa superior del cazador"
+    },
+    "parentKey": "hunter",
+    "description": {
+      "en": "Choose one of the following: Evasion, Stand Against the Tide or Uncanny Dodge.",
+      "fr": "Choisis une option : Dérobade, Résister à la marée ou Esquive instinctive.",
+      "es": "Elige una opción: Evasión, Resistir la marea o Esquiva asombrosa."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "superior-hunters-defense-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Superior hunter's defense",
+          "fr": "Défense supérieure du chasseur",
+          "es": "Defensa superior del cazador"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "superior-hunters-defense"
+        },
+        "count": 1,
+        "level": 15,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "rangers-companion",
+    "label": {
+      "en": "Ranger's Companion",
+      "fr": "Compagnon du rôdeur",
+      "es": "Compañero del explorador"
+    },
+    "parentKey": "beast-master",
+    "description": {
+      "en": "You gain a beast companion of challenge rating 1/4 or lower, no larger than Medium. It adds your proficiency bonus to its AC, attack and damage rolls, and to its proficient saving throws and skills. Its hit point maximum equals its normal maximum or four times your ranger level, whichever is higher. It obeys your commands and acts on your turn; you can use your action to command it to Attack, Dash, Disengage, Dodge or Help. If it dies, you can bond with another beast over 8 hours.",
+      "fr": "Tu obtiens un compagnon animal de facteur de puissance 1/4 ou moins, de taille Moyenne au plus. Il ajoute ton bonus de maîtrise à sa CA, à ses jets d'attaque et de dégâts, et à ses jets de sauvegarde et compétences maîtrisés. Son maximum de points de vie est égal à son maximum normal ou à quatre fois ton niveau de rôdeur, la valeur la plus haute étant retenue. Il obéit à tes ordres et agit pendant ton tour ; tu peux utiliser ton action pour lui ordonner d'Attaquer, Foncer, Se désengager, Esquiver ou Aider. S'il meurt, tu peux te lier à une autre bête en 8 heures.",
+      "es": "Obtienes un compañero bestia de valor de desafío 1/4 o menos, de tamaño Mediano o inferior. Suma tu bonificador por competencia a su CA, tiradas de ataque y daño, y a sus tiradas de salvación y habilidades con competencia. Sus puntos de golpe máximos son su máximo normal o cuatro veces tu nivel de explorador, lo que sea mayor. Obedece tus órdenes y actúa en tu turno; puedes usar tu acción para ordenarle Atacar, Correr, Retirarse, Esquivar o Ayudar. Si muere, puedes vincularte a otra bestia en 8 horas."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "exceptional-training",
+    "label": {
+      "en": "Exceptional Training",
+      "fr": "Entraînement exceptionnel",
+      "es": "Entrenamiento excepcional"
+    },
+    "parentKey": "beast-master",
+    "description": {
+      "en": "On any of your turns when your companion doesn't attack, you can use a bonus action to command it to Dash, Disengage, Dodge or Help. Its attacks now count as magical.",
+      "fr": "À chacun de tes tours où ton compagnon n'attaque pas, tu peux utiliser une action bonus pour lui ordonner de Foncer, Se désengager, Esquiver ou Aider. Ses attaques sont désormais considérées comme magiques.",
+      "es": "En cualquiera de tus turnos en que tu compañero no ataque, puedes usar una acción adicional para ordenarle Correr, Retirarse, Esquivar o Ayudar. Sus ataques cuentan ahora como mágicos."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "bestial-fury",
+    "label": {
+      "en": "Bestial Fury",
+      "fr": "Furie bestiale",
+      "es": "Furia bestial"
+    },
+    "parentKey": "beast-master",
+    "description": {
+      "en": "When you command your companion to take the Attack action, it can make two attacks, or use Multiattack if it has it.",
+      "fr": "Lorsque tu ordonnes à ton compagnon d'Attaquer, il peut faire deux attaques, ou utiliser Attaques multiples s'il dispose de cette action.",
+      "es": "Cuando ordenas a tu compañero realizar la acción de Atacar, puede hacer dos ataques, o usar Ataque múltiple si lo tiene."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "share-spells",
+    "label": {
+      "en": "Share Spells",
+      "fr": "Partage des sorts",
+      "es": "Compartir conjuros"
+    },
+    "parentKey": "beast-master",
+    "description": {
+      "en": "When you cast a spell targeting yourself, you can also affect your companion with it if it is within 30 feet of you.",
+      "fr": "Lorsque tu lances un sort qui te cible, tu peux aussi en faire bénéficier ton compagnon s'il est à 9 m de toi.",
+      "es": "Cuando lanzas un conjuro sobre ti, también puedes afectar con él a tu compañero si está a 30 pies de ti."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "fast-hands",
+    "label": {
+      "en": "Fast Hands",
+      "fr": "Mains lestes",
+      "es": "Manos rápidas"
+    },
+    "parentKey": "thief",
+    "description": {
+      "en": "You can use the bonus action granted by Cunning Action to make a Dexterity (Sleight of Hand) check, use your thieves' tools to disarm a trap or open a lock, or take the Use an Object action.",
+      "fr": "Tu peux utiliser l'action bonus de ta Ruse pour faire un test de Dextérité (Escamotage), utiliser tes outils de voleur pour désamorcer un piège ou crocheter une serrure, ou Utiliser un objet.",
+      "es": "Puedes usar la acción adicional de Acción astuta para hacer una prueba de Destreza (Juego de manos), usar tus herramientas de ladrón para desactivar una trampa o abrir una cerradura, o Usar un objeto."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "second-story-work",
+    "label": {
+      "en": "Second-Story Work",
+      "fr": "Monte-en-l'air",
+      "es": "Trabajo en las alturas"
+    },
+    "parentKey": "thief",
+    "description": {
+      "en": "Climbing no longer costs you extra movement, and when you make a running jump, the distance you cover increases by a number of feet equal to your Dexterity modifier.",
+      "fr": "Escalader ne te coûte plus de mouvement supplémentaire, et lorsque tu sautes avec élan, la distance parcourue augmente d'un nombre de pieds égal à ton modificateur de Dextérité.",
+      "es": "Trepar ya no te cuesta movimiento adicional, y al saltar con carrerilla la distancia aumenta tantos pies como tu modificador de Destreza."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "supreme-sneak",
+    "label": {
+      "en": "Supreme Sneak",
+      "fr": "Furtivité suprême",
+      "es": "Sigilo supremo"
+    },
+    "parentKey": "thief",
+    "description": {
+      "en": "You have advantage on a Dexterity (Stealth) check if you move no more than half your speed on the same turn.",
+      "fr": "Tu as l'avantage aux tests de Dextérité (Discrétion) si tu ne te déplaces pas de plus de la moitié de ta vitesse pendant le même tour.",
+      "es": "Tienes ventaja en las pruebas de Destreza (Sigilo) si no te mueves más de la mitad de tu velocidad en el mismo turno."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "use-magic-device",
+    "label": {
+      "en": "Use Magic Device",
+      "fr": "Utilisation d'objets magiques",
+      "es": "Usar objetos mágicos"
+    },
+    "parentKey": "thief",
+    "description": {
+      "en": "You ignore all class, race and level requirements on the use of magic items.",
+      "fr": "Tu ignores toutes les conditions de classe, de race et de niveau pour utiliser les objets magiques.",
+      "es": "Ignoras todos los requisitos de clase, raza y nivel para usar objetos mágicos."
+    },
+    "level": 13,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "thiefs-reflexes",
+    "label": {
+      "en": "Thief's Reflexes",
+      "fr": "Réflexes de voleur",
+      "es": "Reflejos de ladrón"
+    },
+    "parentKey": "thief",
+    "description": {
+      "en": "You can take two turns during the first round of any combat: your first turn at your normal initiative and your second at your initiative minus 10. You can't use this feature when you are surprised.",
+      "fr": "Tu peux jouer deux tours pendant le premier round de tout combat : le premier à ton initiative normale et le second à ton initiative moins 10. Tu ne peux pas utiliser cette aptitude lorsque tu es surpris.",
+      "es": "Puedes jugar dos turnos durante la primera ronda de cualquier combate: el primero en tu iniciativa normal y el segundo en tu iniciativa menos 10. No puedes usar este rasgo si estás sorprendido."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "assassin-bonus-proficiencies",
+    "label": {
+      "en": "Bonus Proficiencies",
+      "fr": "Maîtrises supplémentaires",
+      "es": "Competencias adicionales"
+    },
+    "parentKey": "assassin",
+    "description": {
+      "en": "You gain proficiency with the disguise kit and the poisoner's kit.",
+      "fr": "Tu obtiens la maîtrise du kit de déguisement et du kit d'empoisonneur.",
+      "es": "Obtienes competencia con los útiles para disfrazarse y los útiles de envenenador."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["disguise-kit", "poisoners-kit"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "assassinate",
+    "label": {
+      "en": "Assassinate",
+      "fr": "Assassinat",
+      "es": "Asesinar"
+    },
+    "parentKey": "assassin",
+    "description": {
+      "en": "You have advantage on attack rolls against any creature that hasn't taken a turn in the combat yet, and any hit you score against a surprised creature is a critical hit.",
+      "fr": "Tu as l'avantage aux jets d'attaque contre toute créature qui n'a pas encore joué son tour dans le combat, et toute attaque qui touche une créature surprise est un coup critique.",
+      "es": "Tienes ventaja en las tiradas de ataque contra cualquier criatura que aún no haya jugado su turno en el combate, y cualquier impacto contra una criatura sorprendida es un crítico."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "infiltration-expertise",
+    "label": {
+      "en": "Infiltration Expertise",
+      "fr": "Expert en infiltration",
+      "es": "Experto en infiltración"
+    },
+    "parentKey": "assassin",
+    "description": {
+      "en": "You can spend seven days and 25 gp to establish an unfailing false identity (history, profession, affiliations), including documentation and acquaintances. You can't take an identity that belongs to someone else.",
+      "fr": "Tu peux consacrer sept jours et 25 po à établir une fausse identité infaillible (histoire, profession, affiliations), avec documents et connaissances. Tu ne peux pas usurper l'identité d'une personne existante.",
+      "es": "Puedes dedicar siete días y 25 po a establecer una identidad falsa infalible (historia, profesión, afiliaciones), con documentación y conocidos. No puedes adoptar la identidad de otra persona existente."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "impostor",
+    "label": {
+      "en": "Impostor",
+      "fr": "Imposteur",
+      "es": "Impostor"
+    },
+    "parentKey": "assassin",
+    "description": {
+      "en": "After studying a person's speech, writing and behavior for at least three hours, you can mimic them unerringly. Casual observers don't notice; a wary creature has disadvantage on its Wisdom (Insight) check against your Charisma (Deception) check.",
+      "fr": "Après avoir étudié au moins trois heures la façon de parler, d'écrire et de se comporter d'une personne, tu peux l'imiter parfaitement. Les observateurs ordinaires ne remarquent rien ; une créature méfiante a le désavantage à son test de Sagesse (Perspicacité) contre ton test de Charisme (Tromperie).",
+      "es": "Tras estudiar al menos tres horas el habla, la escritura y el comportamiento de una persona, puedes imitarla a la perfección. Los observadores casuales no notan nada; una criatura recelosa tiene desventaja en su prueba de Sabiduría (Perspicacia) contra tu prueba de Carisma (Engaño)."
+    },
+    "level": 13,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "death-strike",
+    "label": {
+      "en": "Death Strike",
+      "fr": "Frappe mortelle",
+      "es": "Golpe mortal"
+    },
+    "parentKey": "assassin",
+    "description": {
+      "en": "When you hit a surprised creature, it must make a Constitution saving throw (DC 8 + your Dexterity modifier + your proficiency bonus). On a failure, double the damage of your attack against it.",
+      "fr": "Lorsque tu touches une créature surprise, elle doit faire un jet de sauvegarde de Constitution (DD 8 + ton modificateur de Dextérité + ton bonus de maîtrise). En cas d'échec, double les dégâts de ton attaque contre elle.",
+      "es": "Cuando impactas a una criatura sorprendida, debe hacer una tirada de salvación de Constitución (CD 8 + tu modificador de Destreza + tu bonificador por competencia). Si falla, duplica el daño de tu ataque contra ella."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "arcane-trickster-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "arcane-trickster",
+    "description": {
+      "en": "You cast wizard spells using Intelligence. You know the mage hand cantrip and two other wizard cantrips (one more at 10th level), and three 1st-level wizard spells, mostly enchantment and illusion (one spell from any school at 3rd, 8th, 14th and 20th level). You learn more spells as you level and can replace one each time.",
+      "fr": "Tu lances des sorts de magicien grâce à l'Intelligence. Tu connais le sort mineur main de mage et deux autres sorts mineurs de magicien (un de plus au niveau 10), ainsi que trois sorts de magicien de niveau 1, surtout d'enchantement et d'illusion (un sort de n'importe quelle école aux niveaux 3, 8, 14 et 20). Tu apprends d'autres sorts en progressant et peux en remplacer un à chaque fois.",
+      "es": "Lanzas conjuros de mago con Inteligencia. Conoces el truco mano de mago y otros dos trucos de mago (uno más en el nivel 10), y tres conjuros de mago de nivel 1, sobre todo de encantamiento e ilusión (un conjuro de cualquier escuela en los niveles 3, 8, 14 y 20). Aprendes más conjuros al subir de nivel y puedes sustituir uno cada vez."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spellcasting": {
+        "ability": "intelligence",
+        "preparation": "known",
+        "slots": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0]
+        ],
+        "maxSpellLevelByLevel": [
+          0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4
+        ],
+        "cantripsKnown": [
+          0, 0, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+        ],
+        "spellsKnown": [
+          0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13
+        ],
+        "preparedLevel": "full",
+        "spellList": "wizard",
+        "schools": ["enchantment", "illusion"]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.ability",
+        "value": "intelligence"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.preparation",
+        "value": "known"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.cantripsKnown",
+        "value": [0, 0, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.spellsKnown",
+        "value": [
+          0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.maxSpellLevelByLevel",
+        "value": [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Mage Hand",
+            "classLevel": 3
+          }
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.slots",
+        "value": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.casterProgression",
+        "value": "third"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "mage-hand-legerdemain",
+    "label": {
+      "en": "Mage Hand Legerdemain",
+      "fr": "Escamotage de la main de mage",
+      "es": "Prestidigitación con mano de mago"
+    },
+    "parentKey": "arcane-trickster",
+    "description": {
+      "en": "When you cast mage hand, you can make the hand invisible, and use it to stow or retrieve an object in a container worn or carried by another creature, pick locks and disarm traps with thieves' tools at range. You can perform one of these tasks without being noticed with a Dexterity (Sleight of Hand) check contested by the creature's Wisdom (Perception). You can control the hand with the bonus action of Cunning Action.",
+      "fr": "Lorsque tu lances main de mage, tu peux rendre la main invisible et l'utiliser pour déposer ou prendre un objet dans un contenant porté par une autre créature, crocheter des serrures et désamorcer des pièges à distance avec des outils de voleur. Tu peux accomplir l'une de ces tâches sans être remarqué grâce à un test de Dextérité (Escamotage) opposé à la Sagesse (Perception) de la créature. Tu peux contrôler la main avec l'action bonus de ta Ruse.",
+      "es": "Cuando lanzas mano de mago, puedes hacer la mano invisible y usarla para guardar o sacar un objeto de un contenedor que lleve otra criatura, y abrir cerraduras y desactivar trampas a distancia con herramientas de ladrón. Puedes hacer una de estas tareas sin ser visto con una prueba de Destreza (Juego de manos) enfrentada a la Sabiduría (Percepción) de la criatura. Puedes controlar la mano con la acción adicional de Acción astuta."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "magical-ambush",
+    "label": {
+      "en": "Magical Ambush",
+      "fr": "Embuscade magique",
+      "es": "Emboscada mágica"
+    },
+    "parentKey": "arcane-trickster",
+    "description": {
+      "en": "If you are hidden from a creature when you cast a spell on it, it has disadvantage on any saving throw it makes against the spell this turn.",
+      "fr": "Si tu es caché d'une créature lorsque tu lances un sort sur elle, elle a le désavantage à ses jets de sauvegarde contre ce sort ce tour-ci.",
+      "es": "Si estás escondido de una criatura cuando le lanzas un conjuro, tiene desventaja en las tiradas de salvación contra él ese turno."
+    },
+    "level": 9,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "versatile-trickster",
+    "label": {
+      "en": "Versatile Trickster",
+      "fr": "Arnaqueur polyvalent",
+      "es": "Embaucador versátil"
+    },
+    "parentKey": "arcane-trickster",
+    "description": {
+      "en": "As a bonus action on your turn, you can designate a creature within 5 feet of your spectral hand: you have advantage on attack rolls against it until the end of the turn.",
+      "fr": "Par une action bonus pendant ton tour, tu peux désigner une créature à 1,50 m de ta main spectrale : tu as l'avantage aux jets d'attaque contre elle jusqu'à la fin du tour.",
+      "es": "Como acción adicional en tu turno, puedes designar a una criatura a 5 pies de tu mano espectral: tienes ventaja en las tiradas de ataque contra ella hasta el final del turno."
+    },
+    "level": 13,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "spell-thief",
+    "label": {
+      "en": "Spell Thief",
+      "fr": "Voleur de sorts",
+      "es": "Ladrón de conjuros"
+    },
+    "parentKey": "arcane-trickster",
+    "description": {
+      "en": "Immediately after a creature casts a spell that targets you or includes you in its area, you can use your reaction to force it to make a saving throw with its spellcasting modifier against your spell save DC. On a failure, you negate the spell's effect against you and steal the knowledge of it for 8 hours if it is of a level you can cast; the creature can't cast it during that time. Once per long rest.",
+      "fr": "Juste après qu'une créature a lancé un sort qui te cible ou t'inclut dans sa zone, tu peux utiliser ta réaction pour l'obliger à faire un jet de sauvegarde avec son modificateur d'incantation contre ton DD de sort. En cas d'échec, tu annules l'effet du sort sur toi et en voles la connaissance pendant 8 heures s'il est d'un niveau que tu peux lancer ; la créature ne peut pas le lancer pendant ce temps. Une fois par repos long.",
+      "es": "Justo después de que una criatura lance un conjuro que te tenga como objetivo o te incluya en su área, puedes usar tu reacción para obligarla a hacer una tirada de salvación con su modificador de lanzamiento contra tu CD de conjuro. Si falla, anulas el efecto contra ti y robas su conocimiento durante 8 horas si es de un nivel que puedas lanzar; la criatura no puede lanzarlo mientras tanto. Una vez por descanso largo."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  }
+]

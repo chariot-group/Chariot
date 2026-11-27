@@ -40,10 +40,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import characterService from "@/services/CharacterService";
 import type { Character } from "@/types/character";
-import {
-  trackerDeathSavesFailuresFromCharacter,
-  trackerKindFromCharacter,
-} from "@/components/initiativeTracker/utils";
+import { trackerDeathSavesFailuresFromCharacter, trackerKindFromCharacter } from "@/components/initiativeTracker/utils";
 
 type BattleGroupCharacter = SessionParticipantsGroupCharacter;
 
@@ -115,10 +112,7 @@ const formatCharacterName = (character: BattleGroupCharacter): string => {
   return fullName || character.surname || "-";
 };
 
-const linkedPlayerNameOf = (
-  member: BattleGroupCharacter,
-  members: BattleGroupCharacter[],
-): string | null => {
+const linkedPlayerNameOf = (member: BattleGroupCharacter, members: BattleGroupCharacter[]): string | null => {
   const linkedId = member.linkedPlayerId?.trim();
   if (!linkedId) return null;
   const player = members.find((candidate) => candidate._id === linkedId);
@@ -248,7 +242,15 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- initBattleDraft is only read once on open to restore draft state; including it would retrigger loadGroups on every user interaction
-  }, [open, selectedCampaignId, session?.code, session?.participants, gmGuestCharacterIds, participantDisplayNames, sessionCompanionNpcs]);
+  }, [
+    open,
+    selectedCampaignId,
+    session?.code,
+    session?.participants,
+    gmGuestCharacterIds,
+    participantDisplayNames,
+    sessionCompanionNpcs,
+  ]);
 
   const selectedGroups = React.useMemo(() => {
     const selectedIds = new Set(selectedGroupIds);
@@ -426,23 +428,21 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
 
             return {
               ...createInitiativeTrackerRow({
-              groupId: group._id,
-              groupLabel: group.label,
-              characterId: member._id,
-              firstname,
-              lastname,
-              surname,
-              avatar: character.avatar ?? "",
-              hitPoints: Number.isFinite(currentHitPoints)
-                ? Number(currentHitPoints)
-                : Number(maxHitPoints ?? 0),
-              maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
-              tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
-              armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
-              kind,
-              deathSavesFailures,
-              initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats?.initiative) : 0,
-            }),
+                groupId: group._id,
+                groupLabel: group.label,
+                characterId: member._id,
+                firstname,
+                lastname,
+                surname,
+                avatar: character.avatar ?? "",
+                hitPoints: Number.isFinite(currentHitPoints) ? Number(currentHitPoints) : Number(maxHitPoints ?? 0),
+                maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
+                tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
+                armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
+                kind,
+                deathSavesFailures,
+                initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats?.initiative) : 0,
+              }),
               isGmGuest: guestIdSet.has(member._id),
               isPlayerCompanion: companionIdSet.has(member._id) && !guestIdSet.has(member._id),
             };
@@ -505,7 +505,9 @@ export function InitBattleDialog({ children }: InitBattleDialogProps) {
                         persistInitBattleDraft({ showAllOpponents: nextShowAllOpponents });
                       }}
                     />
-                    <Label htmlFor="enable-half-proficiency" className="cursor-pointer text-sm text-card-foreground">
+                    <Label
+                      htmlFor="enable-half-proficiency"
+                      className="cursor-pointer text-sm text-card-foreground">
                       {t("initBattleShowAllOpponents")}
                     </Label>
                   </div>

@@ -20,10 +20,11 @@ function isSupportedLocale(value: string): value is SupportedLocale {
 }
 
 function formatDate(isoDate: string, locale: SupportedLocale): string {
-  return new Date(isoDate).toLocaleDateString(
-    locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : "en-GB",
-    { day: "numeric", month: "short", year: "numeric" }
-  );
+  return new Date(isoDate).toLocaleDateString(locale === "fr" ? "fr-FR" : locale === "es" ? "es-ES" : "en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 interface VersionNavProps {
@@ -49,7 +50,10 @@ export function CurrentVersionBadge({ label, compact = false }: { label: string;
 
   return (
     <span className="inline-flex shrink-0 items-center gap-1 text-[10px] lg:text-[11px] font-normal text-primary-light bg-accent/10 border border-accent/25 rounded-full px-1.5 py-0.5 leading-none">
-      <span className="w-1 h-1 rounded-full bg-accent" aria-hidden="true" />
+      <span
+        className="w-1 h-1 rounded-full bg-accent"
+        aria-hidden="true"
+      />
       {label}
     </span>
   );
@@ -132,8 +136,7 @@ export function VersionSidebar({
         [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb
         [&::-webkit-scrollbar-thumb]:rounded-full
         [&::-webkit-scrollbar-thumb]:cursor-pointer"
-      aria-label={label}
-    >
+      aria-label={label}>
       {notes.map((note) => {
         const isActive = note.version === selectedVersion;
         return (
@@ -146,8 +149,7 @@ export function VersionSidebar({
               isActive
                 ? "border-l-accent bg-white/[0.05] text-white/90"
                 : "border-l-transparent text-white/35 hover:text-white/65 hover:bg-white/[0.03]"
-            }`}
-          >
+            }`}>
             <span className="flex flex-wrap items-center gap-1.5 text-xs lg:text-sm font-medium leading-none mb-1 lg:mb-1.5">
               {note.version}
               {note.version === currentVersion && <CurrentVersionBadge label={currentLabel} />}
@@ -180,9 +182,7 @@ function ReleaseNoteContent({
         </h2>
         <div className="mt-1.5 lg:mt-2.5 flex items-center gap-2 lg:gap-2.5">
           <div className="sm:hidden min-w-0">{versionPicker}</div>
-          <p className="hidden sm:block text-[11px] lg:text-sm text-white/30">
-            {formatDate(note.date, locale)}
-          </p>
+          <p className="hidden sm:block text-[11px] lg:text-sm text-white/30">{formatDate(note.date, locale)}</p>
         </div>
       </div>
 
@@ -192,15 +192,18 @@ function ReleaseNoteContent({
           [&::-webkit-scrollbar-track]:bg-transparent
           [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb
           [&::-webkit-scrollbar-thumb]:rounded-full">
-        <ul className="flex flex-col gap-2.5 lg:gap-4" aria-label={translation.title}>
+        <ul
+          className="flex flex-col gap-2.5 lg:gap-4"
+          aria-label={translation.title}>
           {translation.highlights.map((highlight, index) => (
-            <li key={index} className="flex items-start gap-2.5 lg:gap-3.5">
+            <li
+              key={index}
+              className="flex items-start gap-2.5 lg:gap-3.5">
               <svg
                 className="mt-0.5 lg:mt-1 shrink-0 text-primary-light/70 size-3 lg:size-4"
                 viewBox="0 0 12 12"
                 fill="none"
-                aria-hidden="true"
-              >
+                aria-hidden="true">
                 <path
                   d="M2.5 6h7M6.5 3.5 9 6l-2.5 2.5"
                   stroke="currentColor"
@@ -232,11 +235,14 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
   const activeVersion = currentNote?.version ?? CURRENT_APP_VERSION;
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}>
       <DialogContent
         className="sm:max-w-[580px] lg:max-w-3xl xl:max-w-4xl max-h-[min(90dvh,720px)] flex flex-col gap-0 p-0 overflow-hidden"
-        aria-describedby="release-notes-description"
-      >
+        aria-describedby="release-notes-description">
         <VisuallyHidden>
           <DialogTitle>{t("title")}</DialogTitle>
         </VisuallyHidden>
@@ -253,8 +259,7 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
 
           <div
             id="release-notes-description"
-            className="flex-1 flex flex-col min-w-0 min-h-0"
-          >
+            className="flex-1 flex flex-col min-w-0 min-h-0">
             {currentNote && (
               <ReleaseNoteContent
                 note={currentNote}
@@ -276,7 +281,9 @@ export function ReleaseNotesModal({ open, onClose }: ReleaseNotesModalProps) {
         </div>
 
         <div className="px-5 py-3 lg:px-8 lg:py-4 shrink-0 flex justify-end border-t border-frame">
-          <Button onClick={onClose} className="w-full sm:w-auto lg:px-6">
+          <Button
+            onClick={onClose}
+            className="w-full sm:w-auto lg:px-6">
             {t("close")}
           </Button>
         </div>

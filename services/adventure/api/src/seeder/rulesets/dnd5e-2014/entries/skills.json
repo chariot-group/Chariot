@@ -1,0 +1,344 @@
+[
+  {
+    "type": "skill",
+    "key": "athletics",
+    "label": {
+      "en": "Athletics",
+      "fr": "Athlétisme",
+      "es": "Atletismo"
+    },
+    "description": {
+      "en": "Climbing, jumping, swimming and grappling.",
+      "fr": "Escalader, sauter, nager et lutter.",
+      "es": "Trepar, saltar, nadar y forcejear."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "athletics",
+      "ability": "strength"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "acrobatics",
+    "label": {
+      "en": "Acrobatics",
+      "fr": "Acrobaties",
+      "es": "Acrobacias"
+    },
+    "description": {
+      "en": "Keeping your balance, tumbling and staying on your feet.",
+      "fr": "Garder l'équilibre, faire des cabrioles et rester debout.",
+      "es": "Mantener el equilibrio, hacer piruetas y no caer."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "acrobatics",
+      "ability": "dexterity"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "sleight-of-hand",
+    "label": {
+      "en": "Sleight of Hand",
+      "fr": "Escamotage",
+      "es": "Juego de manos"
+    },
+    "description": {
+      "en": "Picking pockets, palming objects and other manual tricks.",
+      "fr": "Faire les poches, dissimuler un objet et autres tours de main.",
+      "es": "Robar bolsillos, ocultar objetos y otros trucos manuales."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "sleightHand",
+      "ability": "dexterity"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "stealth",
+    "label": {
+      "en": "Stealth",
+      "fr": "Discrétion",
+      "es": "Sigilo"
+    },
+    "description": {
+      "en": "Hiding and moving without being noticed.",
+      "fr": "Se cacher et se déplacer sans être remarqué.",
+      "es": "Esconderse y moverse sin ser visto."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "stealth",
+      "ability": "dexterity"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "arcana",
+    "label": {
+      "en": "Arcana",
+      "fr": "Arcanes",
+      "es": "Arcanos"
+    },
+    "description": {
+      "en": "Knowledge of spells, magic items, planes and magical traditions.",
+      "fr": "Connaissance des sorts, objets magiques, plans et traditions magiques.",
+      "es": "Conocimiento de conjuros, objetos mágicos, planos y tradiciones mágicas."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "arcana",
+      "ability": "intelligence"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "history",
+    "label": {
+      "en": "History",
+      "fr": "Histoire",
+      "es": "Historia"
+    },
+    "description": {
+      "en": "Knowledge of past events, legends, wars and civilizations.",
+      "fr": "Connaissance des événements passés, légendes, guerres et civilisations.",
+      "es": "Conocimiento de hechos pasados, leyendas, guerras y civilizaciones."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "history",
+      "ability": "intelligence"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "investigation",
+    "label": {
+      "en": "Investigation",
+      "fr": "Investigation",
+      "es": "Investigación"
+    },
+    "description": {
+      "en": "Searching for clues and drawing conclusions from them.",
+      "fr": "Chercher des indices et en tirer des conclusions.",
+      "es": "Buscar pistas y extraer conclusiones de ellas."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "investigation",
+      "ability": "intelligence"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "nature",
+    "label": {
+      "en": "Nature",
+      "fr": "Nature",
+      "es": "Naturaleza"
+    },
+    "description": {
+      "en": "Knowledge of terrain, plants, animals and weather.",
+      "fr": "Connaissance des terrains, plantes, animaux et du climat.",
+      "es": "Conocimiento del terreno, plantas, animales y clima."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "nature",
+      "ability": "intelligence"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "religion",
+    "label": {
+      "en": "Religion",
+      "fr": "Religion",
+      "es": "Religión"
+    },
+    "description": {
+      "en": "Knowledge of deities, rites, holy symbols and cults.",
+      "fr": "Connaissance des divinités, rites, symboles sacrés et cultes.",
+      "es": "Conocimiento de deidades, ritos, símbolos sagrados y cultos."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "religion",
+      "ability": "intelligence"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "animal-handling",
+    "label": {
+      "en": "Animal Handling",
+      "fr": "Dressage",
+      "es": "Trato con animales"
+    },
+    "description": {
+      "en": "Calming, guiding or reading the intentions of animals.",
+      "fr": "Calmer, guider ou deviner les intentions d'un animal.",
+      "es": "Calmar, guiar o intuir las intenciones de un animal."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "animalHandling",
+      "ability": "wisdom"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "insight",
+    "label": {
+      "en": "Insight",
+      "fr": "Perspicacité",
+      "es": "Perspicacia"
+    },
+    "description": {
+      "en": "Reading true intentions and spotting lies.",
+      "fr": "Deviner les véritables intentions et repérer les mensonges.",
+      "es": "Intuir las verdaderas intenciones y detectar mentiras."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "insight",
+      "ability": "wisdom"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "medicine",
+    "label": {
+      "en": "Medicine",
+      "fr": "Médecine",
+      "es": "Medicina"
+    },
+    "description": {
+      "en": "Stabilizing the dying and diagnosing illness.",
+      "fr": "Stabiliser un mourant et diagnostiquer une maladie.",
+      "es": "Estabilizar a un moribundo y diagnosticar enfermedades."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "medicine",
+      "ability": "wisdom"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "perception",
+    "label": {
+      "en": "Perception",
+      "fr": "Perception",
+      "es": "Percepción"
+    },
+    "description": {
+      "en": "Noticing things with your senses.",
+      "fr": "Remarquer des choses grâce à ses sens.",
+      "es": "Advertir cosas con los sentidos."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "perception",
+      "ability": "wisdom"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "survival",
+    "label": {
+      "en": "Survival",
+      "fr": "Survie",
+      "es": "Supervivencia"
+    },
+    "description": {
+      "en": "Tracking, hunting, finding your way and foreseeing natural hazards.",
+      "fr": "Pister, chasser, s'orienter et anticiper les dangers naturels.",
+      "es": "Rastrear, cazar, orientarse y prever peligros naturales."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "survival",
+      "ability": "wisdom"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "deception",
+    "label": {
+      "en": "Deception",
+      "fr": "Tromperie",
+      "es": "Engaño"
+    },
+    "description": {
+      "en": "Hiding the truth through words or actions.",
+      "fr": "Dissimuler la vérité par la parole ou les actes.",
+      "es": "Ocultar la verdad con palabras o actos."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "deception",
+      "ability": "charisma"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "intimidation",
+    "label": {
+      "en": "Intimidation",
+      "fr": "Intimidation",
+      "es": "Intimidación"
+    },
+    "description": {
+      "en": "Influencing others through threats and hostility.",
+      "fr": "Influencer autrui par la menace et l'hostilité.",
+      "es": "Influir en otros mediante amenazas y hostilidad."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "intimidation",
+      "ability": "charisma"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "performance",
+    "label": {
+      "en": "Performance",
+      "fr": "Représentation",
+      "es": "Interpretación"
+    },
+    "description": {
+      "en": "Entertaining an audience with music, dance, acting or storytelling.",
+      "fr": "Divertir un public par la musique, la danse, le jeu ou le récit.",
+      "es": "Entretener a un público con música, danza, actuación o narración."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "performance",
+      "ability": "charisma"
+    }
+  },
+  {
+    "type": "skill",
+    "key": "persuasion",
+    "label": {
+      "en": "Persuasion",
+      "fr": "Persuasion",
+      "es": "Persuasión"
+    },
+    "description": {
+      "en": "Influencing others with tact and good faith.",
+      "fr": "Influencer autrui avec tact et bonne foi.",
+      "es": "Influir en otros con tacto y buena fe."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "persuasion",
+      "ability": "charisma"
+    }
+  }
+]

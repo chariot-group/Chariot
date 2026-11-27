@@ -385,7 +385,10 @@ function SessionLobbyCopyActions({
           {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" />}
           {codeCopyState === "success" && <Check className="h-3.5 w-3.5 shrink-0" />}
           {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5 shrink-0" />}
-          <StableLabel label={copyLabel} alternates={copyLabels} />
+          <StableLabel
+            label={copyLabel}
+            alternates={copyLabels}
+          />
         </Button>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -425,7 +428,11 @@ function SessionLobbyCopyActions({
         {codeCopyState === "loading" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         {codeCopyState === "success" && <Check className="h-3.5 w-3.5" />}
         {codeCopyState === "idle" && <Copy className="h-3.5 w-3.5" />}
-        <StableLabel label={copyLabel} alternates={copyLabels} className="hidden sm:grid" />
+        <StableLabel
+          label={copyLabel}
+          alternates={copyLabels}
+          className="hidden sm:grid"
+        />
       </Button>
       <Tooltip>
         <TooltipTrigger asChild>

@@ -4,6 +4,8 @@ export interface Campaign {
     _id: string;
     label: string;
     gameSystem: GameSystem;
+    /** Ruleset used by the character builder (FR-game-system — Ruleset reference); absent on older campaigns. */
+    rulesetId?: string | null;
     groups: {
         active: string[];
         archived: string[];

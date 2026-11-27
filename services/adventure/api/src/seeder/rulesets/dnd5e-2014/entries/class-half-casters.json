@@ -1,0 +1,2360 @@
+[
+  {
+    "type": "class",
+    "key": "paladin",
+    "label": {
+      "en": "Paladin",
+      "fr": "Paladin",
+      "es": "Paladín"
+    },
+    "description": {
+      "en": "A holy warrior bound by a sacred oath, combining martial skill with divine magic, healing and smites.",
+      "fr": "Un guerrier sacré lié par un serment, qui allie talent martial, magie divine, soins et châtiments.",
+      "es": "Un guerrero sagrado ligado por un juramento, que combina destreza marcial, magia divina, curación y castigos."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Paladin",
+      "hitDie": 10,
+      "primaryAbilities": ["strength", "charisma"],
+      "savingThrows": ["wisdom", "charisma"],
+      "subclassLevel": 3,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "charisma",
+        "preparation": "prepared",
+        "slots": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ],
+        "maxSpellLevelByLevel": [
+          0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
+        ],
+        "cantripsKnown": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "spellsKnown": null,
+        "preparedLevel": "half",
+        "ritualCasting": false,
+        "focus": "holy symbol"
+      },
+      "startingGoldDice": "5d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "strength"
+              },
+              13
+            ]
+          },
+          {
+            ">=": [
+              {
+                "var": "charisma"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.wisdom",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.charisma",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "heavy-armor", "shields"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "martial-weapons"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "martial-weapons"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.ability",
+        "value": "charisma"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.preparation",
+        "value": "prepared"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.cantripsKnown",
+        "value": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.maxSpellLevelByLevel",
+        "value": [0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.preparedLevel",
+        "value": "half"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.slots",
+        "value": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.casterProgression",
+        "value": "half"
+      }
+    ],
+    "grants": [
+      {
+        "id": "paladin-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "insight",
+            "intimidation",
+            "medicine",
+            "persuasion",
+            "religion"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "paladin-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "paladin"
+        },
+        "count": 1,
+        "level": 3
+      },
+      {
+        "id": "paladin-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "paladin-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "paladin-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "paladin-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "paladin-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "paladin-fighting-style",
+        "kind": "choose",
+        "label": {
+          "en": "Fighting style",
+          "fr": "Style de combat",
+          "es": "Estilo de combate"
+        },
+        "description": {
+          "en": "A combat specialty that improves one way of fighting.",
+          "fr": "Une spécialité de combat qui améliore une façon de te battre.",
+          "es": "Una especialidad de combate que mejora una forma de luchar."
+        },
+        "from": {
+          "type": "fighting-style",
+          "keys": [
+            "fighting-style-defense",
+            "fighting-style-dueling",
+            "fighting-style-great-weapon-fighting",
+            "fighting-style-protection"
+          ]
+        },
+        "count": 1,
+        "level": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "divine-sense",
+    "label": {
+      "en": "Divine Sense",
+      "fr": "Perception divine",
+      "es": "Sentidos divinos"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "As an action, until the end of your next turn you know the location of any celestial, fiend or undead within 60 feet that is not behind total cover, and you sense consecrated or desecrated places and objects. You can use it 1 + your Charisma modifier times, regaining all uses after a long rest.",
+      "fr": "Par une action, jusqu'à la fin de ton prochain tour, tu connais la position de tout céleste, fiélon ou mort-vivant situé à 18 m de toi et qui ne bénéficie pas d'un abri total, et tu détectes les lieux et objets consacrés ou profanés. Tu peux l'utiliser 1 + ton modificateur de Charisme fois et récupères toutes les utilisations après un repos long.",
+      "es": "Como acción, hasta el final de tu siguiente turno conoces la posición de cualquier celestial, infernal o muerto viviente a 60 pies que no tenga cobertura total, y percibes lugares y objetos consagrados o profanados. Puedes usarlo 1 + tu modificador de Carisma veces y recuperas todos los usos tras un descanso largo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "+": [
+          1,
+          {
+            "var": "charismaModifier"
+          }
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "lay-on-hands",
+    "label": {
+      "en": "Lay on Hands",
+      "fr": "Imposition des mains",
+      "es": "Imposición de manos"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "You have a pool of healing power equal to five times your paladin level, replenished after a long rest. As an action, you touch a creature and restore any number of hit points from the pool, or spend 5 points to cure one disease or neutralize one poison. It has no effect on undead and constructs.",
+      "fr": "Tu disposes d'une réserve de soins égale à cinq fois ton niveau de paladin, reconstituée après un repos long. Par une action, tu touches une créature et lui rends autant de points de vie que tu le souhaites dans ta réserve, ou tu dépenses 5 points pour guérir une maladie ou neutraliser un poison. Sans effet sur les morts-vivants et les créatures artificielles.",
+      "es": "Tienes una reserva de curación igual a cinco veces tu nivel de paladín, que se repone tras un descanso largo. Como acción, tocas a una criatura y le devuelves los puntos de golpe que quieras de la reserva, o gastas 5 puntos para curar una enfermedad o neutralizar un veneno. No afecta a muertos vivientes ni constructos."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long",
+        "unit": "hp"
+      },
+      "usesByLevel": [
+        5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90,
+        95, 100
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "paladin-fighting-style",
+    "label": {
+      "en": "Fighting Style",
+      "fr": "Style de combat",
+      "es": "Estilo de combate"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "You adopt one fighting style as your specialty: Defense, Dueling, Great Weapon Fighting or Protection.",
+      "fr": "Tu adoptes un style de combat comme spécialité : Défense, Duel, Combat avec une arme à deux mains ou Protection.",
+      "es": "Adoptas un estilo de combate como especialidad: Defensa, Combate con un arma, Combate con armas grandes o Protección."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "paladin-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "You cast divine spells using Charisma (spell save DC = 8 + proficiency bonus + Charisma modifier; spell attack = proficiency bonus + Charisma modifier), with a holy symbol as focus. After a long rest, prepare a number of paladin spells equal to your Charisma modifier + half your paladin level (minimum 1), of a level for which you have slots.",
+      "fr": "Tu lances des sorts divins grâce au Charisme (DD de sauvegarde = 8 + bonus de maîtrise + modificateur de Charisme ; attaque de sort = bonus de maîtrise + modificateur de Charisme), avec un symbole sacré comme focaliseur. Après un repos long, prépare un nombre de sorts de paladin égal à ton modificateur de Charisme + la moitié de ton niveau de paladin (minimum 1), d'un niveau pour lequel tu as des emplacements.",
+      "es": "Lanzas conjuros divinos con Carisma (CD de salvación = 8 + bonificador por competencia + modificador de Carisma; ataque de conjuro = bonificador por competencia + modificador de Carisma), con un símbolo sagrado como canalizador. Tras un descanso largo, prepara tantos conjuros de paladín como tu modificador de Carisma + la mitad de tu nivel de paladín (mínimo 1), de un nivel para el que tengas espacios."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "divine-smite",
+    "label": {
+      "en": "Divine Smite",
+      "fr": "Châtiment divin",
+      "es": "Castigo divino"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "When you hit a creature with a melee weapon attack, you can expend one spell slot to deal 2d8 extra radiant damage, plus 1d8 per slot level above 1st (maximum 5d8), plus 1d8 against undead or fiends.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme de corps à corps, tu peux dépenser un emplacement de sort pour infliger 2d8 dégâts radiants supplémentaires, plus 1d8 par niveau d'emplacement au-delà du 1er (maximum 5d8), plus 1d8 contre un mort-vivant ou un fiélon.",
+      "es": "Cuando impactas a una criatura con un ataque con arma cuerpo a cuerpo, puedes gastar un espacio de conjuro para infligir 2d8 de daño radiante adicional, más 1d8 por nivel de espacio por encima del 1 (máximo 5d8), más 1d8 contra muertos vivientes o infernales."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "divine-health",
+    "label": {
+      "en": "Divine Health",
+      "fr": "Santé divine",
+      "es": "Salud divina"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "The divine magic flowing through you makes you immune to disease.",
+      "fr": "La magie divine qui coule en toi te rend immunisé contre les maladies.",
+      "es": "La magia divina que fluye por ti te hace inmune a las enfermedades."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "paladin-extra-attack",
+    "label": {
+      "en": "Extra Attack",
+      "fr": "Attaque supplémentaire",
+      "es": "Ataque adicional"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, lorsque tu fais l'action Attaquer pendant ton tour.",
+      "es": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "aura-of-protection",
+    "label": {
+      "en": "Aura of Protection",
+      "fr": "Aura de protection",
+      "es": "Aura de protección"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "Whenever you or a friendly creature within 10 feet of you must make a saving throw, it gains a bonus equal to your Charisma modifier (minimum +1). You must be conscious. The range becomes 30 feet at 18th level.",
+      "fr": "Lorsque toi ou une créature amie située à 3 m de toi devez faire un jet de sauvegarde, elle obtient un bonus égal à ton modificateur de Charisme (minimum +1). Tu dois être conscient. La portée passe à 9 m au niveau 18.",
+      "es": "Cuando tú o una criatura amistosa a 10 pies de ti debáis hacer una tirada de salvación, obtiene un bonificador igual a tu modificador de Carisma (mínimo +1). Debes estar consciente. El alcance pasa a 30 pies en el nivel 18."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "aura-of-courage",
+    "label": {
+      "en": "Aura of Courage",
+      "fr": "Aura de courage",
+      "es": "Aura de valor"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "You and friendly creatures within 10 feet of you can't be frightened while you are conscious. The range becomes 30 feet at 18th level.",
+      "fr": "Toi et les créatures amies situées à 3 m de toi ne pouvez pas être effrayés tant que tu es conscient. La portée passe à 9 m au niveau 18.",
+      "es": "Tú y las criaturas amistosas a 10 pies de ti no podéis ser asustados mientras estés consciente. El alcance pasa a 30 pies en el nivel 18."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "improved-divine-smite",
+    "label": {
+      "en": "Improved Divine Smite",
+      "fr": "Châtiment divin amélioré",
+      "es": "Castigo divino mejorado"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "Whenever you hit a creature with a melee weapon, it takes an extra 1d8 radiant damage. This adds to the damage of Divine Smite.",
+      "fr": "Chaque fois que tu touches une créature avec une arme de corps à corps, elle subit 1d8 dégâts radiants supplémentaires. Ces dégâts s'ajoutent à ceux du Châtiment divin.",
+      "es": "Siempre que impactes a una criatura con un arma cuerpo a cuerpo, recibe 1d8 de daño radiante adicional. Se suma al daño del Castigo divino."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "cleansing-touch",
+    "label": {
+      "en": "Cleansing Touch",
+      "fr": "Contact purifiant",
+      "es": "Toque purificador"
+    },
+    "parentKey": "paladin",
+    "description": {
+      "en": "You can use your action to end one spell on yourself or on one willing creature that you touch. You can use it a number of times equal to your Charisma modifier (minimum 1), regaining all uses after a long rest.",
+      "fr": "Tu peux utiliser ton action pour mettre fin à un sort affectant toi-même ou une créature consentante que tu touches. Tu peux l'utiliser un nombre de fois égal à ton modificateur de Charisme (minimum 1) et récupères toutes les utilisations après un repos long.",
+      "es": "Puedes usar tu acción para poner fin a un conjuro sobre ti o sobre una criatura voluntaria que toques. Puedes usarlo tantas veces como tu modificador de Carisma (mínimo 1) y recuperas todos los usos tras un descanso largo."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "charismaModifier"
+          }
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "ranger",
+    "label": {
+      "en": "Ranger",
+      "fr": "Rôdeur",
+      "es": "Explorador"
+    },
+    "description": {
+      "en": "A warrior of the wilderness who tracks, hunts and protects, with a touch of nature magic.",
+      "fr": "Un combattant des terres sauvages qui piste, chasse et protège, avec une touche de magie de la nature.",
+      "es": "Un guerrero de las tierras salvajes que rastrea, caza y protege, con un toque de magia natural."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Ranger",
+      "hitDie": 10,
+      "primaryAbilities": ["dexterity", "wisdom"],
+      "savingThrows": ["strength", "dexterity"],
+      "subclassLevel": 3,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "wisdom",
+        "preparation": "known",
+        "slots": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ],
+        "maxSpellLevelByLevel": [
+          0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
+        ],
+        "cantripsKnown": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "spellsKnown": [
+          0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11
+        ],
+        "preparedLevel": "full",
+        "ritualCasting": false
+      },
+      "startingGoldDice": "5d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "dexterity"
+              },
+              13
+            ]
+          },
+          {
+            ">=": [
+              {
+                "var": "wisdom"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.strength",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.dexterity",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "martial-weapons"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons", "martial-weapons"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.ability",
+        "value": "wisdom"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.preparation",
+        "value": "known"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.cantripsKnown",
+        "value": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.spellsKnown",
+        "value": [
+          0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.maxSpellLevelByLevel",
+        "value": [0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.slots",
+        "value": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.casterProgression",
+        "value": "half"
+      }
+    ],
+    "grants": [
+      {
+        "id": "ranger-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "animal-handling",
+            "athletics",
+            "insight",
+            "investigation",
+            "nature",
+            "perception",
+            "stealth",
+            "survival"
+          ]
+        },
+        "count": 3,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "ranger-multiclass-skill",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "animal-handling",
+            "athletics",
+            "insight",
+            "investigation",
+            "nature",
+            "perception",
+            "stealth",
+            "survival"
+          ]
+        },
+        "count": 1,
+        "level": 1,
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "ranger-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "ranger"
+        },
+        "count": 1,
+        "level": 3
+      },
+      {
+        "id": "ranger-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "ranger-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "ranger-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "ranger-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "ranger-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "ranger-favored-enemy-1",
+        "kind": "choose",
+        "label": {
+          "en": "Favored enemy",
+          "fr": "Ennemi juré",
+          "es": "Enemigo predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "favored-enemy"
+        },
+        "count": 1,
+        "level": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "ranger-favored-enemy-6",
+        "kind": "choose",
+        "label": {
+          "en": "Favored enemy",
+          "fr": "Ennemi juré",
+          "es": "Enemigo predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "favored-enemy"
+        },
+        "count": 1,
+        "level": 6,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "ranger-favored-enemy-14",
+        "kind": "choose",
+        "label": {
+          "en": "Favored enemy",
+          "fr": "Ennemi juré",
+          "es": "Enemigo predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "favored-enemy"
+        },
+        "count": 1,
+        "level": 14,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "ranger-favored-terrain-1",
+        "kind": "choose",
+        "label": {
+          "en": "Favored terrain",
+          "fr": "Environnement de prédilection",
+          "es": "Terreno predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "favored-terrain"
+        },
+        "count": 1,
+        "level": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "ranger-favored-terrain-6",
+        "kind": "choose",
+        "label": {
+          "en": "Favored terrain",
+          "fr": "Environnement de prédilection",
+          "es": "Terreno predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "favored-terrain"
+        },
+        "count": 1,
+        "level": 6,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "ranger-favored-terrain-10",
+        "kind": "choose",
+        "label": {
+          "en": "Favored terrain",
+          "fr": "Environnement de prédilection",
+          "es": "Terreno predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "favored-terrain"
+        },
+        "count": 1,
+        "level": 10,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "ranger-favored-enemy-language",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 1,
+        "level": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "ranger-fighting-style",
+        "kind": "choose",
+        "label": {
+          "en": "Fighting style",
+          "fr": "Style de combat",
+          "es": "Estilo de combate"
+        },
+        "description": {
+          "en": "A combat specialty that improves one way of fighting.",
+          "fr": "Une spécialité de combat qui améliore une façon de te battre.",
+          "es": "Una especialidad de combate que mejora una forma de luchar."
+        },
+        "from": {
+          "type": "fighting-style",
+          "keys": [
+            "fighting-style-archery",
+            "fighting-style-defense",
+            "fighting-style-dueling",
+            "fighting-style-two-weapon-fighting"
+          ]
+        },
+        "count": 1,
+        "level": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "favored-enemy",
+    "label": {
+      "en": "Favored Enemy",
+      "fr": "Ennemi juré",
+      "es": "Enemigo predilecto"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "Choose a type of favored enemy (or two races of humanoid). You have advantage on Wisdom (Survival) checks to track them and on Intelligence checks to recall information about them, and you learn one language they speak. You choose one more favored enemy at 6th and 14th level.",
+      "fr": "Choisis un type d'ennemi juré (ou deux races d'humanoïdes). Tu as l'avantage aux tests de Sagesse (Survie) pour les pister et aux tests d'Intelligence pour te souvenir d'informations à leur sujet, et tu apprends une langue qu'ils parlent. Tu choisis un ennemi juré supplémentaire aux niveaux 6 et 14.",
+      "es": "Elige un tipo de enemigo predilecto (o dos razas de humanoides). Tienes ventaja en las pruebas de Sabiduría (Supervivencia) para rastrearlos y en las de Inteligencia para recordar información sobre ellos, y aprendes un idioma que hablen. Eliges otro enemigo predilecto en los niveles 6 y 14."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "natural-explorer",
+    "label": {
+      "en": "Natural Explorer",
+      "fr": "Explorateur-né",
+      "es": "Explorador nato"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "Choose a favored terrain. In it, your proficiency bonus is doubled for Intelligence and Wisdom checks related to it when you use a proficient skill; difficult terrain doesn't slow your group's travel; you can't become lost except by magic; you remain alert while doing other activities; you can move stealthily at a normal pace alone; you find twice as much food while foraging; and while tracking you learn the creatures' number, size and how long ago they passed. You choose another terrain at 6th and 10th level.",
+      "fr": "Choisis un terrain de prédilection. Dans ce terrain, ton bonus de maîtrise est doublé pour les tests d'Intelligence et de Sagesse qui s'y rapportent avec une compétence maîtrisée ; le terrain difficile ne ralentit pas le voyage de ton groupe ; tu ne peux pas te perdre, sauf par magie ; tu restes vigilant pendant d'autres activités ; tu peux te déplacer discrètement à allure normale si tu es seul ; tu trouves deux fois plus de nourriture en cherchant ; et en pistant, tu apprends le nombre et la taille des créatures et depuis quand elles sont passées. Tu choisis un autre terrain aux niveaux 6 et 10.",
+      "es": "Elige un terreno predilecto. En él, tu bonificador por competencia se duplica en las pruebas de Inteligencia y Sabiduría relacionadas en las que uses una habilidad con competencia; el terreno difícil no ralentiza el viaje de tu grupo; no puedes perderte salvo por magia; sigues alerta mientras haces otras actividades; puedes moverte sigilosamente a ritmo normal si vas solo; encuentras el doble de comida al forrajear; y al rastrear sabes el número y tamaño de las criaturas y cuánto hace que pasaron. Eliges otro terreno en los niveles 6 y 10."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "ranger-fighting-style",
+    "label": {
+      "en": "Fighting Style",
+      "fr": "Style de combat",
+      "es": "Estilo de combate"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "You adopt one fighting style as your specialty: Archery, Defense, Dueling or Two-Weapon Fighting.",
+      "fr": "Tu adoptes un style de combat comme spécialité : Archerie, Défense, Duel ou Combat à deux armes.",
+      "es": "Adoptas un estilo de combate como especialidad: Combate con armas a distancia, Defensa, Combate con un arma o Combate con dos armas."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "ranger-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "You cast spells using Wisdom (spell save DC = 8 + proficiency bonus + Wisdom modifier; spell attack = proficiency bonus + Wisdom modifier). You know two 1st-level ranger spells and learn more as you gain levels; each time you gain a level, you can replace one spell you know with another ranger spell of a level you can cast.",
+      "fr": "Tu lances des sorts grâce à la Sagesse (DD de sauvegarde = 8 + bonus de maîtrise + modificateur de Sagesse ; attaque de sort = bonus de maîtrise + modificateur de Sagesse). Tu connais deux sorts de rôdeur de niveau 1 et en apprends d'autres en gagnant des niveaux ; à chaque niveau, tu peux remplacer un sort connu par un autre sort de rôdeur d'un niveau que tu peux lancer.",
+      "es": "Lanzas conjuros con Sabiduría (CD de salvación = 8 + bonificador por competencia + modificador de Sabiduría; ataque de conjuro = bonificador por competencia + modificador de Sabiduría). Conoces dos conjuros de explorador de nivel 1 y aprendes más al subir de nivel; cada vez que subes de nivel puedes sustituir un conjuro conocido por otro de explorador de un nivel que puedas lanzar."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "primeval-awareness",
+    "label": {
+      "en": "Primeval Awareness",
+      "fr": "Conscience primitive",
+      "es": "Consciencia primigenia"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "You can use your action and expend one ranger spell slot to sense, for 1 minute per slot level, whether aberrations, celestials, dragons, elementals, fey, fiends or undead are present within 1 mile (6 miles in your favored terrain). You learn their types but not their number or location.",
+      "fr": "Tu peux utiliser ton action et dépenser un emplacement de sort de rôdeur pour sentir, pendant 1 minute par niveau d'emplacement, la présence d'aberrations, de célestes, de dragons, d'élémentaires, de fées, de fiélons ou de morts-vivants dans un rayon de 1,5 km (9 km dans ton terrain de prédilection). Tu apprends leur type mais ni leur nombre ni leur position.",
+      "es": "Puedes usar tu acción y gastar un espacio de conjuro de explorador para percibir, durante 1 minuto por nivel del espacio, si hay aberraciones, celestiales, dragones, elementales, feéricos, infernales o muertos vivientes a 1 milla (6 millas en tu terreno predilecto). Sabes sus tipos, pero no su número ni posición."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "ranger-extra-attack",
+    "label": {
+      "en": "Extra Attack",
+      "fr": "Attaque supplémentaire",
+      "es": "Ataque adicional"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, lorsque tu fais l'action Attaquer pendant ton tour.",
+      "es": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno."
+    },
+    "level": 5,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "lands-stride",
+    "label": {
+      "en": "Land's Stride",
+      "fr": "Foulée tellurique",
+      "es": "Zancada terrestre"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "Moving through nonmagical difficult terrain costs you no extra movement, and you can pass through nonmagical plants without being slowed or taking damage from thorns. You have advantage on saving throws against magically created or manipulated plants that impede movement.",
+      "fr": "Te déplacer en terrain difficile non magique ne te coûte pas de mouvement supplémentaire, et tu traverses les plantes non magiques sans être ralenti ni blessé par les épines. Tu as l'avantage aux jets de sauvegarde contre les plantes créées ou manipulées par magie pour entraver les déplacements.",
+      "es": "Moverte por terreno difícil no mágico no te cuesta movimiento adicional, y atraviesas plantas no mágicas sin ser ralentizado ni herido por espinas. Tienes ventaja en las tiradas de salvación contra plantas creadas o manipuladas mágicamente para impedir el movimiento."
+    },
+    "level": 8,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "hide-in-plain-sight",
+    "label": {
+      "en": "Hide in Plain Sight",
+      "fr": "Camouflage",
+      "es": "Ocultarse a plena vista"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "You can spend 1 minute creating camouflage with natural materials. While you stay still against a solid surface, you gain a +10 bonus to Dexterity (Stealth) checks until you move or take an action or reaction.",
+      "fr": "Tu peux passer 1 minute à te camoufler avec des matériaux naturels. Tant que tu restes immobile contre une surface solide, tu obtiens un bonus de +10 aux tests de Dextérité (Discrétion) jusqu'à ce que tu bouges ou fasses une action ou une réaction.",
+      "es": "Puedes pasar 1 minuto camuflándote con materiales naturales. Mientras permanezcas inmóvil contra una superficie sólida, obtienes un +10 a las pruebas de Destreza (Sigilo) hasta que te muevas o realices una acción o reacción."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "vanish",
+    "label": {
+      "en": "Vanish",
+      "fr": "Disparition",
+      "es": "Desvanecerse"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "You can use the Hide action as a bonus action on your turn. Also, you can't be tracked by nonmagical means unless you choose to leave a trail.",
+      "fr": "Tu peux te cacher par une action bonus pendant ton tour. De plus, tu ne peux pas être pisté par des moyens non magiques, sauf si tu choisis de laisser une piste.",
+      "es": "Puedes usar la acción de Esconderte como acción adicional en tu turno. Además, no puedes ser rastreado por medios no mágicos salvo que decidas dejar rastro."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "feral-senses",
+    "label": {
+      "en": "Feral Senses",
+      "fr": "Sens sauvages",
+      "es": "Sentidos salvajes"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "Attacking a creature you can't see doesn't impose disadvantage on your attack rolls against it. You are aware of the location of any invisible creature within 30 feet of you that isn't hidden from you, as long as you aren't blinded or deafened.",
+      "fr": "Attaquer une créature que tu ne vois pas ne t'impose pas le désavantage. Tu connais la position de toute créature invisible à 9 m de toi qui ne se cache pas de toi, tant que tu n'es ni aveuglé ni assourdi.",
+      "es": "Atacar a una criatura que no puedes ver no te impone desventaja. Conoces la posición de cualquier criatura invisible a 30 pies de ti que no se esté escondiendo de ti, siempre que no estés cegado ni ensordecido."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "foe-slayer",
+    "label": {
+      "en": "Foe Slayer",
+      "fr": "Tueur implacable",
+      "es": "Asesino de enemigos"
+    },
+    "parentKey": "ranger",
+    "description": {
+      "en": "Once on each of your turns, you can add your Wisdom modifier to the attack roll or the damage roll of an attack you make against one of your favored enemies.",
+      "fr": "Une fois à chacun de tes tours, tu peux ajouter ton modificateur de Sagesse au jet d'attaque ou au jet de dégâts d'une attaque contre l'un de tes ennemis jurés.",
+      "es": "Una vez en cada uno de tus turnos, puedes sumar tu modificador de Sabiduría a la tirada de ataque o de daño de un ataque contra uno de tus enemigos predilectos."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "artificer",
+    "label": {
+      "en": "Artificer",
+      "fr": "Artificier",
+      "es": "Artífice"
+    },
+    "description": {
+      "en": "An inventor who channels magic into objects, infusing items and casting spells through tools.",
+      "fr": "Un inventeur qui canalise la magie dans les objets, infuse des objets et lance des sorts au moyen d'outils.",
+      "es": "Un inventor que canaliza la magia en objetos, infunde objetos y lanza conjuros mediante herramientas."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Artificer",
+      "hitDie": 8,
+      "primaryAbilities": ["intelligence"],
+      "savingThrows": ["constitution", "intelligence"],
+      "subclassLevel": 3,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "intelligence",
+        "preparation": "prepared",
+        "slots": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ],
+        "maxSpellLevelByLevel": [
+          1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
+        ],
+        "cantripsKnown": [
+          2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4
+        ],
+        "spellsKnown": null,
+        "preparedLevel": "half",
+        "ritualCasting": true,
+        "focus": "thieves' tools, tinker's tools or an artisan's tool"
+      },
+      "startingGoldDice": "5d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "intelligence"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.constitution",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.intelligence",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["thieves-tools", "tinkers-tools"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor", "medium-armor", "shields"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.tools",
+        "value": ["thieves-tools", "tinkers-tools"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.ability",
+        "value": "intelligence"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.preparation",
+        "value": "prepared"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.cantripsKnown",
+        "value": [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.maxSpellLevelByLevel",
+        "value": [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.preparedLevel",
+        "value": "half"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.slots",
+        "value": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.casterProgression",
+        "value": "halfUp"
+      }
+    ],
+    "grants": [
+      {
+        "id": "artificer-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "arcana",
+            "history",
+            "investigation",
+            "medicine",
+            "nature",
+            "perception",
+            "sleight-of-hand"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "artificer-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "artificer"
+        },
+        "count": 1,
+        "level": 3
+      },
+      {
+        "id": "artificer-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "artificer-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "artificer-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "artificer-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "artificer-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "artificer-artisan-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "alchemists-supplies",
+            "brewers-supplies",
+            "calligraphers-supplies",
+            "carpenters-tools",
+            "cartographers-tools",
+            "cobblers-tools",
+            "cooks-utensils",
+            "glassblowers-tools",
+            "jewelers-tools",
+            "leatherworkers-tools",
+            "masons-tools",
+            "painters-supplies",
+            "potters-tools",
+            "smiths-tools",
+            "tinkers-tools",
+            "weavers-tools",
+            "woodcarvers-tools"
+          ]
+        },
+        "count": 1,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "artificer-infusions-2",
+        "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "artificer-infusion"
+        },
+        "count": 4,
+        "level": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "artificer-infusions-6",
+        "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "artificer-infusion"
+        },
+        "count": 2,
+        "level": 6,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "artificer-infusions-10",
+        "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "artificer-infusion"
+        },
+        "count": 2,
+        "level": 10,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "artificer-infusions-14",
+        "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "artificer-infusion"
+        },
+        "count": 2,
+        "level": 14,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "artificer-infusions-18",
+        "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "artificer-infusion"
+        },
+        "count": 2,
+        "level": 18,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "magical-tinkering",
+    "label": {
+      "en": "Magical Tinkering",
+      "fr": "Bricolage magique",
+      "es": "Retoques mágicos"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "With thieves' tools or an artisan's tool in hand, you can use an action to give a Tiny nonmagical object one magical property: it sheds light, plays a recorded message, emits a sound or odor, or shows a picture or text. You can affect a number of objects equal to your Intelligence modifier (minimum 1) at once.",
+      "fr": "Avec des outils de voleur ou un outil d'artisan en main, tu peux utiliser une action pour donner à un objet Très petit non magique une propriété magique : il émet de la lumière, diffuse un message enregistré, produit un son ou une odeur, ou affiche une image ou un texte. Tu peux affecter simultanément un nombre d'objets égal à ton modificateur d'Intelligence (minimum 1).",
+      "es": "Con herramientas de ladrón o de artesano en la mano, puedes usar una acción para dar a un objeto Diminuto no mágico una propiedad mágica: emite luz, reproduce un mensaje grabado, emite un sonido u olor, o muestra una imagen o texto. Puedes afectar a la vez a tantos objetos como tu modificador de Inteligencia (mínimo 1)."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "artificer-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "You cast spells using Intelligence through a tool (thieves' tools, any artisan's tool) or an infused item as a focus. After a long rest, prepare a number of artificer spells equal to your Intelligence modifier + half your artificer level, rounded down (minimum 1). You know two cantrips (three at 10th level, four at 14th) and can cast prepared ritual spells as rituals.",
+      "fr": "Tu lances des sorts grâce à l'Intelligence au moyen d'un outil (outils de voleur, n'importe quel outil d'artisan) ou d'un objet infusé comme focaliseur. Après un repos long, prépare un nombre de sorts d'artificier égal à ton modificateur d'Intelligence + la moitié de ton niveau d'artificier, arrondie à l'inférieur (minimum 1). Tu connais deux sorts mineurs (trois au niveau 10, quatre au niveau 14) et peux lancer comme rituels les sorts rituels préparés.",
+      "es": "Lanzas conjuros con Inteligencia a través de una herramienta (herramientas de ladrón, cualquier herramienta de artesano) o un objeto infundido como canalizador. Tras un descanso largo, prepara tantos conjuros de artífice como tu modificador de Inteligencia + la mitad de tu nivel de artífice, redondeando hacia abajo (mínimo 1). Conoces dos trucos (tres en el nivel 10, cuatro en el 14) y puedes lanzar como rituales los conjuros rituales preparados."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "infuse-item",
+    "label": {
+      "en": "Infuse Item",
+      "fr": "Infusion d'objet",
+      "es": "Infundir objeto"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "You can imbue mundane items with magical infusions. You know four infusions (6 at 6th level, 8 at 10th, 10 at 14th, 12 at 18th) and can swap one when you gain a level. After a long rest, you can infuse nonmagical objects; the number of items infused at the same time is 2 (3 at 6th level, 4 at 10th, 5 at 14th, 6 at 18th).",
+      "fr": "Tu peux imprégner des objets ordinaires d'infusions magiques. Tu connais quatre infusions (6 au niveau 6, 8 au niveau 10, 10 au niveau 14, 12 au niveau 18) et peux en remplacer une à chaque niveau. Après un repos long, tu peux infuser des objets non magiques ; le nombre d'objets infusés en même temps est de 2 (3 au niveau 6, 4 au niveau 10, 5 au niveau 14, 6 au niveau 18).",
+      "es": "Puedes imbuir objetos corrientes con infusiones mágicas. Conoces cuatro infusiones (6 en el nivel 6, 8 en el 10, 10 en el 14, 12 en el 18) y puedes cambiar una al subir de nivel. Tras un descanso largo, puedes infundir objetos no mágicos; el número de objetos infundidos a la vez es 2 (3 en el nivel 6, 4 en el 10, 5 en el 14, 6 en el 18)."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "infusionsKnown": [
+        0, 4, 4, 4, 4, 6, 6, 6, 6, 8, 8, 8, 8, 10, 10, 10, 10, 12, 12, 12
+      ],
+      "infusedItems": [
+        0, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6
+      ]
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "the-right-tool-for-the-job",
+    "label": {
+      "en": "The Right Tool for the Job",
+      "fr": "Le bon outil",
+      "es": "La herramienta adecuada"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "With thieves' tools or an artisan's tool in hand, you can magically create one set of artisan's tools in an unoccupied space within 5 feet of you, over 1 hour (which can coincide with a rest). It vanishes when you use this feature again.",
+      "fr": "Avec des outils de voleur ou un outil d'artisan en main, tu peux créer par magie un ensemble d'outils d'artisan dans un espace inoccupé à 1,50 m de toi, en 1 heure (qui peut coïncider avec un repos). Il disparaît lorsque tu réutilises cette aptitude.",
+      "es": "Con herramientas de ladrón o de artesano en la mano, puedes crear mágicamente un juego de herramientas de artesano en un espacio desocupado a 5 pies de ti, en 1 hora (que puede coincidir con un descanso). Desaparece cuando vuelves a usar este rasgo."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "tool-expertise",
+    "label": {
+      "en": "Tool Expertise",
+      "fr": "Expertise des outils",
+      "es": "Pericia con herramientas"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "Your proficiency bonus is doubled for any ability check you make that uses your proficiency with a tool.",
+      "fr": "Ton bonus de maîtrise est doublé pour tout test de caractéristique utilisant ta maîtrise d'un outil.",
+      "es": "Tu bonificador por competencia se duplica en cualquier prueba de característica que use tu competencia con una herramienta."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "flash-of-genius",
+    "label": {
+      "en": "Flash of Genius",
+      "fr": "Éclair de génie",
+      "es": "Destello de genialidad"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "When you or another creature you can see within 30 feet makes an ability check or a saving throw, you can use your reaction to add your Intelligence modifier to the roll. You can use it a number of times equal to your Intelligence modifier (minimum 1), regaining all uses after a long rest.",
+      "fr": "Lorsque toi ou une autre créature que tu vois à 9 m faites un test de caractéristique ou un jet de sauvegarde, tu peux utiliser ta réaction pour ajouter ton modificateur d'Intelligence au jet. Tu peux l'utiliser un nombre de fois égal à ton modificateur d'Intelligence (minimum 1) et récupères toutes les utilisations après un repos long.",
+      "es": "Cuando tú u otra criatura que puedas ver a 30 pies hagáis una prueba de característica o tirada de salvación, puedes usar tu reacción para sumar tu modificador de Inteligencia a la tirada. Puedes usarlo tantas veces como tu modificador de Inteligencia (mínimo 1) y recuperas todos los usos tras un descanso largo."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "intelligenceModifier"
+          }
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "magic-item-adept",
+    "label": {
+      "en": "Magic Item Adept",
+      "fr": "Adepte des objets magiques",
+      "es": "Experto en objetos mágicos"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "You can attune to up to four magic items at once. Crafting a common or uncommon magic item takes you a quarter of the normal time and costs half as much gold.",
+      "fr": "Tu peux t'harmoniser avec quatre objets magiques à la fois. Fabriquer un objet magique commun ou peu commun te prend le quart du temps normal et coûte moitié moins d'or.",
+      "es": "Puedes sintonizarte con hasta cuatro objetos mágicos a la vez. Fabricar un objeto mágico común o poco común te lleva una cuarta parte del tiempo normal y cuesta la mitad de oro."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "spell-storing-item",
+    "label": {
+      "en": "Spell-Storing Item",
+      "fr": "Objet de stockage de sort",
+      "es": "Objeto almacenaconjuros"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "After a long rest, you can touch a simple or martial weapon or a spellcasting focus and store a 1st- or 2nd-level artificer spell with a casting time of 1 action in it. A creature holding it can use an action to cast the spell with your spellcasting modifier, up to twice your Intelligence modifier times (minimum 2).",
+      "fr": "Après un repos long, tu peux toucher une arme courante ou de guerre ou un focaliseur et y stocker un sort d'artificier de niveau 1 ou 2 au temps d'incantation d'une action. Une créature qui le tient peut utiliser une action pour lancer ce sort avec ton modificateur d'incantation, jusqu'à deux fois ton modificateur d'Intelligence (minimum 2).",
+      "es": "Tras un descanso largo, puedes tocar un arma sencilla o marcial o un canalizador y almacenar en él un conjuro de artífice de nivel 1 o 2 con tiempo de lanzamiento de 1 acción. Una criatura que lo sostenga puede usar una acción para lanzarlo con tu modificador de lanzamiento, hasta el doble de tu modificador de Inteligencia (mínimo 2) veces."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "magic-item-savant",
+    "label": {
+      "en": "Magic Item Savant",
+      "fr": "Expert en objets magiques",
+      "es": "Sabio de objetos mágicos"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "You can attune to up to five magic items at once, and you ignore all class, race, spell and level requirements on attuning to or using a magic item.",
+      "fr": "Tu peux t'harmoniser avec cinq objets magiques à la fois, et tu ignores toutes les conditions de classe, de race, de sort et de niveau pour t'harmoniser avec un objet magique ou l'utiliser.",
+      "es": "Puedes sintonizarte con hasta cinco objetos mágicos a la vez e ignoras todos los requisitos de clase, raza, conjuro y nivel para sintonizarte con un objeto mágico o usarlo."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "magic-item-master",
+    "label": {
+      "en": "Magic Item Master",
+      "fr": "Maître des objets magiques",
+      "es": "Maestro de objetos mágicos"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "You can attune to up to six magic items at once.",
+      "fr": "Tu peux t'harmoniser avec six objets magiques à la fois.",
+      "es": "Puedes sintonizarte con hasta seis objetos mágicos a la vez."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "soul-of-artifice",
+    "label": {
+      "en": "Soul of Artifice",
+      "fr": "Âme de l'artifice",
+      "es": "Alma del artificio"
+    },
+    "parentKey": "artificer",
+    "description": {
+      "en": "You gain a +1 bonus to all saving throws per magic item you are attuned to. If you are reduced to 0 hit points but not killed outright, you can use your reaction to end one of your artificer infusions and drop to 1 hit point instead.",
+      "fr": "Tu obtiens un bonus de +1 à tous tes jets de sauvegarde par objet magique avec lequel tu es harmonisé. Si tes points de vie tombent à 0 sans que tu sois tué sur le coup, tu peux utiliser ta réaction pour mettre fin à l'une de tes infusions et rester à 1 point de vie.",
+      "es": "Obtienes un +1 a todas las tiradas de salvación por cada objeto mágico con el que estés sintonizado. Si tus puntos de golpe se reducen a 0 sin morir en el acto, puedes usar tu reacción para terminar una de tus infusiones y quedarte a 1 punto de golpe."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]

@@ -1,0 +1,197 @@
+[
+  {
+    "type": "damage-type",
+    "key": "acid-damage",
+    "label": {
+      "en": "Acid",
+      "fr": "Acide",
+      "es": "Ácido"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "acid"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "bludgeoning-damage",
+    "label": {
+      "en": "Bludgeoning",
+      "fr": "Contondant",
+      "es": "Contundente"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "bludgeoning"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "cold-damage",
+    "label": {
+      "en": "Cold",
+      "fr": "Froid",
+      "es": "Frío"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "cold"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "fire-damage",
+    "label": {
+      "en": "Fire",
+      "fr": "Feu",
+      "es": "Fuego"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "fire"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "force-damage",
+    "label": {
+      "en": "Force",
+      "fr": "Force",
+      "es": "Fuerza"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "force"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "lightning-damage",
+    "label": {
+      "en": "Lightning",
+      "fr": "Foudre",
+      "es": "Relámpago"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "lightning"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "necrotic-damage",
+    "label": {
+      "en": "Necrotic",
+      "fr": "Nécrotique",
+      "es": "Necrótico"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "necrotic"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "piercing-damage",
+    "label": {
+      "en": "Piercing",
+      "fr": "Perforant",
+      "es": "Perforante"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "piercing"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "poison-damage",
+    "label": {
+      "en": "Poison",
+      "fr": "Poison",
+      "es": "Veneno"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "poison"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "psychic-damage",
+    "label": {
+      "en": "Psychic",
+      "fr": "Psychique",
+      "es": "Psíquico"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "psychic"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "radiant-damage",
+    "label": {
+      "en": "Radiant",
+      "fr": "Radiant",
+      "es": "Radiante"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "radiant"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "slashing-damage",
+    "label": {
+      "en": "Slashing",
+      "fr": "Tranchant",
+      "es": "Cortante"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "slashing"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "damage-type",
+    "key": "thunder-damage",
+    "label": {
+      "en": "Thunder",
+      "fr": "Tonnerre",
+      "es": "Trueno"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "thunder"
+    },
+    "effects": [],
+    "grants": []
+  }
+]

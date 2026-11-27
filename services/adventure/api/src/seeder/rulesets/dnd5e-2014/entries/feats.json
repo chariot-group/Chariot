@@ -1,0 +1,1343 @@
+[
+  {
+    "type": "feat",
+    "key": "feat-alert",
+    "label": {
+      "en": "Alert",
+      "fr": "Vigilant",
+      "es": "Alerta"
+    },
+    "description": {
+      "en": "Always on the lookout for danger: you gain a +5 bonus to initiative, you can't be surprised while you are conscious, and other creatures don't gain advantage on attack rolls against you as a result of being unseen by you.",
+      "fr": "Toujours à l'affût du danger : tu obtiens un bonus de +5 à l'initiative, tu ne peux pas être surpris tant que tu es conscient, et les autres créatures n'ont pas l'avantage à leurs attaques contre toi du fait que tu ne les vois pas.",
+      "es": "Siempre atento al peligro: obtienes un +5 a la iniciativa, no puedes ser sorprendido mientras estés consciente y las demás criaturas no obtienen ventaja en sus ataques contra ti por no ser vistas por ti."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "initiativeBonus",
+        "value": 5
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-athlete",
+    "label": {
+      "en": "Athlete",
+      "fr": "Athlète",
+      "es": "Atleta"
+    },
+    "description": {
+      "en": "Increase your Strength or Dexterity by 1. Standing up from prone uses only 5 feet of movement, climbing doesn't cost extra movement, and you can make a running long or high jump after moving only 5 feet.",
+      "fr": "Augmente ta Force ou ta Dextérité de 1. Te relever ne te coûte que 1,50 m de mouvement, escalader ne te coûte pas de mouvement supplémentaire, et tu peux sauter en longueur ou en hauteur avec élan après seulement 1,50 m de course.",
+      "es": "Aumenta tu Fuerza o Destreza en 1. Levantarte del suelo solo te cuesta 5 pies de movimiento, trepar no te cuesta movimiento adicional y puedes hacer un salto largo o alto con carrerilla tras moverte solo 5 pies."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "athlete-ability",
+        "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
+        "from": {
+          "type": "ability",
+          "keys": ["strength", "dexterity"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-actor",
+    "label": {
+      "en": "Actor",
+      "fr": "Comédien",
+      "es": "Actor"
+    },
+    "description": {
+      "en": "Increase your Charisma by 1. You have advantage on Charisma (Deception) and Charisma (Performance) checks when trying to pass yourself off as a different person, and you can mimic the speech of another person or the sounds of creatures you have heard for at least 1 minute.",
+      "fr": "Augmente ton Charisme de 1. Tu as l'avantage aux tests de Charisme (Tromperie) et (Représentation) pour te faire passer pour quelqu'un d'autre, et tu peux imiter la voix d'une personne ou les sons de créatures que tu as entendus pendant au moins 1 minute.",
+      "es": "Aumenta tu Carisma en 1. Tienes ventaja en las pruebas de Carisma (Engaño) y (Interpretación) para hacerte pasar por otra persona, y puedes imitar la voz de alguien o los sonidos de criaturas que hayas oído durante al menos 1 minuto."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.charisma",
+        "value": 1
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-charger",
+    "label": {
+      "en": "Charger",
+      "fr": "Charge",
+      "es": "Cargador"
+    },
+    "description": {
+      "en": "When you use your action to Dash, you can use a bonus action to make one melee weapon attack or to shove a creature. If you move at least 10 feet in a straight line first, you gain +5 to the attack's damage or push the target up to 10 feet.",
+      "fr": "Lorsque tu utilises ton action pour Foncer, tu peux utiliser une action bonus pour faire une attaque d'arme de corps à corps ou pousser une créature. Si tu t'es d'abord déplacé d'au moins 3 m en ligne droite, tu obtiens +5 aux dégâts de l'attaque ou repousses la cible de 3 m.",
+      "es": "Cuando usas tu acción para Correr, puedes usar una acción adicional para hacer un ataque con arma cuerpo a cuerpo o empujar a una criatura. Si antes te mueves al menos 10 pies en línea recta, obtienes +5 al daño del ataque o empujas al objetivo hasta 10 pies."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-crossbow-expert",
+    "label": {
+      "en": "Crossbow Expert",
+      "fr": "Expert en arbalète",
+      "es": "Experto en ballestas"
+    },
+    "description": {
+      "en": "You ignore the loading property of crossbows you are proficient with; being within 5 feet of a hostile creature doesn't impose disadvantage on your ranged attack rolls; and when you attack with a one-handed weapon using the Attack action, you can attack with a loaded hand crossbow as a bonus action.",
+      "fr": "Tu ignores la propriété chargement des arbalètes que tu maîtrises ; être à 1,50 m d'une créature hostile ne t'impose pas le désavantage aux attaques à distance ; et lorsque tu attaques avec une arme à une main en faisant l'action Attaquer, tu peux attaquer avec une arbalète de poing chargée par une action bonus.",
+      "es": "Ignoras la propiedad de recarga de las ballestas con las que eres competente; estar a 5 pies de una criatura hostil no te impone desventaja en los ataques a distancia; y al atacar con un arma a una mano en la acción de Atacar, puedes atacar con una ballesta de mano cargada como acción adicional."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-defensive-duelist",
+    "label": {
+      "en": "Defensive Duelist",
+      "fr": "Duelliste défensif",
+      "es": "Duelista defensivo"
+    },
+    "description": {
+      "en": "When you are wielding a finesse weapon you are proficient with and another creature hits you with a melee attack, you can use your reaction to add your proficiency bonus to your AC for that attack, potentially causing it to miss.",
+      "fr": "Lorsque tu manies une arme de finesse que tu maîtrises et qu'une autre créature te touche avec une attaque au corps à corps, tu peux utiliser ta réaction pour ajouter ton bonus de maîtrise à ta CA contre cette attaque, ce qui peut la faire rater.",
+      "es": "Cuando empuñas un arma sutil con la que eres competente y otra criatura te impacta con un ataque cuerpo a cuerpo, puedes usar tu reacción para sumar tu bonificador por competencia a tu CA contra ese ataque, pudiendo hacer que falle."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "ability": "dexterity",
+        "min": 13
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-dual-wielder",
+    "label": {
+      "en": "Dual Wielder",
+      "fr": "Combattant à deux armes",
+      "es": "Combatiente con dos armas"
+    },
+    "description": {
+      "en": "You gain a +1 bonus to AC while wielding a separate melee weapon in each hand; you can use two-weapon fighting even when the weapons aren't light; and you can draw or stow two one-handed weapons when you would normally draw or stow only one.",
+      "fr": "Tu obtiens un bonus de +1 à la CA lorsque tu manies une arme de corps à corps dans chaque main ; tu peux combattre à deux armes même si elles ne sont pas légères ; et tu peux dégainer ou rengainer deux armes à une main au lieu d'une.",
+      "es": "Obtienes un +1 a la CA mientras empuñes un arma cuerpo a cuerpo distinta en cada mano; puedes combatir con dos armas aunque no sean ligeras; y puedes desenvainar o envainar dos armas a una mano cuando normalmente solo podrías una."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-dungeon-delver",
+    "label": {
+      "en": "Dungeon Delver",
+      "fr": "Explorateur de donjons",
+      "es": "Explorador de mazmorras"
+    },
+    "description": {
+      "en": "You have advantage on Wisdom (Perception) and Intelligence (Investigation) checks to detect secret doors, and on saving throws to avoid or resist traps; you have resistance to trap damage; and you can search for traps while traveling at a normal pace.",
+      "fr": "Tu as l'avantage aux tests de Sagesse (Perception) et d'Intelligence (Investigation) pour détecter les portes secrètes, et aux jets de sauvegarde pour éviter ou résister aux pièges ; tu as la résistance aux dégâts des pièges ; et tu peux chercher les pièges en voyageant à allure normale.",
+      "es": "Tienes ventaja en las pruebas de Sabiduría (Percepción) e Inteligencia (Investigación) para detectar puertas secretas, y en las tiradas de salvación para evitar o resistir trampas; tienes resistencia al daño de trampas; y puedes buscar trampas viajando a ritmo normal."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-durable",
+    "label": {
+      "en": "Durable",
+      "fr": "Robuste",
+      "es": "Duro"
+    },
+    "description": {
+      "en": "Increase your Constitution by 1. When you roll a Hit Die to regain hit points, the minimum number of hit points you regain equals twice your Constitution modifier (minimum 2).",
+      "fr": "Augmente ta Constitution de 1. Lorsque tu lances un dé de vie pour récupérer des points de vie, tu en récupères au minimum le double de ton modificateur de Constitution (minimum 2).",
+      "es": "Aumenta tu Constitución en 1. Cuando tiras un Dado de Golpe para recuperar puntos de golpe, recuperas como mínimo el doble de tu modificador de Constitución (mínimo 2)."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.constitution",
+        "value": 1
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-elemental-adept",
+    "label": {
+      "en": "Elemental Adept",
+      "fr": "Adepte élémentaire",
+      "es": "Adepto elemental"
+    },
+    "description": {
+      "en": "Choose acid, cold, fire, lightning or thunder. Spells you cast ignore resistance to that damage type, and when you roll damage for such a spell, you can treat any 1 on a damage die as a 2. You can take this feat multiple times, choosing a different type each time.",
+      "fr": "Choisis acide, froid, feu, foudre ou tonnerre. Tes sorts ignorent la résistance à ce type de dégâts, et lorsque tu lances les dégâts d'un tel sort, tu peux considérer chaque 1 sur un dé comme un 2. Tu peux prendre ce don plusieurs fois en choisissant un type différent.",
+      "es": "Elige ácido, frío, fuego, relámpago o trueno. Tus conjuros ignoran la resistencia a ese tipo de daño y, al tirar el daño de un conjuro así, puedes tratar cualquier 1 en un dado como un 2. Puedes elegir esta dote varias veces con un tipo distinto."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "text": "ability to cast at least one spell"
+      }
+    },
+    "effects": [],
+    "grants": [
+      {
+        "id": "elemental-adept-type",
+        "kind": "choose",
+        "label": {
+          "en": "Damage type",
+          "fr": "Type de dégâts",
+          "es": "Tipo de daño"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "damage-type",
+          "keys": [
+            "acid-damage",
+            "cold-damage",
+            "fire-damage",
+            "lightning-damage",
+            "thunder-damage"
+          ]
+        },
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-grappler",
+    "label": {
+      "en": "Grappler",
+      "fr": "Lutteur",
+      "es": "Agarrador"
+    },
+    "description": {
+      "en": "You have advantage on attack rolls against a creature you are grappling, and you can use your action to try to pin it: make another grapple check, and on a success, you and the creature are both restrained until the grapple ends.",
+      "fr": "Tu as l'avantage aux jets d'attaque contre une créature que tu agrippes, et tu peux utiliser ton action pour tenter de l'immobiliser : fais un nouveau test de lutte et, en cas de réussite, toi et la créature êtes entravés jusqu'à la fin de la prise.",
+      "es": "Tienes ventaja en las tiradas de ataque contra una criatura que estés agarrando, y puedes usar tu acción para intentar inmovilizarla: haz otra prueba de presa y, si tienes éxito, tú y la criatura quedáis apresados hasta que termine la presa."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "ability": "strength",
+        "min": 13
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-great-weapon-master",
+    "label": {
+      "en": "Great Weapon Master",
+      "fr": "Maître d'armes lourdes",
+      "es": "Maestro en armas grandes"
+    },
+    "description": {
+      "en": "On your turn, when you score a critical hit with a melee weapon or reduce a creature to 0 hit points with one, you can make one melee weapon attack as a bonus action. Before you make a melee attack with a heavy weapon you are proficient with, you can choose to take a −5 penalty to the attack roll for +10 damage.",
+      "fr": "Pendant ton tour, lorsque tu obtiens un coup critique avec une arme de corps à corps ou réduis une créature à 0 point de vie avec elle, tu peux faire une attaque d'arme de corps à corps par une action bonus. Avant une attaque au corps à corps avec une arme lourde que tu maîtrises, tu peux choisir un malus de −5 au jet d'attaque pour +10 aux dégâts.",
+      "es": "En tu turno, cuando consigas un crítico con un arma cuerpo a cuerpo o reduzcas a una criatura a 0 puntos de golpe con ella, puedes hacer un ataque con arma cuerpo a cuerpo como acción adicional. Antes de atacar cuerpo a cuerpo con un arma pesada con la que seas competente, puedes aceptar un −5 a la tirada de ataque a cambio de +10 al daño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-healer",
+    "label": {
+      "en": "Healer",
+      "fr": "Guérisseur",
+      "es": "Sanador"
+    },
+    "description": {
+      "en": "When you use a healer's kit to stabilize a dying creature, it also regains 1 hit point. As an action, you can spend one use of a healer's kit to restore 1d6 + 4 hit points to a creature, plus hit points equal to its maximum number of Hit Dice; a creature can benefit from this once per short or long rest.",
+      "fr": "Lorsque tu utilises une trousse de soins pour stabiliser une créature mourante, elle récupère aussi 1 point de vie. Par une action, tu peux dépenser une utilisation d'une trousse de soins pour rendre 1d6 + 4 points de vie à une créature, plus un nombre égal à son nombre maximal de dés de vie ; une créature ne peut en bénéficier qu'une fois par repos court ou long.",
+      "es": "Cuando usas un botiquín de sanador para estabilizar a una criatura moribunda, también recupera 1 punto de golpe. Como acción, puedes gastar un uso de un botiquín para devolver 1d6 + 4 puntos de golpe a una criatura, más tantos como su número máximo de Dados de Golpe; una criatura solo puede beneficiarse una vez por descanso corto o largo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-heavily-armored",
+    "label": {
+      "en": "Heavily Armored",
+      "fr": "Protection lourde",
+      "es": "Armadura pesada"
+    },
+    "description": {
+      "en": "Increase your Strength by 1, and you gain proficiency with heavy armor.",
+      "fr": "Augmente ta Force de 1, et tu obtiens la maîtrise des armures lourdes.",
+      "es": "Aumenta tu Fuerza en 1 y obtienes competencia con armaduras pesadas."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "proficiency": "medium-armor"
+      }
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.strength",
+        "value": 1
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["heavy-armor"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-heavy-armor-master",
+    "label": {
+      "en": "Heavy Armor Master",
+      "fr": "Maître des armures lourdes",
+      "es": "Maestro en armadura pesada"
+    },
+    "description": {
+      "en": "Increase your Strength by 1. While you are wearing heavy armor, bludgeoning, piercing and slashing damage that you take from nonmagical weapons is reduced by 3.",
+      "fr": "Augmente ta Force de 1. Tant que tu portes une armure lourde, les dégâts contondants, perforants et tranchants que tu subis des armes non magiques sont réduits de 3.",
+      "es": "Aumenta tu Fuerza en 1. Mientras lleves armadura pesada, el daño contundente, perforante y cortante que recibas de armas no mágicas se reduce en 3."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "proficiency": "heavy-armor"
+      }
+    },
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.strength",
+        "value": 1
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-inspiring-leader",
+    "label": {
+      "en": "Inspiring Leader",
+      "fr": "Meneur exaltant",
+      "es": "Líder inspirador"
+    },
+    "description": {
+      "en": "You can spend 10 minutes inspiring your companions. Up to six friendly creatures (which can include you) within 30 feet who can hear and understand you gain temporary hit points equal to your level + your Charisma modifier. A creature can't gain them again until it finishes a short or long rest.",
+      "fr": "Tu peux passer 10 minutes à galvaniser tes compagnons. Jusqu'à six créatures amies (toi compris) à 9 m qui t'entendent et te comprennent gagnent des points de vie temporaires égaux à ton niveau + ton modificateur de Charisme. Une créature ne peut pas en regagner avant d'avoir terminé un repos court ou long.",
+      "es": "Puedes pasar 10 minutos animando a tus compañeros. Hasta seis criaturas amistosas (tú incluido) a 30 pies que puedan oírte y entenderte obtienen puntos de golpe temporales iguales a tu nivel + tu modificador de Carisma. Una criatura no puede volver a obtenerlos hasta terminar un descanso corto o largo."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "ability": "charisma",
+        "min": 13
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-keen-mind",
+    "label": {
+      "en": "Keen Mind",
+      "fr": "Esprit affûté",
+      "es": "Mente aguda"
+    },
+    "description": {
+      "en": "Increase your Intelligence by 1. You always know which way is north and the number of hours left before the next sunrise or sunset, and you can accurately recall anything you have seen or heard within the past month.",
+      "fr": "Augmente ton Intelligence de 1. Tu sais toujours où est le nord et combien d'heures il reste avant le prochain lever ou coucher du soleil, et tu te souviens avec précision de tout ce que tu as vu ou entendu au cours du dernier mois.",
+      "es": "Aumenta tu Inteligencia en 1. Siempre sabes dónde está el norte y cuántas horas faltan para el siguiente amanecer o anochecer, y recuerdas con precisión todo lo que hayas visto u oído durante el último mes."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.intelligence",
+        "value": 1
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-lightly-armored",
+    "label": {
+      "en": "Lightly Armored",
+      "fr": "Protection légère",
+      "es": "Armadura ligera"
+    },
+    "description": {
+      "en": "Increase your Strength or Dexterity by 1, and you gain proficiency with light armor.",
+      "fr": "Augmente ta Force ou ta Dextérité de 1, et tu obtiens la maîtrise des armures légères.",
+      "es": "Aumenta tu Fuerza o Destreza en 1 y obtienes competencia con armaduras ligeras."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "lightly-armored-ability",
+        "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
+        "from": {
+          "type": "ability",
+          "keys": ["strength", "dexterity"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-linguist",
+    "label": {
+      "en": "Linguist",
+      "fr": "Linguiste",
+      "es": "Lingüista"
+    },
+    "description": {
+      "en": "Increase your Intelligence by 1. You learn three languages of your choice, and you can create written ciphers that others can't decipher without magic or a successful Intelligence check (DC = your Intelligence score + your proficiency bonus).",
+      "fr": "Augmente ton Intelligence de 1. Tu apprends trois langues de ton choix, et tu peux créer des codes écrits que les autres ne peuvent déchiffrer sans magie ou sans réussir un test d'Intelligence (DD = ta valeur d'Intelligence + ton bonus de maîtrise).",
+      "es": "Aumenta tu Inteligencia en 1. Aprendes tres idiomas de tu elección y puedes crear cifrados escritos que otros no pueden descifrar sin magia o sin superar una prueba de Inteligencia (CD = tu puntuación de Inteligencia + tu bonificador por competencia)."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "abilityBonuses.intelligence",
+        "value": 1
+      }
+    ],
+    "grants": [
+      {
+        "id": "linguist-languages",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 3,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-lucky",
+    "label": {
+      "en": "Lucky",
+      "fr": "Chanceux",
+      "es": "Afortunado"
+    },
+    "description": {
+      "en": "You have 3 luck points, regained after a long rest. Whenever you make an attack roll, ability check or saving throw, or an attack roll is made against you, you can spend one luck point to roll an additional d20 (with your own dice) and choose which d20 is used.",
+      "fr": "Tu as 3 points de chance, récupérés après un repos long. Chaque fois que tu fais un jet d'attaque, un test de caractéristique ou un jet de sauvegarde, ou qu'une attaque te vise, tu peux dépenser un point de chance pour lancer un d20 supplémentaire (avec tes propres dés) et choisir le d20 retenu.",
+      "es": "Tienes 3 puntos de suerte, que recuperas tras un descanso largo. Cuando hagas una tirada de ataque, prueba de característica o tirada de salvación, o te ataquen, puedes gastar un punto de suerte para tirar un d20 adicional (con tus propios dados) y elegir qué d20 se usa."
+    },
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 3
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-mage-slayer",
+    "label": {
+      "en": "Mage Slayer",
+      "fr": "Tueur de mages",
+      "es": "Asesino de magos"
+    },
+    "description": {
+      "en": "When a creature within 5 feet of you casts a spell, you can use your reaction to make a melee weapon attack against it. When you damage a creature concentrating on a spell, it has disadvantage on the saving throw to maintain concentration. You have advantage on saving throws against spells cast by creatures within 5 feet of you.",
+      "fr": "Lorsqu'une créature à 1,50 m de toi lance un sort, tu peux utiliser ta réaction pour faire une attaque d'arme de corps à corps contre elle. Lorsque tu blesses une créature qui se concentre sur un sort, elle a le désavantage au jet de sauvegarde pour maintenir sa concentration. Tu as l'avantage aux jets de sauvegarde contre les sorts lancés par des créatures à 1,50 m de toi.",
+      "es": "Cuando una criatura a 5 pies de ti lanza un conjuro, puedes usar tu reacción para hacer un ataque con arma cuerpo a cuerpo contra ella. Cuando dañas a una criatura que se concentra en un conjuro, tiene desventaja en la tirada para mantener la concentración. Tienes ventaja en las tiradas de salvación contra conjuros lanzados por criaturas a 5 pies de ti."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-magic-initiate",
+    "label": {
+      "en": "Magic Initiate",
+      "fr": "Initié à la magie",
+      "es": "Iniciado en la magia"
+    },
+    "description": {
+      "en": "Choose a class: bard, cleric, druid, sorcerer, warlock or wizard. You learn two cantrips and one 1st-level spell from its list; you can cast that spell once at its lowest level, regaining the ability after a long rest. Your spellcasting ability for them depends on the class chosen.",
+      "fr": "Choisis une classe : barde, clerc, druide, ensorceleur, sorcier ou magicien. Tu apprends deux sorts mineurs et un sort de niveau 1 de sa liste ; tu peux lancer ce sort une fois à son niveau minimal et retrouves cette capacité après un repos long. Ta caractéristique d'incantation pour ces sorts dépend de la classe choisie.",
+      "es": "Elige una clase: bardo, clérigo, druida, hechicero, brujo o mago. Aprendes dos trucos y un conjuro de nivel 1 de su lista; puedes lanzar ese conjuro una vez a su nivel mínimo y recuperas la capacidad tras un descanso largo. Tu característica para lanzarlos depende de la clase elegida."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "magic-initiate-class",
+        "kind": "choose",
+        "label": {
+          "en": "Spell list",
+          "fr": "Liste de sorts",
+          "es": "Lista de conjuros"
+        },
+        "description": {
+          "en": "The spell list your feat spells come from.",
+          "fr": "La liste de sorts dans laquelle tu choisis les sorts de ce don.",
+          "es": "La lista de conjuros de la que eliges los conjuros de esta dote."
+        },
+        "from": {
+          "type": "class",
+          "keys": ["bard", "cleric", "druid", "sorcerer", "warlock", "wizard"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "set",
+            "target": "subclassCantrip",
+            "value": {
+              "className": "{key}",
+              "count": 2
+            }
+          },
+          {
+            "op": "set",
+            "target": "featSpell",
+            "value": {
+              "className": "{key}",
+              "level": 1,
+              "count": 1
+            }
+          },
+          {
+            "op": "grant",
+            "target": "featSpellcasting",
+            "value": [
+              {
+                "key": "feat-magic-initiate",
+                "className": "{key}"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-martial-adept",
+    "label": {
+      "en": "Martial Adept",
+      "fr": "Adepte martial",
+      "es": "Adepto marcial"
+    },
+    "description": {
+      "en": "You learn two maneuvers of your choice from the Battle Master archetype (save DC 8 + proficiency bonus + Strength or Dexterity modifier) and gain one superiority die (a d6), regained after a short or long rest. It adds to any superiority dice you already have.",
+      "fr": "Tu apprends deux manœuvres de ton choix de l'archétype Maître de guerre (DD 8 + bonus de maîtrise + modificateur de Force ou de Dextérité) et obtiens un dé de supériorité (un d6), récupéré après un repos court ou long. Il s'ajoute aux dés de supériorité que tu possèdes déjà.",
+      "es": "Aprendes dos maniobras de tu elección del arquetipo Maestro de batalla (CD 8 + bonificador por competencia + modificador de Fuerza o Destreza) y obtienes un dado de superioridad (un d6), que recuperas tras un descanso corto o largo. Se suma a los dados de superioridad que ya tengas."
+    },
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": [
+      {
+        "id": "martial-adept-maneuvers",
+        "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
+        "from": {
+          "type": "maneuver"
+        },
+        "count": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-medium-armor-master",
+    "label": {
+      "en": "Medium Armor Master",
+      "fr": "Maître des armures intermédiaires",
+      "es": "Maestro en armadura media"
+    },
+    "description": {
+      "en": "Wearing medium armor doesn't impose disadvantage on your Dexterity (Stealth) checks, and you can add up to 3, rather than 2, to your AC if you have a Dexterity of 16 or higher while wearing medium armor.",
+      "fr": "Porter une armure intermédiaire ne t'impose pas le désavantage aux tests de Dextérité (Discrétion), et tu peux ajouter jusqu'à 3, au lieu de 2, à ta CA si ta Dextérité est de 16 ou plus en armure intermédiaire.",
+      "es": "Llevar armadura media no te impone desventaja en las pruebas de Destreza (Sigilo), y puedes sumar hasta 3, en lugar de 2, a tu CA si tienes Destreza 16 o más con armadura media."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "proficiency": "medium-armor"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-mobile",
+    "label": {
+      "en": "Mobile",
+      "fr": "Mobile",
+      "es": "Móvil"
+    },
+    "description": {
+      "en": "Your speed increases by 10 feet. When you use the Dash action, difficult terrain doesn't cost you extra movement that turn. When you make a melee attack against a creature, you don't provoke opportunity attacks from it for the rest of the turn, whether you hit or not.",
+      "fr": "Ta vitesse augmente de 3 m. Lorsque tu fais l'action Foncer, le terrain difficile ne te coûte pas de mouvement supplémentaire ce tour-ci. Lorsque tu fais une attaque au corps à corps contre une créature, tu ne provoques pas ses attaques d'opportunité jusqu'à la fin du tour, que tu la touches ou non.",
+      "es": "Tu velocidad aumenta en 10 pies. Cuando usas la acción de Correr, el terreno difícil no te cuesta movimiento adicional ese turno. Cuando haces un ataque cuerpo a cuerpo contra una criatura, no provocas sus ataques de oportunidad durante el resto del turno, impactes o no."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "speed.walk",
+        "value": 10
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-moderately-armored",
+    "label": {
+      "en": "Moderately Armored",
+      "fr": "Protection intermédiaire",
+      "es": "Armadura moderada"
+    },
+    "description": {
+      "en": "Increase your Strength or Dexterity by 1, and you gain proficiency with medium armor and shields.",
+      "fr": "Augmente ta Force ou ta Dextérité de 1, et tu obtiens la maîtrise des armures intermédiaires et des boucliers.",
+      "es": "Aumenta tu Fuerza o Destreza en 1 y obtienes competencia con armaduras medias y escudos."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "proficiency": "light-armor"
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["medium-armor", "shields"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "moderately-armored-ability",
+        "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
+        "from": {
+          "type": "ability",
+          "keys": ["strength", "dexterity"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-mounted-combatant",
+    "label": {
+      "en": "Mounted Combatant",
+      "fr": "Combattant monté",
+      "es": "Combatiente montado"
+    },
+    "description": {
+      "en": "While mounted and not incapacitated, you have advantage on melee attack rolls against unmounted creatures smaller than your mount; you can force an attack targeting your mount to target you instead; and if your mount is subjected to an effect allowing a Dexterity saving throw for half damage, it takes no damage on a success and half on a failure.",
+      "fr": "Lorsque tu es monté et non neutralisé, tu as l'avantage aux attaques au corps à corps contre les créatures non montées plus petites que ta monture ; tu peux faire en sorte qu'une attaque visant ta monture te vise à la place ; et si ta monture subit un effet qui permet un jet de sauvegarde de Dextérité pour la moitié des dégâts, elle n'en subit aucun en cas de réussite et la moitié en cas d'échec.",
+      "es": "Mientras estés montado y no incapacitado, tienes ventaja en los ataques cuerpo a cuerpo contra criaturas no montadas más pequeñas que tu montura; puedes hacer que un ataque contra tu montura te tenga a ti como objetivo; y si tu montura sufre un efecto con salvación de Destreza para la mitad del daño, no recibe daño si la supera y la mitad si la falla."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-observant",
+    "label": {
+      "en": "Observant",
+      "fr": "Observateur",
+      "es": "Observador"
+    },
+    "description": {
+      "en": "Increase your Intelligence or Wisdom by 1. If you can see a creature's mouth while it speaks a language you understand, you can read its lips. You have a +5 bonus to your passive Wisdom (Perception) and passive Intelligence (Investigation) scores.",
+      "fr": "Augmente ton Intelligence ou ta Sagesse de 1. Si tu vois la bouche d'une créature qui parle une langue que tu comprends, tu peux lire sur ses lèvres. Tu obtiens un bonus de +5 à ta Sagesse (Perception) passive et à ton Intelligence (Investigation) passive.",
+      "es": "Aumenta tu Inteligencia o Sabiduría en 1. Si ves la boca de una criatura que habla un idioma que entiendes, puedes leerle los labios. Obtienes un +5 a tu Sabiduría (Percepción) pasiva y a tu Inteligencia (Investigación) pasiva."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "passivePerceptionBonus",
+        "value": 5
+      }
+    ],
+    "grants": [
+      {
+        "id": "observant-ability",
+        "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
+        "from": {
+          "type": "ability",
+          "keys": ["intelligence", "wisdom"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-polearm-master",
+    "label": {
+      "en": "Polearm Master",
+      "fr": "Maître d'armes d'hast",
+      "es": "Maestro en armas de asta"
+    },
+    "description": {
+      "en": "When you take the Attack action with only a glaive, halberd, quarterstaff or spear, you can use a bonus action to attack with the opposite end (1d4 bludgeoning). While wielding a glaive, halberd, pike, quarterstaff or spear, creatures provoke an opportunity attack from you when they enter your reach.",
+      "fr": "Lorsque tu fais l'action Attaquer avec seulement une coutille, une hallebarde, un bâton ou une lance, tu peux utiliser une action bonus pour attaquer avec l'autre extrémité (1d4 contondant). Lorsque tu manies une coutille, une hallebarde, une pique, un bâton ou une lance, les créatures provoquent une attaque d'opportunité de ta part en entrant dans ton allonge.",
+      "es": "Cuando realizas la acción de Atacar solo con una guja, alabarda, bastón o lanza, puedes usar una acción adicional para atacar con el otro extremo (1d4 contundente). Mientras empuñes una guja, alabarda, pica, bastón o lanza, las criaturas provocan un ataque de oportunidad tuyo al entrar en tu alcance."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-resilient",
+    "label": {
+      "en": "Resilient",
+      "fr": "Résilient",
+      "es": "Resistente"
+    },
+    "description": {
+      "en": "Choose one ability score. Increase it by 1, and you gain proficiency in saving throws using it.",
+      "fr": "Choisis une caractéristique. Augmente-la de 1, et tu obtiens la maîtrise des jets de sauvegarde qui l'utilisent.",
+      "es": "Elige una característica. Auméntala en 1 y obtienes competencia en las tiradas de salvación que la usen."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "resilient-ability",
+        "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
+        "from": {
+          "type": "ability",
+          "keys": [
+            "strength",
+            "dexterity",
+            "constitution",
+            "intelligence",
+            "wisdom",
+            "charisma"
+          ]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          },
+          {
+            "op": "set",
+            "target": "savingThrows.{key}",
+            "value": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-ritual-caster",
+    "label": {
+      "en": "Ritual Caster",
+      "fr": "Ritualiste",
+      "es": "Ritualista"
+    },
+    "description": {
+      "en": "Choose a class: bard, cleric, druid, sorcerer, warlock or wizard. You gain a ritual book holding two 1st-level ritual spells of that class, which you can cast as rituals, and you can copy other ritual spells of that class you find (level up to half your level, rounded up) at 2 hours and 50 gp per spell level.",
+      "fr": "Choisis une classe : barde, clerc, druide, ensorceleur, sorcier ou magicien. Tu obtiens un livre de rituels contenant deux sorts rituels de niveau 1 de cette classe, que tu peux lancer comme rituels, et tu peux y copier d'autres sorts rituels de cette classe que tu trouves (de niveau au plus égal à la moitié de ton niveau, arrondie au supérieur) pour 2 heures et 50 po par niveau de sort.",
+      "es": "Elige una clase: bardo, clérigo, druida, hechicero, brujo o mago. Obtienes un libro de rituales con dos conjuros rituales de nivel 1 de esa clase, que puedes lanzar como rituales, y puedes copiar otros conjuros rituales de esa clase que encuentres (de nivel hasta la mitad de tu nivel, redondeando hacia arriba) por 2 horas y 50 po por nivel de conjuro."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "anyAbility": ["intelligence", "wisdom"],
+        "min": 13
+      }
+    },
+    "effects": [],
+    "grants": [
+      {
+        "id": "ritual-caster-class",
+        "kind": "choose",
+        "label": {
+          "en": "Spell list",
+          "fr": "Liste de sorts",
+          "es": "Lista de conjuros"
+        },
+        "description": {
+          "en": "The spell list your feat spells come from.",
+          "fr": "La liste de sorts dans laquelle tu choisis les sorts de ce don.",
+          "es": "La lista de conjuros de la que eliges los conjuros de esta dote."
+        },
+        "from": {
+          "type": "class",
+          "keys": ["bard", "cleric", "druid", "sorcerer", "warlock", "wizard"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "set",
+            "target": "featSpell",
+            "value": {
+              "className": "{key}",
+              "level": 1,
+              "count": 2,
+              "ritualOnly": true
+            }
+          },
+          {
+            "op": "grant",
+            "target": "featSpellcasting",
+            "value": [
+              {
+                "key": "feat-ritual-caster",
+                "className": "{key}"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-savage-attacker",
+    "label": {
+      "en": "Savage Attacker",
+      "fr": "Agresseur sauvage",
+      "es": "Atacante salvaje"
+    },
+    "description": {
+      "en": "Once per turn when you roll damage for a melee weapon attack, you can reroll the weapon's damage dice and use either total.",
+      "fr": "Une fois par tour, lorsque tu lances les dégâts d'une attaque d'arme de corps à corps, tu peux relancer les dés de dégâts de l'arme et garder l'un ou l'autre total.",
+      "es": "Una vez por turno, al tirar el daño de un ataque con arma cuerpo a cuerpo, puedes volver a tirar los dados de daño del arma y usar cualquiera de los dos totales."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-sentinel",
+    "label": {
+      "en": "Sentinel",
+      "fr": "Sentinelle",
+      "es": "Centinela"
+    },
+    "description": {
+      "en": "When you hit a creature with an opportunity attack, its speed becomes 0 for the rest of the turn. Creatures provoke opportunity attacks from you even if they take the Disengage action. When a creature within 5 feet attacks a target other than you (without this feat), you can use your reaction to make a melee weapon attack against it.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'opportunité, sa vitesse tombe à 0 jusqu'à la fin du tour. Les créatures provoquent tes attaques d'opportunité même si elles se désengagent. Lorsqu'une créature à 1,50 m attaque une autre cible que toi (qui n'a pas ce don), tu peux utiliser ta réaction pour faire une attaque d'arme de corps à corps contre elle.",
+      "es": "Cuando impactas a una criatura con un ataque de oportunidad, su velocidad pasa a 0 durante el resto del turno. Las criaturas provocan tus ataques de oportunidad aunque se retiren. Cuando una criatura a 5 pies ataque a un objetivo que no seas tú (y que no tenga esta dote), puedes usar tu reacción para hacer un ataque con arma cuerpo a cuerpo contra ella."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-sharpshooter",
+    "label": {
+      "en": "Sharpshooter",
+      "fr": "Tireur d'élite",
+      "es": "Tirador de primera"
+    },
+    "description": {
+      "en": "Attacking at long range doesn't impose disadvantage on your ranged weapon attack rolls; your ranged weapon attacks ignore half and three-quarters cover; and before you attack with a ranged weapon you are proficient with, you can take a −5 penalty to the attack roll for +10 damage.",
+      "fr": "Attaquer à longue portée ne t'impose pas le désavantage aux attaques d'arme à distance ; tes attaques d'arme à distance ignorent les abris partiels et supérieurs ; et avant une attaque avec une arme à distance que tu maîtrises, tu peux choisir un malus de −5 au jet d'attaque pour +10 aux dégâts.",
+      "es": "Atacar a largo alcance no impone desventaja a tus ataques con arma a distancia; tus ataques a distancia ignoran la cobertura media y de tres cuartos; y antes de atacar con un arma a distancia con la que seas competente, puedes aceptar un −5 a la tirada a cambio de +10 al daño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-shield-master",
+    "label": {
+      "en": "Shield Master",
+      "fr": "Maître du bouclier",
+      "es": "Maestro en escudos"
+    },
+    "description": {
+      "en": "If you take the Attack action, you can use a bonus action to shove a creature within 5 feet with your shield. If you aren't incapacitated, you add your shield's AC bonus to Dexterity saving throws against effects targeting only you. If you succeed on a Dexterity saving throw for half damage, you can use your reaction to take no damage.",
+      "fr": "Si tu fais l'action Attaquer, tu peux utiliser une action bonus pour pousser une créature à 1,50 m avec ton bouclier. Si tu n'es pas neutralisé, tu ajoutes le bonus de CA de ton bouclier aux jets de sauvegarde de Dextérité contre les effets qui ne ciblent que toi. Si tu réussis un jet de sauvegarde de Dextérité pour la moitié des dégâts, tu peux utiliser ta réaction pour n'en subir aucun.",
+      "es": "Si realizas la acción de Atacar, puedes usar una acción adicional para empujar con tu escudo a una criatura a 5 pies. Si no estás incapacitado, sumas el bonificador de CA del escudo a las tiradas de salvación de Destreza contra efectos que solo te afecten a ti. Si superas una tirada de Destreza para la mitad del daño, puedes usar tu reacción para no recibir ninguno."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-skilled",
+    "label": {
+      "en": "Skilled",
+      "fr": "Doué",
+      "es": "Hábil"
+    },
+    "description": {
+      "en": "You gain proficiency in any combination of three skills or tools of your choice.",
+      "fr": "Tu obtiens la maîtrise d'une combinaison de trois compétences ou outils de ton choix.",
+      "es": "Obtienes competencia en cualquier combinación de tres habilidades o herramientas a tu elección."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "skilled-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion"
+          ]
+        },
+        "count": 3,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-skulker",
+    "label": {
+      "en": "Skulker",
+      "fr": "Rôdeur dans l'ombre",
+      "es": "Furtivo"
+    },
+    "description": {
+      "en": "You can try to hide when you are lightly obscured; when you are hidden and miss with a ranged weapon attack, making the attack doesn't reveal your position; and dim light doesn't impose disadvantage on your Wisdom (Perception) checks relying on sight.",
+      "fr": "Tu peux tenter de te cacher lorsque tu es légèrement masqué ; lorsque tu es caché et rates une attaque d'arme à distance, l'attaque ne révèle pas ta position ; et la pénombre n'impose pas le désavantage à tes tests de Sagesse (Perception) basés sur la vue.",
+      "es": "Puedes intentar esconderte cuando estés ligeramente oculto; cuando estás escondido y fallas un ataque con arma a distancia, el ataque no revela tu posición; y la luz tenue no impone desventaja a tus pruebas de Sabiduría (Percepción) basadas en la vista."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "ability": "dexterity",
+        "min": 13
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-spell-sniper",
+    "label": {
+      "en": "Spell Sniper",
+      "fr": "Tireur d'élite magique",
+      "es": "Francotirador de conjuros"
+    },
+    "description": {
+      "en": "When you cast a spell that requires an attack roll, its range is doubled; your ranged spell attacks ignore half and three-quarters cover; and you learn one cantrip that requires an attack roll from the bard, cleric, druid, sorcerer, warlock or wizard list.",
+      "fr": "Lorsque tu lances un sort qui demande un jet d'attaque, sa portée est doublée ; tes attaques de sort à distance ignorent les abris partiels et supérieurs ; et tu apprends un sort mineur demandant un jet d'attaque de la liste du barde, du clerc, du druide, de l'ensorceleur, du sorcier ou du magicien.",
+      "es": "Cuando lanzas un conjuro que requiere tirada de ataque, su alcance se duplica; tus ataques de conjuro a distancia ignoran la cobertura media y de tres cuartos; y aprendes un truco que requiera tirada de ataque de la lista de bardo, clérigo, druida, hechicero, brujo o mago."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "text": "ability to cast at least one spell"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-tavern-brawler",
+    "label": {
+      "en": "Tavern Brawler",
+      "fr": "Bagarreur de taverne",
+      "es": "Camorrista de taberna"
+    },
+    "description": {
+      "en": "Increase your Strength or Constitution by 1. You are proficient with improvised weapons, your unarmed strike uses a d4 for damage, and when you hit a creature with an unarmed strike or improvised weapon on your turn, you can use a bonus action to attempt to grapple it.",
+      "fr": "Augmente ta Force ou ta Constitution de 1. Tu maîtrises les armes improvisées, ton attaque à mains nues inflige 1d4 dégâts, et lorsque tu touches une créature à mains nues ou avec une arme improvisée pendant ton tour, tu peux utiliser une action bonus pour tenter de l'agripper.",
+      "es": "Aumenta tu Fuerza o Constitución en 1. Eres competente con armas improvisadas, tu ataque sin armas usa un d4 de daño y, cuando impactas a una criatura sin armas o con un arma improvisada en tu turno, puedes usar una acción adicional para intentar agarrarla."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "tavern-brawler-ability",
+        "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
+        "from": {
+          "type": "ability",
+          "keys": ["strength", "constitution"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "feat",
+    "key": "feat-tough",
+    "label": {
+      "en": "Tough",
+      "fr": "Robustesse",
+      "es": "Duro de pelar"
+    },
+    "description": {
+      "en": "Your hit point maximum increases by an amount equal to twice your level when you gain this feat, and by 2 more each time you gain a level.",
+      "fr": "Ton maximum de points de vie augmente d'un montant égal à deux fois ton niveau lorsque tu obtiens ce don, puis de 2 à chaque niveau gagné.",
+      "es": "Tus puntos de golpe máximos aumentan en el doble de tu nivel al obtener esta dote, y en 2 más cada vez que subas de nivel."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "hitPointBonusPerLevel",
+        "value": 2
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-war-caster",
+    "label": {
+      "en": "War Caster",
+      "fr": "Mage de guerre",
+      "es": "Lanzador de guerra"
+    },
+    "description": {
+      "en": "You have advantage on Constitution saving throws to maintain concentration when you take damage; you can perform somatic components even with weapons or a shield in both hands; and when a creature provokes an opportunity attack from you, you can cast a spell at it with a casting time of 1 action and a single target instead of making the attack.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde de Constitution pour maintenir ta concentration lorsque tu subis des dégâts ; tu peux accomplir les composantes somatiques même avec des armes ou un bouclier dans les mains ; et lorsqu'une créature provoque une attaque d'opportunité de ta part, tu peux lancer sur elle un sort d'une action à cible unique au lieu d'attaquer.",
+      "es": "Tienes ventaja en las tiradas de salvación de Constitución para mantener la concentración al recibir daño; puedes realizar componentes somáticos aunque tengas armas o escudo en las manos; y cuando una criatura provoque tu ataque de oportunidad, puedes lanzarle un conjuro de 1 acción y objetivo único en lugar de atacar."
+    },
+    "tags": [],
+    "data": {
+      "prerequisite": {
+        "text": "ability to cast at least one spell"
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "feat",
+    "key": "feat-weapon-master",
+    "label": {
+      "en": "Weapon Master",
+      "fr": "Maître d'armes",
+      "es": "Maestro de armas"
+    },
+    "description": {
+      "en": "Increase your Strength or Dexterity by 1, and you gain proficiency with four weapons of your choice, each a simple or martial weapon.",
+      "fr": "Augmente ta Force ou ta Dextérité de 1, et tu obtiens la maîtrise de quatre armes de ton choix, courantes ou de guerre.",
+      "es": "Aumenta tu Fuerza o Destreza en 1 y obtienes competencia con cuatro armas de tu elección, sencillas o marciales."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "weapon-master-ability",
+        "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
+        "from": {
+          "type": "ability",
+          "keys": ["strength", "dexterity"]
+        },
+        "count": 1,
+        "effects": [
+          {
+            "op": "add",
+            "target": "abilityBonuses.{key}",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "id": "weapon-master-weapons",
+        "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
+        "from": {
+          "type": "weapon"
+        },
+        "count": 4,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.weapons",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -34,6 +34,15 @@ export class Campaign extends BaseSchema {
   })
   gameSystem: GameSystem;
 
+  /** @see FR-game-system — Ruleset reference (immutable, defaults to the published ruleset of the game system) */
+  @ApiProperty({
+    example: '507f1f77bcf86cd799439011',
+    required: false,
+    nullable: true,
+  })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Ruleset', default: null })
+  rulesetId?: mongoose.Types.ObjectId | null;
+
   @ApiProperty({ type: Groups })
   @Prop({ type: Groups, required: true })
   groups: Groups;

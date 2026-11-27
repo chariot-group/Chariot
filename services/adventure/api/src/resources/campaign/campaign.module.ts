@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { RulesetModule } from '@/resources/ruleset/ruleset.module';
 import { CampaignService } from '@/resources/campaign/campaign.service';
 import { CampaignController } from '@/resources/campaign/campaign.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -16,6 +17,7 @@ import { Group, GroupSchema } from '@/resources/group/schemas/group.schema';
 
 @Module({
   imports: [
+    RulesetModule,
     MongooseModule.forFeature([
       { name: Campaign.name, schema: CampaignSchema },
       { name: Groups.name, schema: GroupsSchema },

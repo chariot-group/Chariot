@@ -15,6 +15,7 @@ import { useSearchParams, useRouter, useParams } from "next/navigation";
 import { useMemo, useRef } from "react";
 import { useFormState } from "react-hook-form";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { takeBuilderReturnPath } from "@/lib/characterBuilder/builderReturn";
 import { clearNpcCodexDraft, clearPlayerCodexDraft, selectNpcCodexDraft, selectPlayerCodexDraft } from "@/store/slices/codexDraftSlice";
 import { selectCharactersWithoutGroup, upsertCharacterWithoutGroup, upsertPlayerSpaceNpc } from "@/store/slices/characterSlice";
 import { isPlayer } from "@/utils/global.utils";
@@ -236,6 +237,8 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
     type: characterType,
     defaultValues,
     onSuccess: (createdCharacter) => {
+      // The page saved by the character builder is no longer needed once the character exists.
+      takeBuilderReturnPath(window.sessionStorage);
       // Redirect to the newly created character's page
       if (campaignId && resolvedGroupId) {
         dispatch(
@@ -493,15 +496,24 @@ export default function CharacterFormView({ characterType, groupId }: CharacterF
           profile: { alignment: "True Neutral", type: "", subtype: "" },
         } as NPC);
 
+  const fromBuilder = searchParams.get("fromBuilder") === "1";
+
   const handleCancel = useCallback(() => {
     onCancel();
+    // Opened by the character builder: go back to the page shown before the builder, never to the builder.
+    // @see FR-ruleset-character-builder — Web builder UI (End of the builder)
+    if (fromBuilder) {
+      const fallback = campaignId ? `/campaigns/${campaignId}` : "/characters";
+      router.replace(takeBuilderReturnPath(window.sessionStorage) ?? fallback);
+      return;
+    }
     // FR-welcome-onboarding-fallbacks: no player-space character → land on the player fallback, not back on welcome.
     if (characterType === "players" && !campaignId && !hasPlayerSpaceCharacter) {
       router.replace("/characters");
       return;
     }
     router.back();
-  }, [onCancel, router, characterType, campaignId, hasPlayerSpaceCharacter]);
+  }, [onCancel, router, characterType, campaignId, hasPlayerSpaceCharacter, fromBuilder]);
 
   const handleInvalid = useCallback((errors: Record<string, unknown>) => {
     const firstErrorTab = getFirstCharacterTabWithError(errors);

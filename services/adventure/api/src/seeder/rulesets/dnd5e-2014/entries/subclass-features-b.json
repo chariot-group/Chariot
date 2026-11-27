@@ -1,0 +1,2375 @@
+[
+  {
+    "type": "druid-land",
+    "key": "druid-land-arctic",
+    "label": {
+      "en": "Arctic",
+      "fr": "Arctique",
+      "es": "Ártico"
+    },
+    "description": {
+      "en": "Your connection to the land you chose grants you circle spells, always prepared once you reach the listed druid level, without counting against the number of spells you prepare.",
+      "fr": "Ton lien avec la terre choisie te confère des sorts de cercle, toujours préparés dès que tu atteins le niveau de druide indiqué, sans compter dans le nombre de sorts que tu prépares.",
+      "es": "Tu vínculo con la tierra elegida te otorga conjuros de círculo, siempre preparados al alcanzar el nivel de druida indicado, sin contar para el número de conjuros que preparas."
+    },
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Hold Person", "Spike Growth"],
+        "5": ["Sleet Storm", "Slow"],
+        "7": ["Freedom of Movement", "Ice Storm"],
+        "9": ["Commune with Nature", "Cone of Cold"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Hold Person",
+            "classLevel": 3
+          },
+          {
+            "name": "Spike Growth",
+            "classLevel": 3
+          },
+          {
+            "name": "Sleet Storm",
+            "classLevel": 5
+          },
+          {
+            "name": "Slow",
+            "classLevel": 5
+          },
+          {
+            "name": "Freedom of Movement",
+            "classLevel": 7
+          },
+          {
+            "name": "Ice Storm",
+            "classLevel": 7
+          },
+          {
+            "name": "Commune with Nature",
+            "classLevel": 9
+          },
+          {
+            "name": "Cone of Cold",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "druid-land",
+    "key": "druid-land-coast",
+    "label": {
+      "en": "Coast",
+      "fr": "Côte",
+      "es": "Costa"
+    },
+    "description": {
+      "en": "Your connection to the land you chose grants you circle spells, always prepared once you reach the listed druid level, without counting against the number of spells you prepare.",
+      "fr": "Ton lien avec la terre choisie te confère des sorts de cercle, toujours préparés dès que tu atteins le niveau de druide indiqué, sans compter dans le nombre de sorts que tu prépares.",
+      "es": "Tu vínculo con la tierra elegida te otorga conjuros de círculo, siempre preparados al alcanzar el nivel de druida indicado, sin contar para el número de conjuros que preparas."
+    },
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Mirror Image", "Misty Step"],
+        "5": ["Water Breathing", "Water Walk"],
+        "7": ["Control Water", "Freedom of Movement"],
+        "9": ["Conjure Elemental", "Scrying"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Mirror Image",
+            "classLevel": 3
+          },
+          {
+            "name": "Misty Step",
+            "classLevel": 3
+          },
+          {
+            "name": "Water Breathing",
+            "classLevel": 5
+          },
+          {
+            "name": "Water Walk",
+            "classLevel": 5
+          },
+          {
+            "name": "Control Water",
+            "classLevel": 7
+          },
+          {
+            "name": "Freedom of Movement",
+            "classLevel": 7
+          },
+          {
+            "name": "Conjure Elemental",
+            "classLevel": 9
+          },
+          {
+            "name": "Scrying",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "druid-land",
+    "key": "druid-land-desert",
+    "label": {
+      "en": "Desert",
+      "fr": "Désert",
+      "es": "Desierto"
+    },
+    "description": {
+      "en": "Your connection to the land you chose grants you circle spells, always prepared once you reach the listed druid level, without counting against the number of spells you prepare.",
+      "fr": "Ton lien avec la terre choisie te confère des sorts de cercle, toujours préparés dès que tu atteins le niveau de druide indiqué, sans compter dans le nombre de sorts que tu prépares.",
+      "es": "Tu vínculo con la tierra elegida te otorga conjuros de círculo, siempre preparados al alcanzar el nivel de druida indicado, sin contar para el número de conjuros que preparas."
+    },
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Blur", "Silence"],
+        "5": ["Create Food and Water", "Protection from Energy"],
+        "7": ["Blight", "Hallucinatory Terrain"],
+        "9": ["Insect Plague", "Wall of Stone"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Blur",
+            "classLevel": 3
+          },
+          {
+            "name": "Silence",
+            "classLevel": 3
+          },
+          {
+            "name": "Create Food and Water",
+            "classLevel": 5
+          },
+          {
+            "name": "Protection from Energy",
+            "classLevel": 5
+          },
+          {
+            "name": "Blight",
+            "classLevel": 7
+          },
+          {
+            "name": "Hallucinatory Terrain",
+            "classLevel": 7
+          },
+          {
+            "name": "Insect Plague",
+            "classLevel": 9
+          },
+          {
+            "name": "Wall of Stone",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "druid-land",
+    "key": "druid-land-forest",
+    "label": {
+      "en": "Forest",
+      "fr": "Forêt",
+      "es": "Bosque"
+    },
+    "description": {
+      "en": "Your connection to the land you chose grants you circle spells, always prepared once you reach the listed druid level, without counting against the number of spells you prepare.",
+      "fr": "Ton lien avec la terre choisie te confère des sorts de cercle, toujours préparés dès que tu atteins le niveau de druide indiqué, sans compter dans le nombre de sorts que tu prépares.",
+      "es": "Tu vínculo con la tierra elegida te otorga conjuros de círculo, siempre preparados al alcanzar el nivel de druida indicado, sin contar para el número de conjuros que preparas."
+    },
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Barkskin", "Spider Climb"],
+        "5": ["Call Lightning", "Plant Growth"],
+        "7": ["Divination", "Freedom of Movement"],
+        "9": ["Commune with Nature", "Tree Stride"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Barkskin",
+            "classLevel": 3
+          },
+          {
+            "name": "Spider Climb",
+            "classLevel": 3
+          },
+          {
+            "name": "Call Lightning",
+            "classLevel": 5
+          },
+          {
+            "name": "Plant Growth",
+            "classLevel": 5
+          },
+          {
+            "name": "Divination",
+            "classLevel": 7
+          },
+          {
+            "name": "Freedom of Movement",
+            "classLevel": 7
+          },
+          {
+            "name": "Commune with Nature",
+            "classLevel": 9
+          },
+          {
+            "name": "Tree Stride",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "druid-land",
+    "key": "druid-land-grassland",
+    "label": {
+      "en": "Grassland",
+      "fr": "Plaine",
+      "es": "Pradera"
+    },
+    "description": {
+      "en": "Your connection to the land you chose grants you circle spells, always prepared once you reach the listed druid level, without counting against the number of spells you prepare.",
+      "fr": "Ton lien avec la terre choisie te confère des sorts de cercle, toujours préparés dès que tu atteins le niveau de druide indiqué, sans compter dans le nombre de sorts que tu prépares.",
+      "es": "Tu vínculo con la tierra elegida te otorga conjuros de círculo, siempre preparados al alcanzar el nivel de druida indicado, sin contar para el número de conjuros que preparas."
+    },
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Invisibility", "Pass without Trace"],
+        "5": ["Daylight", "Haste"],
+        "7": ["Divination", "Freedom of Movement"],
+        "9": ["Dream", "Insect Plague"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Invisibility",
+            "classLevel": 3
+          },
+          {
+            "name": "Pass without Trace",
+            "classLevel": 3
+          },
+          {
+            "name": "Daylight",
+            "classLevel": 5
+          },
+          {
+            "name": "Haste",
+            "classLevel": 5
+          },
+          {
+            "name": "Divination",
+            "classLevel": 7
+          },
+          {
+            "name": "Freedom of Movement",
+            "classLevel": 7
+          },
+          {
+            "name": "Dream",
+            "classLevel": 9
+          },
+          {
+            "name": "Insect Plague",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "druid-land",
+    "key": "druid-land-mountain",
+    "label": {
+      "en": "Mountain",
+      "fr": "Montagne",
+      "es": "Montaña"
+    },
+    "description": {
+      "en": "Your connection to the land you chose grants you circle spells, always prepared once you reach the listed druid level, without counting against the number of spells you prepare.",
+      "fr": "Ton lien avec la terre choisie te confère des sorts de cercle, toujours préparés dès que tu atteins le niveau de druide indiqué, sans compter dans le nombre de sorts que tu prépares.",
+      "es": "Tu vínculo con la tierra elegida te otorga conjuros de círculo, siempre preparados al alcanzar el nivel de druida indicado, sin contar para el número de conjuros que preparas."
+    },
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Spider Climb", "Spike Growth"],
+        "5": ["Lightning Bolt", "Meld into Stone"],
+        "7": ["Stone Shape", "Stoneskin"],
+        "9": ["Passwall", "Wall of Stone"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Spider Climb",
+            "classLevel": 3
+          },
+          {
+            "name": "Spike Growth",
+            "classLevel": 3
+          },
+          {
+            "name": "Lightning Bolt",
+            "classLevel": 5
+          },
+          {
+            "name": "Meld into Stone",
+            "classLevel": 5
+          },
+          {
+            "name": "Stone Shape",
+            "classLevel": 7
+          },
+          {
+            "name": "Stoneskin",
+            "classLevel": 7
+          },
+          {
+            "name": "Passwall",
+            "classLevel": 9
+          },
+          {
+            "name": "Wall of Stone",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "druid-land",
+    "key": "druid-land-swamp",
+    "label": {
+      "en": "Swamp",
+      "fr": "Marais",
+      "es": "Pantano"
+    },
+    "description": {
+      "en": "Your connection to the land you chose grants you circle spells, always prepared once you reach the listed druid level, without counting against the number of spells you prepare.",
+      "fr": "Ton lien avec la terre choisie te confère des sorts de cercle, toujours préparés dès que tu atteins le niveau de druide indiqué, sans compter dans le nombre de sorts que tu prépares.",
+      "es": "Tu vínculo con la tierra elegida te otorga conjuros de círculo, siempre preparados al alcanzar el nivel de druida indicado, sin contar para el número de conjuros que preparas."
+    },
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Darkness", "Acid Arrow"],
+        "5": ["Water Walk", "Stinking Cloud"],
+        "7": ["Freedom of Movement", "Locate Creature"],
+        "9": ["Insect Plague", "Scrying"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Darkness",
+            "classLevel": 3
+          },
+          {
+            "name": "Acid Arrow",
+            "classLevel": 3
+          },
+          {
+            "name": "Water Walk",
+            "classLevel": 5
+          },
+          {
+            "name": "Stinking Cloud",
+            "classLevel": 5
+          },
+          {
+            "name": "Freedom of Movement",
+            "classLevel": 7
+          },
+          {
+            "name": "Locate Creature",
+            "classLevel": 7
+          },
+          {
+            "name": "Insect Plague",
+            "classLevel": 9
+          },
+          {
+            "name": "Scrying",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "druid-land",
+    "key": "druid-land-underdark",
+    "label": {
+      "en": "Underdark",
+      "fr": "Outreterre",
+      "es": "Infraoscuridad"
+    },
+    "description": {
+      "en": "Your connection to the land you chose grants you circle spells, always prepared once you reach the listed druid level, without counting against the number of spells you prepare.",
+      "fr": "Ton lien avec la terre choisie te confère des sorts de cercle, toujours préparés dès que tu atteins le niveau de druide indiqué, sans compter dans le nombre de sorts que tu prépares.",
+      "es": "Tu vínculo con la tierra elegida te otorga conjuros de círculo, siempre preparados al alcanzar el nivel de druida indicado, sin contar para el número de conjuros que preparas."
+    },
+    "tags": [],
+    "data": {
+      "spells": {
+        "3": ["Spider Climb", "Web"],
+        "5": ["Gaseous Form", "Stinking Cloud"],
+        "7": ["Greater Invisibility", "Stone Shape"],
+        "9": ["Cloudkill", "Insect Plague"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Spider Climb",
+            "classLevel": 3
+          },
+          {
+            "name": "Web",
+            "classLevel": 3
+          },
+          {
+            "name": "Gaseous Form",
+            "classLevel": 5
+          },
+          {
+            "name": "Stinking Cloud",
+            "classLevel": 5
+          },
+          {
+            "name": "Greater Invisibility",
+            "classLevel": 7
+          },
+          {
+            "name": "Stone Shape",
+            "classLevel": 7
+          },
+          {
+            "name": "Cloudkill",
+            "classLevel": 9
+          },
+          {
+            "name": "Insect Plague",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "land-bonus-cantrip",
+    "label": {
+      "en": "Bonus Cantrip",
+      "fr": "Sort mineur supplémentaire",
+      "es": "Truco adicional"
+    },
+    "parentKey": "circle-of-the-land",
+    "description": {
+      "en": "You learn one additional druid cantrip of your choice.",
+      "fr": "Tu apprends un sort mineur de druide supplémentaire de ton choix.",
+      "es": "Aprendes un truco de druida adicional de tu elección."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "subclassCantrip",
+        "value": {
+          "className": "druid",
+          "count": 1
+        }
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "natural-recovery",
+    "label": {
+      "en": "Natural Recovery",
+      "fr": "Restauration naturelle",
+      "es": "Recuperación natural"
+    },
+    "parentKey": "circle-of-the-land",
+    "description": {
+      "en": "Once per long rest, during a short rest, you can recover expended spell slots with a combined level equal to or less than half your druid level (rounded up), none of them 6th level or higher.",
+      "fr": "Une fois par repos long, pendant un repos court, tu peux récupérer des emplacements de sort dépensés dont la somme des niveaux est au plus égale à la moitié de ton niveau de druide (arrondie au supérieur), aucun n'étant de niveau 6 ou plus.",
+      "es": "Una vez por descanso largo, durante un descanso corto, puedes recuperar espacios de conjuro gastados cuya suma de niveles sea igual o menor que la mitad de tu nivel de druida (redondeando hacia arriba), ninguno de nivel 6 o superior."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "circle-spells",
+    "label": {
+      "en": "Circle Spells",
+      "fr": "Sorts de cercle",
+      "es": "Conjuros de círculo"
+    },
+    "parentKey": "circle-of-the-land",
+    "description": {
+      "en": "Choose the land where you became a druid (arctic, coast, desert, forest, grassland, mountain, swamp or Underdark). It grants you circle spells at 3rd, 5th, 7th and 9th druid level, always prepared.",
+      "fr": "Choisis la terre où tu es devenu druide (arctique, côte, désert, forêt, plaine, montagne, marais ou Outreterre). Elle te confère des sorts de cercle aux niveaux de druide 3, 5, 7 et 9, toujours préparés.",
+      "es": "Elige la tierra donde te convertiste en druida (ártico, costa, desierto, bosque, pradera, montaña, pantano o Infraoscuridad). Te otorga conjuros de círculo en los niveles de druida 3, 5, 7 y 9, siempre preparados."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "druid-land-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Circle land",
+          "fr": "Terre du cercle",
+          "es": "Tierra del círculo"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "druid-land"
+        },
+        "count": 1,
+        "level": 2
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "land-lands-stride",
+    "label": {
+      "en": "Land's Stride",
+      "fr": "Foulée tellurique",
+      "es": "Zancada terrestre"
+    },
+    "parentKey": "circle-of-the-land",
+    "description": {
+      "en": "Moving through nonmagical difficult terrain costs you no extra movement, and you pass through nonmagical plants without being slowed or harmed by thorns. You have advantage on saving throws against plants magically created or manipulated to impede movement.",
+      "fr": "Te déplacer en terrain difficile non magique ne te coûte pas de mouvement supplémentaire, et tu traverses les plantes non magiques sans être ralenti ni blessé par les épines. Tu as l'avantage aux jets de sauvegarde contre les plantes créées ou manipulées par magie pour entraver les déplacements.",
+      "es": "Moverte por terreno difícil no mágico no te cuesta movimiento adicional, y atraviesas plantas no mágicas sin ser ralentizado ni herido por espinas. Tienes ventaja en las tiradas de salvación contra plantas creadas o manipuladas mágicamente para impedir el movimiento."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "natures-ward",
+    "label": {
+      "en": "Nature's Ward",
+      "fr": "Protection naturelle",
+      "es": "Protección natural"
+    },
+    "parentKey": "circle-of-the-land",
+    "description": {
+      "en": "You can't be charmed or frightened by elementals or fey, and you are immune to poison and disease.",
+      "fr": "Tu ne peux pas être charmé ni effrayé par les élémentaires ou les fées, et tu es immunisé contre le poison et les maladies.",
+      "es": "No puedes ser hechizado ni asustado por elementales o feéricos, y eres inmune al veneno y las enfermedades."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "immunities",
+        "value": ["poison-damage"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "natures-sanctuary",
+    "label": {
+      "en": "Nature's Sanctuary",
+      "fr": "Sanctuaire naturel",
+      "es": "Santuario natural"
+    },
+    "parentKey": "circle-of-the-land",
+    "description": {
+      "en": "When a beast or plant creature attacks you, it must make a Wisdom saving throw against your druid spell save DC. On a failure, it must choose a different target or the attack automatically misses; on a success, it is immune to this effect for 24 hours.",
+      "fr": "Lorsqu'une bête ou une créature végétale t'attaque, elle doit faire un jet de sauvegarde de Sagesse contre ton DD de sort de druide. En cas d'échec, elle doit choisir une autre cible ou l'attaque rate automatiquement ; en cas de réussite, elle est immunisée contre cet effet pendant 24 heures.",
+      "es": "Cuando una bestia o planta te ataque, debe hacer una tirada de salvación de Sabiduría contra tu CD de conjuro de druida. Si falla, debe elegir otro objetivo o el ataque falla automáticamente; si tiene éxito, es inmune a este efecto durante 24 horas."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "combat-wild-shape",
+    "label": {
+      "en": "Combat Wild Shape",
+      "fr": "Forme sauvage de combat",
+      "es": "Forma salvaje de combate"
+    },
+    "parentKey": "circle-of-the-moon",
+    "description": {
+      "en": "You can use Wild Shape as a bonus action instead of an action. While transformed, you can use a bonus action to expend a spell slot and regain 1d8 hit points per level of the slot.",
+      "fr": "Tu peux utiliser Forme sauvage par une action bonus au lieu d'une action. Une fois transformé, tu peux utiliser une action bonus pour dépenser un emplacement de sort et récupérer 1d8 points de vie par niveau de l'emplacement.",
+      "es": "Puedes usar Forma salvaje como acción adicional en lugar de acción. Mientras estés transformado, puedes usar una acción adicional para gastar un espacio de conjuro y recuperar 1d8 puntos de golpe por nivel del espacio."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "circle-forms",
+    "label": {
+      "en": "Circle Forms",
+      "fr": "Formes du cercle",
+      "es": "Formas del círculo"
+    },
+    "parentKey": "circle-of-the-moon",
+    "description": {
+      "en": "You can transform into beasts of challenge rating 1 (still no flying or swimming speed before the usual levels). From 6th level, the maximum challenge rating equals your druid level divided by 3, rounded down.",
+      "fr": "Tu peux te transformer en bêtes de facteur de puissance 1 (toujours sans vitesse de vol ou de nage avant les niveaux habituels). À partir du niveau 6, le facteur de puissance maximal est égal à ton niveau de druide divisé par 3, arrondi à l'inférieur.",
+      "es": "Puedes transformarte en bestias de valor de desafío 1 (sin velocidad de vuelo o nado antes de los niveles habituales). A partir del nivel 6, el valor de desafío máximo es tu nivel de druida dividido entre 3, redondeando hacia abajo."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "maxChallengeRating": [
+        0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6
+      ]
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "primal-strike",
+    "label": {
+      "en": "Primal Strike",
+      "fr": "Frappe primitive",
+      "es": "Golpe primigenio"
+    },
+    "parentKey": "circle-of-the-moon",
+    "description": {
+      "en": "Your attacks in beast form count as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage.",
+      "fr": "Tes attaques sous forme de bête sont considérées comme magiques pour surmonter la résistance et l'immunité aux attaques et dégâts non magiques.",
+      "es": "Tus ataques en forma de bestia cuentan como mágicos para superar la resistencia y la inmunidad a ataques y daño no mágicos."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "elemental-wild-shape",
+    "label": {
+      "en": "Elemental Wild Shape",
+      "fr": "Forme sauvage élémentaire",
+      "es": "Forma salvaje elemental"
+    },
+    "parentKey": "circle-of-the-moon",
+    "description": {
+      "en": "You can expend two uses of Wild Shape at the same time to transform into an air, earth, fire or water elemental.",
+      "fr": "Tu peux dépenser deux utilisations de Forme sauvage en même temps pour te transformer en élémentaire de l'air, de la terre, du feu ou de l'eau.",
+      "es": "Puedes gastar dos usos de Forma salvaje a la vez para transformarte en un elemental de aire, tierra, fuego o agua."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "thousand-forms",
+    "label": {
+      "en": "Thousand Forms",
+      "fr": "Mille formes",
+      "es": "Mil formas"
+    },
+    "parentKey": "circle-of-the-moon",
+    "description": {
+      "en": "You can cast the alter self spell at will.",
+      "fr": "Tu peux lancer le sort modification d'apparence à volonté.",
+      "es": "Puedes lanzar el conjuro alterar el propio aspecto a voluntad."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "improved-critical",
+    "label": {
+      "en": "Improved Critical",
+      "fr": "Critique amélioré",
+      "es": "Crítico mejorado"
+    },
+    "parentKey": "champion",
+    "description": {
+      "en": "Your weapon attacks score a critical hit on a roll of 19 or 20.",
+      "fr": "Tes attaques avec une arme infligent un coup critique sur un résultat de 19 ou 20.",
+      "es": "Tus ataques con arma consiguen un crítico con un resultado de 19 o 20."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "remarkable-athlete",
+    "label": {
+      "en": "Remarkable Athlete",
+      "fr": "Athlète remarquable",
+      "es": "Atleta excepcional"
+    },
+    "parentKey": "champion",
+    "description": {
+      "en": "You can add half your proficiency bonus (rounded up) to any Strength, Dexterity or Constitution check that doesn't already use your proficiency bonus. When you make a running long jump, the distance increases by a number of feet equal to your Strength modifier.",
+      "fr": "Tu peux ajouter la moitié de ton bonus de maîtrise (arrondie au supérieur) à tout test de Force, de Dextérité ou de Constitution qui n'utilise pas déjà ce bonus. Lorsque tu fais un saut en longueur avec élan, la distance augmente d'un nombre de pieds égal à ton modificateur de Force.",
+      "es": "Puedes sumar la mitad de tu bonificador por competencia (redondeando hacia arriba) a cualquier prueba de Fuerza, Destreza o Constitución que no lo use ya. Al hacer un salto largo con carrerilla, la distancia aumenta tantos pies como tu modificador de Fuerza."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "additional-fighting-style",
+    "label": {
+      "en": "Additional Fighting Style",
+      "fr": "Style de combat supplémentaire",
+      "es": "Estilo de combate adicional"
+    },
+    "parentKey": "champion",
+    "description": {
+      "en": "You can choose a second option from the Fighting Style class feature.",
+      "fr": "Tu peux choisir une deuxième option de style de combat.",
+      "es": "Puedes elegir una segunda opción de Estilo de combate."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "champion-fighting-style",
+        "kind": "choose",
+        "label": {
+          "en": "Fighting style",
+          "fr": "Style de combat",
+          "es": "Estilo de combate"
+        },
+        "description": {
+          "en": "A combat specialty that improves one way of fighting.",
+          "fr": "Une spécialité de combat qui améliore une façon de te battre.",
+          "es": "Una especialidad de combate que mejora una forma de luchar."
+        },
+        "from": {
+          "type": "fighting-style"
+        },
+        "count": 1,
+        "level": 10,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "superior-critical",
+    "label": {
+      "en": "Superior Critical",
+      "fr": "Critique supérieur",
+      "es": "Crítico superior"
+    },
+    "parentKey": "champion",
+    "description": {
+      "en": "Your weapon attacks score a critical hit on a roll of 18–20.",
+      "fr": "Tes attaques avec une arme infligent un coup critique sur un résultat de 18 à 20.",
+      "es": "Tus ataques con arma consiguen un crítico con un resultado de 18 a 20."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "survivor",
+    "label": {
+      "en": "Survivor",
+      "fr": "Survivant",
+      "es": "Superviviente"
+    },
+    "parentKey": "champion",
+    "description": {
+      "en": "At the start of each of your turns, you regain hit points equal to 5 + your Constitution modifier if you have no more than half of your hit points left and at least 1 hit point.",
+      "fr": "Au début de chacun de tes tours, tu récupères 5 + ton modificateur de Constitution points de vie s'il te reste au plus la moitié de tes points de vie et au moins 1.",
+      "es": "Al comienzo de cada uno de tus turnos, recuperas 5 + tu modificador de Constitución puntos de golpe si te queda como mucho la mitad de tus puntos de golpe y al menos 1."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-commanders-strike",
+    "label": {
+      "en": "Commander's Strike",
+      "fr": "Attaque du commandant",
+      "es": "Golpe del comandante"
+    },
+    "description": {
+      "en": "When you take the Attack action, you can forgo one attack and use a bonus action to direct an ally who can see or hear you: it can immediately use its reaction to make one weapon attack, adding the superiority die to the damage.",
+      "fr": "Lorsque tu fais l'action Attaquer, tu peux renoncer à une attaque et utiliser une action bonus pour diriger un allié qui peut te voir ou t'entendre : il peut immédiatement utiliser sa réaction pour faire une attaque avec une arme, en ajoutant le dé de supériorité aux dégâts.",
+      "es": "Cuando realizas la acción de Atacar, puedes renunciar a un ataque y usar una acción adicional para dirigir a un aliado que pueda verte u oírte: puede usar de inmediato su reacción para hacer un ataque con arma, sumando el dado de superioridad al daño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-disarming-attack",
+    "label": {
+      "en": "Disarming Attack",
+      "fr": "Attaque désarmante",
+      "es": "Ataque desarmante"
+    },
+    "description": {
+      "en": "When you hit a creature with a weapon attack, add the superiority die to the damage: the target must succeed on a Strength saving throw or drop one object of your choice that it's holding.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme, ajoute le dé de supériorité aux dégâts : la cible doit réussir un jet de sauvegarde de Force ou lâcher un objet de ton choix qu'elle tient.",
+      "es": "Cuando impactas a una criatura con un ataque con arma, suma el dado de superioridad al daño: el objetivo debe superar una tirada de salvación de Fuerza o soltar un objeto que sostenga a tu elección."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-distracting-strike",
+    "label": {
+      "en": "Distracting Strike",
+      "fr": "Attaque de diversion",
+      "es": "Golpe de distracción"
+    },
+    "description": {
+      "en": "When you hit a creature with a weapon attack, add the superiority die to the damage: the next attack roll against the target by an attacker other than you has advantage, if made before your next turn.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme, ajoute le dé de supériorité aux dégâts : le prochain jet d'attaque contre la cible fait par un autre attaquant que toi a l'avantage s'il a lieu avant ton prochain tour.",
+      "es": "Cuando impactas a una criatura con un ataque con arma, suma el dado de superioridad al daño: la siguiente tirada de ataque contra el objetivo de un atacante que no seas tú tiene ventaja si se hace antes de tu siguiente turno."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-evasive-footwork",
+    "label": {
+      "en": "Evasive Footwork",
+      "fr": "Jeu de jambes",
+      "es": "Juego de pies evasivo"
+    },
+    "description": {
+      "en": "When you move, you can expend one superiority die and add it to your AC until you stop moving.",
+      "fr": "Lorsque tu te déplaces, tu peux dépenser un dé de supériorité et l'ajouter à ta CA jusqu'à la fin de ce déplacement.",
+      "es": "Cuando te mueves, puedes gastar un dado de superioridad y sumarlo a tu CA hasta que dejes de moverte."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-feinting-attack",
+    "label": {
+      "en": "Feinting Attack",
+      "fr": "Feinte",
+      "es": "Ataque fingido"
+    },
+    "description": {
+      "en": "As a bonus action, expend one superiority die to feint against a creature within 5 feet: you have advantage on your next attack roll against it this turn, and if it hits, add the die to the damage.",
+      "fr": "Par une action bonus, dépense un dé de supériorité pour feinter une créature à 1,50 m : tu as l'avantage à ton prochain jet d'attaque contre elle ce tour-ci, et s'il touche, ajoute le dé aux dégâts.",
+      "es": "Como acción adicional, gasta un dado de superioridad para fintar a una criatura a 5 pies: tienes ventaja en tu siguiente tirada de ataque contra ella este turno, y si impactas, suma el dado al daño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-goading-attack",
+    "label": {
+      "en": "Goading Attack",
+      "fr": "Attaque provocante",
+      "es": "Ataque provocador"
+    },
+    "description": {
+      "en": "When you hit a creature with a weapon attack, add the superiority die to the damage: the target must succeed on a Wisdom saving throw or have disadvantage on attack rolls against targets other than you until the end of your next turn.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme, ajoute le dé de supériorité aux dégâts : la cible doit réussir un jet de sauvegarde de Sagesse ou avoir le désavantage aux attaques contre une autre cible que toi jusqu'à la fin de ton prochain tour.",
+      "es": "Cuando impactas a una criatura con un ataque con arma, suma el dado de superioridad al daño: el objetivo debe superar una tirada de salvación de Sabiduría o tener desventaja en los ataques contra objetivos que no seas tú hasta el final de tu siguiente turno."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-lunging-attack",
+    "label": {
+      "en": "Lunging Attack",
+      "fr": "Fente",
+      "es": "Ataque arremetedor"
+    },
+    "description": {
+      "en": "When you make a melee weapon attack on your turn, expend one superiority die to increase your reach by 5 feet for that attack; if it hits, add the die to the damage.",
+      "fr": "Lorsque tu fais une attaque d'arme de corps à corps pendant ton tour, dépense un dé de supériorité pour augmenter ton allonge de 1,50 m pour cette attaque ; si elle touche, ajoute le dé aux dégâts.",
+      "es": "Cuando haces un ataque con arma cuerpo a cuerpo en tu turno, gasta un dado de superioridad para aumentar tu alcance en 5 pies para ese ataque; si impactas, suma el dado al daño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-maneuvering-attack",
+    "label": {
+      "en": "Maneuvering Attack",
+      "fr": "Attaque manœuvrante",
+      "es": "Ataque de maniobra"
+    },
+    "description": {
+      "en": "When you hit a creature with a weapon attack, add the superiority die to the damage and choose a friendly creature that can see or hear you: it can use its reaction to move up to half its speed without provoking opportunity attacks from the target.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme, ajoute le dé de supériorité aux dégâts et choisis une créature amie qui peut te voir ou t'entendre : elle peut utiliser sa réaction pour se déplacer de la moitié de sa vitesse sans provoquer d'attaque d'opportunité de la cible.",
+      "es": "Cuando impactas a una criatura con un ataque con arma, suma el dado de superioridad al daño y elige a una criatura amistosa que pueda verte u oírte: puede usar su reacción para moverse hasta la mitad de su velocidad sin provocar ataques de oportunidad del objetivo."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-menacing-attack",
+    "label": {
+      "en": "Menacing Attack",
+      "fr": "Attaque menaçante",
+      "es": "Ataque amenazador"
+    },
+    "description": {
+      "en": "When you hit a creature with a weapon attack, add the superiority die to the damage: the target must succeed on a Wisdom saving throw or be frightened of you until the end of your next turn.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme, ajoute le dé de supériorité aux dégâts : la cible doit réussir un jet de sauvegarde de Sagesse ou être effrayée par toi jusqu'à la fin de ton prochain tour.",
+      "es": "Cuando impactas a una criatura con un ataque con arma, suma el dado de superioridad al daño: el objetivo debe superar una tirada de salvación de Sabiduría o quedar asustado de ti hasta el final de tu siguiente turno."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-parry",
+    "label": {
+      "en": "Parry",
+      "fr": "Parade",
+      "es": "Parada"
+    },
+    "description": {
+      "en": "When another creature damages you with a melee attack, you can use your reaction and expend one superiority die to reduce the damage by the number rolled + your Dexterity modifier.",
+      "fr": "Lorsqu'une autre créature t'inflige des dégâts avec une attaque au corps à corps, tu peux utiliser ta réaction et dépenser un dé de supériorité pour réduire les dégâts du résultat + ton modificateur de Dextérité.",
+      "es": "Cuando otra criatura te inflija daño con un ataque cuerpo a cuerpo, puedes usar tu reacción y gastar un dado de superioridad para reducir el daño en el resultado + tu modificador de Destreza."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-precision-attack",
+    "label": {
+      "en": "Precision Attack",
+      "fr": "Attaque précise",
+      "es": "Ataque preciso"
+    },
+    "description": {
+      "en": "When you make a weapon attack roll, you can expend one superiority die to add it to the roll, before or after rolling but before the outcome is known.",
+      "fr": "Lorsque tu fais un jet d'attaque avec une arme, tu peux dépenser un dé de supériorité pour l'ajouter au jet, avant ou après l'avoir lancé mais avant d'en connaître l'issue.",
+      "es": "Cuando hagas una tirada de ataque con arma, puedes gastar un dado de superioridad para sumarlo, antes o después de tirar pero antes de conocer el resultado."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-pushing-attack",
+    "label": {
+      "en": "Pushing Attack",
+      "fr": "Attaque repoussante",
+      "es": "Ataque de empuje"
+    },
+    "description": {
+      "en": "When you hit a creature with a weapon attack, add the superiority die to the damage: if the target is Large or smaller, it must succeed on a Strength saving throw or be pushed up to 15 feet away from you.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme, ajoute le dé de supériorité aux dégâts : si la cible est de taille Grande ou inférieure, elle doit réussir un jet de sauvegarde de Force ou être repoussée de 4,50 m.",
+      "es": "Cuando impactas a una criatura con un ataque con arma, suma el dado de superioridad al daño: si el objetivo es Grande o menor, debe superar una tirada de salvación de Fuerza o ser empujado hasta 15 pies."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-rally",
+    "label": {
+      "en": "Rally",
+      "fr": "Ralliement",
+      "es": "Reagrupar"
+    },
+    "description": {
+      "en": "As a bonus action, expend one superiority die to bolster a friendly creature that can see or hear you: it gains temporary hit points equal to the die roll + your Charisma modifier.",
+      "fr": "Par une action bonus, dépense un dé de supériorité pour soutenir une créature amie qui peut te voir ou t'entendre : elle gagne des points de vie temporaires égaux au résultat du dé + ton modificateur de Charisme.",
+      "es": "Como acción adicional, gasta un dado de superioridad para animar a una criatura amistosa que pueda verte u oírte: obtiene puntos de golpe temporales iguales al resultado del dado + tu modificador de Carisma."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-riposte",
+    "label": {
+      "en": "Riposte",
+      "fr": "Riposte",
+      "es": "Contraataque"
+    },
+    "description": {
+      "en": "When a creature misses you with a melee attack, you can use your reaction and expend one superiority die to make a melee weapon attack against it; if you hit, add the die to the damage.",
+      "fr": "Lorsqu'une créature te rate avec une attaque au corps à corps, tu peux utiliser ta réaction et dépenser un dé de supériorité pour faire une attaque d'arme de corps à corps contre elle ; si tu touches, ajoute le dé aux dégâts.",
+      "es": "Cuando una criatura falle un ataque cuerpo a cuerpo contra ti, puedes usar tu reacción y gastar un dado de superioridad para hacer un ataque con arma cuerpo a cuerpo contra ella; si impactas, suma el dado al daño."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-sweeping-attack",
+    "label": {
+      "en": "Sweeping Attack",
+      "fr": "Attaque circulaire",
+      "es": "Ataque de barrido"
+    },
+    "description": {
+      "en": "When you hit a creature with a melee weapon attack, expend one superiority die to attempt to damage another creature within 5 feet of the original target and within your reach: if the original attack roll would hit it, it takes damage equal to the die roll, of the weapon's damage type.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme de corps à corps, dépense un dé de supériorité pour tenter de blesser une autre créature à 1,50 m de la cible initiale et à ton allonge : si le jet d'attaque initial la toucherait, elle subit des dégâts égaux au résultat du dé, du même type que l'arme.",
+      "es": "Cuando impactas a una criatura con un ataque con arma cuerpo a cuerpo, gasta un dado de superioridad para intentar dañar a otra criatura a 5 pies del objetivo original y a tu alcance: si la tirada original la alcanzaría, recibe daño igual al resultado del dado, del tipo del arma."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "maneuver",
+    "key": "maneuver-trip-attack",
+    "label": {
+      "en": "Trip Attack",
+      "fr": "Croc-en-jambe",
+      "es": "Ataque de derribo"
+    },
+    "description": {
+      "en": "When you hit a creature with a weapon attack, add the superiority die to the damage: if the target is Large or smaller, it must succeed on a Strength saving throw or be knocked prone.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme, ajoute le dé de supériorité aux dégâts : si la cible est de taille Grande ou inférieure, elle doit réussir un jet de sauvegarde de Force ou tomber à terre.",
+      "es": "Cuando impactas a una criatura con un ataque con arma, suma el dado de superioridad al daño: si el objetivo es Grande o menor, debe superar una tirada de salvación de Fuerza o quedar derribado."
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "combat-superiority",
+    "label": {
+      "en": "Combat Superiority",
+      "fr": "Supériorité martiale",
+      "es": "Superioridad en combate"
+    },
+    "parentKey": "battle-master",
+    "description": {
+      "en": "You learn three maneuvers (two more at 7th, 10th and 15th level; you can replace one each time you learn new ones). You have four superiority dice, d8s (five at 7th level, six at 15th), regained after a short or long rest; they become d10s at 10th level and d12s at 18th. Maneuver save DC = 8 + your proficiency bonus + your Strength or Dexterity modifier.",
+      "fr": "Tu apprends trois manœuvres (deux de plus aux niveaux 7, 10 et 15 ; tu peux en remplacer une à chaque fois). Tu as quatre dés de supériorité, des d8 (cinq au niveau 7, six au niveau 15), récupérés après un repos court ou long ; ils deviennent des d10 au niveau 10 et des d12 au niveau 18. DD des manœuvres = 8 + ton bonus de maîtrise + ton modificateur de Force ou de Dextérité.",
+      "es": "Aprendes tres maniobras (dos más en los niveles 7, 10 y 15; puedes sustituir una cada vez). Tienes cuatro dados de superioridad, d8 (cinco en el nivel 7, seis en el 15), que recuperas tras un descanso corto o largo; pasan a d10 en el nivel 10 y a d12 en el 18. CD de las maniobras = 8 + tu bonificador por competencia + tu modificador de Fuerza o Destreza."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "superiorityDie": [
+        0, 0, 8, 8, 8, 8, 8, 8, 8, 10, 10, 10, 10, 10, 10, 10, 10, 12, 12, 12
+      ],
+      "uses": {
+        "reset": "short",
+        "unit": "superiority dice"
+      },
+      "usesByLevel": [
+        0, 0, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    "effects": [],
+    "grants": [
+      {
+        "id": "maneuvers-3",
+        "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
+        "from": {
+          "type": "maneuver"
+        },
+        "count": 3,
+        "level": 3,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "maneuvers-7",
+        "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
+        "from": {
+          "type": "maneuver"
+        },
+        "count": 2,
+        "level": 7,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "maneuvers-10",
+        "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
+        "from": {
+          "type": "maneuver"
+        },
+        "count": 2,
+        "level": 10,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "maneuvers-15",
+        "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
+        "from": {
+          "type": "maneuver"
+        },
+        "count": 2,
+        "level": 15,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "student-of-war",
+    "label": {
+      "en": "Student of War",
+      "fr": "Élève de la guerre",
+      "es": "Estudiante de la guerra"
+    },
+    "parentKey": "battle-master",
+    "description": {
+      "en": "You gain proficiency with one type of artisan's tools of your choice.",
+      "fr": "Tu obtiens la maîtrise d'un type d'outils d'artisan de ton choix.",
+      "es": "Obtienes competencia con un tipo de herramientas de artesano a tu elección."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "student-of-war-tool",
+        "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
+        "from": {
+          "type": "tool",
+          "keys": [
+            "alchemists-supplies",
+            "brewers-supplies",
+            "calligraphers-supplies",
+            "carpenters-tools",
+            "cartographers-tools",
+            "cobblers-tools",
+            "cooks-utensils",
+            "glassblowers-tools",
+            "jewelers-tools",
+            "leatherworkers-tools",
+            "masons-tools",
+            "painters-supplies",
+            "potters-tools",
+            "smiths-tools",
+            "tinkers-tools",
+            "weavers-tools",
+            "woodcarvers-tools"
+          ]
+        },
+        "count": 1,
+        "level": 3,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "proficiencies.tools",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "know-your-enemy",
+    "label": {
+      "en": "Know Your Enemy",
+      "fr": "Connais ton ennemi",
+      "es": "Conoce a tu enemigo"
+    },
+    "parentKey": "battle-master",
+    "description": {
+      "en": "If you spend at least 1 minute observing or interacting with a creature outside combat, you learn whether it is your equal, superior or inferior in two characteristics of your choice: Strength, Dexterity, Constitution, Armor Class, current hit points, total class levels or fighter class levels.",
+      "fr": "Si tu passes au moins 1 minute à observer une créature ou à interagir avec elle hors combat, tu apprends si elle t'est égale, supérieure ou inférieure dans deux caractéristiques de ton choix : Force, Dextérité, Constitution, CA, points de vie actuels, total des niveaux de classe ou niveaux de guerrier.",
+      "es": "Si pasas al menos 1 minuto observando o interactuando con una criatura fuera de combate, sabes si es igual, superior o inferior a ti en dos aspectos a tu elección: Fuerza, Destreza, Constitución, CA, puntos de golpe actuales, niveles de clase totales o niveles de guerrero."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "improved-combat-superiority",
+    "label": {
+      "en": "Improved Combat Superiority",
+      "fr": "Supériorité martiale améliorée",
+      "es": "Superioridad en combate mejorada"
+    },
+    "parentKey": "battle-master",
+    "description": {
+      "en": "Your superiority dice turn into d10s. At 18th level, they turn into d12s.",
+      "fr": "Tes dés de supériorité deviennent des d10. Au niveau 18, ils deviennent des d12.",
+      "es": "Tus dados de superioridad pasan a ser d10. En el nivel 18 pasan a ser d12."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "relentless",
+    "label": {
+      "en": "Relentless",
+      "fr": "Implacable",
+      "es": "Implacable"
+    },
+    "parentKey": "battle-master",
+    "description": {
+      "en": "When you roll initiative and have no superiority dice remaining, you regain one superiority die.",
+      "fr": "Lorsque tu lances l'initiative et qu'il ne te reste aucun dé de supériorité, tu en récupères un.",
+      "es": "Cuando tiras iniciativa y no te quedan dados de superioridad, recuperas uno."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "eldritch-knight-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "eldritch-knight",
+    "description": {
+      "en": "You cast wizard spells using Intelligence. You know two wizard cantrips (three at 10th level) and three 1st-level wizard spells, mostly abjuration and evocation (one spell from any school at 3rd, 8th, 14th and 20th level). You learn more spells as you level and can replace one each time.",
+      "fr": "Tu lances des sorts de magicien grâce à l'Intelligence. Tu connais deux sorts mineurs de magicien (trois au niveau 10) et trois sorts de magicien de niveau 1, surtout d'abjuration et d'évocation (un sort de n'importe quelle école aux niveaux 3, 8, 14 et 20). Tu apprends d'autres sorts en progressant et peux en remplacer un à chaque fois.",
+      "es": "Lanzas conjuros de mago con Inteligencia. Conoces dos trucos de mago (tres en el nivel 10) y tres conjuros de mago de nivel 1, sobre todo de abjuración y evocación (un conjuro de cualquier escuela en los niveles 3, 8, 14 y 20). Aprendes más conjuros al subir de nivel y puedes sustituir uno cada vez."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "spellcasting": {
+        "ability": "intelligence",
+        "preparation": "known",
+        "slots": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0]
+        ],
+        "maxSpellLevelByLevel": [
+          0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4
+        ],
+        "cantripsKnown": [
+          0, 0, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+        ],
+        "spellsKnown": [
+          0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13
+        ],
+        "preparedLevel": "full",
+        "spellList": "wizard",
+        "schools": ["abjuration", "evocation"]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.ability",
+        "value": "intelligence"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.preparation",
+        "value": "known"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.cantripsKnown",
+        "value": [0, 0, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.spellsKnown",
+        "value": [
+          0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.maxSpellLevelByLevel",
+        "value": [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.slots",
+        "value": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.casterProgression",
+        "value": "third"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "weapon-bond",
+    "label": {
+      "en": "Weapon Bond",
+      "fr": "Lien martial",
+      "es": "Vínculo con el arma"
+    },
+    "parentKey": "eldritch-knight",
+    "description": {
+      "en": "Through a 1-hour ritual (possibly during a short rest), you bond with up to two weapons. You can't be disarmed of a bonded weapon unless incapacitated, and you can summon it to your hand as a bonus action if it is on the same plane.",
+      "fr": "Par un rituel d'une heure (possiblement pendant un repos court), tu te lies à deux armes au plus. Tu ne peux pas être désarmé d'une arme liée sauf si tu es neutralisé, et tu peux la faire apparaître dans ta main par une action bonus si elle est sur le même plan.",
+      "es": "Mediante un ritual de 1 hora (posiblemente durante un descanso corto), te vinculas a hasta dos armas. No pueden desarmarte de un arma vinculada salvo que estés incapacitado, y puedes invocarla a tu mano como acción adicional si está en el mismo plano."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "war-magic",
+    "label": {
+      "en": "War Magic",
+      "fr": "Magie de guerre",
+      "es": "Magia de guerra"
+    },
+    "parentKey": "eldritch-knight",
+    "description": {
+      "en": "When you use your action to cast a cantrip, you can make one weapon attack as a bonus action.",
+      "fr": "Lorsque tu utilises ton action pour lancer un sort mineur, tu peux faire une attaque avec une arme par une action bonus.",
+      "es": "Cuando usas tu acción para lanzar un truco, puedes hacer un ataque con arma como acción adicional."
+    },
+    "level": 7,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "eldritch-strike",
+    "label": {
+      "en": "Eldritch Strike",
+      "fr": "Frappe occulte",
+      "es": "Golpe sobrenatural"
+    },
+    "parentKey": "eldritch-knight",
+    "description": {
+      "en": "When you hit a creature with a weapon attack, it has disadvantage on the next saving throw it makes against a spell you cast before the end of your next turn.",
+      "fr": "Lorsque tu touches une créature avec une attaque d'arme, elle a le désavantage au prochain jet de sauvegarde contre un sort que tu lances avant la fin de ton prochain tour.",
+      "es": "Cuando impactas a una criatura con un ataque con arma, tiene desventaja en la siguiente tirada de salvación contra un conjuro que lances antes del final de tu siguiente turno."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "arcane-charge",
+    "label": {
+      "en": "Arcane Charge",
+      "fr": "Charge arcanique",
+      "es": "Carga arcana"
+    },
+    "parentKey": "eldritch-knight",
+    "description": {
+      "en": "When you use your Action Surge, you can teleport up to 30 feet to an unoccupied space you can see, before or after the additional action.",
+      "fr": "Lorsque tu utilises ta Fougue, tu peux te téléporter jusqu'à 9 m dans un espace inoccupé que tu vois, avant ou après l'action supplémentaire.",
+      "es": "Cuando usas tu Oleada de acción, puedes teletransportarte hasta 30 pies a un espacio desocupado que puedas ver, antes o después de la acción adicional."
+    },
+    "level": 15,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "improved-war-magic",
+    "label": {
+      "en": "Improved War Magic",
+      "fr": "Magie de guerre améliorée",
+      "es": "Magia de guerra mejorada"
+    },
+    "parentKey": "eldritch-knight",
+    "description": {
+      "en": "When you use your action to cast a spell, you can make one weapon attack as a bonus action.",
+      "fr": "Lorsque tu utilises ton action pour lancer un sort, tu peux faire une attaque avec une arme par une action bonus.",
+      "es": "Cuando usas tu acción para lanzar un conjuro, puedes hacer un ataque con arma como acción adicional."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "open-hand-technique",
+    "label": {
+      "en": "Open Hand Technique",
+      "fr": "Technique de la paume",
+      "es": "Técnica de la mano abierta"
+    },
+    "parentKey": "way-of-the-open-hand",
+    "description": {
+      "en": "Whenever you hit a creature with one of the attacks granted by Flurry of Blows, you can impose one effect: it must succeed on a Dexterity saving throw or be knocked prone; or it must succeed on a Strength saving throw or be pushed up to 15 feet away; or it can't take reactions until the end of your next turn.",
+      "fr": "Chaque fois que tu touches une créature avec une attaque de Déluge de coups, tu peux lui imposer un effet : elle doit réussir un jet de sauvegarde de Dextérité ou tomber à terre ; ou réussir un jet de sauvegarde de Force ou être repoussée de 4,50 m ; ou elle ne peut pas utiliser de réaction jusqu'à la fin de ton prochain tour.",
+      "es": "Siempre que impactes a una criatura con un ataque de Ráfaga de golpes, puedes imponerle un efecto: debe superar una tirada de salvación de Destreza o quedar derribada; o superar una de Fuerza o ser empujada hasta 15 pies; o no puede usar reacciones hasta el final de tu siguiente turno."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "wholeness-of-body",
+    "label": {
+      "en": "Wholeness of Body",
+      "fr": "Plénitude physique",
+      "es": "Integridad corporal"
+    },
+    "parentKey": "way-of-the-open-hand",
+    "description": {
+      "en": "As an action, you regain hit points equal to three times your monk level. You must finish a long rest before using it again.",
+      "fr": "Par une action, tu récupères un nombre de points de vie égal à trois fois ton niveau de moine. Tu dois terminer un repos long avant de la réutiliser.",
+      "es": "Como acción, recuperas tantos puntos de golpe como tres veces tu nivel de monje. Debes terminar un descanso largo antes de volver a usarlo."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "tranquility",
+    "label": {
+      "en": "Tranquility",
+      "fr": "Tranquillité",
+      "es": "Tranquilidad"
+    },
+    "parentKey": "way-of-the-open-hand",
+    "description": {
+      "en": "At the end of a long rest, you gain the effect of a sanctuary spell that lasts until the start of your next long rest (it can end early as normal). Its saving throw DC equals your ki save DC.",
+      "fr": "À la fin d'un repos long, tu bénéficies de l'effet d'un sort de sanctuaire qui dure jusqu'au début de ton prochain repos long (il peut prendre fin plus tôt normalement). Son DD est celui de ton ki.",
+      "es": "Al final de un descanso largo, obtienes el efecto de un conjuro de santuario que dura hasta el comienzo de tu siguiente descanso largo (puede terminar antes de forma normal). Su CD es la de tu ki."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "quivering-palm",
+    "label": {
+      "en": "Quivering Palm",
+      "fr": "Paume vibratoire",
+      "es": "Palma temblorosa"
+    },
+    "parentKey": "way-of-the-open-hand",
+    "description": {
+      "en": "When you hit a creature with an unarmed strike, you can spend 3 ki points to start imperceptible vibrations lasting a number of days equal to your monk level. Later, as an action, you can end them: the creature makes a Constitution saving throw, dropping to 0 hit points on a failure or taking 10d10 necrotic damage on a success. Only one creature at a time.",
+      "fr": "Lorsque tu touches une créature avec une attaque à mains nues, tu peux dépenser 3 points de ki pour déclencher des vibrations imperceptibles qui durent un nombre de jours égal à ton niveau de moine. Plus tard, par une action, tu peux y mettre fin : la créature fait un jet de sauvegarde de Constitution et tombe à 0 point de vie en cas d'échec, ou subit 10d10 dégâts nécrotiques en cas de réussite. Une seule créature à la fois.",
+      "es": "Cuando impactas a una criatura con un ataque sin armas, puedes gastar 3 puntos de ki para iniciar vibraciones imperceptibles que duran tantos días como tu nivel de monje. Después, como acción, puedes terminarlas: la criatura hace una tirada de salvación de Constitución y cae a 0 puntos de golpe si falla, o recibe 10d10 de daño necrótico si tiene éxito. Solo una criatura a la vez."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "shadow-arts",
+    "label": {
+      "en": "Shadow Arts",
+      "fr": "Arts des ombres",
+      "es": "Artes de las sombras"
+    },
+    "parentKey": "way-of-shadow",
+    "description": {
+      "en": "You can spend 2 ki points to cast darkness, darkvision, pass without trace or silence without material components. You also gain the minor illusion cantrip if you don't already know it.",
+      "fr": "Tu peux dépenser 2 points de ki pour lancer ténèbres, vision dans le noir, passage sans trace ou silence sans composantes matérielles. Tu obtiens aussi le sort mineur illusion mineure si tu ne le connais pas déjà.",
+      "es": "Puedes gastar 2 puntos de ki para lanzar oscuridad, visión en la oscuridad, pasar sin rastro o silencio sin componentes materiales. También obtienes el truco ilusión menor si no lo conoces ya."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Minor Illusion",
+            "classLevel": 3
+          },
+          {
+            "name": "Darkness",
+            "classLevel": 3
+          },
+          {
+            "name": "Darkvision",
+            "classLevel": 3
+          },
+          {
+            "name": "Pass without Trace",
+            "classLevel": 3
+          },
+          {
+            "name": "Silence",
+            "classLevel": 3
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "shadow-step",
+    "label": {
+      "en": "Shadow Step",
+      "fr": "Pas de l'ombre",
+      "es": "Paso sombrío"
+    },
+    "parentKey": "way-of-shadow",
+    "description": {
+      "en": "When you are in dim light or darkness, as a bonus action you can teleport up to 60 feet to an unoccupied space you can see that is also in dim light or darkness. You then have advantage on the first melee attack you make before the end of the turn.",
+      "fr": "Lorsque tu es dans la pénombre ou l'obscurité, tu peux par une action bonus te téléporter jusqu'à 18 m dans un espace inoccupé que tu vois, également dans la pénombre ou l'obscurité. Tu as ensuite l'avantage à ta première attaque au corps à corps avant la fin du tour.",
+      "es": "Cuando estás en luz tenue u oscuridad, como acción adicional puedes teletransportarte hasta 60 pies a un espacio desocupado que puedas ver y que también esté en luz tenue u oscuridad. Luego tienes ventaja en el primer ataque cuerpo a cuerpo que hagas antes de que acabe el turno."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "cloak-of-shadows-monk",
+    "label": {
+      "en": "Cloak of Shadows",
+      "fr": "Manteau d'ombres",
+      "es": "Manto de sombras"
+    },
+    "parentKey": "way-of-shadow",
+    "description": {
+      "en": "When you are in an area of dim light or darkness, you can use your action to become invisible. You remain invisible until you make an attack, cast a spell or are in an area of bright light.",
+      "fr": "Lorsque tu es dans une zone de pénombre ou d'obscurité, tu peux utiliser ton action pour devenir invisible. Tu le restes jusqu'à ce que tu attaques, lances un sort ou te trouves dans une zone de lumière vive.",
+      "es": "Cuando estás en una zona de luz tenue u oscuridad, puedes usar tu acción para volverte invisible. Permaneces invisible hasta que ataques, lances un conjuro o estés en luz brillante."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "opportunist",
+    "label": {
+      "en": "Opportunist",
+      "fr": "Opportuniste",
+      "es": "Oportunista"
+    },
+    "parentKey": "way-of-shadow",
+    "description": {
+      "en": "When a creature within 5 feet of you is hit by an attack made by a creature other than you, you can use your reaction to make a melee attack against it.",
+      "fr": "Lorsqu'une créature à 1,50 m de toi est touchée par une attaque d'une autre créature que toi, tu peux utiliser ta réaction pour faire une attaque au corps à corps contre elle.",
+      "es": "Cuando una criatura a 5 pies de ti es impactada por un ataque de otra criatura, puedes usar tu reacción para hacer un ataque cuerpo a cuerpo contra ella."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-fangs-of-the-fire-snake",
+    "label": {
+      "en": "Fangs of the Fire Snake",
+      "fr": "Crocs du serpent de feu",
+      "es": "Colmillos de la serpiente de fuego"
+    },
+    "description": {
+      "en": "When you take the Attack action, you can spend 1 ki point to extend the reach of your unarmed strikes by 10 feet for the turn; such hits deal fire damage, and you can spend 1 more ki point to add 1d10 fire damage.",
+      "fr": "Lorsque tu fais l'action Attaquer, tu peux dépenser 1 point de ki pour augmenter de 3 m l'allonge de tes attaques à mains nues ce tour-ci ; elles infligent alors des dégâts de feu, et tu peux dépenser 1 point de ki de plus pour ajouter 1d10 dégâts de feu.",
+      "es": "Al realizar la acción de Atacar, puedes gastar 1 punto de ki para aumentar en 10 pies el alcance de tus ataques sin armas ese turno; infligen daño de fuego, y puedes gastar 1 punto de ki más para añadir 1d10 de daño de fuego."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 3,
+      "kiCost": 1,
+      "spell": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-fist-of-four-thunders",
+    "label": {
+      "en": "Fist of Four Thunders",
+      "fr": "Poing des quatre tonnerres",
+      "es": "Puño de los cuatro truenos"
+    },
+    "description": {
+      "en": "You can spend 2 ki points to cast thunderwave.",
+      "fr": "Tu peux dépenser 2 points de ki pour lancer vague tonnante.",
+      "es": "Puedes gastar 2 puntos de ki para lanzar onda atronadora."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 3,
+      "kiCost": 2,
+      "spell": "Thunderwave"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-fist-of-unbroken-air",
+    "label": {
+      "en": "Fist of Unbroken Air",
+      "fr": "Poing de l'air invincible",
+      "es": "Puño de aire inquebrantable"
+    },
+    "description": {
+      "en": "As an action, spend 2 ki points and choose a creature within 30 feet: it makes a Strength saving throw, taking 3d10 bludgeoning damage (plus 1d10 per extra ki point spent), being pushed 20 feet and knocked prone on a failure, or half damage only on a success.",
+      "fr": "Par une action, dépense 2 points de ki et choisis une créature à 9 m : elle fait un jet de sauvegarde de Force et subit 3d10 dégâts contondants (plus 1d10 par point de ki supplémentaire), est repoussée de 6 m et jetée à terre en cas d'échec, ou subit seulement la moitié des dégâts en cas de réussite.",
+      "es": "Como acción, gasta 2 puntos de ki y elige a una criatura a 30 pies: hace una tirada de salvación de Fuerza y recibe 3d10 de daño contundente (más 1d10 por punto de ki adicional), es empujada 20 pies y derribada si falla, o solo la mitad del daño si tiene éxito."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 3,
+      "kiCost": 2,
+      "spell": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-rush-of-the-gale-spirits",
+    "label": {
+      "en": "Rush of the Gale Spirits",
+      "fr": "Ruée des esprits du vent",
+      "es": "Embestida de los espíritus del vendaval"
+    },
+    "description": {
+      "en": "You can spend 2 ki points to cast gust of wind.",
+      "fr": "Tu peux dépenser 2 points de ki pour lancer bourrasque.",
+      "es": "Puedes gastar 2 puntos de ki para lanzar ráfaga de viento."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 3,
+      "kiCost": 2,
+      "spell": "Gust of Wind"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-shape-the-flowing-river",
+    "label": {
+      "en": "Shape the Flowing River",
+      "fr": "Façonnage de la rivière",
+      "es": "Moldear el río fluyente"
+    },
+    "description": {
+      "en": "As an action, spend 1 ki point to shape ice or water in a 30-foot cube within 120 feet: change water to ice and back, or raise or lower the ground of ice or water by up to 15 feet in places. You can't trap or injure creatures this way.",
+      "fr": "Par une action, dépense 1 point de ki pour façonner la glace ou l'eau dans un cube de 9 m à 36 m : transforme l'eau en glace et inversement, ou élève ou abaisse localement le niveau de la glace ou de l'eau jusqu'à 4,50 m. Tu ne peux ni piéger ni blesser de créature ainsi.",
+      "es": "Como acción, gasta 1 punto de ki para moldear hielo o agua en un cubo de 30 pies a 120 pies: convierte agua en hielo y viceversa, o sube o baja el nivel del hielo o el agua hasta 15 pies en algunas zonas. No puedes atrapar ni herir criaturas así."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 3,
+      "kiCost": 1,
+      "spell": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-sweeping-cinder-strike",
+    "label": {
+      "en": "Sweeping Cinder Strike",
+      "fr": "Frappe des cendres",
+      "es": "Golpe de ceniza ardiente"
+    },
+    "description": {
+      "en": "You can spend 2 ki points to cast burning hands.",
+      "fr": "Tu peux dépenser 2 points de ki pour lancer mains brûlantes.",
+      "es": "Puedes gastar 2 puntos de ki para lanzar manos ardientes."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 3,
+      "kiCost": 2,
+      "spell": "Burning Hands"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-water-whip",
+    "label": {
+      "en": "Water Whip",
+      "fr": "Fouet d'eau",
+      "es": "Látigo de agua"
+    },
+    "description": {
+      "en": "As an action, spend 2 ki points: a creature within 30 feet makes a Dexterity saving throw, taking 3d10 bludgeoning damage (plus 1d10 per extra ki point) and being knocked prone or pulled up to 25 feet closer on a failure, or half damage on a success.",
+      "fr": "Par une action, dépense 2 points de ki : une créature à 9 m fait un jet de sauvegarde de Dextérité et subit 3d10 dégâts contondants (plus 1d10 par point de ki supplémentaire) et est jetée à terre ou attirée de 7,50 m vers toi en cas d'échec, ou subit la moitié des dégâts en cas de réussite.",
+      "es": "Como acción, gasta 2 puntos de ki: una criatura a 30 pies hace una tirada de salvación de Destreza y recibe 3d10 de daño contundente (más 1d10 por punto de ki adicional) y queda derribada o es atraída hasta 25 pies si falla, o la mitad del daño si tiene éxito."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 3,
+      "kiCost": 2,
+      "spell": null
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-clench-of-the-north-wind",
+    "label": {
+      "en": "Clench of the North Wind",
+      "fr": "Étreinte du vent du nord",
+      "es": "Garra del viento del norte"
+    },
+    "description": {
+      "en": "You can spend 3 ki points to cast hold person.",
+      "fr": "Tu peux dépenser 3 points de ki pour lancer immobilisation de personne.",
+      "es": "Puedes gastar 3 puntos de ki para lanzar inmovilizar persona."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 6,
+      "kiCost": 3,
+      "spell": "Hold Person"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-gong-of-the-summit",
+    "label": {
+      "en": "Gong of the Summit",
+      "fr": "Gong du sommet",
+      "es": "Gong de la cumbre"
+    },
+    "description": {
+      "en": "You can spend 3 ki points to cast shatter.",
+      "fr": "Tu peux dépenser 3 points de ki pour lancer fracassement.",
+      "es": "Puedes gastar 3 puntos de ki para lanzar romper."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 6,
+      "kiCost": 3,
+      "spell": "Shatter"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-flames-of-the-phoenix",
+    "label": {
+      "en": "Flames of the Phoenix",
+      "fr": "Flammes du phénix",
+      "es": "Llamas del fénix"
+    },
+    "description": {
+      "en": "You can spend 4 ki points to cast fireball.",
+      "fr": "Tu peux dépenser 4 points de ki pour lancer boule de feu.",
+      "es": "Puedes gastar 4 puntos de ki para lanzar bola de fuego."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 11,
+      "kiCost": 4,
+      "spell": "Fireball"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-mist-stance",
+    "label": {
+      "en": "Mist Stance",
+      "fr": "Posture de brume",
+      "es": "Postura de niebla"
+    },
+    "description": {
+      "en": "You can spend 4 ki points to cast gaseous form, targeting yourself.",
+      "fr": "Tu peux dépenser 4 points de ki pour lancer forme gazeuse sur toi-même.",
+      "es": "Puedes gastar 4 puntos de ki para lanzar forma gaseosa sobre ti."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 11,
+      "kiCost": 4,
+      "spell": "Gaseous Form"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-ride-the-wind",
+    "label": {
+      "en": "Ride the Wind",
+      "fr": "Chevaucher le vent",
+      "es": "Cabalgar el viento"
+    },
+    "description": {
+      "en": "You can spend 4 ki points to cast fly, targeting yourself.",
+      "fr": "Tu peux dépenser 4 points de ki pour lancer vol sur toi-même.",
+      "es": "Puedes gastar 4 puntos de ki para lanzar volar sobre ti."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 11,
+      "kiCost": 4,
+      "spell": "Fly"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-breath-of-winter",
+    "label": {
+      "en": "Breath of Winter",
+      "fr": "Souffle de l'hiver",
+      "es": "Aliento del invierno"
+    },
+    "description": {
+      "en": "You can spend 6 ki points to cast cone of cold.",
+      "fr": "Tu peux dépenser 6 points de ki pour lancer cône de froid.",
+      "es": "Puedes gastar 6 puntos de ki para lanzar cono de frío."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 17,
+      "kiCost": 6,
+      "spell": "Cone of Cold"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-eternal-mountain-defense",
+    "label": {
+      "en": "Eternal Mountain Defense",
+      "fr": "Défense de la montagne éternelle",
+      "es": "Defensa de la montaña eterna"
+    },
+    "description": {
+      "en": "You can spend 5 ki points to cast stoneskin, targeting yourself.",
+      "fr": "Tu peux dépenser 5 points de ki pour lancer peau de pierre sur toi-même.",
+      "es": "Puedes gastar 5 puntos de ki para lanzar piel pétrea sobre ti."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 17,
+      "kiCost": 5,
+      "spell": "Stoneskin"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-river-of-hungry-flame",
+    "label": {
+      "en": "River of Hungry Flame",
+      "fr": "Rivière de flammes affamées",
+      "es": "Río de llamas hambrientas"
+    },
+    "description": {
+      "en": "You can spend 5 ki points to cast wall of fire.",
+      "fr": "Tu peux dépenser 5 points de ki pour lancer mur de feu.",
+      "es": "Puedes gastar 5 puntos de ki para lanzar muro de fuego."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 17,
+      "kiCost": 5,
+      "spell": "Wall of Fire"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "elemental-discipline",
+    "key": "discipline-wave-of-rolling-earth",
+    "label": {
+      "en": "Wave of Rolling Earth",
+      "fr": "Vague de terre déferlante",
+      "es": "Ola de tierra ondulante"
+    },
+    "description": {
+      "en": "You can spend 6 ki points to cast wall of stone.",
+      "fr": "Tu peux dépenser 6 points de ki pour lancer mur de pierre.",
+      "es": "Puedes gastar 6 puntos de ki para lanzar muro de piedra."
+    },
+    "tags": [],
+    "data": {
+      "minMonkLevel": 17,
+      "kiCost": 6,
+      "spell": "Wall of Stone"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "disciple-of-the-elements",
+    "label": {
+      "en": "Disciple of the Elements",
+      "fr": "Disciple des éléments",
+      "es": "Discípulo de los elementos"
+    },
+    "parentKey": "way-of-the-four-elements",
+    "description": {
+      "en": "You know the Elemental Attunement discipline (minor elemental effects at will) and one other elemental discipline, then one more at 6th, 11th and 17th level; you can replace one each time. Disciplines requiring a saving throw use your ki save DC. You can spend additional ki to raise the level of a discipline's spell, up to a maximum ki per spell of 2 (3 at 5th level, 4 at 9th, 5 at 13th, 6 at 17th).",
+      "fr": "Tu connais la discipline Harmonie élémentaire (effets élémentaires mineurs à volonté) et une autre discipline élémentaire, puis une de plus aux niveaux 6, 11 et 17 ; tu peux en remplacer une à chaque fois. Les disciplines imposant un jet de sauvegarde utilisent le DD de ton ki. Tu peux dépenser plus de ki pour augmenter le niveau du sort d'une discipline, avec un maximum de ki par sort de 2 (3 au niveau 5, 4 au niveau 9, 5 au niveau 13, 6 au niveau 17).",
+      "es": "Conoces la disciplina Sintonía elemental (efectos elementales menores a voluntad) y otra disciplina elemental, y una más en los niveles 6, 11 y 17; puedes sustituir una cada vez. Las disciplinas con tirada de salvación usan la CD de tu ki. Puedes gastar ki adicional para subir el nivel del conjuro de una disciplina, con un máximo de ki por conjuro de 2 (3 en el nivel 5, 4 en el 9, 5 en el 13, 6 en el 17)."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {
+      "maxKiPerSpell": [
+        0, 0, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6
+      ]
+    },
+    "effects": [],
+    "grants": [
+      {
+        "id": "disciplines-3",
+        "kind": "choose",
+        "label": {
+          "en": "Elemental disciplines",
+          "fr": "Disciplines élémentaires",
+          "es": "Disciplinas elementales"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "elemental-discipline"
+        },
+        "count": 1,
+        "level": 3,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "disciplines-6",
+        "kind": "choose",
+        "label": {
+          "en": "Elemental disciplines",
+          "fr": "Disciplines élémentaires",
+          "es": "Disciplinas elementales"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "elemental-discipline"
+        },
+        "count": 1,
+        "level": 6,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "disciplines-11",
+        "kind": "choose",
+        "label": {
+          "en": "Elemental disciplines",
+          "fr": "Disciplines élémentaires",
+          "es": "Disciplinas elementales"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "elemental-discipline"
+        },
+        "count": 1,
+        "level": 11,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "disciplines-17",
+        "kind": "choose",
+        "label": {
+          "en": "Elemental disciplines",
+          "fr": "Disciplines élémentaires",
+          "es": "Disciplinas elementales"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "elemental-discipline"
+        },
+        "count": 1,
+        "level": 17,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  }
+]

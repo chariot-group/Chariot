@@ -1,0 +1,1897 @@
+[
+  {
+    "type": "dragon-ancestor",
+    "key": "black-dragon-ancestor",
+    "label": {
+      "en": "Black dragon",
+      "fr": "Dragon noir",
+      "es": "Dragón negro"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "acid"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "acid"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "blue-dragon-ancestor",
+    "label": {
+      "en": "Blue dragon",
+      "fr": "Dragon bleu",
+      "es": "Dragón azul"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "lightning"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "lightning"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "brass-dragon-ancestor",
+    "label": {
+      "en": "Brass dragon",
+      "fr": "Dragon d'airain",
+      "es": "Dragón de latón"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "fire"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "fire"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "bronze-dragon-ancestor",
+    "label": {
+      "en": "Bronze dragon",
+      "fr": "Dragon de bronze",
+      "es": "Dragón de bronce"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "lightning"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "lightning"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "copper-dragon-ancestor",
+    "label": {
+      "en": "Copper dragon",
+      "fr": "Dragon de cuivre",
+      "es": "Dragón de cobre"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "acid"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "acid"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "gold-dragon-ancestor",
+    "label": {
+      "en": "Gold dragon",
+      "fr": "Dragon d'or",
+      "es": "Dragón de oro"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "fire"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "fire"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "green-dragon-ancestor",
+    "label": {
+      "en": "Green dragon",
+      "fr": "Dragon vert",
+      "es": "Dragón verde"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "poison"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "poison"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "red-dragon-ancestor",
+    "label": {
+      "en": "Red dragon",
+      "fr": "Dragon rouge",
+      "es": "Dragón rojo"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "fire"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "fire"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "silver-dragon-ancestor",
+    "label": {
+      "en": "Silver dragon",
+      "fr": "Dragon d'argent",
+      "es": "Dragón de plata"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "cold"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "cold"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "dragon-ancestor",
+    "key": "white-dragon-ancestor",
+    "label": {
+      "en": "White dragon",
+      "fr": "Dragon blanc",
+      "es": "Dragón blanco"
+    },
+    "tags": [],
+    "data": {
+      "damageType": "cold"
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "dragonAncestorDamage",
+        "value": "cold"
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "dragon-ancestor",
+    "label": {
+      "en": "Dragon Ancestor",
+      "fr": "Ancêtre dragon",
+      "es": "Ancestro dracónico"
+    },
+    "parentKey": "draconic-bloodline",
+    "description": {
+      "en": "Choose one type of dragon as your ancestor; its damage type is used by later features. You can speak, read and write Draconic, and when you make a Charisma check to interact with dragons, your proficiency bonus is doubled if it applies.",
+      "fr": "Choisis un type de dragon comme ancêtre ; son type de dégâts est utilisé par des aptitudes ultérieures. Tu sais parler, lire et écrire le draconique, et lorsque tu fais un test de Charisme pour interagir avec des dragons, ton bonus de maîtrise est doublé s'il s'applique.",
+      "es": "Elige un tipo de dragón como ancestro; su tipo de daño lo usan rasgos posteriores. Puedes hablar, leer y escribir dracónico, y en las pruebas de Carisma para interactuar con dragones tu bonificador por competencia se duplica si se aplica."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "languages",
+        "value": ["draconic"]
+      }
+    ],
+    "grants": [
+      {
+        "id": "dragon-ancestor-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Dragon ancestor",
+          "fr": "Ancêtre draconique",
+          "es": "Ancestro dracónico"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "dragon-ancestor"
+        },
+        "count": 1,
+        "level": 1
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "draconic-resilience",
+    "label": {
+      "en": "Draconic Resilience",
+      "fr": "Résistance draconique",
+      "es": "Resiliencia dracónica"
+    },
+    "parentKey": "draconic-bloodline",
+    "description": {
+      "en": "Your hit point maximum increases by 1, and by 1 again each time you gain a level in this class. When you aren't wearing armor, your AC equals 13 + your Dexterity modifier.",
+      "fr": "Ton maximum de points de vie augmente de 1, puis de 1 à chaque niveau gagné dans cette classe. Lorsque tu ne portes pas d'armure, ta CA est égale à 13 + ton modificateur de Dextérité.",
+      "es": "Tus puntos de golpe máximos aumentan en 1, y en 1 más cada vez que subes de nivel en esta clase. Cuando no llevas armadura, tu CA es 13 + tu modificador de Destreza."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "add",
+        "target": "hitPointBonusPerLevel",
+        "value": 1
+      },
+      {
+        "op": "set",
+        "target": "unarmoredDefense",
+        "value": "draconic"
+      },
+      {
+        "op": "add",
+        "target": "armorClassBonus",
+        "value": 3
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "elemental-affinity",
+    "label": {
+      "en": "Elemental Affinity",
+      "fr": "Affinité élémentaire",
+      "es": "Afinidad elemental"
+    },
+    "parentKey": "draconic-bloodline",
+    "description": {
+      "en": "When you cast a spell that deals damage of your ancestry's type, add your Charisma modifier to one damage roll of it. At the same time, you can spend 1 sorcery point to gain resistance to that damage type for 1 hour.",
+      "fr": "Lorsque tu lances un sort qui inflige des dégâts du type de ton ascendance, ajoute ton modificateur de Charisme à l'un de ses jets de dégâts. Au même moment, tu peux dépenser 1 point de sorcellerie pour obtenir la résistance à ce type de dégâts pendant 1 heure.",
+      "es": "Cuando lanzas un conjuro que inflige daño del tipo de tu linaje, suma tu modificador de Carisma a una de sus tiradas de daño. A la vez, puedes gastar 1 punto de hechicería para obtener resistencia a ese tipo de daño durante 1 hora."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "dragon-wings",
+    "label": {
+      "en": "Dragon Wings",
+      "fr": "Ailes de dragon",
+      "es": "Alas de dragón"
+    },
+    "parentKey": "draconic-bloodline",
+    "description": {
+      "en": "As a bonus action, you sprout dragon wings, gaining a flying speed equal to your current speed until you dismiss them as a bonus action. You can't manifest them while wearing armor not made to accommodate them.",
+      "fr": "Par une action bonus, des ailes de dragon te poussent dans le dos et te donnent une vitesse de vol égale à ta vitesse actuelle jusqu'à ce que tu les fasses disparaître par une action bonus. Tu ne peux pas les déployer avec une armure non adaptée.",
+      "es": "Como acción adicional, te brotan alas de dragón y obtienes una velocidad de vuelo igual a tu velocidad actual hasta que las retires como acción adicional. No puedes desplegarlas con una armadura no adaptada."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "draconic-presence",
+    "label": {
+      "en": "Draconic Presence",
+      "fr": "Présence draconique",
+      "es": "Presencia dracónica"
+    },
+    "parentKey": "draconic-bloodline",
+    "description": {
+      "en": "As an action, spend 5 sorcery points to exude an aura of awe or fear (your choice) to a distance of 60 feet for 1 minute (concentration). Each hostile creature that starts its turn in the aura must succeed on a Wisdom saving throw or be charmed (awe) or frightened (fear) until the aura ends; a successful save makes it immune for 24 hours.",
+      "fr": "Par une action, dépense 5 points de sorcellerie pour émettre une aura de fascination ou de terreur (au choix) sur 18 m pendant 1 minute (concentration). Chaque créature hostile qui commence son tour dans l'aura doit réussir un jet de sauvegarde de Sagesse ou être charmée (fascination) ou effrayée (terreur) jusqu'à la fin de l'aura ; une réussite l'immunise pendant 24 heures.",
+      "es": "Como acción, gasta 5 puntos de hechicería para emanar un aura de asombro o miedo (a tu elección) de 60 pies durante 1 minuto (concentración). Cada criatura hostil que empiece su turno en el aura debe superar una tirada de salvación de Sabiduría o quedar hechizada (asombro) o asustada (miedo) hasta que acabe el aura; si la supera, es inmune durante 24 horas."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "wild-magic-surge",
+    "label": {
+      "en": "Wild Magic Surge",
+      "fr": "Déferlement de magie sauvage",
+      "es": "Oleada de magia salvaje"
+    },
+    "parentKey": "wild-magic",
+    "description": {
+      "en": "Immediately after you cast a sorcerer spell of 1st level or higher, the GM can have you roll a d20 (with your own dice). On a 1, roll on the Wild Magic Surge table to create a random magical effect.",
+      "fr": "Juste après que tu as lancé un sort d'ensorceleur de niveau 1 ou supérieur, le MJ peut te demander de lancer un d20 (avec tes propres dés). Sur un 1, lance un dé sur la table des déferlements de magie sauvage pour créer un effet magique aléatoire.",
+      "es": "Justo después de lanzar un conjuro de hechicero de nivel 1 o superior, el DJ puede pedirte que tires un d20 (con tus propios dados). Con un 1, tira en la tabla de oleadas de magia salvaje para crear un efecto mágico aleatorio."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "tides-of-chaos",
+    "label": {
+      "en": "Tides of Chaos",
+      "fr": "Marées du chaos",
+      "es": "Mareas del caos"
+    },
+    "parentKey": "wild-magic",
+    "description": {
+      "en": "You can gain advantage on one attack roll, ability check or saving throw. You regain this after a long rest, or earlier if the GM has you roll on the Wild Magic Surge table after you cast a sorcerer spell of 1st level or higher.",
+      "fr": "Tu peux obtenir l'avantage à un jet d'attaque, un test de caractéristique ou un jet de sauvegarde. Tu récupères cette capacité après un repos long, ou plus tôt si le MJ te fait lancer un dé sur la table des déferlements après un sort d'ensorceleur de niveau 1 ou supérieur.",
+      "es": "Puedes obtener ventaja en una tirada de ataque, prueba de característica o tirada de salvación. Lo recuperas tras un descanso largo, o antes si el DJ te hace tirar en la tabla de oleadas tras un conjuro de hechicero de nivel 1 o superior."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "bend-luck",
+    "label": {
+      "en": "Bend Luck",
+      "fr": "Chance tordue",
+      "es": "Torcer la suerte"
+    },
+    "parentKey": "wild-magic",
+    "description": {
+      "en": "When another creature you can see makes an attack roll, ability check or saving throw, you can use your reaction and spend 2 sorcery points to roll 1d4 and add or subtract it from the creature's roll, after it rolls but before the outcome.",
+      "fr": "Lorsqu'une autre créature que tu vois fait un jet d'attaque, un test de caractéristique ou un jet de sauvegarde, tu peux utiliser ta réaction et dépenser 2 points de sorcellerie pour lancer 1d4 et l'ajouter à son jet ou l'en soustraire, après le jet mais avant l'issue.",
+      "es": "Cuando otra criatura que puedas ver haga una tirada de ataque, prueba de característica o tirada de salvación, puedes usar tu reacción y gastar 2 puntos de hechicería para tirar 1d4 y sumarlo o restarlo a su tirada, tras tirar pero antes del resultado."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "controlled-chaos",
+    "label": {
+      "en": "Controlled Chaos",
+      "fr": "Chaos maîtrisé",
+      "es": "Caos controlado"
+    },
+    "parentKey": "wild-magic",
+    "description": {
+      "en": "Whenever you roll on the Wild Magic Surge table, you can roll twice and use either result.",
+      "fr": "Chaque fois que tu lances un dé sur la table des déferlements de magie sauvage, tu peux le lancer deux fois et choisir le résultat.",
+      "es": "Siempre que tires en la tabla de oleadas de magia salvaje, puedes tirar dos veces y elegir cualquiera de los resultados."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "spell-bombardment",
+    "label": {
+      "en": "Spell Bombardment",
+      "fr": "Bombardement de sorts",
+      "es": "Bombardeo de conjuros"
+    },
+    "parentKey": "wild-magic",
+    "description": {
+      "en": "When you roll damage for a spell and roll the highest number possible on any of the dice, choose one of those dice, roll it again and add that roll to the damage. Once per turn.",
+      "fr": "Lorsque tu lances les dégâts d'un sort et obtiens le résultat maximal sur l'un des dés, choisis l'un de ces dés, relance-le et ajoute ce résultat aux dégâts. Une fois par tour.",
+      "es": "Cuando tiras daño de un conjuro y sacas el valor máximo en alguno de los dados, elige uno de ellos, vuelve a tirarlo y suma el resultado al daño. Una vez por turno."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "archfey-expanded-spells",
+    "label": {
+      "en": "Expanded Spell List",
+      "fr": "Liste de sorts étendue",
+      "es": "Lista de conjuros ampliada"
+    },
+    "parentKey": "the-archfey",
+    "description": {
+      "en": "Your patron lets you choose from an expanded list of spells when you learn a warlock spell: these spells are added to the warlock spell list for you.",
+      "fr": "Ton protecteur te permet de choisir dans une liste de sorts étendue lorsque tu apprends un sort de sorcier : ces sorts s'ajoutent pour toi à la liste des sorts de sorcier.",
+      "es": "Tu patrón te permite elegir de una lista ampliada al aprender un conjuro de brujo: estos conjuros se añaden para ti a la lista de conjuros de brujo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Faerie Fire", "Sleep"],
+        "3": ["Calm Emotions", "Phantasmal Force"],
+        "5": ["Blink", "Plant Growth"],
+        "7": ["Dominate Beast", "Greater Invisibility"],
+        "9": ["Dominate Person", "Seeming"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Faerie Fire",
+            "classLevel": 1
+          },
+          {
+            "name": "Sleep",
+            "classLevel": 1
+          },
+          {
+            "name": "Calm Emotions",
+            "classLevel": 3
+          },
+          {
+            "name": "Phantasmal Force",
+            "classLevel": 3
+          },
+          {
+            "name": "Blink",
+            "classLevel": 5
+          },
+          {
+            "name": "Plant Growth",
+            "classLevel": 5
+          },
+          {
+            "name": "Dominate Beast",
+            "classLevel": 7
+          },
+          {
+            "name": "Greater Invisibility",
+            "classLevel": 7
+          },
+          {
+            "name": "Dominate Person",
+            "classLevel": 9
+          },
+          {
+            "name": "Seeming",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "fey-presence",
+    "label": {
+      "en": "Fey Presence",
+      "fr": "Présence féerique",
+      "es": "Presencia feérica"
+    },
+    "parentKey": "the-archfey",
+    "description": {
+      "en": "As an action, each creature in a 10-foot cube originating from you must succeed on a Wisdom saving throw against your warlock spell save DC or be charmed or frightened by you (your choice) until the end of your next turn. Once per short or long rest.",
+      "fr": "Par une action, chaque créature dans un cube de 3 m partant de toi doit réussir un jet de sauvegarde de Sagesse contre ton DD de sort de sorcier ou être charmée ou effrayée par toi (au choix) jusqu'à la fin de ton prochain tour. Une fois par repos court ou long.",
+      "es": "Como acción, cada criatura en un cubo de 10 pies que parta de ti debe superar una tirada de salvación de Sabiduría contra tu CD de conjuro de brujo o quedar hechizada o asustada por ti (a tu elección) hasta el final de tu siguiente turno. Una vez por descanso corto o largo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "misty-escape",
+    "label": {
+      "en": "Misty Escape",
+      "fr": "Fuite brumeuse",
+      "es": "Huida brumosa"
+    },
+    "parentKey": "the-archfey",
+    "description": {
+      "en": "When you take damage, you can use your reaction to turn invisible and teleport up to 60 feet to an unoccupied space you can see. You remain invisible until the start of your next turn or until you attack or cast a spell. Once per short or long rest.",
+      "fr": "Lorsque tu subis des dégâts, tu peux utiliser ta réaction pour devenir invisible et te téléporter jusqu'à 18 m dans un espace inoccupé que tu vois. Tu restes invisible jusqu'au début de ton prochain tour ou jusqu'à ce que tu attaques ou lances un sort. Une fois par repos court ou long.",
+      "es": "Cuando recibes daño, puedes usar tu reacción para volverte invisible y teletransportarte hasta 60 pies a un espacio desocupado que puedas ver. Sigues invisible hasta el comienzo de tu siguiente turno o hasta que ataques o lances un conjuro. Una vez por descanso corto o largo."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "beguiling-defenses",
+    "label": {
+      "en": "Beguiling Defenses",
+      "fr": "Défenses séduisantes",
+      "es": "Defensas seductoras"
+    },
+    "parentKey": "the-archfey",
+    "description": {
+      "en": "You are immune to being charmed. When another creature attempts to charm you, you can use your reaction to try to turn the charm back: it must succeed on a Wisdom saving throw against your warlock spell save DC or be charmed by you for 1 minute or until it takes damage.",
+      "fr": "Tu es immunisé contre l'état charmé. Lorsqu'une autre créature tente de te charmer, tu peux utiliser ta réaction pour retourner le charme : elle doit réussir un jet de sauvegarde de Sagesse contre ton DD de sort de sorcier ou être charmée par toi pendant 1 minute ou jusqu'à ce qu'elle subisse des dégâts.",
+      "es": "Eres inmune a ser hechizado. Cuando otra criatura intente hechizarte, puedes usar tu reacción para devolverle el encantamiento: debe superar una tirada de salvación de Sabiduría contra tu CD de conjuro de brujo o quedar hechizada por ti durante 1 minuto o hasta que reciba daño."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "dark-delirium",
+    "label": {
+      "en": "Dark Delirium",
+      "fr": "Sombre délire",
+      "es": "Delirio oscuro"
+    },
+    "parentKey": "the-archfey",
+    "description": {
+      "en": "As an action, choose a creature within 60 feet: it must make a Wisdom saving throw against your warlock spell save DC. On a failure, it is charmed or frightened by you (your choice) for 1 minute or until your concentration is broken, lost in an illusory realm where it perceives only you. Once per short or long rest.",
+      "fr": "Par une action, choisis une créature à 18 m : elle doit faire un jet de sauvegarde de Sagesse contre ton DD de sort de sorcier. En cas d'échec, elle est charmée ou effrayée par toi (au choix) pendant 1 minute ou jusqu'à ce que ta concentration soit rompue, perdue dans un royaume illusoire où elle ne perçoit que toi. Une fois par repos court ou long.",
+      "es": "Como acción, elige a una criatura a 60 pies: debe hacer una tirada de salvación de Sabiduría contra tu CD de conjuro de brujo. Si falla, queda hechizada o asustada por ti (a tu elección) durante 1 minuto o hasta que se rompa tu concentración, perdida en un reino ilusorio donde solo te percibe a ti. Una vez por descanso corto o largo."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "fiend-expanded-spells",
+    "label": {
+      "en": "Expanded Spell List",
+      "fr": "Liste de sorts étendue",
+      "es": "Lista de conjuros ampliada"
+    },
+    "parentKey": "the-fiend",
+    "description": {
+      "en": "Your patron lets you choose from an expanded list of spells when you learn a warlock spell: these spells are added to the warlock spell list for you.",
+      "fr": "Ton protecteur te permet de choisir dans une liste de sorts étendue lorsque tu apprends un sort de sorcier : ces sorts s'ajoutent pour toi à la liste des sorts de sorcier.",
+      "es": "Tu patrón te permite elegir de una lista ampliada al aprender un conjuro de brujo: estos conjuros se añaden para ti a la lista de conjuros de brujo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Burning Hands", "Command"],
+        "3": ["Blindness/Deafness", "Scorching Ray"],
+        "5": ["Fireball", "Stinking Cloud"],
+        "7": ["Fire Shield", "Wall of Fire"],
+        "9": ["Flame Strike", "Hallow"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Burning Hands",
+            "classLevel": 1
+          },
+          {
+            "name": "Command",
+            "classLevel": 1
+          },
+          {
+            "name": "Blindness/Deafness",
+            "classLevel": 3
+          },
+          {
+            "name": "Scorching Ray",
+            "classLevel": 3
+          },
+          {
+            "name": "Fireball",
+            "classLevel": 5
+          },
+          {
+            "name": "Stinking Cloud",
+            "classLevel": 5
+          },
+          {
+            "name": "Fire Shield",
+            "classLevel": 7
+          },
+          {
+            "name": "Wall of Fire",
+            "classLevel": 7
+          },
+          {
+            "name": "Flame Strike",
+            "classLevel": 9
+          },
+          {
+            "name": "Hallow",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "dark-ones-blessing",
+    "label": {
+      "en": "Dark One's Blessing",
+      "fr": "Bénédiction du ténébreux",
+      "es": "Bendición del oscuro"
+    },
+    "parentKey": "the-fiend",
+    "description": {
+      "en": "When you reduce a hostile creature to 0 hit points, you gain temporary hit points equal to your Charisma modifier + your warlock level (minimum 1).",
+      "fr": "Lorsque tu réduis une créature hostile à 0 point de vie, tu gagnes des points de vie temporaires égaux à ton modificateur de Charisme + ton niveau de sorcier (minimum 1).",
+      "es": "Cuando reduces a 0 puntos de golpe a una criatura hostil, obtienes puntos de golpe temporales iguales a tu modificador de Carisma + tu nivel de brujo (mínimo 1)."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "dark-ones-own-luck",
+    "label": {
+      "en": "Dark One's Own Luck",
+      "fr": "Chance du ténébreux",
+      "es": "Suerte del oscuro"
+    },
+    "parentKey": "the-fiend",
+    "description": {
+      "en": "When you make an ability check or a saving throw, you can add a d10 to the roll, after seeing it but before the outcome. Once per short or long rest.",
+      "fr": "Lorsque tu fais un test de caractéristique ou un jet de sauvegarde, tu peux ajouter un d10 au jet, après l'avoir vu mais avant l'issue. Une fois par repos court ou long.",
+      "es": "Cuando haces una prueba de característica o tirada de salvación, puedes sumar un d10 a la tirada, tras verla pero antes del resultado. Una vez por descanso corto o largo."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "fiendish-resilience",
+    "label": {
+      "en": "Fiendish Resilience",
+      "fr": "Résistance fiélonne",
+      "es": "Resiliencia infernal"
+    },
+    "parentKey": "the-fiend",
+    "description": {
+      "en": "When you finish a short or long rest, choose one damage type: you have resistance to it until you choose another. Damage from magical weapons or silver weapons ignores this resistance.",
+      "fr": "Lorsque tu termines un repos court ou long, choisis un type de dégâts : tu y as la résistance jusqu'à ce que tu en choisisses un autre. Les dégâts des armes magiques ou en argent ignorent cette résistance.",
+      "es": "Al terminar un descanso corto o largo, elige un tipo de daño: tienes resistencia a él hasta que elijas otro. El daño de armas mágicas o de plata ignora esta resistencia."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "hurl-through-hell",
+    "label": {
+      "en": "Hurl Through Hell",
+      "fr": "Expédition en enfer",
+      "es": "Arrojar al infierno"
+    },
+    "parentKey": "the-fiend",
+    "description": {
+      "en": "When you hit a creature with an attack, you can instantly send it through the lower planes. It disappears until the end of your next turn, then returns to its space; if it isn't a fiend, it takes 10d10 psychic damage. Once per long rest.",
+      "fr": "Lorsque tu touches une créature avec une attaque, tu peux l'envoyer instantanément à travers les plans inférieurs. Elle disparaît jusqu'à la fin de ton prochain tour puis revient à sa place ; si ce n'est pas un fiélon, elle subit 10d10 dégâts psychiques. Une fois par repos long.",
+      "es": "Cuando impactas a una criatura con un ataque, puedes enviarla al instante a través de los planos inferiores. Desaparece hasta el final de tu siguiente turno y luego vuelve a su espacio; si no es un infernal, recibe 10d10 de daño psíquico. Una vez por descanso largo."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "great-old-one-expanded-spells",
+    "label": {
+      "en": "Expanded Spell List",
+      "fr": "Liste de sorts étendue",
+      "es": "Lista de conjuros ampliada"
+    },
+    "parentKey": "the-great-old-one",
+    "description": {
+      "en": "Your patron lets you choose from an expanded list of spells when you learn a warlock spell: these spells are added to the warlock spell list for you.",
+      "fr": "Ton protecteur te permet de choisir dans une liste de sorts étendue lorsque tu apprends un sort de sorcier : ces sorts s'ajoutent pour toi à la liste des sorts de sorcier.",
+      "es": "Tu patrón te permite elegir de una lista ampliada al aprender un conjuro de brujo: estos conjuros se añaden para ti a la lista de conjuros de brujo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Dissonant Whispers", "Hideous Laughter"],
+        "3": ["Detect Thoughts", "Phantasmal Force"],
+        "5": ["Clairvoyance", "Sending"],
+        "7": ["Dominate Beast", "Black Tentacles"],
+        "9": ["Dominate Person", "Telekinesis"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Dissonant Whispers",
+            "classLevel": 1
+          },
+          {
+            "name": "Hideous Laughter",
+            "classLevel": 1
+          },
+          {
+            "name": "Detect Thoughts",
+            "classLevel": 3
+          },
+          {
+            "name": "Phantasmal Force",
+            "classLevel": 3
+          },
+          {
+            "name": "Clairvoyance",
+            "classLevel": 5
+          },
+          {
+            "name": "Sending",
+            "classLevel": 5
+          },
+          {
+            "name": "Dominate Beast",
+            "classLevel": 7
+          },
+          {
+            "name": "Black Tentacles",
+            "classLevel": 7
+          },
+          {
+            "name": "Dominate Person",
+            "classLevel": 9
+          },
+          {
+            "name": "Telekinesis",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "awakened-mind",
+    "label": {
+      "en": "Awakened Mind",
+      "fr": "Éveil de l'esprit",
+      "es": "Mente despierta"
+    },
+    "parentKey": "the-great-old-one",
+    "description": {
+      "en": "You can telepathically speak to any creature you can see within 30 feet. You don't need to share a language, but the creature must understand at least one language.",
+      "fr": "Tu peux parler par télépathie à toute créature que tu vois à 9 m. Vous n'avez pas besoin de partager une langue, mais elle doit en comprendre au moins une.",
+      "es": "Puedes hablar telepáticamente con cualquier criatura que puedas ver a 30 pies. No necesitáis compartir idioma, pero debe entender al menos uno."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "entropic-ward",
+    "label": {
+      "en": "Entropic Ward",
+      "fr": "Protection entropique",
+      "es": "Protección entrópica"
+    },
+    "parentKey": "the-great-old-one",
+    "description": {
+      "en": "When a creature makes an attack roll against you, you can use your reaction to impose disadvantage on it. If the attack misses, your next attack roll against the creature has advantage if made before the end of your next turn. Once per short or long rest.",
+      "fr": "Lorsqu'une créature fait un jet d'attaque contre toi, tu peux utiliser ta réaction pour lui imposer le désavantage. Si l'attaque rate, ton prochain jet d'attaque contre elle a l'avantage s'il a lieu avant la fin de ton prochain tour. Une fois par repos court ou long.",
+      "es": "Cuando una criatura haga una tirada de ataque contra ti, puedes usar tu reacción para imponerle desventaja. Si falla, tu siguiente tirada de ataque contra ella tiene ventaja si la haces antes del final de tu siguiente turno. Una vez por descanso corto o largo."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "thought-shield",
+    "label": {
+      "en": "Thought Shield",
+      "fr": "Bouclier mental",
+      "es": "Escudo mental"
+    },
+    "parentKey": "the-great-old-one",
+    "description": {
+      "en": "Your thoughts can't be read by telepathy or other means unless you allow it. You have resistance to psychic damage, and whenever a creature deals psychic damage to you, it takes the same amount of damage.",
+      "fr": "Tes pensées ne peuvent être lues ni par télépathie ni par d'autres moyens sans ton accord. Tu as la résistance aux dégâts psychiques, et chaque fois qu'une créature t'en inflige, elle subit le même montant de dégâts.",
+      "es": "Tus pensamientos no pueden leerse por telepatía ni de otro modo sin tu permiso. Tienes resistencia al daño psíquico, y cada vez que una criatura te inflija daño psíquico, recibe la misma cantidad."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["psychic-damage"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "create-thrall",
+    "label": {
+      "en": "Create Thrall",
+      "fr": "Création de serviteur",
+      "es": "Crear siervo"
+    },
+    "parentKey": "the-great-old-one",
+    "description": {
+      "en": "As an action, you touch an incapacitated humanoid: it is charmed by you until a remove curse spell is cast on it, the charmed condition is removed, or you use this feature again. You can communicate telepathically with it while you are on the same plane.",
+      "fr": "Par une action, tu touches un humanoïde neutralisé : il est charmé par toi jusqu'à ce qu'un sort de délivrance des malédictions lui soit lancé, que l'état charmé lui soit retiré, ou que tu réutilises cette aptitude. Tu peux communiquer avec lui par télépathie tant que vous êtes sur le même plan.",
+      "es": "Como acción, tocas a un humanoide incapacitado: queda hechizado por ti hasta que se le lance quitar maldición, se le retire el estado hechizado o vuelvas a usar este rasgo. Puedes comunicarte telepáticamente con él mientras estéis en el mismo plano."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "school-of-abjuration-savant",
+    "label": {
+      "en": "Abjuration Savant",
+      "fr": "Érudit en abjuration",
+      "es": "Sabio en abjuración"
+    },
+    "parentKey": "school-of-abjuration",
+    "description": {
+      "en": "The gold and time you must spend to copy a abjuration spell into your spellbook is halved.",
+      "fr": "L'or et le temps nécessaires pour copier un sort d'abjuration dans ton grimoire sont réduits de moitié.",
+      "es": "El oro y el tiempo necesarios para copiar un conjuro de abjuración en tu libro de conjuros se reducen a la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "arcane-ward",
+    "label": {
+      "en": "Arcane Ward",
+      "fr": "Égide arcanique",
+      "es": "Guarda arcana"
+    },
+    "parentKey": "school-of-abjuration",
+    "description": {
+      "en": "When you cast an abjuration spell of 1st level or higher, you can create a ward on yourself lasting until a long rest, with hit points equal to twice your wizard level + your Intelligence modifier. Damage you take is absorbed by the ward first. Whenever you cast an abjuration spell of 1st level or higher, the ward regains twice the spell's level in hit points. Once created, you can't create a new one until a long rest.",
+      "fr": "Lorsque tu lances un sort d'abjuration de niveau 1 ou supérieur, tu peux créer sur toi une égide qui dure jusqu'à un repos long, avec des points de vie égaux à deux fois ton niveau de magicien + ton modificateur d'Intelligence. Les dégâts que tu subis sont d'abord absorbés par l'égide. Chaque fois que tu lances un sort d'abjuration de niveau 1 ou supérieur, l'égide récupère deux fois le niveau du sort en points de vie. Une fois créée, tu ne peux pas en créer une nouvelle avant un repos long.",
+      "es": "Cuando lanzas un conjuro de abjuración de nivel 1 o superior, puedes crear sobre ti una guarda que dura hasta un descanso largo, con puntos de golpe iguales al doble de tu nivel de mago + tu modificador de Inteligencia. El daño que recibes lo absorbe primero la guarda. Cada vez que lanzas un conjuro de abjuración de nivel 1 o superior, la guarda recupera el doble del nivel del conjuro en puntos de golpe. Una vez creada, no puedes crear otra hasta un descanso largo."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long",
+        "unit": "hp"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "+": [
+          {
+            "*": [
+              2,
+              {
+                "var": "characterLevel"
+              }
+            ]
+          },
+          {
+            "var": "intelligenceModifier"
+          }
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "projected-ward",
+    "label": {
+      "en": "Projected Ward",
+      "fr": "Égide projetée",
+      "es": "Guarda proyectada"
+    },
+    "parentKey": "school-of-abjuration",
+    "description": {
+      "en": "When a creature you can see within 30 feet takes damage, you can use your reaction to have your Arcane Ward absorb that damage instead.",
+      "fr": "Lorsqu'une créature que tu vois à 9 m subit des dégâts, tu peux utiliser ta réaction pour que ton Égide arcanique absorbe ces dégâts à sa place.",
+      "es": "Cuando una criatura que puedas ver a 30 pies reciba daño, puedes usar tu reacción para que tu Guarda arcana absorba ese daño en su lugar."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "improved-abjuration",
+    "label": {
+      "en": "Improved Abjuration",
+      "fr": "Abjuration améliorée",
+      "es": "Abjuración mejorada"
+    },
+    "parentKey": "school-of-abjuration",
+    "description": {
+      "en": "When you cast an abjuration spell that requires an ability check (such as counterspell or dispel magic), you add your proficiency bonus to that check.",
+      "fr": "Lorsque tu lances un sort d'abjuration qui demande un test de caractéristique (comme contresort ou dissipation de la magie), tu ajoutes ton bonus de maîtrise à ce test.",
+      "es": "Cuando lanzas un conjuro de abjuración que requiere una prueba de característica (como contraconjuro o disipar magia), sumas tu bonificador por competencia a esa prueba."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "spell-resistance",
+    "label": {
+      "en": "Spell Resistance",
+      "fr": "Résistance aux sorts",
+      "es": "Resistencia a conjuros"
+    },
+    "parentKey": "school-of-abjuration",
+    "description": {
+      "en": "You have advantage on saving throws against spells, and resistance against the damage of spells.",
+      "fr": "Tu as l'avantage aux jets de sauvegarde contre les sorts et la résistance aux dégâts des sorts.",
+      "es": "Tienes ventaja en las tiradas de salvación contra conjuros y resistencia al daño de conjuros."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "school-of-conjuration-savant",
+    "label": {
+      "en": "Conjuration Savant",
+      "fr": "Érudit en invocation",
+      "es": "Sabio en conjuración"
+    },
+    "parentKey": "school-of-conjuration",
+    "description": {
+      "en": "The gold and time you must spend to copy a conjuration spell into your spellbook is halved.",
+      "fr": "L'or et le temps nécessaires pour copier un sort d'invocation dans ton grimoire sont réduits de moitié.",
+      "es": "El oro y el tiempo necesarios para copiar un conjuro de conjuración en tu libro de conjuros se reducen a la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "minor-conjuration",
+    "label": {
+      "en": "Minor Conjuration",
+      "fr": "Invocation mineure",
+      "es": "Conjuración menor"
+    },
+    "parentKey": "school-of-conjuration",
+    "description": {
+      "en": "As an action, you conjure an inanimate object in your hand or on the ground within 10 feet: no larger than 3 feet on a side, no heavier than 10 pounds, of a nonmagical object you have seen. It disappears after 1 hour, when you use this feature again, or if it takes or deals damage.",
+      "fr": "Par une action, tu fais apparaître un objet inanimé dans ta main ou au sol à 3 m : pas plus de 90 cm de côté, pas plus de 5 kg, et ayant la forme d'un objet non magique que tu as déjà vu. Il disparaît au bout d'1 heure, quand tu réutilises cette aptitude, ou s'il subit ou inflige des dégâts.",
+      "es": "Como acción, conjuras un objeto inanimado en tu mano o en el suelo a 10 pies: no mayor de 3 pies de lado, no más de 10 libras, con la forma de un objeto no mágico que hayas visto. Desaparece tras 1 hora, al volver a usar este rasgo, o si recibe o inflige daño."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "benign-transposition",
+    "label": {
+      "en": "Benign Transposition",
+      "fr": "Transposition bienveillante",
+      "es": "Transposición benigna"
+    },
+    "parentKey": "school-of-conjuration",
+    "description": {
+      "en": "As an action, you teleport up to 30 feet to an unoccupied space you can see, or swap places with a willing Small or Medium creature within range. You regain this after a long rest or when you cast a conjuration spell of 1st level or higher.",
+      "fr": "Par une action, tu te téléportes jusqu'à 9 m dans un espace inoccupé que tu vois, ou échanges ta place avec une créature consentante de taille Petite ou Moyenne à portée. Tu récupères cette capacité après un repos long ou en lançant un sort d'invocation de niveau 1 ou supérieur.",
+      "es": "Como acción, te teletransportas hasta 30 pies a un espacio desocupado que puedas ver, o intercambias tu lugar con una criatura voluntaria Pequeña o Mediana dentro del alcance. Lo recuperas tras un descanso largo o al lanzar un conjuro de conjuración de nivel 1 o superior."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "focused-conjuration",
+    "label": {
+      "en": "Focused Conjuration",
+      "fr": "Invocation focalisée",
+      "es": "Conjuración concentrada"
+    },
+    "parentKey": "school-of-conjuration",
+    "description": {
+      "en": "While you are concentrating on a conjuration spell, your concentration can't be broken as a result of taking damage.",
+      "fr": "Tant que tu te concentres sur un sort d'invocation, subir des dégâts ne peut pas rompre ta concentration.",
+      "es": "Mientras te concentras en un conjuro de conjuración, recibir daño no puede romper tu concentración."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "durable-summons",
+    "label": {
+      "en": "Durable Summons",
+      "fr": "Invocations durables",
+      "es": "Invocaciones duraderas"
+    },
+    "parentKey": "school-of-conjuration",
+    "description": {
+      "en": "Any creature that you summon or create with a conjuration spell has 30 temporary hit points.",
+      "fr": "Toute créature que tu convoques ou crées avec un sort d'invocation a 30 points de vie temporaires.",
+      "es": "Cualquier criatura que invoques o crees con un conjuro de conjuración tiene 30 puntos de golpe temporales."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "school-of-divination-savant",
+    "label": {
+      "en": "Divination Savant",
+      "fr": "Érudit en divination",
+      "es": "Sabio en adivinación"
+    },
+    "parentKey": "school-of-divination",
+    "description": {
+      "en": "The gold and time you must spend to copy a divination spell into your spellbook is halved.",
+      "fr": "L'or et le temps nécessaires pour copier un sort de divination dans ton grimoire sont réduits de moitié.",
+      "es": "El oro y el tiempo necesarios para copiar un conjuro de adivinación en tu libro de conjuros se reducen a la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "portent",
+    "label": {
+      "en": "Portent",
+      "fr": "Présage",
+      "es": "Augurio"
+    },
+    "parentKey": "school-of-divination",
+    "description": {
+      "en": "When you finish a long rest, roll two d20s with your own dice and record the results. You can replace any attack roll, saving throw or ability check made by you or a creature you can see with one of these results, before the roll. Each result can be used once; unused ones are lost at your next long rest. You roll three d20s from 14th level.",
+      "fr": "Lorsque tu termines un repos long, lance deux d20 avec tes propres dés et note les résultats. Tu peux remplacer un jet d'attaque, un jet de sauvegarde ou un test de caractéristique fait par toi ou une créature que tu vois par l'un de ces résultats, avant le jet. Chaque résultat ne sert qu'une fois ; ceux qui ne sont pas utilisés sont perdus à ton prochain repos long. Tu lances trois d20 à partir du niveau 14.",
+      "es": "Al terminar un descanso largo, tira dos d20 con tus propios dados y anota los resultados. Puedes sustituir una tirada de ataque, tirada de salvación o prueba de característica tuya o de una criatura que puedas ver por uno de esos resultados, antes de tirar. Cada resultado se usa una vez; los no usados se pierden en tu siguiente descanso largo. Tiras tres d20 a partir del nivel 14."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      },
+      "usesByLevel": [
+        0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "expert-divination",
+    "label": {
+      "en": "Expert Divination",
+      "fr": "Expert en divination",
+      "es": "Adivinación experta"
+    },
+    "parentKey": "school-of-divination",
+    "description": {
+      "en": "When you cast a divination spell of 2nd level or higher using a spell slot, you regain one expended spell slot of a level lower than the spell (no higher than 5th).",
+      "fr": "Lorsque tu lances un sort de divination de niveau 2 ou supérieur avec un emplacement, tu récupères un emplacement dépensé de niveau inférieur au sort (5e niveau au maximum).",
+      "es": "Cuando lanzas un conjuro de adivinación de nivel 2 o superior con un espacio, recuperas un espacio gastado de nivel inferior al del conjuro (como máximo nivel 5)."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "the-third-eye",
+    "label": {
+      "en": "The Third Eye",
+      "fr": "Troisième œil",
+      "es": "El tercer ojo"
+    },
+    "parentKey": "school-of-divination",
+    "description": {
+      "en": "As an action, you gain one of these benefits until you are incapacitated or take a rest: darkvision 60 feet; seeing into the Ethereal Plane within 60 feet; reading any language; or seeing invisible creatures and objects within 10 feet. Once per short or long rest.",
+      "fr": "Par une action, tu obtiens l'un des bénéfices suivants jusqu'à ce que tu sois neutralisé ou prennes un repos : vision dans le noir à 18 m ; vision du plan Éthéré à 18 m ; lecture de toutes les langues ; ou vision des créatures et objets invisibles à 3 m. Une fois par repos court ou long.",
+      "es": "Como acción, obtienes uno de estos beneficios hasta que quedes incapacitado o descanses: visión en la oscuridad a 60 pies; ver el plano Etéreo a 60 pies; leer cualquier idioma; o ver criaturas y objetos invisibles a 10 pies. Una vez por descanso corto o largo."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "greater-portent",
+    "label": {
+      "en": "Greater Portent",
+      "fr": "Présage supérieur",
+      "es": "Augurio mayor"
+    },
+    "parentKey": "school-of-divination",
+    "description": {
+      "en": "You roll three d20s for your Portent feature, rather than two.",
+      "fr": "Tu lances trois d20 pour ton Présage au lieu de deux.",
+      "es": "Tiras tres d20 para tu Augurio en lugar de dos."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "school-of-enchantment-savant",
+    "label": {
+      "en": "Enchantment Savant",
+      "fr": "Érudit en enchantement",
+      "es": "Sabio en encantamiento"
+    },
+    "parentKey": "school-of-enchantment",
+    "description": {
+      "en": "The gold and time you must spend to copy a enchantment spell into your spellbook is halved.",
+      "fr": "L'or et le temps nécessaires pour copier un sort d'enchantement dans ton grimoire sont réduits de moitié.",
+      "es": "El oro y el tiempo necesarios para copiar un conjuro de encantamiento en tu libro de conjuros se reducen a la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "hypnotic-gaze",
+    "label": {
+      "en": "Hypnotic Gaze",
+      "fr": "Regard hypnotique",
+      "es": "Mirada hipnótica"
+    },
+    "parentKey": "school-of-enchantment",
+    "description": {
+      "en": "As an action, choose a creature you can see within 5 feet that can see or hear you: it must succeed on a Wisdom saving throw against your wizard spell save DC or be charmed until the end of your next turn, with speed 0 and incapacitated. You can extend the effect with your action each turn while you stay within 5 feet. Once a creature succeeds or the effect ends, you can't use it on that creature until a long rest.",
+      "fr": "Par une action, choisis une créature que tu vois à 1,50 m et qui peut te voir ou t'entendre : elle doit réussir un jet de sauvegarde de Sagesse contre ton DD de sort de magicien ou être charmée jusqu'à la fin de ton prochain tour, avec une vitesse de 0 et neutralisée. Tu peux prolonger l'effet par ton action à chaque tour tant que tu restes à 1,50 m. Une fois que la créature réussit ou que l'effet prend fin, tu ne peux plus l'utiliser sur elle avant un repos long.",
+      "es": "Como acción, elige a una criatura que puedas ver a 5 pies y que pueda verte u oírte: debe superar una tirada de salvación de Sabiduría contra tu CD de conjuro de mago o quedar hechizada hasta el final de tu siguiente turno, con velocidad 0 e incapacitada. Puedes prolongar el efecto con tu acción cada turno mientras sigas a 5 pies. Cuando la criatura tenga éxito o el efecto acabe, no puedes volver a usarlo sobre ella hasta un descanso largo."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "instinctive-charm",
+    "label": {
+      "en": "Instinctive Charm",
+      "fr": "Charme instinctif",
+      "es": "Encanto instintivo"
+    },
+    "parentKey": "school-of-enchantment",
+    "description": {
+      "en": "When a creature you can see within 30 feet makes an attack roll against you, you can use your reaction to divert it to another creature within its range (not itself): it must make a Wisdom saving throw against your wizard spell save DC, attacking the closest other creature on a failure. On a success, it is immune to this feature until a long rest.",
+      "fr": "Lorsqu'une créature que tu vois à 9 m fait un jet d'attaque contre toi, tu peux utiliser ta réaction pour détourner l'attaque vers une autre créature à sa portée (pas elle-même) : elle doit faire un jet de sauvegarde de Sagesse contre ton DD de sort de magicien et, en cas d'échec, attaque la créature la plus proche. En cas de réussite, elle est immunisée contre cette aptitude jusqu'à un repos long.",
+      "es": "Cuando una criatura que puedas ver a 30 pies haga una tirada de ataque contra ti, puedes usar tu reacción para desviarla a otra criatura a su alcance (no a sí misma): debe hacer una tirada de salvación de Sabiduría contra tu CD de conjuro de mago y, si falla, ataca a la criatura más cercana. Si tiene éxito, es inmune a este rasgo hasta un descanso largo."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "split-enchantment",
+    "label": {
+      "en": "Split Enchantment",
+      "fr": "Enchantement partagé",
+      "es": "Encantamiento dividido"
+    },
+    "parentKey": "school-of-enchantment",
+    "description": {
+      "en": "When you cast an enchantment spell of 1st level or higher that targets only one creature, you can have it target a second creature.",
+      "fr": "Lorsque tu lances un sort d'enchantement de niveau 1 ou supérieur qui ne cible qu'une créature, tu peux lui faire cibler une seconde créature.",
+      "es": "Cuando lanzas un conjuro de encantamiento de nivel 1 o superior que solo apunta a una criatura, puedes hacer que apunte a una segunda."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "alter-memories",
+    "label": {
+      "en": "Alter Memories",
+      "fr": "Altération des souvenirs",
+      "es": "Alterar recuerdos"
+    },
+    "parentKey": "school-of-enchantment",
+    "description": {
+      "en": "When you cast an enchantment spell to charm creatures, you can make one of them unaware of being charmed. Before the spell ends, you can use your action to try to make it forget some of the time it spent charmed: it makes an Intelligence saving throw, forgetting up to 1 + your Charisma modifier hours on a failure.",
+      "fr": "Lorsque tu lances un sort d'enchantement pour charmer des créatures, tu peux faire en sorte que l'une d'elles ne se rende pas compte qu'elle est charmée. Avant la fin du sort, tu peux utiliser ton action pour tenter de lui faire oublier une partie du temps passé sous le charme : elle fait un jet de sauvegarde d'Intelligence et oublie jusqu'à 1 + ton modificateur de Charisme heures en cas d'échec.",
+      "es": "Cuando lanzas un conjuro de encantamiento para hechizar criaturas, puedes hacer que una de ellas no sepa que está hechizada. Antes de que acabe el conjuro, puedes usar tu acción para intentar que olvide parte del tiempo que pasó hechizada: hace una tirada de salvación de Inteligencia y, si falla, olvida hasta 1 + tu modificador de Carisma horas."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "school-of-evocation-savant",
+    "label": {
+      "en": "Evocation Savant",
+      "fr": "Érudit en évocation",
+      "es": "Sabio en evocación"
+    },
+    "parentKey": "school-of-evocation",
+    "description": {
+      "en": "The gold and time you must spend to copy a evocation spell into your spellbook is halved.",
+      "fr": "L'or et le temps nécessaires pour copier un sort d'évocation dans ton grimoire sont réduits de moitié.",
+      "es": "El oro y el tiempo necesarios para copiar un conjuro de evocación en tu libro de conjuros se reducen a la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "sculpt-spells",
+    "label": {
+      "en": "Sculpt Spells",
+      "fr": "Façonnage des sorts",
+      "es": "Esculpir conjuros"
+    },
+    "parentKey": "school-of-evocation",
+    "description": {
+      "en": "When you cast an evocation spell that affects other creatures you can see, choose a number of them equal to 1 + the spell's level: they automatically succeed on their saving throws against the spell and take no damage if they would normally take half.",
+      "fr": "Lorsque tu lances un sort d'évocation qui affecte d'autres créatures que tu vois, choisis-en un nombre égal à 1 + le niveau du sort : elles réussissent automatiquement leur jet de sauvegarde contre le sort et ne subissent aucun dégât si elles devaient en subir la moitié.",
+      "es": "Cuando lanzas un conjuro de evocación que afecta a otras criaturas que puedas ver, elige tantas como 1 + el nivel del conjuro: superan automáticamente su tirada de salvación y no reciben daño si normalmente recibirían la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "potent-cantrip",
+    "label": {
+      "en": "Potent Cantrip",
+      "fr": "Sort mineur puissant",
+      "es": "Truco potente"
+    },
+    "parentKey": "school-of-evocation",
+    "description": {
+      "en": "When a creature succeeds on a saving throw against your cantrip, it takes half the cantrip's damage (if any) but suffers no additional effect.",
+      "fr": "Lorsqu'une créature réussit un jet de sauvegarde contre ton sort mineur, elle subit la moitié de ses dégâts éventuels mais aucun autre effet.",
+      "es": "Cuando una criatura supera una tirada de salvación contra tu truco, recibe la mitad de su daño (si lo hay) pero ningún otro efecto."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "empowered-evocation",
+    "label": {
+      "en": "Empowered Evocation",
+      "fr": "Évocation renforcée",
+      "es": "Evocación potenciada"
+    },
+    "parentKey": "school-of-evocation",
+    "description": {
+      "en": "You can add your Intelligence modifier to one damage roll of any wizard evocation spell you cast.",
+      "fr": "Tu peux ajouter ton modificateur d'Intelligence à un jet de dégâts de tout sort d'évocation de magicien que tu lances.",
+      "es": "Puedes sumar tu modificador de Inteligencia a una tirada de daño de cualquier conjuro de evocación de mago que lances."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "overchannel",
+    "label": {
+      "en": "Overchannel",
+      "fr": "Surcharge",
+      "es": "Sobrecarga"
+    },
+    "parentKey": "school-of-evocation",
+    "description": {
+      "en": "When you cast a wizard spell of 1st through 5th level that deals damage, you can deal maximum damage with it. The first use is free until a long rest; each further use before then deals you 2d12 necrotic damage per spell level, plus 1d12 per level for each additional use (this damage ignores resistance and immunity).",
+      "fr": "Lorsque tu lances un sort de magicien de niveau 1 à 5 qui inflige des dégâts, tu peux lui faire infliger les dégâts maximaux. La première utilisation est sans risque jusqu'à un repos long ; chaque utilisation suivante avant cela t'inflige 2d12 dégâts nécrotiques par niveau de sort, plus 1d12 par niveau pour chaque utilisation supplémentaire (ces dégâts ignorent résistance et immunité).",
+      "es": "Cuando lanzas un conjuro de mago de nivel 1 a 5 que inflige daño, puedes hacer que inflija el daño máximo. El primer uso es gratuito hasta un descanso largo; cada uso posterior antes de eso te inflige 2d12 de daño necrótico por nivel del conjuro, más 1d12 por nivel por cada uso adicional (este daño ignora resistencia e inmunidad)."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "school-of-illusion-savant",
+    "label": {
+      "en": "Illusion Savant",
+      "fr": "Érudit en illusion",
+      "es": "Sabio en ilusionismo"
+    },
+    "parentKey": "school-of-illusion",
+    "description": {
+      "en": "The gold and time you must spend to copy a illusion spell into your spellbook is halved.",
+      "fr": "L'or et le temps nécessaires pour copier un sort d'illusion dans ton grimoire sont réduits de moitié.",
+      "es": "El oro y el tiempo necesarios para copiar un conjuro de ilusionismo en tu libro de conjuros se reducen a la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "improved-minor-illusion",
+    "label": {
+      "en": "Improved Minor Illusion",
+      "fr": "Illusion mineure améliorée",
+      "es": "Ilusión menor mejorada"
+    },
+    "parentKey": "school-of-illusion",
+    "description": {
+      "en": "You learn the minor illusion cantrip (or another wizard cantrip if you already know it). When you cast minor illusion, you can create both a sound and an image with a single casting.",
+      "fr": "Tu apprends le sort mineur illusion mineure (ou un autre sort mineur de magicien si tu le connais déjà). Lorsque tu lances illusion mineure, tu peux créer à la fois un son et une image.",
+      "es": "Aprendes el truco ilusión menor (u otro truco de mago si ya lo conoces). Al lanzar ilusión menor, puedes crear a la vez un sonido y una imagen."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Minor Illusion",
+            "classLevel": 2
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "malleable-illusions",
+    "label": {
+      "en": "Malleable Illusions",
+      "fr": "Illusions malléables",
+      "es": "Ilusiones maleables"
+    },
+    "parentKey": "school-of-illusion",
+    "description": {
+      "en": "When you cast an illusion spell with a duration of 1 minute or longer, you can use your action to change the nature of that illusion, within the spell's normal parameters, as long as you can see it.",
+      "fr": "Lorsque tu lances un sort d'illusion d'une durée d'au moins 1 minute, tu peux utiliser ton action pour modifier la nature de l'illusion, dans les limites normales du sort, tant que tu la vois.",
+      "es": "Cuando lanzas un conjuro de ilusión con duración de 1 minuto o más, puedes usar tu acción para cambiar la naturaleza de la ilusión, dentro de los parámetros normales del conjuro, mientras puedas verla."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "illusory-self",
+    "label": {
+      "en": "Illusory Self",
+      "fr": "Double illusoire",
+      "es": "Yo ilusorio"
+    },
+    "parentKey": "school-of-illusion",
+    "description": {
+      "en": "When a creature makes an attack roll against you, you can use your reaction to interpose an illusory duplicate: the attack automatically misses, then the illusion dissipates. Once per short or long rest.",
+      "fr": "Lorsqu'une créature fait un jet d'attaque contre toi, tu peux utiliser ta réaction pour interposer un double illusoire : l'attaque rate automatiquement, puis l'illusion se dissipe. Une fois par repos court ou long.",
+      "es": "Cuando una criatura haga una tirada de ataque contra ti, puedes usar tu reacción para interponer un duplicado ilusorio: el ataque falla automáticamente y luego la ilusión se disipa. Una vez por descanso corto o largo."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "illusory-reality",
+    "label": {
+      "en": "Illusory Reality",
+      "fr": "Réalité illusoire",
+      "es": "Realidad ilusoria"
+    },
+    "parentKey": "school-of-illusion",
+    "description": {
+      "en": "When you cast an illusion spell of 1st level or higher, you can choose one inanimate, nonmagical object that is part of the illusion and make it real, as a bonus action on your turn while the spell is ongoing. It stays real for 1 minute and can't deal damage or directly harm anyone.",
+      "fr": "Lorsque tu lances un sort d'illusion de niveau 1 ou supérieur, tu peux choisir un objet inanimé et non magique faisant partie de l'illusion et le rendre réel, par une action bonus pendant ton tour tant que le sort est actif. Il reste réel pendant 1 minute et ne peut ni infliger de dégâts ni blesser directement quiconque.",
+      "es": "Cuando lanzas un conjuro de ilusión de nivel 1 o superior, puedes elegir un objeto inanimado no mágico que forme parte de la ilusión y hacerlo real, como acción adicional en tu turno mientras dure el conjuro. Sigue siendo real durante 1 minuto y no puede infligir daño ni dañar directamente a nadie."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "school-of-necromancy-savant",
+    "label": {
+      "en": "Necromancy Savant",
+      "fr": "Érudit en nécromancie",
+      "es": "Sabio en nigromancia"
+    },
+    "parentKey": "school-of-necromancy",
+    "description": {
+      "en": "The gold and time you must spend to copy a necromancy spell into your spellbook is halved.",
+      "fr": "L'or et le temps nécessaires pour copier un sort de nécromancie dans ton grimoire sont réduits de moitié.",
+      "es": "El oro y el tiempo necesarios para copiar un conjuro de nigromancia en tu libro de conjuros se reducen a la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "grim-harvest",
+    "label": {
+      "en": "Grim Harvest",
+      "fr": "Moisson macabre",
+      "es": "Cosecha siniestra"
+    },
+    "parentKey": "school-of-necromancy",
+    "description": {
+      "en": "Once per turn when you kill one or more creatures with a spell of 1st level or higher, you regain hit points equal to twice the spell's level, or three times its level if it belongs to the School of Necromancy. Undead and constructs don't count.",
+      "fr": "Une fois par tour, lorsque tu tues une ou plusieurs créatures avec un sort de niveau 1 ou supérieur, tu récupères un nombre de points de vie égal à deux fois le niveau du sort, ou trois fois s'il s'agit d'un sort de nécromancie. Les morts-vivants et les créatures artificielles ne comptent pas.",
+      "es": "Una vez por turno, cuando matas a una o más criaturas con un conjuro de nivel 1 o superior, recuperas tantos puntos de golpe como el doble del nivel del conjuro, o el triple si es de nigromancia. No cuentan los muertos vivientes ni los constructos."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "undead-thralls",
+    "label": {
+      "en": "Undead Thralls",
+      "fr": "Serviteurs morts-vivants",
+      "es": "Siervos muertos vivientes"
+    },
+    "parentKey": "school-of-necromancy",
+    "description": {
+      "en": "You add animate dead to your spellbook. When you cast it, you can target one additional corpse or pile of bones. Undead you create with necromancy spells add your wizard level to their hit point maximum and your proficiency bonus to their weapon damage rolls.",
+      "fr": "Tu ajoutes animation des morts à ton grimoire. Lorsque tu le lances, tu peux cibler un cadavre ou un tas d'os supplémentaire. Les morts-vivants créés par tes sorts de nécromancie ajoutent ton niveau de magicien à leur maximum de points de vie et ton bonus de maîtrise à leurs jets de dégâts d'arme.",
+      "es": "Añades animar a los muertos a tu libro de conjuros. Al lanzarlo, puedes elegir un cadáver o montón de huesos adicional. Los muertos vivientes que crees con conjuros de nigromancia suman tu nivel de mago a sus puntos de golpe máximos y tu bonificador por competencia a sus tiradas de daño con armas."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Animate Dead",
+            "classLevel": 6
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "inured-to-undeath",
+    "label": {
+      "en": "Inured to Undeath",
+      "fr": "Insensible à la non-vie",
+      "es": "Inmune a la no muerte"
+    },
+    "parentKey": "school-of-necromancy",
+    "description": {
+      "en": "You have resistance to necrotic damage, and your hit point maximum can't be reduced.",
+      "fr": "Tu as la résistance aux dégâts nécrotiques, et ton maximum de points de vie ne peut pas être réduit.",
+      "es": "Tienes resistencia al daño necrótico y tus puntos de golpe máximos no pueden reducirse."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "resistances",
+        "value": ["necrotic-damage"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "command-undead",
+    "label": {
+      "en": "Command Undead",
+      "fr": "Contrôle des morts-vivants",
+      "es": "Dominar muertos vivientes"
+    },
+    "parentKey": "school-of-necromancy",
+    "description": {
+      "en": "As an action, choose an undead you can see within 60 feet: it makes a Charisma saving throw against your wizard spell save DC (with advantage if its Intelligence is 8 or higher; intelligent undead repeat it every hour). On a failure, it becomes friendly to you and obeys your commands until you use this feature again.",
+      "fr": "Par une action, choisis un mort-vivant que tu vois à 18 m : il fait un jet de sauvegarde de Charisme contre ton DD de sort de magicien (avec l'avantage si son Intelligence est de 8 ou plus ; un mort-vivant intelligent le refait chaque heure). En cas d'échec, il devient amical envers toi et obéit à tes ordres jusqu'à ce que tu réutilises cette aptitude.",
+      "es": "Como acción, elige a un muerto viviente que puedas ver a 60 pies: hace una tirada de salvación de Carisma contra tu CD de conjuro de mago (con ventaja si su Inteligencia es 8 o más; los inteligentes la repiten cada hora). Si falla, se vuelve amistoso contigo y obedece tus órdenes hasta que vuelvas a usar este rasgo."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "school-of-transmutation-savant",
+    "label": {
+      "en": "Transmutation Savant",
+      "fr": "Érudit en transmutation",
+      "es": "Sabio en transmutación"
+    },
+    "parentKey": "school-of-transmutation",
+    "description": {
+      "en": "The gold and time you must spend to copy a transmutation spell into your spellbook is halved.",
+      "fr": "L'or et le temps nécessaires pour copier un sort de transmutation dans ton grimoire sont réduits de moitié.",
+      "es": "El oro y el tiempo necesarios para copiar un conjuro de transmutación en tu libro de conjuros se reducen a la mitad."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "minor-alchemy",
+    "label": {
+      "en": "Minor Alchemy",
+      "fr": "Alchimie mineure",
+      "es": "Alquimia menor"
+    },
+    "parentKey": "school-of-transmutation",
+    "description": {
+      "en": "You can temporarily alter the physical properties of a nonmagical object made of wood, stone (not gemstone), iron, copper or silver, changing it into another of those materials. Each 10 minutes spent transforms up to 1 cubic foot. After 1 hour, or if you lose concentration, it reverts.",
+      "fr": "Tu peux modifier temporairement les propriétés physiques d'un objet non magique en bois, pierre (hors gemme), fer, cuivre ou argent pour le changer en un autre de ces matériaux. Chaque tranche de 10 minutes transforme jusqu'à 30 cm³ de matière. Au bout d'1 heure, ou si tu perds ta concentration, il reprend sa forme.",
+      "es": "Puedes alterar temporalmente las propiedades físicas de un objeto no mágico de madera, piedra (no gema), hierro, cobre o plata, convirtiéndolo en otro de esos materiales. Cada 10 minutos transformas hasta 1 pie cúbico. Tras 1 hora, o si pierdes la concentración, vuelve a su estado original."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "transmuters-stone",
+    "label": {
+      "en": "Transmuter's Stone",
+      "fr": "Pierre de transmutation",
+      "es": "Piedra del transmutador"
+    },
+    "parentKey": "school-of-transmutation",
+    "description": {
+      "en": "You can spend 8 hours creating a transmuter's stone. Its holder gains one benefit you choose when creating it: darkvision 60 feet; +10 feet of speed while unencumbered; proficiency in Constitution saving throws; or resistance to acid, cold, fire, lightning or thunder damage (your choice). Each time you cast a transmutation spell of 1st level or higher, you can change the benefit.",
+      "fr": "Tu peux consacrer 8 heures à créer une pierre de transmutation. Son porteur obtient un bénéfice que tu choisis à sa création : vision dans le noir à 18 m ; +3 m de vitesse sans encombrement ; maîtrise des jets de sauvegarde de Constitution ; ou résistance aux dégâts d'acide, de froid, de feu, de foudre ou de tonnerre (au choix). Chaque fois que tu lances un sort de transmutation de niveau 1 ou supérieur, tu peux changer le bénéfice.",
+      "es": "Puedes dedicar 8 horas a crear una piedra del transmutador. Su portador obtiene un beneficio que eliges al crearla: visión en la oscuridad a 60 pies; +10 pies de velocidad sin carga; competencia en tiradas de salvación de Constitución; o resistencia al daño de ácido, frío, fuego, relámpago o trueno (a tu elección). Cada vez que lances un conjuro de transmutación de nivel 1 o superior, puedes cambiar el beneficio."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "shapechanger",
+    "label": {
+      "en": "Shapechanger",
+      "fr": "Métamorphe",
+      "es": "Cambiaformas"
+    },
+    "parentKey": "school-of-transmutation",
+    "description": {
+      "en": "You add polymorph to your spellbook. You can cast it without expending a spell slot, targeting only yourself and transforming into a beast of challenge rating 1 or lower. Once per short or long rest.",
+      "fr": "Tu ajoutes métamorphose à ton grimoire. Tu peux le lancer sans dépenser d'emplacement de sort, en ne ciblant que toi et en te transformant en une bête de facteur de puissance 1 ou moins. Une fois par repos court ou long.",
+      "es": "Añades polimorfar a tu libro de conjuros. Puedes lanzarlo sin gastar espacios de conjuro, solo sobre ti, transformándote en una bestia de valor de desafío 1 o menos. Una vez por descanso corto o largo."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Polymorph",
+            "classLevel": 10
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "master-transmuter",
+    "label": {
+      "en": "Master Transmuter",
+      "fr": "Maître transmutateur",
+      "es": "Maestro transmutador"
+    },
+    "parentKey": "school-of-transmutation",
+    "description": {
+      "en": "As an action, you can consume your transmuter's stone to produce one effect: transform a nonmagical object up to a 5-foot cube into another nonmagical object of similar size and mass and equal or lesser value; cure all curses, diseases and poisons of a creature you touch and restore all its hit points; cast raise dead without a spell slot; or reduce the apparent age of a willing creature by 3d10 years (minimum 13).",
+      "fr": "Par une action, tu peux consumer ta pierre de transmutation pour produire un effet : transformer un objet non magique tenant dans un cube de 1,50 m en un autre objet non magique de taille et de masse semblables et de valeur égale ou inférieure ; guérir toutes les malédictions, maladies et poisons d'une créature que tu touches et lui rendre tous ses points de vie ; lancer rappel à la vie sans emplacement de sort ; ou réduire l'âge apparent d'une créature consentante de 3d10 ans (minimum 13).",
+      "es": "Como acción, puedes consumir tu piedra del transmutador para producir un efecto: transformar un objeto no mágico que quepa en un cubo de 5 pies en otro objeto no mágico de tamaño y masa similares y valor igual o menor; curar todas las maldiciones, enfermedades y venenos de una criatura que toques y devolverle todos sus puntos de golpe; lanzar revivir a los muertos sin espacio de conjuro; o reducir la edad aparente de una criatura voluntaria en 3d10 años (mínimo 13)."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]

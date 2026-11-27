@@ -14,7 +14,11 @@ import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
-import { Player, PlayerDocument } from './schemas/player.schema';
+import {
+  Player,
+  PlayerDocument,
+} from '@/resources/character/player/schemas/player.schema';
+import { RulesetReferenceService } from '@/resources/ruleset/reference/ruleset-reference.service';
 
 @Injectable()
 export class PlayerService {
@@ -22,6 +26,7 @@ export class PlayerService {
     @InjectModel(Character.name)
     private characterModel: Model<Character>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    private readonly rulesetReference: RulesetReferenceService,
   ) {}
 
   private readonly SERVICE_NAME = PlayerService.name;
@@ -49,10 +54,15 @@ export class PlayerService {
       }
 
       const start: number = Date.now();
+      const rulesetId = await this.rulesetReference.idForCreate(
+        createPlayerDto.gameSystem,
+        createPlayerDto.rulesetId,
+      );
       const newPlayer: PlayerDocument = new this.characterModel.discriminators[
         'player'
       ]({
         ...createPlayerDto,
+        rulesetId,
         createdBy: userId,
       });
       const savedPlayer: Player = await newPlayer.save();

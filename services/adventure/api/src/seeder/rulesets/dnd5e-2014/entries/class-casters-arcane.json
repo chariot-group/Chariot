@@ -1,0 +1,1739 @@
+[
+  {
+    "type": "class",
+    "key": "sorcerer",
+    "label": {
+      "en": "Sorcerer",
+      "fr": "Ensorceleur",
+      "es": "Hechicero"
+    },
+    "description": {
+      "en": "A spellcaster whose magic is innate, born of a bloodline or strange event, and who can bend spells with metamagic.",
+      "fr": "Un lanceur de sorts dont la magie est innée, issue d'une lignée ou d'un événement étrange, et qui peut plier ses sorts grâce à la métamagie.",
+      "es": "Un lanzador de conjuros cuya magia es innata, nacida de un linaje o un suceso extraño, y que puede moldear sus conjuros con metamagia."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Sorcerer",
+      "hitDie": 6,
+      "primaryAbilities": ["charisma"],
+      "savingThrows": ["constitution", "charisma"],
+      "subclassLevel": 1,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "charisma",
+        "preparation": "known",
+        "slots": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ],
+        "maxSpellLevelByLevel": [
+          1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9
+        ],
+        "cantripsKnown": [
+          4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6
+        ],
+        "spellsKnown": [
+          2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 13, 14, 14, 15, 15, 15, 15
+        ],
+        "preparedLevel": "full",
+        "ritualCasting": false,
+        "focus": "arcane focus"
+      },
+      "startingGoldDice": "3d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "charisma"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.constitution",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.charisma",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["dagger", "dart", "sling", "quarterstaff", "light-crossbow"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.ability",
+        "value": "charisma"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.preparation",
+        "value": "known"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.cantripsKnown",
+        "value": [4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.spellsKnown",
+        "value": [
+          2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 13, 14, 14, 15, 15, 15, 15
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.maxSpellLevelByLevel",
+        "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.slots",
+        "value": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.casterProgression",
+        "value": "full"
+      }
+    ],
+    "grants": [
+      {
+        "id": "sorcerer-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "arcana",
+            "deception",
+            "insight",
+            "intimidation",
+            "persuasion",
+            "religion"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "sorcerer-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "sorcerer"
+        },
+        "count": 1,
+        "level": 1
+      },
+      {
+        "id": "sorcerer-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "sorcerer-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "sorcerer-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "sorcerer-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "sorcerer-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "sorcerer-metamagic-3",
+        "kind": "choose",
+        "label": {
+          "en": "Metamagic",
+          "fr": "Métamagie",
+          "es": "Metamagia"
+        },
+        "description": {
+          "en": "Ways to twist your spells with sorcery points.",
+          "fr": "Des façons de modifier tes sorts avec tes points de sorcellerie.",
+          "es": "Formas de modificar tus conjuros con puntos de hechicería."
+        },
+        "from": {
+          "type": "metamagic"
+        },
+        "count": 2,
+        "level": 3,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "sorcerer-metamagic-10",
+        "kind": "choose",
+        "label": {
+          "en": "Metamagic",
+          "fr": "Métamagie",
+          "es": "Metamagia"
+        },
+        "description": {
+          "en": "Ways to twist your spells with sorcery points.",
+          "fr": "Des façons de modifier tes sorts avec tes points de sorcellerie.",
+          "es": "Formas de modificar tus conjuros con puntos de hechicería."
+        },
+        "from": {
+          "type": "metamagic"
+        },
+        "count": 1,
+        "level": 10,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "sorcerer-metamagic-17",
+        "kind": "choose",
+        "label": {
+          "en": "Metamagic",
+          "fr": "Métamagie",
+          "es": "Metamagia"
+        },
+        "description": {
+          "en": "Ways to twist your spells with sorcery points.",
+          "fr": "Des façons de modifier tes sorts avec tes points de sorcellerie.",
+          "es": "Formas de modificar tus conjuros con puntos de hechicería."
+        },
+        "from": {
+          "type": "metamagic"
+        },
+        "count": 1,
+        "level": 17,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "sorcerer-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "sorcerer",
+    "description": {
+      "en": "You cast spells using Charisma, with an arcane focus. You know four cantrips (five at 4th level, six at 10th) and two 1st-level spells, learning more as you level; each time you gain a level, you can replace one known spell.",
+      "fr": "Tu lances des sorts grâce au Charisme, avec un focaliseur arcanique. Tu connais quatre sorts mineurs (cinq au niveau 4, six au niveau 10) et deux sorts de niveau 1, et en apprends d'autres en progressant ; à chaque niveau, tu peux remplacer un sort connu.",
+      "es": "Lanzas conjuros con Carisma, con un canalizador arcano. Conoces cuatro trucos (cinco en el nivel 4, seis en el 10) y dos conjuros de nivel 1, y aprendes más al subir de nivel; cada vez que subes de nivel puedes sustituir un conjuro conocido."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "sorcerous-origin",
+    "label": {
+      "en": "Sorcerous Origin",
+      "fr": "Origine magique",
+      "es": "Origen hechicero"
+    },
+    "parentKey": "sorcerer",
+    "description": {
+      "en": "Choose the source of your innate magic. It grants you features at 1st, 6th, 14th and 18th level.",
+      "fr": "Choisis la source de ta magie innée. Elle te confère des aptitudes aux niveaux 1, 6, 14 et 18.",
+      "es": "Elige la fuente de tu magia innata. Te otorga rasgos en los niveles 1, 6, 14 y 18."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "font-of-magic",
+    "label": {
+      "en": "Font of Magic",
+      "fr": "Source de magie",
+      "es": "Fuente de magia"
+    },
+    "parentKey": "sorcerer",
+    "description": {
+      "en": "You have sorcery points equal to your sorcerer level, regained after a long rest. As a bonus action, you can convert a spell slot into sorcery points equal to its level, or spend sorcery points to create a slot: 2 points for 1st level, 3 for 2nd, 5 for 3rd, 6 for 4th, 7 for 5th (no higher than 5th). Created slots vanish after a long rest.",
+      "fr": "Tu disposes de points de sorcellerie égaux à ton niveau d'ensorceleur, récupérés après un repos long. Par une action bonus, tu peux convertir un emplacement de sort en autant de points que son niveau, ou dépenser des points pour créer un emplacement : 2 points pour le niveau 1, 3 pour le 2, 5 pour le 3, 6 pour le 4, 7 pour le 5 (pas au-delà). Les emplacements créés disparaissent après un repos long.",
+      "es": "Tienes tantos puntos de hechicería como tu nivel de hechicero, que recuperas tras un descanso largo. Como acción adicional, puedes convertir un espacio de conjuro en tantos puntos como su nivel, o gastar puntos para crear un espacio: 2 puntos para nivel 1, 3 para nivel 2, 5 para nivel 3, 6 para nivel 4, 7 para nivel 5 (no más). Los espacios creados desaparecen tras un descanso largo."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long",
+        "unit": "sorcery points"
+      },
+      "usesByLevel": [
+        0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "metamagic",
+    "label": {
+      "en": "Metamagic",
+      "fr": "Métamagie",
+      "es": "Metamagia"
+    },
+    "parentKey": "sorcerer",
+    "description": {
+      "en": "You can twist your spells to suit your needs. You learn two Metamagic options, one more at 10th level and one more at 17th. You can use only one Metamagic option on a spell when you cast it, unless otherwise noted.",
+      "fr": "Tu peux modifier tes sorts selon tes besoins. Tu apprends deux options de métamagie, une de plus au niveau 10 et une autre au niveau 17. Tu ne peux utiliser qu'une option de métamagie par sort lancé, sauf mention contraire.",
+      "es": "Puedes alterar tus conjuros según tus necesidades. Aprendes dos opciones de metamagia, una más en el nivel 10 y otra en el 17. Solo puedes usar una opción de metamagia por conjuro lanzado, salvo que se indique lo contrario."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "sorcerous-restoration",
+    "label": {
+      "en": "Sorcerous Restoration",
+      "fr": "Restauration magique",
+      "es": "Restauración hechicera"
+    },
+    "parentKey": "sorcerer",
+    "description": {
+      "en": "You regain 4 expended sorcery points whenever you finish a short rest.",
+      "fr": "Tu récupères 4 points de sorcellerie dépensés chaque fois que tu termines un repos court.",
+      "es": "Recuperas 4 puntos de hechicería gastados cada vez que terminas un descanso corto."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "warlock",
+    "label": {
+      "en": "Warlock",
+      "fr": "Sorcier",
+      "es": "Brujo"
+    },
+    "description": {
+      "en": "A seeker of forbidden knowledge who gains magic through a pact with an otherworldly patron.",
+      "fr": "Un chercheur de savoirs interdits qui obtient sa magie par un pacte avec un protecteur d'outre-monde.",
+      "es": "Un buscador de saberes prohibidos que obtiene su magia mediante un pacto con un patrón de otro mundo."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Warlock",
+      "hitDie": 8,
+      "primaryAbilities": ["charisma"],
+      "savingThrows": ["wisdom", "charisma"],
+      "subclassLevel": 1,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "charisma",
+        "preparation": "known",
+        "slots": [
+          [1, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 2, 0, 0, 0, 0, 0, 0, 0],
+          [0, 2, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 2, 0, 0, 0, 0, 0, 0],
+          [0, 0, 2, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 2, 0, 0, 0, 0, 0],
+          [0, 0, 0, 2, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 2, 0, 0, 0, 0],
+          [0, 0, 0, 0, 2, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0]
+        ],
+        "maxSpellLevelByLevel": [
+          1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+        ],
+        "cantripsKnown": [
+          2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+        ],
+        "spellsKnown": [
+          2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15
+        ],
+        "preparedLevel": "full",
+        "ritualCasting": false,
+        "focus": "arcane focus",
+        "slotReset": "short",
+        "pactMagic": true
+      },
+      "startingGoldDice": "4d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "charisma"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.wisdom",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.charisma",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["light-armor"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["simple-weapons"],
+        "when": {
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.ability",
+        "value": "charisma"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.preparation",
+        "value": "known"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.cantripsKnown",
+        "value": [2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.spellsKnown",
+        "value": [
+          2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.maxSpellLevelByLevel",
+        "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.slots",
+        "value": [
+          [1, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 2, 0, 0, 0, 0, 0, 0, 0],
+          [0, 2, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 2, 0, 0, 0, 0, 0, 0],
+          [0, 0, 2, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 2, 0, 0, 0, 0, 0],
+          [0, 0, 0, 2, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 2, 0, 0, 0, 0],
+          [0, 0, 0, 0, 2, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.casterProgression",
+        "value": "pact"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.slotReset",
+        "value": "short"
+      }
+    ],
+    "grants": [
+      {
+        "id": "warlock-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "arcana",
+            "deception",
+            "history",
+            "intimidation",
+            "investigation",
+            "nature",
+            "religion"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "warlock-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "warlock"
+        },
+        "count": 1,
+        "level": 1
+      },
+      {
+        "id": "warlock-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "warlock-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "warlock-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "warlock-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "warlock-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      },
+      {
+        "id": "warlock-invocations-2",
+        "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
+        "from": {
+          "type": "eldritch-invocation"
+        },
+        "count": 2,
+        "level": 2,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "warlock-invocations-5",
+        "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
+        "from": {
+          "type": "eldritch-invocation"
+        },
+        "count": 1,
+        "level": 5,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "warlock-invocations-7",
+        "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
+        "from": {
+          "type": "eldritch-invocation"
+        },
+        "count": 1,
+        "level": 7,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "warlock-invocations-9",
+        "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
+        "from": {
+          "type": "eldritch-invocation"
+        },
+        "count": 1,
+        "level": 9,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "warlock-invocations-12",
+        "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
+        "from": {
+          "type": "eldritch-invocation"
+        },
+        "count": 1,
+        "level": 12,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "warlock-invocations-15",
+        "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
+        "from": {
+          "type": "eldritch-invocation"
+        },
+        "count": 1,
+        "level": 15,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "warlock-invocations-18",
+        "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
+        "from": {
+          "type": "eldritch-invocation"
+        },
+        "count": 1,
+        "level": 18,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "warlock-pact-boon",
+        "kind": "choose",
+        "label": {
+          "en": "Pact boon",
+          "fr": "Pacte",
+          "es": "Don del pacto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "pact-boon"
+        },
+        "count": 1,
+        "level": 3,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "classOptions",
+            "value": ["{key}"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "otherworldly-patron",
+    "label": {
+      "en": "Otherworldly Patron",
+      "fr": "Protecteur d'outre-monde",
+      "es": "Patrón de otro mundo"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "You strike a bargain with an otherworldly being. Your patron grants you an expanded spell list and features at 1st, 6th, 10th and 14th level.",
+      "fr": "Tu conclus un pacte avec un être d'outre-monde. Ton protecteur t'accorde une liste de sorts étendue et des aptitudes aux niveaux 1, 6, 10 et 14.",
+      "es": "Sellas un pacto con un ser de otro mundo. Tu patrón te otorga una lista de conjuros ampliada y rasgos en los niveles 1, 6, 10 y 14."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "pact-magic",
+    "label": {
+      "en": "Pact Magic",
+      "fr": "Magie de pacte",
+      "es": "Magia del pacto"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "You cast spells using Charisma, with an arcane focus. All your spell slots are the same level (up to 5th) and you regain them after a short or long rest: 1 slot at 1st level, 2 at 2nd, 3 at 11th, 4 at 17th; their level rises from 1st to 5th by 9th level. You know two cantrips (three at 4th level, four at 10th) and learn more spells as you level, replacing one each level if you wish.",
+      "fr": "Tu lances des sorts grâce au Charisme, avec un focaliseur arcanique. Tous tes emplacements de sort sont du même niveau (jusqu'au 5e) et tu les récupères après un repos court ou long : 1 emplacement au niveau 1, 2 au niveau 2, 3 au niveau 11, 4 au niveau 17 ; leur niveau passe du 1er au 5e d'ici le niveau 9. Tu connais deux sorts mineurs (trois au niveau 4, quatre au niveau 10) et apprends d'autres sorts en progressant, en pouvant en remplacer un à chaque niveau.",
+      "es": "Lanzas conjuros con Carisma, con un canalizador arcano. Todos tus espacios de conjuro son del mismo nivel (hasta 5) y los recuperas tras un descanso corto o largo: 1 espacio en el nivel 1, 2 en el 2, 3 en el 11, 4 en el 17; su nivel sube de 1 a 5 hasta el nivel 9. Conoces dos trucos (tres en el nivel 4, cuatro en el 10) y aprendes más conjuros al subir de nivel, pudiendo sustituir uno en cada nivel."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "eldritch-invocations",
+    "label": {
+      "en": "Eldritch Invocations",
+      "fr": "Manifestations occultes",
+      "es": "Invocaciones sobrenaturales"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "You learn two eldritch invocations of your choice, then one more at 5th, 7th, 9th, 12th, 15th and 18th level. When you gain a level, you can replace one invocation you know. Some invocations have prerequisites (level, pact boon or cantrip).",
+      "fr": "Tu apprends deux manifestations occultes de ton choix, puis une de plus aux niveaux 5, 7, 9, 12, 15 et 18. Lorsque tu gagnes un niveau, tu peux remplacer une manifestation connue. Certaines manifestations ont des prérequis (niveau, pacte ou sort mineur).",
+      "es": "Aprendes dos invocaciones sobrenaturales de tu elección, y una más en los niveles 5, 7, 9, 12, 15 y 18. Al subir de nivel puedes sustituir una invocación conocida. Algunas tienen requisitos (nivel, don de pacto o truco)."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "pact-boon",
+    "label": {
+      "en": "Pact Boon",
+      "fr": "Faveur de pacte",
+      "es": "Don del pacto"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "Your patron bestows a gift upon you for your loyal service: choose the Pact of the Chain, of the Blade or of the Tome.",
+      "fr": "Ton protecteur t'accorde un don pour tes loyaux services : choisis le Pacte de la chaîne, de la lame ou du grimoire.",
+      "es": "Tu patrón te concede un don por tu leal servicio: elige el Pacto de la cadena, del filo o del tomo."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "mystic-arcanum",
+    "label": {
+      "en": "Mystic Arcanum",
+      "fr": "Arcanum mystique",
+      "es": "Arcano místico"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "Choose one 6th-level warlock spell as an arcanum: you can cast it once without a spell slot, regaining the ability after a long rest. You gain a 7th-level arcanum at 13th level, an 8th-level at 15th and a 9th-level at 17th.",
+      "fr": "Choisis un sort de sorcier de niveau 6 comme arcanum : tu peux le lancer une fois sans emplacement de sort et retrouves cette capacité après un repos long. Tu obtiens un arcanum de niveau 7 au niveau 13, de niveau 8 au niveau 15 et de niveau 9 au niveau 17.",
+      "es": "Elige un conjuro de brujo de nivel 6 como arcano: puedes lanzarlo una vez sin espacio de conjuro y recuperas la capacidad tras un descanso largo. Obtienes un arcano de nivel 7 en el nivel 13, de nivel 8 en el 15 y de nivel 9 en el 17."
+    },
+    "level": 11,
+    "tags": [],
+    "data": {
+      "arcanumLevels": {
+        "11": 6,
+        "13": 7,
+        "15": 8,
+        "17": 9
+      },
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "eldritch-master",
+    "label": {
+      "en": "Eldritch Master",
+      "fr": "Maître de l'occulte",
+      "es": "Maestro sobrenatural"
+    },
+    "parentKey": "warlock",
+    "description": {
+      "en": "You can spend 1 minute entreating your patron to regain all your expended Pact Magic spell slots. You must finish a long rest before using it again.",
+      "fr": "Tu peux passer 1 minute à implorer ton protecteur pour récupérer tous tes emplacements de magie de pacte dépensés. Tu dois terminer un repos long avant de pouvoir la réutiliser.",
+      "es": "Puedes pasar 1 minuto suplicando a tu patrón para recuperar todos tus espacios de Magia del pacto gastados. Debes terminar un descanso largo antes de volver a usarlo."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class",
+    "key": "wizard",
+    "label": {
+      "en": "Wizard",
+      "fr": "Magicien",
+      "es": "Mago"
+    },
+    "description": {
+      "en": "A scholarly magic-user who masters arcane spells through study, recorded in a spellbook.",
+      "fr": "Un érudit de la magie qui maîtrise les sorts arcaniques par l'étude et les consigne dans un grimoire.",
+      "es": "Un erudito de la magia que domina los conjuros arcanos mediante el estudio y los anota en un libro de conjuros."
+    },
+    "tags": ["class"],
+    "data": {
+      "sheetName": "Wizard",
+      "hitDie": 6,
+      "primaryAbilities": ["intelligence"],
+      "savingThrows": ["intelligence", "wisdom"],
+      "subclassLevel": 2,
+      "asiLevels": [4, 8, 12, 16, 19],
+      "spellcasting": {
+        "ability": "intelligence",
+        "preparation": "spellbook",
+        "slots": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ],
+        "maxSpellLevelByLevel": [
+          1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9
+        ],
+        "cantripsKnown": [
+          3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+        ],
+        "spellsKnown": [
+          6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40,
+          42, 44
+        ],
+        "preparedLevel": "full",
+        "ritualCasting": true,
+        "focus": "arcane focus"
+      },
+      "startingGoldDice": "4d4 x 10 gp"
+    },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "intelligence"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
+    "effects": [
+      {
+        "op": "set",
+        "target": "savingThrows.intelligence",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "savingThrows.wisdom",
+        "value": true,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["dagger", "dart", "sling", "quarterstaff", "light-crossbow"],
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        }
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.ability",
+        "value": "intelligence"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.preparation",
+        "value": "spellbook"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.cantripsKnown",
+        "value": [3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.spellsKnown",
+        "value": [
+          6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40,
+          42, 44
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.maxSpellLevelByLevel",
+        "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.slots",
+        "value": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.casterProgression",
+        "value": "full"
+      }
+    ],
+    "grants": [
+      {
+        "id": "wizard-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "arcana",
+            "history",
+            "insight",
+            "investigation",
+            "medicine",
+            "religion"
+          ]
+        },
+        "count": 2,
+        "level": 1,
+        "when": {
+          "==": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
+        },
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "id": "wizard-subclass",
+        "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
+        "from": {
+          "type": "subclass",
+          "parentKey": "wizard"
+        },
+        "count": 1,
+        "level": 2
+      },
+      {
+        "id": "wizard-asi-4",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 4
+      },
+      {
+        "id": "wizard-asi-8",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 8
+      },
+      {
+        "id": "wizard-asi-12",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 12
+      },
+      {
+        "id": "wizard-asi-16",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 16
+      },
+      {
+        "id": "wizard-asi-19",
+        "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
+        "from": {
+          "type": "ability-score-improvement"
+        },
+        "count": 1,
+        "level": 19
+      }
+    ]
+  },
+  {
+    "type": "class-feature",
+    "key": "wizard-spellcasting",
+    "label": {
+      "en": "Spellcasting",
+      "fr": "Incantation",
+      "es": "Lanzamiento de conjuros"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "You cast spells using Intelligence, with an arcane focus. You know three cantrips (four at 4th level, five at 10th). Your spellbook starts with six 1st-level wizard spells and you add two wizard spells of a level you can cast each time you gain a level; you can also copy spells you find (2 hours and 50 gp per spell level). After a long rest, prepare a number of spells from your spellbook equal to your Intelligence modifier + your wizard level (minimum 1). You can cast ritual spells from your spellbook as rituals without preparing them.",
+      "fr": "Tu lances des sorts grâce à l'Intelligence, avec un focaliseur arcanique. Tu connais trois sorts mineurs (quatre au niveau 4, cinq au niveau 10). Ton grimoire contient au départ six sorts de magicien de niveau 1 et tu y ajoutes deux sorts de magicien d'un niveau que tu peux lancer à chaque niveau gagné ; tu peux aussi copier les sorts que tu trouves (2 heures et 50 po par niveau de sort). Après un repos long, prépare un nombre de sorts de ton grimoire égal à ton modificateur d'Intelligence + ton niveau de magicien (minimum 1). Tu peux lancer comme rituels les sorts rituels de ton grimoire sans les préparer.",
+      "es": "Lanzas conjuros con Inteligencia, con un canalizador arcano. Conoces tres trucos (cuatro en el nivel 4, cinco en el 10). Tu libro de conjuros empieza con seis conjuros de mago de nivel 1 y añades dos conjuros de mago de un nivel que puedas lanzar cada vez que subes de nivel; también puedes copiar los que encuentres (2 horas y 50 po por nivel de conjuro). Tras un descanso largo, prepara tantos conjuros de tu libro como tu modificador de Inteligencia + tu nivel de mago (mínimo 1). Puedes lanzar como rituales los conjuros rituales de tu libro sin prepararlos."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "arcane-recovery",
+    "label": {
+      "en": "Arcane Recovery",
+      "fr": "Restauration arcanique",
+      "es": "Recuperación arcana"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Once per day when you finish a short rest, you can recover expended spell slots with a combined level equal to or less than half your wizard level (rounded up), none of them 6th level or higher.",
+      "fr": "Une fois par jour, lorsque tu termines un repos court, tu peux récupérer des emplacements de sort dépensés dont la somme des niveaux est au plus égale à la moitié de ton niveau de magicien (arrondie au supérieur), aucun n'étant de niveau 6 ou plus.",
+      "es": "Una vez al día, al terminar un descanso corto, puedes recuperar espacios de conjuro gastados cuya suma de niveles sea igual o menor que la mitad de tu nivel de mago (redondeando hacia arriba), ninguno de nivel 6 o superior."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "recoveredLevels": [
+        1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10
+      ],
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "arcane-tradition",
+    "label": {
+      "en": "Arcane Tradition",
+      "fr": "Tradition arcanique",
+      "es": "Tradición arcana"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Choose a school of magic. It grants you features at 2nd, 6th, 10th and 14th level.",
+      "fr": "Choisis une école de magie. Elle te confère des aptitudes aux niveaux 2, 6, 10 et 14.",
+      "es": "Elige una escuela de magia. Te otorga rasgos en los niveles 2, 6, 10 y 14."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "spell-mastery",
+    "label": {
+      "en": "Spell Mastery",
+      "fr": "Maîtrise des sorts",
+      "es": "Dominio de conjuros"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Choose a 1st-level and a 2nd-level wizard spell in your spellbook. You can cast them at their lowest level without expending a spell slot when you have them prepared. You can change them by spending 8 hours in study.",
+      "fr": "Choisis un sort de magicien de niveau 1 et un de niveau 2 dans ton grimoire. Tu peux les lancer à leur niveau minimal sans dépenser d'emplacement de sort lorsqu'ils sont préparés. Tu peux les changer en étudiant pendant 8 heures.",
+      "es": "Elige un conjuro de mago de nivel 1 y otro de nivel 2 de tu libro. Puedes lanzarlos a su nivel mínimo sin gastar espacios de conjuro cuando los tengas preparados. Puedes cambiarlos estudiando durante 8 horas."
+    },
+    "level": 18,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "class-feature",
+    "key": "signature-spells",
+    "label": {
+      "en": "Signature Spells",
+      "fr": "Sorts de prédilection",
+      "es": "Conjuros distintivos"
+    },
+    "parentKey": "wizard",
+    "description": {
+      "en": "Choose two 3rd-level wizard spells in your spellbook as signature spells. They are always prepared, don't count against your prepared spells, and you can cast each once at 3rd level without a spell slot, regaining this after a short or long rest.",
+      "fr": "Choisis deux sorts de magicien de niveau 3 de ton grimoire comme sorts de prédilection. Ils sont toujours préparés, ne comptent pas dans tes sorts préparés, et tu peux lancer chacun une fois au niveau 3 sans emplacement de sort, ce que tu récupères après un repos court ou long.",
+      "es": "Elige dos conjuros de mago de nivel 3 de tu libro como conjuros distintivos. Siempre están preparados, no cuentan para tus conjuros preparados, y puedes lanzar cada uno una vez a nivel 3 sin espacio de conjuro, lo que recuperas tras un descanso corto o largo."
+    },
+    "level": 20,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 2
+    },
+    "effects": [],
+    "grants": []
+  }
+]

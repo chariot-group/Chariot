@@ -1,0 +1,116 @@
+[
+  {
+    "type": "ability",
+    "key": "strength",
+    "label": {
+      "en": "Strength",
+      "fr": "Force",
+      "es": "Fuerza"
+    },
+    "description": {
+      "en": "Physical power: lifting, pushing, melee attacks with most weapons and athletic feats.",
+      "fr": "Puissance physique : soulever, pousser, attaquer au corps à corps avec la plupart des armes et réussir des exploits athlétiques.",
+      "es": "Potencia física: levantar, empujar, atacar cuerpo a cuerpo con la mayoría de armas y realizar proezas atléticas."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "strength",
+      "abbreviation": "STR"
+    }
+  },
+  {
+    "type": "ability",
+    "key": "dexterity",
+    "label": {
+      "en": "Dexterity",
+      "fr": "Dextérité",
+      "es": "Destreza"
+    },
+    "description": {
+      "en": "Agility, reflexes and balance: ranged and finesse attacks, initiative, armor class without heavy armor.",
+      "fr": "Agilité, réflexes et équilibre : attaques à distance et avec des armes de finesse, initiative, classe d'armure hors armure lourde.",
+      "es": "Agilidad, reflejos y equilibrio: ataques a distancia y con armas sutiles, iniciativa, clase de armadura sin armadura pesada."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "dexterity",
+      "abbreviation": "DEX"
+    }
+  },
+  {
+    "type": "ability",
+    "key": "constitution",
+    "label": {
+      "en": "Constitution",
+      "fr": "Constitution",
+      "es": "Constitución"
+    },
+    "description": {
+      "en": "Health and stamina: hit points, resisting poison and keeping concentration.",
+      "fr": "Santé et endurance : points de vie, résistance aux poisons et maintien de la concentration.",
+      "es": "Salud y aguante: puntos de golpe, resistencia a venenos y mantener la concentración."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "constitution",
+      "abbreviation": "CON"
+    }
+  },
+  {
+    "type": "ability",
+    "key": "intelligence",
+    "label": {
+      "en": "Intelligence",
+      "fr": "Intelligence",
+      "es": "Inteligencia"
+    },
+    "description": {
+      "en": "Reasoning and memory: knowledge, investigation and wizard or artificer spellcasting.",
+      "fr": "Raisonnement et mémoire : connaissances, enquête et magie des magiciens et artificiers.",
+      "es": "Razonamiento y memoria: conocimientos, investigación y magia de magos y artífices."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "intelligence",
+      "abbreviation": "INT"
+    }
+  },
+  {
+    "type": "ability",
+    "key": "wisdom",
+    "label": {
+      "en": "Wisdom",
+      "fr": "Sagesse",
+      "es": "Sabiduría"
+    },
+    "description": {
+      "en": "Perception and intuition: awareness, insight and cleric, druid or ranger spellcasting.",
+      "fr": "Perception et intuition : vigilance, perspicacité et magie des clercs, druides et rôdeurs.",
+      "es": "Percepción e intuición: atención, perspicacia y magia de clérigos, druidas y exploradores."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "wisdom",
+      "abbreviation": "WIS"
+    }
+  },
+  {
+    "type": "ability",
+    "key": "charisma",
+    "label": {
+      "en": "Charisma",
+      "fr": "Charisme",
+      "es": "Carisma"
+    },
+    "description": {
+      "en": "Force of personality: persuasion, deception, performance and bard, paladin, sorcerer or warlock spellcasting.",
+      "fr": "Force de personnalité : persuasion, tromperie, représentation et magie des bardes, paladins, ensorceleurs et sorciers.",
+      "es": "Fuerza de personalidad: persuasión, engaño, interpretación y magia de bardos, paladines, hechiceros y brujos."
+    },
+    "tags": [],
+    "data": {
+      "sheetKey": "charisma",
+      "abbreviation": "CHA"
+    }
+  }
+]

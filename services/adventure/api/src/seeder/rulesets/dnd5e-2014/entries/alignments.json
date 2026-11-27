@@ -1,0 +1,119 @@
+[
+  {
+    "type": "alignment",
+    "key": "lawful-good",
+    "label": {
+      "en": "Lawful Good",
+      "fr": "Loyal Bon",
+      "es": "Legal bueno"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "Lawful Good"
+    }
+  },
+  {
+    "type": "alignment",
+    "key": "neutral-good",
+    "label": {
+      "en": "Neutral Good",
+      "fr": "Neutre Bon",
+      "es": "Neutral bueno"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "Neutral Good"
+    }
+  },
+  {
+    "type": "alignment",
+    "key": "chaotic-good",
+    "label": {
+      "en": "Chaotic Good",
+      "fr": "Chaotique Bon",
+      "es": "Caótico bueno"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "Chaotic Good"
+    }
+  },
+  {
+    "type": "alignment",
+    "key": "lawful-neutral",
+    "label": {
+      "en": "Lawful Neutral",
+      "fr": "Loyal Neutre",
+      "es": "Legal neutral"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "Lawful Neutral"
+    }
+  },
+  {
+    "type": "alignment",
+    "key": "true-neutral",
+    "label": {
+      "en": "True Neutral",
+      "fr": "Neutre",
+      "es": "Neutral"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "True Neutral"
+    }
+  },
+  {
+    "type": "alignment",
+    "key": "chaotic-neutral",
+    "label": {
+      "en": "Chaotic Neutral",
+      "fr": "Chaotique Neutre",
+      "es": "Caótico neutral"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "Chaotic Neutral"
+    }
+  },
+  {
+    "type": "alignment",
+    "key": "lawful-evil",
+    "label": {
+      "en": "Lawful Evil",
+      "fr": "Loyal Mauvais",
+      "es": "Legal malvado"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "Lawful Evil"
+    }
+  },
+  {
+    "type": "alignment",
+    "key": "neutral-evil",
+    "label": {
+      "en": "Neutral Evil",
+      "fr": "Neutre Mauvais",
+      "es": "Neutral malvado"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "Neutral Evil"
+    }
+  },
+  {
+    "type": "alignment",
+    "key": "chaotic-evil",
+    "label": {
+      "en": "Chaotic Evil",
+      "fr": "Chaotique Mauvais",
+      "es": "Caótico malvado"
+    },
+    "tags": [],
+    "data": {
+      "sheetValue": "Chaotic Evil"
+    }
+  }
+]

@@ -1,5 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
-import { IsAdminGuard } from '@/common/guards/is-admin.guard';
+import { hasAdminRole, IsAdminGuard } from '@/common/guards/is-admin.guard';
 
 function mockContext(user: unknown) {
   return {
@@ -38,5 +38,19 @@ describe('IsAdminGuard', () => {
     expect(() => guard.canActivate(mockContext(undefined))).toThrow(
       ForbiddenException,
     );
+  });
+});
+
+describe('hasAdminRole', () => {
+  it('nominal: true for a user with the admin realm role', () => {
+    expect(hasAdminRole({ realm_access: { roles: ['user', 'admin'] } })).toBe(
+      true,
+    );
+  });
+
+  it('failure: false without realm roles or user', () => {
+    expect(hasAdminRole({ realm_access: { roles: ['user'] } })).toBe(false);
+    expect(hasAdminRole({})).toBe(false);
+    expect(hasAdminRole(undefined)).toBe(false);
   });
 });

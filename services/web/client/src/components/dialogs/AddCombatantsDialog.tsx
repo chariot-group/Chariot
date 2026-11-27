@@ -87,15 +87,9 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const sessionCompanionNpcs = useAppSelector(selectSessionCompanionNpcs);
   const trackerRows = useAppSelector(selectInitiativeTrackerRows);
 
-  const inCombatCharacterIds = React.useMemo(
-    () => new Set(trackerRows.map((row) => row.characterId)),
-    [trackerRows],
-  );
+  const inCombatCharacterIds = React.useMemo(() => new Set(trackerRows.map((row) => row.characterId)), [trackerRows]);
 
-  const groupIdsInInitiative = React.useMemo(
-    () => new Set(trackerRows.map((row) => row.groupId)),
-    [trackerRows],
-  );
+  const groupIdsInInitiative = React.useMemo(() => new Set(trackerRows.map((row) => row.groupId)), [trackerRows]);
 
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -108,10 +102,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
   const dialogInitializedRef = React.useRef(false);
 
   const eligibleGroups = React.useMemo(
-    () =>
-      groups.filter((group) =>
-        (group.characters ?? []).some((member) => !inCombatCharacterIds.has(member._id)),
-      ),
+    () => groups.filter((group) => (group.characters ?? []).some((member) => !inCombatCharacterIds.has(member._id))),
     [groups, inCombatCharacterIds],
   );
 
@@ -174,7 +165,15 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     return () => {
       mounted = false;
     };
-  }, [open, selectedCampaignId, session?.code, session?.participants, gmGuestCharacterIds, participantDisplayNames, sessionCompanionNpcs]);
+  }, [
+    open,
+    selectedCampaignId,
+    session?.code,
+    session?.participants,
+    gmGuestCharacterIds,
+    participantDisplayNames,
+    sessionCompanionNpcs,
+  ]);
 
   React.useEffect(() => {
     if (!open) {
@@ -240,10 +239,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     const updates: Record<string, number> = {};
     (group.characters ?? []).forEach((member) => {
       if (inCombatCharacterIds.has(member._id) || excluded.has(member._id)) return;
-      updates[member._id] = initiativeTotalFromRoll(
-        roll,
-        resolveInitiativeModifierFromStats(member.stats),
-      );
+      updates[member._id] = initiativeTotalFromRoll(roll, resolveInitiativeModifierFromStats(member.stats));
     });
     setInitiativeByMemberId((current) => ({ ...current, ...updates }));
   };
@@ -255,10 +251,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
     }));
   };
 
-  const resolveMemberInitiative = (
-    memberId: string,
-    stats?: { initiative?: number | null } | null,
-  ): number => {
+  const resolveMemberInitiative = (memberId: string, stats?: { initiative?: number | null } | null): number => {
     const value = initiativeByMemberId[memberId];
     if (Number.isFinite(value)) return value as number;
     return resolveInitiativeModifierFromStats(stats);
@@ -318,26 +311,22 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
 
             return {
               ...createInitiativeTrackerRow({
-              groupId: group._id,
-              groupLabel: group.label,
-              characterId: member._id,
-              firstname: character.firstname ?? "",
-              lastname: character.lastname ?? "",
-              surname: character.surname ?? "",
-              avatar: character.avatar ?? "",
-              initiative: resolveMemberInitiative(member._id, stats),
-              hitPoints: Number.isFinite(currentHitPoints)
-                ? Number(currentHitPoints)
-                : Number(maxHitPoints ?? 0),
-              maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
-              tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
-              armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
-              kind,
-              deathSavesFailures: isHydrated
-                ? trackerDeathSavesFailuresFromCharacter(hydrated as Character)
-                : 0,
-              initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats?.initiative) : 0,
-            }),
+                groupId: group._id,
+                groupLabel: group.label,
+                characterId: member._id,
+                firstname: character.firstname ?? "",
+                lastname: character.lastname ?? "",
+                surname: character.surname ?? "",
+                avatar: character.avatar ?? "",
+                initiative: resolveMemberInitiative(member._id, stats),
+                hitPoints: Number.isFinite(currentHitPoints) ? Number(currentHitPoints) : Number(maxHitPoints ?? 0),
+                maxHitPoints: Number.isFinite(maxHitPoints) ? Number(maxHitPoints) : 0,
+                tempHitPoints: Number.isFinite(tempHitPoints) ? Number(tempHitPoints) : 0,
+                armorClass: Number.isFinite(armorClass) ? Number(armorClass) : 0,
+                kind,
+                deathSavesFailures: isHydrated ? trackerDeathSavesFailuresFromCharacter(hydrated as Character) : 0,
+                initiativeModifier: Number.isFinite(stats?.initiative) ? Number(stats?.initiative) : 0,
+              }),
               isGmGuest: guestIdSet.has(member._id),
               isPlayerCompanion: companionIdSet.has(member._id) && !guestIdSet.has(member._id),
             };
@@ -389,9 +378,7 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                   <p className="text-sm text-muted-foreground">{t("addCombatantsNoGroupSelected")}</p>
                 ) : (
                   selectedGroups.map((group) => {
-                    const availableMembers = (group.characters ?? []).filter(
-                      (m) => !inCombatCharacterIds.has(m._id),
-                    );
+                    const availableMembers = (group.characters ?? []).filter((m) => !inCombatCharacterIds.has(m._id));
                     const excluded = new Set(excludedMembersByGroup[group._id] ?? []);
                     const isExpanded = expandedGroupIds.includes(group._id);
                     return (
@@ -435,13 +422,9 @@ export function AddCombatantsDialog({ children }: AddCombatantsDialogProps) {
                                   linkedTo: tInit("initBattleLinkedTo"),
                                   linkedCompanion: tInit("initBattleLinkedCompanion"),
                                 }}
-                                onToggleMember={(memberId, include) =>
-                                  toggleMember(group._id, memberId, include)
-                                }
+                                onToggleMember={(memberId, include) => toggleMember(group._id, memberId, include)}
                                 onMemberInitiativeChange={setMemberInitiative}
-                                onApplyGroupInitiative={(initiative) =>
-                                  applyGroupInitiative(group._id, initiative)
-                                }
+                                onApplyGroupInitiative={(initiative) => applyGroupInitiative(group._id, initiative)}
                                 onClearMemberSelection={() =>
                                   clearGroupMemberSelection(
                                     group._id,

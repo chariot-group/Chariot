@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { NAME_LABEL_MAX_LENGTH } from '@/common/constants/label.constant';
 
 export class UpdateCampaignDto extends PartialType(
-  OmitType(CreateCampaignDto, ['label', 'gameSystem'] as const),
+  OmitType(CreateCampaignDto, ['label', 'gameSystem', 'rulesetId'] as const),
 ) {
   /** @see FR-form-field-validation — same 1..50 limit as on creation */
   @ApiProperty({ example: 'Epic Adventure', required: false })

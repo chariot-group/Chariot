@@ -1,0 +1,2150 @@
+[
+  {
+    "type": "subclass-feature",
+    "key": "frenzy",
+    "label": {
+      "en": "Frenzy",
+      "fr": "Frénésie",
+      "es": "Frenesí"
+    },
+    "parentKey": "path-of-the-berserker",
+    "description": {
+      "en": "When you rage, you can go into a frenzy. For the rest of the rage, you can make a single melee weapon attack as a bonus action on each of your turns after this one. When the rage ends, you suffer one level of exhaustion.",
+      "fr": "Lorsque tu entres en rage, tu peux devenir frénétique. Jusqu'à la fin de la rage, tu peux faire une attaque d'arme de corps à corps par une action bonus à chacun de tes tours suivants. Quand la rage prend fin, tu subis un niveau d'épuisement.",
+      "es": "Cuando entras en furia, puedes entrar en frenesí. Durante el resto de la furia, puedes hacer un ataque con arma cuerpo a cuerpo como acción adicional en cada uno de tus turnos posteriores. Cuando la furia termina, sufres un nivel de cansancio."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "mindless-rage",
+    "label": {
+      "en": "Mindless Rage",
+      "fr": "Rage aveugle",
+      "es": "Furia irracional"
+    },
+    "parentKey": "path-of-the-berserker",
+    "description": {
+      "en": "You can't be charmed or frightened while raging. If you are charmed or frightened when you enter your rage, the effect is suspended for the duration of the rage.",
+      "fr": "Tu ne peux pas être charmé ni effrayé pendant ta rage. Si tu l'es déjà lorsque tu entres en rage, l'effet est suspendu pendant la durée de la rage.",
+      "es": "No puedes ser hechizado ni asustado mientras estás en furia. Si ya lo estás al entrar en furia, el efecto queda suspendido mientras dure."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "intimidating-presence",
+    "label": {
+      "en": "Intimidating Presence",
+      "fr": "Présence intimidante",
+      "es": "Presencia intimidante"
+    },
+    "parentKey": "path-of-the-berserker",
+    "description": {
+      "en": "As an action, choose a creature within 30 feet that can see or hear you: it must succeed on a Wisdom saving throw (DC 8 + your proficiency bonus + your Charisma modifier) or be frightened of you until the end of your next turn. You can use your action on later turns to extend the effect. If it succeeds, you can't use this feature on it again for 24 hours.",
+      "fr": "Par une action, choisis une créature à 9 m qui peut te voir ou t'entendre : elle doit réussir un jet de sauvegarde de Sagesse (DD 8 + ton bonus de maîtrise + ton modificateur de Charisme) ou être effrayée par toi jusqu'à la fin de ton prochain tour. Tu peux prolonger l'effet par une action lors de tes tours suivants. Si elle réussit, tu ne peux plus l'utiliser contre elle pendant 24 heures.",
+      "es": "Como acción, elige a una criatura a 30 pies que pueda verte u oírte: debe superar una tirada de salvación de Sabiduría (CD 8 + tu bonificador por competencia + tu modificador de Carisma) o quedar asustada de ti hasta el final de tu siguiente turno. Puedes prolongar el efecto con tu acción en turnos posteriores. Si la supera, no puedes volver a usar este rasgo contra ella durante 24 horas."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "retaliation",
+    "label": {
+      "en": "Retaliation",
+      "fr": "Représailles",
+      "es": "Represalia"
+    },
+    "parentKey": "path-of-the-berserker",
+    "description": {
+      "en": "When you take damage from a creature within 5 feet of you, you can use your reaction to make a melee weapon attack against it.",
+      "fr": "Lorsqu'une créature située à 1,50 m de toi t'inflige des dégâts, tu peux utiliser ta réaction pour faire une attaque d'arme de corps à corps contre elle.",
+      "es": "Cuando una criatura a 5 pies de ti te inflige daño, puedes usar tu reacción para hacer un ataque con arma cuerpo a cuerpo contra ella."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-spirit",
+    "key": "totem-spirit-bear",
+    "label": {
+      "en": "Bear",
+      "fr": "Ours",
+      "es": "Oso"
+    },
+    "description": {
+      "en": "While raging, you have resistance to all damage except psychic damage.",
+      "fr": "Pendant ta rage, tu as la résistance à tous les dégâts sauf psychiques.",
+      "es": "Mientras estás en furia, tienes resistencia a todo el daño excepto psíquico."
+    },
+    "tags": [],
+    "data": {
+      "animal": "bear"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-spirit",
+    "key": "totem-spirit-eagle",
+    "label": {
+      "en": "Eagle",
+      "fr": "Aigle",
+      "es": "Águila"
+    },
+    "description": {
+      "en": "While raging without heavy armor, other creatures have disadvantage on opportunity attacks against you, and you can use the Dash action as a bonus action on your turn.",
+      "fr": "Pendant ta rage, sans armure lourde, les autres créatures ont le désavantage aux attaques d'opportunité contre toi, et tu peux Foncer par une action bonus pendant ton tour.",
+      "es": "Mientras estás en furia sin armadura pesada, las demás criaturas tienen desventaja en los ataques de oportunidad contra ti, y puedes Correr como acción adicional en tu turno."
+    },
+    "tags": [],
+    "data": {
+      "animal": "eagle"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-spirit",
+    "key": "totem-spirit-wolf",
+    "label": {
+      "en": "Wolf",
+      "fr": "Loup",
+      "es": "Lobo"
+    },
+    "description": {
+      "en": "While raging, your friends have advantage on melee attack rolls against any hostile creature within 5 feet of you.",
+      "fr": "Pendant ta rage, tes alliés ont l'avantage aux jets d'attaque au corps à corps contre toute créature hostile située à 1,50 m de toi.",
+      "es": "Mientras estás en furia, tus aliados tienen ventaja en las tiradas de ataque cuerpo a cuerpo contra cualquier criatura hostil a 5 pies de ti."
+    },
+    "tags": [],
+    "data": {
+      "animal": "wolf"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-aspect",
+    "key": "totem-aspect-bear",
+    "label": {
+      "en": "Aspect of the Bear",
+      "fr": "Aspect de l'ours",
+      "es": "Aspecto del oso"
+    },
+    "description": {
+      "en": "Your carrying capacity is doubled, and you have advantage on Strength checks to push, pull, lift or break objects.",
+      "fr": "Ta capacité de charge est doublée, et tu as l'avantage aux tests de Force pour pousser, tirer, soulever ou briser des objets.",
+      "es": "Tu capacidad de carga se duplica y tienes ventaja en las pruebas de Fuerza para empujar, arrastrar, levantar o romper objetos."
+    },
+    "tags": [],
+    "data": {
+      "animal": "bear"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-aspect",
+    "key": "totem-aspect-eagle",
+    "label": {
+      "en": "Aspect of the Eagle",
+      "fr": "Aspect de l'aigle",
+      "es": "Aspecto del águila"
+    },
+    "description": {
+      "en": "You can see up to 1 mile away with no difficulty, discerning fine details, and dim light doesn't impose disadvantage on your Wisdom (Perception) checks.",
+      "fr": "Tu vois sans difficulté jusqu'à 1,5 km en distinguant les détails, et la pénombre n'impose pas le désavantage à tes tests de Sagesse (Perception).",
+      "es": "Puedes ver sin dificultad hasta 1 milla distinguiendo detalles, y la luz tenue no impone desventaja a tus pruebas de Sabiduría (Percepción)."
+    },
+    "tags": [],
+    "data": {
+      "animal": "eagle"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-aspect",
+    "key": "totem-aspect-wolf",
+    "label": {
+      "en": "Aspect of the Wolf",
+      "fr": "Aspect du loup",
+      "es": "Aspecto del lobo"
+    },
+    "description": {
+      "en": "You can track creatures while traveling at a fast pace, and you can move stealthily while traveling at a normal pace.",
+      "fr": "Tu peux pister des créatures en voyageant à allure rapide, et te déplacer discrètement à allure normale.",
+      "es": "Puedes rastrear criaturas viajando a ritmo rápido y moverte sigilosamente a ritmo normal."
+    },
+    "tags": [],
+    "data": {
+      "animal": "wolf"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-attunement",
+    "key": "totem-attunement-bear",
+    "label": {
+      "en": "Attunement of the Bear",
+      "fr": "Harmonie de l'ours",
+      "es": "Sintonía del oso"
+    },
+    "description": {
+      "en": "While raging, any creature within 5 feet of you that's hostile to you has disadvantage on attack rolls against targets other than you or another character with this feature.",
+      "fr": "Pendant ta rage, toute créature hostile située à 1,50 m de toi a le désavantage aux jets d'attaque contre une autre cible que toi ou qu'un personnage ayant cette aptitude.",
+      "es": "Mientras estás en furia, cualquier criatura hostil a 5 pies de ti tiene desventaja en las tiradas de ataque contra objetivos que no seas tú u otro personaje con este rasgo."
+    },
+    "tags": [],
+    "data": {
+      "animal": "bear"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-attunement",
+    "key": "totem-attunement-eagle",
+    "label": {
+      "en": "Attunement of the Eagle",
+      "fr": "Harmonie de l'aigle",
+      "es": "Sintonía del águila"
+    },
+    "description": {
+      "en": "While raging, you have a flying speed equal to your walking speed, but you fall if you end your turn in the air with nothing else holding you aloft.",
+      "fr": "Pendant ta rage, tu as une vitesse de vol égale à ta vitesse de marche, mais tu tombes si tu termines ton tour en l'air sans rien d'autre pour te maintenir.",
+      "es": "Mientras estás en furia, tienes una velocidad de vuelo igual a tu velocidad caminando, pero caes si terminas tu turno en el aire sin nada más que te sostenga."
+    },
+    "tags": [],
+    "data": {
+      "animal": "eagle"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "totem-attunement",
+    "key": "totem-attunement-wolf",
+    "label": {
+      "en": "Attunement of the Wolf",
+      "fr": "Harmonie du loup",
+      "es": "Sintonía del lobo"
+    },
+    "description": {
+      "en": "While raging, you can use a bonus action on your turn to knock a Large or smaller creature prone when you hit it with a melee weapon attack.",
+      "fr": "Pendant ta rage, tu peux utiliser une action bonus pendant ton tour pour jeter à terre une créature de taille Grande ou inférieure que tu touches avec une attaque d'arme de corps à corps.",
+      "es": "Mientras estás en furia, puedes usar una acción adicional en tu turno para derribar a una criatura Grande o menor a la que impactes con un ataque con arma cuerpo a cuerpo."
+    },
+    "tags": [],
+    "data": {
+      "animal": "wolf"
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "spirit-seeker",
+    "label": {
+      "en": "Spirit Seeker",
+      "fr": "Chercheur d'esprits",
+      "es": "Buscador espiritual"
+    },
+    "parentKey": "path-of-the-totem-warrior",
+    "description": {
+      "en": "You gain the ability to cast the beast sense and speak with animals spells, but only as rituals.",
+      "fr": "Tu peux lancer les sorts sens animal et communication avec les animaux, mais uniquement comme rituels.",
+      "es": "Puedes lanzar los conjuros sentidos de las bestias y hablar con los animales, pero solo como rituales."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "totem-spirit",
+    "label": {
+      "en": "Totem Spirit",
+      "fr": "Esprit totem",
+      "es": "Espíritu tótem"
+    },
+    "parentKey": "path-of-the-totem-warrior",
+    "description": {
+      "en": "Choose a totem spirit (bear, eagle or wolf) and gain its feature while raging. You must make or acquire a physical totem object incorporating fur, feathers or similar elements of the animal.",
+      "fr": "Choisis un esprit totem (ours, aigle ou loup) et obtiens son aptitude pendant ta rage. Tu dois fabriquer ou acquérir un totem matériel intégrant fourrure, plumes ou éléments semblables de l'animal.",
+      "es": "Elige un espíritu tótem (oso, águila o lobo) y obtén su rasgo mientras estás en furia. Debes fabricar u obtener un tótem físico con pelaje, plumas o elementos similares del animal."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "totem-spirit-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Totem spirit",
+          "fr": "Esprit totem",
+          "es": "Espíritu tótem"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "totem-spirit"
+        },
+        "count": 1,
+        "level": 3
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "aspect-of-the-beast",
+    "label": {
+      "en": "Aspect of the Beast",
+      "fr": "Aspect de la bête",
+      "es": "Aspecto de la bestia"
+    },
+    "parentKey": "path-of-the-totem-warrior",
+    "description": {
+      "en": "Choose a totem animal (it can differ from your previous choice) and gain its magical benefit, active even when you aren't raging.",
+      "fr": "Choisis un animal totem (il peut différer de ton choix précédent) et obtiens son bénéfice magique, actif même hors de ta rage.",
+      "es": "Elige un animal tótem (puede ser distinto del anterior) y obtén su beneficio mágico, activo incluso fuera de la furia."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "totem-aspect-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Aspect of the beast",
+          "fr": "Aspect de la bête",
+          "es": "Aspecto de la bestia"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "totem-aspect"
+        },
+        "count": 1,
+        "level": 6
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "spirit-walker",
+    "label": {
+      "en": "Spirit Walker",
+      "fr": "Marcheur spirituel",
+      "es": "Caminante espiritual"
+    },
+    "parentKey": "path-of-the-totem-warrior",
+    "description": {
+      "en": "You can cast the commune with nature spell, but only as a ritual. A spiritual version of one of your totem animals appears to give you the information.",
+      "fr": "Tu peux lancer le sort communion avec la nature, mais uniquement comme rituel. Une version spirituelle de l'un de tes animaux totems t'apparaît pour te donner les informations.",
+      "es": "Puedes lanzar el conjuro comunión con la naturaleza, pero solo como ritual. Una versión espiritual de uno de tus animales tótem se te aparece para darte la información."
+    },
+    "level": 10,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "totemic-attunement",
+    "label": {
+      "en": "Totemic Attunement",
+      "fr": "Harmonie totémique",
+      "es": "Sintonía totémica"
+    },
+    "parentKey": "path-of-the-totem-warrior",
+    "description": {
+      "en": "Choose a totem animal (it can differ from your previous choices) and gain its magical benefit.",
+      "fr": "Choisis un animal totem (il peut différer de tes choix précédents) et obtiens son bénéfice magique.",
+      "es": "Elige un animal tótem (puede ser distinto de los anteriores) y obtén su beneficio mágico."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "totem-attunement-choice",
+        "kind": "choose",
+        "label": {
+          "en": "Totemic attunement",
+          "fr": "Harmonie totémique",
+          "es": "Sintonía totémica"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
+        "from": {
+          "type": "totem-attunement"
+        },
+        "count": 1,
+        "level": 14
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "lore-bonus-proficiencies",
+    "label": {
+      "en": "Bonus Proficiencies",
+      "fr": "Maîtrises supplémentaires",
+      "es": "Competencias adicionales"
+    },
+    "parentKey": "college-of-lore",
+    "description": {
+      "en": "You gain proficiency with three skills of your choice.",
+      "fr": "Tu obtiens la maîtrise de trois compétences de ton choix.",
+      "es": "Obtienes competencia en tres habilidades de tu elección."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "lore-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": [
+            "athletics",
+            "acrobatics",
+            "sleight-of-hand",
+            "stealth",
+            "arcana",
+            "history",
+            "investigation",
+            "nature",
+            "religion",
+            "animal-handling",
+            "insight",
+            "medicine",
+            "perception",
+            "survival",
+            "deception",
+            "intimidation",
+            "performance",
+            "persuasion"
+          ]
+        },
+        "count": 3,
+        "level": 3,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "cutting-words",
+    "label": {
+      "en": "Cutting Words",
+      "fr": "Mots cinglants",
+      "es": "Palabras hirientes"
+    },
+    "parentKey": "college-of-lore",
+    "description": {
+      "en": "When a creature you can see within 60 feet makes an attack roll, ability check or damage roll, you can use your reaction to expend one use of Bardic Inspiration and subtract the die result from its roll. You can do so after the roll but before knowing the outcome. Creatures immune to charm are unaffected.",
+      "fr": "Lorsqu'une créature que tu vois à 18 m fait un jet d'attaque, un test de caractéristique ou un jet de dégâts, tu peux utiliser ta réaction pour dépenser une utilisation d'Inspiration bardique et soustraire le résultat du dé de son jet. Tu peux le faire après le jet mais avant d'en connaître l'issue. Les créatures immunisées contre le charme n'y sont pas sensibles.",
+      "es": "Cuando una criatura que puedas ver a 60 pies haga una tirada de ataque, prueba de característica o tirada de daño, puedes usar tu reacción para gastar un uso de Inspiración bárdica y restar el resultado del dado a su tirada. Puedes hacerlo tras la tirada pero antes de conocer el resultado. No afecta a criaturas inmunes al encantamiento."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "additional-magical-secrets",
+    "label": {
+      "en": "Additional Magical Secrets",
+      "fr": "Secrets magiques supplémentaires",
+      "es": "Secretos mágicos adicionales"
+    },
+    "parentKey": "college-of-lore",
+    "description": {
+      "en": "You learn two spells of your choice from any class, of a level you can cast. They count as bard spells for you but don't count against your number of bard spells known.",
+      "fr": "Tu apprends deux sorts de ton choix de n'importe quelle classe, d'un niveau que tu peux lancer. Ils comptent pour toi comme des sorts de barde mais pas dans ton nombre de sorts de barde connus.",
+      "es": "Aprendes dos conjuros de tu elección de cualquier clase, de un nivel que puedas lanzar. Cuentan para ti como conjuros de bardo, pero no para tu número de conjuros de bardo conocidos."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "peerless-skill",
+    "label": {
+      "en": "Peerless Skill",
+      "fr": "Compétence inégalée",
+      "es": "Habilidad sin par"
+    },
+    "parentKey": "college-of-lore",
+    "description": {
+      "en": "When you make an ability check, you can expend one use of Bardic Inspiration and add the die to your check, after seeing the roll but before knowing the outcome.",
+      "fr": "Lorsque tu fais un test de caractéristique, tu peux dépenser une utilisation d'Inspiration bardique et ajouter le dé à ton test, après avoir vu le jet mais avant d'en connaître l'issue.",
+      "es": "Cuando hagas una prueba de característica, puedes gastar un uso de Inspiración bárdica y sumar el dado, tras ver la tirada pero antes de conocer el resultado."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "valor-bonus-proficiencies",
+    "label": {
+      "en": "Bonus Proficiencies",
+      "fr": "Maîtrises supplémentaires",
+      "es": "Competencias adicionales"
+    },
+    "parentKey": "college-of-valor",
+    "description": {
+      "en": "You gain proficiency with medium armor, shields and martial weapons.",
+      "fr": "Tu obtiens la maîtrise des armures intermédiaires, des boucliers et des armes de guerre.",
+      "es": "Obtienes competencia con armaduras medias, escudos y armas marciales."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["medium-armor", "shields"]
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["martial-weapons"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "combat-inspiration",
+    "label": {
+      "en": "Combat Inspiration",
+      "fr": "Inspiration martiale",
+      "es": "Inspiración en combate"
+    },
+    "parentKey": "college-of-valor",
+    "description": {
+      "en": "A creature that has a Bardic Inspiration die from you can roll it and add the number to a weapon damage roll it just made, or, when an attack roll is made against it, use its reaction to add the die to its AC against that attack.",
+      "fr": "Une créature qui a reçu ton dé d'Inspiration bardique peut le lancer et ajouter le résultat à un jet de dégâts d'arme qu'elle vient de faire, ou, lorsqu'une attaque la vise, utiliser sa réaction pour ajouter le dé à sa CA contre cette attaque.",
+      "es": "Una criatura que tenga tu dado de Inspiración bárdica puede tirarlo y sumarlo a una tirada de daño con arma que acabe de hacer, o, cuando la ataquen, usar su reacción para sumar el dado a su CA contra ese ataque."
+    },
+    "level": 3,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "valor-extra-attack",
+    "label": {
+      "en": "Extra Attack",
+      "fr": "Attaque supplémentaire",
+      "es": "Ataque adicional"
+    },
+    "parentKey": "college-of-valor",
+    "description": {
+      "en": "You can attack twice, instead of once, whenever you take the Attack action on your turn.",
+      "fr": "Tu peux attaquer deux fois, au lieu d'une, lorsque tu fais l'action Attaquer pendant ton tour.",
+      "es": "Puedes atacar dos veces, en lugar de una, cuando realizas la acción de Atacar en tu turno."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "battle-magic",
+    "label": {
+      "en": "Battle Magic",
+      "fr": "Magie de combat",
+      "es": "Magia de batalla"
+    },
+    "parentKey": "college-of-valor",
+    "description": {
+      "en": "When you use your action to cast a bard spell, you can make one weapon attack as a bonus action.",
+      "fr": "Lorsque tu utilises ton action pour lancer un sort de barde, tu peux faire une attaque avec une arme par une action bonus.",
+      "es": "Cuando usas tu acción para lanzar un conjuro de bardo, puedes hacer un ataque con arma como acción adicional."
+    },
+    "level": 14,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "knowledge-domain-spells",
+    "label": {
+      "en": "Domain Spells",
+      "fr": "Sorts de domaine",
+      "es": "Conjuros de dominio"
+    },
+    "parentKey": "knowledge-domain",
+    "description": {
+      "en": "You always have these domain spells prepared once you reach the listed cleric level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de domaine préparés dès que tu atteins le niveau de clerc indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de dominio al alcanzar el nivel de clérigo indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Command", "Identify"],
+        "3": ["Augury", "Suggestion"],
+        "5": ["Nondetection", "Speak with Dead"],
+        "7": ["Arcane Eye", "Confusion"],
+        "9": ["Legend Lore", "Scrying"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Command",
+            "classLevel": 1
+          },
+          {
+            "name": "Identify",
+            "classLevel": 1
+          },
+          {
+            "name": "Augury",
+            "classLevel": 3
+          },
+          {
+            "name": "Suggestion",
+            "classLevel": 3
+          },
+          {
+            "name": "Nondetection",
+            "classLevel": 5
+          },
+          {
+            "name": "Speak with Dead",
+            "classLevel": 5
+          },
+          {
+            "name": "Arcane Eye",
+            "classLevel": 7
+          },
+          {
+            "name": "Confusion",
+            "classLevel": 7
+          },
+          {
+            "name": "Legend Lore",
+            "classLevel": 9
+          },
+          {
+            "name": "Scrying",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "blessings-of-knowledge",
+    "label": {
+      "en": "Blessings of Knowledge",
+      "fr": "Bénédictions du savoir",
+      "es": "Bendiciones del conocimiento"
+    },
+    "parentKey": "knowledge-domain",
+    "description": {
+      "en": "You learn two languages of your choice. You also become proficient in your choice of two of the following skills: Arcana, History, Nature or Religion, and your proficiency bonus is doubled for any ability check using them.",
+      "fr": "Tu apprends deux langues de ton choix. Tu obtiens aussi la maîtrise de deux compétences de ton choix parmi Arcanes, Histoire, Nature et Religion, et ton bonus de maîtrise est doublé pour tout test qui les utilise.",
+      "es": "Aprendes dos idiomas de tu elección. Además obtienes competencia en dos de estas habilidades a tu elección: Arcanos, Historia, Naturaleza o Religión, y tu bonificador por competencia se duplica en las pruebas que las usen."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": [
+      {
+        "id": "knowledge-languages",
+        "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
+        "from": {
+          "type": "language"
+        },
+        "count": 2,
+        "level": 1,
+        "effects": [
+          {
+            "op": "grant",
+            "target": "languages",
+            "value": ["{key}"]
+          }
+        ]
+      },
+      {
+        "id": "knowledge-skills",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": ["arcana", "history", "nature", "religion"]
+        },
+        "count": 2,
+        "level": 1,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "knowledge-of-the-ages",
+    "label": {
+      "en": "Channel Divinity: Knowledge of the Ages",
+      "fr": "Conduit divin : savoir ancestral",
+      "es": "Canalizar divinidad: conocimiento de las eras"
+    },
+    "parentKey": "knowledge-domain",
+    "description": {
+      "en": "As an action, choose one skill or tool: for 10 minutes, you have proficiency with it.",
+      "fr": "Par une action, choisis une compétence ou un outil : pendant 10 minutes, tu le maîtrises.",
+      "es": "Como acción, elige una habilidad o herramienta: durante 10 minutos eres competente con ella."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "read-thoughts",
+    "label": {
+      "en": "Channel Divinity: Read Thoughts",
+      "fr": "Conduit divin : lecture des pensées",
+      "es": "Canalizar divinidad: leer pensamientos"
+    },
+    "parentKey": "knowledge-domain",
+    "description": {
+      "en": "As an action, choose a creature within 60 feet: it makes a Wisdom saving throw. On a failure, you can read its surface thoughts for 1 minute while it is within 60 feet, and during that time you can use your action to end the effect and cast suggestion on it without a spell slot; it automatically fails the save.",
+      "fr": "Par une action, choisis une créature à 18 m : elle fait un jet de sauvegarde de Sagesse. En cas d'échec, tu peux lire ses pensées superficielles pendant 1 minute tant qu'elle est à 18 m, et tu peux pendant ce temps utiliser ton action pour mettre fin à l'effet et lancer suggestion sur elle sans emplacement de sort ; elle rate automatiquement son jet.",
+      "es": "Como acción, elige a una criatura a 60 pies: hace una tirada de salvación de Sabiduría. Si falla, puedes leer sus pensamientos superficiales durante 1 minuto mientras esté a 60 pies, y durante ese tiempo puedes usar tu acción para terminar el efecto y lanzarle sugestión sin gastar espacios; falla automáticamente la salvación."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "knowledge-potent-spellcasting",
+    "label": {
+      "en": "Potent Spellcasting",
+      "fr": "Incantation puissante",
+      "es": "Lanzamiento potente"
+    },
+    "parentKey": "knowledge-domain",
+    "description": {
+      "en": "You add your Wisdom modifier to the damage you deal with any cleric cantrip.",
+      "fr": "Tu ajoutes ton modificateur de Sagesse aux dégâts infligés par tes sorts mineurs de clerc.",
+      "es": "Sumas tu modificador de Sabiduría al daño que inflijas con cualquier truco de clérigo."
+    },
+    "level": 8,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "visions-of-the-past",
+    "label": {
+      "en": "Visions of the Past",
+      "fr": "Visions du passé",
+      "es": "Visiones del pasado"
+    },
+    "parentKey": "knowledge-domain",
+    "description": {
+      "en": "You can meditate for at least 1 minute (up to concentration for 10 minutes) to receive visions of the past related to an object you hold (its previous owner) or to your surroundings (events within the last days). You must finish a short or long rest before using it again.",
+      "fr": "Tu peux méditer au moins 1 minute (en te concentrant jusqu'à 10 minutes) pour recevoir des visions du passé liées à un objet que tu tiens (son précédent propriétaire) ou à ton environnement (événements des derniers jours). Tu dois terminer un repos court ou long avant de la réutiliser.",
+      "es": "Puedes meditar al menos 1 minuto (con concentración hasta 10 minutos) para recibir visiones del pasado relacionadas con un objeto que sostengas (su anterior dueño) o con tu entorno (sucesos de los últimos días). Debes terminar un descanso corto o largo antes de volver a usarlo."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "short"
+      }
+    },
+    "values": {
+      "usesCount": 1
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "life-domain-spells",
+    "label": {
+      "en": "Domain Spells",
+      "fr": "Sorts de domaine",
+      "es": "Conjuros de dominio"
+    },
+    "parentKey": "life-domain",
+    "description": {
+      "en": "You always have these domain spells prepared once you reach the listed cleric level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de domaine préparés dès que tu atteins le niveau de clerc indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de dominio al alcanzar el nivel de clérigo indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Bless", "Cure Wounds"],
+        "3": ["Lesser Restoration", "Spiritual Weapon"],
+        "5": ["Beacon of Hope", "Revivify"],
+        "7": ["Death Ward", "Guardian of Faith"],
+        "9": ["Mass Cure Wounds", "Raise Dead"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Bless",
+            "classLevel": 1
+          },
+          {
+            "name": "Cure Wounds",
+            "classLevel": 1
+          },
+          {
+            "name": "Lesser Restoration",
+            "classLevel": 3
+          },
+          {
+            "name": "Spiritual Weapon",
+            "classLevel": 3
+          },
+          {
+            "name": "Beacon of Hope",
+            "classLevel": 5
+          },
+          {
+            "name": "Revivify",
+            "classLevel": 5
+          },
+          {
+            "name": "Death Ward",
+            "classLevel": 7
+          },
+          {
+            "name": "Guardian of Faith",
+            "classLevel": 7
+          },
+          {
+            "name": "Mass Cure Wounds",
+            "classLevel": 9
+          },
+          {
+            "name": "Raise Dead",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "life-bonus-proficiency",
+    "label": {
+      "en": "Bonus Proficiency",
+      "fr": "Maîtrise supplémentaire",
+      "es": "Competencia adicional"
+    },
+    "parentKey": "life-domain",
+    "description": {
+      "en": "You gain proficiency with heavy armor.",
+      "fr": "Tu obtiens la maîtrise des armures lourdes.",
+      "es": "Obtienes competencia con armaduras pesadas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["heavy-armor"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "disciple-of-life",
+    "label": {
+      "en": "Disciple of Life",
+      "fr": "Disciple de la vie",
+      "es": "Discípulo de la vida"
+    },
+    "parentKey": "life-domain",
+    "description": {
+      "en": "Whenever you use a spell of 1st level or higher to restore hit points to a creature, it regains additional hit points equal to 2 + the spell's level.",
+      "fr": "Chaque fois que tu utilises un sort de niveau 1 ou supérieur pour rendre des points de vie à une créature, elle récupère en plus 2 + le niveau du sort points de vie.",
+      "es": "Siempre que uses un conjuro de nivel 1 o superior para devolver puntos de golpe a una criatura, recupera además 2 + el nivel del conjuro."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "preserve-life",
+    "label": {
+      "en": "Channel Divinity: Preserve Life",
+      "fr": "Conduit divin : préservation de la vie",
+      "es": "Canalizar divinidad: preservar la vida"
+    },
+    "parentKey": "life-domain",
+    "description": {
+      "en": "As an action, you restore a number of hit points equal to five times your cleric level, divided as you choose among creatures within 30 feet. A creature can't be raised above half its hit point maximum. No effect on undead or constructs.",
+      "fr": "Par une action, tu rends un nombre de points de vie égal à cinq fois ton niveau de clerc, répartis comme tu le souhaites entre des créatures à 9 m. Une créature ne peut pas dépasser la moitié de son maximum de points de vie. Sans effet sur les morts-vivants et les créatures artificielles.",
+      "es": "Como acción, devuelves tantos puntos de golpe como cinco veces tu nivel de clérigo, repartidos a tu elección entre criaturas a 30 pies. Ninguna puede superar la mitad de sus puntos de golpe máximos. No afecta a muertos vivientes ni constructos."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "blessed-healer",
+    "label": {
+      "en": "Blessed Healer",
+      "fr": "Guérisseur béni",
+      "es": "Sanador bendito"
+    },
+    "parentKey": "life-domain",
+    "description": {
+      "en": "When you cast a spell of 1st level or higher that restores hit points to a creature other than you, you regain hit points equal to 2 + the spell's level.",
+      "fr": "Lorsque tu lances un sort de niveau 1 ou supérieur qui rend des points de vie à une créature autre que toi, tu récupères 2 + le niveau du sort points de vie.",
+      "es": "Cuando lanzas un conjuro de nivel 1 o superior que devuelve puntos de golpe a una criatura que no seas tú, recuperas 2 + el nivel del conjuro."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "life-divine-strike",
+    "label": {
+      "en": "Divine Strike",
+      "fr": "Frappe divine",
+      "es": "Golpe divino"
+    },
+    "parentKey": "life-domain",
+    "description": {
+      "en": "Once on each of your turns when you hit a creature with a weapon attack, you can deal an extra 1d8 radiant damage. The extra damage becomes 2d8 at 14th level.",
+      "fr": "Une fois à chacun de tes tours, lorsque tu touches une créature avec une attaque d'arme, tu peux infliger 1d8 dégâts radiants supplémentaires. Ils passent à 2d8 au niveau 14.",
+      "es": "Una vez en cada uno de tus turnos, cuando impactas a una criatura con un ataque con arma, puedes infligir 1d8 de daño radiante adicional. Pasa a 2d8 en el nivel 14."
+    },
+    "level": 8,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "supreme-healing",
+    "label": {
+      "en": "Supreme Healing",
+      "fr": "Guérison suprême",
+      "es": "Curación suprema"
+    },
+    "parentKey": "life-domain",
+    "description": {
+      "en": "When you would roll dice to restore hit points with a spell, you instead use the highest number possible for each die.",
+      "fr": "Lorsque tu devrais lancer des dés pour rendre des points de vie avec un sort, tu utilises à la place le résultat maximal de chaque dé.",
+      "es": "Cuando debas tirar dados para devolver puntos de golpe con un conjuro, usas en su lugar el valor máximo de cada dado."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "light-domain-spells",
+    "label": {
+      "en": "Domain Spells",
+      "fr": "Sorts de domaine",
+      "es": "Conjuros de dominio"
+    },
+    "parentKey": "light-domain",
+    "description": {
+      "en": "You always have these domain spells prepared once you reach the listed cleric level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de domaine préparés dès que tu atteins le niveau de clerc indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de dominio al alcanzar el nivel de clérigo indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Burning Hands", "Faerie Fire"],
+        "3": ["Flaming Sphere", "Scorching Ray"],
+        "5": ["Daylight", "Fireball"],
+        "7": ["Guardian of Faith", "Wall of Fire"],
+        "9": ["Flame Strike", "Scrying"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Burning Hands",
+            "classLevel": 1
+          },
+          {
+            "name": "Faerie Fire",
+            "classLevel": 1
+          },
+          {
+            "name": "Flaming Sphere",
+            "classLevel": 3
+          },
+          {
+            "name": "Scorching Ray",
+            "classLevel": 3
+          },
+          {
+            "name": "Daylight",
+            "classLevel": 5
+          },
+          {
+            "name": "Fireball",
+            "classLevel": 5
+          },
+          {
+            "name": "Guardian of Faith",
+            "classLevel": 7
+          },
+          {
+            "name": "Wall of Fire",
+            "classLevel": 7
+          },
+          {
+            "name": "Flame Strike",
+            "classLevel": 9
+          },
+          {
+            "name": "Scrying",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "light-bonus-cantrip",
+    "label": {
+      "en": "Bonus Cantrip",
+      "fr": "Sort mineur supplémentaire",
+      "es": "Truco adicional"
+    },
+    "parentKey": "light-domain",
+    "description": {
+      "en": "You gain the light cantrip if you don't already know it.",
+      "fr": "Tu obtiens le sort mineur lumière si tu ne le connais pas déjà.",
+      "es": "Obtienes el truco luz si no lo conoces ya."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Light",
+            "classLevel": 1
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "warding-flare",
+    "label": {
+      "en": "Warding Flare",
+      "fr": "Flamboiement protecteur",
+      "es": "Destello protector"
+    },
+    "parentKey": "light-domain",
+    "description": {
+      "en": "When a creature you can see within 30 feet attacks you, you can use your reaction to impose disadvantage on the attack roll, unless it can't be blinded. You can use it a number of times equal to your Wisdom modifier (minimum 1), regaining uses after a long rest.",
+      "fr": "Lorsqu'une créature que tu vois à 9 m t'attaque, tu peux utiliser ta réaction pour imposer le désavantage à son jet d'attaque, sauf si elle ne peut pas être aveuglée. Tu peux l'utiliser un nombre de fois égal à ton modificateur de Sagesse (minimum 1) et récupères les utilisations après un repos long.",
+      "es": "Cuando una criatura que puedas ver a 30 pies te ataque, puedes usar tu reacción para imponer desventaja a su tirada de ataque, salvo que no pueda ser cegada. Puedes usarlo tantas veces como tu modificador de Sabiduría (mínimo 1) y recuperas los usos tras un descanso largo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "wisdomModifier"
+          }
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "radiance-of-the-dawn",
+    "label": {
+      "en": "Channel Divinity: Radiance of the Dawn",
+      "fr": "Conduit divin : radiance de l'aube",
+      "es": "Canalizar divinidad: resplandor del alba"
+    },
+    "parentKey": "light-domain",
+    "description": {
+      "en": "As an action, you dispel any magical darkness within 30 feet, and each hostile creature within 30 feet makes a Constitution saving throw, taking 2d10 + your cleric level radiant damage on a failure, or half on a success. Creatures with total cover are unaffected.",
+      "fr": "Par une action, tu dissipes toute obscurité magique à 9 m, et chaque créature hostile à 9 m fait un jet de sauvegarde de Constitution : elle subit 2d10 + ton niveau de clerc dégâts radiants en cas d'échec, ou la moitié en cas de réussite. Les créatures derrière un abri total ne sont pas affectées.",
+      "es": "Como acción, disipas cualquier oscuridad mágica a 30 pies, y cada criatura hostil a 30 pies hace una tirada de salvación de Constitución: recibe 2d10 + tu nivel de clérigo de daño radiante si falla, o la mitad si tiene éxito. No afecta a criaturas con cobertura total."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "improved-flare",
+    "label": {
+      "en": "Improved Flare",
+      "fr": "Flamboiement amélioré",
+      "es": "Destello mejorado"
+    },
+    "parentKey": "light-domain",
+    "description": {
+      "en": "You can also use your Warding Flare when a creature you can see within 30 feet attacks a creature other than you.",
+      "fr": "Tu peux aussi utiliser ton Flamboiement protecteur lorsqu'une créature que tu vois à 9 m attaque une autre créature que toi.",
+      "es": "También puedes usar tu Destello protector cuando una criatura que puedas ver a 30 pies ataque a una criatura que no seas tú."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "light-potent-spellcasting",
+    "label": {
+      "en": "Potent Spellcasting",
+      "fr": "Incantation puissante",
+      "es": "Lanzamiento potente"
+    },
+    "parentKey": "light-domain",
+    "description": {
+      "en": "You add your Wisdom modifier to the damage you deal with any cleric cantrip.",
+      "fr": "Tu ajoutes ton modificateur de Sagesse aux dégâts infligés par tes sorts mineurs de clerc.",
+      "es": "Sumas tu modificador de Sabiduría al daño que inflijas con cualquier truco de clérigo."
+    },
+    "level": 8,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "corona-of-light",
+    "label": {
+      "en": "Corona of Light",
+      "fr": "Couronne de lumière",
+      "es": "Corona de luz"
+    },
+    "parentKey": "light-domain",
+    "description": {
+      "en": "As an action, you activate an aura of sunlight for 1 minute: bright light in a 60-foot radius and dim light 30 feet beyond. Your enemies in the bright light have disadvantage on saving throws against spells that deal fire or radiant damage.",
+      "fr": "Par une action, tu actives pendant 1 minute une aura de lumière solaire : lumière vive sur 18 m et faible sur 9 m de plus. Tes ennemis dans la lumière vive ont le désavantage aux jets de sauvegarde contre les sorts infligeant des dégâts de feu ou radiants.",
+      "es": "Como acción, activas durante 1 minuto un aura de luz solar: luz brillante en 60 pies y tenue 30 pies más allá. Tus enemigos en la luz brillante tienen desventaja en las tiradas de salvación contra conjuros que inflijan daño de fuego o radiante."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "nature-domain-spells",
+    "label": {
+      "en": "Domain Spells",
+      "fr": "Sorts de domaine",
+      "es": "Conjuros de dominio"
+    },
+    "parentKey": "nature-domain",
+    "description": {
+      "en": "You always have these domain spells prepared once you reach the listed cleric level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de domaine préparés dès que tu atteins le niveau de clerc indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de dominio al alcanzar el nivel de clérigo indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Animal Friendship", "Speak with Animals"],
+        "3": ["Barkskin", "Spike Growth"],
+        "5": ["Plant Growth", "Wind Wall"],
+        "7": ["Dominate Beast", "Grasping Vine"],
+        "9": ["Insect Plague", "Tree Stride"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Animal Friendship",
+            "classLevel": 1
+          },
+          {
+            "name": "Speak with Animals",
+            "classLevel": 1
+          },
+          {
+            "name": "Barkskin",
+            "classLevel": 3
+          },
+          {
+            "name": "Spike Growth",
+            "classLevel": 3
+          },
+          {
+            "name": "Plant Growth",
+            "classLevel": 5
+          },
+          {
+            "name": "Wind Wall",
+            "classLevel": 5
+          },
+          {
+            "name": "Dominate Beast",
+            "classLevel": 7
+          },
+          {
+            "name": "Grasping Vine",
+            "classLevel": 7
+          },
+          {
+            "name": "Insect Plague",
+            "classLevel": 9
+          },
+          {
+            "name": "Tree Stride",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "acolyte-of-nature",
+    "label": {
+      "en": "Acolyte of Nature",
+      "fr": "Acolyte de la nature",
+      "es": "Acólito de la naturaleza"
+    },
+    "parentKey": "nature-domain",
+    "description": {
+      "en": "You learn one druid cantrip of your choice, which counts as a cleric cantrip for you. You also gain proficiency in one of the following skills: Animal Handling, Nature or Survival.",
+      "fr": "Tu apprends un sort mineur de druide de ton choix, qui compte pour toi comme un sort mineur de clerc. Tu obtiens aussi la maîtrise d'une compétence parmi Dressage, Nature et Survie.",
+      "es": "Aprendes un truco de druida de tu elección, que cuenta para ti como truco de clérigo. También obtienes competencia en una de estas habilidades: Trato con animales, Naturaleza o Supervivencia."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "set",
+        "target": "subclassCantrip",
+        "value": {
+          "className": "druid",
+          "count": 1
+        }
+      }
+    ],
+    "grants": [
+      {
+        "id": "nature-skill",
+        "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
+        "from": {
+          "type": "skill",
+          "keys": ["animal-handling", "nature", "survival"]
+        },
+        "count": 1,
+        "level": 1,
+        "effects": [
+          {
+            "op": "set",
+            "target": "skills.{key}",
+            "value": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "subclass-feature",
+    "key": "nature-bonus-proficiency",
+    "label": {
+      "en": "Bonus Proficiency",
+      "fr": "Maîtrise supplémentaire",
+      "es": "Competencia adicional"
+    },
+    "parentKey": "nature-domain",
+    "description": {
+      "en": "You gain proficiency with heavy armor.",
+      "fr": "Tu obtiens la maîtrise des armures lourdes.",
+      "es": "Obtienes competencia con armaduras pesadas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["heavy-armor"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "charm-animals-and-plants",
+    "label": {
+      "en": "Channel Divinity: Charm Animals and Plants",
+      "fr": "Conduit divin : charme des animaux et des plantes",
+      "es": "Canalizar divinidad: hechizar animales y plantas"
+    },
+    "parentKey": "nature-domain",
+    "description": {
+      "en": "As an action, each beast or plant creature within 30 feet that can see you makes a Wisdom saving throw. On a failure, it is charmed by you for 1 minute or until it takes damage, and is friendly to you and your allies.",
+      "fr": "Par une action, chaque bête ou créature végétale à 9 m qui peut te voir fait un jet de sauvegarde de Sagesse. En cas d'échec, elle est charmée par toi pendant 1 minute ou jusqu'à ce qu'elle subisse des dégâts, et se montre amicale envers toi et tes alliés.",
+      "es": "Como acción, cada bestia o planta a 30 pies que pueda verte hace una tirada de salvación de Sabiduría. Si falla, queda hechizada por ti durante 1 minuto o hasta que reciba daño, y es amistosa contigo y tus aliados."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "dampen-elements",
+    "label": {
+      "en": "Dampen Elements",
+      "fr": "Atténuation des éléments",
+      "es": "Amortiguar elementos"
+    },
+    "parentKey": "nature-domain",
+    "description": {
+      "en": "When you or a creature within 30 feet takes acid, cold, fire, lightning or thunder damage, you can use your reaction to grant resistance to that instance of damage.",
+      "fr": "Lorsque toi ou une créature à 9 m subissez des dégâts d'acide, de froid, de feu, de foudre ou de tonnerre, tu peux utiliser ta réaction pour accorder la résistance contre ces dégâts.",
+      "es": "Cuando tú o una criatura a 30 pies recibáis daño de ácido, frío, fuego, relámpago o trueno, puedes usar tu reacción para otorgar resistencia a ese daño."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "nature-divine-strike",
+    "label": {
+      "en": "Divine Strike",
+      "fr": "Frappe divine",
+      "es": "Golpe divino"
+    },
+    "parentKey": "nature-domain",
+    "description": {
+      "en": "Once on each of your turns when you hit a creature with a weapon attack, you can deal an extra 1d8 cold, fire or lightning damage (your choice). The extra damage becomes 2d8 at 14th level.",
+      "fr": "Une fois à chacun de tes tours, lorsque tu touches une créature avec une attaque d'arme, tu peux infliger 1d8 dégâts supplémentaires de froid, de feu ou de foudre (au choix). Ils passent à 2d8 au niveau 14.",
+      "es": "Una vez en cada uno de tus turnos, cuando impactas a una criatura con un ataque con arma, puedes infligir 1d8 de daño adicional de frío, fuego o relámpago (a tu elección). Pasa a 2d8 en el nivel 14."
+    },
+    "level": 8,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "master-of-nature",
+    "label": {
+      "en": "Master of Nature",
+      "fr": "Maître de la nature",
+      "es": "Señor de la naturaleza"
+    },
+    "parentKey": "nature-domain",
+    "description": {
+      "en": "While creatures are charmed by your Charm Animals and Plants, you can take a bonus action on your turn to verbally command what each of them will do on its next turn.",
+      "fr": "Tant que des créatures sont charmées par ton Charme des animaux et des plantes, tu peux utiliser une action bonus pendant ton tour pour ordonner verbalement à chacune ce qu'elle fera à son prochain tour.",
+      "es": "Mientras haya criaturas hechizadas por tu Hechizar animales y plantas, puedes usar una acción adicional en tu turno para ordenar verbalmente lo que hará cada una en su siguiente turno."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "tempest-domain-spells",
+    "label": {
+      "en": "Domain Spells",
+      "fr": "Sorts de domaine",
+      "es": "Conjuros de dominio"
+    },
+    "parentKey": "tempest-domain",
+    "description": {
+      "en": "You always have these domain spells prepared once you reach the listed cleric level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de domaine préparés dès que tu atteins le niveau de clerc indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de dominio al alcanzar el nivel de clérigo indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Fog Cloud", "Thunderwave"],
+        "3": ["Gust of Wind", "Shatter"],
+        "5": ["Call Lightning", "Sleet Storm"],
+        "7": ["Control Water", "Ice Storm"],
+        "9": ["Destructive Wave", "Insect Plague"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Fog Cloud",
+            "classLevel": 1
+          },
+          {
+            "name": "Thunderwave",
+            "classLevel": 1
+          },
+          {
+            "name": "Gust of Wind",
+            "classLevel": 3
+          },
+          {
+            "name": "Shatter",
+            "classLevel": 3
+          },
+          {
+            "name": "Call Lightning",
+            "classLevel": 5
+          },
+          {
+            "name": "Sleet Storm",
+            "classLevel": 5
+          },
+          {
+            "name": "Control Water",
+            "classLevel": 7
+          },
+          {
+            "name": "Ice Storm",
+            "classLevel": 7
+          },
+          {
+            "name": "Destructive Wave",
+            "classLevel": 9
+          },
+          {
+            "name": "Insect Plague",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "tempest-bonus-proficiencies",
+    "label": {
+      "en": "Bonus Proficiencies",
+      "fr": "Maîtrises supplémentaires",
+      "es": "Competencias adicionales"
+    },
+    "parentKey": "tempest-domain",
+    "description": {
+      "en": "You gain proficiency with martial weapons and heavy armor.",
+      "fr": "Tu obtiens la maîtrise des armes de guerre et des armures lourdes.",
+      "es": "Obtienes competencia con armas marciales y armaduras pesadas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["martial-weapons"]
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["heavy-armor"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "wrath-of-the-storm",
+    "label": {
+      "en": "Wrath of the Storm",
+      "fr": "Fureur de l'ouragan",
+      "es": "Ira de la tormenta"
+    },
+    "parentKey": "tempest-domain",
+    "description": {
+      "en": "When a creature within 5 feet that you can see hits you with an attack, you can use your reaction to make it attempt a Dexterity saving throw: it takes 2d8 lightning or thunder damage (your choice) on a failure, or half on a success. Uses equal to your Wisdom modifier (minimum 1), regained after a long rest.",
+      "fr": "Lorsqu'une créature que tu vois à 1,50 m te touche avec une attaque, tu peux utiliser ta réaction pour l'obliger à faire un jet de sauvegarde de Dextérité : elle subit 2d8 dégâts de foudre ou de tonnerre (au choix) en cas d'échec, la moitié en cas de réussite. Utilisations égales à ton modificateur de Sagesse (minimum 1), récupérées après un repos long.",
+      "es": "Cuando una criatura que puedas ver a 5 pies te impacte con un ataque, puedes usar tu reacción para obligarla a hacer una tirada de salvación de Destreza: recibe 2d8 de daño de relámpago o trueno (a tu elección) si falla, o la mitad si tiene éxito. Usos iguales a tu modificador de Sabiduría (mínimo 1), recuperados tras un descanso largo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "wisdomModifier"
+          }
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "destructive-wrath",
+    "label": {
+      "en": "Channel Divinity: Destructive Wrath",
+      "fr": "Conduit divin : fureur destructrice",
+      "es": "Canalizar divinidad: ira destructiva"
+    },
+    "parentKey": "tempest-domain",
+    "description": {
+      "en": "When you roll lightning or thunder damage, you can use your Channel Divinity to deal maximum damage instead of rolling.",
+      "fr": "Lorsque tu lances des dégâts de foudre ou de tonnerre, tu peux utiliser ton Conduit divin pour infliger les dégâts maximaux au lieu de lancer les dés.",
+      "es": "Cuando tires daño de relámpago o trueno, puedes usar tu Canalizar divinidad para infligir el daño máximo en lugar de tirar."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "thunderbolt-strike",
+    "label": {
+      "en": "Thunderbolt Strike",
+      "fr": "Frappe de l'éclair",
+      "es": "Golpe del rayo"
+    },
+    "parentKey": "tempest-domain",
+    "description": {
+      "en": "When you deal lightning damage to a Large or smaller creature, you can also push it up to 10 feet away from you.",
+      "fr": "Lorsque tu infliges des dégâts de foudre à une créature de taille Grande ou inférieure, tu peux aussi la repousser de 3 m.",
+      "es": "Cuando inflijas daño de relámpago a una criatura Grande o menor, también puedes empujarla hasta 10 pies."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "tempest-divine-strike",
+    "label": {
+      "en": "Divine Strike",
+      "fr": "Frappe divine",
+      "es": "Golpe divino"
+    },
+    "parentKey": "tempest-domain",
+    "description": {
+      "en": "Once on each of your turns when you hit a creature with a weapon attack, you can deal an extra 1d8 thunder damage. The extra damage becomes 2d8 at 14th level.",
+      "fr": "Une fois à chacun de tes tours, lorsque tu touches une créature avec une attaque d'arme, tu peux infliger 1d8 dégâts de tonnerre supplémentaires. Ils passent à 2d8 au niveau 14.",
+      "es": "Una vez en cada uno de tus turnos, cuando impactas a una criatura con un ataque con arma, puedes infligir 1d8 de daño de trueno adicional. Pasa a 2d8 en el nivel 14."
+    },
+    "level": 8,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "stormborn",
+    "label": {
+      "en": "Stormborn",
+      "fr": "Enfant de la tempête",
+      "es": "Hijo de la tormenta"
+    },
+    "parentKey": "tempest-domain",
+    "description": {
+      "en": "You have a flying speed equal to your current walking speed whenever you are not underground or indoors.",
+      "fr": "Tu as une vitesse de vol égale à ta vitesse de marche actuelle tant que tu n'es ni sous terre ni à l'intérieur.",
+      "es": "Tienes una velocidad de vuelo igual a tu velocidad caminando actual siempre que no estés bajo tierra ni en interiores."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "trickery-domain-spells",
+    "label": {
+      "en": "Domain Spells",
+      "fr": "Sorts de domaine",
+      "es": "Conjuros de dominio"
+    },
+    "parentKey": "trickery-domain",
+    "description": {
+      "en": "You always have these domain spells prepared once you reach the listed cleric level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de domaine préparés dès que tu atteins le niveau de clerc indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de dominio al alcanzar el nivel de clérigo indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Charm Person", "Disguise Self"],
+        "3": ["Mirror Image", "Pass without Trace"],
+        "5": ["Blink", "Dispel Magic"],
+        "7": ["Dimension Door", "Polymorph"],
+        "9": ["Dominate Person", "Modify Memory"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Charm Person",
+            "classLevel": 1
+          },
+          {
+            "name": "Disguise Self",
+            "classLevel": 1
+          },
+          {
+            "name": "Mirror Image",
+            "classLevel": 3
+          },
+          {
+            "name": "Pass without Trace",
+            "classLevel": 3
+          },
+          {
+            "name": "Blink",
+            "classLevel": 5
+          },
+          {
+            "name": "Dispel Magic",
+            "classLevel": 5
+          },
+          {
+            "name": "Dimension Door",
+            "classLevel": 7
+          },
+          {
+            "name": "Polymorph",
+            "classLevel": 7
+          },
+          {
+            "name": "Dominate Person",
+            "classLevel": 9
+          },
+          {
+            "name": "Modify Memory",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "blessing-of-the-trickster",
+    "label": {
+      "en": "Blessing of the Trickster",
+      "fr": "Bénédiction de l'escroc",
+      "es": "Bendición del embaucador"
+    },
+    "parentKey": "trickery-domain",
+    "description": {
+      "en": "As an action, you touch a willing creature other than you to give it advantage on Dexterity (Stealth) checks for 1 hour or until you use this feature again.",
+      "fr": "Par une action, tu touches une créature consentante autre que toi pour lui donner l'avantage aux tests de Dextérité (Discrétion) pendant 1 heure ou jusqu'à ce que tu réutilises cette aptitude.",
+      "es": "Como acción, tocas a una criatura voluntaria distinta de ti para darle ventaja en las pruebas de Destreza (Sigilo) durante 1 hora o hasta que vuelvas a usar este rasgo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "invoke-duplicity",
+    "label": {
+      "en": "Channel Divinity: Invoke Duplicity",
+      "fr": "Conduit divin : invocation de double",
+      "es": "Canalizar divinidad: invocar duplicidad"
+    },
+    "parentKey": "trickery-domain",
+    "description": {
+      "en": "As an action, you create a perfect illusion of yourself within 30 feet for 1 minute (concentration). As a bonus action, you can move it up to 30 feet. You can cast spells as though you were in its space, and you have advantage on attack rolls against a creature if both you and the illusion are within 5 feet of it.",
+      "fr": "Par une action, tu crées une illusion parfaite de toi à 9 m pendant 1 minute (concentration). Par une action bonus, tu peux la déplacer de 9 m. Tu peux lancer des sorts comme si tu étais à sa place, et tu as l'avantage aux jets d'attaque contre une créature si toi et l'illusion êtes à 1,50 m d'elle.",
+      "es": "Como acción, creas una ilusión perfecta de ti a 30 pies durante 1 minuto (concentración). Como acción adicional, puedes moverla hasta 30 pies. Puedes lanzar conjuros como si estuvieras en su espacio, y tienes ventaja en las tiradas de ataque contra una criatura si tú y la ilusión estáis a 5 pies de ella."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "cloak-of-shadows-cleric",
+    "label": {
+      "en": "Channel Divinity: Cloak of Shadows",
+      "fr": "Conduit divin : manteau d'ombres",
+      "es": "Canalizar divinidad: manto de sombras"
+    },
+    "parentKey": "trickery-domain",
+    "description": {
+      "en": "As an action, you become invisible until the end of your next turn, or until you attack or cast a spell.",
+      "fr": "Par une action, tu deviens invisible jusqu'à la fin de ton prochain tour, ou jusqu'à ce que tu attaques ou lances un sort.",
+      "es": "Como acción, te vuelves invisible hasta el final de tu siguiente turno, o hasta que ataques o lances un conjuro."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "trickery-divine-strike",
+    "label": {
+      "en": "Divine Strike",
+      "fr": "Frappe divine",
+      "es": "Golpe divino"
+    },
+    "parentKey": "trickery-domain",
+    "description": {
+      "en": "Once on each of your turns when you hit a creature with a weapon attack, you can deal an extra 1d8 poison damage. The extra damage becomes 2d8 at 14th level.",
+      "fr": "Une fois à chacun de tes tours, lorsque tu touches une créature avec une attaque d'arme, tu peux infliger 1d8 dégâts de poison supplémentaires. Ils passent à 2d8 au niveau 14.",
+      "es": "Una vez en cada uno de tus turnos, cuando impactas a una criatura con un ataque con arma, puedes infligir 1d8 de daño de veneno adicional. Pasa a 2d8 en el nivel 14."
+    },
+    "level": 8,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "improved-duplicity",
+    "label": {
+      "en": "Improved Duplicity",
+      "fr": "Double amélioré",
+      "es": "Duplicidad mejorada"
+    },
+    "parentKey": "trickery-domain",
+    "description": {
+      "en": "You can create up to four duplicates of yourself, instead of one, when you use Invoke Duplicity. As a bonus action, you can move any number of them up to 30 feet.",
+      "fr": "Tu peux créer jusqu'à quatre doubles de toi, au lieu d'un, avec Invocation de double. Par une action bonus, tu peux en déplacer autant que tu veux de 9 m.",
+      "es": "Puedes crear hasta cuatro duplicados de ti, en lugar de uno, con Invocar duplicidad. Como acción adicional puedes mover cuantos quieras hasta 30 pies."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "war-domain-spells",
+    "label": {
+      "en": "Domain Spells",
+      "fr": "Sorts de domaine",
+      "es": "Conjuros de dominio"
+    },
+    "parentKey": "war-domain",
+    "description": {
+      "en": "You always have these domain spells prepared once you reach the listed cleric level; they don't count against the number of spells you prepare.",
+      "fr": "Tu as toujours ces sorts de domaine préparés dès que tu atteins le niveau de clerc indiqué ; ils ne comptent pas dans le nombre de sorts que tu prépares.",
+      "es": "Siempre tienes preparados estos conjuros de dominio al alcanzar el nivel de clérigo indicado; no cuentan para el número de conjuros que preparas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "spells": {
+        "1": ["Divine Favor", "Shield of Faith"],
+        "3": ["Magic Weapon", "Spiritual Weapon"],
+        "5": ["Crusader's Mantle", "Spirit Guardians"],
+        "7": ["Freedom of Movement", "Stoneskin"],
+        "9": ["Flame Strike", "Hold Monster"]
+      }
+    },
+    "effects": [
+      {
+        "op": "grant",
+        "target": "subclassSpells",
+        "value": [
+          {
+            "name": "Divine Favor",
+            "classLevel": 1
+          },
+          {
+            "name": "Shield of Faith",
+            "classLevel": 1
+          },
+          {
+            "name": "Magic Weapon",
+            "classLevel": 3
+          },
+          {
+            "name": "Spiritual Weapon",
+            "classLevel": 3
+          },
+          {
+            "name": "Crusader's Mantle",
+            "classLevel": 5
+          },
+          {
+            "name": "Spirit Guardians",
+            "classLevel": 5
+          },
+          {
+            "name": "Freedom of Movement",
+            "classLevel": 7
+          },
+          {
+            "name": "Stoneskin",
+            "classLevel": 7
+          },
+          {
+            "name": "Flame Strike",
+            "classLevel": 9
+          },
+          {
+            "name": "Hold Monster",
+            "classLevel": 9
+          }
+        ]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "war-bonus-proficiencies",
+    "label": {
+      "en": "Bonus Proficiencies",
+      "fr": "Maîtrises supplémentaires",
+      "es": "Competencias adicionales"
+    },
+    "parentKey": "war-domain",
+    "description": {
+      "en": "You gain proficiency with martial weapons and heavy armor.",
+      "fr": "Tu obtiens la maîtrise des armes de guerre et des armures lourdes.",
+      "es": "Obtienes competencia con armas marciales y armaduras pesadas."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {},
+    "effects": [
+      {
+        "op": "grant",
+        "target": "proficiencies.weapons",
+        "value": ["martial-weapons"]
+      },
+      {
+        "op": "grant",
+        "target": "proficiencies.armors",
+        "value": ["heavy-armor"]
+      }
+    ],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "war-priest",
+    "label": {
+      "en": "War Priest",
+      "fr": "Prêtre de guerre",
+      "es": "Sacerdote de guerra"
+    },
+    "parentKey": "war-domain",
+    "description": {
+      "en": "When you use the Attack action, you can make one weapon attack as a bonus action. Uses equal to your Wisdom modifier (minimum 1), regained after a long rest.",
+      "fr": "Lorsque tu fais l'action Attaquer, tu peux faire une attaque avec une arme par une action bonus. Utilisations égales à ton modificateur de Sagesse (minimum 1), récupérées après un repos long.",
+      "es": "Cuando realizas la acción de Atacar, puedes hacer un ataque con arma como acción adicional. Usos iguales a tu modificador de Sabiduría (mínimo 1), recuperados tras un descanso largo."
+    },
+    "level": 1,
+    "tags": [],
+    "data": {
+      "uses": {
+        "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "wisdomModifier"
+          }
+        ]
+      }
+    },
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "guided-strike",
+    "label": {
+      "en": "Channel Divinity: Guided Strike",
+      "fr": "Conduit divin : frappe guidée",
+      "es": "Canalizar divinidad: golpe guiado"
+    },
+    "parentKey": "war-domain",
+    "description": {
+      "en": "When you make an attack roll, you can use your Channel Divinity to gain a +10 bonus to the roll, after seeing it but before knowing the outcome.",
+      "fr": "Lorsque tu fais un jet d'attaque, tu peux utiliser ton Conduit divin pour obtenir un bonus de +10, après avoir vu le jet mais avant d'en connaître l'issue.",
+      "es": "Cuando haces una tirada de ataque, puedes usar tu Canalizar divinidad para obtener un +10, tras ver la tirada pero antes de conocer el resultado."
+    },
+    "level": 2,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "war-gods-blessing",
+    "label": {
+      "en": "Channel Divinity: War God's Blessing",
+      "fr": "Conduit divin : bénédiction du dieu de la guerre",
+      "es": "Canalizar divinidad: bendición del dios de la guerra"
+    },
+    "parentKey": "war-domain",
+    "description": {
+      "en": "When a creature within 30 feet makes an attack roll, you can use your reaction and Channel Divinity to grant it a +10 bonus, after seeing the roll but before knowing the outcome.",
+      "fr": "Lorsqu'une créature à 9 m fait un jet d'attaque, tu peux utiliser ta réaction et ton Conduit divin pour lui accorder un bonus de +10, après avoir vu le jet mais avant d'en connaître l'issue.",
+      "es": "Cuando una criatura a 30 pies haga una tirada de ataque, puedes usar tu reacción y tu Canalizar divinidad para darle un +10, tras ver la tirada pero antes de conocer el resultado."
+    },
+    "level": 6,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "war-divine-strike",
+    "label": {
+      "en": "Divine Strike",
+      "fr": "Frappe divine",
+      "es": "Golpe divino"
+    },
+    "parentKey": "war-domain",
+    "description": {
+      "en": "Once on each of your turns when you hit a creature with a weapon attack, you can deal an extra 1d8 damage of the same type as the weapon. The extra damage becomes 2d8 at 14th level.",
+      "fr": "Une fois à chacun de tes tours, lorsque tu touches une créature avec une attaque d'arme, tu peux infliger 1d8 dégâts supplémentaires du même type que l'arme. Ils passent à 2d8 au niveau 14.",
+      "es": "Una vez en cada uno de tus turnos, cuando impactas a una criatura con un ataque con arma, puedes infligir 1d8 de daño adicional del mismo tipo que el arma. Pasa a 2d8 en el nivel 14."
+    },
+    "level": 8,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "subclass-feature",
+    "key": "avatar-of-battle",
+    "label": {
+      "en": "Avatar of Battle",
+      "fr": "Avatar de la bataille",
+      "es": "Avatar de batalla"
+    },
+    "parentKey": "war-domain",
+    "description": {
+      "en": "You gain resistance to bludgeoning, piercing and slashing damage from nonmagical weapons.",
+      "fr": "Tu obtiens la résistance aux dégâts contondants, perforants et tranchants des armes non magiques.",
+      "es": "Obtienes resistencia al daño contundente, perforante y cortante de armas no mágicas."
+    },
+    "level": 17,
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]

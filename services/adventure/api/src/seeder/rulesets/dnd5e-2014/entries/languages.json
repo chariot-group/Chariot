@@ -1,0 +1,344 @@
+[
+  {
+    "type": "language",
+    "key": "common",
+    "label": {
+      "en": "Common",
+      "fr": "Commun",
+      "es": "Común"
+    },
+    "description": {
+      "en": "Typical speakers: Humans.",
+      "fr": "Locuteurs typiques : Humains.",
+      "es": "Hablantes típicos: Humanos."
+    },
+    "tags": ["standard"],
+    "data": {
+      "category": "standard",
+      "script": "Common"
+    }
+  },
+  {
+    "type": "language",
+    "key": "dwarvish",
+    "label": {
+      "en": "Dwarvish",
+      "fr": "Nain",
+      "es": "Enano"
+    },
+    "description": {
+      "en": "Typical speakers: Dwarves.",
+      "fr": "Locuteurs typiques : Nains.",
+      "es": "Hablantes típicos: Enanos."
+    },
+    "tags": ["standard"],
+    "data": {
+      "category": "standard",
+      "script": "Dwarvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "elvish",
+    "label": {
+      "en": "Elvish",
+      "fr": "Elfique",
+      "es": "Élfico"
+    },
+    "description": {
+      "en": "Typical speakers: Elves.",
+      "fr": "Locuteurs typiques : Elfes.",
+      "es": "Hablantes típicos: Elfos."
+    },
+    "tags": ["standard"],
+    "data": {
+      "category": "standard",
+      "script": "Elvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "giant",
+    "label": {
+      "en": "Giant",
+      "fr": "Géant",
+      "es": "Gigante"
+    },
+    "description": {
+      "en": "Typical speakers: Ogres, giants.",
+      "fr": "Locuteurs typiques : Ogres, géants.",
+      "es": "Hablantes típicos: Ogros, gigantes."
+    },
+    "tags": ["standard"],
+    "data": {
+      "category": "standard",
+      "script": "Dwarvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "gnomish",
+    "label": {
+      "en": "Gnomish",
+      "fr": "Gnome",
+      "es": "Gnomo"
+    },
+    "description": {
+      "en": "Typical speakers: Gnomes.",
+      "fr": "Locuteurs typiques : Gnomes.",
+      "es": "Hablantes típicos: Gnomos."
+    },
+    "tags": ["standard"],
+    "data": {
+      "category": "standard",
+      "script": "Dwarvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "goblin",
+    "label": {
+      "en": "Goblin",
+      "fr": "Gobelin",
+      "es": "Goblin"
+    },
+    "description": {
+      "en": "Typical speakers: Goblinoids.",
+      "fr": "Locuteurs typiques : Gobelinoïdes.",
+      "es": "Hablantes típicos: Goblinoides."
+    },
+    "tags": ["standard"],
+    "data": {
+      "category": "standard",
+      "script": "Dwarvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "halfling-language",
+    "label": {
+      "en": "Halfling",
+      "fr": "Halfelin",
+      "es": "Mediano"
+    },
+    "description": {
+      "en": "Typical speakers: Halflings.",
+      "fr": "Locuteurs typiques : Halfelins.",
+      "es": "Hablantes típicos: Medianos."
+    },
+    "tags": ["standard"],
+    "data": {
+      "category": "standard",
+      "script": "Common"
+    }
+  },
+  {
+    "type": "language",
+    "key": "orc",
+    "label": {
+      "en": "Orc",
+      "fr": "Orc",
+      "es": "Orco"
+    },
+    "description": {
+      "en": "Typical speakers: Orcs.",
+      "fr": "Locuteurs typiques : Orcs.",
+      "es": "Hablantes típicos: Orcos."
+    },
+    "tags": ["standard"],
+    "data": {
+      "category": "standard",
+      "script": "Dwarvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "abyssal",
+    "label": {
+      "en": "Abyssal",
+      "fr": "Abyssal",
+      "es": "Abisal"
+    },
+    "description": {
+      "en": "Typical speakers: Demons.",
+      "fr": "Locuteurs typiques : Démons.",
+      "es": "Hablantes típicos: Demonios."
+    },
+    "tags": ["exotic"],
+    "data": {
+      "category": "exotic",
+      "script": "Infernal"
+    }
+  },
+  {
+    "type": "language",
+    "key": "celestial",
+    "label": {
+      "en": "Celestial",
+      "fr": "Céleste",
+      "es": "Celestial"
+    },
+    "description": {
+      "en": "Typical speakers: Celestials.",
+      "fr": "Locuteurs typiques : Célestes.",
+      "es": "Hablantes típicos: Celestiales."
+    },
+    "tags": ["exotic"],
+    "data": {
+      "category": "exotic",
+      "script": "Celestial"
+    }
+  },
+  {
+    "type": "language",
+    "key": "draconic",
+    "label": {
+      "en": "Draconic",
+      "fr": "Draconique",
+      "es": "Dracónico"
+    },
+    "description": {
+      "en": "Typical speakers: Dragons, dragonborn.",
+      "fr": "Locuteurs typiques : Dragons, drakéides.",
+      "es": "Hablantes típicos: Dragones, dracónidos."
+    },
+    "tags": ["exotic"],
+    "data": {
+      "category": "exotic",
+      "script": "Draconic"
+    }
+  },
+  {
+    "type": "language",
+    "key": "deep-speech",
+    "label": {
+      "en": "Deep Speech",
+      "fr": "Profond",
+      "es": "Habla profunda"
+    },
+    "description": {
+      "en": "Typical speakers: Aboleths, cloakers.",
+      "fr": "Locuteurs typiques : Aboleths, manteleurs.",
+      "es": "Hablantes típicos: Aboleths, capas."
+    },
+    "tags": ["exotic"],
+    "data": {
+      "category": "exotic",
+      "script": null
+    }
+  },
+  {
+    "type": "language",
+    "key": "infernal",
+    "label": {
+      "en": "Infernal",
+      "fr": "Infernal",
+      "es": "Infernal"
+    },
+    "description": {
+      "en": "Typical speakers: Devils.",
+      "fr": "Locuteurs typiques : Diables.",
+      "es": "Hablantes típicos: Diablos."
+    },
+    "tags": ["exotic"],
+    "data": {
+      "category": "exotic",
+      "script": "Infernal"
+    }
+  },
+  {
+    "type": "language",
+    "key": "primordial",
+    "label": {
+      "en": "Primordial",
+      "fr": "Primordial",
+      "es": "Primordial"
+    },
+    "description": {
+      "en": "Typical speakers: Elementals.",
+      "fr": "Locuteurs typiques : Élémentaires.",
+      "es": "Hablantes típicos: Elementales."
+    },
+    "tags": ["exotic"],
+    "data": {
+      "category": "exotic",
+      "script": "Dwarvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "sylvan",
+    "label": {
+      "en": "Sylvan",
+      "fr": "Sylvestre",
+      "es": "Silvano"
+    },
+    "description": {
+      "en": "Typical speakers: Fey creatures.",
+      "fr": "Locuteurs typiques : Créatures féeriques.",
+      "es": "Hablantes típicos: Criaturas feéricas."
+    },
+    "tags": ["exotic"],
+    "data": {
+      "category": "exotic",
+      "script": "Elvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "undercommon",
+    "label": {
+      "en": "Undercommon",
+      "fr": "Commun des profondeurs",
+      "es": "Infracomún"
+    },
+    "description": {
+      "en": "Typical speakers: Underdark traders.",
+      "fr": "Locuteurs typiques : Marchands de l'Outreterre.",
+      "es": "Hablantes típicos: Comerciantes de la Infraoscuridad."
+    },
+    "tags": ["exotic"],
+    "data": {
+      "category": "exotic",
+      "script": "Elvish"
+    }
+  },
+  {
+    "type": "language",
+    "key": "druidic",
+    "label": {
+      "en": "Druidic",
+      "fr": "Druidique",
+      "es": "Druídico"
+    },
+    "description": {
+      "en": "Typical speakers: Druids.",
+      "fr": "Locuteurs typiques : Druides.",
+      "es": "Hablantes típicos: Druidas."
+    },
+    "tags": ["secret"],
+    "data": {
+      "category": "secret",
+      "script": null
+    }
+  },
+  {
+    "type": "language",
+    "key": "thieves-cant",
+    "label": {
+      "en": "Thieves' Cant",
+      "fr": "Argot des voleurs",
+      "es": "Jerga de ladrones"
+    },
+    "description": {
+      "en": "Typical speakers: Rogues.",
+      "fr": "Locuteurs typiques : Roublards.",
+      "es": "Hablantes típicos: Pícaros."
+    },
+    "tags": ["secret"],
+    "data": {
+      "category": "secret",
+      "script": null
+    }
+  }
+]

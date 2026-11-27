@@ -58,7 +58,9 @@ export function ExportCharacterSheetPdfDialog({
     : "";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}>
       <DialogContent
         aria-busy={isExporting}
         className="w-[calc(100%-1.5rem)] max-w-sm">
@@ -78,9 +80,14 @@ export function ExportCharacterSheetPdfDialog({
               aria-pressed={theme === "dark"}
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-[15px] border px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary",
-                theme === "dark" ? "border-primary bg-primary/20" : "border-white/15 bg-gray-middle-light hover:bg-gray",
+                theme === "dark"
+                  ? "border-primary bg-primary/20"
+                  : "border-white/15 bg-gray-middle-light hover:bg-gray",
               )}>
-              <Moon className="size-5 shrink-0 text-blue" aria-hidden="true" />
+              <Moon
+                className="size-5 shrink-0 text-blue"
+                aria-hidden="true"
+              />
               <span>
                 <span className="block text-sm font-semibold text-white">{t("themeDark")}</span>
                 <span className="block text-xs text-white/70">{t("themeDarkHint")}</span>
@@ -92,9 +99,14 @@ export function ExportCharacterSheetPdfDialog({
               aria-pressed={theme === "light"}
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-[15px] border px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-primary",
-                theme === "light" ? "border-primary bg-primary/20" : "border-white/15 bg-gray-middle-light hover:bg-gray",
+                theme === "light"
+                  ? "border-primary bg-primary/20"
+                  : "border-white/15 bg-gray-middle-light hover:bg-gray",
               )}>
-              <Sun className="size-5 shrink-0 text-yellow" aria-hidden="true" />
+              <Sun
+                className="size-5 shrink-0 text-yellow"
+                aria-hidden="true"
+              />
               <span>
                 <span className="block text-sm font-semibold text-white">{t("themeLight")}</span>
                 <span className="block text-xs text-white/70">{t("themeLightHint")}</span>
@@ -104,7 +116,11 @@ export function ExportCharacterSheetPdfDialog({
         </fieldset>
 
         <DialogFooter>
-          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={isExporting}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => onOpenChange(false)}
+            disabled={isExporting}>
             {t("cancel")}
           </Button>
           <Button
@@ -114,9 +130,15 @@ export function ExportCharacterSheetPdfDialog({
             aria-busy={isExporting}
             aria-label={t("exportAria")}>
             {isExporting ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              <Loader2
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
             ) : (
-              <FileDown className="size-4" aria-hidden="true" />
+              <FileDown
+                className="size-4"
+                aria-hidden="true"
+              />
             )}
             {isExporting ? t("exporting") : t("export")}
           </Button>

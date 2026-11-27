@@ -1,0 +1,54 @@
+[
+  {
+    "type": "sense",
+    "key": "darkvision",
+    "label": {
+      "en": "Darkvision",
+      "fr": "Vision dans le noir",
+      "es": "Visión en la oscuridad"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "sense",
+    "key": "blindsight",
+    "label": {
+      "en": "Blindsight",
+      "fr": "Vision aveugle",
+      "es": "Vista ciega"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "sense",
+    "key": "tremorsense",
+    "label": {
+      "en": "Tremorsense",
+      "fr": "Perception des vibrations",
+      "es": "Sentido de la vibración"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  },
+  {
+    "type": "sense",
+    "key": "truesight",
+    "label": {
+      "en": "Truesight",
+      "fr": "Vision véritable",
+      "es": "Visión verdadera"
+    },
+    "tags": [],
+    "data": {},
+    "effects": [],
+    "grants": []
+  }
+]

@@ -5,6 +5,7 @@ import {
   ValidateNested,
   IsEnum,
   IsOptional,
+  IsMongoId,
 } from 'class-validator';
 import { CreateGroupIdsDto } from '@/resources/campaign/dto/sub/create-group-ids.dto';
 import { Type } from 'class-transformer';
@@ -32,6 +33,12 @@ export class CreateCampaignDto {
   @IsOptional()
   @IsEnum(GAME_SYSTEMS, { message: 'gameSystem must be a valid game system' })
   readonly gameSystem?: GameSystem;
+
+  /** @see FR-game-system — Ruleset reference (defaults to the published ruleset of the game system) */
+  @ApiProperty({ example: '507f1f77bcf86cd799439011', required: false })
+  @IsOptional()
+  @IsMongoId()
+  readonly rulesetId?: string;
 
   @ApiProperty({ type: CreateGroupIdsDto })
   @ValidateNested()

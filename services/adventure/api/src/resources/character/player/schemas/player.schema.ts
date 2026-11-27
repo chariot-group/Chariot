@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import { Character } from '@/resources/character/core/schemas/character.schema';
 import { Progression } from '@/resources/character/player/schemas/progression/progression.schema';
 import { Class } from '@/resources/character/player/schemas/class/class.schema';
@@ -13,6 +13,15 @@ export type PlayerDocument = Player & Document;
 
 @Schema()
 export class Player extends Character {
+  /** @see FR-game-system — Ruleset reference (immutable, defaults to the published ruleset of the game system) */
+  @ApiProperty({
+    example: '507f1f77bcf86cd799439011',
+    required: false,
+    nullable: true,
+  })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Ruleset', default: null })
+  rulesetId?: mongoose.Types.ObjectId | null;
+
   @ApiProperty({ type: [Action] })
   @Prop({ type: [Action], default: [] })
   actions: Action[];

@@ -106,6 +106,8 @@ export interface Stats {
 }
 
 export interface PlayerStats extends Stats {
+    /** Ruleset the player was built with (FR-game-system — Ruleset reference). */
+    rulesetId?: string | null;
     proficiencyBonus: number;
     armors: string[];
     weapons: string[];
