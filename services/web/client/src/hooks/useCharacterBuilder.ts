@@ -24,6 +24,7 @@ import {
 } from "@/lib/characterBuilder/builderNavigation";
 import { clearBuilderProgress, loadBuilderProgress, saveBuilderProgress } from "@/lib/characterBuilder/builderProgress";
 import { buildPlayerDraftFromSheet } from "@/lib/characterBuilder/builderDraft";
+import { takeBuilderReturnPath } from "@/lib/characterBuilder/builderReturn";
 
 /**
  * State of the step-by-step character builder: ruleset loading, answers, engine evaluation, navigation,
@@ -172,6 +173,8 @@ export function useCharacterBuilder({ scope, groupId, formPath, cancelPath }: Us
   const goToAdjacent = useCallback(
     (direction: "previous" | "next") => {
       if (!evaluation || !currentKey) return;
+      // A page with an error cannot be left forward (FR-ruleset-character-builder — Pages and breadcrumb).
+      if (direction === "next" && evaluation.pages.find((page) => page.key === currentKey)?.complete === false) return;
       const key = adjacentPageKey(evaluation.pages, currentKey, direction);
       if (key) setWantedPageKey(key);
     },
@@ -182,12 +185,13 @@ export function useCharacterBuilder({ scope, groupId, formPath, cancelPath }: Us
     if (!evaluation || blockingPages.length) return;
     dispatch(setPlayerCodexDraft(buildPlayerDraftFromSheet(evaluation.sheet, groupId)));
     clearBuilderProgress(sessionStore(), scope);
-    router.push(formPath);
+    // Replace the builder in the history: cancelling the form goes back to the page shown before the builder.
+    router.replace(formPath);
   }, [evaluation, blockingPages, dispatch, groupId, scope, router, formPath]);
 
   const cancel = useCallback(() => {
     clearBuilderProgress(sessionStore(), scope);
-    router.push(cancelPath);
+    router.replace(takeBuilderReturnPath(sessionStore()) ?? cancelPath);
   }, [scope, router, cancelPath]);
 
   const chooseRuleset = useCallback((id: string) => {

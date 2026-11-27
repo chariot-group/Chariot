@@ -7,6 +7,7 @@ import { SpellSelectField } from "@/components/characterBuilder/fields/SpellSele
 import { SummaryField } from "@/components/characterBuilder/fields/SummaryField";
 import { ValueField } from "@/components/characterBuilder/fields/ValueField";
 import type { BuilderFieldProps } from "@/components/characterBuilder/builderFieldTypes";
+import { builderFieldDomId } from "@/lib/characterBuilder/builderNavigation";
 import { groupPageFields, isHalfWidthField } from "@/lib/characterBuilder/pageLayout";
 import { readFieldAnswer, setFieldAnswer, setGrantAnswer } from "@/lib/characterBuilder/builderAnswers";
 import { cn } from "@/lib/utils";
@@ -64,7 +65,7 @@ export function BuilderPageFields({
         evaluation={evaluation}
         answer={readFieldAnswer(answers, field.id, page.index)}
         issues={issues}
-        domId={`builder-${page.key.replace(/[^A-Za-z0-9_-]/g, "-")}-${field.id}`}
+        domId={builderFieldDomId(page.key, field.id)}
         onAnswer={(value) =>
           onAnswersChange((current) =>
             setFieldAnswer(

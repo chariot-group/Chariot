@@ -6707,7 +6707,7 @@ The step-by-step builder of the web client runs the engine on the published rule
 
 **Pages and breadcrumb**:
 - The builder shows one page at a time, in the order and with the titles returned by the engine (repeated pages included, e.g. « Niveau 3 »); the breadcrumb lists every page with its `breadcrumb` label and its state: current, complete, with errors, not visited.
-- **Previous / Next** move one page; **Next** stays available on a page with errors but the page is marked incomplete in the breadcrumb (values are suggestions; only the final « Continue » requires every page to be complete). A visited page can be reopened from the breadcrumb; a page not yet reached cannot be skipped to.
+- **Previous / Next** move one page. **Next** is disabled while the current page has an error (missing required choice or value, failed `validation`, unknown entry), the errors being shown on the fields themselves (decision 2026-11-27, no summary message above the buttons). Count warnings (« Encore 1 à choisir ») never block. A visited page can be reopened from the breadcrumb; a page not yet reached cannot be skipped to; a visited page that became incomplete after an upstream change is marked « à corriger » and the final « Continue » stays disabled until it is fixed.
 - Changing an answer re-evaluates the builder immediately: pages, options, suggestions and counters follow (e.g. choosing a target level adds or removes level pages); answers dropped by an upstream change are signalled once (warning) and no longer applied.
 - Progress (selected ruleset, answers, current page) is kept in the browser session storage per route, so a reload resumes the builder; leaving with « Cancel » or finishing clears it.
 
@@ -6729,7 +6729,7 @@ The step-by-step builder of the web client runs the engine on the published rule
 - Chosen spells keep the Codex data and are written to the matching `spellcasting[]` block of the draft (engine stage 4).
 
 **End of the builder**:
-- « Continue » on the summary stores the projected sheet as a `Player` draft (with `groups` set to the current group in a campaign, empty in Player space) and opens the existing Player creation form pre-filled, like a Codex premade player (`?fromBuilder=1`). The player reviews and saves there; nothing is saved by the builder itself.
+- « Continue » on the summary stores the projected sheet as a `Player` draft (with `groups` set to the current group in a campaign, empty in Player space) and opens the existing Player creation form pre-filled, like a Codex premade player (`?fromBuilder=1`), replacing the builder in the browser history. « Cancel » in the form, like « Cancel » in the builder, goes back to the page shown when the builder was opened (an existing character, a group), saved in the session when the builder is chosen in the create dialog, whatever the browser history (a full load of the builder or an SSO round trip adds history entries); without saved page it goes to the Player space (`/characters`) or the campaign. Never back to the builder. A successful creation forgets the saved page. The player reviews and saves there; nothing is saved by the builder itself.
 - Leaving the form without saving drops the draft, like the Codex flow.
 
 **Accessibility (mandatory, docs/design.md §9)**:
@@ -6740,6 +6740,7 @@ The step-by-step builder of the web client runs the engine on the published rule
 
 **Tests (UI)**:
 - Nominal (lot A): from the create dialog, the builder choice opens the builder; a level-1 Hill Dwarf Fighter goes through every page and « Continue » opens the Player form pre-filled with the projected sheet (race, class, ability scores, hit points, features).
+- Edge (lot A): « Next » is disabled on a page whose required choice is missing (error shown on the field); it becomes available once the choice is made; a count not reached does not disable it.
 - Edge (lot A): changing the target level from 1 to 3 adds two level pages to the breadcrumb; changing the race drops the subrace choice with a warning; a reload resumes on the same page with the same answers.
 - Edge (lot A): the breadcrumb, field groups and errors pass the keyboard and naming checks (current step, legends, `aria-invalid`).
 - Nominal (UX): choosing a race whose grant offers exactly its count of options pre-selects them; unchecking them keeps them unchecked; a grant heading shows its label and owner.
@@ -6747,6 +6748,7 @@ The step-by-step builder of the web client runs the engine on the published rule
 - Nominal (lot B): a level-1 wizard adds three cantrips from the Codex (pre-filtered on wizard, level 0) and one spell manually; the counters show 3 / 3 and 1 / 6 and the draft wizard block holds the four spells.
 - Edge (lot B): a spell already chosen is not added twice; a level-2 spell in a level-1 field is kept with a warning; removing a spell updates the counter.
 - Failure (lot B): Codex down disables the search with its message; cancelling the manual dialog adds nothing.
+- Edge (lot A): opened from a character, « Continue » then « Cancel » in the form returns to that character, also after a reload of the builder; without saved page it goes to `/characters`.
 - Failure (lot A): catalog loading error shows a retry; no published ruleset shows the empty state; « Continue » is disabled while a page has errors, which are listed with links to their pages.
 - Nominal (API): `GET /rulesets/:id/catalog` returns every entry of a published version; a second call with `If-None-Match` gets `304`.
 - Failure (API): a non-admin asking the catalog of a draft gets `404`.

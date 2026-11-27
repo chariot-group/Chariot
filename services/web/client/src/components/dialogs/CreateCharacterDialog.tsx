@@ -26,6 +26,7 @@ import {
   CREATE_CHARACTER_PLAYER_BUTTON,
 } from "@/components/dialogs/createCharacterDialogStyles";
 import { cn } from "@/lib/utils";
+import { saveBuilderReturnPath } from "@/lib/characterBuilder/builderReturn";
 import {
   buildCreateCharacterPath,
   type CampaignCreateContext,
@@ -69,6 +70,10 @@ export function CreateCharacterDialog({
     campaignId && groupId ? { campaignId, groupId } : undefined;
 
   const handleSelectType = (type: CreateCharacterChoice) => {
+    // « Cancel » in the builder (or in the form it opens) returns to the page shown now.
+    if (type === "builder") {
+      saveBuilderReturnPath(window.sessionStorage, `${window.location.pathname}${window.location.search}`);
+    }
     setOpen(false);
     setOpenMobile(false);
     router.push(buildCreateCharacterPath(type, campaignContext, { linkedPlayerId }));

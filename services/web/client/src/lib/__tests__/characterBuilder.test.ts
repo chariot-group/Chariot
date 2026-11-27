@@ -3,6 +3,8 @@ import { readFieldAnswer, setFieldAnswer, setGrantAnswer, toggleKey } from "@/li
 import {
   adjacentPageKey,
   buildBreadcrumb,
+  builderFieldDomId,
+  pageErrorFields,
   diffPageKeys,
   incompletePages,
   resolveCurrentPageKey,
@@ -226,5 +228,74 @@ describe("builder routes and draft — FR-ruleset-character-builder (Entry point
     expect(routes.formPath).toBe("/campaigns/c1/groups/g1/characters/new/players?fromBuilder=1");
     expect(routes.scope).toBe("group:g1");
     expect(buildPlayerDraftFromSheet({ firstname: "Thorin", groups: ["other"] }, "g1").groups).toEqual(["g1"]);
+  });
+});
+
+describe("builder « Next » guard — FR-ruleset-character-builder (Pages and breadcrumb)", () => {
+  const raceField = {
+    id: "race",
+    type: "entitySelect" as const,
+    label: "Race",
+    required: true,
+    locked: false,
+    suggestion: null,
+    value: null,
+    answered: false,
+  };
+  const grantField = {
+    id: "classChoices",
+    type: "grantedChoices" as const,
+    label: "Choices",
+    required: false,
+    locked: false,
+    suggestion: null,
+    value: {},
+    answered: false,
+    grants: [
+      {
+        key: "k",
+        id: "skills",
+        label: "Compétences",
+        suggested: false,
+        ownerKey: "f",
+        ownerLabel: "F",
+        options: [],
+        expectedCount: 2,
+        chosen: [],
+      },
+    ],
+  };
+  const racePage: EvaluatedPage = { ...page("race", false), fields: [raceField, grantField] };
+
+  it("nominal: a missing required choice lists its field with its DOM id", () => {
+    const fields = pageErrorFields(
+      evaluation([racePage], [{ code: "required", severity: "error", stepId: "race", fieldId: "race" }]),
+      racePage,
+    );
+
+    expect(fields).toEqual([{ fieldId: "race", label: "Race", domId: builderFieldDomId("race", "race") }]);
+    expect(builderFieldDomId("level-up:3", "hitPoints")).toBe("builder-level-up-3-hitPoints");
+  });
+
+  it("edge: count warnings never block, a grant error shows the grant label", () => {
+    const issues: BuilderEvaluation["issues"] = [
+      { code: "count-not-reached", severity: "warning", stepId: "race", fieldId: "classChoices", grantId: "skills" },
+      { code: "unknown-entry", severity: "error", stepId: "race", fieldId: "classChoices", grantId: "skills" },
+    ];
+
+    expect(pageErrorFields(evaluation([racePage], [issues[0]]), racePage)).toEqual([]);
+    expect(pageErrorFields(evaluation([racePage], issues), racePage).map((field) => field.label)).toEqual([
+      "Compétences",
+    ]);
+  });
+
+  it("failure guard: errors of another page or repeat index are ignored", () => {
+    const levelPage: EvaluatedPage = { ...page("level-up:3", false, 3), fields: [raceField] };
+    const issues: BuilderEvaluation["issues"] = [
+      { code: "required", severity: "error", stepId: "level-up", fieldId: "race", index: 2 },
+      { code: "required", severity: "error", stepId: "class", fieldId: "race" },
+    ];
+
+    expect(pageErrorFields(evaluation([levelPage], issues), levelPage)).toEqual([]);
   });
 });

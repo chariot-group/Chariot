@@ -84,3 +84,25 @@ export function diffPageKeys(previous: readonly string[], next: readonly string[
 export function droppedAnswerIssues(evaluation: BuilderEvaluation): BuilderIssue[] {
   return evaluation.issues.filter((issue) => issue.code === "answer-dropped");
 }
+
+/** DOM id prefix of a field on a page (shared by the field components and the « fields to complete » links). */
+export function builderFieldDomId(pageKey: string, fieldId: string): string {
+  return `builder-${pageKey.replace(/[^A-Za-z0-9_-]/g, "-")}-${fieldId}`;
+}
+
+export type PageErrorField = { fieldId: string; label: string; domId: string };
+
+/**
+ * Fields of a page holding an error (« Next » stays disabled while there is one); count warnings are not errors.
+ * @see FR-ruleset-character-builder — Web builder UI (Pages and breadcrumb)
+ */
+export function pageErrorFields(evaluation: BuilderEvaluation, page: EvaluatedPage): PageErrorField[] {
+  const result: PageErrorField[] = [];
+  for (const issue of pageIssues(evaluation.issues, page)) {
+    const field = page.fields.find((candidate) => candidate.id === issue.fieldId);
+    if (!field || result.some((item) => item.fieldId === field.id)) continue;
+    const grantLabel = issue.grantId ? field.grants?.find((grant) => grant.id === issue.grantId)?.label : undefined;
+    result.push({ fieldId: field.id, label: grantLabel ?? field.label, domId: builderFieldDomId(page.key, field.id) });
+  }
+  return result;
+}

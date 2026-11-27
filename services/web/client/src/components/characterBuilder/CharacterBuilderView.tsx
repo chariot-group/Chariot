@@ -8,7 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { BuilderBreadcrumb } from "@/components/characterBuilder/BuilderBreadcrumb";
 import { BuilderPageFields } from "@/components/characterBuilder/BuilderPageFields";
 import { useCharacterBuilder, type UseCharacterBuilderOptions } from "@/hooks/useCharacterBuilder";
-import { adjacentPageKey, droppedAnswerIssues } from "@/lib/characterBuilder/builderNavigation";
+import { adjacentPageKey, droppedAnswerIssues, pageErrorFields } from "@/lib/characterBuilder/builderNavigation";
 
 /**
  * Step-by-step character builder: loading/error/empty states, ruleset choice, breadcrumb, current page, navigation
@@ -158,6 +158,8 @@ export default function CharacterBuilderView(options: UseCharacterBuilderOptions
   const hasNext = adjacentPageKey(evaluation.pages, currentPage.key, "next") !== null;
   const hasPrevious = adjacentPageKey(evaluation.pages, currentPage.key, "previous") !== null;
   const blockingId = "builder-blocking-pages";
+  // « Next » stays disabled while the page has an error (shown on its fields); count warnings never block.
+  const nextBlocked = pageErrorFields(evaluation, currentPage).length > 0;
 
   return shell(
     <>
@@ -234,6 +236,7 @@ export default function CharacterBuilderView(options: UseCharacterBuilderOptions
             <Button
               type="button"
               variant="accent"
+              disabled={nextBlocked}
               onClick={() => builder.goToAdjacent("next")}>
               {t("next")}
               <ArrowRight aria-hidden="true" />
