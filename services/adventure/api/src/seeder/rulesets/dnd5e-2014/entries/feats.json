@@ -43,6 +43,16 @@
       {
         "id": "athlete-ability",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": ["strength", "dexterity"]
@@ -225,6 +235,16 @@
       {
         "id": "elemental-adept-type",
         "kind": "choose",
+        "label": {
+          "en": "Damage type",
+          "fr": "Type de dégâts",
+          "es": "Tipo de daño"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "damage-type",
           "keys": [
@@ -432,6 +452,16 @@
       {
         "id": "lightly-armored-ability",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": ["strength", "dexterity"]
@@ -473,6 +503,16 @@
       {
         "id": "linguist-languages",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -503,9 +543,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 3,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 3
     },
     "effects": [],
     "grants": []
@@ -548,6 +590,16 @@
       {
         "id": "magic-initiate-class",
         "kind": "choose",
+        "label": {
+          "en": "Spell list",
+          "fr": "Liste de sorts",
+          "es": "Lista de conjuros"
+        },
+        "description": {
+          "en": "The spell list your feat spells come from.",
+          "fr": "La liste de sorts dans laquelle tu choisis les sorts de ce don.",
+          "es": "La lista de conjuros de la que eliges los conjuros de esta dote."
+        },
         "from": {
           "type": "class",
           "keys": ["bard", "cleric", "druid", "sorcerer", "warlock", "wizard"]
@@ -570,6 +622,16 @@
               "level": 1,
               "count": 1
             }
+          },
+          {
+            "op": "grant",
+            "target": "featSpellcasting",
+            "value": [
+              {
+                "key": "feat-magic-initiate",
+                "className": "{key}"
+              }
+            ]
           }
         ]
       }
@@ -591,15 +653,27 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "short"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": [
       {
         "id": "martial-adept-maneuvers",
         "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
         "from": {
           "type": "maneuver"
         },
@@ -690,6 +764,16 @@
       {
         "id": "moderately-armored-ability",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": ["strength", "dexterity"]
@@ -749,6 +833,16 @@
       {
         "id": "observant-ability",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": ["intelligence", "wisdom"]
@@ -802,6 +896,16 @@
       {
         "id": "resilient-ability",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": [
@@ -854,6 +958,16 @@
       {
         "id": "ritual-caster-class",
         "kind": "choose",
+        "label": {
+          "en": "Spell list",
+          "fr": "Liste de sorts",
+          "es": "Lista de conjuros"
+        },
+        "description": {
+          "en": "The spell list your feat spells come from.",
+          "fr": "La liste de sorts dans laquelle tu choisis les sorts de ce don.",
+          "es": "La lista de conjuros de la que eliges los conjuros de esta dote."
+        },
         "from": {
           "type": "class",
           "keys": ["bard", "cleric", "druid", "sorcerer", "warlock", "wizard"]
@@ -869,6 +983,16 @@
               "count": 2,
               "ritualOnly": true
             }
+          },
+          {
+            "op": "grant",
+            "target": "featSpellcasting",
+            "value": [
+              {
+                "key": "feat-ritual-caster",
+                "className": "{key}"
+              }
+            ]
           }
         ]
       }
@@ -966,6 +1090,16 @@
       {
         "id": "skilled-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -1065,6 +1199,16 @@
       {
         "id": "tavern-brawler-ability",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": ["strength", "constitution"]
@@ -1146,6 +1290,16 @@
       {
         "id": "weapon-master-ability",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": ["strength", "dexterity"]
@@ -1162,6 +1316,16 @@
       {
         "id": "weapon-master-weapons",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon"
         },

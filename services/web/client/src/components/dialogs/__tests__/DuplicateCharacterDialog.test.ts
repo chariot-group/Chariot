@@ -31,14 +31,10 @@ describe("FR-character-duplicate — DuplicateCharacterDialog — buildDuplicate
   });
 
   it("nominal: increments past an existing copy", () => {
-    expect(
-      buildDuplicateName({ firstname: "test" }, ["test", "test 2"]),
-    ).toBe("test 3");
+    expect(buildDuplicateName({ firstname: "test" }, ["test", "test 2"])).toBe("test 3");
   });
 
   it("nominal: duplicating a copy continues the stem sequence", () => {
-    expect(
-      buildDuplicateName({ firstname: "test 2" }, ["test", "test 2"]),
-    ).toBe("test 3");
+    expect(buildDuplicateName({ firstname: "test 2" }, ["test", "test 2"])).toBe("test 3");
   });
 });

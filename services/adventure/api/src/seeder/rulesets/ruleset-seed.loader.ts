@@ -6,6 +6,7 @@ import { validateSync, ValidationError } from 'class-validator';
 import { GameSystem } from '@/common/constants/game-system.constant';
 import { CreateRulesetDto } from '@/resources/ruleset/dto/create-ruleset.dto';
 import { CreateRulesetEntryDto } from '@/resources/ruleset/dto/ruleset-entry.dto';
+import { GENERIC_STATE_KEYS } from '@/resources/ruleset/constants/ruleset.constant';
 import {
   RulesetLike,
   validateEntryIntegrity,
@@ -90,9 +91,34 @@ const dtoErrors = (cls: new () => object, plain: object): string[] =>
 
 /** The ruleset fields accepted by the create DTO (meta fields excluded). */
 export function rulesetContent(ruleset: SeedRuleset) {
-  const { key, gameSystem, name, description, flow, formulas, projection } =
-    ruleset;
-  return { key, gameSystem, name, description, flow, formulas, projection };
+  const {
+    key,
+    gameSystem,
+    name,
+    description,
+    flow,
+    formulas,
+    projection,
+    data,
+    levels,
+    attachments,
+    counters,
+    collections,
+  } = ruleset;
+  return {
+    key,
+    gameSystem,
+    name,
+    description,
+    flow,
+    formulas,
+    projection,
+    data,
+    levels,
+    attachments,
+    counters,
+    collections,
+  };
 }
 
 /**
@@ -117,6 +143,22 @@ export function validateSeed(seed: RulesetSeed): string[] {
   keys
     .filter((k, i) => keys.indexOf(k) !== i)
     .forEach((k) => errors.push(`entry key "${k}" is duplicated`));
+
+  const declaredTypes = [
+    ...(ruleset.levels ?? []).map((l) => ['levels', l.type]),
+    ...(ruleset.attachments ?? []).flatMap((a) => [
+      ['attachments', a.childType],
+      ['attachments', a.parentType],
+    ]),
+    ...(ruleset.collections ?? []).flatMap((c) =>
+      (c.from?.types ?? []).map((type) => ['collections', type]),
+    ),
+  ];
+  declaredTypes
+    .filter(([, type]) => !types.has(type))
+    .forEach(([where, type]) =>
+      errors.push(`ruleset ${where} reference unknown entry type "${type}"`),
+    );
 
   entries.forEach((entry) => {
     const prefix = `${entry.type}/${entry.key}`;
@@ -146,7 +188,77 @@ export function validateSeed(seed: RulesetSeed): string[] {
     });
   });
 
+  stateReadErrors(ruleset, entries).forEach((e) => errors.push(e));
+
   return errors;
+}
+
+/** Engine state roots whose content is produced by the seed itself (e.g. `state.page.<effect target>`). */
+const MIRROR_STATE_KEYS = new Set(['page', 'labels']);
+
+/** String paths of every `var` in a JSON document (expressions are found wherever they are). */
+function collectVarPaths(node: unknown, paths: string[] = []): string[] {
+  if (Array.isArray(node))
+    node.forEach((child) => collectVarPaths(child, paths));
+  else if (node && typeof node === 'object') {
+    const record = node as Record<string, unknown>;
+    const keys = Object.keys(record);
+    if (keys.length === 1 && keys[0] === 'var') {
+      const arg = record.var;
+      const path = Array.isArray(arg) ? arg[0] : arg;
+      if (typeof path === 'string') paths.push(path);
+    }
+    Object.values(record).forEach((child) => collectVarPaths(child, paths));
+  }
+  return paths;
+}
+
+/**
+ * Every `state.<root>` read by the seed is produced by an effect, a counter, a collection or the engine
+ * generic state, and `repeat` only exposes `repeat.index`.
+ * @see FR-ruleset-character-builder — Engine delivery stages (stage 3)
+ */
+function stateReadErrors(ruleset: SeedRuleset, entries: SeedEntry[]): string[] {
+  const effectRoots = new Set<string>();
+  const addTargets = (effects: unknown) =>
+    ((effects as { target?: string }[] | undefined) ?? []).forEach((e) => {
+      if (typeof e.target === 'string') effectRoots.add(e.target.split('.')[0]);
+    });
+  entries.forEach((entry) => {
+    addTargets(entry.effects);
+    (entry.grants ?? []).forEach((g) =>
+      addTargets((g as { effects?: unknown }).effects),
+    );
+  });
+  const produced = new Set<string>([
+    ...effectRoots,
+    ...GENERIC_STATE_KEYS,
+    ...(ruleset.counters ?? []).map((c) => c.id),
+    ...(ruleset.collections ?? []).map((c) => c.id),
+  ]);
+
+  const errors = new Set<string>();
+  for (const path of collectVarPaths([ruleset, entries])) {
+    const [root, first, second] = path.split('.');
+    if (root === 'repeat' && first !== 'index') {
+      errors.add(
+        `seed reads "${path}" but the engine only provides repeat.index`,
+      );
+    }
+    if (root !== 'state' || !first) continue;
+    if (!produced.has(first)) {
+      errors.add(`seed reads "state.${first}" but nothing produces it`);
+    } else if (
+      MIRROR_STATE_KEYS.has(first) &&
+      second &&
+      !effectRoots.has(second)
+    ) {
+      errors.add(
+        `seed reads "state.${first}.${second}" but no effect produces "${second}"`,
+      );
+    }
+  }
+  return [...errors];
 }
 
 /** Deterministic JSON: object keys sorted, arrays kept in order. */

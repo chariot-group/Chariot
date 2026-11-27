@@ -172,9 +172,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -332,9 +334,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -357,9 +361,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -537,9 +543,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -764,6 +772,16 @@
       {
         "id": "hunters-prey-choice",
         "kind": "choose",
+        "label": {
+          "en": "Hunter's prey",
+          "fr": "Proie du chasseur",
+          "es": "Presa del cazador"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "hunters-prey"
         },
@@ -801,6 +819,16 @@
       {
         "id": "defensive-tactics-choice",
         "kind": "choose",
+        "label": {
+          "en": "Defensive tactics",
+          "fr": "Tactiques défensives",
+          "es": "Tácticas defensivas"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "defensive-tactics"
         },
@@ -838,6 +866,16 @@
       {
         "id": "hunter-multiattack-choice",
         "kind": "choose",
+        "label": {
+          "en": "Multiattack",
+          "fr": "Attaques multiples",
+          "es": "Ataque múltiple"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "hunter-multiattack"
         },
@@ -875,6 +913,16 @@
       {
         "id": "superior-hunters-defense-choice",
         "kind": "choose",
+        "label": {
+          "en": "Superior hunter's defense",
+          "fr": "Défense supérieure du chasseur",
+          "es": "Defensa superior del cazador"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "superior-hunters-defense"
         },
@@ -1235,34 +1283,34 @@
     "effects": [
       {
         "op": "set",
-        "target": "spellcasting.ability",
+        "target": "spellcasting.rogue.ability",
         "value": "intelligence"
       },
       {
         "op": "set",
-        "target": "spellcasting.preparation",
+        "target": "spellcasting.rogue.preparation",
         "value": "known"
       },
       {
         "op": "set",
-        "target": "spellcasting.cantripsKnown",
+        "target": "spellcasting.rogue.cantripsKnown",
         "value": [0, 0, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
       },
       {
         "op": "set",
-        "target": "spellcasting.spellsKnown",
+        "target": "spellcasting.rogue.spellsKnown",
         "value": [
           0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13
         ]
       },
       {
         "op": "set",
-        "target": "spellcasting.maxSpellLevelByLevel",
+        "target": "spellcasting.rogue.maxSpellLevelByLevel",
         "value": [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4]
       },
       {
         "op": "set",
-        "target": "spellcasting.preparedLevel",
+        "target": "spellcasting.rogue.preparedLevel",
         "value": "full"
       },
       {
@@ -1274,6 +1322,37 @@
             "classLevel": 3
           }
         ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.slots",
+        "value": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.rogue.casterProgression",
+        "value": "third"
       }
     ],
     "grants": []
@@ -1356,9 +1435,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []

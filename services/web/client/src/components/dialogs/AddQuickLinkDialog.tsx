@@ -131,14 +131,14 @@ export function AddQuickLinkDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={handleOpenChange}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditMode ? t("editLinkTitle") : t("addLinkTitle")}</DialogTitle>
-          <DialogDescription>
-            {isEditMode ? t("editLinkDescription") : t("addLinkDescription")}
-          </DialogDescription>
+          <DialogDescription>{isEditMode ? t("editLinkDescription") : t("addLinkDescription")}</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4 py-2">
@@ -165,7 +165,10 @@ export function AddQuickLinkDialog({
                       ? "border-white bg-white/20 text-white"
                       : "border-white/20 bg-white/5 text-white/50 hover:border-white/40 hover:text-white/80",
                   )}>
-                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  <Icon
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  />
                 </button>
               ))}
             </div>
@@ -201,7 +204,9 @@ export function AddQuickLinkDialog({
               className="rounded-[15px]"
               aria-describedby="ql-url-hint"
             />
-            <p id="ql-url-hint" className="text-xs text-white/40">
+            <p
+              id="ql-url-hint"
+              className="text-xs text-white/40">
               {t("urlHint")}
             </p>
           </div>
@@ -242,12 +247,21 @@ export function AddQuickLinkDialog({
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="secondary" disabled={isSaving}>
+            <Button
+              variant="secondary"
+              disabled={isSaving}>
               {tCommon("cancel")}
             </Button>
           </DialogClose>
-          <Button onClick={() => void handleSave()} disabled={!isValid || isSaving}>
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+          <Button
+            onClick={() => void handleSave()}
+            disabled={!isValid || isSaving}>
+            {isSaving && (
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                aria-hidden="true"
+              />
+            )}
             {isEditMode ? t("editLinkSave") : tCommon("save")}
           </Button>
         </DialogFooter>

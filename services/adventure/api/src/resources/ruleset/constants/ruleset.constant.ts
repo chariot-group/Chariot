@@ -27,7 +27,7 @@ export const ABILITY_ALLOCATION_METHODS = [
 export type AbilityAllocationMethod =
   (typeof ABILITY_ALLOCATION_METHODS)[number];
 
-export const EFFECT_OPS = ['add', 'set', 'grant', 'remove'] as const;
+export const EFFECT_OPS = ['add', 'set', 'grant', 'remove', 'max'] as const;
 export type EffectOp = (typeof EFFECT_OPS)[number];
 
 export const GRANT_KINDS = ['choose'] as const;
@@ -48,13 +48,29 @@ export const IDENTIFIER_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/;
  * - `state`: computed builder state (values produced by entry effects);
  * - `repeat`: current repetition of a repeated step (`repeat.index`);
  * - `context`: builder context (`context.mode`, …);
- * - `option`: candidate entry while evaluating an `optionsFilter`.
+ * - `option`: candidate entry while evaluating an `optionsFilter`;
+ * - `self`: entry concerned by an effect, grant, entry value or declaration;
+ * - `item`: element being built by a collection;
+ * - `ruleset`: `{ key, version, data }`, static data of the ruleset.
  */
 export const RESERVED_VAR_ROOTS = [
   'state',
   'repeat',
   'context',
   'option',
+  'self',
+  'item',
+  'ruleset',
+] as const;
+
+/** State keys built by the engine itself; counters and collections cannot use them as id. */
+export const GENERIC_STATE_KEYS = [
+  'entries',
+  'choices',
+  'selected',
+  'labels',
+  'page',
+  'spells',
 ] as const;
 
 /** Standard JSON Logic operators (https://jsonlogic.com/operations.html), `log` excluded. */

@@ -97,7 +97,9 @@ describe('FR-ruleset-character-builder — RulesetService', () => {
         status: 'published',
         gameSystem: 'DND_5E',
       });
-      expect(chain.select).toHaveBeenCalledWith('-flow -formulas -projection');
+      expect(chain.select).toHaveBeenCalledWith(
+        '-flow -formulas -projection -data -levels -attachments -counters -collections',
+      );
     });
 
     it('edge: admins list every status', async () => {

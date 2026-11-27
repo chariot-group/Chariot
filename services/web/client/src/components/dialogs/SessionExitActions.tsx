@@ -34,7 +34,13 @@ interface SessionExitActionsProps {
   buttonClassName?: string;
 }
 
-export function SessionExitActions({ isMJ, isLeaving, onLeave, onCloseSession, buttonClassName }: SessionExitActionsProps) {
+export function SessionExitActions({
+  isMJ,
+  isLeaving,
+  onLeave,
+  onCloseSession,
+  buttonClassName,
+}: SessionExitActionsProps) {
   const t = useTranslations("sessionPage");
   const [leaveOpen, setLeaveOpen] = useState<boolean>(false);
 

@@ -74,6 +74,10 @@ interface CodexSpellSearchDialogProps {
   embedded?: boolean;
   /** Shared portaled filter tracker when embedded in a parent dialog. */
   sharedPortaledFilterOpenTracker?: ReturnType<typeof createPortaledFilterOpenTracker>;
+  /** Class filter applied on open (character builder: class list of the field). @see FR-ruleset-character-builder */
+  initialClasses?: SpellClass[];
+  /** Level filter applied on open (character builder: cantrip fields). */
+  initialLevel?: number | null;
 }
 
 import {
@@ -190,6 +194,8 @@ export default function CodexSpellSearchDialog({
   browseOnly = false,
   embedded = false,
   sharedPortaledFilterOpenTracker,
+  initialClasses,
+  initialLevel,
 }: CodexSpellSearchDialogProps) {
   const userLocale = useLocale() as Locale;
   const tMagic = useTranslations("characterDetail.magic");
@@ -413,9 +419,9 @@ export default function CodexSpellSearchDialog({
     if (open) {
       setSearchQuery("");
       setSelectedLang(userLocale);
-      setSelectedClasses([]);
+      setSelectedClasses(initialClasses ?? []);
       setSelectedSchools([]);
-      setSelectedLevel(null);
+      setSelectedLevel(initialLevel ?? null);
       setSelectedGameSystem(getDefaultCodexGameSystemFilter());
       setSearchResults([]);
       setSelectedSpell(null);
@@ -433,7 +439,16 @@ export default function CodexSpellSearchDialog({
       setHasMore(false);
       isLoadingRef.current = false;
       // Charger les données initiales (lang explicite : selectedLang pas encore à jour dans la closure)
-      searchSpells("", 1, false, userLocale, [], null, [], getDefaultCodexGameSystemFilter());
+      searchSpells(
+        "",
+        1,
+        false,
+        userLocale,
+        initialClasses ?? [],
+        initialLevel ?? null,
+        [],
+        getDefaultCodexGameSystemFilter(),
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);

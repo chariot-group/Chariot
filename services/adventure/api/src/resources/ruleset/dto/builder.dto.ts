@@ -105,6 +105,15 @@ export class BuilderFieldDto {
   @Type(() => SpellFilterDto)
   readonly spellFilter?: SpellFilterDto;
 
+  @ApiPropertyOptional({
+    description:
+      'spellSelect only — JSON Logic group of the chosen spells (`state.spells.<group>`), default: spellFilter.className',
+    example: { var: 'class' },
+  })
+  @IsOptional()
+  @IsJsonLogic()
+  readonly spellGroup?: unknown;
+
   @ApiPropertyOptional({ example: false })
   @IsOptional()
   @IsBoolean()
@@ -156,6 +165,28 @@ export class StepRepeatDto {
   readonly to: unknown;
 }
 
+/** Card grouping fields of a step under one title. @see FR-ruleset-character-builder — Flow */
+export class StepCardDto {
+  @ApiProperty({ example: 'identity' })
+  @Matches(IDENTIFIER_PATTERN)
+  readonly id: string;
+
+  @ApiProperty({ type: TranslatedLabel })
+  @IsTranslatedLabel()
+  readonly title: TranslatedLabel;
+
+  @ApiPropertyOptional({ type: TranslatedLabel })
+  @IsOptional()
+  @IsTranslatedLabel()
+  readonly description?: TranslatedLabel;
+
+  @ApiProperty({ example: ['firstname', 'lastname'] })
+  @IsArray()
+  @ArrayNotEmpty()
+  @Matches(IDENTIFIER_PATTERN, { each: true })
+  readonly fields: string[];
+}
+
 export class BuilderStepDto {
   @ApiProperty({ example: 'race' })
   @Matches(IDENTIFIER_PATTERN)
@@ -195,6 +226,13 @@ export class BuilderStepDto {
   @Type(() => StepRepeatDto)
   readonly repeat?: StepRepeatDto;
 
+  @ApiPropertyOptional({ type: [StepCardDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => StepCardDto)
+  readonly cards?: StepCardDto[];
+
   @ApiProperty({ type: [BuilderFieldDto] })
   @IsArray()
   @ValidateNested({ each: true })
@@ -229,4 +267,98 @@ export class RulesetProjectionDto {
   @IsString()
   @IsNotEmpty()
   readonly target: string;
+}
+
+/** Level of a selected entry of the given type. @see FR-ruleset-character-builder — Declarative primitives */
+export class RulesetLevelDto {
+  @ApiProperty({ example: 'class' })
+  @Matches(KEBAB_CASE_PATTERN)
+  readonly type: string;
+
+  @ApiProperty({
+    description: 'JSON Logic, evaluated with `self` = the entry',
+    example: { var: [{ cat: ['state.classes.of.', { var: 'self.key' }] }, 0] },
+  })
+  @IsJsonLogic()
+  readonly expression: unknown;
+}
+
+/** Children of `childType` attached to a selected `parentType` entry (by `parentKey`). */
+export class RulesetAttachmentDto {
+  @ApiProperty({ example: 'class-feature' })
+  @Matches(KEBAB_CASE_PATTERN)
+  readonly childType: string;
+
+  @ApiProperty({ example: 'class' })
+  @Matches(KEBAB_CASE_PATTERN)
+  readonly parentType: string;
+
+  @ApiPropertyOptional({
+    description: 'JSON Logic, evaluated with `self` = the child',
+  })
+  @IsOptional()
+  @IsJsonLogic()
+  readonly when?: unknown;
+}
+
+/** Counts the values chosen across fields: `state.<id>` = `{ keys, distinct, total, of }`. */
+export class RulesetCounterDto {
+  @ApiProperty({ example: 'classes' })
+  @Matches(IDENTIFIER_PATTERN)
+  readonly id: string;
+
+  @ApiProperty({ example: ['class', 'levelClass'] })
+  @IsArray()
+  @ArrayNotEmpty()
+  @Matches(IDENTIFIER_PATTERN, { each: true })
+  readonly fields: string[];
+}
+
+export class CollectionSourceDto {
+  @ApiPropertyOptional({ example: ['class-feature', 'racial-trait'] })
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @Matches(KEBAB_CASE_PATTERN, { each: true })
+  readonly types?: string[];
+
+  @ApiPropertyOptional({ example: 'equipment', description: 'State list path' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  readonly path?: string;
+}
+
+/** Builds `state.<id>`: one object per element, from an object template of JSON Logic leaves. */
+export class RulesetCollectionDto {
+  @ApiProperty({ example: 'sheetAbilities' })
+  @Matches(IDENTIFIER_PATTERN)
+  readonly id: string;
+
+  @ApiProperty({ type: CollectionSourceDto })
+  @ValidateNested()
+  @Type(() => CollectionSourceDto)
+  readonly from: CollectionSourceDto;
+
+  @ApiPropertyOptional({ description: 'JSON Logic, evaluated with `item`' })
+  @IsOptional()
+  @IsJsonLogic()
+  readonly where?: unknown;
+
+  @ApiPropertyOptional({
+    description: 'JSON Logic sort key, evaluated with `item`',
+  })
+  @IsOptional()
+  @IsJsonLogic()
+  readonly sort?: unknown;
+
+  @ApiProperty({
+    description: 'Dotted target path → JSON Logic evaluated with `item`',
+    example: {
+      name: { var: 'item.label' },
+      'uses.max': { var: 'item.values.usesCount' },
+    },
+  })
+  @IsObject()
+  readonly item: Record<string, unknown>;
 }

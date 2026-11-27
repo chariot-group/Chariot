@@ -36,6 +36,11 @@ const RULESET_CONTENT_FIELDS = [
   'flow',
   'formulas',
   'projection',
+  'data',
+  'levels',
+  'attachments',
+  'counters',
+  'collections',
 ] as const;
 
 const ENTRY_CONTENT_FIELDS = [
@@ -49,6 +54,7 @@ const ENTRY_CONTENT_FIELDS = [
   'data',
   'effects',
   'grants',
+  'values',
 ] as const;
 
 /** Plain copy of the given fields of a document (no _id, timestamps or status). */
@@ -85,7 +91,9 @@ export class RulesetService {
 
       const rulesets = await this.rulesetModel
         .find(filter)
-        .select('-flow -formulas -projection')
+        .select(
+          '-flow -formulas -projection -data -levels -attachments -counters -collections',
+        )
         .sort({ key: 1, version: -1 })
         .exec();
 

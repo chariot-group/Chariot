@@ -301,6 +301,16 @@
       {
         "id": "totem-spirit-choice",
         "kind": "choose",
+        "label": {
+          "en": "Totem spirit",
+          "fr": "Esprit totem",
+          "es": "Espíritu tótem"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "totem-spirit"
         },
@@ -331,6 +341,16 @@
       {
         "id": "totem-aspect-choice",
         "kind": "choose",
+        "label": {
+          "en": "Aspect of the beast",
+          "fr": "Aspect de la bête",
+          "es": "Aspecto de la bestia"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "totem-aspect"
         },
@@ -381,6 +401,16 @@
       {
         "id": "totem-attunement-choice",
         "kind": "choose",
+        "label": {
+          "en": "Totemic attunement",
+          "fr": "Harmonie totémique",
+          "es": "Sintonía totémica"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "totem-attunement"
         },
@@ -411,6 +441,16 @@
       {
         "id": "lore-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -694,6 +734,16 @@
       {
         "id": "knowledge-languages",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -710,6 +760,16 @@
       {
         "id": "knowledge-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": ["arcana", "history", "nature", "religion"]
@@ -804,9 +864,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "short"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -1136,15 +1198,17 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": {
-          "max": [
-            1,
-            {
-              "var": "wisdomModifier"
-            }
-          ]
-        },
         "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "wisdomModifier"
+          }
+        ]
       }
     },
     "effects": [],
@@ -1336,6 +1400,16 @@
       {
         "id": "nature-skill",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": ["animal-handling", "nature", "survival"]
@@ -1582,15 +1656,17 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": {
-          "max": [
-            1,
-            {
-              "var": "wisdomModifier"
-            }
-          ]
-        },
         "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "wisdomModifier"
+          }
+        ]
       }
     },
     "effects": [],
@@ -1975,15 +2051,17 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": {
-          "max": [
-            1,
-            {
-              "var": "wisdomModifier"
-            }
-          ]
-        },
         "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "wisdomModifier"
+          }
+        ]
       }
     },
     "effects": [],

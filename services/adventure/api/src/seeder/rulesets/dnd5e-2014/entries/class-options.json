@@ -19,6 +19,16 @@
       {
         "id": "asi-plus-two-ability",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+2)",
+          "fr": "Caractéristique (+2)",
+          "es": "Característica (+2)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": [
@@ -61,6 +71,16 @@
       {
         "id": "asi-plus-one-abilities",
         "kind": "choose",
+        "label": {
+          "en": "Ability scores (+1 each)",
+          "fr": "Caractéristiques (+1 chacune)",
+          "es": "Características (+1 cada una)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": [
@@ -103,6 +123,16 @@
       {
         "id": "asi-feat-choice",
         "kind": "choose",
+        "label": {
+          "en": "Feat",
+          "fr": "Don",
+          "es": "Dote"
+        },
+        "description": {
+          "en": "A special talent that gives you new capabilities.",
+          "fr": "Un talent particulier qui te donne de nouvelles capacités.",
+          "es": "Un talento especial que te da nuevas capacidades."
+        },
         "from": {
           "type": "feat"
         },

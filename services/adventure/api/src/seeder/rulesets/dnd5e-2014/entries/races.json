@@ -65,6 +65,16 @@
       {
         "id": "dwarf-subrace",
         "kind": "choose",
+        "label": {
+          "en": "Subrace",
+          "fr": "Sous-race",
+          "es": "Subraza"
+        },
+        "description": {
+          "en": "A variant of your race, with its own traits and ability bonuses.",
+          "fr": "Une variante de ta race, avec ses propres traits et bonus de caractéristiques.",
+          "es": "Una variante de tu raza, con sus propios rasgos y bonificadores de característica."
+        },
         "from": {
           "type": "subrace",
           "parentKey": "dwarf"
@@ -74,6 +84,16 @@
       {
         "id": "dwarf-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": ["smiths-tools", "brewers-supplies", "masons-tools"]
@@ -210,6 +230,16 @@
       {
         "id": "elf-subrace",
         "kind": "choose",
+        "label": {
+          "en": "Subrace",
+          "fr": "Sous-race",
+          "es": "Subraza"
+        },
+        "description": {
+          "en": "A variant of your race, with its own traits and ability bonuses.",
+          "fr": "Une variante de ta race, avec ses propres traits et bonus de caractéristiques.",
+          "es": "Una variante de tu raza, con sus propios rasgos y bonificadores de característica."
+        },
         "from": {
           "type": "subrace",
           "parentKey": "elf"
@@ -259,6 +289,16 @@
       {
         "id": "high-elf-language",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language",
           "keys": [
@@ -440,6 +480,16 @@
       {
         "id": "halfling-subrace",
         "kind": "choose",
+        "label": {
+          "en": "Subrace",
+          "fr": "Sous-race",
+          "es": "Subraza"
+        },
+        "description": {
+          "en": "A variant of your race, with its own traits and ability bonuses.",
+          "fr": "Une variante de ta race, avec ses propres traits et bonus de caractéristiques.",
+          "es": "Una variante de tu raza, con sus propios rasgos y bonificadores de característica."
+        },
         "from": {
           "type": "subrace",
           "parentKey": "halfling"
@@ -544,6 +594,16 @@
       {
         "id": "human-subrace",
         "kind": "choose",
+        "label": {
+          "en": "Subrace",
+          "fr": "Sous-race",
+          "es": "Subraza"
+        },
+        "description": {
+          "en": "A variant of your race, with its own traits and ability bonuses.",
+          "fr": "Une variante de ta race, avec ses propres traits et bonus de caractéristiques.",
+          "es": "Una variante de tu raza, con sus propios rasgos y bonificadores de característica."
+        },
         "from": {
           "type": "subrace",
           "parentKey": "human"
@@ -553,6 +613,16 @@
       {
         "id": "human-language",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language",
           "keys": [
@@ -656,6 +726,16 @@
       {
         "id": "variant-human-abilities",
         "kind": "choose",
+        "label": {
+          "en": "Ability score (+1)",
+          "fr": "Caractéristique (+1)",
+          "es": "Característica (+1)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": [
@@ -679,6 +759,16 @@
       {
         "id": "variant-human-skill",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -714,6 +804,16 @@
       {
         "id": "variant-human-feat",
         "kind": "choose",
+        "label": {
+          "en": "Feat",
+          "fr": "Don",
+          "es": "Dote"
+        },
+        "description": {
+          "en": "A special talent that gives you new capabilities.",
+          "fr": "Un talent particulier qui te donne de nouvelles capacités.",
+          "es": "Un talento especial que te da nuevas capacidades."
+        },
         "from": {
           "type": "feat"
         },
@@ -772,6 +872,16 @@
       {
         "id": "draconic-ancestry",
         "kind": "choose",
+        "label": {
+          "en": "Draconic ancestry",
+          "fr": "Ascendance draconique",
+          "es": "Ascendencia dracónica"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "draconic-ancestry"
         },
@@ -835,6 +945,16 @@
       {
         "id": "gnome-subrace",
         "kind": "choose",
+        "label": {
+          "en": "Subrace",
+          "fr": "Sous-race",
+          "es": "Subraza"
+        },
+        "description": {
+          "en": "A variant of your race, with its own traits and ability bonuses.",
+          "fr": "Une variante de ta race, avec ses propres traits et bonus de caractéristiques.",
+          "es": "Una variante de tu raza, con sus propios rasgos y bonificadores de característica."
+        },
         "from": {
           "type": "subrace",
           "parentKey": "gnome"
@@ -966,6 +1086,16 @@
       {
         "id": "half-elf-abilities",
         "kind": "choose",
+        "label": {
+          "en": "Ability scores (+1 each)",
+          "fr": "Caractéristiques (+1 chacune)",
+          "es": "Características (+1 cada una)"
+        },
+        "description": {
+          "en": "The chosen ability score increases.",
+          "fr": "La caractéristique choisie augmente.",
+          "es": "La característica elegida aumenta."
+        },
         "from": {
           "type": "ability",
           "keys": [
@@ -988,6 +1118,16 @@
       {
         "id": "half-elf-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -1023,6 +1163,16 @@
       {
         "id": "half-elf-language",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language",
           "keys": [
@@ -1979,9 +2129,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -2193,9 +2345,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "short"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -2464,9 +2618,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -2545,9 +2701,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []

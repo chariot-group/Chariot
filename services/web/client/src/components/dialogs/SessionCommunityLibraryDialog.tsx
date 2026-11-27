@@ -40,7 +40,11 @@ export function SessionCommunityLibraryDialog({ open, onOpenChange }: SessionCom
   const shouldPreventDialogOutsideDismiss = (target: EventTarget | null) =>
     shouldPreventDialogDismissForPortaledFilter(portaledFilterOpenTrackerRef.current, target);
 
-  const preventOutsideDismiss = (event: { preventDefault: () => void; target?: EventTarget | null; detail?: { originalEvent?: { target?: EventTarget | null } } }) => {
+  const preventOutsideDismiss = (event: {
+    preventDefault: () => void;
+    target?: EventTarget | null;
+    detail?: { originalEvent?: { target?: EventTarget | null } };
+  }) => {
     const target = event.detail?.originalEvent?.target ?? event.target ?? null;
     if (shouldPreventDialogOutsideDismiss(target)) {
       event.preventDefault();

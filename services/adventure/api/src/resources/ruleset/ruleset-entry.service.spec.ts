@@ -86,6 +86,52 @@ describe('FR-ruleset-character-builder — RulesetEntryService', () => {
     service = module.get(RulesetEntryService);
   });
 
+  describe('getCatalog', () => {
+    const catalogChain = (entries: object[]) => ({
+      sort: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue(entries),
+    });
+
+    it('nominal: a published catalog is built once, with a stable ETag', async () => {
+      rulesetService.getVisibleOrFail.mockResolvedValue({
+        _id: RULESET_ID,
+        status: 'published',
+      });
+      entryModel.find.mockReturnValue(catalogChain([elf, { key: 'dwarf' }]));
+
+      const first = await service.getCatalog(RULESET_ID, false);
+      const second = await service.getCatalog(RULESET_ID, false);
+
+      expect(first.entries).toHaveLength(2);
+      expect(first.etag).toMatch(/^"[\w-]+"$/);
+      expect(second).toBe(first);
+      expect(entryModel.find).toHaveBeenCalledTimes(1);
+      expect(entryModel.find).toHaveBeenCalledWith({ rulesetId: RULESET_ID });
+    });
+
+    it('edge: a draft catalog (admin) is read every time and has no ETag', async () => {
+      entryModel.find.mockReturnValue(catalogChain([elf]));
+
+      const result = await service.getCatalog(RULESET_ID, true);
+      await service.getCatalog(RULESET_ID, true);
+
+      expect(result.etag).toBeNull();
+      expect(entryModel.find).toHaveBeenCalledTimes(2);
+    });
+
+    it('failure: a non-admin asking a draft catalog gets 404', async () => {
+      rulesetService.getVisibleOrFail.mockRejectedValue(
+        new NotFoundException('Ruleset not found'),
+      );
+
+      await expect(service.getCatalog(RULESET_ID, false)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(entryModel.find).not.toHaveBeenCalled();
+    });
+  });
+
   describe('findAll', () => {
     it('edge: filters by type + parentKey + tags and paginates', async () => {
       const chain = {

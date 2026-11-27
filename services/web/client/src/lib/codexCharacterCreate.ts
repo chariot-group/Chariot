@@ -5,7 +5,8 @@ export type CodexCreateSelection =
   | { kind: "npc"; draft: Partial<NPC> }
   | { kind: "player"; draft: Partial<Player> };
 
-export type CreateCharacterChoice = "players" | "npcs" | "codex";
+/** `builder`: step-by-step Player builder (FR-ruleset-character-builder — Web builder UI). */
+export type CreateCharacterChoice = "players" | "npcs" | "codex" | "builder";
 
 export interface CampaignCreateContext {
   campaignId: string;

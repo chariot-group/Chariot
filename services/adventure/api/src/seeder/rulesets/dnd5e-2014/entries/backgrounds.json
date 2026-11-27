@@ -134,6 +134,16 @@
       {
         "id": "acolyte-languages",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -424,6 +434,16 @@
       {
         "id": "criminal-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -587,6 +607,16 @@
       {
         "id": "entertainer-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -764,6 +794,16 @@
       {
         "id": "folk-hero-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -935,6 +975,16 @@
       {
         "id": "guild-artisan-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -969,6 +1019,16 @@
       {
         "id": "guild-artisan-languages",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -1134,6 +1194,16 @@
       {
         "id": "hermit-languages",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -1286,6 +1356,16 @@
       {
         "id": "noble-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -1307,6 +1387,16 @@
       {
         "id": "noble-languages",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -1467,6 +1557,16 @@
       {
         "id": "outlander-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -1494,6 +1594,16 @@
       {
         "id": "outlander-languages",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -1662,6 +1772,16 @@
       {
         "id": "sage-languages",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -1976,6 +2096,16 @@
       {
         "id": "soldier-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [

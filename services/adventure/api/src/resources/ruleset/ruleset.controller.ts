@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
   ValidationPipe,
 } from '@nestjs/common';
 import {
@@ -19,6 +20,7 @@ import {
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
+import type { Response } from 'express';
 import { Types } from 'mongoose';
 import { RulesetService } from '@/resources/ruleset/ruleset.service';
 import { RulesetEntryService } from '@/resources/ruleset/ruleset-entry.service';
@@ -144,6 +146,37 @@ export class RulesetController {
     @Query(queryPipe) query: FindRulesetEntriesQueryDto,
   ) {
     return this.entryService.findAll(id, query, hasAdminRole(request.user));
+  }
+
+  @Get(':id/catalog')
+  @ApiOperation({
+    summary:
+      'Every catalog entry of a ruleset version, unpaginated (cached, ETag, 304 on If-None-Match for published versions)',
+  })
+  @ApiParam({ name: 'id', type: String })
+  @okResponse(RulesetEntry, true)
+  @ApiResponse({ status: 304, description: 'Catalog unchanged (ETag)' })
+  @notFound
+  async findCatalog(
+    @Req() request,
+    @Res({ passthrough: true }) response: Response,
+    @Param('id', ParseMongoIdPipe) id: Types.ObjectId,
+  ): Promise<IResponse<RulesetEntry[]> | undefined> {
+    const catalog = await this.entryService.getCatalog(
+      id,
+      hasAdminRole(request.user),
+    );
+    if (!catalog.etag) {
+      response.setHeader('Cache-Control', 'no-store');
+      return { message: 'Ruleset catalog found', data: catalog.entries };
+    }
+    response.setHeader('ETag', catalog.etag);
+    response.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+    if (request.headers?.['if-none-match'] === catalog.etag) {
+      response.status(304);
+      return undefined;
+    }
+    return { message: 'Ruleset catalog found', data: catalog.entries };
   }
 
   // ── Admin write ───────────────────────────────────────────────────────────

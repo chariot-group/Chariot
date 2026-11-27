@@ -558,9 +558,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -587,6 +589,16 @@
       {
         "id": "druid-land-choice",
         "kind": "choose",
+        "label": {
+          "en": "Circle land",
+          "fr": "Terre du cercle",
+          "es": "Tierra del círculo"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "druid-land"
         },
@@ -827,6 +839,16 @@
       {
         "id": "champion-fighting-style",
         "kind": "choose",
+        "label": {
+          "en": "Fighting style",
+          "fr": "Style de combat",
+          "es": "Estilo de combate"
+        },
+        "description": {
+          "en": "A combat specialty that improves one way of fighting.",
+          "fr": "Une spécialité de combat qui améliore une façon de te battre.",
+          "es": "Una especialidad de combate que mejora una forma de luchar."
+        },
         "from": {
           "type": "fighting-style"
         },
@@ -1191,9 +1213,31 @@
         0, 0, 8, 8, 8, 8, 8, 8, 8, 10, 10, 10, 10, 10, 10, 10, 10, 12, 12, 12
       ],
       "uses": {
-        "count": [0, 0, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6],
         "reset": "short",
         "unit": "superiority dice"
+      },
+      "usesByLevel": [
+        0, 0, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
       }
     },
     "effects": [],
@@ -1201,6 +1245,16 @@
       {
         "id": "maneuvers-3",
         "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
         "from": {
           "type": "maneuver"
         },
@@ -1217,6 +1271,16 @@
       {
         "id": "maneuvers-7",
         "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
         "from": {
           "type": "maneuver"
         },
@@ -1233,6 +1297,16 @@
       {
         "id": "maneuvers-10",
         "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
         "from": {
           "type": "maneuver"
         },
@@ -1249,6 +1323,16 @@
       {
         "id": "maneuvers-15",
         "kind": "choose",
+        "label": {
+          "en": "Maneuvers",
+          "fr": "Manœuvres",
+          "es": "Maniobras"
+        },
+        "description": {
+          "en": "Special combat moves fueled by your superiority dice.",
+          "fr": "Des techniques de combat qui utilisent tes dés de supériorité.",
+          "es": "Técnicas de combate que usan tus dados de superioridad."
+        },
         "from": {
           "type": "maneuver"
         },
@@ -1286,6 +1370,16 @@
       {
         "id": "student-of-war-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -1439,35 +1533,66 @@
     "effects": [
       {
         "op": "set",
-        "target": "spellcasting.ability",
+        "target": "spellcasting.fighter.ability",
         "value": "intelligence"
       },
       {
         "op": "set",
-        "target": "spellcasting.preparation",
+        "target": "spellcasting.fighter.preparation",
         "value": "known"
       },
       {
         "op": "set",
-        "target": "spellcasting.cantripsKnown",
+        "target": "spellcasting.fighter.cantripsKnown",
         "value": [0, 0, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
       },
       {
         "op": "set",
-        "target": "spellcasting.spellsKnown",
+        "target": "spellcasting.fighter.spellsKnown",
         "value": [
           0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13
         ]
       },
       {
         "op": "set",
-        "target": "spellcasting.maxSpellLevelByLevel",
+        "target": "spellcasting.fighter.maxSpellLevelByLevel",
         "value": [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4]
       },
       {
         "op": "set",
-        "target": "spellcasting.preparedLevel",
+        "target": "spellcasting.fighter.preparedLevel",
         "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.slots",
+        "value": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.fighter.casterProgression",
+        "value": "third"
       }
     ],
     "grants": []
@@ -1610,9 +1735,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -2142,6 +2269,16 @@
       {
         "id": "disciplines-3",
         "kind": "choose",
+        "label": {
+          "en": "Elemental disciplines",
+          "fr": "Disciplines élémentaires",
+          "es": "Disciplinas elementales"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "elemental-discipline"
         },
@@ -2158,6 +2295,16 @@
       {
         "id": "disciplines-6",
         "kind": "choose",
+        "label": {
+          "en": "Elemental disciplines",
+          "fr": "Disciplines élémentaires",
+          "es": "Disciplinas elementales"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "elemental-discipline"
         },
@@ -2174,6 +2321,16 @@
       {
         "id": "disciplines-11",
         "kind": "choose",
+        "label": {
+          "en": "Elemental disciplines",
+          "fr": "Disciplines élémentaires",
+          "es": "Disciplinas elementales"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "elemental-discipline"
         },
@@ -2190,6 +2347,16 @@
       {
         "id": "disciplines-17",
         "kind": "choose",
+        "label": {
+          "en": "Elemental disciplines",
+          "fr": "Disciplines élémentaires",
+          "es": "Disciplinas elementales"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "elemental-discipline"
         },

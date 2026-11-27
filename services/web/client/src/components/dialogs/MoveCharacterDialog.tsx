@@ -56,10 +56,7 @@ export async function fetchMoveTargetGroups(campaignId: string): Promise<MoveTar
   ]);
 }
 
-export function buildMoveGroupOptions(
-  groups: MoveTargetGroup[],
-  archivedBadgeLabel: string,
-): SearchableSelectOption[] {
+export function buildMoveGroupOptions(groups: MoveTargetGroup[], archivedBadgeLabel: string): SearchableSelectOption[] {
   return groups.map((group) => ({
     value: group._id,
     label: group.label,

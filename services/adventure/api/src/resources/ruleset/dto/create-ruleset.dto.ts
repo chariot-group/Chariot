@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsIn,
+  IsObject,
   IsOptional,
   Matches,
   ValidateNested,
@@ -15,7 +16,11 @@ import { KEBAB_CASE_PATTERN } from '@/resources/ruleset/constants/ruleset.consta
 import { TranslatedLabel } from '@/resources/ruleset/schemas/sub/translated-label.schema';
 import { IsTranslatedLabel } from '@/resources/ruleset/validation/validators.decorator';
 import {
+  RulesetAttachmentDto,
+  RulesetCollectionDto,
+  RulesetCounterDto,
   RulesetFlowDto,
+  RulesetLevelDto,
   RulesetFormulaDto,
   RulesetProjectionDto,
 } from '@/resources/ruleset/dto/builder.dto';
@@ -58,4 +63,40 @@ export class CreateRulesetDto {
   @ValidateNested({ each: true })
   @Type(() => RulesetProjectionDto)
   readonly projection?: RulesetProjectionDto[];
+
+  @ApiPropertyOptional({
+    example: { experienceByLevel: [0, 300, 900] },
+    description: 'Static data readable in expressions as `ruleset.data.*`',
+  })
+  @IsOptional()
+  @IsObject()
+  readonly data?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ type: [RulesetLevelDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RulesetLevelDto)
+  readonly levels?: RulesetLevelDto[];
+
+  @ApiPropertyOptional({ type: [RulesetAttachmentDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RulesetAttachmentDto)
+  readonly attachments?: RulesetAttachmentDto[];
+
+  @ApiPropertyOptional({ type: [RulesetCounterDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RulesetCounterDto)
+  readonly counters?: RulesetCounterDto[];
+
+  @ApiPropertyOptional({ type: [RulesetCollectionDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RulesetCollectionDto)
+  readonly collections?: RulesetCollectionDto[];
 }

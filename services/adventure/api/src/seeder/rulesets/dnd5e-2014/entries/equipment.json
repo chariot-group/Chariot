@@ -176,6 +176,16 @@
       {
         "id": "barbarian-equipment-weapon-1",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -188,6 +198,16 @@
       {
         "id": "barbarian-equipment-weapon-2",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["barbarian-equipment-handaxes", "barbarian-equipment-simple"]
@@ -197,6 +217,16 @@
       {
         "id": "barbarian-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["explorers-pack"]
@@ -261,6 +291,16 @@
       {
         "id": "barbarian-martial-melee",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -349,6 +389,16 @@
       {
         "id": "barbarian-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -430,6 +480,16 @@
       {
         "id": "bard-equipment-weapon",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -443,6 +503,16 @@
       {
         "id": "bard-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["diplomats-pack", "entertainers-pack"]
@@ -464,6 +534,16 @@
       {
         "id": "bard-equipment-instrument",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["bard-equipment-lute", "bard-equipment-instrument"]
@@ -545,6 +625,16 @@
       {
         "id": "bard-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -624,6 +714,16 @@
       {
         "id": "bard-instrument-item",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -695,6 +795,16 @@
       {
         "id": "cleric-equipment-weapon",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["cleric-equipment-mace", "cleric-equipment-warhammer"]
@@ -704,6 +814,16 @@
       {
         "id": "cleric-equipment-armor",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -717,6 +837,16 @@
       {
         "id": "cleric-equipment-ranged",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["cleric-equipment-crossbow", "cleric-equipment-simple"]
@@ -726,6 +856,16 @@
       {
         "id": "cleric-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["priests-pack", "explorers-pack"]
@@ -928,6 +1068,16 @@
       {
         "id": "cleric-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -1008,6 +1158,16 @@
       {
         "id": "druid-equipment-shield",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["druid-equipment-shield", "druid-equipment-simple"]
@@ -1017,6 +1177,16 @@
       {
         "id": "druid-equipment-weapon",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["druid-equipment-scimitar", "druid-equipment-simple-melee"]
@@ -1026,6 +1196,16 @@
       {
         "id": "druid-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["explorers-pack"]
@@ -1085,6 +1265,16 @@
       {
         "id": "druid-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -1169,6 +1359,16 @@
       {
         "id": "druid-simple-melee",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -1226,6 +1426,16 @@
       {
         "id": "fighter-equipment-armor",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -1238,6 +1448,16 @@
       {
         "id": "fighter-equipment-weapons",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -1250,6 +1470,16 @@
       {
         "id": "fighter-equipment-ranged",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["fighter-equipment-crossbow", "fighter-equipment-handaxes"]
@@ -1259,6 +1489,16 @@
       {
         "id": "fighter-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["dungeoneers-pack", "explorers-pack"]
@@ -1370,6 +1610,16 @@
       {
         "id": "fighter-martial-1",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -1434,6 +1684,16 @@
       {
         "id": "fighter-martial-2",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -1586,6 +1846,16 @@
       {
         "id": "monk-equipment-weapon",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["monk-equipment-shortsword", "monk-equipment-simple"]
@@ -1595,6 +1865,16 @@
       {
         "id": "monk-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["dungeoneers-pack", "explorers-pack"]
@@ -1659,6 +1939,16 @@
       {
         "id": "monk-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -1739,6 +2029,16 @@
       {
         "id": "paladin-equipment-weapons",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -1751,6 +2051,16 @@
       {
         "id": "paladin-equipment-secondary",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -1763,6 +2073,16 @@
       {
         "id": "paladin-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["priests-pack", "explorers-pack"]
@@ -1809,6 +2129,16 @@
       {
         "id": "paladin-martial-1",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -1873,6 +2203,16 @@
       {
         "id": "paladin-martial-2",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -1966,6 +2306,16 @@
       {
         "id": "paladin-simple-melee",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -2047,6 +2397,16 @@
       {
         "id": "ranger-equipment-armor",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["ranger-equipment-scale-mail", "ranger-equipment-leather"]
@@ -2056,6 +2416,16 @@
       {
         "id": "ranger-equipment-weapons",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -2068,6 +2438,16 @@
       {
         "id": "ranger-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["dungeoneers-pack", "explorers-pack"]
@@ -2180,6 +2560,16 @@
       {
         "id": "ranger-simple-melee",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -2261,6 +2651,16 @@
       {
         "id": "rogue-equipment-weapon",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["rogue-equipment-rapier", "rogue-equipment-shortsword"]
@@ -2270,6 +2670,16 @@
       {
         "id": "rogue-equipment-ranged",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -2282,6 +2692,16 @@
       {
         "id": "rogue-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["burglars-pack", "dungeoneers-pack", "explorers-pack"]
@@ -2463,6 +2883,16 @@
       {
         "id": "sorcerer-equipment-weapon",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["sorcerer-equipment-crossbow", "sorcerer-equipment-simple"]
@@ -2472,6 +2902,16 @@
       {
         "id": "sorcerer-equipment-focus",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["sorcerer-equipment-pouch", "sorcerer-equipment-focus"]
@@ -2481,6 +2921,16 @@
       {
         "id": "sorcerer-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["dungeoneers-pack", "explorers-pack"]
@@ -2553,6 +3003,16 @@
       {
         "id": "sorcerer-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -2690,6 +3150,16 @@
       {
         "id": "warlock-equipment-weapon",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["warlock-equipment-crossbow", "warlock-equipment-simple"]
@@ -2699,6 +3169,16 @@
       {
         "id": "warlock-equipment-focus",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["warlock-equipment-pouch", "warlock-equipment-focus"]
@@ -2708,6 +3188,16 @@
       {
         "id": "warlock-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["scholars-pack", "dungeoneers-pack"]
@@ -2729,6 +3219,16 @@
       {
         "id": "warlock-extra-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -2821,6 +3321,16 @@
       {
         "id": "warlock-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -2953,6 +3463,16 @@
       {
         "id": "wizard-equipment-weapon",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["wizard-equipment-quarterstaff", "wizard-equipment-dagger"]
@@ -2962,6 +3482,16 @@
       {
         "id": "wizard-equipment-focus",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": ["wizard-equipment-pouch", "wizard-equipment-focus"]
@@ -2971,6 +3501,16 @@
       {
         "id": "wizard-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["scholars-pack", "explorers-pack"]
@@ -3154,6 +3694,16 @@
       {
         "id": "artificer-simple",
         "kind": "choose",
+        "label": {
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
+        },
+        "description": {
+          "en": "The chosen weapon is added to your equipment.",
+          "fr": "L'arme choisie s'ajoute à ton équipement.",
+          "es": "El arma elegida se añade a tu equipo."
+        },
         "from": {
           "type": "weapon",
           "keys": [
@@ -3195,6 +3745,16 @@
       {
         "id": "artificer-equipment-armor",
         "kind": "choose",
+        "label": {
+          "en": "Starting equipment",
+          "fr": "Équipement de départ",
+          "es": "Equipo inicial"
+        },
+        "description": {
+          "en": "Pick one option: the items are added to your starting equipment.",
+          "fr": "Choisis une option : les objets s'ajoutent à ton équipement de départ.",
+          "es": "Elige una opción: los objetos se añaden a tu equipo inicial."
+        },
         "from": {
           "type": "equipment-option",
           "keys": [
@@ -3207,6 +3767,16 @@
       {
         "id": "artificer-pack",
         "kind": "choose",
+        "label": {
+          "en": "Adventuring pack",
+          "fr": "Sac d'équipement",
+          "es": "Paquete de equipo"
+        },
+        "description": {
+          "en": "A ready-made pack of adventuring gear.",
+          "fr": "Un sac d'équipement d'aventurier tout prêt.",
+          "es": "Un paquete de equipo de aventura ya preparado."
+        },
         "from": {
           "type": "adventuring-pack",
           "keys": ["dungeoneers-pack"]

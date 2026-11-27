@@ -89,6 +89,30 @@ export class EntryGrantDto {
   @IsJsonLogic()
   readonly count: unknown;
 
+  @ApiPropertyOptional({
+    type: TranslatedLabel,
+    description: 'Name of the choice for the player (e.g. « Sous-race »)',
+  })
+  @IsOptional()
+  @IsTranslatedLabel()
+  readonly label?: TranslatedLabel;
+
+  @ApiPropertyOptional({
+    type: TranslatedLabel,
+    description: 'What the choice is and what it implies',
+  })
+  @IsOptional()
+  @IsTranslatedLabel()
+  readonly description?: TranslatedLabel;
+
+  @ApiPropertyOptional({
+    example: ['common'],
+    description: 'Suggested option keys, or JSON Logic giving them',
+  })
+  @IsOptional()
+  @IsJsonLogic()
+  readonly default?: unknown;
+
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
   @IsInt()
@@ -150,6 +174,15 @@ export class CreateRulesetEntryDto {
   @IsOptional()
   @IsObject()
   readonly data?: Record<string, unknown>;
+
+  @ApiPropertyOptional({
+    example: { multiclassAllowed: { '>=': [{ var: 'strength' }, 13] } },
+    description:
+      'Named JSON Logic expressions evaluated with `self` = the entry (checked by integrity validation)',
+  })
+  @IsOptional()
+  @IsObject()
+  readonly values?: Record<string, unknown>;
 
   @ApiPropertyOptional({ type: [EntryEffectDto] })
   @IsOptional()

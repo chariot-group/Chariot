@@ -42,11 +42,7 @@ interface DuplicateCharacterDialogProps {
   /** Visible character display names used to pick the next free suffix */
   existingNames?: readonly string[];
   /** When provided, shows a secondary "Create in another group" button */
-  onDuplicateAndMove?: (
-    name: string,
-    count: number,
-    companionMode: PlayerDuplicateCompanionMode,
-  ) => Promise<void>;
+  onDuplicateAndMove?: (name: string, count: number, companionMode: PlayerDuplicateCompanionMode) => Promise<void>;
   /** Linked companions — when non-empty, shows companion outcome choices */
   companions?: NPC[];
   isLoadingCompanions?: boolean;
@@ -65,10 +61,7 @@ export function DuplicateCharacterDialog({
   const t = useTranslations("sidebar");
   const tCommon = useTranslations("common");
 
-  const defaultName = React.useMemo(
-    () => buildDuplicateName(character, existingNames),
-    [character, existingNames],
-  );
+  const defaultName = React.useMemo(() => buildDuplicateName(character, existingNames), [character, existingNames]);
 
   const [name, setName] = React.useState(defaultName);
   const [countStr, setCountStr] = React.useState("1");
@@ -223,9 +216,7 @@ export function DuplicateCharacterDialog({
                     aria-label={t("duplicatePlayerOnlyAria")}
                   />
                   <span className="min-w-0">
-                    <span className="block text-sm font-medium text-white">
-                      {t("duplicatePlayerOnly")}
-                    </span>
+                    <span className="block text-sm font-medium text-white">{t("duplicatePlayerOnly")}</span>
                     <span className="mt-0.5 block text-xs leading-snug text-white/70">
                       {t("duplicatePlayerOnlyHint")}
                     </span>
@@ -242,9 +233,7 @@ export function DuplicateCharacterDialog({
                     aria-label={t("duplicatePlayerAndCompanionsAria")}
                   />
                   <span className="min-w-0">
-                    <span className="block text-sm font-medium text-white">
-                      {t("duplicatePlayerAndCompanions")}
-                    </span>
+                    <span className="block text-sm font-medium text-white">{t("duplicatePlayerAndCompanions")}</span>
                     <span className="mt-0.5 block text-xs leading-snug text-white/70">
                       {t("duplicatePlayerAndCompanionsHint")}
                     </span>
@@ -252,10 +241,7 @@ export function DuplicateCharacterDialog({
                 </label>
 
                 <label
-                  className={cn(
-                    companionChoiceRowClass,
-                    moveCompanionsDisabled && "cursor-not-allowed opacity-50",
-                  )}>
+                  className={cn(companionChoiceRowClass, moveCompanionsDisabled && "cursor-not-allowed opacity-50")}>
                   <input
                     type="radio"
                     name="duplicate-companion-mode"
@@ -266,9 +252,7 @@ export function DuplicateCharacterDialog({
                     aria-label={t("duplicatePlayerMoveCompanionsAria")}
                   />
                   <span className="min-w-0">
-                    <span className="block text-sm font-medium text-white">
-                      {t("duplicatePlayerMoveCompanions")}
-                    </span>
+                    <span className="block text-sm font-medium text-white">{t("duplicatePlayerMoveCompanions")}</span>
                     <span className="mt-0.5 block text-xs leading-snug text-white/70">
                       {moveCompanionsDisabled
                         ? t("duplicatePlayerMoveCompanionsDisabledHint")
@@ -297,7 +281,10 @@ export function DuplicateCharacterDialog({
               disabled={!canSubmit}
               onClick={() => void handleCreateAndMove()}>
               {isCreating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                <Loader2
+                  className="mr-2 h-4 w-4 animate-spin"
+                  aria-hidden
+                />
               ) : null}
               {t("duplicateCharacterCreateAndMove")}
             </Button>
@@ -308,7 +295,10 @@ export function DuplicateCharacterDialog({
             disabled={!canSubmit}
             onClick={() => void handleCreate()}>
             {isCreating ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                aria-hidden
+              />
             ) : null}
             {t("duplicateCharacterCreate")}
           </Button>

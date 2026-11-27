@@ -24,6 +24,16 @@ import {
   RulesetProjection,
   RulesetProjectionSchema,
 } from '@/resources/ruleset/schemas/sub/formula.schema';
+import {
+  RulesetAttachment,
+  RulesetAttachmentSchema,
+  RulesetCollection,
+  RulesetCollectionSchema,
+  RulesetCounter,
+  RulesetCounterSchema,
+  RulesetLevel,
+  RulesetLevelSchema,
+} from '@/resources/ruleset/schemas/sub/declarations.schema';
 
 export type RulesetDocument = Ruleset & Document;
 
@@ -78,6 +88,29 @@ export class Ruleset extends BaseSchema {
   @ApiProperty({ type: [RulesetProjection] })
   @Prop({ type: [RulesetProjectionSchema], default: [] })
   projection: RulesetProjection[];
+
+  @ApiProperty({
+    example: { experienceByLevel: [0, 300, 900] },
+    description: 'Static data readable in expressions as `ruleset.data.*`',
+  })
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: {} })
+  data: Record<string, unknown>;
+
+  @ApiProperty({ type: [RulesetLevel] })
+  @Prop({ type: [RulesetLevelSchema], default: [] })
+  levels: RulesetLevel[];
+
+  @ApiProperty({ type: [RulesetAttachment] })
+  @Prop({ type: [RulesetAttachmentSchema], default: [] })
+  attachments: RulesetAttachment[];
+
+  @ApiProperty({ type: [RulesetCounter] })
+  @Prop({ type: [RulesetCounterSchema], default: [] })
+  counters: RulesetCounter[];
+
+  @ApiProperty({ type: [RulesetCollection] })
+  @Prop({ type: [RulesetCollectionSchema], default: [] })
+  collections: RulesetCollection[];
 
   @ApiProperty({ example: null, required: false })
   @Prop({ default: null })

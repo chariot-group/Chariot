@@ -18,7 +18,7 @@ describe('FR-ruleset-character-builder — dnd5e-2014 seed', () => {
     expect(ruleset).toMatchObject({
       key: 'dnd5e-2014',
       gameSystem: 'DND_5E',
-      version: 1,
+      version: 4,
     });
   });
 
@@ -97,5 +97,58 @@ describe('FR-ruleset-character-builder — dnd5e-2014 seed', () => {
         'race/ghost-race grant "g" targets unknown type "ghost"',
       ]),
     );
+  });
+
+  it('failure: declarations naming an entry type absent from the seed are reported', () => {
+    const errors = validateSeed({
+      ...seed,
+      ruleset: {
+        ...seed.ruleset,
+        levels: [{ type: 'ghost-class', expression: 1 }],
+        attachments: [{ childType: 'ghost-feature', parentType: 'class' }],
+        collections: [
+          { id: 'ghosts', from: { types: ['ghost'] }, item: { name: 1 } },
+        ],
+      },
+    });
+    expect(errors).toEqual(
+      expect.arrayContaining([
+        'ruleset levels reference unknown entry type "ghost-class"',
+        'ruleset attachments reference unknown entry type "ghost-feature"',
+        'ruleset collections reference unknown entry type "ghost"',
+      ]),
+    );
+  });
+
+  it('failure: a ruleset data that is not an object is rejected', () => {
+    const errors = validateSeed({
+      ...seed,
+      ruleset: { ...seed.ruleset, data: 'tables' as never },
+    });
+    expect(errors).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('data must be an object'),
+      ]),
+    );
+  });
+
+  it('failure: a state root nobody produces and an engine-only repeat value are reported', () => {
+    const errors = validateSeed({
+      ...seed,
+      ruleset: {
+        ...seed.ruleset,
+        formulas: [
+          ...(seed.ruleset.formulas ?? []),
+          { id: 'ghostRead', expression: { var: 'state.classKeys' } },
+          { id: 'ghostPage', expression: { var: 'state.page.nothing' } },
+          { id: 'ghostRepeat', expression: { var: 'repeat.hitDie' } },
+        ],
+      },
+    });
+    expect(errors).toEqual([
+      'seed reads "state.classKeys" but nothing produces it',
+      'seed reads "state.page.nothing" but no effect produces "nothing"',
+      'seed reads "repeat.hitDie" but the engine only provides repeat.index',
+    ]);
   });
 });

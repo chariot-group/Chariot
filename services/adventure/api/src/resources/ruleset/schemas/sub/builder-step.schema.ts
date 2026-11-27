@@ -28,6 +28,28 @@ export class StepRepeat {
 
 export const StepRepeatSchema = SchemaFactory.createForClass(StepRepeat);
 
+/** Card grouping fields of a step under one title. @see FR-ruleset-character-builder — Flow */
+@Schema({ _id: false })
+export class StepCard {
+  @ApiProperty({ example: 'identity' })
+  @Prop({ required: true })
+  id: string;
+
+  @ApiProperty({ type: TranslatedLabel })
+  @Prop({ type: TranslatedLabelSchema, required: true })
+  title: TranslatedLabel;
+
+  @ApiProperty({ type: TranslatedLabel, required: false })
+  @Prop({ type: TranslatedLabelSchema })
+  description?: TranslatedLabel;
+
+  @ApiProperty({ example: ['firstname', 'lastname'] })
+  @Prop({ type: [String], required: true })
+  fields: string[];
+}
+
+export const StepCardSchema = SchemaFactory.createForClass(StepCard);
+
 @Schema({ _id: false })
 export class BuilderStep {
   @ApiProperty({ example: 'race' })
@@ -65,6 +87,10 @@ export class BuilderStep {
   @ApiProperty({ type: [BuilderField] })
   @Prop({ type: [BuilderFieldSchema], default: [] })
   fields: BuilderField[];
+
+  @ApiProperty({ type: [StepCard], required: false })
+  @Prop({ type: [StepCardSchema], default: undefined })
+  cards?: StepCard[];
 }
 
 export const BuilderStepSchema = SchemaFactory.createForClass(BuilderStep);

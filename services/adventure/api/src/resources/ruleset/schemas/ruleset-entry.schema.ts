@@ -65,6 +65,14 @@ export class RulesetEntry extends BaseSchema {
   @Prop({ type: mongoose.Schema.Types.Mixed, default: {} })
   data: Record<string, unknown>;
 
+  @ApiProperty({
+    example: { multiclassAllowed: { '>=': [{ var: 'strength' }, 13] } },
+    description:
+      'Named JSON Logic expressions evaluated with `self` = the entry',
+  })
+  @Prop({ type: mongoose.Schema.Types.Mixed, default: {} })
+  values: Record<string, unknown>;
+
   @ApiProperty({ type: [EntryEffect] })
   @Prop({ type: [EntryEffectSchema], default: [] })
   effects: EntryEffect[];

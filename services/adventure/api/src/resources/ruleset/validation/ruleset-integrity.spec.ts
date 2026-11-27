@@ -254,3 +254,219 @@ describe('FR-ruleset-character-builder — spellSelect', () => {
     ]);
   });
 });
+
+describe('FR-ruleset-character-builder — declarative primitives', () => {
+  const declarations: Partial<RulesetLike> = {
+    levels: [
+      {
+        type: 'race',
+        expression: {
+          var: [{ cat: ['state.races.of.', { var: 'self.key' }] }, 0],
+        },
+      },
+    ],
+    attachments: [
+      {
+        childType: 'racial-trait',
+        parentType: 'race',
+        when: { '!!': [{ var: 'self.key' }] },
+      },
+    ],
+    counters: [{ id: 'races', fields: ['race'] }],
+    collections: [
+      {
+        id: 'traits',
+        from: { types: ['racial-trait'] },
+        where: { '!!': [{ var: 'item.label' }] },
+        sort: { var: 'item.level' },
+        item: {
+          name: { var: 'item.label' },
+          'uses.max': { var: 'dexModifier' },
+        },
+      },
+      {
+        id: 'gear',
+        from: { path: 'equipment' },
+        item: { name: { var: 'item.key' } },
+      },
+    ],
+  };
+
+  it('nominal: levels, attachments, counters and collections reading self and item are valid', () => {
+    expect(validateRulesetIntegrity(ruleset(declarations))).toEqual([]);
+  });
+
+  it('edge: entry values reading fields, formulas and self are valid', () => {
+    expect(
+      validateEntryIntegrity(
+        {
+          values: {
+            multiclassAllowed: { '>=': [{ var: 'dexModifier' }, 1] },
+            usesCount: { '+': [1, { var: 'self.level' }] },
+          },
+        },
+        ruleset(),
+      ),
+    ).toEqual([]);
+  });
+
+  it('failure: invalid declarations are rejected', () => {
+    expect(
+      validateRulesetIntegrity(
+        ruleset({
+          levels: [
+            { type: 'race', expression: 1 },
+            { type: 'race', expression: { log: 1 } },
+          ],
+          attachments: [{ childType: 'race', parentType: 'race' }],
+          counters: [
+            { id: 'entries', fields: ['race'] },
+            { id: 'bad', fields: ['nope', 'dexMod'] },
+          ],
+          collections: [
+            { id: 'bad', from: {}, item: {} },
+            {
+              id: 'both',
+              from: { types: ['x'], path: 'a..b' },
+              item: { 'a..b': { var: 'unknownRoot' } },
+            },
+          ],
+        }),
+      ),
+    ).toEqual([
+      'levels type "race" is duplicated',
+      'levels[1].expression $ uses unknown operator "log"',
+      'attachments[0] childType and parentType must differ',
+      'counter/collection id "bad" is duplicated',
+      'counter/collection id "entries" is reserved by the engine',
+      'counters[1].fields references unknown field "nope"',
+      'counters[1].fields "dexMod" must be an entitySelect or multiSelect field',
+      'collections[0].from must define either types or path',
+      'collections[0].item must define at least one target',
+      'collections[1].from must define either types or path',
+      'collections[1].from.path "a..b" is not a valid path',
+      'collections[1].item target "a..b" is not a valid path',
+      'collections[1].item.a..b references unknown variable "unknownRoot"',
+    ]);
+  });
+
+  it('failure: entry values with a bad name or an unknown operator are rejected', () => {
+    expect(
+      validateEntryIntegrity(
+        { values: { 'bad name': 1, ok: { log: 'x' } } },
+        ruleset(),
+      ),
+    ).toEqual([
+      'values "bad name" is not a valid identifier',
+      'values.ok $ uses unknown operator "log"',
+    ]);
+  });
+});
+
+describe('FR-ruleset-character-builder — spellcasting (stage 4)', () => {
+  const withField = (field: Record<string, unknown>): RulesetLike =>
+    ruleset({
+      flow: {
+        steps: [
+          {
+            id: 'spells',
+            fields: [
+              { id: 'class', type: 'entitySelect', source: { type: 'class' } },
+              field as never,
+            ],
+          },
+        ],
+      },
+      projection: [],
+    });
+
+  it('nominal: a spellSelect groups its spells by a field and reads ruleset data', () => {
+    expect(
+      validateRulesetIntegrity(
+        withField({
+          id: 'spells',
+          type: 'spellSelect',
+          spellGroup: { var: 'class' },
+          count: { var: 'ruleset.data.spellsByLevel.0' },
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it('failure: spellGroup on another field type or with an unknown variable is rejected', () => {
+    expect(
+      validateRulesetIntegrity(
+        withField({
+          id: 'name',
+          type: 'text',
+          spellGroup: { var: 'unknownField' },
+        }),
+      ),
+    ).toEqual([
+      'flow.steps[0].fields[1].spellGroup references unknown variable "unknownField"',
+      'flow.steps[0].fields[1].spellGroup is only allowed for spellSelect',
+    ]);
+  });
+});
+
+describe('FR-ruleset-character-builder — grant label and default', () => {
+  it('nominal: a grant default listing keys or reading a field is valid', () => {
+    expect(
+      validateEntryIntegrity(
+        {
+          grants: [
+            { id: 'languages', count: 1, default: ['common'] },
+            { id: 'skills', count: 2, default: { var: 'race' } },
+          ],
+        },
+        ruleset(),
+      ),
+    ).toEqual([]);
+  });
+
+  it('failure: a grant default reading an unknown variable is rejected', () => {
+    expect(
+      validateEntryIntegrity(
+        { grants: [{ id: 'skills', count: 2, default: { var: 'nope' } }] },
+        ruleset(),
+      ),
+    ).toEqual(['grants[0].default references unknown variable "nope"']);
+  });
+});
+
+describe('FR-ruleset-character-builder — step cards', () => {
+  const withCards = (
+    cards: { id: string; fields: string[] }[],
+  ): RulesetLike => {
+    const base = ruleset();
+    const [first, ...rest] = base.flow?.steps ?? [];
+    return { ...base, flow: { steps: [{ ...first, cards }, ...rest] } };
+  };
+
+  it('nominal: a card grouping fields of its step is valid', () => {
+    expect(
+      validateRulesetIntegrity(
+        withCards([{ id: 'origin', fields: ['race', 'raceChoices'] }]),
+      ),
+    ).toEqual([]);
+  });
+
+  it('edge: a step without cards keeps every field on its own', () => {
+    expect(validateRulesetIntegrity(withCards([]))).toEqual([]);
+  });
+
+  it('failure: duplicated cards, a field in two cards or outside the step are rejected', () => {
+    expect(
+      validateRulesetIntegrity(
+        withCards([
+          { id: 'origin', fields: ['race'] },
+          { id: 'origin', fields: ['race', 'scores'] },
+        ]),
+      ),
+    ).toEqual([
+      'flow.steps[0].cards id "origin" is duplicated',
+      'flow.steps[0].cards field "race" is duplicated',
+      'flow.steps[0].cards[1] references field "scores" outside the step',
+    ]);
+  });
+});

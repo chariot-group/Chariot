@@ -1,4 +1,8 @@
-import { RESERVED_VAR_ROOTS } from '@/resources/ruleset/constants/ruleset.constant';
+import {
+  GENERIC_STATE_KEYS,
+  IDENTIFIER_PATTERN,
+  RESERVED_VAR_ROOTS,
+} from '@/resources/ruleset/constants/ruleset.constant';
 import {
   analyzeJsonLogic,
   varRoot,
@@ -30,10 +34,12 @@ type FieldLike = {
   default?: Expression;
   optionsFilter?: Expression;
   validation?: Expression;
+  spellGroup?: Expression;
 };
 
 type StepLike = {
   id: string;
+  cards?: { id: string; fields: string[] }[];
   visibleWhen?: Expression;
   repeat?: { from: Expression; to: Expression };
   fields?: FieldLike[];
@@ -43,23 +49,37 @@ export type RulesetLike = {
   flow?: { steps?: StepLike[] };
   formulas?: { id: string; expression: Expression }[];
   projection?: { source: Expression; target: string }[];
+  data?: Record<string, unknown>;
+  levels?: { type: string; expression: Expression }[];
+  attachments?: { childType: string; parentType: string; when?: Expression }[];
+  counters?: { id: string; fields: string[] }[];
+  collections?: {
+    id: string;
+    from: { types?: string[]; path?: string };
+    where?: Expression;
+    sort?: Expression;
+    item: Record<string, Expression>;
+  }[];
 };
 
 type EffectLike = { target: string; when?: Expression };
 type GrantLike = {
   id: string;
   count: Expression;
+  default?: Expression;
   when?: Expression;
   effects?: EffectLike[];
 };
 
 export type RulesetEntryLike = {
+  values?: Record<string, Expression>;
   effects?: EffectLike[];
   grants?: GrantLike[];
 };
 
 const FIELD_EXPRESSION_KEYS = [
   'count',
+  'spellGroup',
   'formula',
   'visibleWhen',
   'requiredWhen',
@@ -161,6 +181,27 @@ export function validateRulesetIntegrity(ruleset: RulesetLike): string[] {
       checkExpression(step.repeat.to, `${stepPath}.repeat.to`, roots, errors);
     }
 
+    const stepFieldIds = new Set((step.fields ?? []).map((f) => f.id));
+    pushDuplicates(
+      (step.cards ?? []).map((card) => card.id),
+      `${stepPath}.cards id`,
+      errors,
+    );
+    pushDuplicates(
+      (step.cards ?? []).flatMap((card) => card.fields),
+      `${stepPath}.cards field`,
+      errors,
+    );
+    (step.cards ?? []).forEach((card, ci) =>
+      card.fields
+        .filter((fieldId) => !stepFieldIds.has(fieldId))
+        .forEach((fieldId) =>
+          errors.push(
+            `${stepPath}.cards[${ci}] references field "${fieldId}" outside the step`,
+          ),
+        ),
+    );
+
     (step.fields ?? []).forEach((field, fi) => {
       const path = `${stepPath}.fields[${fi}]`;
       FIELD_EXPRESSION_KEYS.forEach((key) =>
@@ -180,6 +221,9 @@ export function validateRulesetIntegrity(ruleset: RulesetLike): string[] {
       }
       if (field.type === 'multiSelect' && field.count === undefined) {
         errors.push(`${path}.count is required for multiSelect`);
+      }
+      if (field.spellGroup !== undefined && field.type !== 'spellSelect') {
+        errors.push(`${path}.spellGroup is only allowed for spellSelect`);
       }
       if (field.type === 'computed' && field.formula === undefined) {
         errors.push(`${path}.formula is required for computed`);
@@ -224,7 +268,99 @@ export function validateRulesetIntegrity(ruleset: RulesetLike): string[] {
     checkExpression(p.source, `projection[${i}].source`, roots, errors),
   );
 
+  validateDeclarations(ruleset, roots, fieldsById, errors);
+
   return errors;
+}
+
+const isValidStatePath = (path: string) =>
+  path.split('.').every((segment) => segment !== '');
+
+/** `levels`, `attachments`, `counters` and `collections`. @see FR-ruleset-character-builder — Declarative primitives */
+function validateDeclarations(
+  ruleset: RulesetLike,
+  roots: Set<string>,
+  fieldsById: Map<string, FieldLike>,
+  errors: string[],
+) {
+  pushDuplicates(
+    (ruleset.levels ?? []).map((l) => l.type),
+    'levels type',
+    errors,
+  );
+  (ruleset.levels ?? []).forEach((level, i) =>
+    checkExpression(level.expression, `levels[${i}].expression`, roots, errors),
+  );
+
+  pushDuplicates(
+    (ruleset.attachments ?? []).map((a) => `${a.childType} → ${a.parentType}`),
+    'attachments',
+    errors,
+  );
+  (ruleset.attachments ?? []).forEach((attachment, i) => {
+    if (attachment.childType === attachment.parentType) {
+      errors.push(`attachments[${i}] childType and parentType must differ`);
+    }
+    checkExpression(attachment.when, `attachments[${i}].when`, roots, errors);
+  });
+
+  const counters = ruleset.counters ?? [];
+  const collections = ruleset.collections ?? [];
+  const declarationIds = [
+    ...counters.map((c) => c.id),
+    ...collections.map((c) => c.id),
+  ];
+  pushDuplicates(declarationIds, 'counter/collection id', errors);
+  declarationIds
+    .filter((id) => (GENERIC_STATE_KEYS as readonly string[]).includes(id))
+    .forEach((id) =>
+      errors.push(`counter/collection id "${id}" is reserved by the engine`),
+    );
+
+  counters.forEach((counter, i) =>
+    counter.fields.forEach((fieldId) => {
+      const field = fieldsById.get(fieldId);
+      if (!field) {
+        errors.push(
+          `counters[${i}].fields references unknown field "${fieldId}"`,
+        );
+      } else if (!SELECT_TYPES.includes(field.type)) {
+        errors.push(
+          `counters[${i}].fields "${fieldId}" must be an entitySelect or multiSelect field`,
+        );
+      }
+    }),
+  );
+
+  collections.forEach((collection, i) => {
+    const path = `collections[${i}]`;
+    const hasTypes = (collection.from?.types?.length ?? 0) > 0;
+    const hasPath = collection.from?.path !== undefined;
+    if (hasTypes === hasPath) {
+      errors.push(`${path}.from must define either types or path`);
+    }
+    if (hasPath && !isValidStatePath(collection.from.path ?? '')) {
+      errors.push(
+        `${path}.from.path "${collection.from.path}" is not a valid path`,
+      );
+    }
+    checkExpression(collection.where, `${path}.where`, roots, errors);
+    checkExpression(collection.sort, `${path}.sort`, roots, errors);
+    const targets = Object.keys(collection.item ?? {});
+    if (!targets.length)
+      errors.push(`${path}.item must define at least one target`);
+    targets.forEach((target) => {
+      if (!isValidStatePath(target)) {
+        errors.push(`${path}.item target "${target}" is not a valid path`);
+      }
+      checkExpression(
+        collection.item[target],
+        `${path}.item.${target}`,
+        roots,
+        errors,
+      );
+    });
+  });
 }
 
 /** Expressions of an entry may reference the fields and formulas of its ruleset. */
@@ -235,6 +371,12 @@ export function validateEntryIntegrity(
   const errors: string[] = [];
   const roots = knownVarRoots(ruleset);
 
+  Object.entries(entry.values ?? {}).forEach(([name, expression]) => {
+    if (!IDENTIFIER_PATTERN.test(name)) {
+      errors.push(`values "${name}" is not a valid identifier`);
+    }
+    checkExpression(expression, `values.${name}`, roots, errors);
+  });
   (entry.effects ?? []).forEach((effect, i) =>
     checkExpression(effect.when, `effects[${i}].when`, roots, errors),
   );
@@ -245,6 +387,7 @@ export function validateEntryIntegrity(
   );
   (entry.grants ?? []).forEach((grant, i) => {
     checkExpression(grant.count, `grants[${i}].count`, roots, errors);
+    checkExpression(grant.default, `grants[${i}].default`, roots, errors);
     checkExpression(grant.when, `grants[${i}].when`, roots, errors);
     (grant.effects ?? []).forEach((effect, j) =>
       checkExpression(

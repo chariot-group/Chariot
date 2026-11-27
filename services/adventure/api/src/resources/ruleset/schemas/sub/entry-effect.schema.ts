@@ -2,6 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import mongoose from 'mongoose';
 import {
+  TranslatedLabel,
+  TranslatedLabelSchema,
+} from '@/resources/ruleset/schemas/sub/translated-label.schema';
+import {
   EFFECT_OPS,
   EffectOp,
   GRANT_KINDS,
@@ -63,6 +67,25 @@ export class EntryGrant {
   @ApiProperty({ example: 1, description: 'JSON Logic or number' })
   @Prop({ type: mongoose.Schema.Types.Mixed, required: true })
   count: unknown;
+
+  @ApiProperty({ type: TranslatedLabel, required: false })
+  @Prop({ type: TranslatedLabelSchema })
+  label?: TranslatedLabel;
+
+  @ApiProperty({
+    type: TranslatedLabel,
+    required: false,
+    description: 'What the choice is and what it implies',
+  })
+  @Prop({ type: TranslatedLabelSchema })
+  description?: TranslatedLabel;
+
+  @ApiProperty({
+    required: false,
+    description: 'Suggested option keys, or JSON Logic giving them',
+  })
+  @Prop({ type: mongoose.Schema.Types.Mixed })
+  default?: unknown;
 
   @ApiProperty({ example: 1, required: false })
   @Prop()

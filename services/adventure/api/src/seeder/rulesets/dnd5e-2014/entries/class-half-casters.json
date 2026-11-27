@@ -18,26 +18,6 @@
       "hitDie": 10,
       "primaryAbilities": ["strength", "charisma"],
       "savingThrows": ["wisdom", "charisma"],
-      "multiclassPrerequisite": {
-        "and": [
-          {
-            ">=": [
-              {
-                "var": "strength"
-              },
-              13
-            ]
-          },
-          {
-            ">=": [
-              {
-                "var": "charisma"
-              },
-              13
-            ]
-          }
-        ]
-      },
       "subclassLevel": 3,
       "asiLevels": [4, 8, 12, 16, 19],
       "spellcasting": {
@@ -78,16 +58,39 @@
       },
       "startingGoldDice": "5d4 x 10 gp"
     },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "strength"
+              },
+              13
+            ]
+          },
+          {
+            ">=": [
+              {
+                "var": "charisma"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
     "effects": [
       {
         "op": "set",
         "target": "savingThrows.wisdom",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -96,10 +99,11 @@
         "target": "savingThrows.charisma",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -108,10 +112,11 @@
         "target": "proficiencies.armors",
         "value": ["light-armor", "medium-armor", "heavy-armor", "shields"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -120,10 +125,11 @@
         "target": "proficiencies.weapons",
         "value": ["simple-weapons", "martial-weapons"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -132,7 +138,12 @@
         "target": "proficiencies.armors",
         "value": ["light-armor", "medium-armor", "shields"],
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         }
       },
       {
@@ -140,32 +151,68 @@
         "target": "proficiencies.weapons",
         "value": ["simple-weapons", "martial-weapons"],
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         }
       },
       {
         "op": "set",
-        "target": "spellcasting.ability",
+        "target": "spellcasting.paladin.ability",
         "value": "charisma"
       },
       {
         "op": "set",
-        "target": "spellcasting.preparation",
+        "target": "spellcasting.paladin.preparation",
         "value": "prepared"
       },
       {
         "op": "set",
-        "target": "spellcasting.cantripsKnown",
+        "target": "spellcasting.paladin.cantripsKnown",
         "value": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
       },
       {
         "op": "set",
-        "target": "spellcasting.maxSpellLevelByLevel",
+        "target": "spellcasting.paladin.maxSpellLevelByLevel",
         "value": [0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
       },
       {
         "op": "set",
-        "target": "spellcasting.preparedLevel",
+        "target": "spellcasting.paladin.preparedLevel",
+        "value": "half"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.slots",
+        "value": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.paladin.casterProgression",
         "value": "half"
       }
     ],
@@ -173,6 +220,16 @@
       {
         "id": "paladin-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -187,10 +244,11 @@
         "count": 2,
         "level": 1,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         },
         "effects": [
@@ -204,6 +262,16 @@
       {
         "id": "paladin-subclass",
         "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
         "from": {
           "type": "subclass",
           "parentKey": "paladin"
@@ -214,6 +282,16 @@
       {
         "id": "paladin-asi-4",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -223,6 +301,16 @@
       {
         "id": "paladin-asi-8",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -232,6 +320,16 @@
       {
         "id": "paladin-asi-12",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -241,6 +339,16 @@
       {
         "id": "paladin-asi-16",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -250,6 +358,16 @@
       {
         "id": "paladin-asi-19",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -259,6 +377,16 @@
       {
         "id": "paladin-fighting-style",
         "kind": "choose",
+        "label": {
+          "en": "Fighting style",
+          "fr": "Style de combat",
+          "es": "Estilo de combate"
+        },
+        "description": {
+          "en": "A combat specialty that improves one way of fighting.",
+          "fr": "Une spécialité de combat qui améliore une façon de te battre.",
+          "es": "Una especialidad de combate que mejora una forma de luchar."
+        },
         "from": {
           "type": "fighting-style",
           "keys": [
@@ -298,15 +426,17 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": {
-          "+": [
-            1,
-            {
-              "var": "charismaModifier"
-            }
-          ]
-        },
         "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "+": [
+          1,
+          {
+            "var": "charismaModifier"
+          }
+        ]
       }
     },
     "effects": [],
@@ -330,12 +460,32 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": [
-          5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90,
-          95, 100
-        ],
         "reset": "long",
         "unit": "hp"
+      },
+      "usesByLevel": [
+        5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90,
+        95, 100
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
       }
     },
     "effects": [],
@@ -519,15 +669,17 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": {
-          "max": [
-            1,
-            {
-              "var": "charismaModifier"
-            }
-          ]
-        },
         "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "charismaModifier"
+          }
+        ]
       }
     },
     "effects": [],
@@ -552,26 +704,6 @@
       "hitDie": 10,
       "primaryAbilities": ["dexterity", "wisdom"],
       "savingThrows": ["strength", "dexterity"],
-      "multiclassPrerequisite": {
-        "and": [
-          {
-            ">=": [
-              {
-                "var": "dexterity"
-              },
-              13
-            ]
-          },
-          {
-            ">=": [
-              {
-                "var": "wisdom"
-              },
-              13
-            ]
-          }
-        ]
-      },
       "subclassLevel": 3,
       "asiLevels": [4, 8, 12, 16, 19],
       "spellcasting": {
@@ -613,16 +745,39 @@
       },
       "startingGoldDice": "5d4 x 10 gp"
     },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "dexterity"
+              },
+              13
+            ]
+          },
+          {
+            ">=": [
+              {
+                "var": "wisdom"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
     "effects": [
       {
         "op": "set",
         "target": "savingThrows.strength",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -631,10 +786,11 @@
         "target": "savingThrows.dexterity",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -643,10 +799,11 @@
         "target": "proficiencies.armors",
         "value": ["light-armor", "medium-armor", "shields"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -655,10 +812,11 @@
         "target": "proficiencies.weapons",
         "value": ["simple-weapons", "martial-weapons"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -667,7 +825,12 @@
         "target": "proficiencies.armors",
         "value": ["light-armor", "medium-armor", "shields"],
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         }
       },
       {
@@ -675,46 +838,92 @@
         "target": "proficiencies.weapons",
         "value": ["simple-weapons", "martial-weapons"],
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         }
       },
       {
         "op": "set",
-        "target": "spellcasting.ability",
+        "target": "spellcasting.ranger.ability",
         "value": "wisdom"
       },
       {
         "op": "set",
-        "target": "spellcasting.preparation",
+        "target": "spellcasting.ranger.preparation",
         "value": "known"
       },
       {
         "op": "set",
-        "target": "spellcasting.cantripsKnown",
+        "target": "spellcasting.ranger.cantripsKnown",
         "value": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
       },
       {
         "op": "set",
-        "target": "spellcasting.spellsKnown",
+        "target": "spellcasting.ranger.spellsKnown",
         "value": [
           0, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11
         ]
       },
       {
         "op": "set",
-        "target": "spellcasting.maxSpellLevelByLevel",
+        "target": "spellcasting.ranger.maxSpellLevelByLevel",
         "value": [0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
       },
       {
         "op": "set",
-        "target": "spellcasting.preparedLevel",
+        "target": "spellcasting.ranger.preparedLevel",
         "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.slots",
+        "value": [
+          [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.ranger.casterProgression",
+        "value": "half"
       }
     ],
     "grants": [
       {
         "id": "ranger-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -731,10 +940,11 @@
         "count": 3,
         "level": 1,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         },
         "effects": [
@@ -748,6 +958,16 @@
       {
         "id": "ranger-multiclass-skill",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -764,7 +984,12 @@
         "count": 1,
         "level": 1,
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         },
         "effects": [
           {
@@ -777,6 +1002,16 @@
       {
         "id": "ranger-subclass",
         "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
         "from": {
           "type": "subclass",
           "parentKey": "ranger"
@@ -787,6 +1022,16 @@
       {
         "id": "ranger-asi-4",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -796,6 +1041,16 @@
       {
         "id": "ranger-asi-8",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -805,6 +1060,16 @@
       {
         "id": "ranger-asi-12",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -814,6 +1079,16 @@
       {
         "id": "ranger-asi-16",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -823,6 +1098,16 @@
       {
         "id": "ranger-asi-19",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -832,6 +1117,16 @@
       {
         "id": "ranger-favored-enemy-1",
         "kind": "choose",
+        "label": {
+          "en": "Favored enemy",
+          "fr": "Ennemi juré",
+          "es": "Enemigo predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "favored-enemy"
         },
@@ -848,6 +1143,16 @@
       {
         "id": "ranger-favored-enemy-6",
         "kind": "choose",
+        "label": {
+          "en": "Favored enemy",
+          "fr": "Ennemi juré",
+          "es": "Enemigo predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "favored-enemy"
         },
@@ -864,6 +1169,16 @@
       {
         "id": "ranger-favored-enemy-14",
         "kind": "choose",
+        "label": {
+          "en": "Favored enemy",
+          "fr": "Ennemi juré",
+          "es": "Enemigo predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "favored-enemy"
         },
@@ -880,6 +1195,16 @@
       {
         "id": "ranger-favored-terrain-1",
         "kind": "choose",
+        "label": {
+          "en": "Favored terrain",
+          "fr": "Environnement de prédilection",
+          "es": "Terreno predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "favored-terrain"
         },
@@ -896,6 +1221,16 @@
       {
         "id": "ranger-favored-terrain-6",
         "kind": "choose",
+        "label": {
+          "en": "Favored terrain",
+          "fr": "Environnement de prédilection",
+          "es": "Terreno predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "favored-terrain"
         },
@@ -912,6 +1247,16 @@
       {
         "id": "ranger-favored-terrain-10",
         "kind": "choose",
+        "label": {
+          "en": "Favored terrain",
+          "fr": "Environnement de prédilection",
+          "es": "Terreno predilecto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "favored-terrain"
         },
@@ -928,6 +1273,16 @@
       {
         "id": "ranger-favored-enemy-language",
         "kind": "choose",
+        "label": {
+          "en": "Languages",
+          "fr": "Langues",
+          "es": "Idiomas"
+        },
+        "description": {
+          "en": "You can speak, read and write these languages.",
+          "fr": "Tu sais parler, lire et écrire ces langues.",
+          "es": "Puedes hablar, leer y escribir estos idiomas."
+        },
         "from": {
           "type": "language"
         },
@@ -944,6 +1299,16 @@
       {
         "id": "ranger-fighting-style",
         "kind": "choose",
+        "label": {
+          "en": "Fighting style",
+          "fr": "Style de combat",
+          "es": "Estilo de combate"
+        },
+        "description": {
+          "en": "A combat specialty that improves one way of fighting.",
+          "fr": "Une spécialité de combat qui améliore une façon de te battre.",
+          "es": "Una especialidad de combate que mejora una forma de luchar."
+        },
         "from": {
           "type": "fighting-style",
           "keys": [
@@ -1204,18 +1569,6 @@
       "hitDie": 8,
       "primaryAbilities": ["intelligence"],
       "savingThrows": ["constitution", "intelligence"],
-      "multiclassPrerequisite": {
-        "and": [
-          {
-            ">=": [
-              {
-                "var": "intelligence"
-              },
-              13
-            ]
-          }
-        ]
-      },
       "subclassLevel": 3,
       "asiLevels": [4, 8, 12, 16, 19],
       "spellcasting": {
@@ -1256,16 +1609,31 @@
       },
       "startingGoldDice": "5d4 x 10 gp"
     },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "intelligence"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
     "effects": [
       {
         "op": "set",
         "target": "savingThrows.constitution",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -1274,10 +1642,11 @@
         "target": "savingThrows.intelligence",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -1286,10 +1655,11 @@
         "target": "proficiencies.armors",
         "value": ["light-armor", "medium-armor", "shields"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -1298,10 +1668,11 @@
         "target": "proficiencies.weapons",
         "value": ["simple-weapons"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -1310,10 +1681,11 @@
         "target": "proficiencies.tools",
         "value": ["thieves-tools", "tinkers-tools"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -1322,7 +1694,12 @@
         "target": "proficiencies.armors",
         "value": ["light-armor", "medium-armor", "shields"],
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         }
       },
       {
@@ -1330,39 +1707,85 @@
         "target": "proficiencies.tools",
         "value": ["thieves-tools", "tinkers-tools"],
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         }
       },
       {
         "op": "set",
-        "target": "spellcasting.ability",
+        "target": "spellcasting.artificer.ability",
         "value": "intelligence"
       },
       {
         "op": "set",
-        "target": "spellcasting.preparation",
+        "target": "spellcasting.artificer.preparation",
         "value": "prepared"
       },
       {
         "op": "set",
-        "target": "spellcasting.cantripsKnown",
+        "target": "spellcasting.artificer.cantripsKnown",
         "value": [2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4]
       },
       {
         "op": "set",
-        "target": "spellcasting.maxSpellLevelByLevel",
+        "target": "spellcasting.artificer.maxSpellLevelByLevel",
         "value": [1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5]
       },
       {
         "op": "set",
-        "target": "spellcasting.preparedLevel",
+        "target": "spellcasting.artificer.preparedLevel",
         "value": "half"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.slots",
+        "value": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.artificer.casterProgression",
+        "value": "halfUp"
       }
     ],
     "grants": [
       {
         "id": "artificer-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -1378,10 +1801,11 @@
         "count": 2,
         "level": 1,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         },
         "effects": [
@@ -1395,6 +1819,16 @@
       {
         "id": "artificer-subclass",
         "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
         "from": {
           "type": "subclass",
           "parentKey": "artificer"
@@ -1405,6 +1839,16 @@
       {
         "id": "artificer-asi-4",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1414,6 +1858,16 @@
       {
         "id": "artificer-asi-8",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1423,6 +1877,16 @@
       {
         "id": "artificer-asi-12",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1432,6 +1896,16 @@
       {
         "id": "artificer-asi-16",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1441,6 +1915,16 @@
       {
         "id": "artificer-asi-19",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1450,6 +1934,16 @@
       {
         "id": "artificer-artisan-tool",
         "kind": "choose",
+        "label": {
+          "en": "Tools",
+          "fr": "Outils",
+          "es": "Herramientas"
+        },
+        "description": {
+          "en": "You are proficient with these tools: add your proficiency bonus to checks made with them.",
+          "fr": "Tu maîtrises ces outils : tu ajoutes ton bonus de maîtrise aux tests faits avec eux.",
+          "es": "Eres competente con estas herramientas: sumas tu bonificador de competencia a las pruebas con ellas."
+        },
         "from": {
           "type": "tool",
           "keys": [
@@ -1475,10 +1969,11 @@
         "count": 1,
         "level": 1,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         },
         "effects": [
@@ -1492,6 +1987,16 @@
       {
         "id": "artificer-infusions-2",
         "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "artificer-infusion"
         },
@@ -1508,6 +2013,16 @@
       {
         "id": "artificer-infusions-6",
         "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "artificer-infusion"
         },
@@ -1524,6 +2039,16 @@
       {
         "id": "artificer-infusions-10",
         "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "artificer-infusion"
         },
@@ -1540,6 +2065,16 @@
       {
         "id": "artificer-infusions-14",
         "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "artificer-infusion"
         },
@@ -1556,6 +2091,16 @@
       {
         "id": "artificer-infusions-18",
         "kind": "choose",
+        "label": {
+          "en": "Infusions",
+          "fr": "Infusions",
+          "es": "Infusiones"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "artificer-infusion"
         },
@@ -1696,15 +2241,17 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": {
-          "max": [
-            1,
-            {
-              "var": "intelligenceModifier"
-            }
-          ]
-        },
         "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "intelligenceModifier"
+          }
+        ]
       }
     },
     "effects": [],

@@ -110,6 +110,13 @@ export class BuilderField {
 
   @ApiProperty({
     required: false,
+    description: 'spellSelect only — JSON Logic group of the chosen spells',
+  })
+  @Prop({ type: mongoose.Schema.Types.Mixed })
+  spellGroup?: unknown;
+
+  @ApiProperty({
+    required: false,
     example: false,
     description:
       'When true, the suggested value cannot be changed by the player',

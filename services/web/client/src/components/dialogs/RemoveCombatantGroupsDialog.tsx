@@ -14,10 +14,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getRemovableTrackerGroups } from "@/components/initiativeTracker/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import {
-  removeInitiativeTrackerGroups,
-  selectInitiativeTrackerRows,
-} from "@/store/slices/sessionSlice";
+import { removeInitiativeTrackerGroups, selectInitiativeTrackerRows } from "@/store/slices/sessionSlice";
 import { useTranslations } from "next-intl";
 
 interface RemoveCombatantGroupsDialogProps {

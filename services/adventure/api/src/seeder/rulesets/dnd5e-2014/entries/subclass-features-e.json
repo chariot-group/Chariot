@@ -118,8 +118,30 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": [0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3],
         "reset": "long"
+      },
+      "usesByLevel": [
+        0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
       }
     },
     "effects": [],
@@ -163,15 +185,17 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": {
-          "max": [
-            1,
-            {
-              "var": "intelligenceModifier"
-            }
-          ]
-        },
         "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "intelligenceModifier"
+          }
+        ]
       }
     },
     "effects": [],
@@ -387,6 +411,16 @@
       {
         "id": "armor-model-choice",
         "kind": "choose",
+        "label": {
+          "en": "Armor model",
+          "fr": "Modèle d'armure",
+          "es": "Modelo de armadura"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "armor-model"
         },
@@ -574,9 +608,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -826,15 +862,17 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": {
-          "max": [
-            1,
-            {
-              "var": "intelligenceModifier"
-            }
-          ]
-        },
         "reset": "long"
+      }
+    },
+    "values": {
+      "usesCount": {
+        "max": [
+          1,
+          {
+            "var": "intelligenceModifier"
+          }
+        ]
       }
     },
     "effects": [],

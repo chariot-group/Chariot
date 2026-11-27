@@ -18,18 +18,6 @@
       "hitDie": 6,
       "primaryAbilities": ["charisma"],
       "savingThrows": ["constitution", "charisma"],
-      "multiclassPrerequisite": {
-        "and": [
-          {
-            ">=": [
-              {
-                "var": "charisma"
-              },
-              13
-            ]
-          }
-        ]
-      },
       "subclassLevel": 1,
       "asiLevels": [4, 8, 12, 16, 19],
       "spellcasting": {
@@ -72,16 +60,31 @@
       },
       "startingGoldDice": "3d4 x 10 gp"
     },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "charisma"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
     "effects": [
       {
         "op": "set",
         "target": "savingThrows.constitution",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -90,10 +93,11 @@
         "target": "savingThrows.charisma",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -102,43 +106,75 @@
         "target": "proficiencies.weapons",
         "value": ["dagger", "dart", "sling", "quarterstaff", "light-crossbow"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
       {
         "op": "set",
-        "target": "spellcasting.ability",
+        "target": "spellcasting.sorcerer.ability",
         "value": "charisma"
       },
       {
         "op": "set",
-        "target": "spellcasting.preparation",
+        "target": "spellcasting.sorcerer.preparation",
         "value": "known"
       },
       {
         "op": "set",
-        "target": "spellcasting.cantripsKnown",
+        "target": "spellcasting.sorcerer.cantripsKnown",
         "value": [4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
       },
       {
         "op": "set",
-        "target": "spellcasting.spellsKnown",
+        "target": "spellcasting.sorcerer.spellsKnown",
         "value": [
           2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 13, 14, 14, 15, 15, 15, 15
         ]
       },
       {
         "op": "set",
-        "target": "spellcasting.maxSpellLevelByLevel",
+        "target": "spellcasting.sorcerer.maxSpellLevelByLevel",
         "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9]
       },
       {
         "op": "set",
-        "target": "spellcasting.preparedLevel",
+        "target": "spellcasting.sorcerer.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.slots",
+        "value": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.sorcerer.casterProgression",
         "value": "full"
       }
     ],
@@ -146,6 +182,16 @@
       {
         "id": "sorcerer-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -160,10 +206,11 @@
         "count": 2,
         "level": 1,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         },
         "effects": [
@@ -177,6 +224,16 @@
       {
         "id": "sorcerer-subclass",
         "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
         "from": {
           "type": "subclass",
           "parentKey": "sorcerer"
@@ -187,6 +244,16 @@
       {
         "id": "sorcerer-asi-4",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -196,6 +263,16 @@
       {
         "id": "sorcerer-asi-8",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -205,6 +282,16 @@
       {
         "id": "sorcerer-asi-12",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -214,6 +301,16 @@
       {
         "id": "sorcerer-asi-16",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -223,6 +320,16 @@
       {
         "id": "sorcerer-asi-19",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -232,6 +339,16 @@
       {
         "id": "sorcerer-metamagic-3",
         "kind": "choose",
+        "label": {
+          "en": "Metamagic",
+          "fr": "Métamagie",
+          "es": "Metamagia"
+        },
+        "description": {
+          "en": "Ways to twist your spells with sorcery points.",
+          "fr": "Des façons de modifier tes sorts avec tes points de sorcellerie.",
+          "es": "Formas de modificar tus conjuros con puntos de hechicería."
+        },
         "from": {
           "type": "metamagic"
         },
@@ -248,6 +365,16 @@
       {
         "id": "sorcerer-metamagic-10",
         "kind": "choose",
+        "label": {
+          "en": "Metamagic",
+          "fr": "Métamagie",
+          "es": "Metamagia"
+        },
+        "description": {
+          "en": "Ways to twist your spells with sorcery points.",
+          "fr": "Des façons de modifier tes sorts avec tes points de sorcellerie.",
+          "es": "Formas de modificar tus conjuros con puntos de hechicería."
+        },
         "from": {
           "type": "metamagic"
         },
@@ -264,6 +391,16 @@
       {
         "id": "sorcerer-metamagic-17",
         "kind": "choose",
+        "label": {
+          "en": "Metamagic",
+          "fr": "Métamagie",
+          "es": "Metamagia"
+        },
+        "description": {
+          "en": "Ways to twist your spells with sorcery points.",
+          "fr": "Des façons de modifier tes sorts avec tes points de sorcellerie.",
+          "es": "Formas de modificar tus conjuros con puntos de hechicería."
+        },
         "from": {
           "type": "metamagic"
         },
@@ -337,11 +474,31 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": [
-          0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
-        ],
         "reset": "long",
         "unit": "sorcery points"
+      },
+      "usesByLevel": [
+        0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+      ]
+    },
+    "values": {
+      "usesCount": {
+        "var": [
+          {
+            "cat": [
+              "self.data.usesByLevel.",
+              {
+                "-": [
+                  {
+                    "var": "self.level"
+                  },
+                  1
+                ]
+              }
+            ]
+          },
+          0
+        ]
       }
     },
     "effects": [],
@@ -406,18 +563,6 @@
       "hitDie": 8,
       "primaryAbilities": ["charisma"],
       "savingThrows": ["wisdom", "charisma"],
-      "multiclassPrerequisite": {
-        "and": [
-          {
-            ">=": [
-              {
-                "var": "charisma"
-              },
-              13
-            ]
-          }
-        ]
-      },
       "subclassLevel": 1,
       "asiLevels": [4, 8, 12, 16, 19],
       "spellcasting": {
@@ -462,16 +607,31 @@
       },
       "startingGoldDice": "4d4 x 10 gp"
     },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "charisma"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
     "effects": [
       {
         "op": "set",
         "target": "savingThrows.wisdom",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -480,10 +640,11 @@
         "target": "savingThrows.charisma",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -492,10 +653,11 @@
         "target": "proficiencies.armors",
         "value": ["light-armor"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -504,10 +666,11 @@
         "target": "proficiencies.weapons",
         "value": ["simple-weapons"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -516,7 +679,12 @@
         "target": "proficiencies.armors",
         "value": ["light-armor"],
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         }
       },
       {
@@ -524,46 +692,97 @@
         "target": "proficiencies.weapons",
         "value": ["simple-weapons"],
         "when": {
-          "var": ["state.multiclassing", false]
+          "!=": [
+            {
+              "var": "self.field"
+            },
+            "class"
+          ]
         }
       },
       {
         "op": "set",
-        "target": "spellcasting.ability",
+        "target": "spellcasting.warlock.ability",
         "value": "charisma"
       },
       {
         "op": "set",
-        "target": "spellcasting.preparation",
+        "target": "spellcasting.warlock.preparation",
         "value": "known"
       },
       {
         "op": "set",
-        "target": "spellcasting.cantripsKnown",
+        "target": "spellcasting.warlock.cantripsKnown",
         "value": [2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
       },
       {
         "op": "set",
-        "target": "spellcasting.spellsKnown",
+        "target": "spellcasting.warlock.spellsKnown",
         "value": [
           2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15
         ]
       },
       {
         "op": "set",
-        "target": "spellcasting.maxSpellLevelByLevel",
+        "target": "spellcasting.warlock.maxSpellLevelByLevel",
         "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
       },
       {
         "op": "set",
-        "target": "spellcasting.preparedLevel",
+        "target": "spellcasting.warlock.preparedLevel",
         "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.slots",
+        "value": [
+          [1, 0, 0, 0, 0, 0, 0, 0, 0],
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 2, 0, 0, 0, 0, 0, 0, 0],
+          [0, 2, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 2, 0, 0, 0, 0, 0, 0],
+          [0, 0, 2, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 2, 0, 0, 0, 0, 0],
+          [0, 0, 0, 2, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 2, 0, 0, 0, 0],
+          [0, 0, 0, 0, 2, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 3, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 0, 0, 0, 0]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.casterProgression",
+        "value": "pact"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.warlock.slotReset",
+        "value": "short"
       }
     ],
     "grants": [
       {
         "id": "warlock-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -579,10 +798,11 @@
         "count": 2,
         "level": 1,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         },
         "effects": [
@@ -596,6 +816,16 @@
       {
         "id": "warlock-subclass",
         "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
         "from": {
           "type": "subclass",
           "parentKey": "warlock"
@@ -606,6 +836,16 @@
       {
         "id": "warlock-asi-4",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -615,6 +855,16 @@
       {
         "id": "warlock-asi-8",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -624,6 +874,16 @@
       {
         "id": "warlock-asi-12",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -633,6 +893,16 @@
       {
         "id": "warlock-asi-16",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -642,6 +912,16 @@
       {
         "id": "warlock-asi-19",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -651,6 +931,16 @@
       {
         "id": "warlock-invocations-2",
         "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
         "from": {
           "type": "eldritch-invocation"
         },
@@ -667,6 +957,16 @@
       {
         "id": "warlock-invocations-5",
         "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
         "from": {
           "type": "eldritch-invocation"
         },
@@ -683,6 +983,16 @@
       {
         "id": "warlock-invocations-7",
         "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
         "from": {
           "type": "eldritch-invocation"
         },
@@ -699,6 +1009,16 @@
       {
         "id": "warlock-invocations-9",
         "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
         "from": {
           "type": "eldritch-invocation"
         },
@@ -715,6 +1035,16 @@
       {
         "id": "warlock-invocations-12",
         "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
         "from": {
           "type": "eldritch-invocation"
         },
@@ -731,6 +1061,16 @@
       {
         "id": "warlock-invocations-15",
         "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
         "from": {
           "type": "eldritch-invocation"
         },
@@ -747,6 +1087,16 @@
       {
         "id": "warlock-invocations-18",
         "kind": "choose",
+        "label": {
+          "en": "Eldritch invocations",
+          "fr": "Manifestations occultes",
+          "es": "Invocaciones sobrenaturales"
+        },
+        "description": {
+          "en": "Fragments of forbidden knowledge that grant lasting magical abilities.",
+          "fr": "Des fragments de savoir interdit qui donnent des capacités magiques permanentes.",
+          "es": "Fragmentos de conocimiento prohibido que otorgan capacidades mágicas permanentes."
+        },
         "from": {
           "type": "eldritch-invocation"
         },
@@ -763,6 +1113,16 @@
       {
         "id": "warlock-pact-boon",
         "kind": "choose",
+        "label": {
+          "en": "Pact boon",
+          "fr": "Pacte",
+          "es": "Don del pacto"
+        },
+        "description": {
+          "en": "Choose among these options: each one gives you its own feature.",
+          "fr": "Choisis parmi ces options : chacune te donne sa propre aptitude.",
+          "es": "Elige entre estas opciones: cada una te da su propio rasgo."
+        },
         "from": {
           "type": "pact-boon"
         },
@@ -882,9 +1242,11 @@
         "17": 9
       },
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -907,9 +1269,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -933,18 +1297,6 @@
       "hitDie": 6,
       "primaryAbilities": ["intelligence"],
       "savingThrows": ["intelligence", "wisdom"],
-      "multiclassPrerequisite": {
-        "and": [
-          {
-            ">=": [
-              {
-                "var": "intelligence"
-              },
-              13
-            ]
-          }
-        ]
-      },
       "subclassLevel": 2,
       "asiLevels": [4, 8, 12, 16, 19],
       "spellcasting": {
@@ -988,16 +1340,31 @@
       },
       "startingGoldDice": "4d4 x 10 gp"
     },
+    "values": {
+      "multiclassAllowed": {
+        "and": [
+          {
+            ">=": [
+              {
+                "var": "intelligence"
+              },
+              13
+            ]
+          }
+        ]
+      }
+    },
     "effects": [
       {
         "op": "set",
         "target": "savingThrows.intelligence",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -1006,10 +1373,11 @@
         "target": "savingThrows.wisdom",
         "value": true,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
@@ -1018,31 +1386,32 @@
         "target": "proficiencies.weapons",
         "value": ["dagger", "dart", "sling", "quarterstaff", "light-crossbow"],
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         }
       },
       {
         "op": "set",
-        "target": "spellcasting.ability",
+        "target": "spellcasting.wizard.ability",
         "value": "intelligence"
       },
       {
         "op": "set",
-        "target": "spellcasting.preparation",
+        "target": "spellcasting.wizard.preparation",
         "value": "spellbook"
       },
       {
         "op": "set",
-        "target": "spellcasting.cantripsKnown",
+        "target": "spellcasting.wizard.cantripsKnown",
         "value": [3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
       },
       {
         "op": "set",
-        "target": "spellcasting.spellsKnown",
+        "target": "spellcasting.wizard.spellsKnown",
         "value": [
           6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40,
           42, 44
@@ -1050,12 +1419,43 @@
       },
       {
         "op": "set",
-        "target": "spellcasting.maxSpellLevelByLevel",
+        "target": "spellcasting.wizard.maxSpellLevelByLevel",
         "value": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 9]
       },
       {
         "op": "set",
-        "target": "spellcasting.preparedLevel",
+        "target": "spellcasting.wizard.preparedLevel",
+        "value": "full"
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.slots",
+        "value": [
+          [2, 0, 0, 0, 0, 0, 0, 0, 0],
+          [3, 0, 0, 0, 0, 0, 0, 0, 0],
+          [4, 2, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 0, 0, 0, 0, 0, 0, 0],
+          [4, 3, 2, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 0, 0, 0, 0, 0, 0],
+          [4, 3, 3, 1, 0, 0, 0, 0, 0],
+          [4, 3, 3, 2, 0, 0, 0, 0, 0],
+          [4, 3, 3, 3, 1, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 0, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 0, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 0, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 0],
+          [4, 3, 3, 3, 2, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 1, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 1, 1, 1],
+          [4, 3, 3, 3, 3, 2, 2, 1, 1]
+        ]
+      },
+      {
+        "op": "set",
+        "target": "spellcasting.wizard.casterProgression",
         "value": "full"
       }
     ],
@@ -1063,6 +1463,16 @@
       {
         "id": "wizard-skills",
         "kind": "choose",
+        "label": {
+          "en": "Skills",
+          "fr": "Compétences",
+          "es": "Habilidades"
+        },
+        "description": {
+          "en": "You are proficient in these skills: add your proficiency bonus to their checks.",
+          "fr": "Tu maîtrises ces compétences : tu ajoutes ton bonus de maîtrise à leurs tests.",
+          "es": "Eres competente en estas habilidades: sumas tu bonificador de competencia a sus pruebas."
+        },
         "from": {
           "type": "skill",
           "keys": [
@@ -1077,10 +1487,11 @@
         "count": 2,
         "level": 1,
         "when": {
-          "!": [
+          "==": [
             {
-              "var": ["state.multiclassing", false]
-            }
+              "var": "self.field"
+            },
+            "class"
           ]
         },
         "effects": [
@@ -1094,6 +1505,16 @@
       {
         "id": "wizard-subclass",
         "kind": "choose",
+        "label": {
+          "en": "Subclass",
+          "fr": "Sous-classe",
+          "es": "Subclase"
+        },
+        "description": {
+          "en": "Your specialization: it gives you new features at certain levels.",
+          "fr": "Ta spécialisation : elle te donne de nouvelles aptitudes à certains niveaux.",
+          "es": "Tu especialización: te da nuevos rasgos en ciertos niveles."
+        },
         "from": {
           "type": "subclass",
           "parentKey": "wizard"
@@ -1104,6 +1525,16 @@
       {
         "id": "wizard-asi-4",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1113,6 +1544,16 @@
       {
         "id": "wizard-asi-8",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1122,6 +1563,16 @@
       {
         "id": "wizard-asi-12",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1131,6 +1582,16 @@
       {
         "id": "wizard-asi-16",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1140,6 +1601,16 @@
       {
         "id": "wizard-asi-19",
         "kind": "choose",
+        "label": {
+          "en": "Ability Score Improvement",
+          "fr": "Amélioration de caractéristiques",
+          "es": "Mejora de característica"
+        },
+        "description": {
+          "en": "Raise your ability scores or take a feat instead.",
+          "fr": "Augmente tes caractéristiques, ou prends un don à la place.",
+          "es": "Aumenta tus características o elige una dote en su lugar."
+        },
         "from": {
           "type": "ability-score-improvement"
         },
@@ -1189,9 +1660,11 @@
         1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10
       ],
       "uses": {
-        "count": 1,
         "reset": "long"
       }
+    },
+    "values": {
+      "usesCount": 1
     },
     "effects": [],
     "grants": []
@@ -1254,9 +1727,11 @@
     "tags": [],
     "data": {
       "uses": {
-        "count": 2,
         "reset": "short"
       }
+    },
+    "values": {
+      "usesCount": 2
     },
     "effects": [],
     "grants": []

@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -24,6 +25,12 @@ import {
 } from '@/resources/ruleset/ruleset.errors';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 
+/** Whole catalog of a ruleset version; `etag` is set for published (immutable) versions only. */
+export type RulesetCatalog = {
+  etag: string | null;
+  entries: RulesetEntry[];
+};
+
 /** @see FR-ruleset-character-builder — ruleset_entries */
 @Injectable()
 export class RulesetEntryService {
@@ -34,6 +41,50 @@ export class RulesetEntryService {
   ) {}
 
   private readonly logger = new Logger(RulesetEntryService.name);
+
+  /** Catalogs of published versions, built once: a published version never changes. */
+  private readonly catalogCache = new Map<string, RulesetCatalog>();
+
+  /**
+   * Every entry of a ruleset version in one response (builder UI).
+   * @see FR-ruleset-character-builder — Access (catalog)
+   */
+  async getCatalog(
+    rulesetId: Types.ObjectId,
+    isAdmin: boolean,
+  ): Promise<RulesetCatalog> {
+    try {
+      const ruleset = await this.rulesetService.getVisibleOrFail(
+        rulesetId,
+        isAdmin,
+      );
+      const published = ruleset.status === 'published';
+      const cached = published
+        ? this.catalogCache.get(String(rulesetId))
+        : undefined;
+      if (cached) return cached;
+
+      const entries = (await this.entryModel
+        .find({ rulesetId })
+        .sort({ type: 1, level: 1, key: 1 })
+        .lean()
+        .exec()) as RulesetEntry[];
+      const catalog: RulesetCatalog = {
+        etag: published
+          ? `"${createHash('sha256').update(JSON.stringify(entries)).digest('base64url')}"`
+          : null,
+        entries,
+      };
+      if (published) this.catalogCache.set(String(rulesetId), catalog);
+      return catalog;
+    } catch (error) {
+      throw toHttpError(
+        error,
+        `Error fetching the catalog of ruleset #${rulesetId}`,
+        this.logger,
+      );
+    }
+  }
 
   async findAll(
     rulesetId: Types.ObjectId,
