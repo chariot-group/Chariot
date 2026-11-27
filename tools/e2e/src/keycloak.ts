@@ -1,4 +1,6 @@
-import { env, keycloakBase, type Role } from "@/env";
+import { accountSlots, env, hasKeycloakAdmin, keycloakBase, testUser, type Role, type TestUser } from "@/env";
+
+export { hasKeycloakAdmin };
 
 async function postForm(url: string, form: Record<string, string>): Promise<Response> {
   return fetch(url, {
@@ -8,22 +10,51 @@ async function postForm(url: string, form: Record<string, string>): Promise<Resp
   });
 }
 
-/** Token utilisateur via password grant (client public `chariot-app`, direct access activé). */
-export async function getUserAccessToken(role: Role): Promise<string> {
+/** Token d'un compte de test via password grant (client public `chariot-app`, direct access activé). */
+export async function getUserAccessToken(role: Role, slot: number): Promise<string> {
+  return getAccessToken(testUser(role, slot).username, env.password);
+}
+
+/** Token d'un compte quelconque (ex. compte jetable) via password grant. */
+export async function getAccessToken(username: string, password: string): Promise<string> {
   const response = await postForm(`${keycloakBase}/realms/${env.keycloakRealm}/protocol/openid-connect/token`, {
     grant_type: "password",
     client_id: env.keycloakClientId,
-    username: env.users[role].username,
-    password: env.password,
+    username,
+    password,
   });
   if (!response.ok) {
-    throw new Error(`Connexion Keycloak impossible pour ${env.users[role].username} (HTTP ${response.status})`);
+    throw new Error(`Connexion Keycloak impossible pour ${username} (HTTP ${response.status})`);
   }
   const body = (await response.json()) as { access_token: string };
   return body.access_token;
 }
 
+/**
+ * Indique si Keycloak accepte ce couple identifiant / mot de passe (password grant, client public).
+ * Sert à vérifier un changement de mot de passe sans dépendre de l'app.
+ */
+export async function acceptsPassword(username: string, password: string): Promise<boolean> {
+  const response = await postForm(`${keycloakBase}/realms/${env.keycloakRealm}/protocol/openid-connect/token`, {
+    grant_type: "password",
+    client_id: env.keycloakClientId,
+    username,
+    password,
+  });
+  if (response.ok) return true;
+  // Keycloak répond 400 ou 401 `invalid_grant` selon la version pour des identifiants refusés.
+  const body = (await response.json().catch(() => ({}))) as { error?: string; error_description?: string };
+  if (body.error === "invalid_grant" && body.error_description === "Invalid user credentials") return false;
+  throw new Error(
+    `Vérification du mot de passe de ${username} impossible (HTTP ${response.status} ${body.error ?? ""} ${body.error_description ?? ""})`,
+  );
+}
+
+/** Token admin mis en cache par worker, renouvelé 10 s avant expiration. */
+let cachedAdminToken: { value: string; expiresAt: number } | undefined;
+
 async function getAdminToken(): Promise<string> {
+  if (cachedAdminToken && Date.now() < cachedAdminToken.expiresAt) return cachedAdminToken.value;
   const response = await postForm(`${keycloakBase}/realms/master/protocol/openid-connect/token`, {
     grant_type: "password",
     client_id: "admin-cli",
@@ -33,60 +64,147 @@ async function getAdminToken(): Promise<string> {
   if (!response.ok) {
     throw new Error(`Connexion admin Keycloak impossible (HTTP ${response.status}) — vérifier KEYCLOAK_ADMIN_*`);
   }
-  const body = (await response.json()) as { access_token: string };
+  const body = (await response.json()) as { access_token: string; expires_in?: number };
+  const lifetimeMs = (body.expires_in ?? 60) * 1000;
+  cachedAdminToken = { value: body.access_token, expiresAt: Date.now() + lifetimeMs - 10_000 };
   return body.access_token;
 }
 
-/**
- * Crée le compte de test s'il n'existe pas et réinitialise son mot de passe.
- * Idempotent : peut être relancé à chaque exécution.
- */
-async function ensureUser(adminToken: string, role: Role): Promise<void> {
-  const user = env.users[role];
-  const adminBase = `${keycloakBase}/admin/realms/${env.keycloakRealm}`;
-  const headers = { Authorization: `Bearer ${adminToken}`, "Content-Type": "application/json" };
+const adminBase = () => `${keycloakBase}/admin/realms/${env.keycloakRealm}`;
 
-  const search = await fetch(`${adminBase}/users?exact=true&username=${encodeURIComponent(user.username)}`, {
-    headers,
+function adminHeaders(adminToken: string): Record<string, string> {
+  return { Authorization: `Bearer ${adminToken}`, "Content-Type": "application/json" };
+}
+
+async function findUserId(adminToken: string, username: string): Promise<string | undefined> {
+  const search = await fetch(`${adminBase()}/users?exact=true&username=${encodeURIComponent(username)}`, {
+    headers: adminHeaders(adminToken),
   });
   if (!search.ok) throw new Error(`Recherche utilisateur Keycloak impossible (HTTP ${search.status})`);
   const existing = (await search.json()) as Array<{ id: string }>;
-
-  let userId: string | undefined = existing[0]?.id;
-  if (!userId) {
-    const created = await fetch(`${adminBase}/users`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        username: user.username,
-        email: `${user.username}@e2e.chariot.test`,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        enabled: true,
-        emailVerified: true,
-        requiredActions: [],
-      }),
-    });
-    if (created.status !== 201) {
-      throw new Error(`Création de ${user.username} impossible (HTTP ${created.status})`);
-    }
-    userId = created.headers.get("location")?.split("/").pop();
-    if (!userId) throw new Error(`Identifiant Keycloak introuvable pour ${user.username}`);
-  }
-
-  const reset = await fetch(`${adminBase}/users/${userId}/reset-password`, {
-    method: "PUT",
-    headers,
-    body: JSON.stringify({ type: "password", value: env.password, temporary: false }),
-  });
-  if (!reset.ok) throw new Error(`Mot de passe de ${user.username} non défini (HTTP ${reset.status})`);
+  return existing[0]?.id;
 }
 
-/** Provisionne tous les comptes de test. Sans identifiants admin, on suppose qu'ils existent déjà. */
-export async function ensureTestUsers(): Promise<void> {
-  if (!env.keycloakAdminUser || !env.keycloakAdminPassword) return;
-  const adminToken = await getAdminToken();
-  for (const role of Object.keys(env.users) as Role[]) {
-    await ensureUser(adminToken, role);
+type NewUser = TestUser;
+
+async function createUser(adminToken: string, user: NewUser): Promise<string> {
+  // Champs listés un à un : Keycloak refuse (400) tout champ inconnu de UserRepresentation.
+  const { username, email, firstName, lastName } = user;
+  const created = await fetch(`${adminBase()}/users`, {
+    method: "POST",
+    headers: adminHeaders(adminToken),
+    body: JSON.stringify({
+      username,
+      email,
+      firstName,
+      lastName,
+      enabled: true,
+      emailVerified: true,
+      requiredActions: [],
+    }),
+  });
+  if (created.status !== 201) {
+    throw new Error(`Création de ${user.username} impossible (HTTP ${created.status})`);
   }
+  const userId = created.headers.get("location")?.split("/").pop();
+  if (!userId) throw new Error(`Identifiant Keycloak introuvable pour ${user.username}`);
+  return userId;
+}
+
+async function setPassword(adminToken: string, userId: string, username: string, password: string): Promise<void> {
+  const reset = await fetch(`${adminBase()}/users/${userId}/reset-password`, {
+    method: "PUT",
+    headers: adminHeaders(adminToken),
+    body: JSON.stringify({ type: "password", value: password, temporary: false }),
+  });
+  if (!reset.ok) throw new Error(`Mot de passe de ${username} non défini (HTTP ${reset.status})`);
+}
+
+/**
+ * Crée le compte de test d'un worker s'il n'existe pas et réinitialise son mot de passe.
+ * Idempotent : peut être relancé à chaque exécution. Sans identifiants admin, on suppose qu'il existe.
+ */
+export async function ensureTestUser(role: Role, slot: number): Promise<void> {
+  if (!hasKeycloakAdmin()) return;
+  const adminToken = await getAdminToken();
+  const user = testUser(role, slot);
+  const userId = (await findUserId(adminToken, user.username)) ?? (await createUser(adminToken, user));
+  await setPassword(adminToken, userId, user.username, env.password);
+}
+
+/** Provisionne les comptes de test de tous les workers. */
+export async function ensureTestUsers(): Promise<void> {
+  for (const slot of accountSlots) {
+    for (const role of Object.keys(env.users) as Role[]) {
+      await ensureTestUser(role, slot);
+    }
+  }
+}
+
+/** Compte jetable propre à un scénario : il peut être modifié sans gêner les autres. */
+export type TemporaryAccount = NewUser & { password: string };
+
+/** Préfixe des comptes jetables, pour les repérer (et les purger) dans Keycloak. */
+export const TEMPORARY_ACCOUNT_PREFIX = "e2e-tmp-";
+
+/** Données uniques d'un compte jetable (rien n'est créé). Identifiant ≤ 30 caractères, minuscules. */
+export function temporaryAccountData(tag: string): TemporaryAccount {
+  const suffix = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  const username = `${TEMPORARY_ACCOUNT_PREFIX}${tag}-${suffix}`.toLowerCase();
+  return {
+    username,
+    email: `${username}@e2e.chariot.test`,
+    firstName: "Temporaire",
+    lastName: "Etedeuxe",
+    password: env.password,
+  };
+}
+
+/** Crée un compte jetable via l'API admin (nécessite `KEYCLOAK_ADMIN_*`). */
+export async function createTemporaryAccount(tag: string): Promise<TemporaryAccount> {
+  const account = temporaryAccountData(tag);
+  const adminToken = await getAdminToken();
+  const userId = await createUser(adminToken, account);
+  await setPassword(adminToken, userId, account.username, account.password);
+  return account;
+}
+
+/** Attribue un rôle de realm (ex. `admin`) à un compte existant. */
+async function grantRealmRole(adminToken: string, userId: string, roleName: string): Promise<void> {
+  const roleResponse = await fetch(`${adminBase()}/roles/${encodeURIComponent(roleName)}`, {
+    headers: adminHeaders(adminToken),
+  });
+  if (!roleResponse.ok) throw new Error(`Rôle Keycloak « ${roleName} » introuvable (HTTP ${roleResponse.status})`);
+  const role = (await roleResponse.json()) as { id: string; name: string };
+  const granted = await fetch(`${adminBase()}/users/${userId}/role-mappings/realm`, {
+    method: "POST",
+    headers: adminHeaders(adminToken),
+    body: JSON.stringify([{ id: role.id, name: role.name }]),
+  });
+  if (!granted.ok) throw new Error(`Attribution du rôle « ${roleName} » impossible (HTTP ${granted.status})`);
+}
+
+/**
+ * Compte jetable avec le rôle de realm `admin` : sert uniquement à créer / supprimer
+ * les codes promo et d'affiliation via l'API paiement (`@IsAdmin`). À supprimer dans un `finally`.
+ */
+export async function createTemporaryAdminAccount(tag: string): Promise<TemporaryAccount> {
+  const account = temporaryAccountData(tag);
+  const adminToken = await getAdminToken();
+  const userId = await createUser(adminToken, account);
+  await setPassword(adminToken, userId, account.username, account.password);
+  await grantRealmRole(adminToken, userId, "admin");
+  return account;
+}
+
+/** Supprime un compte Keycloak par identifiant. Sans effet s'il n'existe pas. */
+export async function deleteKeycloakAccount(username: string): Promise<void> {
+  const adminToken = await getAdminToken();
+  const userId = await findUserId(adminToken, username);
+  if (!userId) return;
+  const deleted = await fetch(`${adminBase()}/users/${userId}`, {
+    method: "DELETE",
+    headers: adminHeaders(adminToken),
+  });
+  if (!deleted.ok) throw new Error(`Suppression de ${username} impossible (HTTP ${deleted.status})`);
 }

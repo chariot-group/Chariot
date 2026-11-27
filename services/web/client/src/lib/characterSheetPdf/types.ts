@@ -9,7 +9,6 @@ export interface CharacterSheetPdfLabels {
   characterName: string;
   playerName: string;
   race: string;
-  classAndLevel: string;
   background: string;
   alignment: string;
   experience: string;
@@ -21,12 +20,13 @@ export interface CharacterSheetPdfLabels {
   initiativeShort: string;
   languages: string;
   qrCodeHint: string;
-  speed: string;
+  speedShort: string;
   maxHp: string;
   currentHp: string;
   tempHp: string;
   hitPoints: string;
   hitDice: string;
+  hitDiceRemaining: string;
   hitPointsRoll: string;
   proficiencyBonus: string;
   inspiration: string;
@@ -70,8 +70,6 @@ export interface CharacterSheetPdfLabels {
   cantrips: string;
   preparedSpells: string;
   spellSlots: string;
-  slotsUsed: string;
-  slotsTotal: string;
   // Spell detail pages
   spellsSection: string;
   spellSchool: string;
@@ -84,7 +82,6 @@ export interface CharacterSheetPdfLabels {
   spellHealing: string;
   spellPreparedLabel: string;
   spellUnpreparedLabel: string;
-  spellDescriptionContinuation: string;
   npcAtWill: string;
   npcUsesPerDay: string;
   spellUsesTracker: string;
@@ -140,7 +137,10 @@ export interface PdfSavingThrowRow {
 export interface PdfAttackRow {
   name: string;
   bonus: string;
+  /** Damage dice, e.g. `1d8+3` (several entries joined with ` + `). */
   damage: string;
+  /** Damage types in the same order as the dice, shown under them. */
+  damageType: string;
   range: string;
 }
 
@@ -185,16 +185,13 @@ export interface PdfSpellLevelGroup {
   slots: { used: number; total: number } | null;
 }
 
-export type SpellPdfPageKind = "overview" | "detailBatch" | "detailContinuation";
+export type SpellPdfPageKind = "overview" | "details";
 
 export interface SpellPdfPageDescriptor {
   kind: SpellPdfPageKind;
   blockIndex: number;
-  /** Up to six spells rendered on one compact detail page. */
+  /** Details only: spells in display order, two cards per row, each capped at half a page. */
   spells?: PdfSpellRow[];
-  /** Single spell for description overflow pages. */
-  spell?: PdfSpellRow;
-  descriptionText?: string;
 }
 
 export interface PdfSpellcastingBlock {
@@ -223,7 +220,6 @@ export interface CharacterSheetPdfData {
   backgroundOrSubtype: string;
   alignment: string;
   experience: string;
-  inspiration: boolean;
   proficiencyBonus: string;
   abilities: PdfAbilityRow[];
   savingThrows: PdfSavingThrowRow[];
@@ -233,11 +229,8 @@ export interface CharacterSheetPdfData {
   initiative: string;
   speed: string;
   maxHp: string;
-  currentHp: string;
-  tempHp: string;
+  /** NPC: hit points roll notation. Player: total hit dice per class (`5d10 (Fighter)`). */
   hitDice: string;
-  deathSaveSuccesses: number;
-  deathSaveFailures: number;
   attacks: PdfAttackRow[];
   equipment: string;
   treasureText: string;

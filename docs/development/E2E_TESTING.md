@@ -64,7 +64,7 @@ make up ENV=dev
 ```
 
 ```bash
-cp tools/e2e/env.example tools/e2e/.env
+cp tools/e2e/.env.example tools/e2e/.env
 ```
 
 ```bash
@@ -89,7 +89,7 @@ If everything is green, setup is complete.
 | `KEYCLOAK_REALM` / `KEYCLOAK_CLIENT_ID` | OIDC realm and client | `chariot` / `chariot-app` |
 | `LOCALE` | UI language under test. Selectors use the FR labels | `fr` |
 | `KEYCLOAK_ADMIN_USER` / `KEYCLOAK_ADMIN_PASSWORD` | Admin account used **only** to create the test accounts | `admin` / `admin` |
-| `E2E_GM_USERNAME` / `E2E_PLAYER_USERNAME` / `E2E_USER_PASSWORD` | Test accounts | see `env.example` |
+| `E2E_GM_USERNAME` / `E2E_PLAYER_USERNAME` / `E2E_USER_PASSWORD` | Test accounts | see `.env.example` |
 
 `.env` is never committed (it is listed in `tools/e2e/.gitignore`).
 
@@ -97,13 +97,52 @@ If everything is green, setup is complete.
 
 At the start of every run, `scenarios/auth.setup.ts`:
 
-1. creates `e2e-gm` and `e2e-player` in Keycloak if they do not exist, and resets their password;
+1. creates one GM / player pair **per worker** in Keycloak (`e2e-gm-0`, `e2e-player-0`, `e2e-gm-1`…) if they do not exist, and resets their password;
 2. logs in with each account through the real Keycloak form;
-3. saves the browser session (SSO cookies + `localStorage`) to `tools/e2e/.auth/<role>.json`.
+3. saves the browser session (SSO cookies + `localStorage`) to `tools/e2e/.auth/<role>-<slot>.json`.
+
+With a single worker (or without `KEYCLOAK_ADMIN_*`), the base accounts `e2e-gm` / `e2e-player` are used, unsuffixed.
+`testUser(role, slot)` (`@/env`) returns the account of a worker; in a test, the slot is `accountSlot(testInfo.parallelIndex)`.
 
 Scenarios then reuse these sessions: they start **already logged in**, without going through the login screen again.
 
+#### Temporary accounts
+
+Scenarios that change the account itself (profile edit, sign-up) never touch the shared `e2e-gm*` / `e2e-player*` accounts: they use a **temporary account** named `e2e-tmp-<tag>-<suffix>`.
+
+- `createTemporaryAccount(tag)` (`@/keycloak`) creates it through the Keycloak admin API; `deleteKeycloakAccount(username)` removes it in a `finally`.
+- `temporaryAccountData(tag)` only builds unique values (used by the sign-up scenario, which creates the account through the UI).
+- Log in with `loginWithCredentials(page, username, password)` and call `muteReleaseNotes(context)` first, so the "What's new" dialog does not cover a brand-new account.
+- These scenarios are **skipped** when `KEYCLOAK_ADMIN_*` is empty.
+- Only the Keycloak account is deleted: the adventure user record created on first visit stays (local data only).
+
 > On a hosted environment (integ), leave `KEYCLOAK_ADMIN_*` empty and provide dedicated test accounts created beforehand. Never use real user accounts.
+
+### Shop scenarios (Stripe)
+
+`scenarios/boutique/` covers the sales funnel (FR-stripe-checkout, Checkout Outcomes): success, failure and cancel for each pack, promo codes, affiliation codes and referral.
+
+- **Stripe test mode only**: the payment service runs with an `sk_test_…` key; cards are Stripe's published test numbers (`CARDS` in `@/shop`).
+- **Webhook**: tokens are credited (and discounts consumed) only when Stripe's `payment_intent.succeeded` webhook reaches the gateway. Start the listener in a separate terminal, and make the payment service use **its** signing secret:
+
+  ```bash
+  make stripe-listen
+  ```
+
+  ```bash
+  stripe listen --print-secret
+  ```
+
+  Put that value in `STRIPE_WEBHOOK_SECRET` (`services/payment/.env`), restart the payment service, then run with the flag:
+
+  ```bash
+  make e2e FILTER=boutique STRIPE_WEBHOOK=1
+  ```
+
+  Without `STRIPE_WEBHOOK=1`, tests tagged `@webhook` are not scheduled at all (`grepInvert` in `playwright.config.ts`); failure, cancel and refused-code tests still run.
+- **Accounts**: every test buys with its own temporary account (`buyer` fixture, `@/shop-fixtures`); a new account starts with welcome tokens, so assertions compare against `initialBalance`. Referral tests open a second account (`openBuyer`), the referee arriving through `/fr?ref=CODE`.
+- **Codes**: a temporary account with the realm role `admin` (one per worker) creates promo / affiliation codes through the payment API (`createPromo`, `createAffiliation`); they are deleted at the end of the test.
+- **Targets**: the full matrix runs on `desktop-chrome`; the other targets only schedule the `@smoke` subset (one success, failure and cancel, one code of each kind, the return page), so they never show up as « skipped ». This bounds the calls to Stripe's test API. Tags and filters live in `@/tags`.
 
 ---
 
@@ -120,6 +159,16 @@ make e2e FILTER=session
 ```
 
 `FILTER` selects tests whose title (or file name) contains the given text.
+
+```bash
+make e2e DEVICE=mobile
+```
+
+```bash
+make e2e BROWSER=firefox
+```
+
+`DEVICE` (`desktop` or `mobile`) and `BROWSER` (`chrome`, `firefox` or `safari`) narrow the run; they can be combined (`DEVICE=mobile BROWSER=safari`). Without them, every scenario runs on all five targets listed under [Execution order](#execution-order).
 
 ```bash
 make e2e-ui
@@ -152,7 +201,7 @@ npx playwright test --last-failed
 ```
 
 ```bash
-npx playwright test --repeat-each=5 -g "rejoint"
+npx playwright test --repeat-each=5 --no-deps -g "rejoint"   # after one normal run (sessions in .auth/)
 ```
 
 | Option | Effect |
@@ -162,19 +211,35 @@ npx playwright test --repeat-each=5 -g "rejoint"
 | `--headed` | Shows the browser while running |
 | `--debug` | Opens the Playwright Inspector, step-by-step execution |
 | `--last-failed` | Re-runs only the tests that failed last time |
-| `--repeat-each=5` | Repeats each test 5 times, to detect a flaky test |
-| `--project=scenarios` | Skips other projects (setup still runs, it is a dependency) |
+| `--repeat-each=5` | Repeats each test 5 times, to detect a flaky test. Add `--no-deps`: otherwise the `setup` tests are repeated too and log in to the same accounts at the same time |
+| `--no-deps` | Skips the `setup` project and reuses the sessions saved in `.auth/` by the last run |
+| `--project="mobile-*"` | Runs only the matching projects (`desktop-chrome`, `mobile-safari`…); setup still runs, it is a dependency |
 
 > ⚠️ Do not pass `--reporter=...` on the command line if you want the HTML report: this option **replaces** the reporters from the config, and `reports/html` is not regenerated.
 
 ### Execution order
 
-The config declares two projects:
+The config declares a `setup` project (`auth.setup.ts`: accounts + SSO sessions), then one project per device × browser, each running every `*.spec.ts` after `setup`:
 
-1. **`setup`**: `auth.setup.ts` (accounts + SSO sessions);
-2. **`scenarios`**: every `*.spec.ts`, which depend on `setup`.
+| Project | Playwright profile | Engine | Screen |
+| --- | --- | --- | --- |
+| `desktop-chrome` | Desktop Chrome | Chromium | 1280×720 |
+| `desktop-firefox` | Desktop Firefox | Firefox | 1280×720 |
+| `desktop-safari` | Desktop Safari | WebKit | 1280×720 |
+| `mobile-chrome` | Pixel 7 | Chromium | 412×839, touch |
+| `mobile-safari` | iPhone 14 | WebKit | 390×664, touch |
 
-Tests run **one at a time** (`workers: 1`): they share the same accounts, and two simultaneous WebSocket sessions for the same user would skew the results.
+"Safari" means WebKit, Safari's engine: close to real Safari, but not the Apple app itself. There is no mobile Firefox: Playwright does not support mobile emulation in Firefox.
+
+Each test therefore appears five times in the report, prefixed with its project. The `gm` and `player` actors take the screen, touch and user agent of the project they run in.
+
+Tests run **in parallel** (`fullyParallel: true`) on `E2E_WORKERS` workers (4 by default, `make e2e WORKERS=…`).
+Each worker logs in with **its own GM / player pair** (`e2e-gm-<slot>`, `e2e-player-<slot>`, slot = `testInfo.parallelIndex`):
+two simultaneous tests never share an account, so WebSocket sessions, roster and post-login landing do not interfere.
+
+- Set the number of workers with `E2E_WORKERS`, **not** `--workers`: accounts are provisioned for `E2E_WORKERS` slots only, and a test on an extra worker fails with an explicit error.
+- Without `KEYCLOAK_ADMIN_*` (hosted environment), accounts cannot be created: the run falls back to 1 worker on the base accounts.
+- 4 workers is a good fit for the local Docker stack; beyond that, the stack (not the machine) becomes the bottleneck and timeouts appear.
 
 ---
 
@@ -183,18 +248,39 @@ Tests run **one at a time** (`workers: 1`): they share the same accounts, and tw
 ```
 tools/e2e/
 ├── playwright.config.ts        # config: projects, timeouts, reporters, trace/video/screenshots
-├── env.example                 # .env template
+├── .env.example                # .env template
 ├── scenarios/                  # the tests, one folder per functional domain
 │   ├── auth.setup.ts           # setup: test accounts + SSO sessions
 │   ├── auth/connexion.spec.ts
 │   ├── campagne/creation-campagne.spec.ts
+│   ├── campagne/campagnes.spec.ts   # campaigns from the GM space menu: create, name validation, rename, delete (other / displayed / last)
+│   ├── groupe/groupes.spec.ts       # groups: create, name validation, rename, archive / restore, delete, delete all archived
+│   ├── lien/liens-rapides.spec.ts   # sidebar quick links: create (player / GM space), validation, edit, delete, shared links, API 400 / 403
+│   ├── personnage/personnages.spec.ts            # player characters: create (player space / group), required fields, rename, delete
+│   ├── personnage/duplication-deplacement.spec.ts # duplicate (suggested name, copies, other group), move between groups
+│   ├── personnage/repos.spec.ts                  # long rest (sheet, group), no rest out of session in player space, short rest in a launched session
+│   ├── personnage/pnj.spec.ts                    # NPCs: create (player space / group), required name, rename, delete
+│   ├── personnage/pnj-duplication-deplacement.spec.ts # NPC duplicate (unlinked, linked companion, other group), move between groups
+│   ├── personnage/pnj-compagnons.spec.ts         # companions CRUD: create linked, link / unlink (sidebar and Companions tab), reassign, rename, delete, search; PC delete / duplicate with companions; none in GM space
+│   ├── personnage/pnj-repos.spec.ts              # NPC long rest (sheet, mixed group), none in player space; in session: companion, GM guest, GM rest
+│   ├── personnage/export-pdf.spec.ts             # PC sheet PDF export: sheet / sidebar / group, dark and light themes, sanitized filename, 2 or 3 pages, long texts, cancel, NPC disabled, load error
+│   ├── profil/inscription.spec.ts   # sign-up through the Keycloak registration page
+│   ├── profil/profil.spec.ts        # profile read / edit, account deletion request
+│   ├── boutique/packs.spec.ts       # funnel per pack: success / failure / cancel, 3-D Secure, return page
+│   ├── boutique/codes-promo.spec.ts # promo codes, free order, « Cadeau » line, refused codes
+│   ├── boutique/affiliation.spec.ts # affiliation codes
+│   ├── boutique/parrainage.spec.ts  # referral: referee 15 %, referrer tier, own code
 │   └── session/rejoindre-session.spec.ts
 ├── src/                        # shared tooling (imported via @/…)
 │   ├── env.ts                  # .env loading, uniqueLabel(), .auth/ paths
-│   ├── keycloak.ts             # account provisioning, tokens
+│   ├── keycloak.ts             # account provisioning, tokens, temporary accounts
 │   ├── api.ts                  # ChariotApi: gateway calls (setup / cleanup)
-│   ├── auth.ts                 # loginThroughKeycloak(): login through the SSO form
+│   ├── auth.ts                 # login through the SSO form, release-notes mute
 │   ├── fixtures.ts             # `gm` and `player` actors
+│   ├── payment.ts              # GatewayClient: catalog, balance, referral, admin promo / affiliation codes
+│   ├── shop.ts                 # shop journeys: packs, Stripe card entry, 3-D Secure, outcome assertions
+│   ├── shop-fixtures.ts        # `buyer`, `openBuyer`, `adminApi`, `createPromo`, `createAffiliation`
+│   ├── tags.ts                 # `@smoke` / `@webhook` tags and the per-project filters
 │   └── flows.ts                # reusable UI journeys
 ├── .auth/                      # saved sessions (generated, git-ignored)
 ├── test-results/               # traces, videos, screenshots of the last run (generated)
@@ -216,7 +302,7 @@ Each actor provides:
 | `gm.page` | A page in an **isolated browser**, already logged in as the GM |
 | `gm.api` | An HTTP client authenticated as the same account (`ChariotApi`) |
 
-The GM and the player each have their own cookies, `localStorage` and WebSocket: the equivalent of two people on two computers. At the end of the test, each actor's video is attached to the report ("vidéo MJ", "vidéo Joueur").
+The GM and the player each have their own cookies, `localStorage` and WebSocket: the equivalent of two people on two computers. With `E2E_ARTIFACTS=all`, each actor's video is attached to the report at the end of the test ("vidéo MJ", "vidéo Joueur").
 
 Only request the actors you need: a test that only asks for `gm` does not open a player browser.
 
@@ -329,7 +415,7 @@ cd tools/e2e && npx tsc --noEmit
 The easiest way to find the right selectors: open an **already logged-in** browser and click around. Playwright writes the matching code.
 
 ```bash
-cd tools/e2e && npx playwright codegen --load-storage=.auth/gm.json http://localhost:3000/fr/welcome
+cd tools/e2e && npx playwright codegen --load-storage=.auth/gm-0.json http://localhost:3000/fr/welcome
 ```
 
 - Replace `gm.json` with `player.json` for the other role (the files are created on the first `make e2e`).
@@ -509,7 +595,7 @@ Clicking a test opens its page:
 2. **Errors** (on failure): message, expected / received, code excerpt with the offending line.
 3. **Test Steps**: the scenario's `test.step` blocks, each expandable down to individual actions, with its duration. An orange bar shows where the time goes. This is where you see **where** a slow test spends its time.
 4. **Screenshots**: end-of-test screenshot (and the failure screenshot, if any).
-5. **Videos**: one video per browser. For a multi-actor test: "vidéo MJ" and "vidéo Joueur".
+5. **Videos** (only with `make e2e ARTIFACTS=all`): one video per browser. For a multi-actor test: "vidéo MJ" and "vidéo Joueur".
 6. **Traces**: link to the full trace (§ 11).
 7. **Attachments**: attached files, including `error-context.md` on failure.
 
@@ -526,7 +612,7 @@ Clicking a test opens its page:
 
 ## 11. The Trace Viewer: replaying a run step by step
 
-A trace is the full recording of a test: every action, the DOM before and after, the network, the console. Traces are recorded for **every** test (`trace: "on"`).
+A trace is the full recording of a test: every action, the DOM before and after, the network, the console. By default, traces and screenshots are kept **for failed tests only** (`retain-on-failure`) and videos are off: recording everything slows every test down. To keep trace + video + screenshots for every test, run `make e2e ARTIFACTS=all` (`E2E_ARTIFACTS=all`).
 
 ### Opening a trace
 
@@ -596,7 +682,7 @@ A trace contains **every browser** in the test. GM and player actions are interl
 ### Fails in CI but not locally
 
 - Download the HTML report published as an artifact, then open the trace.
-- Run locally with `--repeat-each=10`: an intermittent failure reveals a race condition.
+- Run locally with `--repeat-each=10 --no-deps`: an intermittent failure reveals a race condition. Run it with the default workers, since parallel load is often what exposes the race.
 - Do not "fix" it by adding `waitForTimeout`: find the event to wait for (text, network request, URL).
 
 ---
@@ -610,9 +696,16 @@ A trace contains **every browser** in the test. GM and player actions are interl
 | **`?join=CODE` and redirects** | If the player has a character without a group, the root redirects to that character's sheet and drops the parameter. | Open the invite link on a page that does not redirect (a character sheet). |
 | **Accessible name ≠ text** | `aria-label` takes precedence over the displayed text. | Use the name from the snapshot or "Pick locator". |
 | **`--reporter` on the command line** | Replaces the config's reporters: no HTML report. | Use `make e2e`, or do not pass `--reporter`. |
-| **Shared WebSocket sessions** | Two parallel tests on the same accounts interfere (roster, toasts). | `workers: 1`. |
+| **Shared WebSocket sessions** | Two parallel tests on the same accounts interfere (roster, toasts, post-login landing). | One GM / player pair per worker (`testUser`, `accountSlot`). Never hard-code `e2e-gm` / `e2e-player` in a test. |
 | **Session left open** | A test failing before its cleanup can leave an active session. | `leaveSession()` in the `finally`. `[e2e]` data is easy to find for manual cleanup. |
-| **Automatic screenshots** | `screenshot: "on"` only captures the default page, not the actors' pages. | Use the GM and player videos, or the trace. |
+| **Sidebar on mobile** | Below 768 px the sidebar is a drawer behind "Ouvrir le menu": its buttons ("Lancer une session"…) are not in the page until it is opened. | Call `openSidebarIfMobile(page)` from `@/flows` before clicking in the sidebar. |
+| **Sidebar row actions** | From 1024 px, group / archive / campaign actions are a right-click context menu; below, a `⋮` button ("Actions sur le groupe", "Actions sur les archives", "Actions sur la campagne", "Actions sur le lien <titre>"). | Use `openGroupActions()` / `openArchivesActions()` / `openCampaignActions()` / `openQuickLinkActions()` from `@/flows`: they pick the right entry point for the viewport. |
+| **GM space still in Player mode** | The displayed space is remembered per account: opening `/campaigns/<id>` can show the Player sidebar. The "Espace maître du jeu" menu stays open (modal) after picking, creating or deleting a campaign, sometimes with no visible content during the navigation. | Use `openCampaignSidebar(page, campaign)` and `closeSpaceMenu(page)` from `@/flows` (they wait on the trigger's `aria-expanded`), then `ensureSidebarOpen(page)` before using the mobile drawer again. |
+| **Safari (WebKit) on `http://localhost`** | Keycloak sets its SSO cookies as `Secure; SameSite=None`. WebKit does not send them over HTTP, so every page falls back to the login form. | The `gm` / `player` fixtures drop `Secure` from the saved cookies for WebKit when Keycloak is on HTTP. Nothing changes on an HTTPS environment. |
+| **`next dev` killed for lack of memory** | With the full stack, Docker can run out of memory while `next dev` compiles a page: `ERR_EMPTY_RESPONSE`, endless "Chargement…", failures in any browser. Check with `docker inspect chariot-web --format '{{.RestartCount}}'`. | Give Docker Desktop **at least 12 GB** (Settings → Resources → Memory): the full stack uses ~6 GB and `next dev` can reach ~1.5 GB while compiling. 8 GB is not enough. Otherwise, run against a production build (`make web-prod-local`, back with `make web-dev-local`). |
+| **Stripe webhook not received** | The payment succeeds on the return page but the balance never moves (`expectBalance` times out). | `make stripe-listen` must be running and `STRIPE_WEBHOOK_SECRET` of the payment service must equal `stripe listen --print-secret` (otherwise the payment service rejects the signature). |
+| **Stripe card fields** | The card form lives in a cross-origin iframe; the 3-D Secure page is an iframe nested in another one. | Use `fillCard()` / `answerThreeDSecure()` from `@/shop`, which target the iframes by title and URL. |
+| **Automatic screenshots** | Playwright's screenshot only captures the default page, not the actors' pages. | Use the trace (kept on failure), or the GM and player videos with `ARTIFACTS=all`. |
 
 ---
 
@@ -620,16 +713,18 @@ A trace contains **every browser** in the test. GM and player actions are interl
 
 | From the root | Equivalent in `tools/e2e/` | Effect |
 | --- | --- | --- |
-| `make e2e-install` | `npm ci && npx playwright install chromium` | Setup |
+| `make e2e-install` | `npm ci && npx playwright install chromium firefox webkit` | Setup |
 | `make e2e` | `npx playwright test` | All scenarios + HTML report |
 | `make e2e FILTER=x` | `npx playwright test --grep "x"` | Filtered scenarios |
+| `make e2e DEVICE=mobile` | `npx playwright test --project="mobile-*"` | One device only (`desktop` or `mobile`) |
+| `make e2e BROWSER=safari` | `npx playwright test --project="*-safari"` | One browser only (`chrome`, `firefox`, `safari`) |
 | `make e2e-ui` | `npx playwright test --ui` | UI mode |
 | `make e2e-report` | `npx playwright show-report reports/html` | Opens the report |
 | — | `npx playwright test --headed` | Visible browser |
 | — | `npx playwright test --debug` | Step-by-step inspector |
 | — | `npx playwright test --last-failed` | Re-runs failures |
 | — | `npx playwright show-trace <trace.zip>` | Opens a trace |
-| — | `npx playwright codegen --load-storage=.auth/gm.json <url>` | Generates code from clicks |
+| — | `npx playwright codegen --load-storage=.auth/gm-0.json <url>` | Generates code from clicks |
 | — | `npx tsc --noEmit` | Type check |
 
 ### Resources

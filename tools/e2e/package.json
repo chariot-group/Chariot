@@ -9,7 +9,7 @@
     "headed": "playwright test --headed",
     "report": "playwright show-report reports/html",
     "trace": "playwright show-trace",
-    "install:browsers": "playwright install chromium",
+    "install:browsers": "playwright install chromium firefox webkit",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

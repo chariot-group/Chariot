@@ -53,16 +53,15 @@ function formatSenses(senses: { name?: string; value?: number | null }[] | undef
     .join(", ");
 }
 
-function formatDamage(action: Action): string {
-  if (!action.damage?.length) return "";
-  return action.damage
-    .map((d) => {
-      const dice = d.dice?.trim() ?? "";
-      const type = d.type?.trim() ?? "";
-      return [dice, type].filter(Boolean).join(" ");
-    })
-    .filter(Boolean)
-    .join(" + ");
+/** Dice and types of an attack, each joined in entry order (the PDF prints the types under the dice). */
+function formatDamage(action: Action): Pick<PdfAttackRow, "damage" | "damageType"> {
+  const entries = action.damage ?? [];
+  const join = (values: (string | undefined)[]) =>
+    values
+      .map((value) => value?.trim() ?? "")
+      .filter(Boolean)
+      .join(" + ");
+  return { damage: join(entries.map((d) => d.dice)), damageType: join(entries.map((d) => d.type)) };
 }
 
 function mapAttacks(actions: Action[]): PdfAttackRow[] {
@@ -71,7 +70,7 @@ function mapAttacks(actions: Action[]): PdfAttackRow[] {
     .map((action) => ({
       name: action.name.trim(),
       bonus: formatSignedBonus(action.attackBonus ?? 0),
-      damage: formatDamage(action),
+      ...formatDamage(action),
       range: orEmpty(action.range),
     }));
 }
@@ -256,11 +255,8 @@ export function mapCharacterToPdfData(
   let hitDiceEntries: PdfHitDiceEntry[] = [];
   let backgroundOrSubtype = "";
   let experience = "";
-  let inspiration = false;
   let proficiencyBonus = "+2";
   let hitDice = "";
-  let deathSaveSuccesses = 0;
-  let deathSaveFailures = 0;
   let attacks: PdfAttackRow[] = [];
   let proficiencies = "";
 
@@ -284,17 +280,14 @@ export function mapCharacterToPdfData(
     classOrCr = classPrimary;
     backgroundOrSubtype = orEmpty(character.profile?.history);
     experience = String(character.progression?.experience ?? 0);
-    inspiration = Boolean(character.inspiration);
     proficiencyBonus = formatSignedBonus(character.stats.proficiencyBonus ?? 2);
     hitDiceEntries = character.class.map((cls) => ({
-      notation: `${cls.hitDiceRemaining ?? cls.level}d${cls.hitDice}`,
+      notation: `${cls.level}d${cls.hitDice}`,
       className: translateClass(cls.name),
     }));
     hitDice = hitDiceEntries
       .map((entry) => `${entry.notation} (${entry.className})`)
       .join(", ");
-    deathSaveSuccesses = character.deathSaves?.successes ?? 0;
-    deathSaveFailures = character.deathSaves?.failures ?? 0;
     attacks = mapAttacks(character.actions ?? []);
     const armor = (character.stats.armors ?? []).join(", ");
     const weapons = (character.stats.weapons ?? []).join(", ");
@@ -333,7 +326,6 @@ export function mapCharacterToPdfData(
     backgroundOrSubtype,
     alignment,
     experience,
-    inspiration,
     proficiencyBonus,
     abilities,
     savingThrows,
@@ -343,11 +335,7 @@ export function mapCharacterToPdfData(
     initiative: formatSignedBonus(stats.initiative ?? 0),
     speed: formatSpeed(stats.speed ?? {}),
     maxHp: String(stats.maxHitPoints ?? 0),
-    currentHp: String(stats.currentHitPoints ?? 0),
-    tempHp: String(stats.tempHitPoints ?? 0),
     hitDice: isPlayer(character) ? hitDice : orEmpty(character.hitPointsRoll),
-    deathSaveSuccesses,
-    deathSaveFailures,
     attacks,
     equipment: orEmpty(character.treasure?.equipment),
     treasureText: orEmpty(character.treasure?.treasure),

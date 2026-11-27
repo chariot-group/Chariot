@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { expect, test, type CDPSession, type Page } from "@playwright/test";
-import { env } from "@/env";
+import { env, testUser } from "@/env";
 import { ensureTestUsers } from "@/keycloak";
 
 /**
@@ -142,7 +142,7 @@ async function measureOnce(page: Page, cdp: CDPSession): Promise<RunResult> {
 
   // Un utilisateur réel met quelques secondes à saisir ses identifiants.
   if (thinkMs > 0) await page.waitForTimeout(thinkMs);
-  await page.locator("#username").fill(env.users.player.username);
+  await page.locator("#username").fill(testUser("player", 0).username);
   await page.locator("#password").fill(env.password);
   phase = "after-submit";
   const submit = Date.now();
