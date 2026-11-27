@@ -10,6 +10,7 @@ import {
   Req,
   Res,
   ValidationPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiExtraModels,
@@ -32,6 +33,8 @@ import {
   UpdateRulesetEntryDto,
 } from '@/resources/ruleset/dto/ruleset-entry.dto';
 import { FindRulesetsQueryDto } from '@/resources/ruleset/dto/find-rulesets-query.dto';
+import { ResolveRulesetQueryDto } from '@/resources/ruleset/dto/resolve-ruleset-query.dto';
+import { RulesetReferenceService } from '@/resources/ruleset/reference/ruleset-reference.service';
 import { Ruleset } from '@/resources/ruleset/schemas/ruleset.schema';
 import { RulesetEntry } from '@/resources/ruleset/schemas/ruleset-entry.schema';
 import { ParseMongoIdPipe } from '@/common/pipes/parse-mong-id.pipe';
@@ -90,6 +93,7 @@ export class RulesetController {
   constructor(
     private readonly rulesetService: RulesetService,
     private readonly entryService: RulesetEntryService,
+    private readonly referenceService: RulesetReferenceService,
   ) {}
 
   // ── Read (authenticated) ──────────────────────────────────────────────────
@@ -101,6 +105,22 @@ export class RulesetController {
   @okResponse(Ruleset, true)
   findAll(@Req() request, @Query() query: FindRulesetsQueryDto) {
     return this.rulesetService.findAll(query, hasAdminRole(request.user));
+  }
+
+  @Get('resolve')
+  @ApiOperation({
+    summary:
+      'Published ruleset for a reference (rulesetId of a campaign or player, archived version → published version of its key, none → published ruleset of the game system)',
+  })
+  @okResponse(Ruleset)
+  @notFound
+  async resolve(@Query() query: ResolveRulesetQueryDto) {
+    const ruleset = await this.referenceService.resolvePublished(
+      query.rulesetId,
+      query.gameSystem,
+    );
+    if (!ruleset) throw new NotFoundException('No published ruleset');
+    return { message: `Ruleset #${ruleset._id} resolved`, data: ruleset };
   }
 
   @Get('key/:key')

@@ -4223,6 +4223,18 @@ Each initiative tracker row carries:
 - Update DTOs MUST NOT accept `gameSystem` (immutable after creation)
 - Swagger documents the enum and default on create/read endpoints
 
+### Ruleset reference (`rulesetId`)
+
+Complements **FR-ruleset-character-builder** (which owns rulesets and the builder).
+
+- Campaign and Player persist an optional `rulesetId` (ObjectId of a `rulesets` document), next to `gameSystem`. NPC does not carry it.
+- On create, when `rulesetId` is omitted, it defaults to the `published` ruleset of the entity's `gameSystem` (today `dnd5e-2014` for `DND_5E`); when no ruleset of that `gameSystem` is published, it stays `null` and the creation still succeeds.
+- An explicit `rulesetId` on create MUST reference an existing ruleset of the same `gameSystem`; otherwise the request is rejected (400).
+- `rulesetId` is immutable: update DTOs MUST NOT accept it (like `gameSystem`).
+- Backward compatibility: documents created before the attribute have no `rulesetId`; no migration is run. Any reader that needs the ruleset of such a document uses the `published` ruleset of its `gameSystem`.
+- A `rulesetId` pointing to an `archived` version resolves to the `published` version with the same ruleset `key` (e.g. `dnd5e-2014` v4 → v5); the stored value is not rewritten.
+- No web UI sets it for now (back-end attribute only).
+
 **Prohibitions**:
 
 - Storing free-text or unknown values outside the enum
@@ -4235,12 +4247,19 @@ Each initiative tracker row carries:
 - Edge: explicit `DND_5E` on create is accepted
 - Failure: invalid enum value is rejected by DTO validation
 - Failure: update DTOs reject or strip `gameSystem`
+- Nominal: create a campaign or a player without `rulesetId` → persisted with the published ruleset of its `gameSystem`
+- Edge: no published ruleset for the `gameSystem` → created with `rulesetId: null`
+- Edge: explicit `rulesetId` of the same `gameSystem` is kept
+- Failure: unknown `rulesetId`, or one of another `gameSystem` → 400
+- Failure: update DTOs of Campaign and Player strip `rulesetId`
 
 **References**:
 
 - `services/adventure/api/src/common/constants/game-system.constant.ts`
 - `services/adventure/api/src/resources/campaign/schemas/campaign.schema.ts`
 - `services/adventure/api/src/resources/character/core/schemas/character.schema.ts`
+- `services/adventure/api/src/resources/character/player/schemas/player.schema.ts`, `src/resources/ruleset/reference/ruleset-reference.service.ts`, `src/resources/ruleset/dto/resolve-ruleset-query.dto.ts` (`GET /rulesets/resolve`)
+- `services/web/client/src/lib/characterBuilder/builderRulesets.ts`, `src/services/RulesetService.ts` (`resolveRuleset`)
 
 ---
 
@@ -6702,7 +6721,9 @@ The step-by-step builder of the web client runs the engine on the published rule
 
 **Entry point and routes** (complements **FR-player-space-codex-character-creation**):
 - The create-character dialog (Player space and campaign group) offers, next to the manual Player form, a **builder** choice (Player only, hidden when the dialog is limited to NPCs). It opens `/characters/new/builder` in Player space or `/campaigns/{id}/groups/{idGroup}/characters/new/builder` in a group.
-- The builder loads the published rulesets of the `DND_5E` game system; with one ruleset it starts directly, with several the player picks one (name and description in their locale). Then it loads the ruleset and its catalog (`/catalog`) once.
+- The builder loads the published rulesets (no game system written in the client); with one ruleset it starts directly, with several the player picks one (name and description in their locale). Then it loads the ruleset and its catalog (`/catalog`) once.
+- In a campaign group, the builder starts directly on the campaign ruleset (**FR-game-system**, Ruleset reference): the campaign `rulesetId`, or the published version of its `key` when that version is archived, or, when the campaign has no `rulesetId`, the published ruleset of the campaign `gameSystem`. Only when none of them resolves does it fall back to the choice above. A saved progress on another ruleset is not restored in that campaign.
+- « Continue » sends the `rulesetId` of the ruleset used with the `Player` draft, so the created character keeps it.
 - Loading, error (with retry) and empty states (no published ruleset) are shown in place of the pages; the loading state is announced (`aria-busy`, status region).
 
 **Pages and breadcrumb**:
@@ -6715,7 +6736,7 @@ The step-by-step builder of the web client runs the engine on the published rule
 - `entitySelect`: list of options (label, description on demand) as a radio group or a searchable select when the list is long; `multiSelect` and each grant of `grantedChoices`: checkbox group with the counter « n / expected » (owner label shown for grants).
 - `abilityAllocation`: one row per ability (base score control, bonus, total) in a single table: `config.totals` maps each ability to a `computed` field of the page, shown in its row (bonus = total − base) instead of a separate field. Each method is explained from its config (point buy: budget and value range with the remaining points; standard array: the values to place once each; dice roll: the dice to roll with the player's own dice).
 - `number` / `text` (with the background suggestions as pickable chips when `config.suggestionsFrom` is set) / `computed` (suggested value shown, editable unless `locked`, with a « reset to suggestion » action).
-- `summary`: one card per builder page (accent title = page title) recalling its answers (chosen options and grant choices with their labels, values), each with a « Modify » button that opens that page, plus a sheet card (ability scores, hit points, armor class, proficiency bonus) computed from the projected sheet.
+- `summary`: one card per builder page (accent title = page title) recalling its answers (chosen options and grant choices with their labels, values), each with a « Modify » button that opens that page, plus a « Statistiques du personnage » card (the abilities listed by the ruleset `abilityAllocation` config with their catalog labels, hit points, armor class, proficiency bonus) computed from the projected sheet; no ability list is written in the client.
 - Every suggestion pre-fills the field and stays editable; warnings (counts, point budget) are shown as hints, errors as field errors. « Reset to suggestion » is a link under the field, so the field never changes width.
 - Layout (docs/design.md §5.3): the step `cards` group their fields in one titled card (each field keeps its own label inside); any other field (or each grant of a `grantedChoices` field) is its own card with an accent-colored heading; every card has a title. The grant heading is its `label`, with the owner and the number to choose as secondary text (« via Nain · choisis 2 ») and its `description` as help. Option cards are clickable and hoverable on their whole surface (only the « Details » toggle stays separate). Every single or multiple choice is shown the same way, as a list of option cards (no drop-down), on up to three columns.
 - Count warnings give the numbers: « Encore 1 à choisir (2 suggérés) », « 1 de trop (2 suggérés) ». Required fields are not marked with an asterisk (same as the other forms): the requirement is announced to assistive technologies and a missing value is a field error.
@@ -6737,6 +6758,8 @@ The step-by-step builder of the web client runs the engine on the published rule
 - Each page title is the `h1`/`h2` of the region and receives focus when the page changes; the evaluation result changes are announced through a polite status region (e.g. « 2 pages added »).
 - Radio and checkbox groups use `fieldset`/`legend`; counters and errors are linked with `aria-describedby`; invalid fields carry `aria-invalid`.
 - Full keyboard operation (Tab, arrows in groups, Enter/Space), visible focus on dark surfaces, no keyboard trap; layout responsive from mobile (breadcrumb collapses into « Step n of N » with a menu) to desktop.
+- An option card shows the focus ring only when its radio or checkbox has the focus (the « Details » toggle has its own ring). Every region has a unique name: the page container is not a region, and grant cards sharing a label are numbered (« Arme (1) », « Arme (2) »); the seed gives distinct labels to grants offered together (checked by the seed spec).
+- Verification (2026-11-27): axe-core 4.11 (WCAG 2.0/2.1/2.2 A and AA + best practices) reports no violation on every page of the builder, color contrast included (all text nodes pass, none undetermined); keyboard pass done (tab order, arrows in radio groups, Space on checkboxes, focus moved to the page title on page change).
 
 **Tests (UI)**:
 - Nominal (lot A): from the create dialog, the builder choice opens the builder; a level-1 Hill Dwarf Fighter goes through every page and « Continue » opens the Player form pre-filled with the projected sheet (race, class, ability scores, hit points, features).
@@ -6777,7 +6800,7 @@ The step-by-step builder of the web client runs the engine on the published rule
 - Failure (stage 3): a second class without 13 in its primary ability, or a third class, is refused by `validation`; the seed check fails on a `state.*` root nobody produces, on a `state.page.*` / `state.labels.*` path no effect produces, or on a `repeat.*` value other than `repeat.index`.
 
 ### Seed `dnd5e-2014`
-- One ruleset `dnd5e-2014` (`gameSystem: DND_5E`, version 4: versions 1 to 3 (before the engine migration, without grant labels, without grant descriptions and step cards) may exist in development databases) with its entries, stored as JSON files in `services/adventure/api/src/seeder/rulesets/dnd5e-2014/` (`ruleset.json` plus one file per entry type) and imported with status `published`. Every text is written in `en`, `fr` and `es`, with full descriptions.
+- One ruleset `dnd5e-2014` (`gameSystem: DND_5E`, version 5: versions 1 to 4 (before the engine migration, without grant labels, without grant descriptions and step cards, with identical equipment grant labels) may exist in development databases) with its entries, stored as JSON files in `services/adventure/api/src/seeder/rulesets/dnd5e-2014/` (`ruleset.json` plus one file per entry type) and imported with status `published`. Every text is written in `en`, `fr` and `es`, with full descriptions.
 - **Catalog**: the D&D 5e 2014 races and subraces; the 13 classes offered by Chariot (`Artificer` included) with their subclasses and class features from level 1 to 20; backgrounds; feats; the equipment packs of each class; reference entries for skills, languages, tools, weapons and armors.
 - **Creation flow** (in order): Race → Class → Ability scores → Background → Equipment → Spells (only for spellcasting classes) → Details (name, alignment, personality, appearance) → Summary. The player picks a target level (1–20, default 1); levels 2 to the target level use the level-up pages (`repeat`), which are also the `levelUp` mode pages.
 - **Ability scores**: methods point buy (27 points, scores 8–15 before racial bonuses), standard array (15, 14, 13, 12, 10, 8) and dice roll; the result stays editable.

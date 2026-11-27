@@ -11,6 +11,7 @@ import {
 import { RulesetService } from '@/resources/ruleset/ruleset.service';
 import { RulesetEntryService } from '@/resources/ruleset/ruleset-entry.service';
 import { RulesetController } from '@/resources/ruleset/ruleset.controller';
+import { RulesetReferenceService } from '@/resources/ruleset/reference/ruleset-reference.service';
 
 /** @see FR-ruleset-character-builder */
 @Module({
@@ -21,7 +22,7 @@ import { RulesetController } from '@/resources/ruleset/ruleset.controller';
     ]),
   ],
   controllers: [RulesetController],
-  providers: [RulesetService, RulesetEntryService],
-  exports: [RulesetService, MongooseModule],
+  providers: [RulesetService, RulesetEntryService, RulesetReferenceService],
+  exports: [RulesetService, RulesetReferenceService, MongooseModule],
 })
 export class RulesetModule {}

@@ -39,6 +39,7 @@ describe('FR-ruleset-character-builder — RulesetController access', () => {
     const controller = new RulesetController(
       rulesetService as never,
       {} as never,
+      {} as never,
     );
     const id = {} as never;
 
@@ -57,6 +58,7 @@ describe('FR-ruleset-character-builder — RulesetController access', () => {
       new RulesetController(
         {} as never,
         { getCatalog: jest.fn().mockResolvedValue(catalog) } as never,
+        {} as never,
       );
 
     it('nominal: a published catalog is returned with an ETag and an immutable cache', async () => {

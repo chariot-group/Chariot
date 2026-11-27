@@ -45,7 +45,7 @@ export function BuilderOptionList({
             <li
               key={option.key}
               className={cn(
-                "relative flex min-w-0 flex-col gap-1 rounded-[13px] border border-input bg-gray-middle-light px-3 py-2 transition-colors hover:bg-gray hover:border-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+                "relative flex min-w-0 flex-col gap-1 rounded-[13px] border border-input bg-gray-middle-light px-3 py-2 transition-colors hover:bg-gray hover:border-ring has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-ring has-[button[role=checkbox]:focus-visible]:ring-2 has-[button[role=checkbox]:focus-visible]:ring-ring",
                 checked && "border-primary-light bg-primary/15",
               )}>
               <div className="flex min-w-0 items-center gap-3">

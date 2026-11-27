@@ -17,6 +17,8 @@ export function GrantedChoicesField({ field, issues, domId, onGrantAnswer, embed
   const t = useTranslations("characterBuilder");
   const grants = field.grants ?? [];
   if (!grants.length) return null;
+  // Titles stay distinct (on screen and as region names) even if the ruleset gives two grants the same label.
+  const titles = distinctTitles(grants.map((grant) => grant.label ?? field.label));
   return (
     <>
       {grants.map((grant, grantIndex) => {
@@ -31,7 +33,7 @@ export function GrantedChoicesField({ field, issues, domId, onGrantAnswer, embed
             embedded={embedded}
             headingId={headingId}
             describedBy={grant.description ? `${grantDomId}-description` : undefined}
-            title={grant.label ?? field.label}
+            title={titles[grantIndex]}
             subtitle={[
               t("grantFrom", { owner: grant.ownerLabel }),
               t("chooseCount", { count: grant.expectedCount }),
@@ -75,4 +77,14 @@ export function GrantedChoicesField({ field, issues, domId, onGrantAnswer, embed
       })}
     </>
   );
+}
+
+/** Numbers repeated titles: « Arme (1) », « Arme (2) »; unique titles are kept as they are. */
+export function distinctTitles(titles: readonly string[]): string[] {
+  return titles.map((title, index) => {
+    const total = titles.filter((other) => other === title).length;
+    if (total < 2) return title;
+    const rank = titles.slice(0, index + 1).filter((other) => other === title).length;
+    return `${title} (${rank})`;
+  });
 }

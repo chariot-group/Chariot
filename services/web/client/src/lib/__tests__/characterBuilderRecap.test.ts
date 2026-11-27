@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { groupPageFields } from "@/lib/characterBuilder/pageLayout";
-import { pageRecap } from "@/lib/characterBuilder/summaryRecap";
+import { pageRecap, summaryAbilities } from "@/lib/characterBuilder/summaryRecap";
 import { evaluateBuilder } from "@/lib/rulesetEngine/engine";
 import type { BuilderRuleset } from "@/lib/rulesetEngine/types";
 import { fixtureEntries, fixtureRuleset } from "@/lib/__tests__/rulesetEngineFixture";
@@ -134,5 +134,19 @@ describe("step cards — fields grouped under one title", () => {
     const page = evaluate({}).pages.find((candidate) => candidate.key === "race")!;
 
     expect(groupPageFields(page)).toHaveLength(page.fields.length);
+  });
+});
+
+describe("summary abilities — read from the ruleset, not written in code", () => {
+  it("nominal: the abilities of the allocation field config", () => {
+    expect(summaryAbilities(evaluate({}).pages)).toEqual(["strength", "constitution", "wisdom"]);
+  });
+
+  it("failure guard: a ruleset without allocation field gives no ability", () => {
+    const pages = evaluate({}).pages.map((page) => ({
+      ...page,
+      fields: page.fields.filter((field) => field.type !== "abilityAllocation"),
+    }));
+    expect(summaryAbilities(pages)).toEqual([]);
   });
 });

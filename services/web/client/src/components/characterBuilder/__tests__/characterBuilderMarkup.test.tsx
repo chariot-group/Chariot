@@ -82,6 +82,11 @@ describe("character builder markup — FR-ruleset-character-builder (Accessibili
     expect(html).toContain('aria-label="0 choix sur 1 suggérés"');
     // The whole option card is the click target (stretched label).
     expect(html).toContain("after:absolute after:inset-0");
+    // The card ring follows the option control only, not the « Details » toggle inside it.
+    expect(html).toContain("has-[input:focus-visible]:ring-2");
+    expect(html).not.toContain("has-[:focus-visible]:ring-2");
+    // The page is not a region: only its cards are (unique region names).
+    expect(html).not.toContain('aria-labelledby="builder-page-title"');
     // No visual asterisk, the requirement is for screen readers.
     expect(html).not.toContain(">*<");
   });

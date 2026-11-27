@@ -18,7 +18,7 @@ describe('FR-ruleset-character-builder — dnd5e-2014 seed', () => {
     expect(ruleset).toMatchObject({
       key: 'dnd5e-2014',
       gameSystem: 'DND_5E',
-      version: 4,
+      version: 5,
     });
   });
 
@@ -65,6 +65,29 @@ describe('FR-ruleset-character-builder — dnd5e-2014 seed', () => {
       )
       .map((s) => s.key);
     expect(broken).toEqual([]);
+  });
+
+  it('failure guard: grants offered together by one entry have distinct labels (distinct choices, distinct regions)', () => {
+    const duplicates = entries.flatMap((entry) => {
+      const grants = (entry.grants ?? []) as {
+        id: string;
+        level?: number;
+        when?: unknown;
+        label?: { en: string };
+      }[];
+      const together = grants.filter((grant) => grant.when === undefined);
+      return together
+        .filter(
+          (grant, i) =>
+            together.findIndex(
+              (other) =>
+                other.level === grant.level &&
+                other.label?.en === grant.label?.en,
+            ) !== i,
+        )
+        .map((grant) => `${entry.key}/${grant.id}`);
+    });
+    expect(duplicates).toEqual([]);
   });
 
   it('failure: duplicated keys, unknown parents and grant targets are reported', () => {

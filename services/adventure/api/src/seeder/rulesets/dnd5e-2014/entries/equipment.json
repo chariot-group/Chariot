@@ -177,9 +177,9 @@
         "id": "barbarian-equipment-weapon-1",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Main weapon",
+          "fr": "Arme principale",
+          "es": "Arma principal"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -199,9 +199,9 @@
         "id": "barbarian-equipment-weapon-2",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Second weapon",
+          "fr": "Arme secondaire",
+          "es": "Arma secundaria"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -481,9 +481,9 @@
         "id": "bard-equipment-weapon",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -535,9 +535,9 @@
         "id": "bard-equipment-instrument",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Musical instrument",
+          "fr": "Instrument de musique",
+          "es": "Instrumento musical"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -796,9 +796,9 @@
         "id": "cleric-equipment-weapon",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -815,9 +815,9 @@
         "id": "cleric-equipment-armor",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Armor",
+          "fr": "Armure",
+          "es": "Armadura"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -838,9 +838,9 @@
         "id": "cleric-equipment-ranged",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Ranged weapon",
+          "fr": "Arme à distance",
+          "es": "Arma a distancia"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -1159,9 +1159,9 @@
         "id": "druid-equipment-shield",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Shield or weapon",
+          "fr": "Bouclier ou arme",
+          "es": "Escudo o arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -1178,9 +1178,9 @@
         "id": "druid-equipment-weapon",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -1427,9 +1427,9 @@
         "id": "fighter-equipment-armor",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Armor",
+          "fr": "Armure",
+          "es": "Armadura"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -1449,9 +1449,9 @@
         "id": "fighter-equipment-weapons",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapons",
+          "fr": "Armes",
+          "es": "Armas"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -1471,9 +1471,9 @@
         "id": "fighter-equipment-ranged",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Ranged weapon",
+          "fr": "Arme à distance",
+          "es": "Arma a distancia"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -1847,9 +1847,9 @@
         "id": "monk-equipment-weapon",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -2030,9 +2030,9 @@
         "id": "paladin-equipment-weapons",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapons",
+          "fr": "Armes",
+          "es": "Armas"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -2052,9 +2052,9 @@
         "id": "paladin-equipment-secondary",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Second weapon",
+          "fr": "Arme secondaire",
+          "es": "Arma secundaria"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -2398,9 +2398,9 @@
         "id": "ranger-equipment-armor",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Armor",
+          "fr": "Armure",
+          "es": "Armadura"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -2417,9 +2417,9 @@
         "id": "ranger-equipment-weapons",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapons",
+          "fr": "Armes",
+          "es": "Armas"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -2652,9 +2652,9 @@
         "id": "rogue-equipment-weapon",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -2671,9 +2671,9 @@
         "id": "rogue-equipment-ranged",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Ranged weapon",
+          "fr": "Arme à distance",
+          "es": "Arma a distancia"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -2884,9 +2884,9 @@
         "id": "sorcerer-equipment-weapon",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -2903,9 +2903,9 @@
         "id": "sorcerer-equipment-focus",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Spellcasting focus",
+          "fr": "Focaliseur",
+          "es": "Canalizador"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -3151,9 +3151,9 @@
         "id": "warlock-equipment-weapon",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -3170,9 +3170,9 @@
         "id": "warlock-equipment-focus",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Spellcasting focus",
+          "fr": "Focaliseur",
+          "es": "Canalizador"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -3220,9 +3220,9 @@
         "id": "warlock-extra-simple",
         "kind": "choose",
         "label": {
-          "en": "Weapon",
-          "fr": "Arme",
-          "es": "Arma"
+          "en": "Extra simple weapon",
+          "fr": "Arme courante supplémentaire",
+          "es": "Arma sencilla adicional"
         },
         "description": {
           "en": "The chosen weapon is added to your equipment.",
@@ -3464,9 +3464,9 @@
         "id": "wizard-equipment-weapon",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Weapon",
+          "fr": "Arme",
+          "es": "Arma"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -3483,9 +3483,9 @@
         "id": "wizard-equipment-focus",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Spellcasting focus",
+          "fr": "Focaliseur",
+          "es": "Canalizador"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",
@@ -3746,9 +3746,9 @@
         "id": "artificer-equipment-armor",
         "kind": "choose",
         "label": {
-          "en": "Starting equipment",
-          "fr": "Équipement de départ",
-          "es": "Equipo inicial"
+          "en": "Armor",
+          "fr": "Armure",
+          "es": "Armadura"
         },
         "description": {
           "en": "Pick one option: the items are added to your starting equipment.",

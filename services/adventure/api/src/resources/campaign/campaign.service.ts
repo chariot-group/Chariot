@@ -15,12 +15,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Group, GroupDocument } from '@/resources/group/schemas/group.schema';
 import { IPaginatedResponse, IResponse } from '@/common/dtos/reponse.dto';
 import { Groups } from '@/resources/campaign/schemas/sub/groups.schema';
+import { RulesetReferenceService } from '@/resources/ruleset/reference/ruleset-reference.service';
 
 @Injectable()
 export class CampaignService {
   constructor(
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    private readonly rulesetReference: RulesetReferenceService,
   ) {}
 
   private readonly logger: Logger = new Logger(CampaignService.name);
@@ -37,8 +39,13 @@ export class CampaignService {
       const totalGroups: string[] = [...activeIds, ...archivedIds];
 
       const start: number = Date.now();
+      const rulesetId = await this.rulesetReference.idForCreate(
+        campaignData.gameSystem,
+        campaignData.rulesetId,
+      );
       const campaign: Campaign = await this.campaignModel.create({
         ...campaignData,
+        rulesetId,
         groups: {
           active: activeIds,
           archived: archivedIds,
@@ -58,6 +65,7 @@ export class CampaignService {
         data: campaign,
       };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       const message = `Error while creating campaign: ${error.message}`;
       this.logger.error(message, null, this.SERVICE_NAME);
       throw new InternalServerErrorException(message);

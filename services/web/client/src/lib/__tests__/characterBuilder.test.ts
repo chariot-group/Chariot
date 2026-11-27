@@ -214,6 +214,7 @@ describe("builder routes and draft — FR-ruleset-character-builder (Entry point
   it("nominal: Player space routes and a draft without group", () => {
     expect(buildCharacterBuilderRoutes()).toEqual({
       scope: "player-space",
+      campaignId: null,
       groupId: null,
       formPath: "/characters/new/players?fromBuilder=1",
       manualFormPath: "/characters/new/players",

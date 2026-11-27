@@ -37,4 +37,15 @@ describe('Update DTOs - FR-game-system: immutable gameSystem', () => {
     expect(errors).toHaveLength(0);
     expect(dto).not.toHaveProperty('gameSystem');
   });
+
+  it('FR-game-system: update DTOs of Campaign and Player strip rulesetId', () => {
+    const rulesetId = '507f1f77bcf86cd799439011';
+    const campaign = plainToInstance(UpdateCampaignDto, { rulesetId });
+    const player = plainToInstance(UpdatePlayerDto, { rulesetId });
+
+    expect(validateSync(campaign, { whitelist: true })).toHaveLength(0);
+    expect(validateSync(player, { whitelist: true })).toHaveLength(0);
+    expect(campaign).not.toHaveProperty('rulesetId');
+    expect(player).not.toHaveProperty('rulesetId');
+  });
 });

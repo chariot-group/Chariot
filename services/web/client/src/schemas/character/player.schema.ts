@@ -139,6 +139,8 @@ export const PlayerProfileSchema = z.object({
  */
 export function createPlayerSchema(zm: ZodMessages) {
     return createCharacterSchema(zm).extend({
+        /** Ruleset used by the character builder, kept on creation (FR-game-system — Ruleset reference). */
+        rulesetId: z.string().regex(/^[a-f\d]{24}$/i).nullish(),
         actions: z.preprocess(preprocessActionArrayRows, z.array(ActionSchema(zm)).optional()),
 
         inspiration: z.boolean({ message: zm.required() }).optional(),

@@ -156,7 +156,7 @@ export function AbilityAllocationField({
             <div
               key={method}
               className={cn(
-                "relative flex items-center gap-2 rounded-[13px] border border-input bg-gray-middle-light px-3 py-2 transition-colors hover:border-ring hover:bg-gray has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
+                "relative flex items-center gap-2 rounded-[13px] border border-input bg-gray-middle-light px-3 py-2 transition-colors hover:border-ring hover:bg-gray has-[input:focus-visible]:ring-2 has-[input:focus-visible]:ring-ring",
                 checked && "border-primary-light bg-primary/15",
               )}>
               <input

@@ -120,3 +120,7 @@ export const JSON_LOGIC_SCOPED_OPERATORS = [
   'none',
   'some',
 ] as const;
+
+/** Projection of a ruleset summary (lists, reference resolution): without flow nor builder declarations. */
+export const RULESET_SUMMARY_PROJECTION =
+  '-flow -formulas -projection -data -levels -attachments -counters -collections';

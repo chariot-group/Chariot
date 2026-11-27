@@ -6,6 +6,8 @@ import { useRouter } from "@/i18n/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { setPlayerCodexDraft } from "@/store/slices/codexDraftSlice";
 import rulesetService, { type RulesetDetail, type RulesetSummary } from "@/services/RulesetService";
+import campaignService from "@/services/CampaignService";
+import { loadBuilderRulesets } from "@/lib/characterBuilder/builderRulesets";
 import { evaluateBuilder } from "@/lib/rulesetEngine/engine";
 import {
   RULESET_DEFAULT_LOCALE,
@@ -33,8 +35,6 @@ import { takeBuilderReturnPath } from "@/lib/characterBuilder/builderReturn";
  * @see FR-ruleset-character-builder — Web builder UI
  */
 
-export const BUILDER_GAME_SYSTEM = "DND_5E";
-
 export type CharacterBuilderStatus = "loading" | "error" | "empty" | "choose" | "ready";
 
 type Loaded = { ruleset: RulesetDetail; entries: RulesetEntry[] };
@@ -42,6 +42,8 @@ type Loaded = { ruleset: RulesetDetail; entries: RulesetEntry[] };
 export type UseCharacterBuilderOptions = {
   /** Session storage scope (one builder per route). */
   scope: string;
+  /** Campaign whose ruleset the builder uses (FR-game-system — Ruleset reference); none in Player space. */
+  campaignId?: string | null;
   /** Campaign group of the created character; empty groups in Player space. */
   groupId?: string | null;
   /** Player creation form opened at the end (`?fromBuilder=1`). */
@@ -55,7 +57,7 @@ const toRulesetLocale = (locale: string): RulesetLocale =>
 
 const sessionStore = () => (typeof window === "undefined" ? undefined : window.sessionStorage);
 
-export function useCharacterBuilder({ scope, groupId, formPath, cancelPath }: UseCharacterBuilderOptions) {
+export function useCharacterBuilder({ scope, campaignId, groupId, formPath, cancelPath }: UseCharacterBuilderOptions) {
   const locale = toRulesetLocale(useLocale());
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -70,12 +72,15 @@ export function useCharacterBuilder({ scope, groupId, formPath, cancelPath }: Us
   const [reloadToken, setReloadToken] = useState(0);
   const restored = useRef(false);
 
-  // Rulesets of the game system; a saved progress or a single ruleset starts directly.
+  // Published rulesets (only the campaign one in a campaign); a saved progress or a single ruleset starts directly.
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
-    rulesetService
-      .listRulesets(BUILDER_GAME_SYSTEM)
+    loadBuilderRulesets(campaignId, {
+      listRulesets: () => rulesetService.listRulesets(),
+      getCampaign: (id) => campaignService.getCampaignById(id),
+      resolveRuleset: (reference) => rulesetService.resolveRuleset(reference),
+    })
       .then((list) => {
         if (cancelled) return;
         setRulesets(list);
@@ -97,7 +102,7 @@ export function useCharacterBuilder({ scope, groupId, formPath, cancelPath }: Us
     return () => {
       cancelled = true;
     };
-  }, [scope, reloadToken]);
+  }, [scope, campaignId, reloadToken]);
 
   // Ruleset and its whole catalog, loaded once per selected ruleset.
   useEffect(() => {
@@ -183,11 +188,11 @@ export function useCharacterBuilder({ scope, groupId, formPath, cancelPath }: Us
 
   const finish = useCallback(() => {
     if (!evaluation || blockingPages.length) return;
-    dispatch(setPlayerCodexDraft(buildPlayerDraftFromSheet(evaluation.sheet, groupId)));
+    dispatch(setPlayerCodexDraft(buildPlayerDraftFromSheet(evaluation.sheet, groupId, rulesetId)));
     clearBuilderProgress(sessionStore(), scope);
     // Replace the builder in the history: cancelling the form goes back to the page shown before the builder.
     router.replace(formPath);
-  }, [evaluation, blockingPages, dispatch, groupId, scope, router, formPath]);
+  }, [evaluation, blockingPages, dispatch, groupId, rulesetId, scope, router, formPath]);
 
   const cancel = useCallback(() => {
     clearBuilderProgress(sessionStore(), scope);

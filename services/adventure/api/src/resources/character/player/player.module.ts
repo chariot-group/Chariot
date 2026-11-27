@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { RulesetModule } from '@/resources/ruleset/ruleset.module';
 import { PlayerService } from '@/resources/character/player/player.service';
 import { PlayerController } from '@/resources/character/player/player.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -14,6 +15,7 @@ import { SessionAccessModule } from '@/common/session/session-access.module';
   controllers: [PlayerController],
   providers: [PlayerService, CharacterService],
   imports: [
+    RulesetModule,
     SessionAccessModule,
     MongooseModule.forFeature([
       { name: Group.name, schema: GroupSchema },

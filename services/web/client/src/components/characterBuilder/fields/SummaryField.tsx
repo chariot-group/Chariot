@@ -5,10 +5,8 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { BuilderCard } from "@/components/characterBuilder/BuilderCard";
 import type { BuilderFieldProps } from "@/components/characterBuilder/builderFieldTypes";
-import { pageRecap } from "@/lib/characterBuilder/summaryRecap";
+import { pageRecap, summaryAbilities } from "@/lib/characterBuilder/summaryRecap";
 import type { Player } from "@/types/character";
-
-const ABILITIES = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 
 /**
  * `summary`: one card per builder page recalling its answers with a « Modify » button opening the page, then the
@@ -17,10 +15,11 @@ const ABILITIES = ["strength", "dexterity", "constitution", "intelligence", "wis
  */
 export function SummaryField({ evaluation, page: summaryPage, entryLabel, onGoToPage }: BuilderFieldProps) {
   const t = useTranslations("characterBuilder.summary");
-  const tAbilities = useTranslations("characterDetail.player.general.abilities");
   const sheet = evaluation.sheet as Partial<Player> & Record<string, unknown>;
   const stats = (sheet.stats ?? {}) as Partial<Player["stats"]> & Record<string, unknown>;
   const scores = (stats.abilityScores ?? {}) as Record<string, number>;
+  // Abilities come from the ruleset (the allocation field config), never from a list written in code.
+  const abilities = summaryAbilities(evaluation.pages);
 
   return (
     <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
@@ -66,16 +65,18 @@ export function SummaryField({ evaluation, page: summaryPage, entryLabel, onGoTo
       <BuilderCard
         headingId="builder-summary-sheet"
         title={t("sheet")}>
-        <dl className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-          {ABILITIES.map((ability) => (
-            <div
-              key={ability}
-              className="flex min-w-0 flex-col items-center">
-              <dt className="truncate text-xs text-muted-foreground">{tAbilities(ability)}</dt>
-              <dd className="text-lg font-semibold text-white">{scores[ability] ?? "—"}</dd>
-            </div>
-          ))}
-        </dl>
+        {abilities.length ? (
+          <dl className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {abilities.map((ability) => (
+              <div
+                key={ability}
+                className="flex min-w-0 flex-col items-center">
+                <dt className="truncate text-xs text-muted-foreground">{entryLabel(ability)}</dt>
+                <dd className="text-lg font-semibold text-white">{scores[ability] ?? "—"}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
         <dl className="grid grid-cols-3 gap-2 border-t border-border pt-3 text-sm">
           <div>
             <dt className="text-muted-foreground">{t("hitPoints")}</dt>

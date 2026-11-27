@@ -24,7 +24,11 @@ function withoutBuilderSpellKeys(spellcasting: unknown): unknown {
  *
  * @see FR-ruleset-character-builder — Web builder UI (End of the builder)
  */
-export function buildPlayerDraftFromSheet(sheet: Record<string, unknown>, groupId?: string | null): Partial<Player> {
+export function buildPlayerDraftFromSheet(
+  sheet: Record<string, unknown>,
+  groupId?: string | null,
+  rulesetId?: string | null,
+): Partial<Player> {
   return {
     ...(sheet as Partial<Player>),
     ...(sheet.spellcasting !== undefined
@@ -32,5 +36,7 @@ export function buildPlayerDraftFromSheet(sheet: Record<string, unknown>, groupI
       : {}),
     // The creation form sends `groups` as ids (CharacterWriteData).
     groups: (groupId ? [groupId] : []) as unknown as Partial<Player>["groups"],
+    // The created character keeps the ruleset it was built with (FR-game-system — Ruleset reference).
+    ...(rulesetId ? { rulesetId } : {}),
   };
 }

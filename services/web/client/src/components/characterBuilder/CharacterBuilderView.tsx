@@ -167,9 +167,8 @@ export default function CharacterBuilderView(options: UseCharacterBuilderOptions
         steps={breadcrumb}
         onSelect={builder.goTo}
       />
-      <section
-        aria-labelledby="builder-page-title"
-        className="flex min-w-0 flex-col gap-4">
+      {/* Not a region: its cards are the regions (a page region would duplicate the name of its main card). */}
+      <div className="flex min-w-0 flex-col gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <h2
             id="builder-page-title"
@@ -188,7 +187,7 @@ export default function CharacterBuilderView(options: UseCharacterBuilderOptions
           entryLabel={builder.entryLabel}
           onGoToPage={builder.goTo}
         />
-      </section>
+      </div>
 
       {!hasNext && blockingPages.length ? (
         <section

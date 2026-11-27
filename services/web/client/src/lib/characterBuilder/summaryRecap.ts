@@ -83,3 +83,12 @@ export function pageRecap(page: EvaluatedPage, entryLabel: (key: string) => stri
     .filter((field) => !hidden.has(field.id))
     .flatMap((field) => fieldRows(field, page, entryLabel, field.value));
 }
+
+/** Abilities listed by the first `abilityAllocation` field of the builder (empty when the ruleset has none). */
+export function summaryAbilities(pages: readonly EvaluatedPage[]): string[] {
+  for (const page of pages) {
+    const field = page.fields.find((candidate) => candidate.type === "abilityAllocation");
+    if (field) return readAllocationConfig(field.config).abilities;
+  }
+  return [];
+}

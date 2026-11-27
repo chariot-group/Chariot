@@ -1,10 +1,19 @@
+import { RulesetReferenceService } from '@/resources/ruleset/reference/ruleset-reference.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CampaignService } from './campaign.service';
+import { CampaignService } from '@/resources/campaign/campaign.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Campaign } from '@/resources/campaign/schemas/campaign.schema';
 import { Group } from '@/resources/group/schemas/group.schema';
-import { InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
+
+const rulesetReferenceMock = {
+  idForCreate: jest.fn().mockResolvedValue(null),
+  resolvePublished: jest.fn(),
+};
 
 describe('CampaignService - create', () => {
   let service: CampaignService;
@@ -38,6 +47,7 @@ describe('CampaignService - create', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CampaignService,
+        { provide: RulesetReferenceService, useValue: rulesetReferenceMock },
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
         { provide: getModelToken(Group.name), useValue: groupModel },
       ],
@@ -58,6 +68,7 @@ describe('CampaignService - create', () => {
 
     expect(campaignModel.create).toHaveBeenCalledWith({
       ...mockCampaignDto,
+      rulesetId: null,
       createdBy: userId,
     });
 
@@ -77,6 +88,38 @@ describe('CampaignService - create', () => {
     });
 
     loggerSpy.mockRestore();
+  });
+
+  it('FR-game-system: persists the rulesetId resolved for the game system', async () => {
+    const rulesetId = new Types.ObjectId();
+    rulesetReferenceMock.idForCreate.mockResolvedValueOnce(rulesetId);
+    campaignModel.create.mockResolvedValue(mockCreatedCampaign);
+    groupModel.updateMany.mockResolvedValue({});
+
+    await service.create({ ...mockCampaignDto, gameSystem: 'DND_5E' }, userId);
+
+    expect(rulesetReferenceMock.idForCreate).toHaveBeenCalledWith(
+      'DND_5E',
+      undefined,
+    );
+    expect(campaignModel.create).toHaveBeenCalledWith(
+      expect.objectContaining({ rulesetId }),
+    );
+  });
+
+  it('FR-game-system: an invalid rulesetId answers 400, not 500, and creates nothing', async () => {
+    rulesetReferenceMock.idForCreate.mockRejectedValueOnce(
+      new BadRequestException('Unknown ruleset'),
+    );
+    campaignModel.create.mockClear();
+
+    await expect(
+      service.create(
+        { ...mockCampaignDto, rulesetId: '507f1f77bcf86cd799439011' },
+        userId,
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(campaignModel.create).not.toHaveBeenCalled();
   });
 
   it('should handle errors and log them', async () => {
@@ -130,6 +173,7 @@ describe('CampaignService - findAllByUser', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CampaignService,
+        { provide: RulesetReferenceService, useValue: rulesetReferenceMock },
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
         { provide: getModelToken(Group.name), useValue: {} }, // Pas utilisé ici
       ],
@@ -222,6 +266,7 @@ describe('CampaignService - findOne', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CampaignService,
+        { provide: RulesetReferenceService, useValue: rulesetReferenceMock },
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
         { provide: getModelToken(Group.name), useValue: {} },
       ],
@@ -283,6 +328,7 @@ describe('CampaignService - update', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CampaignService,
+        { provide: RulesetReferenceService, useValue: rulesetReferenceMock },
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
         { provide: getModelToken(Group.name), useValue: groupModel },
       ],
@@ -363,6 +409,7 @@ describe('CampaignService - remove', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CampaignService,
+        { provide: RulesetReferenceService, useValue: rulesetReferenceMock },
         { provide: getModelToken(Campaign.name), useValue: campaignModel },
         { provide: getModelToken(Group.name), useValue: groupModel },
       ],

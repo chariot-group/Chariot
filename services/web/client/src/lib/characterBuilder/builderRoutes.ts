@@ -10,6 +10,7 @@ export function buildCharacterBuilderRoutes(context?: CampaignCreateContext) {
     const base = `/campaigns/${context.campaignId}/groups/${context.groupId}/characters/new`;
     return {
       scope: `group:${context.groupId}`,
+      campaignId: context.campaignId,
       groupId: context.groupId,
       formPath: `${base}/players?fromBuilder=1`,
       manualFormPath: `${base}/players`,
@@ -18,6 +19,7 @@ export function buildCharacterBuilderRoutes(context?: CampaignCreateContext) {
   }
   return {
     scope: "player-space",
+    campaignId: null,
     groupId: null,
     formPath: "/characters/new/players?fromBuilder=1",
     manualFormPath: "/characters/new/players",

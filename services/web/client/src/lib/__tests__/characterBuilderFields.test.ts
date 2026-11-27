@@ -47,3 +47,20 @@ describe("point-buy cost of a value", () => {
     expect(pointBuyCost(undefined, 15)).toBe(0);
   });
 });
+
+describe("grant titles stay distinct", () => {
+  it("nominal: unique titles are kept", async () => {
+    const { distinctTitles } = await import("@/components/characterBuilder/fields/GrantedChoicesField");
+    expect(distinctTitles(["Armure", "Armes"])).toEqual(["Armure", "Armes"]);
+  });
+
+  it("edge: repeated titles are numbered in order", async () => {
+    const { distinctTitles } = await import("@/components/characterBuilder/fields/GrantedChoicesField");
+    expect(distinctTitles(["Arme", "Sac", "Arme"])).toEqual(["Arme (1)", "Sac", "Arme (2)"]);
+  });
+
+  it("failure guard: no title gives no title", async () => {
+    const { distinctTitles } = await import("@/components/characterBuilder/fields/GrantedChoicesField");
+    expect(distinctTitles([])).toEqual([]);
+  });
+});

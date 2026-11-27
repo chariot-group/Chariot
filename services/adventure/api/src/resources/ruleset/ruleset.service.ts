@@ -26,6 +26,7 @@ import {
   toHttpError,
 } from '@/resources/ruleset/ruleset.errors';
 import { IResponse } from '@/common/dtos/reponse.dto';
+import { RULESET_SUMMARY_PROJECTION } from '@/resources/ruleset/constants/ruleset.constant';
 
 /** Fields copied when a new version is created from an existing one. */
 const RULESET_CONTENT_FIELDS = [
@@ -91,9 +92,7 @@ export class RulesetService {
 
       const rulesets = await this.rulesetModel
         .find(filter)
-        .select(
-          '-flow -formulas -projection -data -levels -attachments -counters -collections',
-        )
+        .select(RULESET_SUMMARY_PROJECTION)
         .sort({ key: 1, version: -1 })
         .exec();
 
