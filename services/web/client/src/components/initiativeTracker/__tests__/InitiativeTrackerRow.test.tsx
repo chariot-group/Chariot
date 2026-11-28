@@ -407,9 +407,471 @@ describe("InitiativeTrackerRow mobile card layout (FR-combat-initiative-tracker)
     // Desktop grid + mobile card.
     expect(hpButtons).toHaveLength(2);
     for (const tag of hpButtons) {
-      expect(tag).toContain(" bg-gray-middle-light ");
+      // Rows sit on gray-middle-light: the field frame uses the next lighter level.
+      expect(tag).toContain(" bg-gray ");
       expect(tag).not.toContain("bg-transparent");
     }
   });
+
+  const mobileSlot = (html: string, slot: string) => {
+    const start = html.indexOf(`data-slot="${slot}"`);
+    return start < 0 ? "" : html.slice(start);
+  };
+  const collapsedLine = (html: string) => {
+    const start = html.indexOf('data-slot="tracker-mobile-header"');
+    return html.slice(start, html.indexOf('id="initiative-tracker-row-details-', start));
+  };
+  const shortLabels = { ...labels, shortStatLabels: { initiative: "Init.", hitPoints: "PV", armorClass: "CA" } };
+
+  it("nominal: collapsed line holds checkbox, name, clickable HP without label and chevron only", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        battleStarted
+        initiativeLocked
+        isActiveTurn
+        selectionEnabled
+        onUpdateRow={() => {}}
+        onHitPointsClick={() => {}}
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={shortLabels}
+      />,
+    );
+
+    const line = collapsedLine(html);
+    expect(line).toContain('role="checkbox"');
+    expect(line).toContain('data-slot="tracker-mobile-hp"');
+    expect(line).toContain(`aria-label="${labels.hitPointsFor}"`);
+    expect(line).toContain('data-slot="tracker-mobile-expand"');
+    // No stat labels, no initiative / AC / group, no display or conditions button, no active-turn pill.
+    expect(line).not.toContain("Init.");
+    expect(line).not.toContain(">PV<");
+    expect(line).not.toContain(`aria-label="${labels.visibleFor}"`);
+    expect(line).not.toContain(`aria-label="${labels.conditionFor}"`);
+    expect(line).not.toContain(labels.activeTurn);
+    // Smaller avatar bubble on the collapsed line.
+    expect(line).toContain("size-7");
+    // HP keeps a fixed width sized for « 000/000 » (+ status icon); the name takes the remaining space.
+    expect(line).toMatch(/data-slot="tracker-mobile-hp" class="flex w-28 shrink-0/);
+    // The active turn stays announced on the block itself.
+    expect(html).toMatch(/<article[^>]*aria-current="true"/);
+  });
+
+  it("edge: expanded block shows initiative, AC and group with labels, then display and condition buttons without labels", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        isExpanded
+        onUpdateRow={() => {}}
+        onAddCondition={() => {}}
+        onRemoveCondition={() => {}}
+        onClearConditions={() => {}}
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={shortLabels}
+      />,
+    );
+
+    const stats = mobileSlot(html, "tracker-mobile-stats");
+    const actions = mobileSlot(html, "tracker-mobile-actions");
+    const statsStart = html.indexOf('data-slot="tracker-mobile-stats"');
+    const actionsStart = html.indexOf('data-slot="tracker-mobile-actions"');
+    expect(statsStart).toBeGreaterThan(-1);
+    expect(actionsStart).toBeGreaterThan(statsStart);
+    const statsLine = html.slice(statsStart, actionsStart);
+    expect(stats).toContain("grid-cols-3");
+    expect(statsLine).toContain('<span aria-hidden="true">Init.</span>');
+    expect(statsLine).toContain('<span aria-hidden="true">CA</span>');
+    expect(statsLine).toContain(`<span aria-hidden="true">${labels.visibilityDialog.fields.groupLabel}</span>`);
+    expect(actions).toContain(`aria-label="${labels.visibleFor}"`);
+    expect(actions).toContain(`aria-label="${labels.conditionFor}"`);
+    // Display button vertically centered like the condition editor.
+    expect(actions).toMatch(/^data-slot="tracker-mobile-actions" class="[^"]*items-center/);
+    // Icon-only buttons: no visible label next to them.
+    expect(actions).not.toContain(`>${labels.visibilityDialog.fields.conditions}<`);
+    expect(html.slice(html.indexOf("<article"))).not.toContain("border-t");
+  });
+
+  it("guard: player view never shows the display button, even expanded", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        battleStarted
+        initiativeLocked
+        isExpanded
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={shortLabels}
+      />,
+    );
+
+    expect(html.slice(html.indexOf("<article"))).not.toContain(`aria-label="${labels.visibleFor}"`);
+    // Read-only HP keeps an accessible label even without a visible one.
+    expect(collapsedLine(html)).toContain(`<span class="sr-only">${labels.visibilityDialog.fields.hitPoints}</span>`);
+  });
 });
 
+
+describe("FR-combat-initiative-tracker — tracker table row", () => {
+  it("guard: several conditions keep every badge text, without tablet chevron nor details line", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{
+          ...baseRow,
+          conditions: [{ condition: "poisoned" }, { condition: "blinded" }, { condition: "prone" }] as InitiativeTrackerRowType["conditions"],
+        }}
+        mode="gm"
+        onAddCondition={() => {}}
+        onRemoveCondition={() => {}}
+        onClearConditions={() => {}}
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).not.toContain("initiative-tracker-row-tablet-details");
+    expect(html).not.toContain("lg:hidden");
+    expect(html).not.toContain("md:sr-only");
+    expect(html).not.toContain("Plus d&#x27;états");
+    // Only the mobile toggle exposes the expand label.
+    expect(html.match(new RegExp(`aria-label="${labels.expandDetails}"`, "g")) ?? []).toHaveLength(1);
+  });
+
+  const desktopRow = (html: string) => {
+    const start = html.indexOf('data-slot="tracker-row"');
+    return html.slice(html.lastIndexOf("<div", start), html.indexOf(">", start) + 1);
+  };
+
+  it("nominal: names and groups longer than 20 characters are cut with an ellipsis, full value kept", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        getSheetHref={(characterId) => `/character/${characterId}`}
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('<span aria-hidden="true">A character with a v…</span>');
+    expect(html).toContain('<span class="sr-only">A character with a very long first name and an even longer family name</span>');
+    expect(html).toContain('title="A character with a very long first name and an even longer family name"');
+    expect(html).toContain('<span aria-hidden="true">Companions with an u…</span>');
+  });
+
+  it("edge: a 20-character name is shown whole, without ellipsis", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, firstname: "Twenty chars", lastname: "exactly", groupLabel: "Short group", playerDisplayName: "" }}
+        mode="gm"
+        labels={labels}
+      />,
+    );
+
+    expect("Twenty chars exactly").toHaveLength(20);
+    expect(html).toContain(">Twenty chars exactly<");
+    expect(html).not.toContain("…");
+  });
+
+  it("guard: colored rows change their background only, without ring; active turn wins over vital status", () => {
+    const dead = desktopRow(
+      renderToStaticMarkup(
+        <InitiativeTrackerRow
+          row={{ ...baseRow, hitPoints: 0 }}
+          mode="gm"
+          labels={labels}
+        />,
+      ),
+    );
+    const activeUnconscious = desktopRow(
+      renderToStaticMarkup(
+        <InitiativeTrackerRow
+          row={{ ...baseRow, hitPoints: 0, kind: "player", deathSavesFailures: 1 }}
+          mode="gm"
+          isActiveTurn
+          labels={labels}
+        />,
+      ),
+    );
+
+    expect(dead).toContain("bg-red/35");
+    expect(dead).not.toContain("ring");
+    expect(dead).not.toContain("rounded");
+    expect(activeUnconscious).toContain("bg-blue/35");
+    expect(activeUnconscious).not.toContain("bg-yellow/30");
+    expect(activeUnconscious).not.toContain("ring");
+    expect(activeUnconscious).toContain('aria-current="true"');
+  });
+
+  it("edge: the reveal halo stays the only ring on a player row", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        isNewlyRevealed
+        labels={labels}
+      />,
+    );
+
+    expect(desktopRow(html)).toContain("ring-green/60");
+  });
+
+  it("guard: a locked initiative is plain text, without field frame", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        initiativeLocked
+        battleStarted
+        labels={labels}
+      />,
+    );
+    const valueTags = (html.match(/<div[^>]*data-slot="tracker-initiative-value"[^>]*>/g) ?? []);
+
+    expect(valueTags.length).toBeGreaterThan(0);
+    for (const tag of valueTags) {
+      expect(tag).not.toContain("bg-gray-middle-light");
+      expect(tag).not.toContain("rounded");
+    }
+  });
+
+  it("nominal: row buttons look like real buttons and keep the show icon state color", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        onUpdateRow={() => {}}
+        labels={labels}
+      />,
+    );
+    const showButtons = (html.match(/<button[^>]*>/g) ?? []).filter((tag) =>
+      tag.includes(`aria-label="${labels.visibleFor}"`),
+    );
+
+    expect(showButtons.length).toBeGreaterThan(0);
+    for (const tag of showButtons) expect(tag).toContain("bg-gray-middle-light");
+    expect(html).toContain("text-green");
+  });
+
+  it("nominal: armor class comes before hit points; the hit points value is centered in its button", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        onHitPointsClick={() => {}}
+        labels={labels}
+      />,
+    );
+    const desktop = html.slice(html.indexOf('data-slot="tracker-row"'), html.indexOf("tablet-details"));
+
+    expect(desktop.indexOf('data-tracker-grid-cell-align="armorClass"')).toBeLessThan(
+      desktop.indexOf('data-tracker-grid-cell-align="hitPoints"'),
+    );
+    const hpButton = (desktop.match(/<button[^>]*>/g) ?? []).find((tag) =>
+      tag.includes(`aria-label="${labels.hitPointsFor}"`),
+    );
+    expect(hpButton).toContain("items-center");
+    expect(hpButton).toContain("first-child]:justify-center");
+  });
+
+  it("guard: a read-only hit points value stays plain and left-aligned", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    expect(html).not.toContain(`aria-label="${labels.hitPointsFor}"`);
+    expect(html).not.toContain("first-child]:justify-center");
+  });
+
+  it("edge: a character without image shows the profile placeholder bubble", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, avatar: "" }}
+        mode="gm"
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('data-slot="tracker-avatar-placeholder" aria-hidden="true"');
+    expect(html).toContain("lucide-user ");
+  });
+
+  it("guard: a hidden identity gets the placeholder, never the character image", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{
+          ...baseRow,
+          avatar: "characters/character-1/avatar.webp",
+          playerDisplayName: "",
+          playerFieldVisibility: { ...baseRow.playerFieldVisibility, name: false },
+        }}
+        mode="player"
+        ownCharacterId="other-character"
+        avatarImageUrl="https://media.example/avatar.webp"
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('data-slot="tracker-avatar-placeholder"');
+    expect(html).not.toContain("https://media.example/avatar.webp");
+  });
+
+  it("nominal: a character with a resolved image shows it instead of the placeholder", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, avatar: "characters/character-1/avatar.webp" }}
+        mode="gm"
+        avatarImageUrl="https://media.example/avatar.webp"
+        labels={labels}
+      />,
+    );
+
+    expect(html).toContain('src="https://media.example/avatar.webp"');
+    expect(html).not.toContain('data-slot="tracker-avatar-placeholder"');
+  });
+
+  it("nominal: the mobile expand toggle is a ghost button, without box", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        labels={labels}
+      />,
+    );
+    const toggle = (html.match(/<button[^>]*>/g) ?? []).find((tag) => tag.includes('data-slot="tracker-mobile-expand"')) ?? "";
+
+    expect(toggle).toContain('data-variant="ghost"');
+    expect(toggle).not.toContain("bg-gray-middle-light");
+  });
+});
+
+describe("InitiativeTrackerRow mobile expandable details (FR-combat-initiative-tracker)", () => {
+  const allHidden = {
+    ...baseRow.playerFieldVisibility,
+    initiative: false,
+    armorClass: false,
+    groupLabel: false,
+    conditions: false,
+    concentration: false,
+  };
+  const article = (html: string) => html.slice(html.indexOf("<article"));
+  const mobileStats = (html: string) => {
+    const start = html.indexOf('data-slot="tracker-mobile-stats"');
+    return html.slice(start, html.indexOf("</dl>", start));
+  };
+
+  it("nominal: a player row with at least one visible detail keeps the chevron", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, playerFieldVisibility: { ...allHidden, armorClass: true } }}
+        mode="player"
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    expect(article(html)).toContain('data-slot="tracker-mobile-expand"');
+    expect(article(html)).toContain('id="initiative-tracker-row-details-row-1"');
+  });
+
+  it("guard: a player row whose 2nd and 3rd lines are all hidden has no chevron nor expanded block", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, playerFieldVisibility: allHidden }}
+        mode="player"
+        battleStarted
+        isExpanded
+        labels={labels}
+      />,
+    );
+
+    expect(article(html)).not.toContain('data-slot="tracker-mobile-expand"');
+    expect(article(html)).not.toContain('id="initiative-tracker-row-details-');
+  });
+
+  it("guard: without chevron the row keeps an empty slot of the chevron's size so the HP column stays in place", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, playerFieldVisibility: { ...allHidden, hitPoints: false } }}
+        mode="player"
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    const card = article(html);
+    expect(card).toMatch(/data-slot="tracker-mobile-expand-spacer" class="size-8 shrink-0"/);
+    // Player view: HP column right-aligned, the hidden icon sits on the same right edge.
+    expect(card).toMatch(/data-slot="tracker-mobile-hp" class="flex w-28 shrink-0/);
+    const hp = card.slice(card.indexOf('data-slot="tracker-mobile-hp"'));
+    expect(hp).toMatch(/aria-label="Hidden"/);
+    expect(hp).toMatch(/class="[^"]*items-end text-right/);
+    expect(hp.slice(0, hp.indexOf('aria-label="Hidden"'))).toMatch(/justify-end[^"]*"\s*$/);
+  });
+
+  it("nominal: mobile stat labels sit right above their values, like the sheet label / value cells", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        battleStarted
+        isExpanded
+        labels={labels}
+      />,
+    );
+
+    const stats = mobileStats(html);
+    expect((stats.match(/class="flex min-w-0 flex-col gap-0\.5 items-start"/g) ?? []).length).toBe(3);
+    // Read-only values: no field height pushing them away from their label.
+    expect(stats).not.toContain("h-9");
+  });
+
+  it("nominal: the own character badge is pushed to the right of the name area", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, kind: "player" }}
+        mode="player"
+        ownCharacterId={baseRow.characterId}
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    expect(article(html)).toMatch(/class="ml-auto shrink-0 rounded-full[^"]*"[^>]*aria-label="This is your character"/);
+  });
+
+  it("edge: the GM always keeps the chevron (display configuration button), even with every field hidden to players", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, playerFieldVisibility: allHidden }}
+        mode="gm"
+        onUpdateRow={() => {}}
+        labels={labels}
+      />,
+    );
+
+    expect(article(html)).toContain('data-slot="tracker-mobile-expand"');
+  });
+
+  it("nominal: the mobile group cell shows the group name without the group icon, the desktop cell keeps it", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        isExpanded
+        onUpdateRow={() => {}}
+        labels={labels}
+      />,
+    );
+
+    const stats = mobileStats(html);
+    expect(stats).toContain(baseRow.groupLabel);
+    expect(stats).not.toContain("lucide-layers");
+    expect(html.slice(0, html.indexOf("<article"))).toContain("lucide-layers");
+  });
+});

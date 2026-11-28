@@ -153,6 +153,20 @@ export function characterName(firstname: string, lastname: string, surname: stri
   return fullName || surname || "-";
 }
 
+/** FR-combat-initiative-tracker — max visible characters of a tracker name / group label. */
+export const TRACKER_LABEL_MAX_CHARS = 20;
+
+/**
+ * FR-combat-initiative-tracker — cuts a tracker label after `max` characters and appends `…`.
+ * Counts code points so emoji and accents are never split.
+ */
+export function truncateTrackerLabel(value: string | null | undefined, max = TRACKER_LABEL_MAX_CHARS): string {
+  const text = (value ?? "").trim();
+  const chars = Array.from(text);
+  if (max <= 0 || chars.length <= max) return text;
+  return `${chars.slice(0, max).join("").trimEnd()}…`;
+}
+
 export function clampConditionIndex(index: number, length: number) {
   if (length === 0) return -1;
   return Math.max(0, Math.min(index, length - 1));
@@ -387,4 +401,31 @@ export function getVisibleInitiativeInputs(container: ParentNode): HTMLElement[]
   return Array.from(container.querySelectorAll<HTMLElement>(`[${INITIATIVE_INPUT_ATTRIBUTE}]`)).filter(
     (input) => !input.hasAttribute("disabled") && input.getClientRects().length > 0,
   );
+}
+
+/** Elements of a row that keep their own action: a row click on them never toggles the selection. */
+const ROW_INTERACTIVE_SELECTOR =
+  'button, a, input, textarea, select, label, [role="button"], [role="checkbox"], [role="combobox"], [role="menuitem"], [contenteditable="true"]';
+
+/**
+ * FR-tracker-bulk-actions — true when a click on `target` should toggle the row selection:
+ * the target is inside the row (not a portal such as a dialog opened from it) and not one of its controls.
+ */
+export function isRowSelectionClickTarget(
+  target: EventTarget | null,
+  row: { contains: (node: Node | null) => boolean },
+): boolean {
+  const element = target as Partial<Pick<Element, "closest">> | null;
+  if (!element || typeof element.closest !== "function" || !row.contains(target as Node)) return false;
+  const interactive = element.closest(ROW_INTERACTIVE_SELECTOR);
+  return interactive == null || !row.contains(interactive);
+}
+
+/**
+ * FR-combat-initiative-tracker — scroll offset that puts the active row second in the rows area:
+ * the previous row's top, or 0 when the active row is first (or unknown).
+ */
+export function getActiveTurnScrollTop(rowTops: number[], activeIndex: number): number {
+  if (activeIndex <= 0 || activeIndex >= rowTops.length) return 0;
+  return Math.max(0, rowTops[activeIndex - 1] - rowTops[0]);
 }

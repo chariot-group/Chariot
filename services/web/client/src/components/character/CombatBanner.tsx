@@ -1,44 +1,55 @@
 "use client";
 
 import React from "react";
-import { ChevronLeft, ChevronRight, Dices, Heart, ScrollText, Shield, Swords } from "lucide-react";
+import { Swords } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useStore } from "react-redux";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  canUndoBattleTurn,
   characterName,
   filterRowsForPlayerView,
   getInitiativeTrackerRowStatus,
   sanitizeInitiativeTrackerRowForPlayer,
   sortInitiativeTrackerRows,
+  truncateTrackerLabel,
 } from "@/components/initiativeTracker/utils";
-import { CONDITION_META, CUSTOM_EFFECT_META } from "@/components/initiativeTracker/conditionMeta";
-import { formatRemainingConditionDuration } from "@/components/initiativeTracker/conditionDuration";
 import { cn } from "@/lib/utils";
 import { MediaAvatar } from "@/components/media/MediaAvatar";
 import { useMediaAvatarBatch } from "@/hooks/useMediaAvatar";
-import { emitBattleStateUpdate } from "@/lib/sessionBattleSyncBridge";
 import { useNewlyRevealedRows } from "@/hooks/useNewlyRevealedRows";
 import { useStatusChangedRows } from "@/hooks/useStatusChangedRows";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import type { RootState } from "@/store/index";
-import { useRouter } from "@/i18n/navigation";
+import { useAppSelector } from "@/store/hooks";
+import { Link } from "@/i18n/navigation";
 import { buildSessionCharacterHref } from "@/lib/sessionInAppNavigation";
 import { selectIsGmMode } from "@/store/slices/environmentSlice";
 import {
-  nextBattleTurn,
-  previousBattleTurn,
   selectActiveTurnRowId,
   selectBattleStarted,
-  selectBattleStateSnapshot,
-  selectCurrentRound,
   selectInitiativeTrackerRows,
   selectSessionCode,
-  selectTurnsWithActions,
-  type InitiativeTrackerConditionEntry,
 } from "@/store/slices/sessionSlice";
+
+/** FR-session-combat-navigation — horizontal padding shared by every zone of the sheet footer. */
+const FOOTER_PADDING_X_CLASS = "px-4 sm:px-6 md:px-8";
+/**
+ * FR-session-combat-navigation — the footer is remounted on every sheet navigation (chip click, loading
+ * skeleton): its strip position and the last turn it followed live here so it never moves by itself.
+ * It scrolls only when the active turn actually changes.
+ */
+const stripMemory: { scrollLeft: number; activeTurnRowId: string | null } = { scrollLeft: 0, activeTurnRowId: null };
+
+/** Test helper: forget the strip position and followed turn. */
+export function resetCombatFooterStripMemory() {
+  stripMemory.scrollLeft = 0;
+  stripMemory.activeTurnRowId = null;
+}
+
+/** Scroll offset that centers `chip` in `container` (clamped by the browser). */
+export function getCenteredChipScrollLeft(chip: { offsetLeft: number; offsetWidth: number }, containerWidth: number) {
+  return Math.max(0, chip.offsetLeft - containerWidth / 2 + chip.offsetWidth / 2);
+}
+
+/** FR-session-combat-navigation — max visible characters of a footer chip name (then `…`). */
+export const COMBAT_FOOTER_NAME_MAX_CHARS = 10;
+const FOOTER_SAFE_AREA_CLASS = "pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]";
 
 interface CombatBannerProps {
   /** ID du personnage actuellement consulté — sert à détecter si c'est son tour. */
@@ -48,33 +59,21 @@ interface CombatBannerProps {
 
 export function CombatBanner({ characterId, footerActions }: CombatBannerProps) {
   const t = useTranslations("initTracker.tracker");
-  const dispatch = useAppDispatch();
-  const store = useStore<RootState>();
-  const router = useRouter();
 
   const isGm = useAppSelector(selectIsGmMode);
   const battleStarted = useAppSelector(selectBattleStarted);
   const allRows = useAppSelector(selectInitiativeTrackerRows);
   const activeTurnRowId = useAppSelector(selectActiveTurnRowId);
-  const currentRound = useAppSelector(selectCurrentRound);
-  const turnsWithActions = useAppSelector(selectTurnsWithActions);
   const sessionCode = useAppSelector(selectSessionCode);
 
-  const [expandedRowId, setExpandedRowId] = React.useState<string | null>(null);
-  const containerRef = React.useRef<HTMLDivElement>(null);
   const carouselRef = React.useRef<HTMLDivElement>(null);
-  const chipRefs = React.useRef<Map<string, HTMLButtonElement>>(new Map());
+  const chipRefs = React.useRef<Map<string, HTMLElement>>(new Map());
 
   const sortedRows = React.useMemo(() => {
     const rows = sortInitiativeTrackerRows(allRows);
     if (isGm) return rows;
     return filterRowsForPlayerView(rows).map(sanitizeInitiativeTrackerRowForPlayer);
   }, [allRows, isGm]);
-
-  const canGoPrevious = React.useMemo(
-    () => canUndoBattleTurn(sortedRows, currentRound, activeTurnRowId, turnsWithActions),
-    [sortedRows, currentRound, activeTurnRowId, turnsWithActions],
-  );
 
   const isInCombat = React.useMemo(
     () => !!characterId && sortedRows.some((row) => row.characterId === characterId),
@@ -86,23 +85,6 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
     const activeRow = sortedRows.find((row) => row.id === activeTurnRowId);
     return activeRow?.characterId === characterId;
   }, [characterId, activeTurnRowId, sortedRows]);
-
-  const activeDisplayName = React.useMemo(() => {
-    if (!activeTurnRowId) return t("unknownCombatant");
-    const activeRow = sortedRows.find((row) => row.id === activeTurnRowId);
-    if (!activeRow) return t("unknownCombatant");
-    if (isGm) {
-      return characterName(activeRow.firstname, activeRow.lastname, activeRow.surname) || activeRow.playerDisplayName || t("unknownCombatant");
-    }
-    return activeRow.playerFieldVisibility.name
-      ? (activeRow.playerDisplayName?.trim() || characterName(activeRow.firstname, activeRow.lastname, activeRow.surname) || t("unknownCombatant"))
-      : t("unknownCombatant");
-  }, [activeTurnRowId, sortedRows, isGm, t]);
-
-  const expandedRow = React.useMemo(
-    () => sortedRows.find((row) => row.id === expandedRowId) ?? null,
-    [sortedRows, expandedRowId],
-  );
 
   const newlyRevealedIds = useNewlyRevealedRows(isGm ? [] : sortedRows.map((r) => r.id));
   const statusChangedRows = useStatusChangedRows(sortedRows, isGm);
@@ -144,164 +126,100 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
     setLiveAnnouncement(names.map((n) => `${n} — ${t("newlyCombatantRevealed")}`).join(". "));
   }, [newlyRevealedIds, isGm, sortedRows, t]);
 
-  // Auto-scroll le carrousel pour centrer le combattant actif
+  // Fin du combat : le prochain combat repart d'un bandeau neuf.
   React.useEffect(() => {
-    if (!activeTurnRowId || !carouselRef.current) return;
-    const chip = chipRefs.current.get(activeTurnRowId);
-    if (!chip) return;
-    const container = carouselRef.current;
-    const scrollTarget = chip.offsetLeft - container.offsetWidth / 2 + chip.offsetWidth / 2;
-    container.scrollTo({ left: scrollTarget, behavior: "smooth" });
-  }, [activeTurnRowId]);
+    if (!battleStarted) resetCombatFooterStripMemory();
+  }, [battleStarted]);
 
-  // Fermer le panneau étendu au clic extérieur
-  React.useEffect(() => {
-    if (!expandedRowId) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setExpandedRowId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [expandedRowId]);
-
-  const broadcastAfterDispatch = React.useCallback(() => {
-    const snapshot = selectBattleStateSnapshot(store.getState());
-    if (snapshot.battleStarted || snapshot.battleInitialized) {
-      emitBattleStateUpdate(snapshot);
-    }
-  }, [store]);
-
-  const handlePrevious = React.useCallback(() => {
-    dispatch(previousBattleTurn());
-    broadcastAfterDispatch();
-  }, [dispatch, broadcastAfterDispatch]);
-
-  const handleNext = React.useCallback(() => {
-    dispatch(nextBattleTurn());
-    broadcastAfterDispatch();
-  }, [dispatch, broadcastAfterDispatch]);
-
-  const handleRowClick = React.useCallback((rowId: string) => {
-    setExpandedRowId((prev) => (prev === rowId ? null : rowId));
+  // Remontage (changement de fiche) : le bandeau reprend sa position, sans animation.
+  React.useLayoutEffect(() => {
+    if (carouselRef.current) carouselRef.current.scrollLeft = stripMemory.scrollLeft;
   }, []);
 
-  const handleViewSheet = React.useCallback(
-    (cId: string) => {
-      router.push(buildSessionCharacterHref(cId, sessionCode));
-    },
-    [router, sessionCode],
-  );
-
-  const formatConditionDuration = React.useCallback(
-    (entry: Pick<InitiativeTrackerConditionEntry, "duration" | "remainingSeconds">): string | null => {
-      if (entry.duration?.unit === "untilCombatEnd") {
-        return t("conditionDurationUntilCombatEnd");
-      }
-      if (entry.remainingSeconds != null) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return formatRemainingConditionDuration(entry.remainingSeconds, (unit, amount) => t(`conditionDurationUnits.${unit}` as any, { amount }));
-      }
-      return null;
-    },
-    [t],
-  );
+  // Centre le combattant actif uniquement quand le tour change (pas à chaque sélection de fiche).
+  React.useEffect(() => {
+    if (!activeTurnRowId || !carouselRef.current) return;
+    if (stripMemory.activeTurnRowId === activeTurnRowId) return;
+    const chip = chipRefs.current.get(activeTurnRowId);
+    if (!chip) return;
+    const firstFollow = stripMemory.activeTurnRowId === null;
+    stripMemory.activeTurnRowId = activeTurnRowId;
+    const container = carouselRef.current;
+    const reduceMotion =
+      typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const left = getCenteredChipScrollLeft(chip, container.offsetWidth);
+    stripMemory.scrollLeft = left;
+    container.scrollTo?.({ left, behavior: firstFollow || reduceMotion ? "auto" : "smooth" });
+  }, [activeTurnRowId]);
 
   if (!battleStarted || sortedRows.length === 0) {
     return footerActions ? (
-      <div className="shrink-0 border-t border-frame px-4 sm:px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+      <div className={cn("shrink-0 border-t border-frame pt-3", FOOTER_PADDING_X_CLASS, FOOTER_SAFE_AREA_CLASS)}>
         <div className="flex w-full justify-end">{footerActions}</div>
       </div>
     ) : null;
   }
 
-  const hasVisibleStats =
-    isGm ||
-    (expandedRow &&
-      (expandedRow.playerFieldVisibility.hitPoints ||
-        expandedRow.playerFieldVisibility.armorClass ||
-        expandedRow.playerFieldVisibility.initiative ||
-        (expandedRow.playerFieldVisibility.conditions &&
-          (expandedRow.conditions.length > 0 || (expandedRow.customEffects?.length ?? 0) > 0))));
+  // FR-session-combat-navigation — the active combatant is highlighted in the strip, so only the player's
+  // own turn gets a text status ("your turn"), never "turn of X".
+  const turnStatusNode =
+    !isGm && isInCombat && isMyTurn ? (
+      <p
+        data-slot="combat-footer-turn"
+        className="flex min-w-0 shrink items-center gap-2 text-sm font-semibold text-primary-light">
+        <Swords
+          className="size-4 shrink-0 motion-safe:animate-pulse"
+          aria-hidden="true"
+        />
+        <span className="truncate">{t("yourTurn")}</span>
+      </p>
+    ) : null;
 
   return (
-    <div ref={containerRef} className="shrink-0 border-t border-frame pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]">
+    <div
+      data-slot="combat-footer"
+      className={cn("shrink-0 border-t border-frame pt-3", FOOTER_SAFE_AREA_CLASS)}>
       <div aria-live="polite" aria-atomic="true" className="sr-only">{liveAnnouncement}</div>
 
-      {/* Actions d'édition — mobile : au-dessus de la zone combat, desktop : inline dans la nav */}
-      {footerActions && (
-        <div className="flex justify-end px-2 pt-1.5 sm:hidden">
-          {footerActions}
-        </div>
-      )}
+      {/* Mobile : « votre tour » au-dessus du bandeau */}
+      {turnStatusNode ? <div className={cn("mb-2 flex sm:hidden", FOOTER_PADDING_X_CLASS)}>{turnStatusNode}</div> : null}
 
-      {/* Séparateur mobile avec indicateur de manche intégré */}
-      <div className={cn("flex items-center gap-2 px-2 sm:hidden", footerActions ? "pt-1" : "pt-1.5")}>
-        <Swords className="size-3 shrink-0 text-white/20" aria-hidden="true" />
-        <div className="h-px flex-1 bg-white/10" />
-        <span className="text-[10px] tabular-nums text-white/35">
-          {t("roundIndicator", { round: currentRound })}
-        </span>
-        <div className="h-px flex-1 bg-white/10" />
-      </div>
+      {/* Barre : « votre tour » · bandeau des combattants · actions d'édition (une ligne sur sm+) */}
+      <div className={cn("flex min-w-0 items-center gap-4", FOOTER_PADDING_X_CLASS)}>
+        {turnStatusNode ? <div className="hidden max-w-[14rem] shrink-0 sm:flex">{turnStatusNode}</div> : null}
 
-      {/* Ligne de navigation combat */}
-      <div className="flex min-w-0 items-center gap-1 px-2 py-1.5 sm:px-4">
-
-        {/* Indicateur "votre tour" (joueur uniquement) */}
-        {!isGm && isInCombat && (
-          <div
-            className={cn(
-              "flex max-w-[8rem] shrink-0 items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold transition-colors",
-              isMyTurn ? "text-primary-light" : "text-white/50",
-            )}>
-            <Swords className={cn("size-2.5 shrink-0", isMyTurn && "animate-pulse")} />
-            <span className={cn("truncate", isMyTurn && "animate-pulse")}>
-              {isMyTurn ? t("yourTurn") : t("notYourTurn", { name: activeDisplayName })}
-            </span>
-          </div>
-        )}
-
-        {/* Tour précédent (MJ uniquement) */}
-        {isGm ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex shrink-0">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={!canGoPrevious}
-                  aria-label={t("previousTurn")}
-                  onClick={handlePrevious}
-                  className="h-7 w-7 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
-                  <ChevronLeft className="size-4" />
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>{t("previousTurn")}</TooltipContent>
-          </Tooltip>
-        ) : (
-          <div className="w-7 shrink-0" />
-        )}
-
-        {/* Carrousel des combattants */}
+        {/* Bandeau des combattants, dans l'ordre d'initiative */}
         <div
           ref={carouselRef}
-          className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-0.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
+          onScroll={(event) => {
+            stripMemory.scrollLeft = event.currentTarget.scrollLeft;
+          }}
+          role="group"
+          aria-label={t("rowsRegion")}
+          data-slot="combat-footer-strip"
+          className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-scrollbar-thumb">
           {sortedRows.map((row) => {
             const isActive = row.id === activeTurnRowId;
-            const isExpanded = row.id === expandedRowId;
             const isOwnCharacter = !isGm && !!characterId && row.characterId === characterId;
+            const isCurrentSheet = !!characterId && row.characterId === characterId;
+            const ChipElement = (isGm || isOwnCharacter ? Link : "span") as React.ElementType;
             const displayName = isGm
               ? (characterName(row.firstname, row.lastname, row.surname) || row.playerDisplayName || t("unknownCombatant"))
               : row.playerFieldVisibility.name
                 ? (row.playerDisplayName?.trim() || characterName(row.firstname, row.lastname, row.surname) || t("unknownCombatant"))
                 : t("unknownCombatant");
 
-            const baseAriaLabel = isExpanded ? t("collapseStats", { name: displayName }) : t("expandStats", { name: displayName });
-            const chipAriaLabel = isOwnCharacter ? `${baseAriaLabel} — ${t("ownCharacterLabel", { name: displayName })}` : baseAriaLabel;
+            // FR-session-combat-navigation — a chip opens the combatant's sheet: any sheet for the GM,
+            // only their own for a player (other sheets are not readable by players).
+            const canOpenSheet = isGm || isOwnCharacter;
+            const baseAriaLabel = canOpenSheet ? t("viewSheetFor", { name: displayName }) : displayName;
+            const chipAriaLabel = [
+              baseAriaLabel,
+              isOwnCharacter ? t("ownCharacterLabel", { name: displayName }) : null,
+              isActive ? t("activeTurn") : null,
+            ]
+              .filter(Boolean)
+              .join(" — ");
 
             const isNewlyRevealed = !isGm && newlyRevealedIds.has(row.id);
             const statusAnimation = statusChangedRows.get(row.id);
@@ -311,24 +229,26 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
             const isUnconscious = rowStatus === "unconscious";
 
             return (
-              <button
+              <ChipElement
                 key={row.id}
-                ref={(el) => {
+                ref={(el: HTMLElement | null) => {
                   if (el) chipRefs.current.set(row.id, el);
                   else chipRefs.current.delete(row.id);
                 }}
-                type="button"
+                href={canOpenSheet ? buildSessionCharacterHref(row.characterId, sessionCode) : undefined}
+                data-active={isActive || undefined}
+                title={displayName}
                 aria-label={chipAriaLabel}
-                aria-expanded={isExpanded}
-                onClick={() => handleRowClick(row.id)}
+                aria-current={isCurrentSheet ? "page" : undefined}
                 className={cn(
-                  "flex min-w-10 shrink-0 items-center gap-1.5 rounded px-1.5 py-1 transition-all",
-                  "cursor-pointer hover:bg-white/5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30",
-                  isActive ? "opacity-100" : "opacity-40",
-                  isExpanded && "bg-white/5 opacity-100 ring-1 ring-white/15",
-                  isNewlyRevealed && "opacity-100 rounded-[8px] bg-green/[0.08] shadow-[0_0_0_1.5px_rgba(154,226,1,0.65),0_0_10px_rgba(154,226,1,0.4)] animate-pulse",
-                  !isNewlyRevealed && statusAnimation === "dead" && "opacity-100 rounded-[8px] shadow-[0_0_0_1.5px_rgba(255,45,45,0.65),0_0_10px_rgba(255,45,45,0.35)] animate-pulse",
-                  !isNewlyRevealed && statusAnimation === "unconscious" && "opacity-100 rounded-[8px] shadow-[0_0_0_1.5px_rgba(255,196,0,0.65),0_0_10px_rgba(255,196,0,0.35)] animate-pulse",
+                  "flex min-w-10 shrink-0 items-center gap-2 rounded-[13px] py-1.5 pl-1.5 pr-3 transition-colors",
+                  canOpenSheet &&
+                    "cursor-pointer hover:bg-gray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  // The sheet on screen is the selected chip (box); the active turn is the sky-blue ring.
+                  isCurrentSheet ? "bg-gray" : "bg-transparent",
+                  isNewlyRevealed && "bg-green/[0.08] shadow-[0_0_0_1.5px_rgba(154,226,1,0.65),0_0_10px_rgba(154,226,1,0.4)] motion-safe:animate-pulse",
+                  !isNewlyRevealed && statusAnimation === "dead" && "shadow-[0_0_0_1.5px_rgba(255,45,45,0.65),0_0_10px_rgba(255,45,45,0.35)] motion-safe:animate-pulse",
+                  !isNewlyRevealed && statusAnimation === "unconscious" && "shadow-[0_0_0_1.5px_rgba(255,196,0,0.65),0_0_10px_rgba(255,196,0,0.35)] motion-safe:animate-pulse",
                 )}>
                 <MediaAvatar
                   scope="character"
@@ -339,173 +259,53 @@ export function CombatBanner({ characterId, footerActions }: CombatBannerProps) 
                   alt={displayName}
                   avatarImageUrl={getAvatarUrl("character", row.characterId, "xs")}
                   className={cn(
-                    "ring-2 ring-offset-1 ring-offset-transparent",
+                    "ring-2",
                     isActive
-                      ? "ring-purple/40"
+                      ? "ring-blue"
                       : isDead
-                        ? "ring-red/40"
+                        ? "ring-red/60"
                         : isUnconscious
-                          ? "ring-yellow/40"
+                          ? "ring-yellow/60"
                           : isOwnCharacter
-                            ? "ring-blue/40"
-                            : "ring-white/10",
+                            ? "ring-primary-light/60"
+                            : "ring-transparent",
                   )}
                 />
                 <span
                   className={cn(
-                    "max-w-[60px] truncate text-[10px] leading-tight",
-                    isActive
+                    "whitespace-nowrap text-xs leading-tight",
+                    isActive || isCurrentSheet
                       ? "font-semibold text-white"
                       : isDead
                         ? "font-semibold text-red"
                         : isUnconscious
                           ? "font-semibold text-yellow"
                           : isOwnCharacter
-                            ? "font-semibold text-blue"
-                            : "text-white/60",
+                            ? "font-semibold text-primary-light"
+                            : "text-muted-foreground",
                   )}>
-                  {displayName}
+                  {truncateTrackerLabel(displayName, COMBAT_FOOTER_NAME_MAX_CHARS)}
                 </span>
-              </button>
+              </ChipElement>
             );
           })}
         </div>
 
-        {/* Tour suivant (+ indicateur de manche sur sm+) */}
-        <div className="flex shrink-0 items-center gap-0.5">
-          <span className="hidden text-[10px] tabular-nums text-white/50 sm:inline">
-            {t("roundIndicator", { round: currentRound })}
-          </span>
-          {isGm ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  disabled={!battleStarted}
-                  aria-label={t("nextTurn")}
-                  onClick={handleNext}
-                  className="h-7 w-7 text-white/60 hover:bg-white/10 hover:text-white disabled:opacity-30">
-                  <ChevronRight className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{t("nextTurn")}</TooltipContent>
-            </Tooltip>
-          ) : (
-            <div className="w-7 shrink-0" />
-          )}
-        </div>
-
-        {/* Actions d'édition — inline sur sm+ avec séparateur visuel */}
+        {/* Actions d'édition, séparées du bandeau (sm+) */}
         {footerActions && (
-          <div className="ml-1 hidden shrink-0 border-l border-border pl-2 sm:block">
+          <div className="hidden shrink-0 border-l border-border pl-4 sm:block">
             {footerActions}
           </div>
         )}
       </div>
 
-      {/* Panneau de stats étendu (au clic sur un combattant) */}
-      {expandedRow && (
-        <div className="mx-2 mb-1 rounded-[13px] bg-white/5 px-3 py-2 sm:mx-4">
-          {hasVisibleStats ? (
-            <div className="flex flex-col gap-2">
-
-              {/* Stats numériques + bouton voir la fiche sur la même ligne */}
-              <div className="flex min-w-0 items-center gap-x-4 gap-y-1.5 flex-wrap">
-                {(isGm || expandedRow.playerFieldVisibility.hitPoints) && (
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Heart className="size-3 shrink-0 text-red-400" aria-hidden="true" />
-                    <span className="font-semibold tabular-nums text-white">
-                      {expandedRow.hitPoints}
-                      {expandedRow.maxHitPoints > 0 && `/${expandedRow.maxHitPoints}`}
-                    </span>
-                    {expandedRow.tempHitPoints > 0 && (
-                      <span className="text-[10px] text-green-400">+{expandedRow.tempHitPoints}</span>
-                    )}
-                  </div>
-                )}
-
-                {(isGm || expandedRow.playerFieldVisibility.armorClass) && (
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Shield className="size-3 shrink-0 text-blue-300" aria-hidden="true" />
-                    <span className="font-semibold tabular-nums text-white">{expandedRow.armorClass}</span>
-                  </div>
-                )}
-
-                {(isGm || expandedRow.playerFieldVisibility.initiative) && (
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <Dices className="size-3 shrink-0 text-yellow-300" aria-hidden="true" />
-                    <span className="font-semibold tabular-nums text-white">{expandedRow.initiative}</span>
-                  </div>
-                )}
-
-                {/* Bouton voir la fiche (MJ uniquement) — aligné à droite sur la même ligne */}
-                {isGm && (
-                  <button
-                    type="button"
-                    aria-label={t("viewSheet")}
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      handleViewSheet(expandedRow.characterId);
-                    }}
-                    className="ml-auto flex cursor-pointer shrink-0 items-center gap-1.5 rounded-[13px] bg-white/10 px-3 py-1.5 text-[11px] font-semibold text-white/70 transition-colors hover:bg-white/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-                    <ScrollText className="size-3.5 shrink-0" aria-hidden="true" />
-                    {t("viewSheet")}
-                  </button>
-                )}
-              </div>
-
-              {/* Badges de conditions */}
-              {(isGm || expandedRow.playerFieldVisibility.conditions) &&
-                (expandedRow.conditions.length > 0 || (expandedRow.customEffects?.length ?? 0) > 0) && (
-                <div className="flex flex-wrap gap-1">
-                  {expandedRow.conditions.map((entry) => {
-                    const meta = CONDITION_META[entry.condition];
-                    if (!meta) return null;
-                    const { Icon, badgeClassName } = meta;
-                    const duration = formatConditionDuration(entry);
-                    return (
-                      <span
-                        key={entry.condition}
-                        className={cn(
-                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium leading-none",
-                          badgeClassName,
-                        )}>
-                        <Icon className="size-2.5 shrink-0" aria-hidden="true" />
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        <span>{t(`conditions.${entry.condition}` as any)}</span>
-                        {duration && (
-                          <span className="ml-0.5 opacity-70">{duration}</span>
-                        )}
-                      </span>
-                    );
-                  })}
-                  {(expandedRow.customEffects ?? []).map((entry) => {
-                    const { Icon, badgeClassName } = CUSTOM_EFFECT_META;
-                    const duration = formatConditionDuration(entry);
-                    return (
-                      <span
-                        key={entry.effectId}
-                        className={cn(
-                          "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium leading-none",
-                          badgeClassName,
-                        )}
-                        title={entry.name}>
-                        <Icon className="size-2.5 shrink-0" aria-hidden="true" />
-                        <span className="max-w-[9rem] truncate">{entry.name}</span>
-                        {duration && (
-                          <span className="ml-0.5 opacity-70">{duration}</span>
-                        )}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-center text-[11px] text-white/30">{t("noVisibleStats")}</p>
-          )}
+      {/* Mobile : actions sous le bandeau ; chaque bouton prend une part égale sur très petit écran,
+          alignés à droite dès 480px (largeurs portées par les boutons de la fiche). */}
+      {footerActions && (
+        <div
+          data-slot="combat-footer-mobile-actions"
+          className={cn("mt-3 flex justify-end sm:hidden [&>div]:w-full", FOOTER_PADDING_X_CLASS)}>
+          {footerActions}
         </div>
       )}
     </div>

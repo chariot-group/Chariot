@@ -7,7 +7,7 @@ import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Player, NPC } from "@/types/character";
 import CharacterDetailView from "@/components/character/CharacterDetailView";
-import CharacterSheetSkeleton from "@/components/character/skeleton/CharacterSheetSkeleton";
+import { CharacterSheetLoading } from "@/components/character/skeleton/CharacterSheetLoading";
 import { resolveCharacterSheetSkeletonVariant } from "@/components/character/skeleton/characterSheetSkeletonLayout";
 import { shouldRedirectAwayFromCharacterSheet } from "@/lib/characterAccessError";
 
@@ -41,7 +41,10 @@ export default function Character() {
 
   if (keycloakLoading || userTransitioning || loading || error || !character) {
     return (
-      <CharacterSheetSkeleton {...resolveCharacterSheetSkeletonVariant("playerSpace", searchParams.get("tab"))} />
+      <CharacterSheetLoading
+        characterId={characterId}
+        {...resolveCharacterSheetSkeletonVariant("playerSpace", searchParams.get("tab"))}
+      />
     );
   }
 

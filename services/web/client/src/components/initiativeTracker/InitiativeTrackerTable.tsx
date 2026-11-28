@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Cog, ListOrdered, LogOut, X } from "lucide-react";
+import { ListOrdered, LogOut, MonitorCog, X } from "lucide-react";
 import type {
   InitiativeTrackerConditionDuration,
   InitiativeTrackerConditionDurationUnit,
@@ -23,11 +23,16 @@ import { InitiativeTrackerBulkVisibilityDialog } from "@/components/initiativeTr
 import { InitiativeTrackerGroupedInitiativeBar } from "@/components/initiativeTracker/InitiativeTrackerGroupedInitiativeBar";
 import { InitiativeTrackerRow as InitiativeTrackerRowComponent } from "@/components/initiativeTracker/InitiativeTrackerRow";
 import {
-  PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS,
-  TRACKER_GRID_TEMPLATE_COLUMNS,
-  TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION,
+  getTrackerGridTemplateColumns,
+  TRACKER_CARD_PADDING_X_CLASS,
+  TRACKER_FIT_SCREEN_CLASS,
+  TRACKER_GRID_GAP_CLASS,
   TRACKER_HEADER_ALIGN,
+  TRACKER_ROWS_SCROLL_CLASS,
+  TRACKER_ZONE_PADDING_Y_CLASS,
 } from "@/components/initiativeTracker/constants";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import type { ActiveInitiativeTrackerCondition } from "@/components/initiativeTracker/types";
 import type { ConditionSelectCustomEffectsProps } from "@/components/initiativeTracker/ConditionSelect";
 import {
@@ -37,7 +42,9 @@ import {
   isInitiativeInputTarget,
   orderRowsByFrozenIds,
   findAdjacentInitiativeInput,
+  getActiveTurnScrollTop,
   getVisibleInitiativeInputs,
+  isRowSelectionClickTarget,
   resolveInitiativeModifier,
   type InitiativeTrackerRowStatus,
 } from "@/components/initiativeTracker/utils";
@@ -178,6 +185,7 @@ export type InitiativeTrackerTableProps = {
     emptySelection: string;
     configure: string;
     configureShort: string;
+    accept: string;
     cancel: string;
     leaveInitiative: string;
     fields: {
@@ -191,7 +199,12 @@ export type InitiativeTrackerTableProps = {
       groupLabel: string;
     };
   };
+  /** FR-combat-initiative-tracker — tracker card footer (GM turn controls, player round). */
   turnControls?: React.ReactNode;
+  /** FR-combat-initiative-tracker — GM roster actions, right side of the card header toolbar. */
+  headerActions?: React.ReactNode;
+  /** Accessible name of the scrolling rows area (e.g. « Combattants »). */
+  rowsLabel?: string;
   ownCharacterId?: string | null;
   ownCharacterSheetHref?: string | null;
   sessionCode?: string | null;
@@ -204,6 +217,30 @@ function getCompactHeaderLabel(label: string, length: number) {
   const trimmed = label.trim();
   if (trimmed.length <= length + 1) return trimmed;
   return `${trimmed.slice(0, length)}.`;
+}
+
+/**
+ * FR-tracker-bulk-actions — selected count of the header toolbar: the number alone on mobile so the
+ * toolbar stays on one line, the full label from `md`; the full label is always the accessible text.
+ */
+export function TrackerSelectedCount({ count, label }: { count: number; label: string }) {
+  return (
+    <span
+      className="shrink-0 text-sm font-semibold tabular-nums text-white/85"
+      role="status">
+      <span
+        className="md:hidden"
+        aria-hidden="true">
+        {count}
+      </span>
+      <span
+        className="hidden md:inline"
+        aria-hidden="true">
+        {label}
+      </span>
+      <span className="sr-only">{label}</span>
+    </span>
+  );
 }
 
 export function canConfigureBulkVisibility(selectedCount: number) {
@@ -234,6 +271,8 @@ export function InitiativeTrackerTable({
   groupedInitiativeLabels,
   bulkVisibilityLabels,
   turnControls,
+  headerActions,
+  rowsLabel,
   ownCharacterId = null,
   ownCharacterSheetHref = null,
   sessionCode = null,
@@ -294,14 +333,15 @@ export function InitiativeTrackerTable({
   // FR-tracker-bulk-actions — "select first, act next": checkboxes are always visible for the GM.
   const selectionEnabled = !isPlayerView && bulkVisibilityLabels != null;
   const groupedInitiativeActive = groupedInitiativeAvailable && groupedInitiativeOpen;
-  const gridTemplateColumns = isPlayerView
-    ? PLAYER_TRACKER_GRID_TEMPLATE_COLUMNS
-    : selectionEnabled
-      ? TRACKER_GRID_TEMPLATE_COLUMNS_WITH_SELECTION
-      : TRACKER_GRID_TEMPLATE_COLUMNS;
+  const gridTemplateColumns = getTrackerGridTemplateColumns({
+    selection: selectionEnabled,
+    visibility: !isPlayerView,
+    initiativeEditable: !initiativeLocked,
+  });
   const compactInitiativeLabel = getCompactHeaderLabel(columnLabels.initiative, 4);
   const compactVisibleLabel = getCompactHeaderLabel(columnLabels.visible, 3);
   const headerLabelClassName = "block min-w-0 truncate leading-tight";
+  const hasToolbar = selectionEnabled || headerActions != null;
 
   const clearSelection = React.useCallback(() => {
     setSelectedRowIds(new Set());
@@ -376,63 +416,96 @@ export function InitiativeTrackerTable({
     clearSelection();
   };
 
-  const renderSelectionActions = (compact: boolean) =>
+  /** Icon + label; the label is visible from `xl`, below it stays the accessible name and a tooltip. */
+  const renderToolbarButton = ({
+    label,
+    icon,
+    onClick,
+    pressed,
+    variant = "secondary",
+  }: {
+    label: string;
+    icon: React.ReactNode;
+    onClick: () => void;
+    pressed?: boolean;
+    variant?: "secondary" | "destructive";
+  }) => (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          type="button"
+          variant={variant}
+          size="sm"
+          aria-label={label}
+          aria-pressed={pressed}
+          onClick={onClick}>
+          {icon}
+          <span className="sr-only xl:not-sr-only">{label}</span>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent className="xl:hidden">{label}</TooltipContent>
+    </Tooltip>
+  );
+
+  // FR-tracker-bulk-actions — selection tools, left side of the card header toolbar.
+  const renderSelectionActions = () =>
     bulkVisibilityLabels ? (
-      <div className="flex min-w-0 flex-wrap gap-2">
-        {groupedInitiativeAvailable && groupedInitiativeLabels ? (
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            aria-pressed={groupedInitiativeActive}
-            onClick={() => setGroupedInitiativeOpen((open) => !open)}
-            className="gap-2">
-            <ListOrdered
+      <>
+        {groupedInitiativeAvailable && groupedInitiativeLabels
+          ? renderToolbarButton({
+              label: groupedInitiativeLabels.action,
+              icon: (
+                <ListOrdered
+                  className="size-4"
+                  aria-hidden="true"
+                />
+              ),
+              pressed: groupedInitiativeActive,
+              onClick: () => setGroupedInitiativeOpen((open) => !open),
+            })
+          : null}
+        {renderGroupedInitiativeBar()}
+        {renderToolbarButton({
+          label: bulkVisibilityLabels.configure,
+          // Same icon as the per-row show button.
+          icon: (
+            <MonitorCog
               className="size-4"
               aria-hidden="true"
             />
-            {groupedInitiativeLabels.action}
-          </Button>
-        ) : null}
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="gap-2"
-          onClick={() => setBulkVisibilityOpen(true)}>
-          <Cog
-            className="size-4"
-            aria-hidden="true"
-          />
-          {compact ? bulkVisibilityLabels.configureShort : bulkVisibilityLabels.configure}
-        </Button>
-        {onRemoveMultipleFromInitiative ? (
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="gap-2 text-red hover:bg-red/15"
-            onClick={leaveSelection}>
-            <LogOut
-              className="size-4"
-              aria-hidden="true"
-            />
-            {bulkVisibilityLabels.leaveInitiative}
-          </Button>
-        ) : null}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="gap-2"
-          onClick={clearSelection}>
-          <X
-            className="size-4"
-            aria-hidden="true"
-          />
-          {compact ? bulkVisibilityLabels.clearSelectionShort : bulkVisibilityLabels.clearSelection}
-        </Button>
-      </div>
+          ),
+          onClick: () => setBulkVisibilityOpen(true),
+        })}
+        {onRemoveMultipleFromInitiative
+          ? renderToolbarButton({
+              label: bulkVisibilityLabels.leaveInitiative,
+              icon: (
+                <LogOut
+                  className="size-4"
+                  aria-hidden="true"
+                />
+              ),
+              onClick: leaveSelection,
+              variant: "destructive",
+            })
+          : null}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={bulkVisibilityLabels.clearSelection}
+              onClick={clearSelection}>
+              <X
+                className="size-4"
+                aria-hidden="true"
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{bulkVisibilityLabels.clearSelection}</TooltipContent>
+        </Tooltip>
+      </>
     ) : null;
 
   const renderGroupedInitiativeBar = () =>
@@ -448,46 +521,140 @@ export function InitiativeTrackerTable({
         }}
         onApply={applyGroupedInitiative}
         onClearSelection={clearSelection}
+        inline
       />
     ) : null;
 
+  // FR-combat-initiative-tracker — on turn change, scroll so the active combatant is second (previous one above).
+  const rowsRef = React.useRef<HTMLDivElement>(null);
+  const displayRowIdsKey = displayRows.map((row) => row.id).join("|");
+  React.useEffect(() => {
+    const container = rowsRef.current;
+    if (!container || !activeTurnRowId) return;
+    const rowElements = Array.from(container.querySelectorAll<HTMLElement>(":scope > [data-row-id]"));
+    const activeIndex = rowElements.findIndex((element) => element.dataset.rowId === activeTurnRowId);
+    if (activeIndex < 0) return;
+    const containerTop = container.getBoundingClientRect().top;
+    const rowTops = rowElements.map((element) => element.getBoundingClientRect().top - containerTop + container.scrollTop);
+    const reduceMotion =
+      typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
+    if (container.scrollHeight > container.clientHeight) {
+      container.scrollTo?.({ top: getActiveTurnScrollTop(rowTops, activeIndex), behavior });
+      return;
+    }
+    // Very short screens: the page scrolls instead of the rows area.
+    if (activeIndex > 0) rowElements[activeIndex - 1].scrollIntoView?.({ block: "start", behavior });
+    // Only the active turn (and the row ids it is placed among) drive the scroll, not every row update.
+  }, [activeTurnRowId, displayRowIdsKey]);
+
+  // FR-tracker-bulk-actions — once a row is selected, a click anywhere on a row (outside its controls) toggles it.
+  const rowClickSelects = selectionEnabled && selectedCount > 0;
+  const handleRowClick = (rowId: string) => (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!rowClickSelects || !isRowSelectionClickTarget(event.target, event.currentTarget)) return;
+    toggleRowSelection(rowId, !selectedRowIds.has(rowId));
+  };
+
+  const selectAllChecked = allRowsSelected ? true : someRowsSelected ? "indeterminate" : false;
+
   return (
-    <div className="w-full min-w-0">
+    <section
+      data-slot="tracker-card"
+      // `overflow-clip` keeps the rounded corners without making the card a scroll container, so it never
+      // shrinks below its content on very short screens (the page scrolls there).
+      className={cn(
+        "flex w-full min-w-0 max-w-full flex-col overflow-clip rounded-[24px] bg-card text-white shadow-xl",
+        TRACKER_FIT_SCREEN_CLASS,
+      )}>
       <div aria-live="polite" aria-atomic="true" className="sr-only">{liveAnnouncement}</div>
-      <div className="hidden w-full max-w-full min-w-0 overflow-hidden rounded-[24px] bg-card text-xs font-bold text-white shadow-xl md:block lg:text-sm xl:text-base">
+
+      <div
+        data-slot="tracker-header"
+        className="shrink-0">
+        {hasToolbar ? (
+          // Constant height: selecting rows never moves the table (FR-tracker-bulk-actions).
+          <div
+            data-slot="tracker-toolbar"
+            className={cn(
+              "flex min-h-14 w-full min-w-0 flex-wrap items-center justify-between gap-2 border-b border-border sm:gap-3",
+              TRACKER_CARD_PADDING_X_CLASS,
+              TRACKER_ZONE_PADDING_Y_CLASS,
+            )}>
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 sm:gap-2">
+              {selectionEnabled && bulkVisibilityLabels ? (
+                <>
+                  {/* Mobile has no column headings: select-all lives in the toolbar. */}
+                  <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-white/85 md:hidden">
+                    <Checkbox
+                      checked={selectAllChecked}
+                      aria-label={bulkVisibilityLabels.selectAllRows}
+                      onCheckedChange={toggleSelectAllRows}
+                      className="size-5 shrink-0 cursor-pointer"
+                    />
+                    <span
+                      className={selectedCount > 0 ? "sr-only" : "truncate"}
+                      aria-hidden="true">
+                      {bulkVisibilityLabels.selectAllRowsShort}
+                    </span>
+                  </label>
+                  {selectedCount > 0 ? (
+                    <div
+                      className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2"
+                      role="toolbar"
+                      aria-label={bulkVisibilityLabels.selectionToolbar}>
+                      <TrackerSelectedCount
+                        count={selectedCount}
+                        label={selectedCountLabel ?? String(selectedCount)}
+                      />
+                      {renderSelectionActions()}
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+            </div>
+            {headerActions ? <div className="ml-auto flex shrink-0 items-center gap-2">{headerActions}</div> : null}
+          </div>
+        ) : null}
+
         <div
-          className="grid w-full max-w-full min-w-0 items-center gap-x-1.5 px-2 py-2.5 lg:px-4 xl:gap-x-3 xl:px-5"
+          data-slot="tracker-headings"
+          className={cn(
+            "hidden w-full max-w-full min-w-0 items-center border-b border-border text-xs font-bold uppercase tracking-wide text-muted-foreground md:grid",
+            TRACKER_GRID_GAP_CLASS,
+            TRACKER_CARD_PADDING_X_CLASS,
+            TRACKER_ZONE_PADDING_Y_CLASS,
+          )}
           style={{ gridTemplateColumns }}>
           {selectionEnabled ? (
             <Checkbox
-              checked={allRowsSelected ? true : someRowsSelected ? "indeterminate" : false}
+              checked={selectAllChecked}
               aria-label={bulkVisibilityLabels?.selectAllRows ?? ""}
               onCheckedChange={toggleSelectAllRows}
-              className="size-5 cursor-pointer justify-self-center"
+              className="size-5 cursor-pointer justify-self-start"
             />
           ) : null}
           {!isPlayerView ? (
             <span
-              className={`flex min-w-0 items-center justify-center gap-1 ${TRACKER_HEADER_ALIGN.visible}`}
+              className={`min-w-0 ${TRACKER_HEADER_ALIGN.visible}`}
               title={columnLabels.visible}>
               <span
-                className={`${headerLabelClassName} xl:hidden`}
+                className={headerLabelClassName}
                 aria-hidden="true">
                 {compactVisibleLabel}
               </span>
-              <span className={`${headerLabelClassName} hidden xl:block`}>{columnLabels.visible}</span>
+              <span className="sr-only">{columnLabels.visible}</span>
             </span>
           ) : null}
           <span
-            className={`min-w-0 text-center ${TRACKER_HEADER_ALIGN.initiative}`}
+            className={`min-w-0 ${TRACKER_HEADER_ALIGN.initiative}`}
             title={columnLabels.initiative}>
-            <span className="inline-flex min-w-0 max-w-full items-center justify-center gap-1">
-              <span
-                className={`${headerLabelClassName} xl:hidden`}
-                aria-hidden="true">
-                {compactInitiativeLabel}
-              </span>
-              <span className={`${headerLabelClassName} hidden xl:block`}>{columnLabels.initiative}</span>
+            <span
+              className={cn(headerLabelClassName, !initiativeLocked && "xl:hidden")}
+              aria-hidden="true">
+              {compactInitiativeLabel}
+            </span>
+            <span className={initiativeLocked ? "sr-only" : `${headerLabelClassName} sr-only xl:not-sr-only`}>
+              {columnLabels.initiative}
             </span>
           </span>
           <span
@@ -496,14 +663,14 @@ export function InitiativeTrackerTable({
             {columnLabels.character}
           </span>
           <span
-            className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.hitPoints}`}
-            title={columnLabels.hitPoints}>
-            {columnLabels.hitPoints}
-          </span>
-          <span
             className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.armorClass}`}
             title={columnLabels.armorClass}>
             {columnLabels.armorClass}
+          </span>
+          <span
+            className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.hitPoints}`}
+            title={columnLabels.hitPoints}>
+            {columnLabels.hitPoints}
           </span>
           <span
             className={`min-w-0 truncate leading-tight ${TRACKER_HEADER_ALIGN.condition}`}
@@ -516,59 +683,16 @@ export function InitiativeTrackerTable({
             {columnLabels.group}
           </span>
         </div>
-
-        {selectionEnabled && selectedCount > 0 ? (
-          <div
-            className="flex w-full min-w-0 flex-col gap-2.5 border-t border-border px-5 py-2.5"
-            role="toolbar"
-            aria-label={bulkVisibilityLabels?.selectionToolbar}>
-            <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-sm text-white/80">
-              <span
-                className="min-w-0 truncate font-semibold"
-                role="status">
-                {selectedCountLabel}
-              </span>
-              {renderSelectionActions(false)}
-            </div>
-            {renderGroupedInitiativeBar()}
-          </div>
-        ) : null}
       </div>
 
-      {selectionEnabled && bulkVisibilityLabels ? (
-        <div className="rounded-[18px] bg-card/95 px-3 py-3 text-white shadow-lg ring-1 ring-white/10 md:hidden">
-          <div className="flex min-w-0 items-center justify-between gap-3">
-            <label className="flex min-w-0 items-center gap-2 text-sm font-semibold text-white/85">
-              <Checkbox
-                checked={allRowsSelected ? true : someRowsSelected ? "indeterminate" : false}
-                aria-label={bulkVisibilityLabels.selectAllRows}
-                onCheckedChange={toggleSelectAllRows}
-                className="size-5 shrink-0 cursor-pointer"
-              />
-              <span className="min-w-0 truncate">{bulkVisibilityLabels.selectAllRowsShort}</span>
-            </label>
-            {selectedCount > 0 ? (
-              <span
-                className="shrink-0 text-xs font-semibold text-white/65"
-                role="status">
-                {selectedCountLabel}
-              </span>
-            ) : null}
-          </div>
-          {selectedCount > 0 ? (
-            <div
-              className="mt-3 flex min-w-0 flex-col gap-3 border-t border-border pt-3"
-              role="toolbar"
-              aria-label={bulkVisibilityLabels.selectionToolbar}>
-              {renderSelectionActions(true)}
-              {renderGroupedInitiativeBar()}
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
       <div
-        className="mt-3 flex w-full min-w-0 flex-col gap-3 md:gap-2.5"
+        ref={rowsRef}
+        data-slot="tracker-rows"
+        role="region"
+        aria-label={rowsLabel}
+        tabIndex={0}
+        // Raised, lighter tone than the card; the only scrolling zone (header and footer stay in place).
+        className={cn("flex w-full min-w-0 flex-col bg-gray-middle-light", TRACKER_ROWS_SCROLL_CLASS)}
         onFocusCapture={(event) => {
           if (isInitiativeInputTarget(event.target)) setFrozenOrder((current) => current ?? rows.map((row) => row.id));
         }}
@@ -630,11 +754,25 @@ export function InitiativeTrackerTable({
               labels={rowLabels}
             />
           );
-          if (isPlayerView || !onRemoveFromInitiative || !bulkVisibilityLabels) return rowNode;
+          // Square rows split by a thin line (FR-combat-initiative-tracker table layout).
+          const rowWrapperProps = {
+            "data-row-id": row.id,
+            className: cn("min-w-0 border-b border-border last:border-b-0", rowClickSelects && "cursor-pointer"),
+            onClick: handleRowClick(row.id),
+          };
+          if (isPlayerView || !onRemoveFromInitiative || !bulkVisibilityLabels) {
+            return (
+              <div
+                key={row.id}
+                {...rowWrapperProps}>
+                {rowNode}
+              </div>
+            );
+          }
           return (
             <ContextMenu key={row.id}>
               <ContextMenuTrigger asChild>
-                <div className="min-w-0">{rowNode}</div>
+                <div {...rowWrapperProps}>{rowNode}</div>
               </ContextMenuTrigger>
               <ContextMenuContent>
                 <ContextMenuLabel className="max-w-64 truncate">
@@ -666,6 +804,7 @@ export function InitiativeTrackerTable({
             fieldsTitle: bulkVisibilityLabels.fieldsTitle,
             emptySelection: bulkVisibilityLabels.emptySelection,
             configure: bulkVisibilityLabels.configure,
+            accept: bulkVisibilityLabels.accept,
             cancel: bulkVisibilityLabels.cancel,
             leaveInitiative: bulkVisibilityLabels.leaveInitiative,
             fields: bulkVisibilityLabels.fields,
@@ -681,7 +820,13 @@ export function InitiativeTrackerTable({
         />
       ) : null}
 
-      {turnControls}
-    </div>
+      {turnControls ? (
+        <div
+          data-slot="tracker-footer-zone"
+          className="shrink-0 border-t border-border">
+          {turnControls}
+        </div>
+      ) : null}
+    </section>
   );
 }

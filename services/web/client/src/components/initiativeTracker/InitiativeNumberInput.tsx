@@ -41,6 +41,8 @@ type InitiativeNumberInputProps = {
   rollPlaceholder?: string;
   /** Screen-reader prefix of the live total preview (e.g. "Total d'initiative :"). */
   totalPreviewLabel?: string;
+  /** `start` left-aligns the field and its bonus line (tracker table, FR-combat-initiative-tracker). */
+  align?: "center" | "start";
 };
 
 export function InitiativeNumberInput({
@@ -55,6 +57,7 @@ export function InitiativeNumberInput({
   showModifier = false,
   rollPlaceholder,
   totalPreviewLabel,
+  align = "center",
 }: InitiativeNumberInputProps) {
   const resolvedModifier = resolveInitiativeModifier(modifier);
   const rollValue = initiativeRollFromTotal(value, resolvedModifier);
@@ -82,7 +85,7 @@ export function InitiativeNumberInput({
 
   return (
     <div
-      className={cn(INITIATIVE_CONTAINER_CLASS, containerClassName)}
+      className={cn(INITIATIVE_CONTAINER_CLASS, align === "start" && "mx-0", containerClassName)}
       onMouseDownCapture={(event) => {
         // Stepper buttons cancel the mousedown default, so the input would never take focus
         // (and the tracker could not freeze its row order while the GM keeps clicking).
@@ -107,7 +110,7 @@ export function InitiativeNumberInput({
       />
       {/* Below the field so inputs stay aligned with the other values of the row. */}
       {showModifier ? (
-        <div className="flex justify-center">
+        <div className={cn("flex", align === "start" ? "justify-start" : "justify-center")}>
           <InitiativeModifierHint
             modifierText={modifierText}
             ariaLabel={hintAriaLabel}

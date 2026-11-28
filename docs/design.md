@@ -347,6 +347,30 @@ All numeric fields use `components/ui/number-input.tsx` (`Input type="number"` d
 - Custom stepper without border or divider, flush against the right edge, out of the tab order (keyboard uses arrow keys)
 - `StoredUnitNumberInput` and `StoredUnitFeetRangeInput` build on the same frame
 
+## 5.7 Initiative Tracker Table
+
+The tracker (FR-combat-initiative-tracker, Tracker Table Layout) is one table card, not a list of row cards:
+
+- Card: `rounded-[24px] bg-card shadow-xl overflow-hidden`; zones split by `border-border` lines: header toolbar (fixed `min-h`, selection tools left, roster actions right), column headings, rows, footer. Header and footer stay on `bg-card` (level 1); the rows area is `bg-gray-middle-light` (level 2, raised rows) so the content reads apart; fields inside rows (initiative input, GM HP button) use `bg-gray` (level 3) to stay visible; row buttons keep the `secondary` type (its border outlines them)
+- Spacing: zones `px-3 sm:px-5`, rows `py-3`, toolbar / headings / footer `py-3`, one column gap `gap-x-4`
+- Columns: conditions `minmax(10rem, 1fr)` (one full pill + edit button always fits), group `minmax(4rem, 14rem)` (gives up width first); no tablet compaction of badges (no icon-only badges, no `…` counter, no chevron details line)
+- Rows: square, `border-b border-border` between rows; a state tints the background only (`bg-blue/35` active turn, which wins over `bg-red/35` dead and `bg-yellow/30` unconscious); no ring on rows except the temporary green reveal halo (FR-tracker-combatant-reveal)
+- Columns: selection · show · initiative · character · AC · HP · conditions · group; every value and heading left-aligned except the HP value, centered in its button; selection / show / initiative are narrow fixed tracks; name and group capped at 20 characters (`…`, full value in `title`)
+- Avatar: `size-9 sm:size-10` round bubble before the name; without image (or hidden identity) a decorative placeholder with the same shape: `bg-gray` + Lucide `User` `text-white/40` (same fallback as `MediaAvatar`)
+- Read-only initiative: plain `tabular-nums` text, no field frame; editable fields (initiative input, GM HP button) keep the field frame
+- Row buttons: `secondary` icon-only (`icon-sm`), icon colors unchanged (show: green when visible); the mobile expand-details chevron is `ghost` (disclosure toggle, no box)
+- Footer: three zones (`grid-cols-[1fr_auto_1fr]`): preparation status left, joined control `previous | Round N | next` centered (secondary buttons, square inner corners, dividers, the round in the middle is plain text), End combat / Cancel / Start on the right
+- Leave initiative: `destructive` button, no local restyle
+- Condition badges: no help icon; the badge itself is the help trigger (tooltip after 0.5 s hover, on focus, or toggled by click)
+- Tracker dialogs: sectioned style shared with the codex / library dialogs (`DialogContent` `p-0 gap-0`, header `border-b border-frame`, body `px-6 py-4`, footer `border-t border-frame px-6 py-4`), from `components/ui/dialog-sections.ts`; the header holds the title only, descriptions and hints open the body; no bordered box in the body (field groups are plain `fieldset` + muted uppercase `legend`)
+- Mobile toolbar: one line; the selected count shows the number alone (`sr-only` full label), action labels hidden behind icons
+- Fit to screen: the page `main` is a flex column; from `min-height: 30rem` the page wrapper and the card take `min-h-0` (`TRACKER_FIT_SCREEN_CLASS`) so the card shrinks to the screen; header and footer `shrink-0`, the rows area `min-h-0 overflow-y-auto` with the project scrollbar tokens (`TRACKER_ROWS_SCROLL_CLASS`), focusable region labelled « Combattants ». The card uses `overflow-clip` so it never shrinks below its content on short screens (the page scrolls there)
+- Page: `max-w-[1520px] mx-auto`; from `2xl` the wrapper also takes `my-auto` (vertical centering when shorter than the screen, no clipping when longer)
+- Mobile footer (below `sm`): navigation group left (icons), End combat right with the short label
+- Mobile: same card; rows become thin stacked blocks (`py-2.5`) separated by the same line; no line between the parts of one block, spacing only; collapsed line: checkbox · `size-7` avatar + name (`flex-1`) · HP button without label (`w-28`, fits `000/000` + icon) · ghost chevron; expanded: line 2 initiative / CA / group (`grid-cols-3`, muted uppercase labels), line 3 display button + condition editor (icon only, `items-center`), no active-turn pill
+- Active turn scroll: the rows area scrolls (smooth, `auto` under reduced motion) so the active row is second
+- Sheet combat footer (`CombatBanner`): no turn controls nor round; `border-t border-frame pt-3`, padding `px-4 sm:px-6 md:px-8` like the sheet edit footer; one line from `sm`: « your turn » (`text-primary-light`, player's turn only) · combatant strip (chips `rounded-[13px]`, names cut at 10 characters; active turn `ring-blue` (sky blue) on the avatar; the sheet on screen is the selected chip `bg-gray`; own character `text-primary-light`; others muted text) · edit actions after a `border-l border-border`; mobile: strip, then edit actions under it (each button `flex-1 basis-0` below `480px`, the export button filling its wrapper; right-aligned natural widths above); the strip keeps its scroll position across sheet navigations and only scrolls on a turn change; a chip is a link to the combatant's sheet (no stats panel); while the next sheet loads the combat footer replaces the skeleton footer (`CharacterSheetLoading`)
+
 ## 6. Responsive Baseline
 
 ## 6.1 Breakpoints Actively Used

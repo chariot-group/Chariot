@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { InitiativeTrackerTurnControls } from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
+import {
+  InitiativeTrackerRoundFooter,
+  InitiativeTrackerTurnControls,
+} from "@/components/initiativeTracker/InitiativeTrackerTurnControls";
 
 const confirmHandlers: Array<() => void> = [];
 
@@ -54,6 +57,7 @@ describe("FR-combat-initiative-tracker — cancel combat before start", () => {
     const html = renderToStaticMarkup(
       <InitiativeTrackerTurnControls
         battleStarted={false}
+        roundLabel="Round 3"
         canGoPrevious={false}
         previousTurnState="noPreviousTurn"
         labels={baseLabels}
@@ -79,6 +83,7 @@ describe("FR-combat-initiative-tracker — cancel combat before start", () => {
     renderToStaticMarkup(
       <InitiativeTrackerTurnControls
         battleStarted={false}
+        roundLabel="Round 3"
         canGoPrevious={false}
         previousTurnState="noPreviousTurn"
         labels={baseLabels}
@@ -101,6 +106,7 @@ describe("FR-combat-initiative-tracker — cancel combat before start", () => {
     const html = renderToStaticMarkup(
       <InitiativeTrackerTurnControls
         battleStarted={true}
+        roundLabel="Round 3"
         canGoPrevious={false}
         previousTurnState="noPreviousTurn"
         labels={baseLabels}
@@ -136,6 +142,7 @@ describe("FR-combat-initiative-tracker — pre-combat initiative guidance", () =
     const html = renderToStaticMarkup(
       <InitiativeTrackerTurnControls
         battleStarted={false}
+        roundLabel="Round 3"
         canGoPrevious={false}
         previousTurnState="noPreviousTurn"
         missingInitiativeCount={missingInitiativeCount}
@@ -172,6 +179,7 @@ describe("FR-combat-initiative-tracker — pre-combat initiative guidance", () =
     const html = renderToStaticMarkup(
       <InitiativeTrackerTurnControls
         battleStarted
+        roundLabel="Round 3"
         canGoPrevious={false}
         previousTurnState="noPreviousTurn"
         missingInitiativeCount={2}
@@ -185,5 +193,77 @@ describe("FR-combat-initiative-tracker — pre-combat initiative guidance", () =
     );
     expect(html).not.toContain("2 to enter");
     expect(html).not.toContain("Enter initiatives first.");
+  });
+});
+
+describe("FR-combat-initiative-tracker — table footer layout", () => {
+  const renderControls = (battleStarted: boolean, canGoPrevious = true) =>
+    renderToStaticMarkup(
+      <InitiativeTrackerTurnControls
+        battleStarted={battleStarted}
+        roundLabel="Round 3"
+        canGoPrevious={canGoPrevious}
+        previousTurnState={canGoPrevious ? "available" : "currentTurnLocked"}
+        labels={{ ...baseLabels, turnNavigation: "Turn navigation", endCombatShort: "End" }}
+        onStartCombat={() => undefined}
+        onCancelCombat={() => undefined}
+        onEndCombat={() => undefined}
+        onPrevious={() => undefined}
+        onNext={() => undefined}
+      />,
+    );
+
+  it("nominal: started combat shows previous | round | next, then end combat on the right", () => {
+    const html = renderControls(true);
+    const previous = html.indexOf('aria-label="Previous"');
+    const round = html.indexOf("Round 3");
+    const next = html.indexOf('aria-label="Next"');
+    const end = html.indexOf('aria-label="End combat"');
+
+    expect(html).toContain('role="group" aria-label="Turn navigation"');
+    expect(previous).toBeGreaterThan(-1);
+    expect(round).toBeGreaterThan(previous);
+    expect(next).toBeGreaterThan(round);
+    expect(end).toBeGreaterThan(next);
+    // Three zones: the navigation group is centered in the footer.
+    expect(html).toContain("sm:grid-cols-[1fr_auto_1fr]");
+    expect(html).toMatch(/role="group" aria-label="Turn navigation" class="[^"]*sm:justify-self-center/);
+  });
+
+  it("edge: mobile footer keeps navigation left and a short end combat label right", () => {
+    const html = renderControls(true);
+    const footer = html.match(/<div data-slot="tracker-footer" class="([^"]*)"/)?.[1] ?? "";
+
+    expect(footer).toContain("flex items-center justify-between");
+    expect(html).toContain('<span class="sm:hidden" aria-hidden="true">End</span>');
+    expect(html).toContain('<span class="hidden sm:inline" aria-hidden="true">End combat</span>');
+    // Accessible name stays the full label.
+    expect(html).toContain('aria-label="End combat"');
+  });
+
+  it("edge: locked turn disables previous only, next stays available", () => {
+    const html = renderControls(true, false);
+    const tags = html.match(/<button[^>]*>/g) ?? [];
+    const previousTag = tags.find((tag) => tag.includes('aria-label="Previous"')) ?? "";
+    const nextTag = tags.find((tag) => tag.includes('aria-label="Next"')) ?? "";
+
+    expect(previousTag).toContain('disabled=""');
+    expect(nextTag).not.toContain('disabled=""');
+  });
+
+  it("guard: no round and no turn navigation before combat start", () => {
+    const html = renderControls(false);
+
+    expect(html).not.toContain("Round 3");
+    expect(html).not.toContain('aria-label="Previous"');
+    expect(html).not.toContain('aria-label="Next"');
+  });
+
+  it("nominal: player footer shows the read-only round without controls", () => {
+    const html = renderToStaticMarkup(<InitiativeTrackerRoundFooter roundLabel="Round 4" />);
+
+    expect(html).toContain("Round 4");
+    expect(html).toContain('role="status"');
+    expect(html).not.toContain("<button");
   });
 });

@@ -3,6 +3,14 @@
 import * as React from "react";
 import { MonitorCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  DIALOG_SECTIONED_CONTENT_CLASS,
+  DIALOG_SECTION_BODY_CLASS,
+  DIALOG_SECTION_FOOTER_CLASS,
+  DIALOG_SECTION_HEADER_CLASS,
+  DIALOG_SECTION_TITLE_CLASS,
+} from "@/components/ui/dialog-sections";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -87,13 +95,13 @@ export function InitiativeTrackerVisibilityDialog({
     <Dialog
       open={open}
       onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{labels.title}</DialogTitle>
-          <p className="text-sm text-white/70">{labels.configureFor}</p>
+      <DialogContent className={cn(DIALOG_SECTIONED_CONTENT_CLASS, "sm:max-w-md")}>
+        <DialogHeader className={DIALOG_SECTION_HEADER_CLASS}>
+          <DialogTitle className={DIALOG_SECTION_TITLE_CLASS}>{labels.title}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 py-2">
+        <div className={cn("flex flex-col gap-4", DIALOG_SECTION_BODY_CLASS)}>
+          <p className="text-sm text-white/70">{labels.configureFor}</p>
           {isSessionParticipantRow ? (
             <p className="text-sm text-white/65">{labels.playerRowVisibilityHint}</p>
           ) : null}
@@ -132,9 +140,9 @@ export function InitiativeTrackerVisibilityDialog({
               </div>
 
               <fieldset
-                className="flex flex-col gap-2.5 rounded-[15px] border border-white/10 p-4"
+                className="flex flex-col gap-2.5"
                 disabled={!visible}>
-                <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-white/55">
+                <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-white/55">
                   {labels.title}
                 </legend>
                 {FIELD_KEYS.map((key) => (
@@ -162,8 +170,8 @@ export function InitiativeTrackerVisibilityDialog({
           {onLeaveInitiative ? (
             <Button
               type="button"
-              variant="secondary"
-              className="w-full border-red/40 text-red hover:bg-red/15 hover:text-red"
+              variant="destructive"
+              className="w-full"
               onClick={() => {
                 onLeaveInitiative();
                 onOpenChange(false);
@@ -173,7 +181,7 @@ export function InitiativeTrackerVisibilityDialog({
           ) : null}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2">
+        <DialogFooter className={cn("gap-2 sm:gap-2", DIALOG_SECTION_FOOTER_CLASS)}>
           <Button
             type="button"
             variant="secondary"
@@ -204,17 +212,18 @@ export function VisibilityTriggerButton({ row, ariaLabel, onClick }: VisibilityT
   const iconClass = row.visible ? "text-green" : "text-white/45";
 
   return (
+    // FR-combat-initiative-tracker — row buttons read as real buttons; icon keeps its state color.
     <Button
       type="button"
-      variant="ghost"
+      variant="secondary"
       size="icon-sm"
       aria-label={ariaLabel}
       aria-haspopup="dialog"
       onClick={onClick}
-      className="size-9 shrink-0 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/40">
+      className="shrink-0">
       <MonitorCog
         aria-hidden="true"
-        className={`size-5 ${iconClass}`}
+        className={`size-4 ${iconClass}`}
       />
     </Button>
   );

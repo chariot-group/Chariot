@@ -30,3 +30,21 @@ describe("CharacterDetailView merged footer", () => {
     expect(bannerIndex).toBeLessThan(source.indexOf("</form>"));
   });
 });
+
+describe("CharacterDetailView footer buttons on very small screens (FR-session-combat-navigation)", () => {
+  it("nominal: edit, save, cancel and export share the width equally below 480px", () => {
+    const source = readSource();
+
+    expect(source).toContain('const FOOTER_ACTION_FILL_CLASS = "flex-1 basis-0 min-[480px]:flex-none min-[480px]:basis-auto";');
+    // Edit, Save, Cancel and the export wrapper.
+    expect(source.match(/FOOTER_ACTION_FILL_CLASS\)/g) ?? []).toHaveLength(4);
+  });
+
+  it("edge: the export button fills its wrapper (and its NPC tooltip wrapper) instead of staying small", () => {
+    const source = readSource();
+
+    expect(source).toContain('const FOOTER_ACTION_FILL_INNER_CLASS = "w-full min-[480px]:w-auto";');
+    expect(source.match(/FOOTER_ACTION_FILL_INNER_CLASS/g) ?? []).toHaveLength(4);
+  });
+});
+
