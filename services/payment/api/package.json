@@ -30,11 +30,11 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@nestjs/common": "^12.5.1",
+    "@nestjs/common": "^12.6.0",
     "@nestjs/config": "^12.1.1",
-    "@nestjs/core": "^12.5.1",
+    "@nestjs/core": "^12.6.0",
     "@nestjs/mapped-types": "^12.0.1",
-    "@nestjs/platform-express": "^12.5.1",
+    "@nestjs/platform-express": "^12.6.0",
     "@nestjs/swagger": "^12.1.2",
     "@opentelemetry/api": "^1.10.0",
     "@opentelemetry/auto-instrumentations-node": "^0.83.1",
@@ -64,13 +64,13 @@
     "winston-transport": "^4.9.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^12.0.13",
-    "@nestjs/schematics": "^12.0.0",
-    "@nestjs/testing": "^12.5.1",
+    "@nestjs/cli": "^12.0.15",
+    "@nestjs/schematics": "^12.0.16",
+    "@nestjs/testing": "^12.6.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.6.6",
+    "@types/node": "^26.6.7",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
@@ -81,7 +81,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.73.0"
+    "typescript-eslint": "^8.74.0"
   },
   "overrides": {
     "cross-spawn": "^7.0.6",
