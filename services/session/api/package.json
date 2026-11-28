@@ -29,14 +29,14 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
-    "@nestjs/common": "^12.5.1",
+    "@nestjs/common": "^12.6.0",
     "@nestjs/config": "^12.1.1",
-    "@nestjs/core": "^12.5.1",
+    "@nestjs/core": "^12.6.0",
     "@nestjs/mapped-types": "^12.0.1",
-    "@nestjs/platform-express": "^12.5.1",
-    "@nestjs/platform-socket.io": "^12.5.1",
+    "@nestjs/platform-express": "^12.6.0",
+    "@nestjs/platform-socket.io": "^12.6.0",
     "@nestjs/swagger": "^12.1.2",
-    "@nestjs/websockets": "^12.5.1",
+    "@nestjs/websockets": "^12.6.0",
     "@opentelemetry/api": "^1.10.0",
     "@opentelemetry/auto-instrumentations-node": "^0.83.1",
     "@opentelemetry/exporter-trace-otlp-http": "^0.301.2",
@@ -52,7 +52,7 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^18.0.10",
     "express": "^5.3.0",
-    "ioredis": "^6.0.0",
+    "ioredis": "^6.1.0",
     "jsonwebtoken": "^9.0.3",
     "jwks-rsa": "^4.1.0",
     "nest-winston": "^2.0.0",
@@ -72,14 +72,14 @@
     "typescript": "$typescript"
   },
   "devDependencies": {
-    "@nestjs/cli": "^12.0.13",
-    "@nestjs/testing": "^12.5.1",
+    "@nestjs/cli": "^12.0.15",
+    "@nestjs/testing": "^12.6.0",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.6.6",
+    "@types/node": "^26.6.7",
     "@types/supertest": "^7.2.1",
-    "@typescript-eslint/eslint-plugin": "^8.73.0",
-    "@typescript-eslint/parser": "^8.73.0",
+    "@typescript-eslint/eslint-plugin": "^8.74.0",
+    "@typescript-eslint/parser": "^8.74.0",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
@@ -90,6 +90,6 @@
     "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.73.0"
+    "typescript-eslint": "^8.74.0"
   }
 }
