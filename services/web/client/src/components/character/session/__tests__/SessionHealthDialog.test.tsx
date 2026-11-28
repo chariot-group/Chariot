@@ -93,6 +93,15 @@ describe("SessionHealthDialog — death saves (FR-combat-initiative-tracker HP s
     expect(render(player, false)).not.toContain("session-hp-death-saves-heading");
   });
 
+  it("edge: a player above 0 HP has no death saves section, at 0 HP or below it does", () => {
+    const withHp = (currentHitPoints: number) =>
+      ({ ...player, stats: { ...stats, currentHitPoints } }) as unknown as Player;
+
+    expect(render(withHp(1))).not.toContain("session-hp-death-saves-heading");
+    expect(render(withHp(0))).toContain("session-hp-death-saves-heading");
+    expect(render(withHp(-3))).toContain("session-hp-death-saves-heading");
+  });
+
   it("guard: sections are separated by spacing only, without bordered boxes", () => {
     const html = render(player);
 

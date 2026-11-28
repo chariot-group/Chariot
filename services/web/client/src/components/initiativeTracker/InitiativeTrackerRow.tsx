@@ -54,6 +54,7 @@ import type { TrackerConcentration } from "@/store/slices/sessionSlice";
 import { TrackerGridCell } from "@/components/initiativeTracker/TrackerGridCell";
 import { ConditionBadgeHelp } from "@/components/initiativeTracker/ConditionBadgeHelp";
 import { formatSignedBonus } from "@/utils/attack.utils";
+import { FACT_CELL_CLASS } from "@/components/character/tabContents/shared/factCell";
 
 type InitiativeTrackerRowProps = {
   row: InitiativeTrackerRowType;
@@ -258,7 +259,7 @@ export function InitiativeTrackerRow({
         />
         {isOwnCharacter ? (
           <span
-            className="shrink-0 rounded-full bg-blue/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue"
+            className="ml-auto shrink-0 rounded-full bg-blue/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue"
             aria-label={labels.ownCharacterLabel}>
             {labels.ownCharacterBadge}
           </span>
@@ -306,16 +307,27 @@ export function InitiativeTrackerRow({
 
   const hidden = <HiddenFieldPlaceholder label={labels.hiddenField} />;
   const compactHidden = <HiddenFieldPlaceholder label={labels.hiddenField} compact />;
-
-  const hpCellContent = (
+  /**
+   * `alignEnd`: mobile read-only HP column, right-aligned against the chevron slot.
+   * A hidden value shows its icon on the same edge as the value would (the column never shifts).
+   */
+  const renderHpCellContent = (alignEnd = false) => (
     <>
-      <span className="flex items-center justify-start gap-1 text-sm font-medium leading-tight text-white">
+      <span
+        className={cn(
+          "flex items-center gap-1 text-sm font-medium leading-tight text-white",
+          alignEnd ? "justify-end" : "justify-start",
+        )}>
         {showHp ? (
           <span>
             {row.hitPoints}/{row.maxHitPoints ?? 0}
           </span>
         ) : (
-          compactHidden
+          <HiddenFieldPlaceholder
+            label={labels.hiddenField}
+            compact
+            className={alignEnd ? "justify-end" : "justify-start"}
+          />
         )}
         {StatusIcon ? (
           <StatusIcon
@@ -452,10 +464,11 @@ export function InitiativeTrackerRow({
     </div>
   );
 
+  /** `detail`: mobile expanded line — the group name only, no group icon (FR-combat-initiative-tracker). */
   const renderGroupContent = (detail = false) =>
     showGroupLabel ? (
       <>
-        {row.groupId === SESSION_PARTICIPANTS_GROUP_ID ? (
+        {detail ? null : row.groupId === SESSION_PARTICIPANTS_GROUP_ID ? (
           <Users
             aria-hidden="true"
             className="size-4 shrink-0 text-white/75"
@@ -564,6 +577,20 @@ export function InitiativeTrackerRow({
       : null;
 
   const detailsId = `initiative-tracker-row-details-${row.id}`;
+  /**
+   * FR-combat-initiative-tracker — mobile: the row is expandable only when its 2nd / 3rd lines hold at least
+   * one piece of information the viewer can access (hidden placeholders do not count). The GM always has the
+   * display configuration button.
+   */
+  const hasExpandableDetails =
+    !isPlayerView
+    || showInitiative
+    || showAc
+    || showGroupLabel
+    || showConditions
+    || activeConcentration != null
+    || canEditConcentration;
+  const detailsExpanded = hasExpandableDetails && isExpanded;
 
   const renderInitiativeCell = (compact = false) => {
     const showModifier = !battleStarted && (!isPlayerView || isOwnCharacter);
@@ -580,8 +607,9 @@ export function InitiativeTrackerRow({
             <div
               data-slot="tracker-initiative-value"
               className={cn(
-                "flex h-9 items-center text-sm font-semibold tabular-nums text-white",
-                compact && "text-base",
+                "flex items-center text-sm font-semibold tabular-nums text-white",
+                // Mobile details: plain value right under its label (no field height without a field).
+                compact ? "text-base" : "h-9",
               )}
               aria-label={
                 showModifier ? `${labels.initiativeFor}, ${modifierAriaLabel}` : labels.initiativeFor
@@ -647,16 +675,17 @@ export function InitiativeTrackerRow({
             // Clickable on mobile too: keep the field frame (like the initiative input) as affordance.
             compact && "min-w-0 [&>span:first-child]:text-base [&>span:first-child]:font-semibold",
           )}>
-          {hpCellContent}
+          {renderHpCellContent()}
         </button>
       ) : (
         <div
           className={cn(
             hpCellClassName,
             "text-sm font-medium",
-            compact && "[&>span:first-child]:text-base [&>span:first-child]:font-semibold",
+            // Mobile read-only (player view): right-aligned against the chevron slot.
+            compact && "items-end text-right [&>span:first-child]:text-base [&>span:first-child]:font-semibold",
           )}>
-          {hpCellContent}
+          {renderHpCellContent(compact)}
         </div>
       )}
     </div>
@@ -815,8 +844,9 @@ export function InitiativeTrackerRow({
     armorClass: labels.shortStatLabels?.armorClass ?? labels.visibilityDialog.fields.armorClass,
   };
 
+  /** Same label / value cell as the character sheet facts (FR-character-statistics-card). */
   const renderMobileStat = (shortLabel: string, fullLabel: string, value: React.ReactNode) => (
-    <div className="flex min-w-0 flex-col items-start gap-1.5">
+    <div className={cn(FACT_CELL_CLASS, "items-start")}>
       <dt className="w-full truncate text-left text-[11px] font-semibold uppercase tracking-wide text-white/50">
         <span aria-hidden="true">{shortLabel}</span>
         <span className="sr-only">{fullLabel}</span>
@@ -925,68 +955,79 @@ export function InitiativeTrackerRow({
           </div>
 
           {/* Disclosure toggle: ghost (no box), like the other expand toggles of the app. */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            data-slot="tracker-mobile-expand"
-            aria-expanded={isExpanded}
-            aria-controls={detailsId}
-            aria-label={isExpanded ? labels.collapseDetails : labels.expandDetails}
-            onClick={onToggleExpanded}
-            className="shrink-0">
-            {isExpanded ? (
-              <ChevronDown className="size-4" aria-hidden="true" />
-            ) : (
-              <ChevronRight className="size-4" aria-hidden="true" />
-            )}
-          </Button>
+          {hasExpandableDetails ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              data-slot="tracker-mobile-expand"
+              aria-expanded={detailsExpanded}
+              aria-controls={detailsId}
+              aria-label={detailsExpanded ? labels.collapseDetails : labels.expandDetails}
+              onClick={onToggleExpanded}
+              className="shrink-0">
+              {detailsExpanded ? (
+                <ChevronDown className="size-4" aria-hidden="true" />
+              ) : (
+                <ChevronRight className="size-4" aria-hidden="true" />
+              )}
+            </Button>
+          ) : (
+            // Same room as the chevron: the HP column never shifts (FR-combat-initiative-tracker).
+            <span
+              aria-hidden="true"
+              data-slot="tracker-mobile-expand-spacer"
+              className="size-8 shrink-0"
+            />
+          )}
         </div>
 
-        <div
-          id={detailsId}
-          hidden={!isExpanded}
-          // Mobile: no separator inside a row, spacing only (the line splits rows, not their parts).
-          className="mt-3">
-          {/* Second line: initiative, armor class, group, each with its label. */}
-          <dl
-            data-slot="tracker-mobile-stats"
-            className="grid min-w-0 grid-cols-3 gap-4">
-            {renderMobileStat(
-              mobileStatLabels.initiative,
-              labels.visibilityDialog.fields.initiative,
-              renderInitiativeCell(true),
-            )}
-            {renderMobileStat(
-              mobileStatLabels.armorClass,
-              labels.visibilityDialog.fields.armorClass,
-              <div className="flex h-9 items-center justify-start text-base font-semibold tabular-nums text-white">
-                {showAc ? row.armorClass : hidden}
-              </div>,
-            )}
-            {renderMobileStat(
-              labels.visibilityDialog.fields.groupLabel,
-              labels.visibilityDialog.fields.groupLabel,
-              <div className="flex h-9 min-w-0 items-center overflow-hidden text-sm text-white/85">
-                {renderGroupContent(true)}
-              </div>,
-            )}
-          </dl>
-
-          {/* Third line: display button and condition editor, icon only (accessible names kept). */}
+        {hasExpandableDetails ? (
           <div
-            data-slot="tracker-mobile-actions"
-            className="mt-3 flex min-w-0 items-center gap-2">
-            {!isPlayerView ? (
-              <VisibilityTriggerButton
-                row={row}
-                ariaLabel={labels.visibleFor}
-                onClick={() => setVisibilityOpen(true)}
-              />
-            ) : null}
-            <div className="min-w-0 flex-1">{renderConditionsCell(true)}</div>
+            id={detailsId}
+            hidden={!detailsExpanded}
+            // Mobile: no separator inside a row, spacing only (the line splits rows, not their parts).
+            className="mt-3">
+            {/* Second line: initiative, armor class, group, each with its label. */}
+            <dl
+              data-slot="tracker-mobile-stats"
+              className="grid min-w-0 grid-cols-3 gap-4">
+              {renderMobileStat(
+                mobileStatLabels.initiative,
+                labels.visibilityDialog.fields.initiative,
+                renderInitiativeCell(true),
+              )}
+              {renderMobileStat(
+                mobileStatLabels.armorClass,
+                labels.visibilityDialog.fields.armorClass,
+                <div className="flex items-center justify-start text-base font-semibold tabular-nums text-white">
+                  {showAc ? row.armorClass : hidden}
+                </div>,
+              )}
+              {renderMobileStat(
+                labels.visibilityDialog.fields.groupLabel,
+                labels.visibilityDialog.fields.groupLabel,
+                <div className="flex min-w-0 items-center overflow-hidden text-sm text-white/85">
+                  {renderGroupContent(true)}
+                </div>,
+              )}
+            </dl>
+
+            {/* Third line: display button and condition editor, icon only (accessible names kept). */}
+            <div
+              data-slot="tracker-mobile-actions"
+              className="mt-3 flex min-w-0 items-center gap-2">
+              {!isPlayerView ? (
+                <VisibilityTriggerButton
+                  row={row}
+                  ariaLabel={labels.visibleFor}
+                  onClick={() => setVisibilityOpen(true)}
+                />
+              ) : null}
+              <div className="min-w-0 flex-1">{renderConditionsCell(true)}</div>
+            </div>
           </div>
-        </div>
+        ) : null}
       </article>
 
       {!isPlayerView && onUpdateRow ? (

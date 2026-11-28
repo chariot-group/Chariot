@@ -205,8 +205,9 @@ export function SessionHealthDialog({
     }
   }
 
+  // FR-combat-initiative-tracker — death saves only matter at 0 HP: the section is hidden above it.
   const deathSaves: DeathSaves | null =
-    showDeathSaves && isPlayer(character)
+    showDeathSaves && isPlayer(character) && character.stats.currentHitPoints <= 0
       ? {
           successes: character.deathSaves?.successes ?? 0,
           failures: character.deathSaves?.failures ?? 0,

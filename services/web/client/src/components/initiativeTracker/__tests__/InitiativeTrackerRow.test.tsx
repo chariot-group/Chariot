@@ -749,3 +749,129 @@ describe("FR-combat-initiative-tracker — tracker table row", () => {
     expect(toggle).not.toContain("bg-gray-middle-light");
   });
 });
+
+describe("InitiativeTrackerRow mobile expandable details (FR-combat-initiative-tracker)", () => {
+  const allHidden = {
+    ...baseRow.playerFieldVisibility,
+    initiative: false,
+    armorClass: false,
+    groupLabel: false,
+    conditions: false,
+    concentration: false,
+  };
+  const article = (html: string) => html.slice(html.indexOf("<article"));
+  const mobileStats = (html: string) => {
+    const start = html.indexOf('data-slot="tracker-mobile-stats"');
+    return html.slice(start, html.indexOf("</dl>", start));
+  };
+
+  it("nominal: a player row with at least one visible detail keeps the chevron", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, playerFieldVisibility: { ...allHidden, armorClass: true } }}
+        mode="player"
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    expect(article(html)).toContain('data-slot="tracker-mobile-expand"');
+    expect(article(html)).toContain('id="initiative-tracker-row-details-row-1"');
+  });
+
+  it("guard: a player row whose 2nd and 3rd lines are all hidden has no chevron nor expanded block", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, playerFieldVisibility: allHidden }}
+        mode="player"
+        battleStarted
+        isExpanded
+        labels={labels}
+      />,
+    );
+
+    expect(article(html)).not.toContain('data-slot="tracker-mobile-expand"');
+    expect(article(html)).not.toContain('id="initiative-tracker-row-details-');
+  });
+
+  it("guard: without chevron the row keeps an empty slot of the chevron's size so the HP column stays in place", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, playerFieldVisibility: { ...allHidden, hitPoints: false } }}
+        mode="player"
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    const card = article(html);
+    expect(card).toMatch(/data-slot="tracker-mobile-expand-spacer" class="size-8 shrink-0"/);
+    // Player view: HP column right-aligned, the hidden icon sits on the same right edge.
+    expect(card).toMatch(/data-slot="tracker-mobile-hp" class="flex w-28 shrink-0/);
+    const hp = card.slice(card.indexOf('data-slot="tracker-mobile-hp"'));
+    expect(hp).toMatch(/aria-label="Hidden"/);
+    expect(hp).toMatch(/class="[^"]*items-end text-right/);
+    expect(hp.slice(0, hp.indexOf('aria-label="Hidden"'))).toMatch(/justify-end[^"]*"\s*$/);
+  });
+
+  it("nominal: mobile stat labels sit right above their values, like the sheet label / value cells", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="player"
+        battleStarted
+        isExpanded
+        labels={labels}
+      />,
+    );
+
+    const stats = mobileStats(html);
+    expect((stats.match(/class="flex min-w-0 flex-col gap-0\.5 items-start"/g) ?? []).length).toBe(3);
+    // Read-only values: no field height pushing them away from their label.
+    expect(stats).not.toContain("h-9");
+  });
+
+  it("nominal: the own character badge is pushed to the right of the name area", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, kind: "player" }}
+        mode="player"
+        ownCharacterId={baseRow.characterId}
+        battleStarted
+        labels={labels}
+      />,
+    );
+
+    expect(article(html)).toMatch(/class="ml-auto shrink-0 rounded-full[^"]*"[^>]*aria-label="This is your character"/);
+  });
+
+  it("edge: the GM always keeps the chevron (display configuration button), even with every field hidden to players", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={{ ...baseRow, playerFieldVisibility: allHidden }}
+        mode="gm"
+        onUpdateRow={() => {}}
+        labels={labels}
+      />,
+    );
+
+    expect(article(html)).toContain('data-slot="tracker-mobile-expand"');
+  });
+
+  it("nominal: the mobile group cell shows the group name without the group icon, the desktop cell keeps it", () => {
+    const html = renderToStaticMarkup(
+      <InitiativeTrackerRow
+        row={baseRow}
+        mode="gm"
+        isExpanded
+        onUpdateRow={() => {}}
+        labels={labels}
+      />,
+    );
+
+    const stats = mobileStats(html);
+    expect(stats).toContain(baseRow.groupLabel);
+    expect(stats).not.toContain("lucide-layers");
+    expect(html.slice(0, html.indexOf("<article"))).toContain("lucide-layers");
+  });
+});
